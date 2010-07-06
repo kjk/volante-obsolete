@@ -1,6 +1,0 @@
-This directory contains JAssist source files changed by me to make it possible
-to distinguish access to fields of this and foreign objects.
-As far as JAssist is distributed under LGPL license, these files are also
-can be used and distributed under the conditions described in this license. 
-All other Perst code is distributed under its own MIT-like license. 
-Home page of Jassist is http://www.csg.is.titech.ac.jp/~chiba/javassist/.

@@ -1,6 +1,6 @@
 import org.garret.perst.*;
 
-import java.util.*;
+import java.util.Iterator;
 
 class Record extends Persistent { 
     String strKey;
@@ -16,10 +16,10 @@ public class TestIndex {
     final static int nRecords = 100000;
     final static int pagePoolSize = 32*1024*1024;
 
-    static public void main(String[] args) {    
+    static public void main(String[] args) {	
         Storage db = StorageFactory.getInstance().createStorage();
 
-        db.open("testidx.dbs", pagePoolSize);
+	db.open("testidx.dbs", pagePoolSize);
         Indices root = (Indices)db.getRoot();
         if (root == null) { 
             root = new Indices();
@@ -74,17 +74,6 @@ public class TestIndex {
         Assert.that(i == nRecords);
         System.out.println("Elapsed time for iterating through " + (nRecords*2) + " records: " 
                            + (System.currentTimeMillis() - start) + " milliseconds");
-
-        HashMap map = db.getMemoryDump();
-        iterator = map.values().iterator();
-        System.out.println("Memory usage");
-        start = System.currentTimeMillis();
-        while (iterator.hasNext()) { 
-            MemoryUsage usage = (MemoryUsage)iterator.next();
-            System.out.println(" " + usage.cls.getName() + ": instances=" + usage.nInstances + ", total size=" + usage.totalSize + ", allocated size=" + usage.allocatedSize);
-        }
-        System.out.println("Elapsed time for memory dump: " + (System.currentTimeMillis() - start) + " milliseconds");
-        
         start = System.currentTimeMillis();
         key = 1999;
         for (i = 0; i < nRecords; i++) { 

@@ -37,7 +37,11 @@ class BtreeFieldIndex extends Btree implements FieldIndex {
 
     public void onLoad()
     {
-        cls = ClassDescriptor.loadClass(getStorage(), className);
+        try { 
+            cls = Class.forName(className);
+        } catch (Exception x) { 
+            throw new StorageError(StorageError.CLASS_NOT_FOUND, className, x);
+        }           
         locateField();
     }
 
@@ -47,7 +51,10 @@ class BtreeFieldIndex extends Btree implements FieldIndex {
         this.fieldName = fieldName;
         this.className = cls.getName();
         locateField();
-        type = checkType(fld.getType());
+        type = ClassDescriptor.getTypeCode(fld.getType());
+        if (type >= ClassDescriptor.tpLink) { 
+            throw new StorageError(StorageError.UNSUPPORTED_INDEX_TYPE, fld.getType());
+        }
     }
 
     private Key extractKey(IPersistent obj) { 
@@ -110,21 +117,6 @@ class BtreeFieldIndex extends Btree implements FieldIndex {
         super.remove(new BtreeKey(extractKey(obj), obj.getOid()));
     }
 
-    public boolean contains(IPersistent obj) {
-        Key key = extractKey(obj);
-        if (unique) { 
-            return super.get(key) != null;
-        } else { 
-            IPersistent[] mbrs = get(key, key);
-            for (int i = 0; i < mbrs.length; i++) { 
-                if (mbrs[i] == obj) { 
-                    return true;
-                }
-            }
-            return false;
-        }
-    }
-
     public synchronized void append(IPersistent obj) {
         Key key;
         try { 
@@ -154,12 +146,12 @@ class BtreeFieldIndex extends Btree implements FieldIndex {
         }
         ArrayList list = new ArrayList();
         if (root != 0) { 
-            BtreePage.find((StorageImpl)getStorage(), root, from, till, this, height, list);
+            BtreePage.find((StorageImpl)getStorage(), root, from, till, type, height, list);
         }
         return (IPersistent[])list.toArray((Object[])Array.newInstance(cls, list.size()));
     }
 
-    public IPersistent[] toPersistentArray() {
+    public IPersistent[] toArray() {
         IPersistent[] arr = (IPersistent[])Array.newInstance(cls, nElems);
         if (root != 0) { 
             BtreePage.traverseForward((StorageImpl)getStorage(), root, type, height, arr, 0);

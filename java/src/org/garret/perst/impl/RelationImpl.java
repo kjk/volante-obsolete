@@ -1,6 +1,5 @@
 package org.garret.perst.impl;
 import  org.garret.perst.*;
-import  java.util.Iterator;
 
 public class RelationImpl extends Relation {
     public int size() {
@@ -57,10 +56,6 @@ public class RelationImpl extends Relation {
        
     public void clear() {
         link.clear();
-    }
-
-    public Iterator iterator() {
-        return link.iterator();
     }
     
     RelationImpl(IPersistent owner) { 

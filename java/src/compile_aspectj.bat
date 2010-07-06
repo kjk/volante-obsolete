@@ -1,1 +1,0 @@
-ajc org/garret/perst/aspectj/*.java -injars ../lib/perst.jar -outjar ../lib/perst_aspectj.jar

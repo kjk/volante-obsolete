@@ -37,16 +37,16 @@ public class TestSSD extends Persistent {
     }
 
     static String input(String prompt) {
-        while (true) { 
-            try { 
-                System.out.print(prompt);
-                int len = System.in.read(inputBuffer);
-                String answer = new String(inputBuffer, 0, len).trim();
-                if (answer.length() != 0) {
-                    return answer;
-                }
-            } catch (IOException x) {}
-        }
+	while (true) { 
+	    try { 
+		System.out.print(prompt);
+		int len = System.in.read(inputBuffer);
+		String answer = new String(inputBuffer, 0, len).trim();
+		if (answer.length() != 0) {
+		    return answer;
+		}
+	    } catch (IOException x) {}
+	}
     }
 
     static long inputLong(String prompt) { 
@@ -69,7 +69,7 @@ public class TestSSD extends Persistent {
         }
     }
 
-    static public void main(String[] args) {    
+    static public void main(String[] args) {	
         Storage db = StorageFactory.getInstance().createStorage();
         Supplier   supplier;
         Detail     detail;
@@ -78,7 +78,7 @@ public class TestSSD extends Persistent {
         Iterator   iterator;
         int        i;
 
-        db.open("testssd.dbs");
+	db.open("testssd.dbs");
 
         TestSSD root = (TestSSD)db.getRoot();
         if (root == null) { 

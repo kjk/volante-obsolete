@@ -1,13 +1,13 @@
 package org.garret.perst.impl;
 
-public class ByteBuffer {
-    public final void extend(int size) {  
-        if (size > arr.length) { 
-            int newLen = size > arr.length*2 ? size : arr.length*2;
-            byte[] newArr = new byte[newLen];
-            System.arraycopy(arr, 0, newArr, 0, used); 
-            arr = newArr;
-        }
+class ByteBuffer {
+    final void extend(int size) {  
+	if (size > arr.length) { 
+	    int newLen = size > arr.length*2 ? size : arr.length*2;
+	    byte[] newArr = new byte[newLen];
+	    System.arraycopy(arr, 0, newArr, 0, used); 
+	    arr = newArr;
+	}
         used = size;
     }
     
@@ -21,8 +21,8 @@ public class ByteBuffer {
         arr = new byte[64];
     }
 
-    public byte[] arr;
-    public int    used;
+    byte[] arr;
+    int    used;
 }
 
 

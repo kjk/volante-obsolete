@@ -23,7 +23,7 @@ public class TestRaw extends Persistent {
     public static void main(String[] args) { 
         Storage db = StorageFactory.getInstance().createStorage();
         db.setProperty("perst.serialize.transient.objects", Boolean.TRUE);
-        db.open("testraw.dbs");
+	db.open("testraw.dbs");
         TestRaw root = (TestRaw)db.getRoot();
         if (root == null) { 
             root = new TestRaw();

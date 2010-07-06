@@ -1,1 +1,0 @@
-java -classpath ../../lib/perst_aspectj.jar;.;%classpath% Guess

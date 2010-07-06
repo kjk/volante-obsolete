@@ -1,1 +1,0 @@
-ajc *.java -aspectpath ../../lib/perst_aspectj.jar

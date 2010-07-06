@@ -2,7 +2,7 @@ package org.garret.perst;
 
 /**
  * Interface of file.
- * Programmer can provide its own impleentation of this interface, adding such features
+ * Prorgemmer can provide its own impleentation of this interface, adding such features
  * as support of flash cards, encrypted files,...
  * Implentation of this interface should throw StorageError exception in case of failure
  */

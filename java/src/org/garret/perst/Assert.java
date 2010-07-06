@@ -15,8 +15,8 @@ public class Assert {
      */
     public static final void that(boolean cond) { 
         if (!cond) { 
-            throw new AssertionFailed();
-        }
+	    throw new AssertionFailed();
+	}
     }
 
     /** Check specified condition and raise <code>AssertionFailed</code>
@@ -27,22 +27,22 @@ public class Assert {
      */
     public static final void that(String description, boolean cond) { 
         if (!cond) { 
-            throw new AssertionFailed(description);
-        }
+	    throw new AssertionFailed(description);
+	}
     }
 
     /**
      * Throw assertion failed exception.
      */
     public static final void failed() { 
-        throw new AssertionFailed();
+	throw new AssertionFailed();
     }
 
     /**
      * Throw assertion failed exception with given description.
      */
     public static final void failed(String description) { 
-        throw new AssertionFailed(description);
+	throw new AssertionFailed(description);
     }
 }
 
