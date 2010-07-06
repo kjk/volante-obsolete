@@ -143,3 +143,6 @@ Attention: database format is incompatible with version 1.22!
 --- Release version 2.11 07.01.2004 -------------------------------------
 1. Add Storage.backup method which can be used for online backups and database compactification
 2. Add support of time series
+
+--- Release version 2.12 12.01.2004 -------------------------------------
+1. Fix bug in backup method

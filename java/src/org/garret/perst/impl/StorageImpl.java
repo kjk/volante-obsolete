@@ -1259,7 +1259,7 @@ public class StorageImpl extends Storage {
                         int nBits = (int)((newFileSize - mappedSpace) >> dbAllocationQuantumBits);
                         Arrays.fill(page, 0, nBits >> 3, (byte)-1);
                         page[nBits >> 3] = (byte)((1 << (nBits & 7)) - 1);
-                        Arrays.fill(page, (nBits >> 3) + 1, Page.pageSize - (nBits >> 3) - 1, (byte)0);
+                        Arrays.fill(page, (nBits >> 3) + 1, Page.pageSize, (byte)0);
                     }
                     out.write(page);
                 } else {                        
