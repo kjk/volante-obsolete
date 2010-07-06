@@ -19,6 +19,15 @@ public class TestGC {
     static public void main(String[] args) {    
         Storage db = StorageFactory.getInstance().createStorage();
 
+        for (int i = 0; i < args.length; i++) { 
+            if ("background".equals(args[i])) { 
+                db.setProperty("perst.background.gc", Boolean.TRUE);
+            } else if ("altbtree".equals(args[i])) { 
+                db.setProperty("perst.alternative.btree", Boolean.TRUE);
+            } else { 
+                System.err.println("Unrecognized option: " + args[i]);
+            }
+        }
         db.open("testgc.dbs");
         db.setGcThreshold(1000000);
         StorageRoot root = new StorageRoot();
@@ -50,6 +59,8 @@ public class TestGC {
             root.list.intKey = i;
             root.store();
             if (i % 1000 == 0) { 
+                System.out.print("Iteration " + i + "\r");
+                System.out.flush();
                 db.commit();
             }            
         }

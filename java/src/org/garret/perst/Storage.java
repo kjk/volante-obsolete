@@ -400,6 +400,9 @@ public abstract class Storage {
      * Also it provides better performance (about 3 times comaring with old implementation) because
      * of object caching. And B-Tree supports keys of user defined types. 
      * </TD></TR>
+     * <TR><TD><code>perst.background.gc</code></TD><TD>Boolean</TD><TD>false</TD>
+     * <TD>Perform garbage collection in separate thread without blocking the main application.
+     * </TD></TR>
      * </TABLE>
      * @param name name of the property
      * @param value value of the property (for boolean properties pass <code>java.lang.Boolean.TRUE</code>
@@ -428,6 +431,16 @@ public abstract class Storage {
      */
     abstract public java.util.HashMap getMemoryDump();
     
+
+    /**
+     * Get total size of all allocated objects in the database
+     */
+    abstract public long getUsedSize();
+
+    /**
+     * Get size of the database
+     */
+    abstract public long getDatabaseSize();
 
     /**
      * Set class loader. This class loader will be used to locate classes for 

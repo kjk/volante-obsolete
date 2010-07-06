@@ -265,6 +265,14 @@ public class StorageImpl extends Storage {
         }
     }
 
+    public long getUsedSize() { 
+        return usedSize;
+    }
+
+    public long getDatabaseSize() { 
+        return header.root[1-currIndex].size;
+    }
+
     static class Location { 
         long     pos;
         long     size;
@@ -327,7 +335,7 @@ public class StorageImpl extends Storage {
             Assert.that(size != 0);
             allocatedDelta += size;
             if (allocatedDelta > gcThreshold) {
-                gc();
+                gc0();
             }
             int  objBitSize = (int)(size >> dbAllocationQuantumBits);
             Assert.that(objBitSize == (size >> dbAllocationQuantumBits));
@@ -653,7 +661,7 @@ public class StorageImpl extends Storage {
                 if (gcThreshold != Long.MAX_VALUE && !gcDone) {
                     allocatedDelta -= size;
                     usedSize -= size;
-                    gc();
+                    gc0();
                     currRBitmapPage = currPBitmapPage = 0;
                     currRBitmapOffs = currPBitmapOffs = 0;                
                     return allocate(size, oid);
@@ -703,10 +711,6 @@ public class StorageImpl extends Storage {
             if ((pos & (Page.pageSize-1)) == 0 && size >= Page.pageSize) { 
                 if (pageId == currPBitmapPage && offs < currPBitmapOffs) { 
                     currPBitmapOffs = offs;
-                }
-            } else { 
-                if (pageId == currRBitmapPage && offs < currRBitmapOffs) { 
-                    currRBitmapOffs = offs;
                 }
             }
             if (pageId == currRBitmapPage && offs < currRBitmapOffs) { 
@@ -810,6 +814,11 @@ public class StorageImpl extends Storage {
 
         dirtyPagesMap = new int[dbDirtyPageBitmapSize/4+1];
         gcThreshold = Long.MAX_VALUE;
+        backgroundGcMonitor = new Object();
+        gcThread = null;
+        gcActive = false;
+        gcDone = false;
+        allocatedDelta = 0;
 
         nNestedTransactions = 0;
         nBlockedTransactions = 0;
@@ -818,8 +827,6 @@ public class StorageImpl extends Storage {
         transactionMonitor = new Object();
         transactionLock = new PersistentResource();
 
-        allocatedDelta = 0;
-        gcDone = false;
         modified = false;        
         pool = new PagePool(pagePoolSize/Page.pageSize);
 
@@ -1039,16 +1046,20 @@ public class StorageImpl extends Storage {
         modified = true;
     }
  
-    public synchronized void commit() {
-        if (!opened) {
-            throw new StorageError(StorageError.STORAGE_NOT_OPENED);
+    public void commit() {
+        synchronized (backgroundGcMonitor) { 
+            synchronized (this) { 
+                if (!opened) {
+                    throw new StorageError(StorageError.STORAGE_NOT_OPENED);
+                }
+                objectCache.flush();
+                if (!modified) { 
+                    return;
+                }
+                commit0();
+                modified = false;
+            }
         }
-        objectCache.flush();
-        if (!modified) { 
-            return;
-        }
-        commit0();
-        modified = false;
     }
 
     private final void commit0() 
@@ -1540,100 +1551,160 @@ public class StorageImpl extends Storage {
         gcThreshold = maxAllocatedDelta;
     }
 
+    private void mark() { 
+        int bitmapSize = (int)(header.root[currIndex].size >>> (dbAllocationQuantumBits + 5)) + 1;
+        boolean existsNotMarkedObjects;
+        long pos;
+        int  i, j;
+        
+        // mark
+        greyBitmap = new int[bitmapSize];
+        blackBitmap = new int[bitmapSize];
+        int rootOid = header.root[currIndex].rootObject;
+        if (rootOid != 0) { 
+            markOid(rootOid);
+            do { 
+                existsNotMarkedObjects = false;
+                for (i = 0; i < bitmapSize; i++) { 
+                    if (greyBitmap[i] != 0) { 
+                        existsNotMarkedObjects = true;
+                        for (j = 0; j < 32; j++) { 
+                            if ((greyBitmap[i] & (1 << j)) != 0) { 
+                                pos = (((long)i << 5) + j) << dbAllocationQuantumBits;
+                                greyBitmap[i] &= ~(1 << j);
+                                blackBitmap[i] |= 1 << j;
+                                int offs = (int)pos & (Page.pageSize-1);
+                                Page pg = pool.getPage(pos - offs);
+                                int typeOid = ObjectHeader.getType(pg.data, offs);
+                                if (typeOid != 0) { 
+                                    ClassDescriptor desc = findClassDescriptor(typeOid);
+                                    if (Btree.class.isAssignableFrom(desc.cls)) { 
+                                        Btree btree = new Btree(pg.data, ObjectHeader.sizeof + offs);
+                                        btree.assignOid(this, 0, false);
+                                        btree.markTree();
+                                    } else if (desc.hasReferences) { 
+                                        markObject(pool.get(pos), ObjectHeader.sizeof, desc);
+                                    }
+                                }
+                                pool.unfix(pg);                                
+                            }
+                        }
+                    }
+                }
+            } while (existsNotMarkedObjects);
+        }    
+    }
+
+    private int sweep() { 
+        int nDeallocated = 0;
+        long pos;
+        gcDone = true;
+        for (int i = dbFirstUserId, j = committedIndexSize; i < j; i++) {
+            pos = getGCPos(i);
+            if (((int)pos & (dbPageObjectFlag|dbFreeHandleFlag)) == 0) {
+                int bit = (int)(pos >>> dbAllocationQuantumBits);
+                if ((blackBitmap[bit >>> 5] & (1 << (bit & 31))) == 0) { 
+                    // object is not accessible
+                    if (getPos(i) != pos) { 
+                        throw new StorageError(StorageError.INVALID_OID);
+                    }
+                    int offs = (int)pos & (Page.pageSize-1);
+                    Page pg = pool.getPage(pos - offs);
+                    int typeOid = ObjectHeader.getType(pg.data, offs);
+                    if (typeOid != 0) { 
+                        ClassDescriptor desc = findClassDescriptor(typeOid);
+                        nDeallocated += 1;
+                        if (Btree.class.isAssignableFrom(desc.cls)) { 
+                            Btree btree = new Btree(pg.data, ObjectHeader.sizeof + offs);
+                            pool.unfix(pg);
+                            btree.assignOid(this, i, false);
+                            btree.deallocate();
+                        } else { 
+                            int size = ObjectHeader.getSize(pg.data, offs);
+                            pool.unfix(pg);
+                            freeId(i);
+                            objectCache.remove(i);                        
+                            cloneBitmap(pos, size);
+                        }
+                    }
+                }
+            }   
+        }
+
+        greyBitmap = null;
+        blackBitmap = null;
+        allocatedDelta = 0;
+        gcActive = false;
+        return nDeallocated;
+    }   
+     
+    class GcThread extends Thread { 
+        private Object  monitor = new Object();
+        private boolean go;
+
+
+        GcThread() { 
+            start();
+        }
+
+        void activate() { 
+            synchronized(monitor) { 
+                go = true;
+                monitor.notify();
+            }
+        }
+
+        public void run() { 
+            try { 
+                synchronized(backgroundGcMonitor) { 
+                    while (true) { 
+                        while (!go && opened) { 
+                            backgroundGcMonitor.wait();
+                        }
+                        if (!opened) { 
+                            return;
+                        }
+                        go = false;
+                        mark();
+                        synchronized (StorageImpl.this) { 
+                            synchronized (objectCache) { 
+                                sweep();
+                            }
+                        }
+                        
+                    }
+                }
+            } catch (InterruptedException x) { 
+            }    
+        }
+    }
+
     public synchronized int gc() { 
+        return gc0();
+    }
+
+    private int gc0() { 
         synchronized (objectCache) { 
             if (!opened) {
                 throw new StorageError(StorageError.STORAGE_NOT_OPENED);
             }
-            if (gcDone) { 
+            if (gcDone || gcActive) { 
                 return 0;
             }
+            gcActive = true;
+            if (backgroundGc) { 
+                if (gcThread == null) { 
+                    gcThread = new GcThread();
+                }
+                gcThread.activate();
+                return 0;
+           }
             // System.out.println("Start GC, allocatedDelta=" + allocatedDelta + ", header[" + currIndex + "].size=" + header.root[currIndex].size + ", gcTreshold=" + gcThreshold);
-                
-            int bitmapSize = (int)(header.root[currIndex].size >>> (dbAllocationQuantumBits + 5)) + 1;
-            boolean existsNotMarkedObjects;
-            long pos;
-            int  i, j;
-
-            // mark
-            greyBitmap = new int[bitmapSize];
-            blackBitmap = new int[bitmapSize];
-            int rootOid = header.root[currIndex].rootObject;
-            if (rootOid != 0) { 
-                markOid(rootOid);
-                do { 
-                    existsNotMarkedObjects = false;
-                    for (i = 0; i < bitmapSize; i++) { 
-                        if (greyBitmap[i] != 0) { 
-                            existsNotMarkedObjects = true;
-                            for (j = 0; j < 32; j++) { 
-                                if ((greyBitmap[i] & (1 << j)) != 0) { 
-                                    pos = (((long)i << 5) + j) << dbAllocationQuantumBits;
-                                    greyBitmap[i] &= ~(1 << j);
-                                    blackBitmap[i] |= 1 << j;
-                                    int offs = (int)pos & (Page.pageSize-1);
-                                    Page pg = pool.getPage(pos - offs);
-                                    int typeOid = ObjectHeader.getType(pg.data, offs);
-                                    if (typeOid != 0) { 
-                                        ClassDescriptor desc = findClassDescriptor(typeOid);
-                                        if (Btree.class.isAssignableFrom(desc.cls)) { 
-                                            Btree btree = new Btree(pg.data, ObjectHeader.sizeof + offs);
-                                            btree.assignOid(this, 0, false);
-                                            btree.markTree();
-                                        } else if (desc.hasReferences) { 
-                                            markObject(pool.get(pos), ObjectHeader.sizeof, desc);
-                                        }
-                                    }
-                                    pool.unfix(pg);                                
-                                }
-                            }
-                        }
-                    }
-                } while (existsNotMarkedObjects);
-            }    
-        
-            // sweep
-            int nDeallocated = 0;
-            gcDone = true;
-            for (i = dbFirstUserId, j = committedIndexSize; i < j; i++) {
-                pos = getGCPos(i);
-                if (((int)pos & (dbPageObjectFlag|dbFreeHandleFlag)) == 0) {
-                    int bit = (int)(pos >>> dbAllocationQuantumBits);
-                    if ((blackBitmap[bit >>> 5] & (1 << (bit & 31))) == 0) { 
-                        // object is not accessible
-                        if (getPos(i) != pos) { 
-                            throw new StorageError(StorageError.INVALID_OID);
-                        }
-                        int offs = (int)pos & (Page.pageSize-1);
-                        Page pg = pool.getPage(pos - offs);
-                        int typeOid = ObjectHeader.getType(pg.data, offs);
-                        if (typeOid != 0) { 
-                            ClassDescriptor desc = findClassDescriptor(typeOid);
-                            nDeallocated += 1;
-                            if (Btree.class.isAssignableFrom(desc.cls)) { 
-                                Btree btree = new Btree(pg.data, ObjectHeader.sizeof + offs);
-                                pool.unfix(pg);
-                                btree.assignOid(this, i, false);
-                                btree.deallocate();
-                            } else { 
-                                int size = ObjectHeader.getSize(pg.data, offs);
-                                pool.unfix(pg);
-                                freeId(i);
-                                objectCache.remove(i);                        
-                                cloneBitmap(pos, size);
-                            }
-                        }
-                    }
-                }   
-            }
-
-            greyBitmap = null;
-            blackBitmap = null;
-            allocatedDelta = 0;
-            return nDeallocated;
+                        
+            mark();
+            return sweep();
         }
     }
-
 
     public synchronized HashMap getMemoryDump() { 
         synchronized (objectCache) { 
@@ -1969,8 +2040,10 @@ public class StorageImpl extends Storage {
                         ((IPersistent)ctx.modified.get(--i)).store();
                     } while (i != 0);
 
-                    synchronized(this) { 
-                        commit0();
+                    synchronized (backgroundGcMonitor) { 
+                        synchronized(this) { 
+                            commit0();
+                        }
                     }
                 }
                 for (i = ctx.locked.size(); --i >= 0;) { 
@@ -2060,6 +2133,12 @@ public class StorageImpl extends Storage {
     {
         commit();
         opened = false;
+        if (gcThread != null) { 
+            gcThread.activate();
+            try { 
+                gcThread.join();
+            } catch (InterruptedException x) {}
+        }
         if (header.dirty) { 
             Page pg = pool.putPage(0);
             header.pack(pg.data);
@@ -2155,6 +2234,9 @@ public class StorageImpl extends Storage {
         if ((value = props.getProperty("perst.alternative.btree")) != null) { 
             alternativeBtree = getBooleanValue(value);
         }
+        if ((value = props.getProperty("perst.background.gc")) != null) { 
+            backgroundGc = getBooleanValue(value);
+        }
     }
 
     public void setProperty(String name, Object value)
@@ -2175,6 +2257,8 @@ public class StorageImpl extends Storage {
             readOnly = getBooleanValue(value);
         } else if (name.equals("perst.alternative.btree")) { 
             alternativeBtree = getBooleanValue(value);
+        } else if (name.equals("perst.background.gc")) {
+            backgroundGc = getBooleanValue(value);
         } else { 
             throw new StorageError(StorageError.NO_SUCH_PROPERTY);
         }
@@ -3421,6 +3505,7 @@ public class StorageImpl extends Storage {
     private long    extensionQuantum = dbDefaultExtensionQuantum;
     private boolean readOnly = false;
     private boolean alternativeBtree = false;
+    private boolean backgroundGc = false;
 
 
     PagePool  pool;
@@ -3450,6 +3535,9 @@ public class StorageImpl extends Storage {
     long      gcThreshold;
     long      allocatedDelta;
     boolean   gcDone;
+    boolean   gcActive;
+    Object    backgroundGcMonitor;
+    GcThread  gcThread;
 
     int       nNestedTransactions;
     int       nBlockedTransactions;

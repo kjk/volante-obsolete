@@ -257,3 +257,8 @@ introduced in version 2.26
 9. Fields of java.lang.Object and java.lang.Comparable type 
    are now serialized decpite to whether "perst.serialize.transient.objects" property was set or not
 10. Add Persistent onStore method which is invoked before object is stored in the database
+
+
+--- Release version 2.33 27.08.2004 -------------------------------------
+1. Background garbage collection
+2. Add Storage.getUsedSize() and Storage.getDatabaseSize() methods

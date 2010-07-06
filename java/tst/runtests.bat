@@ -19,6 +19,11 @@ call TestTtree
 call TestRaw
 call TestRaw
 call TestGC
+del *.dbs
+call TestGC background
+del *.dbs
+call TestGC altbtree background
+del *.dbs
 call TestConcur
 call TestXML
 call TestBackup
