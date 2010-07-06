@@ -101,6 +101,11 @@ public class MultiFile implements IFile
         }
     }
     
+    public boolean lock() 
+    { 
+        return OSFile.lockFile(segment[0].f);
+    }
+
     public void close() 
     { 
         try { 

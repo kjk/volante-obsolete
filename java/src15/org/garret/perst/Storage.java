@@ -396,6 +396,10 @@ public abstract class Storage {
      * when delta between total size of allocated and deallocated objects exceeds specified threashold OR
      * after reaching end of allocation bitmap in allocator.
      * </TD></TR>
+     * <TR><TD><code>perst.lock.file</code></TD><TD>Boolean</TD><TD>false</TD>
+     * <TD>Lock database file to prevent concurrent access to the database by 
+     * more than one application.
+     * </TD></TR>
      * <TR><TD><code>perst.file.readonly</code></TD><TD>Boolean</TD><TD>false</TD>
      * <TD>Database file should be opened in read-only mode.
      * </TD></TR>

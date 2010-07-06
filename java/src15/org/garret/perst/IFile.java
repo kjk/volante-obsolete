@@ -28,6 +28,13 @@ public interface IFile {
     void sync();
     
     /**
+     * Lock file
+     * @return <code>true</code> if file was successfully locked or locking in not implemented,
+     * <code>false</code> if file is locked by some other applciation     
+     */
+    boolean lock();
+
+    /**
      * Close file
      */
     void close();

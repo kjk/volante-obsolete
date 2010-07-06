@@ -325,3 +325,7 @@ stored in OS file buffers and sooner or later them will be written to the disk)
 
 --- Release version 2.43 10.12.2004 -------------------------------------
 1. Add BitIndex collection (allowing to select object by bit vector of boolean properties)
+
+
+--- Release version 2.44 14.12.2004 -------------------------------------
+1. Add optional file locking to prevent modification of database file by more than one application

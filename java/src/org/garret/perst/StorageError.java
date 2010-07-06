@@ -30,6 +30,7 @@ public class StorageError extends Error {
     public static final int SERIALIZE_PERSISTENT   = 24;
     public static final int EMPTY_VALUE            = 25;
     public static final int UNSUPPORTED_ENCODING   = 26;
+    public static final int STORAGE_IS_USED        = 27;
 
     private static final String[] messageText = {
         "",
@@ -57,6 +58,8 @@ public class StorageError extends Error {
         "No such database property",
         "Attempt to store persistent object as raw object",
         "Attempt to store java.lang.Object as value",
+        "Unsupported encoding", 
+        "Storage is used by other application"
     };
 
     /**

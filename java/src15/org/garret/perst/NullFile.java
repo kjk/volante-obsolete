@@ -19,5 +19,9 @@ public class NullFile implements IFile
 
     public void sync() {}
 
+    public boolean lock() { 
+        return true;
+    }
+
     public void close() {}
 }

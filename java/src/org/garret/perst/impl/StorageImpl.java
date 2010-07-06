@@ -817,6 +817,11 @@ public class StorageImpl extends Storage {
         if (opened) {
             throw new StorageError(StorageError.STORAGE_ALREADY_OPENED);
         }
+        if (lockFile) { 
+            if (!file.lock()) { 
+                throw new StorageError(StorageError.STORAGE_IS_USED);
+            }
+        }
         Page pg;
         int i;
         int indexSize = initIndexSize;
@@ -2293,6 +2298,9 @@ public class StorageImpl extends Storage {
         if ((value = props.getProperty("perst.string.encoding")) != null) { 
             encoding = value;
         }
+        if ((value = props.getProperty("perst.lock.file")) != null) { 
+            lockFile = getBooleanValue(value);
+        }
     }
 
     public void setProperty(String name, Object value)
@@ -2321,6 +2329,8 @@ public class StorageImpl extends Storage {
             backgroundGc = getBooleanValue(value);
         } else if (name.equals("perst.string.encoding")) { 
             encoding = (value == null) ? null : value.toString();
+        } else if (name.equals("perst.lock.file")) { 
+            lockFile = getBooleanValue(value);
         } else { 
             throw new StorageError(StorageError.NO_SUCH_PROPERTY);
         }
@@ -3513,6 +3523,7 @@ public class StorageImpl extends Storage {
     private int     objectCacheInitSize = dbDefaultObjectCacheInitSize;
     private long    extensionQuantum = dbDefaultExtensionQuantum;
     private String  cacheKind = "lru";
+    private boolean lockFile = false;
     private boolean readOnly = false;
     private boolean noFlush = false;
     private boolean alternativeBtree = false;

@@ -3,6 +3,7 @@ package org.garret.perst;
 import java.io.*;
 import java.nio.*;
 import java.nio.channels.*;
+import org.garret.perst.impl.OSFile;
 
 /**
  * Class using NIO mapping file on virtual mapping.
@@ -12,7 +13,7 @@ import java.nio.channels.*;
 public class MappedFile implements IFile { 
     private final void checkSize(long size) throws IOException { 
         if (size > mapSize) { 
-            long newSize = mapSize*2 < Integer.MAX_VALUE ? mapSize*2 : mapSize + (mapSize >>> 1);
+            long newSize = mapSize < Integer.MAX_VALUE/2 ? mapSize*2 : Integer.MAX_VALUE;
             if (newSize < size) { 
                 newSize = size;
             }
@@ -57,6 +58,11 @@ public class MappedFile implements IFile {
         } catch(IOException x) { 
             throw new StorageError(StorageError.FILE_ACCESS_ERROR, x);
         }
+    }
+
+    public boolean lock() 
+    {
+        return OSFile.lockFile(f);
     }
 
     public MappedFile(String filePath, long initialSize, boolean readOnly) { 

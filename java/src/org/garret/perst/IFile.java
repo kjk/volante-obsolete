@@ -26,7 +26,14 @@ public interface IFile {
      * Flush all fiels changes to the disk
      */
     void sync();
-    
+        
+    /**
+     * Lock file
+     * @return <code>true</code> if file was successfully locked or locking in not implemented,
+     * <code>false</code> if file is locked by some other applciation     
+     */
+    boolean lock();
+
     /**
      * Close file
      */
