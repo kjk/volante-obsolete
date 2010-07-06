@@ -103,3 +103,8 @@ method is not invoked before transaction commit.
 Attention: database format is incompatible with version 1.22!
 2. New implementation of modified object list
 3. Make it possible to tune most of database parameters using Storage.setProperty/Storage.setProperties methods
+
+--- Release version 2.02 07.11.2003 -------------------------------------
+
+1. Support indices for byte arrays
+2. Support compound indices

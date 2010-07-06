@@ -1164,6 +1164,15 @@ public class StorageImpl extends Storage {
         return index;
     }
 
+    public synchronized FieldIndex createFieldIndex(Class type, String[] fieldNames, boolean unique) {
+        if (!opened) { 
+            throw new StorageError(StorageError.STORAGE_NOT_OPENED);
+        }        
+        FieldIndex index = new BtreeMultiFieldIndex(type, fieldNames, unique);
+        setObjectOid(index, 0, false);
+        return index;
+    }
+
     public SortedCollection createSortedCollection(PersistentComparator comparator, boolean unique) {
         if (!opened) { 
             throw new StorageError(StorageError.STORAGE_NOT_OPENED);
@@ -1237,7 +1246,7 @@ public class StorageImpl extends Storage {
                                 int typeOid = ObjectHeader.getType(pg.data, offs);
                                 if (typeOid != 0) { 
                                     ClassDescriptor desc = findClassDescriptor(typeOid);
-                                    if (desc.cls == Btree.class || desc.cls == BtreeFieldIndex.class) { 
+                                    if (Btree.class.isAssignableFrom(desc.cls)) { 
                                         Btree btree = new Btree(pg.data, ObjectHeader.sizeof + offs);
                                         setObjectOid(btree, 0, false);
                                         btree.markTree();
@@ -1269,7 +1278,7 @@ public class StorageImpl extends Storage {
                     int typeOid = ObjectHeader.getType(pg.data, offs);
                     if (typeOid != 0) { 
                         ClassDescriptor desc = findClassDescriptor(typeOid);
-                        if (desc.cls == Btree.class || desc.cls == BtreeFieldIndex.class) { 
+                        if (Btree.class.isAssignableFrom(desc.cls)) { 
                             Btree btree = new Btree(pg.data, ObjectHeader.sizeof + offs);
                             pool.unfix(pg);
                             setObjectOid(btree, i, false);

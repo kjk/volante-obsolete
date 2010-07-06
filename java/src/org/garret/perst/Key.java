@@ -2,7 +2,7 @@ package org.garret.perst;
 import  org.garret.perst.impl.ClassDescriptor;
 
 /**
- * Class for specifying key value (neededd to access obejct by key usig index)
+ * Class for specifying key value (needed to access obejct by key usig index)
  */
 public class Key { 
     public final int     type;
@@ -10,7 +10,7 @@ public class Key {
     public final int     ival;
     public final long    lval;
     public final double  dval;
-    public final char[]  sval;
+    public final Object  oval;
 
     public final int     inclusion;
 
@@ -92,18 +92,42 @@ public class Key {
     }
 
     /**
+     * Constructor of array of byte key (boundary is inclusive)
+     */
+    public Key(byte[] v) { 
+        this(v, true);
+    }
+
+    /**
+     * Constructor of compound key (boundary is inclusive)
+     * @param v array of compound key values
+     */
+    public Key(Object[] v) { 
+        this(v, true);
+    }    
+
+    /**
+     * Constructor of compound key with two values (boundary is inclusive)
+     * @param v1 first value of compund key
+     * @param v2 second value of compund key
+     */
+    public Key(Object v1, Object v2) { 
+        this(new Object[]{v1, v2}, true);
+    }    
+
+    /**
      * Constructor of key with persistent object reference (boundary is inclusive)
      */
     public Key(IPersistent v) { 
         this(v, true);
     }
 
-    private Key(int type, long lval, double dval, char[] sval, boolean inclusive) { 
+    private Key(int type, long lval, double dval, Object oval, boolean inclusive) { 
         this.type = type;
         this.ival = (int)lval;
         this.lval = lval;
         this.dval = dval;
-        this.sval = sval;
+        this.oval = oval;
         this.inclusion = inclusive ? 1 : 0;
     }
 
@@ -188,13 +212,15 @@ public class Key {
         this(ClassDescriptor.tpDate, v == null ? -1 : v.getTime(), 0.0, null, inclusive);
     }
 
+    static final char[] EMPTY_STRING = new char[0];
+
     /**
      * Constructor of string key
      * @param v key value
      * @param inclusive whether boundary is inclusive or exclusive
      */
     public Key(String v, boolean inclusive) { 
-        this(ClassDescriptor.tpString, 0, 0.0, v.toCharArray(), inclusive);
+        this(ClassDescriptor.tpString, 0, 0.0, v == null ? EMPTY_STRING : v.toCharArray(), inclusive);
     }
 
     /**
@@ -203,7 +229,7 @@ public class Key {
      * @param inclusive whether boundary is inclusive or exclusive
      */
     public Key(char[] v, boolean inclusive) { 
-        this(ClassDescriptor.tpString, 0, 0.0, v, inclusive);
+        this(ClassDescriptor.tpString, 0, 0.0, v == null ? EMPTY_STRING : v, inclusive);
     }
 
     /**
@@ -213,6 +239,34 @@ public class Key {
      */
     public Key(IPersistent v, boolean inclusive) { 
         this(ClassDescriptor.tpObject, v == null ? 0 : v.getOid(), 0.0, null, inclusive);
+    }
+
+    /**
+     * Constructor of compound key
+     * @param vals array of key values
+     * @param inclusive whether boundary is inclusive or exclusive
+     */
+    public Key(Object[] v, boolean inclusive) { 
+        this(ClassDescriptor.tpArrayOfObject, 0, 0.0, v, inclusive);        
+    }    
+
+    /**
+     * Constructor of compound key with two values
+     * @param v1 first value of compund key
+     * @param v2 second value of compund key
+     * @param inclusive whether boundary is inclusive or exclusive
+     */
+    public Key(Object v1, Object v2, boolean inclusive) { 
+        this(new Object[]{v1, v2}, inclusive);
+    }
+
+    /**
+     * Constructor of byte array key
+     * @param v byte array value
+     * @param inclusive whether boundary is inclusive or exclusive
+     */
+    public Key(byte[] v, boolean inclusive) { 
+        this(ClassDescriptor.tpArrayOfByte, 0, 0.0, v, inclusive);        
     }
 }
 

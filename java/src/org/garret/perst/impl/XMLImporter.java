@@ -48,7 +48,10 @@ public class XMLImporter {
                 throwException("Element name expected");
             }
             String elemName = scanner.getIdentifier();
-            if (elemName.equals("org.garret.perst.impl.Btree") || elemName.equals("org.garret.perst.impl.BtreeFieldIndex")) { 
+            if (elemName.equals("org.garret.perst.impl.Btree") 
+                || elemName.equals("org.garret.perst.impl.BtreeFieldIndex") 
+                || elemName.equals("org.garret.perst.impl.BtreeMultiFieldIndex")) 
+            { 
                 createIndex(elemName);
             } else { 
                 createObject(readElement(elemName));
@@ -233,6 +236,89 @@ public class XMLImporter {
         throwException("Bad type");
         return -1;
     }
+    
+    final Key createCompoundKey(int[] types, String[] values) throws XMLImportException
+    {
+        IPersistent obj;
+        Date date;
+        ByteBuffer buf = new ByteBuffer();
+        int dst = 0;
+
+        try { 
+            for (int i = 0; i < types.length; i++) { 
+                String value = values[i];
+                switch (types[i]) { 
+                  case ClassDescriptor.tpBoolean:
+                    buf.extend(dst+1);
+                    buf.arr[dst++] = (byte)(Integer.parseInt(value) != 0 ? 1 : 0);
+                    break;
+                  case ClassDescriptor.tpByte:
+                    buf.extend(dst+1);
+                    buf.arr[dst++] = Byte.parseByte(value);
+                    break;
+                  case ClassDescriptor.tpChar:
+                    buf.extend(dst+2);
+                    Bytes.pack2(buf.arr, dst, (short)Integer.parseInt(value));
+                    dst += 2;
+                    break;
+                  case ClassDescriptor.tpShort:
+                    buf.extend(dst+2);
+                    Bytes.pack2(buf.arr, dst, Short.parseShort(value));
+                    dst += 2;
+                    break;
+                  case ClassDescriptor.tpInt:
+                    buf.extend(dst+4);
+                    Bytes.pack4(buf.arr, dst, Integer.parseInt(value));
+                    dst += 4;
+                    break;
+                  case ClassDescriptor.tpObject:
+                    buf.extend(dst+4);
+                    Bytes.pack4(buf.arr, dst, mapId(Integer.parseInt(value)));
+                    dst += 4;
+                    break;
+                  case ClassDescriptor.tpLong:
+                  case ClassDescriptor.tpDate:
+                    buf.extend(dst+8);
+                    Bytes.pack8(buf.arr, dst, Long.parseLong(value));
+                    dst += 8;
+                    break;
+                  case ClassDescriptor.tpFloat:
+                    buf.extend(dst+4);
+                    Bytes.pack4(buf.arr, dst, Float.floatToIntBits(Float.parseFloat(value)));
+                    dst += 4;
+                    break;
+                  case ClassDescriptor.tpDouble:
+                    buf.extend(dst+8);
+                    Bytes.pack8(buf.arr, dst, Double.doubleToLongBits(Double.parseDouble(value)));
+                    dst += 8;
+                    break;
+                  case ClassDescriptor.tpString:
+                    buf.extend(dst + 4 + 2*value.length());
+                    Bytes.pack4(buf.arr, dst, value.length());
+                    dst += 4;
+                    for (int j = 0, n = value.length(); j < n; j++) { 
+                        Bytes.pack2(buf.arr, dst, (short)value.charAt(j));
+                        dst += 2;
+                    }
+                    break;
+                  case ClassDescriptor.tpArrayOfByte:
+                    buf.extend(dst + 4 + (value.length() >>> 1));
+                    Bytes.pack4(buf.arr, dst, value.length() >>> 1);
+                    dst += 4;
+                    for (int j = 0, n = value.length(); j < n; j+=2) { 
+                        buf.arr[dst++] = (byte)((getHexValue(value.charAt(j)) << 4) 
+                                                | getHexValue(value.charAt(j+1)));
+                    }
+                    break;
+                  default:
+                    throwException("Bad key type");
+                }
+            }
+        } catch (NumberFormatException x) { 
+            throwException("Failed to convert key value");
+        }
+        return new Key(buf.toArray());
+    }
 
     final Key createKey(int type, String value) throws XMLImportException
     { 
@@ -243,11 +329,11 @@ public class XMLImporter {
                 case ClassDescriptor.tpBoolean:
                     return new Key(Integer.parseInt(value) != 0);
                  case ClassDescriptor.tpByte:
-                    return new Key((byte)Integer.parseInt(value));
+                    return new Key(Byte.parseByte(value));
                 case ClassDescriptor.tpChar:
                     return new Key((char)Integer.parseInt(value));
                 case ClassDescriptor.tpShort:
-                    return new Key((short)Integer.parseInt(value));
+                    return new Key(Short.parseShort(value));
                 case ClassDescriptor.tpInt:
                     return new Key(Integer.parseInt(value));
                 case ClassDescriptor.tpObject:
@@ -262,11 +348,23 @@ public class XMLImporter {
                     return new Key(Double.parseDouble(value));
                 case ClassDescriptor.tpString:
                     return new Key(value);
+                case ClassDescriptor.tpArrayOfByte:
+                {
+                    byte[] buf = new byte[value.length() >> 1];
+                    for (int i = 0; i < buf.length; i++) { 
+                        buf[i] = (byte)((getHexValue(value.charAt(i*2)) << 4) | getHexValue(value.charAt(i*2+1)));
+                    }
+                    return new Key(buf);
+                }
                 case ClassDescriptor.tpDate:
-                    date = httpFormatter.parse(value, new ParsePosition(0));
-                    if (date == null) { 
-                        throwException("Invalid date");
-                    }               
+                    if (value.equals("null")) {
+                        date = null;
+                    } else { 
+                        date = httpFormatter.parse(value, new ParsePosition(0));
+                        if (date == null) { 
+                            throwException("Invalid date");
+                        }               
+                    }
                     return new Key(date);
                 default:
                     throwException("Bad key type");
@@ -289,12 +387,13 @@ public class XMLImporter {
 
     final void createIndex(String indexType) throws XMLImportException
     {
-        Btree btree;
+        Btree btree = null;
         int tkn;
         int oid = 0;
         boolean unique = false;
         String className = null;
         String fieldName = null;
+        String[] fieldNames = null;
         String type = null;
         while ((tkn = scanner.scan()) == XMLScanner.XML_IDENT) { 
             String attrName = scanner.getIdentifier();
@@ -308,10 +407,27 @@ public class XMLImporter {
                 unique = parseInt(attrValue) != 0;
             } else if (attrName.equals("class")) { 
                 className = attrValue;
-            } else if (attrName.equals("field")) { 
-                fieldName = attrValue;
             } else if (attrName.equals("type")) { 
                 type = attrValue;
+            } else if (attrName.startsWith("field")) {
+                int len = attrName.length();
+                if (len == 5) {
+                    fieldName = attrValue;
+                } else { 
+                    try { 
+                        int fieldNo = Integer.parseInt(attrName.substring(5));
+                        if (fieldNames == null || fieldNames.length <= fieldNo) { 
+                            String[] newFieldNames = new String[fieldNo+1];
+                            if (fieldNames != null) { 
+                                System.arraycopy(fieldNames, 0, newFieldNames, 0, fieldNames.length);
+                            }
+                            fieldNames = newFieldNames;
+                        }
+                        fieldNames[fieldNo] = attrValue;
+                    } catch (NumberFormatException x) { 
+                        throwException("Invalid field index");
+                    }
+                }
             }
         }
         if (tkn != XMLScanner.XML_GT) { 
@@ -321,16 +437,19 @@ public class XMLImporter {
             throwException("ID is not specified or index");
         }
         if (className != null) { 
-            if (fieldName == null) { 
-                throwException("Field name is not specified for field index");
-            }
             Class cls = null;
             try { 
                 cls = Class.forName(className);
             } catch (ClassNotFoundException x) { 
                  throwException("Class " + className + " not found");
             }
-            btree = new BtreeFieldIndex(cls, fieldName, unique);
+            if (fieldName != null) { 
+                btree = new BtreeFieldIndex(cls, fieldName, unique);
+            } else if (fieldNames != null) { 
+                btree = new BtreeMultiFieldIndex(cls, fieldNames, unique);
+            } else { 
+                throwException("Field name is not specified for field index");
+            }
         } else { 
             if (type == null) { 
                 throwException("Key type is not specified for index");
@@ -346,10 +465,19 @@ public class XMLImporter {
                 throwException("<ref> element expected");
             }   
             XMLElement ref = readElement("ref");
-            String entryKey = getAttribute(ref, "key");
-            int entryOid = mapId(getIntAttribute(ref, "id"));
-            Key key = createKey(btree.type, entryKey);
+            Key key;
+            if (fieldNames != null) { 
+                String[] values = new String[fieldNames.length];                
+                int[] types = ((BtreeMultiFieldIndex)btree).types;
+                for (int i = 0; i < values.length; i++) { 
+                    values[i] = getAttribute(ref, "key"+i);
+                }
+                key = createCompoundKey(types, values);
+            } else { 
+                key = createKey(btree.type, getAttribute(ref, "key"));
+            }
             IPersistent obj = new Persistent();
+            int entryOid = mapId(getIntAttribute(ref, "id"));
             storage.assignOid(obj, entryOid);
             btree.insert(key, obj, false);
         }

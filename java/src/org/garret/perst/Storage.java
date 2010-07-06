@@ -129,6 +129,17 @@ public abstract class Storage {
     abstract public FieldIndex createFieldIndex(Class type, String fieldName, boolean unique);
 
     /**
+     * Create new mutlifield index
+     * @param type objects of which type (or derived from which type) will be included in the index
+     * @param fieldNames names of the index fields. Fields with such name should be present in specified class <code>type</code>
+     * @param unique whether index is unique (duplicate value of keys are not allowed)
+     * @return persistent object implementing field index
+     * @exception StorageError(StorageError.INDEXED_FIELD_NOT_FOUND) if there is no such field in specified class,<BR> 
+     * StorageError(StorageError.UNSUPPORTED_INDEX_TYPE) exception if type of specified field is not supported by implementation
+     */
+    abstract public FieldIndex createFieldIndex(Class type, String[] fieldName, boolean unique);
+
+    /**
      * Create new spatial index
      * @return persistent object implementing spatial index
      */

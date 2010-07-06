@@ -51,10 +51,7 @@ class BtreeFieldIndex extends Btree implements FieldIndex {
         this.fieldName = fieldName;
         this.className = cls.getName();
         locateField();
-        type = ClassDescriptor.getTypeCode(fld.getType());
-        if (type >= ClassDescriptor.tpLink) { 
-            throw new StorageError(StorageError.UNSUPPORTED_INDEX_TYPE, fld.getType());
-        }
+        type = checkType(fld.getType());
     }
 
     private Key extractKey(IPersistent obj) { 
@@ -161,7 +158,7 @@ class BtreeFieldIndex extends Btree implements FieldIndex {
         }
         ArrayList list = new ArrayList();
         if (root != 0) { 
-            BtreePage.find((StorageImpl)getStorage(), root, from, till, type, height, list);
+            BtreePage.find((StorageImpl)getStorage(), root, from, till, this, height, list);
         }
         return (IPersistent[])list.toArray((Object[])Array.newInstance(cls, list.size()));
     }

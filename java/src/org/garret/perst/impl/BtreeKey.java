@@ -21,6 +21,14 @@ class BtreeKey {
         key = new Key(sval);
     }
 
+    final void getByteArray(Page pg, int i) { 
+	int len = BtreePage.getKeyStrSize(pg, i);
+	int offs = BtreePage.firstKeyOffs + BtreePage.getKeyStrOffs(pg, i);
+	byte[] bval = new byte[len];
+        System.arraycopy(pg.data, offs, bval, 0, len);
+        key = new Key(bval);
+    }
+
 
     final void extract(Page pg, int offs, int type) { 
         byte[] data = pg.data;
