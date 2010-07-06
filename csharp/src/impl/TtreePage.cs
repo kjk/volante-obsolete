@@ -35,27 +35,27 @@ namespace Perst.Impl
             return mbr;
         }
 
-        internal bool find(PersistentComparator comparator, Object minValue, Object maxValue, ArrayList selection)
+        internal bool find(PersistentComparator comparator, object minValue, int minInclusive, object maxValue, int maxInclusive, ArrayList selection)
         { 
             int l, r, m, n;
             Load();
             n = nItems;
             if (minValue != null) 
             { 
-                if (comparator.CompareMemberWithKey(loadItem(0), minValue) < 0) 
+                if (-comparator.CompareMemberWithKey(loadItem(0), minValue) >= minInclusive) 
                 {	    
-                    if (comparator.CompareMemberWithKey(loadItem(n-1), maxValue) < 0) 
+                    if (-comparator.CompareMemberWithKey(loadItem(n-1), minValue) >= minInclusive) 
                     { 
                         if (right != null) 
                         { 
-                            return right.find(comparator, minValue, maxValue, selection); 
+                            return right.find(comparator, minValue, minInclusive, maxValue, maxInclusive, selection); 
                         } 
                         return true;
                     }
                     for (l = 0, r = n; l < r;) 
                     { 
                         m = (l + r) >> 1;
-                        if (comparator.CompareMemberWithKey(loadItem(m), minValue) < 0) 
+                        if (-comparator.CompareMemberWithKey(loadItem(m), minValue) >= minInclusive) 
                         {
                             l = m+1;
                         } 
@@ -67,7 +67,7 @@ namespace Perst.Impl
                     while (r < n) 
                     { 
                         if (maxValue != null
-                            && comparator.CompareMemberWithKey(loadItem(r), maxValue) > 0)
+                            && comparator.CompareMemberWithKey(loadItem(r), maxValue) >= maxInclusive)
                         { 
                             return false;
                         }
@@ -76,21 +76,21 @@ namespace Perst.Impl
                     }
                     if (right != null) 
                     { 
-                        return right.find(comparator, minValue, maxValue, selection); 
+                        return right.find(comparator, minValue, minInclusive, maxValue, maxInclusive, selection); 
                     } 
                     return true;	
                 }
             }	
             if (left != null) 
             { 
-                if (!left.find(comparator, minValue, maxValue, selection)) 
+                if (!left.find(comparator, minValue, minInclusive, maxValue, maxInclusive, selection)) 
                 { 
                     return false;
                 }
             }
             for (l = 0; l < n; l++) 
             { 
-                if (maxValue != null && comparator.CompareMemberWithKey(loadItem(l), maxValue) > 0) 
+                if (maxValue != null && comparator.CompareMemberWithKey(loadItem(l), maxValue) >= maxInclusive) 
                 {
                     return false;
                 }
@@ -98,7 +98,7 @@ namespace Perst.Impl
             }
             if (right != null) 
             { 
-                return right.find(comparator, minValue, maxValue, selection);
+                return right.find(comparator, minValue, minInclusive, maxValue, maxInclusive, selection);
             }         
             return true;
         }

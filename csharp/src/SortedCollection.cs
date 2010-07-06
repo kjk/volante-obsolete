@@ -44,13 +44,24 @@ namespace Perst
         /// Either from boundary, either till boundary either both of them can be <code>null</code>.
         /// In last case the method returns all objects from the collection.
         /// </summary>
-        /// <param name="from"> low boundary. If <code>null</code> then low boundary is not specified.
-        /// Low boundary can be inclusive or exclusive. </param>
-        /// <param name="till"> high boundary. If <code>null</code> then high boundary is not specified.
-        /// High boundary can be inclusive or exclusive. </param>
+        /// <param name="from"> inclusive low boundary. If <code>null</code> then low boundary is not specified.</param>
+        /// <param name="till"> inclusive high boundary. If <code>null</code> then high boundary is not specified.</param>
         /// <returns> array of objects which keys belongs to the specified interval, ordered by key value</returns>
         ///
         IPersistent[] Get(object from, object till);
+
+        /// <summary>
+        /// Get members which key value belongs to the specified range.
+        /// Either from boundary, either till boundary either both of them can be <code>null</code>.
+        /// In last case the method returns all objects from the collection.
+        /// </summary>
+        /// <param name="from"> low boundary. If <code>null</code> then low boundary is not specified.</param>
+        /// <param name="fromInclusive"> whether low boundary is inclusive or exclusive
+        /// <param name="till"> high boundary. If <code>null</code> then high boundary is not specified.</param>
+        /// <param name="tillInclusive"> whether till boundary is inclusive or exclusive
+        /// <returns> array of objects which keys belongs to the specified interval, ordered by key value</returns>
+        ///
+        IPersistent[] Get(object from, bool fromInclusive, object till, bool tillInclusive);
 
         /// <summary>
         /// Add new member to collection
@@ -107,13 +118,23 @@ namespace Perst
         /// <summary>
         /// Get iterator for traversing collection members  with key belonging to the specified range. 
         /// </summary>
-        /// <param name="from"> low boundary. If <code>null</code> then low boundary is not specified.
-        /// Low boundary can be inclusive or exclusive.</param>
-        /// <param name="till"> high boundary. If <code>null</code> then high boundary is not specified.
-        /// High boundary can be inclusive or exclusive. </param>
+        /// <param name="from"> inclusive low boundary. If <code>null</code> then low boundary is not specified.</param>
+        /// <param name="fromInclusive"> whether low boundary is inclusive or exclusive
+        /// <param name="till"> inclusive high boundary. If <code>null</code> then high boundary is not specified.</param>
         /// <returns> selection iterator</returns>
         ///
         IEnumerator GetEnumerator(object from, object till);
+
+        /// <summary>
+        /// Get iterator for traversing collection members  with key belonging to the specified range. 
+        /// </summary>
+        /// <param name="from"> low boundary. If <code>null</code> then low boundary is not specified.</param>
+        /// <param name="fromInclusive"> whether low boundary is inclusive or exclusive
+        /// <param name="till"> high boundary. If <code>null</code> then high boundary is not specified.</param>
+        /// <param name="tillInclusive"> whether till boundary is inclusive or exclusive
+        /// <returns> selection iterator</returns>
+        ///
+        IEnumerator GetEnumerator(object from, bool fromInclusive, object till, bool tillInclusive);
 
         /// <summary>
         /// Get comparator used in this collection

@@ -83,7 +83,7 @@ namespace Perst.Impl
             if (root != null) 
             { 
                 ArrayList list = new ArrayList();
-                root.find(comparator, key, key, list);
+                root.find(comparator, key, 1, key, 1, list);
                 if (list.Count > 1) 
                 { 
                     throw new StorageError(StorageError.ErrorCode.KEY_NOT_UNIQUE);
@@ -104,11 +104,15 @@ namespace Perst.Impl
 
         public IPersistent[] Get(object from, object till) 
         { 
+            return Get(from, true, till, true);
+        }
+
+        public IPersistent[] Get(object from, bool fromInclusive, object till, bool tillInclusive) 
+        { 
             ArrayList list = new ArrayList();
             if (root != null) 
-            { 
-                
-                root.find(comparator, from, till, list);
+            {                 
+                root.find(comparator, from, fromInclusive ? 1 : 0, till, tillInclusive ? 1 : 0, list);
             }
             return (IPersistent[])list.ToArray(typeof(IPersistent));
         }
@@ -252,13 +256,17 @@ namespace Perst.Impl
 
         public IEnumerator GetEnumerator(object from, object till) 
         {
+            return GetEnumerator(from, true, till, true);
+        }
+
+        public IEnumerator GetEnumerator(object from, bool fromInclusive, object till, bool tillInclusive) 
+        {
             ArrayList list = new ArrayList();
             if (root != null) 
             { 
-                root.find(comparator, from, till, list);
+                root.find(comparator, from, fromInclusive ? 1 : 0, till, tillInclusive ? 1 : 0, list);
             }            
             return new TtreeEnumerator(this, list);
         }
     }
-
 }
