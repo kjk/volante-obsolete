@@ -63,7 +63,7 @@ public interface IPersistent extends java.io.Serializable {
      * To avoid main memory overflow you should stop recursive loading of all objects
      * from the database to main memory by redefining this method in some classes and returing
      * <code>false</code> in it. In this case object has to be loaded explicitely 
-     * using Peristent.load method.
+     * using Persistent.load method.
      * @return <code>true</code> if object is automatically loaded
      */
     public boolean recursiveLoading();

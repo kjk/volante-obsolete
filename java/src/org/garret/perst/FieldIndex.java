@@ -43,11 +43,35 @@ public interface FieldIndex extends IPersistent {
     public boolean       put(IPersistent obj);
 
     /**
+     * Associate new object with the key specified by object field value. 
+     * If there is already object with such key in the index, 
+     * then it will be removed from the index and new value associated with this key.
+     * @param obj object to be inserted in index. Object should contain indexed field. 
+     * Object can be not yet peristent, in this case
+     * its forced to become persistent by assigning OID to it.
+     */
+    public void          set(IPersistent obj);
+
+    /**
+     * Assign to the integer indexed field unique autoicremented value and 
+     * insert object in the index. 
+     * @param obj object to be inserted in index. Object should contain indexed field
+     * of integer (<code>int</code> or <code>long</code>) type.
+     * This field is assigned unique value (which will not be reused while 
+     * this index exists) and object is marked as modified.
+     * Object can be not yet peristent, in this case
+     * its forced to become persistent by assigning OID to it.
+     * @exception StorageError(StorageError.INCOMPATIBLE_KEY_TYPE) when indexed field
+     * has type other than <code>int</code> or <code>long</code>
+     */
+    public void          append(IPersistent obj);
+
+    /**
      * Remove object from the index
      * @param obj object removed from the index. Object should contain indexed field. 
      * @exception StorageError(StorageError.KEY_NOT_FOUND) exception if there is no such key in the index
      */
-    public void          remove(Key key, IPersistent obj);
+    public void          remove(IPersistent obj);
 
     /**
      * Get number of objects in the index

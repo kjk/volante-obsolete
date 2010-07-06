@@ -52,7 +52,7 @@ public abstract class Storage {
      * If object is already persistent, this method has no effect
      * @param obj object to be made persistent.
      */
-    public void makeObjectPeristent(IPersistent obj) {
+    public void makeObjectPersistent(IPersistent obj) {
         if (obj.getOid() == 0) { 
             storeObject(obj);
         }
@@ -162,6 +162,16 @@ public abstract class Storage {
      * @param reader XML document reader
      */
     abstract public void importXML(java.io.Reader reader) throws XMLImportException;
+
+    /**
+     * Retrieve object by OID. This method should be used with care because
+     * if object is deallocated, its OID can be reused. In this case
+     * getObjectByOID will return reference to the new object with may be
+     * different type.
+     * @param oid object oid
+     * @return reference to the object with specified OID
+     */
+    abstract public IPersistent getObjectByOID(int oid);
 
     /**
      * Set database property. Now the following boolean properties are supported:

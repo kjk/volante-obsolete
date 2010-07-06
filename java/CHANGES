@@ -53,3 +53,7 @@ Object will be automatically saved during transaction commit.
 --- Release version 1.13 04.07.2003 -------------------------------------
 1. Make it possible to provide user specific implementation of PERST file interface. 
 For example it can be used to work with flash card or encrypted files.
+
+--- Release version 1.14 09.07.2003 -------------------------------------
+1. Add Storage.loadObjectByOID method
+2. Add autoincremented field support: FieldIndex.append method

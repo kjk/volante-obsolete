@@ -698,7 +698,13 @@ public class StorageImpl extends Storage {
     }
 
     public synchronized void open(String filePath, int pagePoolSize) {
-        open(new OSFile(filePath), pagePoolSize);
+        OSFile file = new OSFile(filePath);      
+        try {
+            open(file, pagePoolSize);
+        } catch (StorageError ex) {
+            file.close();            
+            throw ex;
+        }
     }
 
     public synchronized void open(IFile file, int pagePoolSize) {
@@ -1491,6 +1497,11 @@ public class StorageImpl extends Storage {
         } else { 
             throw new StorageError(StorageError.NO_SUCH_PROPERTY);
         }
+    }
+
+    public IPersistent getObjectByOID(int oid)
+    {
+        return oid == 0 ? null : lookupObject(oid, null);
     }
 
     protected synchronized void modifyObject(IPersistent obj) {

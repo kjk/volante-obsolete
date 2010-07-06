@@ -8,6 +8,7 @@ import java.util.ArrayList;
 class BtreeFieldIndex extends Btree implements FieldIndex { 
     String className;
     String fieldName;
+    long   autoincCount;
     transient Class cls;
     transient Field fld;
 
@@ -108,10 +109,37 @@ class BtreeFieldIndex extends Btree implements FieldIndex {
         return super.insert(extractKey(obj), obj, false);
     }
 
+    public void set(IPersistent obj) {
+         super.insert(extractKey(obj), obj, true);
+    }
+
     public void  remove(IPersistent obj) {
         super.remove(new BtreeKey(extractKey(obj), obj.getOid()));
     }
-        
+
+    public synchronized void append(IPersistent obj) {
+        Key key;
+        try { 
+            switch (type) {
+              case ClassDescriptor.tpInt:
+                key = new Key((int)autoincCount);
+                fld.setInt(obj, (int)autoincCount);
+                break;            
+              case ClassDescriptor.tpLong:
+                key = new Key(autoincCount);
+                fld.setLong(obj, autoincCount);
+                break;            
+              default:
+                throw new StorageError(StorageError.UNSUPPORTED_INDEX_TYPE, fld.getType());
+            }
+        } catch (Exception x) { 
+            throw new StorageError(StorageError.ACCESS_VIOLATION, x);
+        }
+        autoincCount += 1;
+        obj.modify();
+        super.insert(key, obj, false);
+    }
+
     public IPersistent[] get(Key from, Key till) {
         if ((from != null && from.type != type) || (till != null && till.type != type)) { 
             throw new StorageError(StorageError.INCOMPATIBLE_KEY_TYPE);
