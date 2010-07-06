@@ -229,3 +229,6 @@ SpatialIndexR2 class provides iterator to accessed overlaped object one-by-one.
 4. Add Link.setSize() method.
 5. Add MappedFile class based on java.nio package for mapping database file on virtual memory
 (JDK 1.5 version only)
+
+--- Release version 2.30 15.07.2004 -------------------------------------
+1. Fix bug in JAssist translator class

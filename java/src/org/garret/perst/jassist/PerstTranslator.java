@@ -233,7 +233,7 @@ public class PerstTranslator implements Translator {
             }
             if (insertLoad 
                 && !"recursiveLoading".equals(m.getName())
-                && (m.getModifiers() & Modifier.STATIC) == 0)  
+                && (m.getModifiers() & (Modifier.STATIC|Modifier.ABSTRACT)) == 0)  
             { 
                 m.insertBefore("load();");
             }
