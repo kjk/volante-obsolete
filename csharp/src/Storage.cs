@@ -369,6 +369,14 @@ namespace Perst
         /// <TR><TD><code>perst.background.gc</code></TD><TD>bool</TD><TD>false</TD>
         /// <TD>Perform garbage collection in separate thread without blocking the main application.                                                                                          
         /// </TD></TR>
+        /// <TR><TD><code>perst.string.encoding</code></TD><TD>String</TD><TD>null</TD>
+        /// <TD>Specifies encoding of storing strings in the database. By default Perst stores 
+        /// strings as sequence of chars (two bytes per char). If all strings in application are in 
+        /// the same language, then using encoding  can signifficantly reduce space needed
+        /// to store string (about two times). But please notice, that this option has influence
+        /// on all strings  stored in database. So if you already have some data in the storage
+        /// and then change encoding, then it can cause incorrect fetching of strings and even database crash.
+        /// </TD></TR>
         /// </TABLE>
         /// </remarks>
         /// <param name="name">name of the property</param>
@@ -385,6 +393,13 @@ namespace Perst
         ///
         abstract public void SetProperties(System.Collections.Specialized.NameValueCollection props);
 
+        /// <summary>
+        /// Set storage listener.
+        /// </summary>summary>
+        /// <param name="listener">new storage listener (may be null)</param>
+        /// <returns>previous storage listener</returns>
+        ///
+        abstract public StorageListener SetListener(StorageListener listener);
 
         /// <summary>
         /// Set class loader. This class loader will be used to locate classes for 

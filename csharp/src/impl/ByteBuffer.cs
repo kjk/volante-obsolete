@@ -1,6 +1,7 @@
 namespace Perst.Impl
 {
     using System;
+    using System.Text;
 	
     public class ByteBuffer
     {
@@ -86,7 +87,7 @@ namespace Perst.Impl
             return offs + 8;
         }
  
-        public int packString(int offs, string s)
+        public int packString(int offs, string s, Encoding encoding)
         {
             if (s == null)
             {
@@ -97,13 +98,24 @@ namespace Perst.Impl
             else
             {
                 int len = s.Length;
-                extend(offs + 4 + len * 2);
-                Bytes.pack4(arr, offs, len);
-                offs += 4;
-                for (int i = 0; i < len; i++)
-                {
-                    Bytes.pack2(arr, offs, (short)s[i]);
-                    offs += 2;
+                if (encoding == null) 
+                { 
+                    extend(offs + 4 + len * 2);
+                    Bytes.pack4(arr, offs, len);
+                    offs += 4;
+                    for (int i = 0; i < len; i++)
+                    {
+                        Bytes.pack2(arr, offs, (short)s[i]);
+                        offs += 2;
+                    }
+                } 
+                else 
+                { 
+                    byte[] bytes = encoding.GetBytes(s);
+                    extend(offs + 4 + bytes.Length);
+                    Bytes.pack4(arr, offs, -2-bytes.Length);
+                    Array.Copy(bytes, 0, arr, offs+4, bytes.Length);
+                    offs += 4 + bytes.Length;
                 }
             }
             return offs;

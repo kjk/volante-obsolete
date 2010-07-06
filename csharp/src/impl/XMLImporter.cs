@@ -369,7 +369,7 @@ namespace Perst.Impl
                         break;
 
                     case ClassDescriptor.FieldType.tpString:
-                        dst = buf.packString(dst, val);
+                        dst = buf.packString(dst, val, null);
                         break;
 
                     case ClassDescriptor.FieldType.tpArrayOfByte:
@@ -1026,19 +1026,8 @@ namespace Perst.Impl
                             {
                                 throwException("Conversion for field " + fieldName + " is not possible");
                             }
-                            if (val != null)
-                            {
-                                int len = val.Length;
-                                buf.extend(offs + 4 + len * 2);
-                                Bytes.pack4(buf.arr, offs, len);
-                                offs += 4;
-                                for (int j = 0; j < len; j++)
-                                {
-                                    Bytes.pack2(buf.arr, offs, (short) val[j]);
-                                    offs += 2;
-                                }
-                                continue;
-                            }
+                            offs = buf.packString(offs, val, storage.encoding);
+                            continue;
                         }
                         buf.extend(offs + 4);
                         Bytes.pack4(buf.arr, offs, - 1);
@@ -1474,24 +1463,7 @@ namespace Perst.Impl
                                 {
                                     throwException("Conversion for field " + fieldName + " is not possible");
                                 }
-                                if (val == null)
-                                {
-                                    buf.extend(offs + 4);
-                                    Bytes.pack4(buf.arr, offs, - 1);
-                                    offs += 4;
-                                }
-                                else
-                                {
-                                    int strlen = val.Length;
-                                    buf.extend(offs + 4 + len * 2);
-                                    Bytes.pack4(buf.arr, offs, len);
-                                    offs += 4;
-                                    for (int j = 0; j < strlen; j++)
-                                    {
-                                        Bytes.pack2(buf.arr, offs, (short) val[j]);
-                                        offs += 2;
-                                    }
-                                }
+                                offs = buf.packString(offs, val, storage.encoding);  
                                 item = item.NextSibling;
                             }
                         }

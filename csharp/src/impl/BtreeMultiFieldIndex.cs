@@ -451,7 +451,7 @@ namespace Perst.Impl
                     dst = buf.packGuid(dst, (Guid)val);
                     break;            
                 case ClassDescriptor.FieldType.tpString:
-                    dst = buf.packString(dst, (string)val);
+                    dst = buf.packString(dst, (string)val, null);
                     break;            
                 case ClassDescriptor.FieldType.tpArrayOfByte:
                     buf.extend(dst+4);

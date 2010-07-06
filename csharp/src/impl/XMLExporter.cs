@@ -3,6 +3,7 @@ namespace Perst.Impl
     using System;
     using System.Reflection;
     using System.Diagnostics;
+    using System.Text;
     using Perst;
 	
     public class XMLExporter
@@ -312,6 +313,24 @@ namespace Perst.Impl
                     offs += 2;
                 }
                 writer.Write("\"");
+            } 
+            else if (len < -1) 
+            { 
+                writer.Write("\"");   
+                string s;
+                if (storage.encoding != null) 
+                { 
+                    s = storage.encoding.GetString(body, offs, -len-2);
+                } 
+                else 
+                { 
+                    s = Encoding.Default.GetString(body, offs, -len-2);
+                }
+                offs -= len+2;
+                for (int i = 0, n = s.Length; i < n; i++) 
+                { 
+                    exportChar(s[i]);
+                }
             }
             else
             {

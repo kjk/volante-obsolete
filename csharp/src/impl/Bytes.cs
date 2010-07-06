@@ -1,6 +1,7 @@
 namespace Perst.Impl
 {
     using System;
+    using System.Text;
     using Perst;
 	
     //
@@ -116,7 +117,7 @@ namespace Perst.Impl
             return new decimal(bits);
         }
 
-        public static int unpackString(byte[] arr, int offs, out string str)
+        public static int unpackString(byte[] arr, int offs, out string str, Encoding encoding)
         {
             int len = Bytes.unpack4(arr, offs);
             offs += 4;
@@ -130,6 +131,18 @@ namespace Perst.Impl
                     offs += 2;
                 }
                 str = new string(chars);
+            } 
+            else if (len < -1) 
+            {
+                if (encoding != null) 
+                { 
+                    str = encoding.GetString(arr, offs, -2-len);
+                } 
+                else 
+                { 
+                    str = Encoding.Default.GetString(arr, offs, -2-len);
+                }
+                offs -= 2+len;
             }
             return offs;
         }

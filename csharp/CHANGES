@@ -293,7 +293,11 @@ stored in OS file buffers and sooner or later them will be written to the disk)
 2. Fix possible problems with GC memory consistency verification for T-Tree and R-Tree classes
 
 
---- Release version 2.35 02.11.2004 -------------------------------------
+--- Release version 2.35 02.10.2004 -------------------------------------
 1. Fix problem with supporting compund keys in alternative implementation of B-Tree
 2. Fix bug (cuase inefficient execution) in TimeSeries.Contains method.
 
+--- Release version 2.36 07.10.2004 -------------------------------------
+1. Make it possible to specify encoding for storing string
+2. Add StorageListener class
+3. Fix compilation problem with Compact.Net framework and multifield alternative indices

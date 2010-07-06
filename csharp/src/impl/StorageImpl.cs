@@ -5,6 +5,7 @@ namespace Perst.Impl
     using System.Reflection;
     using System.Threading;
     using System.Diagnostics;
+    using System.Text;
     using Perst;
 	
     public class StorageImpl:Storage
@@ -1079,6 +1080,10 @@ namespace Perst.Impl
                     pool.open(file);
                     if (header.dirty)
                     {
+                        if (listener != null) 
+                        {
+                            listener.DatabaseCorrupted();
+                        }
                         System.Console.WriteLine("Database was not normally closed: start recovery");
                         header.root[1-curr].size = header.root[curr].size;
                         header.root[1-curr].indexUsed = header.root[curr].indexUsed;
@@ -1097,6 +1102,10 @@ namespace Perst.Impl
                         pool.unfix(pg);
 						
                         pool.copy(header.root[1-curr].index, header.root[curr].index, (header.root[curr].indexUsed * 8L + Page.pageSize - 1) & ~ (Page.pageSize - 1));
+                        if (listener != null) 
+                        {
+                            listener.RecoveryCompleted();
+                        }
                         System.Console.WriteLine("Recovery completed");
                     }
                     currIndexSize = header.root[1-curr].indexUsed;
@@ -1793,9 +1802,17 @@ namespace Perst.Impl
                 {
                     throw new StorageError(StorageError.ErrorCode.STORAGE_NOT_OPENED);
                 }
+#if COMPACT_NET_FRAMEWORK
+                if (alternativeBtree) 
+                {
+                    throw new  StorageError(StorageError.ErrorCode.UNSUPPORTED_INDEX_TYPE);
+                }
+                FieldIndex index = new BtreeMultiFieldIndex(type, fieldNames, unique);
+#else
                 FieldIndex index = alternativeBtree
                     ? (FieldIndex)new AltBtreeMultiFieldIndex(type, fieldNames, unique)
                     : (FieldIndex)new BtreeMultiFieldIndex(type, fieldNames, unique);
+#endif
                 index.AssignOid(this, 0, false);
                 return index;
             }
@@ -1908,7 +1925,11 @@ namespace Perst.Impl
             long pos;
             int  i, j;
 
-            // mark
+            if (listener != null) 
+            { 
+                listener.GcStarted();
+            }          
+ 
             greyBitmap = new int[bitmapSize];
             blackBitmap = new int[bitmapSize];
             int rootOid = header.root[currIndex].rootObject;
@@ -1999,6 +2020,10 @@ namespace Perst.Impl
                                 objectCache.remove(i);                        
                                 cloneBitmap(pos, size);
                             }
+                            if (listener != null) 
+                            { 
+                                listener.DeallocateObject(desc.cls, i);
+                            }
                         }
                     }
                 }   
@@ -2008,6 +2033,11 @@ namespace Perst.Impl
             blackBitmap = null;
             allocatedDelta = 0;
             gcActive = false;
+
+            if (listener != null) 
+            {
+                listener.GcCompleted(nDeallocated);
+            }
             return nDeallocated;
         }
     
@@ -2285,6 +2315,10 @@ namespace Perst.Impl
                         if (strlen > 0) 
                         {
                             offs += strlen*2;
+                        } 
+                        else if (strlen < -1) 
+                        {
+                            offs -= strlen+2;
                         }
                         continue;
                     }
@@ -2377,6 +2411,10 @@ namespace Perst.Impl
                             if (strlen > 0) 
                             { 
                                 offs += strlen*2;
+                            }                       
+                            else if (strlen < -1) 
+                            {
+                                offs -= strlen+2;
                             }
                         }
                         continue;
@@ -2731,6 +2769,10 @@ namespace Perst.Impl
             { 
                 backgroundGc = getBooleanValue(val);
             }
+            if ((val = props["perst.string.encoding"]) != null) 
+            {
+                encoding = Encoding.GetEncoding(val);
+            }
         }
 
         public override void SetProperty(String name, Object val)
@@ -2770,16 +2812,26 @@ namespace Perst.Impl
             else if (name.Equals("perst.alternative.btree")) 
             { 
                 alternativeBtree = getBooleanValue(val);
-            }
-        
+            }       
             else if (name.Equals("perst.background.gc")) 
             {
                 backgroundGc = getBooleanValue(val);
+            }
+            else if (name.Equals("perst.string.encoding")) 
+            {
+                encoding = Encoding.GetEncoding((string)val);
             }
             else 
             { 
                 throw new StorageError(StorageError.ErrorCode.NO_SUCH_PROPERTY);
             }
+        }
+
+        public override StorageListener SetListener(StorageListener listener)
+        {
+            StorageListener prevListener = this.listener;
+            this.listener = listener;
+            return prevListener;
         }
 
     
@@ -3095,7 +3147,12 @@ namespace Perst.Impl
                     if (len > 0) 
                     { 
                         offs += len*2;
-                    } 
+                    }                        
+                    else if (len < -1) 
+                    {
+                        offs -= len+2;
+                    }
+
                     break;
                 case ClassDescriptor.FieldType.tpValue:
                     return unpackObject(null, fd.valueDesc, false, body, offs);
@@ -3161,7 +3218,12 @@ namespace Perst.Impl
                             if (strlen > 0) 
                             {
                                 offs += strlen*2;
+                            }                       
+                            else if (strlen < -1) 
+                            {
+                                offs -= strlen+2;
                             }
+
                         }
                     }
                     break;
@@ -3372,7 +3434,7 @@ namespace Perst.Impl
                 case ClassDescriptor.FieldType.tpString: 
                 {
                     string str;
-                    offs = Bytes.unpackString(body, offs, out str);
+                    offs = Bytes.unpackString(body, offs, out str, encoding);
                     val = str;
                     break;
                 }
@@ -3678,7 +3740,7 @@ namespace Perst.Impl
                         string[] arr = new string[len];
                         for (int j = 0; j < len; j++)
                         {
-                            offs = Bytes.unpackString(body, offs, out arr[j]);
+                            offs = Bytes.unpackString(body, offs, out arr[j], encoding);
                         }
                         val = arr;
                     }
@@ -4030,7 +4092,7 @@ public int packField(ByteBuffer buf, int offs, object val, ClassDescriptor.Field
                 case ClassDescriptor.FieldType.tpDate: 
                     return buf.packDate(offs, (DateTime)val);					
                 case ClassDescriptor.FieldType.tpString: 
-                    return buf.packString(offs, (string)val);					
+                    return buf.packString(offs, (string)val, encoding);					
                 case ClassDescriptor.FieldType.tpValue:
                     return packObject(val, fd.valueDesc, offs, buf);
                 case ClassDescriptor.FieldType.tpObject: 
@@ -4426,7 +4488,7 @@ public int packField(ByteBuffer buf, int offs, object val, ClassDescriptor.Field
                         offs += 4;
                         for (int j = 0; j < len; j++)
                         {
-                            offs = buf.packString(offs, arr[j]);
+                            offs = buf.packString(offs, arr[j], encoding);
                         }
                     }
                     break;
@@ -4554,6 +4616,9 @@ public int packField(ByteBuffer buf, int offs, object val, ClassDescriptor.Field
         internal bool      gcGo;
         internal object    backgroundGcMonitor;
         internal Thread    gcThread;
+        internal Encoding  encoding;
+
+        internal StorageListener  listener;
 
         internal OidHashTable     objectCache;
         internal Hashtable        classDescMap;
