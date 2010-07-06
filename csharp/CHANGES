@@ -121,3 +121,12 @@ Attention: database format is incompatible with version 1.22!
 
 --- Release version 2.04 26.11.2003 -------------------------------------
 1. Derive ISet from IPersistent and IResource interfaces
+
+--- Release version 2.05 28.11.2003 -------------------------------------
+
+1. Make it possible to profile storage memory using Storage.getMemoryDump() method 
+
+--- Release version 2.06 08.12.2003 -------------------------------------
+
+1. Make it possible to index properties
+

@@ -241,13 +241,30 @@ namespace Perst.Impl
             { 
                 Entry[] tab = table;
                 int index = (oid & 0x7FFFFFFF) % tab.Length;
-                for (Entry e = tab[index] ; e != null ; e = e.next) 
+                for (Entry e = tab[index], prev = null; e != null; prev = e, e = e.next)
                 {
                     if (e.oid == oid) 
                     {
-                        if (e.dirty > 0) 
+                        if (e.oref.IsAlive) 
                         { 
-                            e.dirty -= 1;
+                            if (e.dirty > 0) 
+                            { 
+                                e.dirty -= 1;
+                            }
+                        } 
+                        else 
+                        { 
+                            e.dirty = 0;
+                            e.oref.Target = null;
+                            count -= 1;
+                            if (prev != null)
+                            {
+                                prev.next = e.next;
+                            }
+                            else
+                            {
+                                tab[index] = e.next;
+                            }
                         }
                         return;
                     }

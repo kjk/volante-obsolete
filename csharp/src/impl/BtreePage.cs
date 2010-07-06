@@ -2024,9 +2024,10 @@ namespace Perst.Impl
             }
         }
 
-        internal static void markPage(StorageImpl db, int pageId, ClassDescriptor.FieldType type, int height)
+        internal static int markPage(StorageImpl db, int pageId, ClassDescriptor.FieldType type, int height)
         {
             Page pg = db.getGCPage(pageId);
+            int nPages = 1;
             try 
             { 
                 int i, n = getnItems(pg);
@@ -2036,14 +2037,14 @@ namespace Perst.Impl
                     { // page of strings
                         for (i = 0; i <= n; i++) 
                         { 
-                            markPage(db, getKeyStrOid(pg, i), type, height);
+                            nPages += markPage(db, getKeyStrOid(pg, i), type, height);
                         }
                     } 
                     else 
                     { 
                         for (i = 0; i <= n; i++) 
                         { 
-                            markPage(db, getReference(pg, maxItems-i-1), type, height);
+                            nPages += markPage(db, getReference(pg, maxItems-i-1), type, height);
                         }
                     }
                 } 
@@ -2069,6 +2070,7 @@ namespace Perst.Impl
             { 
                 db.pool.unfix(pg);
             }
+            return nPages;
         }
     
 		

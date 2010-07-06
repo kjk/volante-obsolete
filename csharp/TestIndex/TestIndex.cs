@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using Perst;
 
 class Record:Persistent
@@ -80,6 +81,16 @@ public class TestIndex
         }
         Assert.That(i == nRecords);
         System.Console.WriteLine("Elapsed time for iteration through " + (nRecords * 2) + " records: " + (DateTime.Now - start));
+
+
+        Hashtable map = db.GetMemoryDump();
+        Console.WriteLine("Memory usage");
+        start = DateTime.Now;
+        foreach (MemoryUsage usage in db.GetMemoryDump().Values) { 
+            Console.WriteLine(" " + usage.type.Name + ": instances=" + usage.nInstances + ", total size=" + usage.totalSize + ", allocated size=" + usage.allocatedSize);
+        }
+        Console.WriteLine("Elapsed time for memory dump: " + (DateTime.Now - start));
+ 
 
         start = System.DateTime.Now;
         key = 1999;

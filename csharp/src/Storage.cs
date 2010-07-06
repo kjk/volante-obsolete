@@ -342,6 +342,21 @@ namespace Perst
         abstract public void RollbackThreadTransaction();
 #endif
 
+        /// <summary>
+        /// Get database memory dump. This function returns hashmap which key is classes
+        /// of stored objects and value - MemoryUsage object which specifies number of instances
+        /// of particular class in the storage and total size of memory used by these instance.
+        /// Size of internal database structures (object index,* memory allocation bitmap) is associated with 
+        /// <code>Storage</code> class. Size of class descriptors  - with <code>System.Type</code> class.
+        /// <p>This method traverse the storage as garbage collection do - starting from the root object
+        /// and recursively visiting all reachable objects. So it reports statistic only for visible objects.
+        /// If total database size is significantly larger than total size of all instances reported
+        /// by this method, it means that there is garbage in the database. You can explicitly invoke
+        /// garbage collector in this case.</p> 
+        /// </summary>
+        abstract public System.Collections.Hashtable GetMemoryDump();
+
+
         // Internal methods
 		
         abstract protected internal void  deallocateObject(IPersistent obj);

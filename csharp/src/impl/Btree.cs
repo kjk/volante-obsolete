@@ -445,12 +445,9 @@ namespace Perst.Impl
             }
         }		
 
-        internal void markTree() 
+        internal int markTree() 
         { 
-            if (root != 0) 
-            { 
-                BtreePage.markPage((StorageImpl)Storage, root, type, height);
-            }
+            return (root != 0) ? BtreePage.markPage((StorageImpl)Storage, root, type, height) : 0;
         }        
 
         protected virtual object unpackEnum(int val) 

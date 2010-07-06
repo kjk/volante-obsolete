@@ -807,9 +807,12 @@ namespace Perst.Impl
         public override void Open(System.String filePath, int pagePoolSize)
         {
             OSFile file = new OSFile(filePath);      
-            try {
+            try 
+            {
                 Open(file, pagePoolSize);
-            } catch (StorageError ex) {
+            } 
+            catch (StorageError ex) 
+            {
                 file.Close();            
                 throw ex;
             }
@@ -842,7 +845,7 @@ namespace Perst.Impl
                 currRBitmapPage = currPBitmapPage = dbBitmapId;
                 currRBitmapOffs = currPBitmapOffs = 0;
                 gcThreshold = Int64.MaxValue;
-#if !COMPACT_NET_FRAME_WORK
+#if !COMPACT_NET_FRAMEWORK
                 nNestedTransactions = 0;
                 nBlockedTransactions = 0;
                 nCommittedTransactions = 0;
@@ -1563,6 +1566,154 @@ namespace Perst.Impl
         }
 
 
+        public override Hashtable GetMemoryDump() 
+        { 
+            lock(this) 
+            { 
+                lock (objectCache) 
+                { 
+                    if (!opened) 
+                    {
+                        throw new StorageError(StorageError.ErrorCode.STORAGE_NOT_OPENED);
+                    }
+                    int bitmapSize = (int)(header.root[currIndex].size >> (dbAllocationQuantumBits + 5)) + 1;
+                    bool existsNotMarkedObjects;
+                    long pos;
+                    int  i, j, n;
+
+                    // mark
+                    greyBitmap = new int[bitmapSize];
+                    blackBitmap = new int[bitmapSize];
+                    int rootOid = header.root[currIndex].rootObject;
+                    Hashtable map = new Hashtable();
+
+                    if (rootOid != 0) 
+                    { 
+                        MemoryUsage indexUsage = new MemoryUsage(typeof(Index));
+                        MemoryUsage fieldIndexUsage = new MemoryUsage(typeof(FieldIndex));
+                        MemoryUsage classUsage = new MemoryUsage(typeof(Type));
+
+                        markOid(rootOid);
+                        do 
+                        { 
+                            existsNotMarkedObjects = false;
+                            for (i = 0; i < bitmapSize; i++) 
+                            { 
+                                if (greyBitmap[i] != 0) 
+                                { 
+                                    existsNotMarkedObjects = true;
+                                    for (j = 0; j < 32; j++) 
+                                    { 
+                                        if ((greyBitmap[i] & (1 << j)) != 0) 
+                                        { 
+                                            pos = (((long)i << 5) + j) << dbAllocationQuantumBits;
+                                            greyBitmap[i] &= ~(1 << j);
+                                            blackBitmap[i] |= 1 << j;
+                                            int offs = (int)pos & (Page.pageSize-1);
+                                            Page pg = pool.getPage(pos - offs);
+                                            int typeOid = ObjectHeader.getType(pg.data, offs);
+                                            int objSize = ObjectHeader.getSize(pg.data, offs);
+                                            int alignedSize = (objSize + dbAllocationQuantum - 1) & ~(dbAllocationQuantum-1);                                    
+                                            if (typeOid != 0) 
+                                            { 
+                                                markOid(typeOid);
+                                                ClassDescriptor desc = findClassDescriptor(typeOid);
+                                                if (typeof(Btree).IsAssignableFrom(desc.cls)) 
+                                                { 
+                                                    Btree btree = new Btree(pg.data, ObjectHeader.Sizeof + offs);
+                                                    setObjectOid(btree, 0, false);
+                                                    int nPages = btree.markTree();
+                                                    if (typeof(FieldIndex).IsAssignableFrom(desc.cls)) 
+                                                    { 
+                                                        fieldIndexUsage.nInstances += 1;
+                                                        fieldIndexUsage.totalSize += nPages*Page.pageSize + objSize;
+                                                        fieldIndexUsage.allocatedSize += nPages*Page.pageSize + alignedSize;
+                                                    } 
+                                                    else 
+                                                    {
+                                                        indexUsage.nInstances += 1;
+                                                        indexUsage.totalSize += nPages*Page.pageSize + objSize;
+                                                        indexUsage.allocatedSize += nPages*Page.pageSize + alignedSize;
+                                                    }
+                                                } 
+                                                else 
+                                                { 
+                                                    MemoryUsage usage = (MemoryUsage)map[desc.cls];
+                                                    if (usage == null) 
+                                                    { 
+                                                        usage = new MemoryUsage(desc.cls);
+                                                        map[desc.cls] = usage;
+                                                    }
+                                                    usage.nInstances += 1;
+                                                    usage.totalSize += objSize;
+                                                    usage.allocatedSize += alignedSize;
+                                                      
+                                                    if (desc.hasReferences) 
+                                                    { 
+                                                        markObject(pool.get(pos), ObjectHeader.Sizeof, desc);
+                                                    }
+                                                }
+                                            } 
+                                            else 
+                                            { 
+                                                classUsage.nInstances += 1;
+                                                classUsage.totalSize += objSize;
+                                                classUsage.allocatedSize += alignedSize;
+                                            }
+                                            pool.unfix(pg);                                
+                                        }
+                                    }
+                                }
+                            }
+                        } while (existsNotMarkedObjects);
+                
+                        if (indexUsage.nInstances != 0) 
+                        { 
+                            map[typeof(Index)] = indexUsage;
+                        }
+                        if (fieldIndexUsage.nInstances != 0) 
+                        { 
+                            map[typeof(FieldIndex)] = fieldIndexUsage;
+                        }
+                        if (classUsage.nInstances != 0) 
+                        { 
+                            map[typeof(Type)] = classUsage;
+                        }
+                        MemoryUsage system = new MemoryUsage(typeof(Storage));
+                        system.totalSize += header.root[0].indexSize*8;
+                        system.totalSize += header.root[1].indexSize*8;
+                        system.totalSize += (header.root[0].bitmapEnd - dbBitmapId + 1)*Page.pageSize;
+                        system.totalSize += (header.root[1].bitmapEnd - dbBitmapId + 1)*Page.pageSize;
+                        system.totalSize += Page.pageSize; // root page
+
+                        long allocated = 0;
+                        for (i = dbBitmapId, n  = header.root[currIndex].bitmapEnd; i < n; i++) {
+                            Page pg = getGCPage(i);
+                            for (j = 0; j < Page.pageSize; j++) 
+                            {
+                                int mask = pg.data[j] & 0xFF;
+                                while (mask != 0) 
+                                { 
+                                    if ((mask & 1) != 0) 
+                                    { 
+                                        allocated += dbAllocationQuantum;
+                                    }
+                                    mask >>= 1;
+                                }
+                            }
+                            pool.unfix(pg);
+                        }
+                        system.allocatedSize = allocated;
+
+                        system.nInstances = header.root[currIndex].indexSize;
+                        map[typeof(Storage)] = system;
+                    } 
+                    return map;
+                }
+            }
+        }
+
+        
         internal int markObject(byte[] obj, int offs,  ClassDescriptor desc)
         { 
             ClassDescriptor.FieldDescriptor[] all = desc.allFields;

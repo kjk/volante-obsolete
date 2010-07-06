@@ -13,7 +13,7 @@ namespace Perst.Impl
         [NonSerialized()]
         Type cls;
         [NonSerialized()]
-        FieldInfo[] fld;
+        MemberInfo[] mbr;
  
         internal BtreeMultiFieldIndex()
         {
@@ -21,13 +21,17 @@ namespace Perst.Impl
 
         private void locateFields() 
         {
-            fld = new FieldInfo[fieldNames.Length];
+            mbr = new MemberInfo[fieldNames.Length];
             for (int i = 0; i < fieldNames.Length; i++) 
             {
-                fld[i] = cls.GetField(fieldNames[i], BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public); 
-                if (fld[i] == null) 
+                mbr[i] = cls.GetField(fieldNames[i], BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public); 
+                if (mbr[i] == null) 
                 { 
-                    throw new StorageError(StorageError.ErrorCode.INDEXED_FIELD_NOT_FOUND, className + "." + fieldNames[i]);
+                    mbr[i] = cls.GetProperty(fieldNames[i], BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public); 
+                    if (mbr[i] == null) 
+                    { 
+                        throw new StorageError(StorageError.ErrorCode.INDEXED_FIELD_NOT_FOUND, className + "." + fieldNames[i]);
+                    }
                 }
             }
         }
@@ -49,7 +53,8 @@ namespace Perst.Impl
             types = new ClassDescriptor.FieldType[fieldNames.Length];
             for (int i = 0; i < types.Length; i++) 
             {
-                types[i] = checkType(fld[i].FieldType);
+                Type mbrType = mbr[i] is FieldInfo ? ((FieldInfo)mbr[i]).FieldType : ((PropertyInfo)mbr[i]).PropertyType;
+                types[i] = checkType(mbrType);
             }
         }
 
@@ -59,7 +64,7 @@ namespace Perst.Impl
             int o2 = offs;
             byte[] a1 = key;
             byte[] a2 = item;
-            for (int i = 0; i < fld.Length; i++) 
+            for (int i = 0; i < types.Length; i++) 
             {
                 int diff = 0;
                 switch (types[i]) 
@@ -200,9 +205,9 @@ namespace Perst.Impl
         {
             int offs = BtreePage.firstKeyOffs + BtreePage.getKeyStrOffs(pg, pos);
             byte[] data = pg.data;
-            Object[] values = new Object[fld.Length];
+            Object[] values = new Object[types.Length];
 
-            for (int i = 0; i < fld.Length; i++) 
+            for (int i = 0; i < types.Length; i++) 
             {
                 Object v = null;
                 switch (types[i]) 
@@ -240,7 +245,8 @@ namespace Perst.Impl
                         break;
                    
                     case ClassDescriptor.FieldType.tpEnum: 
-                        v = Enum.ToObject(fld[i].FieldType, Bytes.unpack4(data, offs));
+                        v = Enum.ToObject(mbr[i] is FieldInfo ? ((FieldInfo)mbr[i]).FieldType : ((PropertyInfo)mbr[i]).PropertyType, 
+                                          Bytes.unpack4(data, offs));
                         offs += 4;
                         break;
             
@@ -323,9 +329,10 @@ namespace Perst.Impl
         { 
             ByteBuffer buf = new ByteBuffer();
             int dst = 0;
-            for (int i = 0; i < fld.Length; i++) 
+            for (int i = 0; i < types.Length; i++) 
             { 
-                dst = packKeyPart(buf, dst, types[i], fld[i].GetValue(obj));
+                object val = mbr[i] is FieldInfo ? ((FieldInfo)mbr[i]).GetValue(obj) : ((PropertyInfo)mbr[i]).GetValue(obj, null);
+                dst = packKeyPart(buf, dst, types[i], val);
             }
             return new Key(buf.toArray());
         }
@@ -344,7 +351,7 @@ namespace Perst.Impl
             ByteBuffer buf = new ByteBuffer();
             int dst = 0;
                 
-            for (int i = 0; i < fld.Length; i++) 
+            for (int i = 0; i < values.Length; i++) 
             { 
                 dst = packKeyPart(buf, dst, types[i], values[i]);
             }
@@ -502,7 +509,7 @@ namespace Perst.Impl
             base.remove(new BtreeKey(extractKey(obj), obj.Oid));
         }
         
-        public void Remove(Key key) 
+        public override void Remove(Key key) 
         {
             base.Remove(convertKey(key));
         }       

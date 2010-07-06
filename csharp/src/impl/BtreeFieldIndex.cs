@@ -13,44 +13,57 @@ namespace Perst.Impl
         [NonSerialized()]
         Type cls;
         [NonSerialized()]
-        FieldInfo fld;
+        MemberInfo mbr;
+        [NonSerialized()]
+        Type mbrType;
  
         internal BtreeFieldIndex()
         {
         }
 
+        private void lookupField(String name) 
+        {
+            FieldInfo fld = cls.GetField(fieldName, BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+            if (fld == null) 
+            { 
+                PropertyInfo prop = cls.GetProperty(fieldName, BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+                if (prop == null)  
+                {
+                    throw new StorageError(StorageError.ErrorCode.INDEXED_FIELD_NOT_FOUND, className + "." + fieldName);
+                }
+                mbrType = prop.PropertyType;
+                mbr = prop;
+            } 
+            else 
+            {
+                mbrType = fld.FieldType;
+                mbr = fld;
+            }
+        }
+
         public override void OnLoad()
         {
             cls = ClassDescriptor.lookup(className);
-            fld = cls.GetField(fieldName, BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);            
-            if (fld == null) { 
-                throw new StorageError(StorageError.ErrorCode.INDEXED_FIELD_NOT_FOUND, className + "." + fieldName);
-            }
+            lookupField(fieldName);
         }
 		
         internal BtreeFieldIndex(Type cls, String fieldName, bool unique) {
-            fld = cls.GetField(fieldName, BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);            
-            if (fld == null) { 
-                throw new StorageError(StorageError.ErrorCode.INDEXED_FIELD_NOT_FOUND, className + "." + fieldName);
-            }
-            type = ClassDescriptor.getTypeCode(fld.FieldType);
-            if ((int)type >= (int)ClassDescriptor.FieldType.tpLink) { 
-                throw new StorageError(StorageError.ErrorCode.UNSUPPORTED_INDEX_TYPE, fld.FieldType);
-            }
             this.cls = cls;
             this.unique = unique;
             this.fieldName = fieldName;
             this.className = cls.FullName;
+            lookupField(fieldName);
+            type = checkType(mbrType);
         }
 
         protected override object unpackEnum(int val) 
         {
-            return Enum.ToObject(fld.FieldType, val);
+            return Enum.ToObject(mbrType, val);
         }
 
         private Key extractKey(IPersistent obj) 
         { 
-            Object val = fld.GetValue(obj);
+            Object val = mbr is FieldInfo ? ((FieldInfo)mbr).GetValue(obj) : ((PropertyInfo)mbr).GetValue(obj, null);
             Key key = null;
             switch (type) {
               case ClassDescriptor.FieldType.tpBoolean:
@@ -140,20 +153,31 @@ namespace Perst.Impl
         }
 
         public void Append(IPersistent obj) {
-            lock(this) { 
+            lock(this) 
+            { 
                 Key key;
-                switch (type) {
-                  case ClassDescriptor.FieldType.tpInt:
-                     key = new Key((int)autoincCount);
-                     fld.SetValue(obj, (int)autoincCount);
-                     break;            
-                   case ClassDescriptor.FieldType.tpLong:
-                     key = new Key(autoincCount);
-                     fld.SetValue(obj, autoincCount);
-                     break;            
-                   default:
-                     throw new StorageError(StorageError.ErrorCode.UNSUPPORTED_INDEX_TYPE, fld.FieldType);
+                object val; 
+                switch (type) 
+                {
+                    case ClassDescriptor.FieldType.tpInt:
+                        key = new Key((int)autoincCount);
+                        val = (int)autoincCount;
+                        break;            
+                    case ClassDescriptor.FieldType.tpLong:
+                        key = new Key(autoincCount);
+                        val = autoincCount;
+                        break;            
+                    default:
+                        throw new StorageError(StorageError.ErrorCode.UNSUPPORTED_INDEX_TYPE, mbrType);
                 }
+                if (mbr is FieldInfo) 
+                { 
+                    ((FieldInfo)mbr).SetValue(obj, val);
+                } 
+                else 
+                {
+                    ((PropertyInfo)mbr).SetValue(obj, val, null);
+                }              
                 autoincCount += 1;
                 obj.Modify();
                 base.insert(key, obj, false);
