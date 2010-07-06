@@ -6,6 +6,35 @@ namespace Perst.Impl
 	
     public class LinkImpl : Link
     {
+        public int Count 
+        { 
+            get 
+            {
+                return used;
+            }
+        }
+
+        public bool IsSynchronized 
+        {
+            get 
+            {
+                return false;
+            }
+        }
+
+        public object SyncRoot 
+        {
+            get 
+            {
+                return null;
+            }
+        }
+
+        public void CopyTo(Array dst, int i) 
+        {
+            Array.Copy(arr, 0, dst, i, used);
+        }
+
         public virtual int Size()
         {
             return used;

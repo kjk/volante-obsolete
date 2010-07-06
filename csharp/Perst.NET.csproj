@@ -473,12 +473,22 @@
                     BuildAction = "Compile"
                 />
                 <File
+                    RelPath = "src\impl\ScalableSet.cs"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
                     RelPath = "src\impl\StorageImpl.cs"
                     SubType = "Code"
                     BuildAction = "Compile"
                 />
                 <File
                     RelPath = "src\impl\StrongHashTable.cs"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "src\impl\ThickIndex.cs"
                     SubType = "Code"
                     BuildAction = "Compile"
                 />

@@ -132,6 +132,19 @@ namespace Perst
         /// </exception>
         abstract public Index CreateIndex(Type type, bool unique);
 		
+        /// <summary> Create new thick index (index with large number of duplicated keys)
+        /// </summary>
+        /// <param name="type">type of the index key (you should path here <code>String.class</code>, 
+        /// <code>int.class</code>, ...)
+        /// </param>
+        /// <returns>persistent object implementing thick index
+        /// </returns>
+        /// <exception cref="Perst.StorageError">StorageError(StorageError.ErrorCode.UNSUPPORTED_INDEX_TYPE) exception if 
+        /// specified key type is not supported by implementation.
+        /// 
+        /// </exception>
+        abstract public Index CreateThickIndex(Type type);
+		
         /// <summary> 
         /// Create new field index
         /// </summary>
@@ -226,6 +239,27 @@ namespace Perst
         /// 
         /// </returns>
         abstract public Link CreateLink(int initialSize);
+		
+        /// <summary>  Create new scalable set references to persistent objects.
+        /// This container can effciently store small number of references as well 
+        /// as very large number references. When number of memers is small, 
+        /// Link class is used to store set members. When number of members exceed 
+        /// some threshold, PersistentSet (based on B-Tree) is used instead.
+        /// </summary>
+        /// <returns>new empty set, new members can be added to the set later.
+        /// </returns>
+        abstract public ISet CreateScalableSet();
+		
+        /// <summary>  Create new scalable set references to persistent objects.
+        /// This container can effciently store small number of references as well 
+        /// as very large number references. When number of memers is small, 
+        /// Link class is used to store set members. When number of members exceed 
+        /// some threshold, PersistentSet (based on B-Tree) is used instead.
+        /// </summary>
+        /// <param name="intialSize">initial size of the sety</param>
+        /// <returns>new empty set, new members can be added to the set later.
+        /// </returns>
+        abstract public ISet CreateScalableSet(int initialSize);
 		
         /// <summary> Create dynamcially extended array of reference to persistent objects.
         /// It is inteded to be used in classes using virtual properties to 

@@ -7,6 +7,23 @@ namespace Perst
     /// </summary>
     public abstract class Relation:Persistent, Link
     {
+        public abstract int Count 
+        { 
+            get;
+        }
+
+        public abstract bool IsSynchronized 
+        {
+            get;
+        }
+
+        public abstract object SyncRoot 
+        {
+            get;
+        }
+
+        public abstract void CopyTo(Array dst, int i);
+
         public abstract int Size();
 
         public abstract int Length 

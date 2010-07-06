@@ -1312,7 +1312,7 @@ namespace Perst.Impl
                                 {
                                     free(pos & ~ dbFlagsMask, Page.pageSize);
                                 }
-                                else
+                                else if (pos != 0)
                                 {
                                     int offs = (int) pos & (Page.pageSize - 1);
                                     pg = pool.getPage(pos - offs);
@@ -1343,7 +1343,7 @@ namespace Perst.Impl
                             {
                                 free(pos & ~ dbFlagsMask, Page.pageSize);
                             }
-                            else
+                            else if (pos != 0)
                             {
                                 int offs = (int) pos & (Page.pageSize - 1);
                                 pg = pool.getPage(pos - offs);
@@ -1550,7 +1550,7 @@ namespace Perst.Impl
                     obj.AssignOid(this, oid, false);
                     setPos(oid, 0);
                     objectCache.put(oid, obj);
-                    objectCache.setDirty(oid);
+                    obj.Modify();
                     return obj;
                 }
             }
@@ -1589,7 +1589,7 @@ namespace Perst.Impl
                     obj.AssignOid(this, oid, false);
                     setPos(oid, 0);
                     objectCache.put(oid, obj);
-                    objectCache.setDirty(oid);
+                    obj.Modify();
                     return oid;
                 }
             }
@@ -1634,7 +1634,7 @@ namespace Perst.Impl
                             {
                                 nPagedObjects += 1;
                             } 
-                            else 
+                            else if (pos != 0) 
                             { 
                                 int offs = (int)pos & (Page.pageSize-1);
                                 Page op = pool.getPage(pos - offs);
@@ -1686,14 +1686,14 @@ namespace Perst.Impl
                 {
                     long pos = index[i];
                     int oid = oids[i];
-                    if ((pos & dbFreeHandleFlag) == 0) 
+                    if (pos != 0 && (pos & dbFreeHandleFlag) == 0) 
                     { 
                         if ((pos & dbPageObjectFlag) != 0) 
                         {
                             Bytes.pack8(newIndex, oid*8, pageOffs | dbPageObjectFlag);
                             pageOffs += Page.pageSize;
                         } 
-                        else 
+                        else
                         { 
                             Bytes.pack8(newIndex, oid*8, recOffs);
                             int offs = (int)pos & (Page.pageSize-1);
@@ -1751,7 +1751,7 @@ namespace Perst.Impl
                 for (i = 0; i < nObjects; i++) 
                 {
                     long pos = index[i];
-                    if (((int)pos & (dbFreeHandleFlag|dbPageObjectFlag)) == 0) 
+                    if (pos != 0 && ((int)pos & (dbFreeHandleFlag|dbPageObjectFlag)) == 0) 
                     { 
                         pos &= ~dbFlagsMask;
                         int offs = (int)pos & (Page.pageSize-1);
@@ -1799,6 +1799,18 @@ namespace Perst.Impl
                     : (Index)new Btree(keyType, unique);
                 index.AssignOid(this, 0, false);
                 return index;
+            }
+        }
+
+        public override Index CreateThickIndex(Type keyType)
+        {
+            lock(this)
+            {
+                if (!opened)
+                {
+                    throw new StorageError(StorageError.ErrorCode.STORAGE_NOT_OPENED);
+                }
+                return new ThickIndex(keyType, this);
             }
         }
         
@@ -1878,7 +1890,24 @@ namespace Perst.Impl
                 return s;
             }
         }
-		
+
+        public override ISet CreateScalableSet() 
+        {
+            return CreateScalableSet(8);
+        }
+
+        public override ISet CreateScalableSet(int initialSize) 
+        {
+            lock(this)
+            {
+                if (!opened)
+                {
+                    throw new StorageError(StorageError.ErrorCode.STORAGE_NOT_OPENED);
+                }
+                return new ScalableSet(this, initialSize);
+            }
+        }
+
         public override FieldIndex CreateFieldIndex(System.Type type, String fieldName, bool unique)
         {
             lock(this)
@@ -2103,7 +2132,7 @@ namespace Perst.Impl
             for (int i = dbFirstUserId, j = committedIndexSize; i < j; i++) 
             {
                 pos = getGCPos(i);
-                if (((int)pos & (dbPageObjectFlag|dbFreeHandleFlag)) == 0) 
+                if (pos != 0 && ((int)pos & (dbPageObjectFlag|dbFreeHandleFlag)) == 0) 
                 {
                     int bit = (int)((ulong)pos >> dbAllocationQuantumBits);
                     if ((blackBitmap[(uint)bit >> 5] & (1 << (bit & 31))) == 0) 

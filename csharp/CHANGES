@@ -362,3 +362,10 @@ instead of direct invocation of constructors. See "PropGuess" sample.
 5. Add PArray class to be used instead of array of references in virtual property based transparent API
 6. Change semantic of IPersistent.MakePersistent method, now it doesn't store transparent object
 in the storage, it just assigns OID and marks it as modified
+
+--- Release version 2.46 19.12.2004 -------------------------------------
+1. Add Storage.createThickIndex method for efficient support of indices with a lot of duplicate 
+   values of of the key
+2. Add Storage.createScalableSet method for efficient (space and speed) support of set of references 
+   small as well as large number of members
+3. Fix bugs in virtual proxy transparent API implementation

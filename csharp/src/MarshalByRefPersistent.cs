@@ -59,7 +59,7 @@ namespace Perst
         {
             if (oid == 0)
             {
-                storage.storeObject(this);
+                storage.MakePersistent(this);
             }
             return oid;
         }

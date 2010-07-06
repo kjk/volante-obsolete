@@ -25,21 +25,16 @@ namespace Perst.Impl
             return base.Put(new Key(o), o);
         }
 
-        public bool AddAll(IEnumerator e) 
+        public bool AddAll(ICollection c) 
         {
             bool modified = false;
-            while (e.MoveNext()) 
+            foreach (IPersistent o in c)
             {
-                modified |= Add((IPersistent)e.Current);
+                modified |= Add(o);
             }
             return modified;
         }
 
-
-        public bool AddAll(IEnumerable e) 
-        {
-            return AddAll(e.GetEnumerator());
-        }
 
         public bool Remove(IPersistent o) 
         { 
@@ -58,11 +53,11 @@ namespace Perst.Impl
             return true;
         }
     
-        public bool ContainsAll(IEnumerator e) 
+        public bool ContainsAll(ICollection c) 
         { 
-            while (e.MoveNext()) 
+            foreach (IPersistent o in c)
             { 
-                if (!Contains((IPersistent)e.Current)) 
+                if (!Contains(o)) 
                 {
                     return false;
                 }
@@ -70,35 +65,25 @@ namespace Perst.Impl
             return true;
         }
 
-        public bool ContainsAll(IEnumerable e) 
-        {
-            return ContainsAll(e.GetEnumerator());
-        }
 
              
-        public bool RemoveAll(IEnumerator e) 
+        public bool RemoveAll(ICollection c) 
         {
             bool modified = false;
-            while (e.MoveNext())  
+            foreach (IPersistent o in c)
             {
-                modified |= Remove((IPersistent)e.Current);
+                modified |= Remove(o);
             }
             return modified;
         }
 
-        public bool RemoveAll(IEnumerable e) 
-        {
-            return RemoveAll(e.GetEnumerator());
-        }
-
-        
         public override bool Equals(object o) 
         {
             if (o == this) 
             {
                 return true;
             }
-            ISet s = o as ISet;
+            ICollection s = o as ICollection;
             if (s == null) 
             {
                 return false;

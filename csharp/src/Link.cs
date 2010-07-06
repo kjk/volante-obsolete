@@ -11,7 +11,7 @@ namespace Perst
     /// and standalone relation is represented by Relation persistent class created by
     /// Storage.createRelation method.
     /// </summary>
-    public interface Link : IEnumerable
+    public interface Link : ICollection
     {
         /// <summary> Get number of the linked objects 
         /// </summary>

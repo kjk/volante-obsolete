@@ -6,6 +6,35 @@ namespace Perst.Impl
 	
     public class RelationImpl:Relation
     {
+        public override int Count 
+        { 
+            get 
+            {
+                return link.Count;
+            }
+        }
+
+        public override bool IsSynchronized 
+        {
+            get 
+            {
+                return link.IsSynchronized;
+            }
+        }
+
+        public override object SyncRoot 
+        {
+            get 
+            {
+                return link.SyncRoot;
+            }
+        }
+
+        public override void CopyTo(Array dst, int i) 
+        {
+            link.CopyTo(dst, i);
+        }
+
         public override int Length 
         {
             get 

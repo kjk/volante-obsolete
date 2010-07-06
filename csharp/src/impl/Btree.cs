@@ -172,7 +172,7 @@ namespace Perst.Impl
             }
             set 
             {
-                Set(key, (IPersistent)value);
+                Set(key, value);
             }
         } 
      
@@ -272,7 +272,7 @@ namespace Perst.Impl
             }
             else if (o is String) 
             {
-                return new Key(((String)o).ToCharArray());
+                return new Key((String)o);
             }
             else if (o is DateTime) 
             {
