@@ -38,4 +38,9 @@ public interface IFile {
      * Close file
      */
     void close();
+
+    /**
+     * Length of the file
+     */
+    long length();
 }

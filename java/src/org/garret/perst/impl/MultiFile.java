@@ -173,6 +173,14 @@ public class MultiFile implements IFile
         }
     }
 
+    public long length() {
+        try { 
+            return fixedSize +  segment[segment.length-1].f.length();
+        } catch (IOException x) {
+            return -1;
+        }
+    }
+
     MultiFileSegment segment[];
     long             currPos;
     long             currOffs;

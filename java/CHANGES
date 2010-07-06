@@ -349,3 +349,10 @@ stored in OS file buffers and sooner or later them will be written to the disk)
 1. Revisted collections in JDK 1.5 API (now all collections implmements Collection interface)
 2. Rewrite R-Tree iterator implementation
 3. Fix bug in multified index key field lookup (if key belons to the base class)
+
+
+--- Release version 2.48 03.01.2005 -------------------------------------
+1. Replication support. Now Perst supports master-slaves replication model.
+Single master node replicates changes to one or more slave nodes.
+It is possible to access database at slave nodes in read-only mode.
+Look at TestReplic example.

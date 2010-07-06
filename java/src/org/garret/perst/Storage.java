@@ -3,7 +3,7 @@ package org.garret.perst;
 /**
  * Object storage
  */
-public abstract class Storage { 
+public interface Storage { 
     /**
      * Constant specifying that page pool should be dynamically extended 
      * to conatins all database file pages
@@ -25,7 +25,7 @@ public abstract class Storage {
      * database, when storage is created with NullFile.
      * 
      */
-    abstract public void open(String filePath, int pagePoolSize);
+    public void open(String filePath, int pagePoolSize);
 
     /**
      * Open the storage
@@ -35,23 +35,19 @@ public abstract class Storage {
      * But larger page pool ussually leads to better performance (unless it could not fit
      * in memory and cause swapping).
      */
-    abstract public void open(IFile file, int pagePoolSize);
+    public void open(IFile file, int pagePoolSize);
 
     /**
      * Open the storage with default page pool size
      * @param file user specific implementation of IFile interface
      */ 
-    public void open(IFile file) {
-        open(file, DEFAULT_PAGE_POOL_SIZE);
-    }
+    public void open(IFile file);
 
     /**
      * Open the storage with default page pool size
      * @param filePath path to the database file
      */ 
-    public void open(String filePath) {
-        open(filePath, DEFAULT_PAGE_POOL_SIZE);
-    }
+    public void open(String filePath);
 
     /**
      * Open the encrypted storage
@@ -62,33 +58,22 @@ public abstract class Storage {
      * in memory and cause swapping).
      * @param cipherKey cipher key
      */
-    abstract public void open(String filePath, int pagePoolSize, String cipherKey);
+    public void open(String filePath, int pagePoolSize, String cipherKey);
 
     /**
      * Check if database is opened
      * @return <code>true</code> if database was opened by <code>open</code> method, 
      * <code>false</code> otherwise
      */
-    abstract public boolean isOpened();
+    public boolean isOpened();
     
-    /**
-     * Explicitly make object persistent (assign to the storage).
-     * If object is already persistent, this method has no effect
-     * @param obj object to be made persistent.
-     */
-    public void makeObjectPersistent(IPersistent obj) {
-        if (obj.getOid() == 0) { 
-            storeObject(obj);
-        }
-    }
-
     /**
      * Get storage root. Storage can have exactly one root object. 
      * If you need to have several root object and access them by name (as is is possible 
      * in many other OODBMSes), you should create index and use it as root object.
      * @return root object or <code>null</code> if root is not specified (storage is not yet initialized)
      */
-    abstract public IPersistent getRoot();
+    public IPersistent getRoot();
     
     /**
      * Set new storage root object.
@@ -96,7 +81,7 @@ public abstract class Storage {
      * @param root object to become new storage root. If it is not persistent yet, it is made
      * persistent and stored in the storage
      */
-    abstract public void setRoot(IPersistent root);
+    public void setRoot(IPersistent root);
 
     
 
@@ -104,23 +89,45 @@ public abstract class Storage {
      * Commit changes done by the last transaction. Transaction is started implcitlely with forst update
      * opertation.
      */
-    abstract public void commit();
+    public void commit();
 
     /**
      * Rollback changes made by the last transaction
      */
-    abstract public void rollback();
+    public void rollback();
 
 
     /**
      * Backup current state of database
      * @param out output stream to which backup is done
      */
-    abstract public void backup(java.io.OutputStream out) throws java.io.IOException;
+    public void backup(java.io.OutputStream out) throws java.io.IOException;
 
+    /**
+     * Exclusive per-thread transaction: each thread access database in exclusive mode
+     */
     public static final int EXCLUSIVE_TRANSACTION   = 0;
+    /**
+     * Cooperative mode; all threads share the same transaction. Commit will commit changes made
+     * by all threads. To make this schema work correctly, it is necessary to ensure (using locking)
+     * that no thread is performing update of the database while another one tries to perform commit.
+     * Also please notice that rollback will undo the work of all threads. 
+     */
     public static final int COOPERATIVE_TRANSACTION = 1;
+    /**
+     * Serializable per-thread transaction. Unlike exclusive mode, threads can concurrently access database, 
+     * but effect will be the same as them work exclusively.
+     * To provide such behavior, programmer should lock all access objects (or use hierarchical locking).
+     * When object is updated, exclusive lock should be set, otherwise shared lock is enough.
+     * Lock should be preserved until the end of transaction.
+     */
     public static final int SERIALIZABLE_TRANSACTION = 2;
+
+    /**
+     * Read only transaction which can be started at replicastion slave node.
+     * It runs concurrently with receiving updates from master node.
+     */
+    public static final int REPLICATION_SLAVE_TRANSACTION = 3;
 
     /** 
      * Begin per-thread transaction. Three types of per-thread transactions are supported: 
@@ -142,10 +149,10 @@ public abstract class Storage {
      * and use <code>store()</code> method to assign OID to inserted object. 
      * You should use <code>SortedCollection</code> based on T-Tree instead or alternative
      * B-Tree implemenataion (set "perst.alternative.btree" property).
-     * @param mode <code>EXCLUSIVE_TRANSACTION</code>, <code>COOPERATIVE_TRANSACTION</code>
-     * or <code>SERIALIZABLE_TRANSACTION</code>
+     * @param mode <code>EXCLUSIVE_TRANSACTION</code>, <code>COOPERATIVE_TRANSACTION</code>, 
+     * <code>SERIALIZABLE_TRANSACTION</code> or <code>REPLICATION_SLAVE_TRANSACTION</code>
      */
-    abstract public void beginThreadTransaction(int mode);
+    public void beginThreadTransaction(int mode);
     
     /**
      * End per-thread transaction started by beginThreadTransaction method.<br>
@@ -156,9 +163,7 @@ public abstract class Storage {
      * If transaction is <i>cooperative</i>, this method decrement counter of cooperative
      * transactions and if it becomes zero - commit the work
      */
-    public void endThreadTransaction() { 
-        endThreadTransaction(Integer.MAX_VALUE);
-    }
+    public void endThreadTransaction();
 
     /**
      * End per-thread cooperative transaction with specified maximal delay of transaction
@@ -177,19 +182,19 @@ public abstract class Storage {
      * If <code>maxDelay</code> is 0, current thread will be blocked until all other cooperative trasnaction are also finished
      * and changhes will be committed to the database.
      */
-    abstract public void endThreadTransaction(int maxDelay);
+    public void endThreadTransaction(int maxDelay);
    
     /**
      * Rollback per-thread transaction. It is safe to use this method only for exclusive transactions.
      * In case of cooperative transactions, this method rollback results of all transactions.
      */
-    abstract public void rollbackThreadTransaction();
+    public void rollbackThreadTransaction();
 
     /**
      * Create new peristent set
      * @return persistent object implementing set
      */
-    abstract public IPersistentSet createSet();
+    public IPersistentSet createSet();
 
     /**
      * Create new scalable set references to persistent objects.
@@ -199,7 +204,7 @@ public abstract class Storage {
      * is used instead.
      * @return scalable set implementation
      */
-    abstract public IPersistentSet createScalableSet();
+    public IPersistentSet createScalableSet();
 
     /**
      * Create new scalable set references to persistent objects.
@@ -210,7 +215,7 @@ public abstract class Storage {
      * @param initialSize initial size of the set
      * @return scalable set implementation
      */
-    abstract public IPersistentSet createScalableSet(int initialSize);
+    public IPersistentSet createScalableSet(int initialSize);
 
     /**
      * Create new index
@@ -221,7 +226,7 @@ public abstract class Storage {
      * @exception StorageError(StorageError.UNSUPPORTED_INDEX_TYPE) exception if 
      * specified key type is not supported by implementation.
      */
-    abstract public Index createIndex(Class type, boolean unique);
+    public Index createIndex(Class type, boolean unique);
 
     /**
      * Create new thick index (index with large number of duplicated keys)
@@ -231,14 +236,14 @@ public abstract class Storage {
      * @exception StorageError(StorageError.UNSUPPORTED_INDEX_TYPE) exception if 
      * specified key type is not supported by implementation.
      */
-    abstract public Index createThickIndex(Class type);
+    public Index createThickIndex(Class type);
 
     /**
      * Create new bit index. Bit index is used to select object 
      * with specified set of (boolean) properties.
      * @return persistent object implementing bit index
      */
-    abstract public BitIndex createBitIndex();
+    public BitIndex createBitIndex();
 
     /**
      * Create new field index
@@ -249,7 +254,7 @@ public abstract class Storage {
      * @exception StorageError(StorageError.INDEXED_FIELD_NOT_FOUND) if there is no such field in specified class,<BR> 
      * StorageError(StorageError.UNSUPPORTED_INDEX_TYPE) exception if type of specified field is not supported by implementation
      */
-    abstract public FieldIndex createFieldIndex(Class type, String fieldName, boolean unique);
+    public FieldIndex createFieldIndex(Class type, String fieldName, boolean unique);
 
     /**
      * Create new mutlifield index
@@ -260,19 +265,19 @@ public abstract class Storage {
      * @exception StorageError(StorageError.INDEXED_FIELD_NOT_FOUND) if there is no such field in specified class,<BR> 
      * StorageError(StorageError.UNSUPPORTED_INDEX_TYPE) exception if type of specified field is not supported by implementation
      */
-    abstract public FieldIndex createFieldIndex(Class type, String[] fieldNames, boolean unique);
+    public FieldIndex createFieldIndex(Class type, String[] fieldNames, boolean unique);
 
     /**
      * Create new spatial index with integer coordinates
      * @return persistent object implementing spatial index
      */
-    abstract public SpatialIndex createSpatialIndex();
+    public SpatialIndex createSpatialIndex();
 
     /**
      * Create new R2 spatial index 
      * @return persistent object implementing spatial index
      */
-    abstract public SpatialIndexR2 createSpatialIndexR2();
+    public SpatialIndexR2 createSpatialIndexR2();
 
     /**
      * Create new sorted collection with specified comparator
@@ -280,7 +285,7 @@ public abstract class Storage {
      * @param unique whether index is collection (members with the same key value are not allowed)
      * @return persistent object implementing sorted collection
      */
-    abstract public SortedCollection createSortedCollection(PersistentComparator comparator, boolean unique);
+    public SortedCollection createSortedCollection(PersistentComparator comparator, boolean unique);
 
     /**
      * Create new sorted collection. Members of this collections should implement 
@@ -289,20 +294,20 @@ public abstract class Storage {
      * @param unique whether index is collection (members with the same key value are not allowed)
      * @return persistent object implementing sorted collection
      */
-    abstract public SortedCollection createSortedCollection(boolean unique);
+    public SortedCollection createSortedCollection(boolean unique);
 
     /**
      * Create one-to-many link.
      * @return new empty link, new members can be added to the link later.
      */
-    abstract public Link createLink();
+    public Link createLink();
     
     /**
      * Create one-to-many link with specified initially allocated size.
      * @param initialSize initial size of array
      * @return new empty link, new members can be added to the link later.
      */
-    abstract public Link createLink(int initialSize);
+    public Link createLink(int initialSize);
     
     /**
      * Create relation object. Unlike link which represent embedded relation and stored
@@ -312,14 +317,14 @@ public abstract class Storage {
      * @return object representing empty relation (relation with specified owner and no members), 
      * new members can be added to the link later.
      */
-    abstract public Relation createRelation(IPersistent owner);
+    public Relation createRelation(IPersistent owner);
 
 
     /**
      * Create new BLOB. Create object for storing large binary data.
      * @return empty BLOB
      */
-    abstract public Blob createBlob();
+    public Blob createBlob();
 
     /**
      * Create new time series object. 
@@ -339,7 +344,7 @@ public abstract class Storage {
      * value of maxBlockTimeInterval can be set as 100*(24*60*60*1000)*2
      * @return new empty time series
      */
-    abstract public TimeSeries createTimeSeries(Class blockClass, long maxBlockTimeInterval);
+    public TimeSeries createTimeSeries(Class blockClass, long maxBlockTimeInterval);
 
 
     /**
@@ -353,12 +358,12 @@ public abstract class Storage {
      * to other structures such as hashtables when memory space is of concern.
      * @return created PATRICIA trie
      */
-    abstract public PatriciaTrie createPatriciaTrie();
+    public PatriciaTrie createPatriciaTrie();
 
     /**
      * Commit transaction (if needed) and close the storage
      */
-    abstract public void close();
+    public void close();
 
     /**
      * Set threshold for initiation of garbage collection. By default garbage collection is disable (threshold is set to
@@ -368,25 +373,25 @@ public abstract class Storage {
      * @param allocatedDelta delta between total size of allocated and deallocated object since last GC 
      * or storage opening 
      */
-    abstract public void setGcThreshold(long allocatedDelta);
+    public void setGcThreshold(long allocatedDelta);
 
     /**
      * Explicit start of garbage collector
      * @return number of collected (deallocated) objects
      */
-    abstract public int gc();
+    public int gc();
 
     /**
      * Export database in XML format 
      * @param writer writer for generated XML document
      */
-    abstract public void exportXML(java.io.Writer writer) throws java.io.IOException;
+    public void exportXML(java.io.Writer writer) throws java.io.IOException;
 
     /**
      * Import data from XML file
      * @param reader XML document reader
      */
-    abstract public void importXML(java.io.Reader reader) throws XMLImportException;
+    public void importXML(java.io.Reader reader) throws XMLImportException;
 
     /**
      * Retrieve object by OID. This method should be used with care because
@@ -396,7 +401,7 @@ public abstract class Storage {
      * @param oid object oid
      * @return reference to the object with specified OID
      */
-    abstract public IPersistent getObjectByOID(int oid);
+    public IPersistent getObjectByOID(int oid);
 
     /**
      * Explicitely make object peristent. Usually objects are made persistent
@@ -406,7 +411,7 @@ public abstract class Storage {
      * @param obj object to be made persistent
      * @return OID assigned to the object  
      */
-    abstract public int makePersistent(IPersistent obj);
+    public int makePersistent(IPersistent obj);
 
  
     /**
@@ -474,7 +479,7 @@ public abstract class Storage {
      * <TD>Database file should be opened in read-only mode.
      * </TD></TR>
      * <TR><TD><code>perst.file.noflush</code></TD><TD>Boolean</TD><TD>false</TD>
-     * <TD>To not flush file during transaction commit. It will greatly increase performance because
+     * <TD>Do not flush file during transaction commit. It will greatly increase performance because
      * eliminate synchronous write to the disk (when program has to wait until all changed
      * are actually written to the disk). But it can cause database corruption in case of 
      * OS or power failure (but abnormal termination of application itself should not cause
@@ -502,26 +507,38 @@ public abstract class Storage {
      * on all strings  stored in database. So if you already have some data in the storage
      * and then change encoding, then it can cause incorrect fetching of strings and even database crash.
      * </TD></TR>
+     * <TR><TD><code>perst.replication.ack</code></TD><TD>Boolean</TD><TD>false</TD>
+     * <TD>Request acknowledgement from slave that it receives all data before transaction
+     * commit. If this option is not set, then replication master node just writes
+     * data to the socket not warring whether it reaches slave node or not.
+     * When this option is set to true, master not will wait during each transaction commit acknowledgement
+     * from slave node. Please notice that this option should be either set or not set both
+     * at slave and master node. If it is set only on one of this nodes then behavior of
+     * the system is unpredicted. This option can be used both in synchronous and asynchronous replication
+     * mode. The only difference is that in first case main application thread will be blocked waiting
+     * for acknowledgment, while in the asynchronous mode special replication thread will be blocked
+     * allowing thread performing commit to proceed.
+     * </TD></TR>
      * </TABLE>
      * @param name name of the property
      * @param value value of the property (for boolean properties pass <code>java.lang.Boolean.TRUE</code>
      * and <code>java.lang.Boolean.FALSE</code>
      */
-    abstract public void setProperty(String name, Object value);
+    public void setProperty(String name, Object value);
 
    /**
      * Set database properties. This method should be invoked before opening database. 
      * For list of supported properties please see <code>setProperty</code> command. 
      * All not recognized properties are ignored.
      */
-    abstract public void setProperties(java.util.Properties props);
+    public void setProperties(java.util.Properties props);
 
     /**
      * Set storage listener.
      * @param listener new storage listener (may be null)
      * @return previous storage listener
      */
-    abstract public StorageListener setListener(StorageListener listener);
+    public StorageListener setListener(StorageListener listener);
 
     /**
      * Get database memory dump. This function returns hashmap which key is classes
@@ -535,18 +552,18 @@ public abstract class Storage {
      * by this method, it means that there is garbage in the database. You can explicitly invoke
      * garbage collector in this case.</p> 
      */
-    abstract public java.util.HashMap getMemoryDump();
+    public java.util.HashMap getMemoryDump();
     
 
     /**
      * Get total size of all allocated objects in the database
      */
-    abstract public long getUsedSize();
+    public long getUsedSize();
 
     /**
      * Get size of the database
      */
-    abstract public long getDatabaseSize();
+    public long getDatabaseSize();
 
     /**
      * Set class loader. This class loader will be used to locate classes for 
@@ -556,12 +573,7 @@ public abstract class Storage {
      * @param loader class loader
      * @return previous class loader or null if not specified
      */
-    public ClassLoader setClassLoader(ClassLoader loader) 
-    { 
-        ClassLoader prev = loader;
-        this.loader = loader;
-        return prev;
-    }
+    public ClassLoader setClassLoader(ClassLoader loader);
 
     /**
      * Get class loader used to locate classes for 
@@ -569,26 +581,21 @@ public abstract class Storage {
      * @return class loader previously set by <code>setClassLoader</code>
      * method or <code>null</code> if not specified. 
      */
-    public ClassLoader getClassLoader() {
-        return loader;
-    }
+    public ClassLoader getClassLoader();
 
+    // Internal methods (I haev to made them public to be used by AspectJ API)
 
-    // Internal methods
+    public void deallocateObject(IPersistent obj);
 
-    abstract public/*protected*/  void deallocateObject(IPersistent obj);
+    public void storeObject(IPersistent obj);
 
-    abstract public/*protected*/ void storeObject(IPersistent obj);
+    public void storeFinalizedObject(IPersistent obj);
 
-    abstract public/*protected*/ void storeFinalizedObject(IPersistent obj);
+    public void modifyObject(IPersistent obj);
 
-    abstract public/*protected*/ void modifyObject(IPersistent obj);
+    public void loadObject(IPersistent obj);
 
-    abstract public/*protected*/ void loadObject(IPersistent obj);
-
-    abstract public/*protected*/ void lockObject(IPersistent obj);
-
-    private ClassLoader loader;
+    public void lockObject(IPersistent obj);
 }
 
 

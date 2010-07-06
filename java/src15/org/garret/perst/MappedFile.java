@@ -65,6 +65,14 @@ public class MappedFile implements IFile {
         return OSFile.lockFile(f);
     }
 
+    public long length() { 
+        try { 
+            return f.length();
+        } catch(IOException x) { 
+            return -1;
+        }
+    }
+
     public MappedFile(String filePath, long initialSize, boolean readOnly) { 
         try { 
             f = new RandomAccessFile(filePath, readOnly ? "r" : "rw");

@@ -5,7 +5,7 @@ import java.lang.reflect.*;
 import java.util.*;
 import java.io.*;
 
-public class StorageImpl extends Storage { 
+public class StorageImpl implements Storage { 
     /**
      * Initialial database index size - increasing it reduce number of inde reallocation but increase
      * initial database size. Should be set before openning connection.
@@ -775,6 +775,14 @@ public class StorageImpl extends Storage {
         }
     }
 
+    public void open(String filePath) {
+        open(filePath, DEFAULT_PAGE_POOL_SIZE);
+    }
+
+    public void open(IFile file) {
+        open(file, DEFAULT_PAGE_POOL_SIZE);
+    }
+
     public synchronized void open(String filePath, int pagePoolSize) {
         IFile file = filePath.startsWith("@") 
             ? (IFile)new MultiFile(filePath.substring(1), readOnly, noFlush)
@@ -811,7 +819,10 @@ public class StorageImpl extends Storage {
         }
         return new LruObjectCache(objectCacheSize);
     }
-        
+
+    protected boolean isDirty() { 
+        return header.dirty;
+    }
 
     public synchronized void open(IFile file, int pagePoolSize) {
         if (opened) {
@@ -846,8 +857,7 @@ public class StorageImpl extends Storage {
         transactionMonitor = new Object();
         transactionLock = new PersistentResource();
 
-        modified = false;        
-        pool = new PagePool(pagePoolSize/Page.pageSize);
+        modified = false; 
 
         objectCache = createObjectCache(cacheKind, pagePoolSize, objectCacheInitSize);
 
@@ -863,6 +873,10 @@ public class StorageImpl extends Storage {
         header.unpack(buf);
         if (header.curr < 0 || header.curr > 1) { 
             throw new StorageError(StorageError.DATABASE_CORRUPTED);
+        }
+        if (pool == null) { 
+            pool = new PagePool(pagePoolSize/Page.pageSize);
+            pool.open(file);
         }
         if (!header.initialized) {          
             header.curr = currIndex = 0;
@@ -888,8 +902,6 @@ public class StorageImpl extends Storage {
                       / (Page.pageSize*(dbAllocationQuantum*8-1)));
             long bitmapSize = (long)bitmapPages*Page.pageSize;
             int usedBitmapSize = (int)((used + bitmapSize) >>> (dbAllocationQuantumBits + 3));
-
-            pool.open(file);
 
             for (i = 0; i < bitmapPages; i++) { 
                 pg = pool.putPage(used + (long)i*Page.pageSize);
@@ -940,8 +952,7 @@ public class StorageImpl extends Storage {
             if (header.root[curr].indexSize != header.root[curr].shadowIndexSize) {
                 throw new StorageError(StorageError.DATABASE_CORRUPTED);
             }           
-            pool.open(file);
-            if (header.dirty) { 
+            if (isDirty()) { 
                 if (listener != null) {
                     listener.databaseCorrupted();
                 }
@@ -2073,10 +2084,13 @@ public class StorageImpl extends Storage {
 
     public void beginThreadTransaction(int mode)
     {
-        if (mode == SERIALIZABLE_TRANSACTION) { 
+        switch (mode) {
+        case SERIALIZABLE_TRANSACTION:
             useSerializableTransactions = true;
-            getTransactionContext().nested += 1;;
-        } else { 
+            getTransactionContext().nested += 1;
+            break;
+        case EXCLUSIVE_TRANSACTION:
+        case COOPERATIVE_TRANSACTION:
             synchronized (transactionMonitor) {
                 if (scheduledCommitTime != Long.MAX_VALUE) { 
                     nBlockedTransactions += 1;
@@ -2094,7 +2108,14 @@ public class StorageImpl extends Storage {
             } else { 
                 transactionLock.sharedLock();
             }
+            break;
+        default:
+            throw new IllegalArgumentException("Illegal transaction mode");
         }
+    }
+
+    public void endThreadTransaction() { 
+        endThreadTransaction(Integer.MAX_VALUE);
     }
 
     public void endThreadTransaction(int maxDelay)
@@ -2209,7 +2230,7 @@ public class StorageImpl extends Storage {
                 gcThread.join();
             } catch (InterruptedException x) {}
         }
-        if (header.dirty) { 
+        if (isDirty()) { 
             Page pg = pool.putPage(0);
             header.pack(pg.data);
             pool.flush();
@@ -2319,6 +2340,9 @@ public class StorageImpl extends Storage {
         if ((value = props.getProperty("perst.lock.file")) != null) { 
             lockFile = getBooleanValue(value);
         }
+        if ((value = props.getProperty("perst.replication.ack")) != null) { 
+            replicationAck = getBooleanValue(value);
+        }
     }
 
     public void setProperty(String name, Object value)
@@ -2349,6 +2373,8 @@ public class StorageImpl extends Storage {
             encoding = (value == null) ? null : value.toString();
         } else if (name.equals("perst.lock.file")) { 
             lockFile = getBooleanValue(value);
+        } else if (name.equals("perst.replication.ack")) { 
+            replicationAck = getBooleanValue(value);
         } else { 
             throw new StorageError(StorageError.NO_SUCH_PROPERTY);
         }
@@ -3558,6 +3584,17 @@ public class StorageImpl extends Storage {
         return offs;
     }
                 
+    public ClassLoader setClassLoader(ClassLoader loader) 
+    { 
+        ClassLoader prev = loader;
+        this.loader = loader;
+        return prev;
+    }
+
+    public ClassLoader getClassLoader() {
+        return loader;
+    }
+
     private int     initIndexSize = dbDefaultInitIndexSize;
     private int     objectCacheInitSize = dbDefaultObjectCacheInitSize;
     private long    extensionQuantum = dbDefaultExtensionQuantum;
@@ -3568,6 +3605,8 @@ public class StorageImpl extends Storage {
     private boolean alternativeBtree = false;
     private boolean backgroundGc = false;
     
+    boolean replicationAck = false;
+
     String    encoding = null; 
 
     PagePool  pool;
@@ -3601,6 +3640,8 @@ public class StorageImpl extends Storage {
     Object    backgroundGcMonitor;
     Object    backgroundGcStartMonitor;
     GcThread  gcThread;
+
+    ClassLoader loader;
 
     StorageListener listener;
 

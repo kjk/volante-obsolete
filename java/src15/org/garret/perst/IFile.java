@@ -26,7 +26,7 @@ public interface IFile {
      * Flush all fiels changes to the disk
      */
     void sync();
-    
+        
     /**
      * Lock file
      * @return <code>true</code> if file was successfully locked or locking in not implemented,
@@ -38,4 +38,10 @@ public interface IFile {
      * Close file
      */
     void close();
+
+    /**
+     * Length of the file
+     * @return length of file in bytes
+     */
+    long length();
 }

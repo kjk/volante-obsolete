@@ -24,4 +24,8 @@ public class NullFile implements IFile
     }
 
     public void close() {}
+
+    public long length() { 
+        return 0;
+    }
 }

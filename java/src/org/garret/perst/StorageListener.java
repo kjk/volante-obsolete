@@ -37,4 +37,15 @@ public abstract class StorageListener {
      * @param nDeallocatedObjects number of deallocated objects
      */
     public void gcCompleted(int nDeallocatedObjects) {}
+
+    /**
+     * Handle replication error 
+     * @param host address of host replication to which is failed (null if error jappens at slave node)
+     * @return <code>true</code> if host should be reconnected and attempt to send data to it should be 
+     * repeated, <code>false</code> if no more attmpts to communicate with this host should be performed 
+     */
+    public boolean replicationError(String host) {
+        return false;
+    }        
 }
+     

@@ -3,7 +3,7 @@ package org.garret.perst;
 /**
  * Exception throw by storage implementation
  */
-public class StorageError extends Error { 
+public class StorageError extends RuntimeException { 
     public static final int STORAGE_NOT_OPENED     = 1;
     public static final int STORAGE_ALREADY_OPENED = 2;
     public static final int FILE_ACCESS_ERROR      = 3;

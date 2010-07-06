@@ -89,6 +89,15 @@ public class OSFile implements IFile {
         }
     }
 
+    public long length() {
+        try { 
+            return file.length();
+        } catch (IOException x) { 
+            return -1;
+        }
+    }
+
+
     protected RandomAccessFile file;
     protected boolean          noFlush;
 }

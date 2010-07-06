@@ -1,7 +1,7 @@
 package org.garret.perst.impl;
 import  org.garret.perst.*;
 
-public class Rc4File extends OSFile 
+public class Rc4File implements IFile 
 { 
     public void write(long pos, byte[] buf) 
     {
@@ -11,20 +11,20 @@ public class Rc4File extends OSFile
                 encrypt(zeroPage, 0, zeroPage, 0, Page.pageSize);
             }
             do { 
-                super.write(length, zeroPage);
+                file.write(length, zeroPage);
             } while ((length += Page.pageSize) < pos);
         } 
         if (pos == length) { 
             length += Page.pageSize;
         }        
         encrypt(buf, 0, cipherBuf, 0, buf.length);
-        super.write(pos, cipherBuf);
+        file.write(pos, cipherBuf);
     }
 
     public int read(long pos, byte[] buf) 
     { 
         if (pos < length) { 
-            int rc = super.read(pos, buf);
+            int rc = file.read(pos, buf);
             decrypt(buf, 0, buf, 0, rc);
             return rc;
         } 
@@ -33,12 +33,15 @@ public class Rc4File extends OSFile
 
     public Rc4File(String filePath, boolean readOnly, boolean noFlush, String key) 
     { 
-        super(filePath, readOnly, noFlush);
-        try { 
-            length = file.length() & ~(Page.pageSize-1);
-        } catch(java.io.IOException x) { 
-            throw new StorageError(StorageError.FILE_ACCESS_ERROR, x);
-        }
+        file = new OSFile(filePath, readOnly, noFlush);
+        length = file.length() & ~(Page.pageSize-1);
+        setKey(key.getBytes());
+    }
+
+    public Rc4File(IFile file, String key) 
+    { 
+        this.file = file;
+        length = file.length() & ~(Page.pageSize-1);
         setKey(key.getBytes());
     }
 
@@ -88,6 +91,23 @@ public class Rc4File extends OSFile
 	return (state[x] + state[y]) & 0xff;
     }
 
+    public void close() { 
+        file.close();
+    }
+
+    public boolean lock() { 
+        return file.lock();
+    }
+
+    public void sync() { 
+        file.sync();
+    }
+
+    public long length() {
+        return file.length();
+    }
+
+    private IFile  file;
     private byte[] cipherBuf = new byte[Page.pageSize];
     private byte[] initState = new byte[256];
     private byte[] state = new byte[256];

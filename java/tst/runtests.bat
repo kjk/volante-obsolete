@@ -35,4 +35,5 @@ call TestTimeSeries
 call TestBit
 call TestThickIndex
 call TestSet
-
+start TestReplic master
+call TestReplic slave

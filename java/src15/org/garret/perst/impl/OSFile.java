@@ -4,7 +4,6 @@ import  org.garret.perst.*;
 import java.lang.reflect.*;
 import java.io.*;
 
-
 public class OSFile implements IFile { 
     public void write(long pos, byte[] buf) 
     {
@@ -45,7 +44,6 @@ public class OSFile implements IFile {
             throw new StorageError(StorageError.FILE_ACCESS_ERROR, x);
         }
     }
-
 
     public boolean lock() 
     { 
@@ -90,6 +88,15 @@ public class OSFile implements IFile {
             throw new StorageError(StorageError.FILE_ACCESS_ERROR, x);
         }
     }
+
+    public long length() {
+        try { 
+            return file.length();
+        } catch (IOException x) { 
+            return -1;
+        }
+    }
+
 
     protected RandomAccessFile file;
     protected boolean          noFlush;
