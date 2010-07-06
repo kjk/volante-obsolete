@@ -212,3 +212,8 @@ of pack/unpack methods.
 --- Release version 2.22 10.04.2004 -------------------------------------
 1. Fix bug in dbTimeSeries class
 2. Implement reallocatable bitmap (now database size is not limited by dbDatabaseOffsetBits constant)
+
+--- Release version 2.23 09.05.2004 -------------------------------------
+1. Make StorageImpl.swizzle and StorageImpl.unswizzle method protected to be allow
+their redefinition in derived class.
+2. Fix problem with parsing ulong literals in XMLImport

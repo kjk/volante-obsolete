@@ -96,7 +96,7 @@ namespace Perst.Impl
          
         int getBitmapPageId(int i) 
         { 
-             return i < dbBitmapPages ? dbBitmapId + i : header.root[1-currIndex].bitmapExtent + i;
+            return i < dbBitmapPages ? dbBitmapId + i : header.root[1-currIndex].bitmapExtent + i;
         }
 
         internal long getPos(int oid)
@@ -2073,7 +2073,7 @@ namespace Perst.Impl
                         { 
                             system.allocatedSize = getBitmapUsedSpace(dbBitmapId, dbBitmapId+dbBitmapPages)
                                 +  getBitmapUsedSpace(header.root[currIndex].bitmapExtent, 
-                                                      header.root[currIndex].bitmapExtent + header.root[currIndex].bitmapEnd-dbBitmapId);
+                                header.root[currIndex].bitmapExtent + header.root[currIndex].bitmapEnd-dbBitmapId);
                         } 
                         else 
                         { 
@@ -2165,6 +2165,24 @@ namespace Perst.Impl
                         continue;
 #if SUPPORT_RAW_TYPE
                     case ClassDescriptor.FieldType.tpRaw:
+                    {
+                        int len = Bytes.unpack4(obj, offs);
+                        offs += 4;
+                        if (len > 0) 
+                        { 
+                            offs += len;
+                        } 
+                        else if (len == -2-(int)ClassDescriptor.FieldType.tpObject) 
+                        {
+                            markOid(Bytes.unpack4(obj, offs));
+                            offs += 4;
+                        }
+                        else if (len < -1) 
+                        { 
+                            offs += ClassDescriptor.Sizeof[-2-len];
+                        }
+                        continue;
+                    }
 #endif
                     case ClassDescriptor.FieldType.tpArrayOfByte:
                     case ClassDescriptor.FieldType.tpArrayOfSByte:
@@ -2175,7 +2193,7 @@ namespace Perst.Impl
                         if (len > 0) 
                         { 
                             offs += len;
-                        }
+                        } 
                         continue;
                     }
                     case ClassDescriptor.FieldType.tpArrayOfShort:
@@ -2266,6 +2284,15 @@ namespace Perst.Impl
                             if (rawlen >= 0) 
                             { 
                                 offs += rawlen;
+                            }
+                            else if (rawlen == -2-(int)ClassDescriptor.FieldType.tpObject) 
+                            {
+                                markOid(Bytes.unpack4(obj, offs));
+                                offs += 4;
+                            }
+                            else if (rawlen < -1) 
+                            { 
+                                offs += ClassDescriptor.Sizeof[-2-rawlen];
                             }
                         }
                         continue;
@@ -2623,7 +2650,7 @@ namespace Perst.Impl
             return obj;
         }
 		
-        internal int swizzle(IPersistent obj)
+        protected virtual int swizzle(IPersistent obj)
         {
             int oid = 0;
             if (obj != null)
@@ -2643,7 +2670,7 @@ namespace Perst.Impl
                                                                                                                                             
         }
 
-        internal IPersistent unswizzle(int oid, System.Type cls, bool recursiveLoading)
+        protected virtual IPersistent unswizzle(int oid, System.Type cls, bool recursiveLoading)
         {
             if (oid == 0)
             {
@@ -2796,6 +2823,10 @@ namespace Perst.Impl
                     { 
                         offs += len;
                     }
+                    else if (len < -1) 
+                    { 
+                        offs += ClassDescriptor.Sizeof[-2-len];
+                    }
                     break;
                 case ClassDescriptor.FieldType.tpArrayOfShort:
                 case ClassDescriptor.FieldType.tpArrayOfUShort:
@@ -2841,7 +2872,7 @@ namespace Perst.Impl
                             offs += 4;
                             if (strlen > 0) 
                             {
-                                len += strlen*2;
+                                offs += strlen*2;
                             }
                         }
                     }
@@ -2872,6 +2903,10 @@ namespace Perst.Impl
                             {
                                 len += rawlen;
                             }
+                            else if (rawlen < -1) 
+                            { 
+                                offs += ClassDescriptor.Sizeof[-2-rawlen];
+                            }
                         }
                     }
                     break;
@@ -2880,6 +2915,93 @@ namespace Perst.Impl
             return offs;
         }
                
+#if SUPPORT_RAW_TYPE
+        private int unpackRawValue(byte[] body, int offs, out object val, bool recursiveLoading) 
+        {
+            int len = Bytes.unpack4(body, offs);
+            offs += 4;
+            if (len >= 0)
+            {
+                System.IO.MemoryStream ms = new System.IO.MemoryStream(body, offs, len);
+                val = objectFormatter.Deserialize(ms);
+                ms.Close();
+                offs += len;
+            } 
+            else 
+            { 
+                switch ((ClassDescriptor.FieldType)(-2-len)) 
+                { 
+                    case ClassDescriptor.FieldType.tpBoolean:
+                        val = body[offs++] != 0;
+                        break;
+                    case ClassDescriptor.FieldType.tpByte:
+                        val = body[offs++];
+                        break;                            
+                    case ClassDescriptor.FieldType.tpSByte:
+                        val = (sbyte)body[offs++];
+                        break;                            
+                    case ClassDescriptor.FieldType.tpChar:
+                        val = (char)Bytes.unpack2(body, offs);
+                        offs += 2;
+                        break;                            
+                    case ClassDescriptor.FieldType.tpShort:
+                        val = Bytes.unpack2(body, offs);
+                        offs += 2;
+                        break;                            
+                    case ClassDescriptor.FieldType.tpUShort:
+                        val = (ushort)Bytes.unpack2(body, offs);
+                        offs += 2;
+                        break;                            
+                    case ClassDescriptor.FieldType.tpInt:
+                        val = Bytes.unpack4(body, offs);
+                        offs += 4;
+                        break;                            
+                    case ClassDescriptor.FieldType.tpUInt:
+                        val = (uint)Bytes.unpack4(body, offs);
+                        offs += 4;
+                        break;                            
+                    case ClassDescriptor.FieldType.tpLong:
+                        val = Bytes.unpack8(body, offs);
+                        offs += 8;
+                        break;                            
+                    case ClassDescriptor.FieldType.tpULong:
+                        val = (ulong)Bytes.unpack8(body, offs);
+                        offs += 8;
+                        break;                            
+                    case ClassDescriptor.FieldType.tpFloat:
+                        val = Bytes.unpackF4(body, offs);
+                        offs += 4;
+                        break;                            
+                    case ClassDescriptor.FieldType.tpDouble:
+                        val = Bytes.unpackF8(body, offs);
+                        offs += 8;
+                        break;                            
+                    case ClassDescriptor.FieldType.tpDate:
+                        val = Bytes.unpackDate(body, offs);
+                        offs += 8;
+                        break;                                                       
+                    case ClassDescriptor.FieldType.tpGuid:
+                        val = Bytes.unpackGuid(body, offs);
+                        offs += 8;
+                        break;                                                       
+                    case ClassDescriptor.FieldType.tpDecimal:
+                        val = Bytes.unpackDecimal(body, offs);
+                        offs += 8;
+                        break;                                                       
+                    case ClassDescriptor.FieldType.tpObject:
+                        val = unswizzle(Bytes.unpack4(body, offs), 
+                            typeof(Persistent), 
+                            recursiveLoading);
+                        offs += 4;
+                        break;
+                    default:
+                        val = null;
+                        break;
+                }
+            }    
+            return offs;
+        }
+#endif					
 
         public int unpackField(byte[] body, int offs, bool recursiveLoading, ref object val, ClassDescriptor.FieldDescriptor fd, ClassDescriptor.FieldType type)
 
@@ -2991,15 +3113,7 @@ namespace Perst.Impl
 					
 #if SUPPORT_RAW_TYPE
                 case ClassDescriptor.FieldType.tpRaw: 
-                    len = Bytes.unpack4(body, offs);
-                    offs += 4;
-                    if (len >= 0)
-                    {
-                        System.IO.MemoryStream ms = new System.IO.MemoryStream(body, offs, len);
-                        val = objectFormatter.Deserialize(ms);
-                        ms.Close();
-                        offs += len;
-                    }
+                    offs = unpackRawValue(body, offs, out val, recursiveLoading);
                     break;
 #endif					
                 case ClassDescriptor.FieldType.tpArrayOfByte: 
@@ -3377,15 +3491,9 @@ namespace Perst.Impl
                         ClassDescriptor valueDesc = fd.valueDesc;
                         for (int j = 0; j < len; j++) 
                         { 
-                            int rawlen = Bytes.unpack4(body, offs);
-                            offs += 4;
-                            if (rawlen >= 0) 
-                            {
-                                System.IO.MemoryStream ms = new System.IO.MemoryStream(body, offs, rawlen);
-                                arr.SetValue(objectFormatter.Deserialize(ms), j);
-                                ms.Close();
-                                offs += rawlen;
-                            }
+                            object elem;
+                            offs = unpackRawValue(body, offs, out elem, recursiveLoading);
+                            arr.SetValue(elem, j);
                         }
                         val = arr;
                     }
@@ -3455,7 +3563,150 @@ namespace Perst.Impl
             return offs;
         }            
     
-        public int packField(ByteBuffer buf, int offs, object val, ClassDescriptor.FieldDescriptor fd, ClassDescriptor.FieldType type)
+#if SUPPORT_RAW_TYPE
+        public int packRawValue(ByteBuffer buf, int offs, object val)
+        {
+            if (val == null)
+            {
+                buf.extend(offs + 4);
+                Bytes.pack4(buf.arr, offs, - 1);
+                offs += 4;
+            }
+            else if (val is IPersistent) 
+            { 
+                buf.extend(offs + 8);
+                Bytes.pack4(buf.arr, offs, -2-(int)ClassDescriptor.FieldType.tpObject);
+                Bytes.pack4(buf.arr, offs+4, swizzle((IPersistent)val));
+                offs += 8;                        
+            } 
+            else 
+            {
+                Type t = val.GetType();
+                if (t == typeof(bool)) 
+                {
+                    buf.extend(offs + 5);
+                    Bytes.pack4(buf.arr, offs, -2-(int)ClassDescriptor.FieldType.tpBoolean);
+                    buf.arr[offs+4] = (byte)((bool)val ? 1 : 0);
+                    offs += 5;                   
+                } 
+                else if (t == typeof(char)) 
+                {
+                    buf.extend(offs + 6);
+                    Bytes.pack4(buf.arr, offs, -2-(int)ClassDescriptor.FieldType.tpChar);
+                    Bytes.pack2(buf.arr, offs+4, (short)(char)val);
+                    offs += 6;                         
+                } 
+                else if (t == typeof(byte)) 
+                { 
+                    buf.extend(offs + 5);
+                    Bytes.pack4(buf.arr, offs, -2-(int)ClassDescriptor.FieldType.tpByte);
+                    buf.arr[offs+4] = (byte)val;
+                    offs += 5; 
+                } 
+                else if (t == typeof(sbyte)) 
+                { 
+                    buf.extend(offs + 5);
+                    Bytes.pack4(buf.arr, offs, -2-(int)ClassDescriptor.FieldType.tpSByte);
+                    buf.arr[offs+4] = (byte)(sbyte)val;
+                    offs += 5; 
+                } 
+                else if (t == typeof(short)) 
+                {
+                    buf.extend(offs + 6);
+                    Bytes.pack4(buf.arr, offs, -2-(int)ClassDescriptor.FieldType.tpShort);
+                    Bytes.pack2(buf.arr, offs+4, (short)val);
+                    offs += 6;                                                   
+                } 
+                else if (t == typeof(ushort)) 
+                {
+                    buf.extend(offs + 6);
+                    Bytes.pack4(buf.arr, offs, -2-(int)ClassDescriptor.FieldType.tpUShort);
+                    Bytes.pack2(buf.arr, offs+4, (short)(ushort)val);
+                    offs += 6; 
+                } 
+                else if (t == typeof(int)) 
+                {
+                    buf.extend(offs + 8);
+                    Bytes.pack4(buf.arr, offs, -2-(int)ClassDescriptor.FieldType.tpInt);
+                    Bytes.pack4(buf.arr, offs+4, (int)val);
+                    offs += 8;                       
+                } 
+                else if (t == typeof(uint)) 
+                {
+                    buf.extend(offs + 8);
+                    Bytes.pack4(buf.arr, offs, -2-(int)ClassDescriptor.FieldType.tpUInt);
+                    Bytes.pack4(buf.arr, offs+4, (int)(uint)val);
+                    offs += 8;                       
+                } 
+                else if (t == typeof(long)) 
+                {
+                    buf.extend(offs + 12);
+                    Bytes.pack4(buf.arr, offs, -2-(int)ClassDescriptor.FieldType.tpLong);
+                    Bytes.pack8(buf.arr, offs+4, (long)val);
+                    offs += 12; 
+                } 
+                else if (t == typeof(ulong)) 
+                {   
+                    buf.extend(offs + 12);
+                    Bytes.pack4(buf.arr, offs, -2-(int)ClassDescriptor.FieldType.tpULong);
+                    Bytes.pack8(buf.arr, offs+4, (long)(ulong)val);
+                    offs += 12; 
+                } 
+                else if (t == typeof(float)) 
+                {
+                    buf.extend(offs + 8);
+                    Bytes.pack4(buf.arr, offs, -2-(int)ClassDescriptor.FieldType.tpFloat);
+                    Bytes.packF4(buf.arr, offs+4, (float)val);
+                    offs += 8;                              
+                } 
+                else if (t == typeof(double)) 
+                {
+                    buf.extend(offs + 12);
+                    Bytes.pack4(buf.arr, offs, -2-(int)ClassDescriptor.FieldType.tpDouble);
+                    Bytes.packF8(buf.arr, offs+4, (double)val);
+                    offs += 12;
+                } 
+                else if (t == typeof(DateTime)) 
+                {
+                    buf.extend(offs + 12);
+                    Bytes.pack4(buf.arr, offs, -2-(int)ClassDescriptor.FieldType.tpDate);
+                    Bytes.packDate(buf.arr, offs+4, (DateTime)val);
+                    offs += 12;                                                   
+                } 
+                else if (t == typeof(Guid)) 
+                {
+                    buf.extend(offs + 12);
+                    Bytes.pack4(buf.arr, offs, -2-(int)ClassDescriptor.FieldType.tpGuid);
+                    Bytes.packGuid(buf.arr, offs+4, (Guid)val);
+                    offs += 12;                                                   
+                } 
+                else if (t == typeof(Decimal)) 
+                {
+                    buf.extend(offs + 12);
+                    Bytes.pack4(buf.arr, offs, -2-(int)ClassDescriptor.FieldType.tpDecimal);
+                    Bytes.packDecimal(buf.arr, offs+4, (decimal)val);
+                    offs += 12;                                                   
+                } 
+                else 
+                {
+                    System.IO.MemoryStream ms = new System.IO.MemoryStream();
+                    objectFormatter.Serialize(ms, val);
+                    ms.Close();
+                    byte[] arr = ms.ToArray();
+                    int len = arr.Length;
+                    buf.extend(offs + 4 + len);
+                    Bytes.pack4(buf.arr, offs, len);
+                    offs += 4;
+                    Array.Copy(arr, 0, buf.arr, offs, len);
+                    offs += len;
+                }
+            }
+            return offs;
+        }
+#endif
+
+
+public int packField(ByteBuffer buf, int offs, object val, ClassDescriptor.FieldDescriptor fd, ClassDescriptor.FieldType type)
         {
             switch (type)
             {
@@ -3499,29 +3750,7 @@ namespace Perst.Impl
  
 #if SUPPORT_RAW_TYPE
                 case ClassDescriptor.FieldType.tpRaw:
-                    if (val == null)
-                    {
-                        buf.extend(offs + 4);
-                        Bytes.pack4(buf.arr, offs, - 1);
-                        offs += 4;
-                    } 
-                    else if (val is IPersistent) 
-                    { 
-                        throw new StorageError(StorageError.ErrorCode.SERIALIZE_PERSISTENT);
-                    }
-                    else
-                    {
-                        System.IO.MemoryStream ms = new System.IO.MemoryStream();
-                        objectFormatter.Serialize(ms, val);
-                        ms.Close();
-                        byte[] arr = ms.ToArray();
-                        int len = arr.Length;
-                        buf.extend(offs + 4 + len);
-                        Bytes.pack4(buf.arr, offs, len);
-                        offs += 4;
-                        Array.Copy(arr, 0, buf.arr, offs, len);
-                        offs += len;
-                    }
+                    offs = packRawValue(buf, offs, val);
                     break;
 #endif
                 case ClassDescriptor.FieldType.tpArrayOfByte: 
@@ -3952,26 +4181,7 @@ namespace Perst.Impl
                         offs += 4;
                         for (int j = 0; j < len; j++)
                         {
-                            Object raw = arr.GetValue(j);
-                            if (raw == null)
-                            {
-                                buf.extend(offs + 4);
-                                Bytes.pack4(buf.arr, offs, -1);
-                                offs += 4;
-                            }
-                            else
-                            {
-                                System.IO.MemoryStream ms = new System.IO.MemoryStream();
-                                objectFormatter.Serialize(ms, raw);
-                                ms.Close();
-                                byte[] rawarr = ms.ToArray();
-                                int rawlen = rawarr.Length;
-                                buf.extend(offs + 4 + rawlen);
-                                Bytes.pack4(buf.arr, offs, rawlen);
-                                offs += 4;
-                                Array.Copy(rawarr, 0, buf.arr, offs, rawlen);
-                                offs += len;
-                            }
+                            offs = packRawValue(buf, offs, arr.GetValue(j));
                         }
                     }
                     break;

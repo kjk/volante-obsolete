@@ -1916,7 +1916,8 @@ namespace Perst.Impl
                                         }
                                         else
                                         {
-                                            iconst = System.Int64.Parse(new String(sconst, 0, i));
+                                            iconst = sconst[0] == '-' ? System.Int64.Parse(new String(sconst, 0, i))
+                                                : (long)System.UInt64.Parse(new String(sconst, 0, i));
                                             return Token.ICONST;
                                         }
                                     }
