@@ -9,7 +9,6 @@ namespace Perst.Impl
         internal Page   freePages;
         internal Page[] hashTable;
         internal int    poolSize;
-        internal long   fileSize;
         internal bool   autoExtended;
         internal IFile  file;
 		
@@ -83,10 +82,6 @@ namespace Perst.Impl
                                 {
                                     dirtyPages[pg.writeQueueIndex] = dirtyPages[--nDirtyPages];
                                     dirtyPages[pg.writeQueueIndex].writeQueueIndex = pg.writeQueueIndex;
-                                }
-                                if (pg.offs >= fileSize)
-                                {
-                                    fileSize = pg.offs + Page.pageSize;
                                 }
                             }
                         }
@@ -186,10 +181,27 @@ namespace Perst.Impl
             unfix(srcPage);
         }
 		
-        internal void  open(IFile f, long size)
+        internal void write(long dstPos, byte[] src) 
+        {
+            Assert.that((dstPos & (Page.pageSize-1)) == 0);
+            Assert.that((src.Length & (Page.pageSize-1)) == 0);
+            for (int i = 0; i < src.Length;) 
+            { 
+                Page pg = find(dstPos, Page.psDirty);
+                byte[] dst = pg.data;
+                for (int j = 0; j < Page.pageSize; j++) 
+                { 
+                    dst[j] = src[i++];
+                }
+                unfix(pg);
+                dstPos += Page.pageSize;
+            }
+        }
+
+
+        internal void open(IFile f)
         {
             file = f;
-            fileSize = size;
             hashTable = new Page[poolSize];
             dirtyPages = new Page[poolSize];
             nDirtyPages = 0;
@@ -322,7 +334,6 @@ namespace Perst.Impl
 
         internal virtual void  flush()
         {
-            long maxOffs;
             lock(this)
             {
                 flushing = true;
@@ -331,7 +342,6 @@ namespace Perst.Impl
 #else
                 Array.Sort(dirtyPages, 0, nDirtyPages);
 #endif
-                maxOffs = fileSize;
             }
             for (int i = 0; i < nDirtyPages; i++)
             {
@@ -342,20 +352,12 @@ namespace Perst.Impl
                     {
                         file.write(pg.offs, pg.data);
                         pg.state &= ~ Page.psDirty;
-                        if (pg.offs >= maxOffs)
-                        {
-                            maxOffs = pg.offs + Page.pageSize;
-                        }
                     }
                 }
             }
             file.sync();
             nDirtyPages = 0;
             flushing = false;
-            if (maxOffs > fileSize)
-            {
-                fileSize = maxOffs;
-            }
         }
     }
 }

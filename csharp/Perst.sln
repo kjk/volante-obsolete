@@ -45,6 +45,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestSSD", "TestSSD\TestSSD.
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestTtree", "TestTtree\TestTtree.csproj", "{9D66F041-EE49-452E-A882-6E6431E92318}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfiguration) = preSolution
 		Debug = Debug
@@ -91,6 +95,10 @@ Global
 		{107C5E43-9BB6-4FA2-B6A2-AA8D8A4D3898}.Debug.Build.0 = Debug|.NET
 		{107C5E43-9BB6-4FA2-B6A2-AA8D8A4D3898}.Release.ActiveCfg = Release|.NET
 		{107C5E43-9BB6-4FA2-B6A2-AA8D8A4D3898}.Release.Build.0 = Release|.NET
+		{9D66F041-EE49-452E-A882-6E6431E92318}.Debug.ActiveCfg = Debug|.NET
+		{9D66F041-EE49-452E-A882-6E6431E92318}.Debug.Build.0 = Debug|.NET
+		{9D66F041-EE49-452E-A882-6E6431E92318}.Release.ActiveCfg = Release|.NET
+		{9D66F041-EE49-452E-A882-6E6431E92318}.Release.Build.0 = Release|.NET
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 	EndGlobalSection

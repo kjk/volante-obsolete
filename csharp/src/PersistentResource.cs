@@ -2,6 +2,7 @@ namespace Perst
 {
     using System;
     using System.Threading;
+    using System.Collections;
 	
     /// <summary>Base class for persistent capable objects supporting locking
     /// </summary>
@@ -52,7 +53,7 @@ namespace Perst
                 queueStart = queueEnd = ctx;
             }                            
             ctx.exclusive = exclusive;
-
+ 
             Monitor.Exit(this);
             ctx.evt.WaitOne();
 
@@ -60,7 +61,6 @@ namespace Perst
             {
                 ctx.next = freeContexts;
                 freeContexts = ctx;
-                ctx = null;
             }
         }
 
@@ -109,30 +109,29 @@ namespace Perst
 
         private void notify() 
         {
-            lock (this) 
-            {
-                WaitContext ctx = queueStart;
-                while (ctx != null) 
-                { 
-                    if (ctx.exclusive) 
+            WaitContext next, ctx = queueStart;
+            while (ctx != null) 
+            { 
+                if (ctx.exclusive) 
+                {
+                    if (nReaders == 0) 
                     {
-                        if (nReaders == 0) 
-                        {
-                            nWriters = 1;
-                            ctx.evt.Set();
-                            ctx = ctx.next;
-                        } 
-                        break;
-                    } 
-                    else 
-                    {
-                        nReaders += 1;
+                        nWriters = 1;
+                        next = ctx.next;
                         ctx.evt.Set();
-                        ctx = ctx.next;
-                     }
+                        ctx = next;
+                    } 
+                    break;
+                } 
+                else 
+                {
+                    nReaders += 1;
+                    next = ctx.next;
+                    ctx.evt.Set();
+                    ctx = next;
                 }
-                queueStart = ctx;
             }
+            queueStart = ctx;
         }
 
         

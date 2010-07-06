@@ -20,7 +20,7 @@ public class TestGC {
     static public void Main(String[] args) {	
         Storage db = StorageFactory.Instance.createStorage();
 
-	db.open("testgc.dbs");
+	    db.open("testgc.dbs");
         db.setGcThreshold(1000000);
         StorageRoot root = new StorageRoot();
         root.strIndex = db.createIndex(typeof(String), true);

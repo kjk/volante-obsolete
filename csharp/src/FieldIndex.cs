@@ -11,8 +11,16 @@ namespace Perst
     /// (each boundary can be specified or unspecified and can be inclusive or exclusive)
     /// Key should be of scalar, String, DateTime or peristent object type.
     /// </summary>
-    public interface FieldIndex : IPersistent, IEnumerable
+    public interface FieldIndex : IPersistent, IEnumerable, ICollection
     {
+        /// <summary> Access element by key
+        /// </summary>
+        IPersistent this[object key] 
+        {
+            get;
+            set;
+        }       
+
         /// <summary> Get object by key (exact match)     
         /// </summary>
         /// <param name="key">specified key wrapper. It should match with type of the index and should be inclusive.

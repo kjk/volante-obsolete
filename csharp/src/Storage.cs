@@ -12,7 +12,10 @@ namespace Perst
         /// Previous reference to the root object is rewritten but old root is not automatically deallocated.
         /// </summary>
         abstract public IPersistent Root {get; set;}
-        
+      
+        abstract public IPersistent getRoot();
+        abstract public void setRoot(IPersistent root);
+
         /// <summary> 
         /// Constant specifying that page pool should be dynamically extended 
         /// to conatins all database file pages
@@ -128,6 +131,14 @@ namespace Perst
         /// persistent object implementing spatial index
         /// </returns>
         abstract public SpatialIndex createSpatialIndex();
+
+        /// <summary>
+        /// Create new sorted collection
+        /// </summary>
+        /// <param name="comparator">comparator class specifying order in the collection</param>
+        /// <param name="unique"> whether collection is unique (members with the same key value are not allowed)</param>
+        /// <returns> persistent object implementing sorted collection</returns>
+        abstract public SortedCollection createSortedCollection(PersistentComparator comparator, bool unique);
 
         /// <summary>
         /// Create new object set

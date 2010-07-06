@@ -12,6 +12,14 @@ namespace Perst.Impl
 
         internal Rtree() {}
 
+        public int Count 
+        { 
+            get 
+            {
+                return n;
+            }
+        }
+
         public void put(Rectangle r, IPersistent obj) 
         {
             if (!obj.isPersistent()) 

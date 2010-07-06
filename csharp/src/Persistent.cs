@@ -109,6 +109,15 @@ namespace Perst
         {
         }
         
+
+        ~Persistent() 
+        {
+            if ((state & (int)ObjectState.DIRTY) != 0) 
+            { 
+                store();
+            }
+        }
+
         [NonSerialized()]
         internal Storage storage;
         [NonSerialized()]

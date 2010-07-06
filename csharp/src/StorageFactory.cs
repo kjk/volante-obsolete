@@ -7,6 +7,10 @@ namespace Perst
     /// </summary>
     public class StorageFactory
     {
+        /// <summary> Get instance of storage factory.
+        /// So new storages should be create in application in the following way:
+        /// <code>StorageFactory.Instance.createStorage()</code>
+        /// </summary>
         public static StorageFactory Instance
         {
             get
@@ -15,6 +19,19 @@ namespace Perst
             }
 			
         }
+
+        /// <summary> Get instance of storage factory.
+        /// So new storages should be create in application in the following way:
+        /// <code>StorageFactory.getInstance().createStorage()</code>
+        /// </summary>
+        /// <returns>instance of the storage factory
+        /// 
+        /// </returns>
+        public static StorageFactory getStorage() 
+        {
+            return instance;
+        }
+
         /// <summary> Create new instance of the storage
         /// </summary>
         /// <param name="new">instance of the storage (unopened,you should explicitely invoke open method)
@@ -29,13 +46,6 @@ namespace Perst
 #endif
         }
 		
-        /// <summary> Get instance of storage factory.
-        /// So new storages should be create in application in the following way:
-        /// <code>StorageFactory.getInstance().createStorage()</code>
-        /// </summary>
-        /// <returns>instance of the storage factory
-        /// 
-        /// </returns>
 		
         protected internal static StorageFactory instance = new StorageFactory();
     }

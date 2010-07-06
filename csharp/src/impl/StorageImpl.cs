@@ -52,6 +52,16 @@ namespace Perst.Impl
             }
 			
         }
+        public override  IPersistent getRoot() 
+        {
+            return this.Root;
+        }
+
+        public override  void setRoot(IPersistent root) 
+        {
+            this.Root = root;
+        }
+
         /// <summary> Initialial database index size - increasing it reduce number of inde reallocation but increase
         /// initial database size. Should be set before openning connection.
         /// </summary>
@@ -835,7 +845,6 @@ namespace Perst.Impl
                     ? (OidHashTable)new StrongHashTable(dbObjectCacheInitSize) 
                     : (OidHashTable)new WeakHashTable(dbObjectCacheInitSize);
                 classDescMap = new Hashtable();
-                modifiedList = new ArrayList();
                 descList = null;
 				
 #if SUPPORT_RAW_TYPE
@@ -877,18 +886,25 @@ namespace Perst.Impl
                     int bitmapSize = bitmapPages * Page.pageSize;
                     int usedBitmapSize = (int) ((used + bitmapSize) >> (dbAllocationQuantumBits + 3));
 					
-                    byte[] bitmap = new byte[bitmapSize];
-                    for (i = 0; i < usedBitmapSize; i++)
-                    {
-                        bitmap[i] = (byte) 0xFF;
+                    pool.open(file);
+
+                    for (i = 0; i < bitmapPages; i++) 
+                    { 
+                        pg = pool.putPage(used + i*Page.pageSize);
+                        byte[] bitmap = pg.data;
+                        for (int j = 0; j < Page.pageSize; j++) 
+                        { 
+                            bitmap[j] = (byte)0xFF;
+                        }
+                        pool.unfix(pg);
                     }
-                    file.write(used, bitmap);
+                    
                     int bitmapIndexSize = ((dbBitmapId + dbBitmapPages) * 8 + Page.pageSize - 1) & ~ (Page.pageSize - 1);
                     byte[] index = new byte[bitmapIndexSize];
                     Bytes.pack8(index, dbInvalidId * 8, dbFreeHandleFlag);
                     for (i = 0; i < bitmapPages; i++)
                     {
-                        Bytes.pack8(index, (dbBitmapId + i) * 8, used | dbPageObjectFlag | dbModifiedFlag);
+                        Bytes.pack8(index, (dbBitmapId + i) * 8, used | dbPageObjectFlag);
                         used += Page.pageSize;
                     }
                     header.root[0].bitmapEnd = dbBitmapId + i;
@@ -898,26 +914,14 @@ namespace Perst.Impl
                         Bytes.pack8(index, (dbBitmapId + i) * 8, dbFreeHandleFlag);
                         i += 1;
                     }
-                    file.write(header.root[1].index, index);
                     header.root[0].size = used;
                     header.root[1].size = used;
                     usedSize = used;
                     committedIndexSize = currIndexSize = dbFirstUserId;
-                    pool.open(file, used);
 					
-                    long indexPage = header.root[1].index;
-                    long lastIndexPage = indexPage + header.root[1].bitmapEnd * 8;
-                    while (indexPage < lastIndexPage)
-                    {
-                        pg = pool.putPage(indexPage);
-                        for (i = 0; i < Page.pageSize; i += 8)
-                        {
-                            Bytes.pack8(pg.data, i, Bytes.unpack8(pg.data, i) & ~ dbModifiedFlag);
-                        }
-                        pool.unfix(pg);
-                        indexPage += Page.pageSize;
-                    }
-                    pool.copy(header.root[0].index, header.root[1].index, currIndexSize * 8);
+                    pool.write(header.root[1].index, index);
+                    pool.write(header.root[0].index, index);
+
                     header.dirty = true;
                     header.root[0].size = header.root[1].size;
                     pg = pool.putPage(0);
@@ -937,7 +941,7 @@ namespace Perst.Impl
                     {
                         throw new StorageError(StorageError.ErrorCode.DATABASE_CORRUPTED);
                     }
-                    pool.open(file, header.root[curr].size);
+                    pool.open(file);
                     if (header.dirty)
                     {
                         System.Console.WriteLine("Database was not normally closed: start recovery");
@@ -968,7 +972,6 @@ namespace Perst.Impl
                 }
                 reloadScheme();
                 opened = true;
-                new ModifiedListSupervisor(this);
             }
         }
 
@@ -1060,41 +1063,18 @@ namespace Perst.Impl
             return desc;
         }
 		
-        class ModifiedListSupervisor 
-        { 
-            ~ModifiedListSupervisor() 
-            { 
-                storage.truncateModifiedList = true;
-                new ModifiedListSupervisor(storage);
-            }
-
-            internal ModifiedListSupervisor(StorageImpl storage) 
-            { 
-                this.storage = storage;
-            }
-            private StorageImpl storage;
-        }
-
-        internal void storeModifiedObjects() 
-        {
-            foreach (IPersistent p in modifiedList) 
-            {
-                p.store();
-            }
-            modifiedList.Clear();
-        }    
-
-
-
+            
+ 
         public override void  commit()
         {
+            if (!opened)
+            {
+                throw new StorageError(StorageError.ErrorCode.STORAGE_NOT_OPENED);
+            }
+            objectCache.flush();
+           
             lock(this)
             {
-                if (!opened)
-                {
-                    throw new StorageError(StorageError.ErrorCode.STORAGE_NOT_OPENED);
-                }
-                storeModifiedObjects();
                 if (modified)
                 {
                     int curr = currIndex;
@@ -1269,14 +1249,15 @@ namespace Perst.Impl
 		
         public override void  rollback()
         {
+            if (!opened)
+            {
+                throw new StorageError(StorageError.ErrorCode.STORAGE_NOT_OPENED);
+            }
+            objectCache.flush();
+            objectCache.clear();
+
             lock(this)
             {
-                if (!opened)
-                {
-                    throw new StorageError(StorageError.ErrorCode.STORAGE_NOT_OPENED);
-                }
-                objectCache.clear();
-                modifiedList.Clear();
                 if (!modified) 
                 { 
                     return;
@@ -1348,6 +1329,15 @@ namespace Perst.Impl
             }
         }
 		
+        public override SortedCollection createSortedCollection(PersistentComparator comparator, bool unique) 
+        {
+            if (!opened) 
+            { 
+                throw new StorageError(StorageError.ErrorCode.STORAGE_NOT_OPENED);
+            }        
+            return new Ttree(comparator, unique);
+        }
+
         public override ISet createSet() 
         {
             lock(this)
@@ -1729,16 +1719,7 @@ namespace Perst.Impl
 
         public override void  close()
         {
-            lock(this)
-            {
-                if (!opened)
-                {
-                    throw new StorageError(StorageError.ErrorCode.STORAGE_NOT_OPENED);
-                }
-                if (modified)
-                {
-                    commit();
-                }
+            commit();
                 opened = false;
                 if (header.dirty)
                 {
@@ -1759,7 +1740,6 @@ namespace Perst.Impl
                 bitmapPageAvailableSpace = null;
                 dirtyPagesMap = null;
                 descList = null;
-            }
         }
 		
         public override IPersistent getObjectByOID(int oid)
@@ -1769,24 +1749,17 @@ namespace Perst.Impl
 
         protected internal override void modifyObject(IPersistent obj) 
         {
-            lock(this)
-            {
-                if (truncateModifiedList) 
-                { 
-                    storeModifiedObjects();
-                    truncateModifiedList = false;
-                }
-                if (!obj.isModified()) 
-                {
-                    modifiedList.Add(obj);
-                }
-            }
+            objectCache.setDirty(obj.Oid);
         }
 
         protected internal override void storeObject(IPersistent obj)
         {
             lock(this)
             {
+                if (!opened) 
+                {
+                    return;
+                }
                 int oid = obj.Oid;
                 bool newObject = false;
                 if (oid == 0)
@@ -1795,7 +1768,12 @@ namespace Perst.Impl
                     objectCache.put(oid, obj);
                     setObjectOid(obj, oid, false);
                     newObject = true;
+                } 
+                else if (obj.isModified()) 
+                { 
+                    objectCache.clearDirty(oid);
                 }
+
                 byte[] data= packObject(obj);
                 long pos;
                 int newSize = ObjectHeader.getSize(data, 0);
@@ -3183,8 +3161,6 @@ namespace Perst.Impl
         internal bool      gcDone;
         internal int       btreeClassOid;
         internal int       btree2ClassOid;
-        internal ArrayList modifiedList;
-        internal bool      truncateModifiedList;
 
         internal OidHashTable    objectCache;
         internal Hashtable       classDescMap;

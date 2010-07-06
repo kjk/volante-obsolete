@@ -15,7 +15,7 @@ public class TestRtree : Persistent {
         SpatialObject so;
         Rectangle r;
         DateTime start = DateTime.Now;
-	db.open("testrtree.dbs");
+	    db.open("testrtree.dbs");
         TestRtree root = (TestRtree)db.Root;
         if (root == null) { 
             root = new TestRtree();

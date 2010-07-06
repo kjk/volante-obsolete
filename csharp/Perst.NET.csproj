@@ -18,7 +18,7 @@
                 OutputType = "Library"
                 PreBuildEvent = ""
                 PostBuildEvent = ""
-                RootNamespace = ""
+                RootNamespace = "Perst"
                 RunPostBuildEvent = "OnBuildSuccess"
                 StartupObject = ""
             >
@@ -148,6 +148,11 @@
                     BuildAction = "Compile"
                 />
                 <File
+                    RelPath = "src\PersistentComparator.cs"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
                     RelPath = "src\PersistentResource.cs"
                     SubType = "Code"
                     BuildAction = "Compile"
@@ -159,6 +164,11 @@
                 />
                 <File
                     RelPath = "src\Relation.cs"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "src\SortedCollection.cs"
                     SubType = "Code"
                     BuildAction = "Compile"
                 />
@@ -284,6 +294,16 @@
                 />
                 <File
                     RelPath = "src\impl\StrongHashTable.cs"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "src\impl\Ttree.cs"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "src\impl\TtreePage.cs"
                     SubType = "Code"
                     BuildAction = "Compile"
                 />

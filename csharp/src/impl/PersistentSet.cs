@@ -12,29 +12,6 @@ namespace Perst.Impl
             unique = true;
         }
 
-        public int Count 
-        { 
-            get 
-            {
-                return nElems;
-            }
-        }
-        public bool IsSynchronized 
-        {
-            get 
-            {
-                return true;
-            }
-        }
-
-        public object SyncRoot 
-        {
-            get 
-            {
-                return this;
-            }
-        }
-
 
         public bool Contains(IPersistent o) 
         {
@@ -145,14 +122,6 @@ namespace Perst.Impl
                 h += o.Oid;
             }
             return h;
-        }
-
-        public void CopyTo(Array dst, int i) 
-        {
-            foreach (object o in this) 
-            { 
-                dst.SetValue(o, i++);
-            }
         }
     }
 }

@@ -54,6 +54,50 @@ namespace Perst.Impl
         internal const int op_duplicate = 4;
         internal const int op_overwrite = 5;
 		
+        public int Count 
+        { 
+            get 
+            {
+                return nElems;
+            }
+        }
+
+        public bool IsSynchronized 
+        {
+            get 
+            {
+                return true;
+            }
+        }
+
+        public object SyncRoot 
+        {
+            get 
+            {
+                return this;
+            }
+        }
+
+        public void CopyTo(Array dst, int i) 
+        {
+            foreach (object o in this) 
+            { 
+                dst.SetValue(o, i++);
+            }
+        }
+
+        public IPersistent this[object key] 
+        {
+            get 
+            {
+                return get(key);
+            }
+            set 
+            {
+                set(key, (IPersistent)value);
+            }
+        } 
+      
         public virtual IPersistent get(Key key)
         {
             if (key.type != type)

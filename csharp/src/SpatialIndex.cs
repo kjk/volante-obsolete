@@ -10,6 +10,15 @@ namespace Perst
     public interface SpatialIndex : IPersistent, IResource
     {
         /// <summary>
+        /// Get number of objects in the index
+        /// </summary>
+        int Count 
+        { 
+            get;
+        }
+                
+                
+        /// <summary>
         /// Find all objects located in the selected rectangle
         /// </summary>
         /// <param name="r">selected rectangle
