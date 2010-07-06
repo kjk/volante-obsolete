@@ -19,7 +19,7 @@ public class TestIndexIterator {
     static public void main(String[] args) {	
         Storage db = StorageFactory.getInstance().createStorage();
 
-	db.open("testidx.dbs", pagePoolSize);
+	db.open("testidx2.dbs", pagePoolSize);
         Indices root = (Indices)db.getRoot();
         if (root == null) { 
             root = new Indices();

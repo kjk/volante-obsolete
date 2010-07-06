@@ -6,7 +6,6 @@ class PagePool {
     Page    freePages;
     Page    hashTable[];
     int     poolSize;
-    long    fileSize;
     boolean autoExtended;
     IFile   file;
 
@@ -66,9 +65,6 @@ class PagePool {
 			    if (!flushing) { 
 				dirtyPages[pg.writeQueueIndex] = dirtyPages[--nDirtyPages];
 				dirtyPages[pg.writeQueueIndex].writeQueueIndex = pg.writeQueueIndex;
-			    }
-			    if (pg.offs >= fileSize) { 
-				fileSize = pg.offs + Page.pageSize;
 			    }
 			}
 		    }
@@ -154,10 +150,24 @@ class PagePool {
 	unfix(srcPage);
     }
 
-    final void open(IFile f, long size) 
+    final void write(long dstPos, byte[] src) 
+    {
+        Assert.that((dstPos & (Page.pageSize-1)) == 0);
+        Assert.that((src.length & (Page.pageSize-1)) == 0);
+        for (int i = 0; i < src.length;) { 
+            Page pg = find(dstPos, Page.psDirty);
+            byte[] dst = pg.data;
+            for (int j = 0; j < Page.pageSize; j++) { 
+                dst[j] = src[i++];
+            }
+            unfix(pg);
+            dstPos += Page.pageSize;
+        }
+    }
+
+    final void open(IFile f) 
     {
 	file = f;
-	fileSize = size;
 	hashTable = new Page[poolSize];
 	dirtyPages = new Page[poolSize];
 	nDirtyPages = 0;
@@ -254,11 +264,9 @@ class PagePool {
     }
 
     void flush() { 
-	long maxOffs;
 	synchronized (this) { 
 	    flushing = true;
 	    java.util.Arrays.sort(dirtyPages, 0, nDirtyPages); 
-	    maxOffs = fileSize;
 	}
 	for (int i = 0; i < nDirtyPages; i++) { 
 	    Page pg = dirtyPages[i];
@@ -266,18 +274,12 @@ class PagePool {
 		if ((pg.state & Page.psDirty) != 0) { 
 		    file.write(pg.offs, pg.data);
 		    pg.state &= ~Page.psDirty;
-		    if (pg.offs >= maxOffs) { 
-			maxOffs = pg.offs + Page.pageSize;
-		    }
 		}
 	    }
 	}	    
 	file.sync();
         nDirtyPages = 0;
         flushing = false;
-        if (maxOffs > fileSize) { 
-            fileSize = maxOffs;
-        }
     }
 }
 

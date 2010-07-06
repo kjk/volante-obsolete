@@ -48,6 +48,11 @@ public class Persistent implements IPersistent {
         }
     }
 
+    protected void finalize() { 
+        if ((state & DIRTY) != 0) { 
+            store();
+        }
+    }
 
 
     public final int getOid() {
@@ -57,6 +62,7 @@ public class Persistent implements IPersistent {
     public void deallocate() { 
         if (storage != null) { 
             storage.deallocateObject(this);
+            state = 0;
             storage = null;
         }
     }
@@ -79,6 +85,8 @@ public class Persistent implements IPersistent {
 
     public void onLoad() {
     }
+
+    
 
     transient Storage storage;
     transient int     oid;

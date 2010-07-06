@@ -1,0 +1,9 @@
+del *.dbs
+call TestIndex
+call TestIndexIterator
+call TestRtree
+call TestTtree
+call TestRaw
+call TestGC
+call TestConcur
+call TestXML

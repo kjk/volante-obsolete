@@ -840,9 +840,9 @@ class Btree extends PersistentResource implements Index {
         }
             
         protected Object getCurrent(Page pg, int pos) { 
-            return (type == ClassDescriptor.tpString)
+            return (this.type == ClassDescriptor.tpString)
                 ? new BtreeEntry(db, unpackStrKey(pg, pos), BtreePage.getKeyStrOid(pg, pos))
-                : new BtreeEntry(db, unpackKey(db, pg, pos, type), BtreePage.getReference(pg, BtreePage.maxItems-1-pos));
+                : new BtreeEntry(db, unpackKey(db, pg, pos, this.type), BtreePage.getReference(pg, BtreePage.maxItems-1-pos));
         }
     }
 

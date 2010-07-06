@@ -135,6 +135,14 @@ public abstract class Storage {
     abstract public SpatialIndex createSpatialIndex();
 
     /**
+     * Create new sorted collection
+     * @param comparator comparator class specifying order in the collection
+     * @param unique whether index is collection (members with the same key value are not allowed)
+     * @return persistent object implementing sorted collection
+     */
+    abstract public SortedCollection createSortedCollection(PersistentComparator comparator, boolean unique);
+
+    /**
      * Create one-to-many link.
      * @return new empty link, new members can be added to the link later.
      */

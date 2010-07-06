@@ -698,23 +698,6 @@ public class StorageImpl extends Storage {
 	}
     }
 
-    class ModifiedListSupervisor { 
-        protected void finalize() { 
-            truncateModifiedList = true;
-            new ModifiedListSupervisor();
-        }
-    }
-
-    final void storeModifiedObjects() { 
-        int i = modifiedList.size();
-        if (i != 0) { 
-            while (--i >= 0) { 
-                ((IPersistent)modifiedList.get(i)).store();
-            }
-            modifiedList.clear();
-        }
-    }
-        
     public synchronized void open(String filePath, int pagePoolSize) {
         OSFile file = new OSFile(filePath);      
         try {
@@ -755,7 +738,6 @@ public class StorageImpl extends Storage {
             ? (OidHashTable)new StrongHashTable(dbObjectCacheInitSize) 
             : (OidHashTable)new WeakHashTable(dbObjectCacheInitSize);
         classDescMap = new HashMap();
-        modifiedList = new ArrayList();
         descList = null;
         
 	header = new Header();
@@ -793,18 +775,23 @@ public class StorageImpl extends Storage {
 	    int bitmapSize = bitmapPages*Page.pageSize;
 	    int usedBitmapSize = (int)((used + bitmapSize) >>> (dbAllocationQuantumBits + 3));
 
-	    byte[] bitmap = new byte[bitmapSize];
-	    for (i = 0; i < usedBitmapSize; i++) { 
-		bitmap[i] = (byte)0xFF;
+	    pool.open(file);
+
+            for (i = 0; i < bitmapPages; i++) { 
+                pg = pool.putPage(used + i*Page.pageSize);
+                byte[] bitmap = pg.data;
+                for (int j = 0; j < Page.pageSize; j++) { 
+                    bitmap[j] = (byte)0xFF;
+                }
+                pool.unfix(pg);
 	    }
-	    file.write(used, bitmap);
 	    int bitmapIndexSize = 
 		((dbBitmapId + dbBitmapPages)*8 + Page.pageSize - 1)
 		& ~(Page.pageSize - 1);
 	    byte[] index = new byte[bitmapIndexSize];
 	    Bytes.pack8(index, dbInvalidId*8, dbFreeHandleFlag);
 	    for (i = 0; i < bitmapPages; i++) { 
-		Bytes.pack8(index, (dbBitmapId+i)*8, used | dbPageObjectFlag | dbModifiedFlag);
+		Bytes.pack8(index, (dbBitmapId+i)*8, used | dbPageObjectFlag);
 		used += Page.pageSize;
 	    }
 	    header.root[0].bitmapEnd = dbBitmapId + i;
@@ -813,25 +800,14 @@ public class StorageImpl extends Storage {
 		Bytes.pack8(index, (dbBitmapId+i)*8, dbFreeHandleFlag);
 		i += 1;
 	    }
-	    file.write(header.root[1].index, index);
 	    header.root[0].size = used;
 	    header.root[1].size = used;
             usedSize = used;
 	    committedIndexSize = currIndexSize = dbFirstUserId;
-	    pool.open(file, used);
 
-	    long indexPage = header.root[1].index;
-	    long lastIndexPage = indexPage + header.root[1].bitmapEnd*8;
-	    while (indexPage < lastIndexPage) { 
-		pg = pool.putPage(indexPage);
-		for (i = 0; i < Page.pageSize; i += 8) { 
-		    Bytes.pack8(pg.data, i, 
-				Bytes.unpack8(pg.data, i) & ~dbModifiedFlag);
-		}
-		pool.unfix(pg);
-		indexPage += Page.pageSize;
-	    }
-	    pool.copy(header.root[0].index, header.root[1].index, currIndexSize*8);
+            pool.write(header.root[1].index, index);
+	    pool.write(header.root[0].index, index);
+
 	    header.dirty = true;
 	    header.root[0].size = header.root[1].size;
 	    pg = pool.putPage(0);
@@ -848,7 +824,7 @@ public class StorageImpl extends Storage {
 	    if (header.root[curr].indexSize != header.root[curr].shadowIndexSize) {
                 throw new StorageError(StorageError.DATABASE_CORRUPTED);
 	    }		
-	    pool.open(file, header.root[curr].size);
+	    pool.open(file);
 	    if (header.dirty) { 
 		System.err.println("Database was not normally closed: start recovery");
 		header.root[1-curr].size = header.root[curr].size;
@@ -879,7 +855,6 @@ public class StorageImpl extends Storage {
 	}
         reloadScheme();
         opened = true;
-        new ModifiedListSupervisor();
     }
 
     public boolean isOpened() { 
@@ -969,202 +944,208 @@ public class StorageImpl extends Storage {
     }
 
 
-    public synchronized void commit() 
+    public void commit() 
     {
-        int i, j, n;
-        if (!opened) {
-            throw new StorageError(StorageError.STORAGE_NOT_OPENED);
-        }
-        storeModifiedObjects();
-	if (modified) { 
-	    int curr = currIndex;
-	    int[] map = dirtyPagesMap;
-	    int oldIndexSize = header.root[curr].indexSize;
-	    int newIndexSize = header.root[1-curr].indexSize;
-	    int nPages = committedIndexSize >>> dbHandlesPerPageBits;
-	    Page pg;
-	    if (newIndexSize > oldIndexSize) { 
-		long newIndex = allocate(newIndexSize*8, 0);
-		header.root[1-curr].shadowIndex = newIndex;
-		header.root[1-curr].shadowIndexSize = newIndexSize;
-		cloneBitmap(header.root[curr].index, oldIndexSize*8);
-		free(header.root[curr].index, oldIndexSize*8);
-	    }
-	    for (i = 0; i < nPages; i++) { 
-		if ((map[i >> 5] & (1 << (i & 31))) != 0) { 
-		    Page srcIndex = pool.getPage(header.root[1-curr].index+i*Page.pageSize);
-		    Page dstIndex = pool.getPage(header.root[curr].index+i*Page.pageSize);
-		    for (j = 0; j < Page.pageSize; j += 8) {
-			long pos = Bytes.unpack8(dstIndex.data, j);
-			if (Bytes.unpack8(srcIndex.data, j) != pos) { 
-			    if ((pos & dbFreeHandleFlag) == 0) {
-				if ((pos & dbPageObjectFlag) != 0) {  
-				    free(pos & ~dbFlagsMask, Page.pageSize);
-				} else { 
-				    int offs = (int)pos & (Page.pageSize-1);
-				    pg = pool.getPage(pos-offs);
-				    free(pos, ObjectHeader.getSize(pg.data, offs));
-				    pool.unfix(pg);
-				}
-			    }
-			}
-		    }
-		    pool.unfix(srcIndex);
-		    pool.unfix(dstIndex);
-		}
-	    }
-	    n = committedIndexSize & (dbHandlesPerPage-1);
-	    if (n != 0 && (map[i >> 5] & (1 << (i & 31))) != 0) { 
-		Page srcIndex = pool.getPage(header.root[1-curr].index+i*Page.pageSize);
-		Page dstIndex = pool.getPage(header.root[curr].index+i*Page.pageSize);
-		j = 0;
-		do { 
-		    long pos = Bytes.unpack8(dstIndex.data, j);
-		    if (Bytes.unpack8(srcIndex.data, j) != pos) { 
-			if ((pos & dbFreeHandleFlag) == 0) {
-			    if ((pos & dbPageObjectFlag) != 0) { 
-				free(pos & ~dbFlagsMask, Page.pageSize);
-			    } else { 
-				int offs = (int)pos & (Page.pageSize-1);
-				pg = pool.getPage(pos - offs);
-				free(pos, ObjectHeader.getSize(pg.data, offs));
-				pool.unfix(pg);
-			    }
-			}
-		    }
-		    j += 8;
-		} while (--n != 0);
+        objectCache.flush();
+        synchronized (this) { 
+            int i, j, n;
+            if (!opened) {
+                throw new StorageError(StorageError.STORAGE_NOT_OPENED);
+            }
+            
+            if (modified) { 
+                int curr = currIndex;
+                int[] map = dirtyPagesMap;
+                int oldIndexSize = header.root[curr].indexSize;
+                int newIndexSize = header.root[1-curr].indexSize;
+                int nPages = committedIndexSize >>> dbHandlesPerPageBits;
+                Page pg;
+                if (newIndexSize > oldIndexSize) { 
+                    long newIndex = allocate(newIndexSize*8, 0);
+                    header.root[1-curr].shadowIndex = newIndex;
+                    header.root[1-curr].shadowIndexSize = newIndexSize;
+                    cloneBitmap(header.root[curr].index, oldIndexSize*8);
+                    free(header.root[curr].index, oldIndexSize*8);
+                }
+                for (i = 0; i < nPages; i++) { 
+                    if ((map[i >> 5] & (1 << (i & 31))) != 0) { 
+                        Page srcIndex = pool.getPage(header.root[1-curr].index+i*Page.pageSize);
+                        Page dstIndex = pool.getPage(header.root[curr].index+i*Page.pageSize);
+                        for (j = 0; j < Page.pageSize; j += 8) {
+                            long pos = Bytes.unpack8(dstIndex.data, j);
+                            if (Bytes.unpack8(srcIndex.data, j) != pos) { 
+                                if ((pos & dbFreeHandleFlag) == 0) {
+                                    if ((pos & dbPageObjectFlag) != 0) {  
+                                        free(pos & ~dbFlagsMask, Page.pageSize);
+                                    } else { 
+                                        int offs = (int)pos & (Page.pageSize-1);
+                                        pg = pool.getPage(pos-offs);
+                                        free(pos, ObjectHeader.getSize(pg.data, offs));
+                                        pool.unfix(pg);
+                                    }
+                                }
+                            }
+                        }
+                        pool.unfix(srcIndex);
+                        pool.unfix(dstIndex);
+                    }
+                }
+                n = committedIndexSize & (dbHandlesPerPage-1);
+                if (n != 0 && (map[i >> 5] & (1 << (i & 31))) != 0) { 
+                    Page srcIndex = pool.getPage(header.root[1-curr].index+i*Page.pageSize);
+                    Page dstIndex = pool.getPage(header.root[curr].index+i*Page.pageSize);
+                    j = 0;
+                    do { 
+                        long pos = Bytes.unpack8(dstIndex.data, j);
+                        if (Bytes.unpack8(srcIndex.data, j) != pos) { 
+                            if ((pos & dbFreeHandleFlag) == 0) {
+                                if ((pos & dbPageObjectFlag) != 0) { 
+                                    free(pos & ~dbFlagsMask, Page.pageSize);
+                                } else { 
+                                    int offs = (int)pos & (Page.pageSize-1);
+                                    pg = pool.getPage(pos - offs);
+                                    free(pos, ObjectHeader.getSize(pg.data, offs));
+                                    pool.unfix(pg);
+                                }
+                            }
+                        }
+                        j += 8;
+                    } while (--n != 0);
 
-		pool.unfix(srcIndex);
-		pool.unfix(dstIndex);
-	    }
-	    for (i = 0; i <= nPages; i++) { 
-		if ((map[i >> 5] & (1 << (i & 31))) != 0) { 
-		    pg = pool.putPage(header.root[1-curr].index+i*Page.pageSize);
-		    for (j = 0; j < Page.pageSize; j += 8) {
-			Bytes.pack8(pg.data, j, Bytes.unpack8(pg.data, j) & ~dbModifiedFlag);
-		    }
-		    pool.unfix(pg);
-		}
-	    }
-	    if (currIndexSize > committedIndexSize) { 
-		long page = (header.root[1-curr].index 
-			   + committedIndexSize*8) & ~(Page.pageSize-1);
-		long end = (header.root[1-curr].index + Page.pageSize - 1
-			    + currIndexSize*8) & ~(Page.pageSize-1);
-		while (page < end) { 
-		    pg = pool.putPage(page);
-		    for (j = 0; j < Page.pageSize; j += 8) {
-			Bytes.pack8(pg.data, j, Bytes.unpack8(pg.data, j) & ~dbModifiedFlag);
-		    }
-		    pool.unfix(pg);
-		    page += Page.pageSize;
-		}
-	    }
-	    header.root[1-curr].usedSize = usedSize;
-	    pg = pool.putPage(0);
-	    header.pack(pg.data);
-	    pool.flush();
-            pool.modify(pg);
-            header.curr = curr ^= 1;
-            header.dirty = true;
-            header.pack(pg.data);
-	    pool.unfix(pg);
-	    pool.flush();
+                    pool.unfix(srcIndex);
+                    pool.unfix(dstIndex);
+                }
+                for (i = 0; i <= nPages; i++) { 
+                    if ((map[i >> 5] & (1 << (i & 31))) != 0) { 
+                        pg = pool.putPage(header.root[1-curr].index+i*Page.pageSize);
+                        for (j = 0; j < Page.pageSize; j += 8) {
+                            Bytes.pack8(pg.data, j, Bytes.unpack8(pg.data, j) & ~dbModifiedFlag);
+                        }
+                        pool.unfix(pg);
+                    }
+                }
+                if (currIndexSize > committedIndexSize) { 
+                    long page = (header.root[1-curr].index 
+                                 + committedIndexSize*8) & ~(Page.pageSize-1);
+                    long end = (header.root[1-curr].index + Page.pageSize - 1
+                                + currIndexSize*8) & ~(Page.pageSize-1);
+                    while (page < end) { 
+                        pg = pool.putPage(page);
+                        for (j = 0; j < Page.pageSize; j += 8) {
+                            Bytes.pack8(pg.data, j, Bytes.unpack8(pg.data, j) & ~dbModifiedFlag);
+                        }
+                        pool.unfix(pg);
+                        page += Page.pageSize;
+                    }
+                }
+                header.root[1-curr].usedSize = usedSize;
+                pg = pool.putPage(0);
+                header.pack(pg.data);
+                pool.flush();
+                pool.modify(pg);
+                header.curr = curr ^= 1;
+                header.dirty = true;
+                header.pack(pg.data);
+                pool.unfix(pg);
+                pool.flush();
 	    
-	    header.root[1-curr].size = header.root[curr].size;
-	    header.root[1-curr].indexUsed = currIndexSize; 
-	    header.root[1-curr].freeList  = header.root[curr].freeList; 
-	    header.root[1-curr].bitmapEnd = header.root[curr].bitmapEnd; 
-	    header.root[1-curr].rootObject = header.root[curr].rootObject; 
-	    header.root[1-curr].classDescList = header.root[curr].classDescList; 
+                header.root[1-curr].size = header.root[curr].size;
+                header.root[1-curr].indexUsed = currIndexSize; 
+                header.root[1-curr].freeList  = header.root[curr].freeList; 
+                header.root[1-curr].bitmapEnd = header.root[curr].bitmapEnd; 
+                header.root[1-curr].rootObject = header.root[curr].rootObject; 
+                header.root[1-curr].classDescList = header.root[curr].classDescList; 
 	    
-	    if (currIndexSize == 0 || newIndexSize != oldIndexSize) {
-		if (currIndexSize == 0) { 
-		    currIndexSize = header.root[1-curr].indexUsed;
-		}
-		header.root[1-curr].index = header.root[curr].shadowIndex;
-		header.root[1-curr].indexSize = header.root[curr].shadowIndexSize;
-		header.root[1-curr].shadowIndex = header.root[curr].index;
-		header.root[1-curr].shadowIndexSize = header.root[curr].indexSize;
-		pool.copy(header.root[1-curr].index, header.root[curr].index,
-			  currIndexSize*8);
-		i = (currIndexSize+dbHandlesPerPage*32-1) >>> (dbHandlesPerPageBits+5);
-		while (--i >= 0) { 
-		    map[i] = 0;
-		}
-	    } else { 
-		for (i = 0; i < nPages; i++) { 
-		    if ((map[i >> 5] & (1 << (i & 31))) != 0) { 
-			map[i >> 5] -= (1 << (i & 31));
-			pool.copy(header.root[1-curr].index + i*Page.pageSize,
-				  header.root[curr].index + i*Page.pageSize,
-				  Page.pageSize);
-		    }
-		}
-		if (currIndexSize > i*dbHandlesPerPage &&
-		    ((map[i >> 5] & (1 << (i & 31))) != 0
-		     || currIndexSize != committedIndexSize))
-		{
-		    pool.copy(header.root[1-curr].index + i*Page.pageSize,
-			      header.root[curr].index + i*Page.pageSize,
-			      8*currIndexSize - i*Page.pageSize);
-		    j = i>>>5;
-		    n = (currIndexSize + dbHandlesPerPage*32 - 1) >>> (dbHandlesPerPageBits+5); 
-		    while (j < n) { 
-			map[j++] = 0;
-		    }
-		}
-	    }
-            modified = false;
-            gcDone = false;
-            currIndex = curr;
-            committedIndexSize = currIndexSize;
-	}
+                if (currIndexSize == 0 || newIndexSize != oldIndexSize) {
+                    if (currIndexSize == 0) { 
+                        currIndexSize = header.root[1-curr].indexUsed;
+                    }
+                    header.root[1-curr].index = header.root[curr].shadowIndex;
+                    header.root[1-curr].indexSize = header.root[curr].shadowIndexSize;
+                    header.root[1-curr].shadowIndex = header.root[curr].index;
+                    header.root[1-curr].shadowIndexSize = header.root[curr].indexSize;
+                    pool.copy(header.root[1-curr].index, header.root[curr].index,
+                              currIndexSize*8);
+                    i = (currIndexSize+dbHandlesPerPage*32-1) >>> (dbHandlesPerPageBits+5);
+                    while (--i >= 0) { 
+                        map[i] = 0;
+                    }
+                } else { 
+                    for (i = 0; i < nPages; i++) { 
+                        if ((map[i >> 5] & (1 << (i & 31))) != 0) { 
+                            map[i >> 5] -= (1 << (i & 31));
+                            pool.copy(header.root[1-curr].index + i*Page.pageSize,
+                                      header.root[curr].index + i*Page.pageSize,
+                                      Page.pageSize);
+                        }
+                    }
+                    if (currIndexSize > i*dbHandlesPerPage &&
+                        ((map[i >> 5] & (1 << (i & 31))) != 0
+                         || currIndexSize != committedIndexSize))
+                    {
+                        pool.copy(header.root[1-curr].index + i*Page.pageSize,
+                                  header.root[curr].index + i*Page.pageSize,
+                                  8*currIndexSize - i*Page.pageSize);
+                        j = i>>>5;
+                        n = (currIndexSize + dbHandlesPerPage*32 - 1) >>> (dbHandlesPerPageBits+5); 
+                        while (j < n) { 
+                            map[j++] = 0;
+                        }
+                    }
+                }
+                modified = false;
+                gcDone = false;
+                currIndex = curr;
+                committedIndexSize = currIndexSize;
+            }
+        }
     }
 
-    public synchronized void rollback() {
-        if (!opened) {
-            throw new StorageError(StorageError.STORAGE_NOT_OPENED);
-        }
-        modifiedList.clear();
+    public void rollback() {
+        objectCache.flush();
         objectCache.clear();
-        if (!modified) { 
-            return;
+
+        synchronized (this) { 
+            if (!opened) {
+                throw new StorageError(StorageError.STORAGE_NOT_OPENED);
+            }
+            if (!modified) { 
+                return;
+            }
+            int curr = currIndex;
+            int[] map = dirtyPagesMap;
+            if (header.root[1-curr].index != header.root[curr].shadowIndex) { 
+                pool.copy(header.root[curr].shadowIndex, header.root[curr].index, 8*committedIndexSize);
+            } else { 
+                int nPages = (committedIndexSize + dbHandlesPerPage - 1) >>> dbHandlesPerPageBits;
+                for (int i = 0; i < nPages; i++) { 
+                    if ((map[i >> 5] & (1 << (i & 31))) != 0) { 
+                        pool.copy(header.root[curr].shadowIndex + i*Page.pageSize,
+                                  header.root[curr].index + i*Page.pageSize,
+                                  Page.pageSize);
+                    }
+                }
+            }
+            for (int j = (currIndexSize+dbHandlesPerPage*32-1) >>> (dbHandlesPerPageBits+5);
+                 --j >= 0;
+                 map[j] = 0);
+            header.root[1-curr].index = header.root[curr].shadowIndex;
+            header.root[1-curr].indexSize = header.root[curr].shadowIndexSize;
+            header.root[1-curr].indexUsed = committedIndexSize;
+            header.root[1-curr].freeList  = header.root[curr].freeList; 
+            header.root[1-curr].bitmapEnd = header.root[curr].bitmapEnd; 
+            header.root[1-curr].size = header.root[curr].size;
+            header.root[1-curr].rootObject = header.root[curr].rootObject;
+            header.root[1-curr].classDescList = header.root[curr].classDescList;
+            modified = false;
+            usedSize = header.root[curr].size;
+            currIndexSize = committedIndexSize;
+
+            currRBitmapPage = currPBitmapPage = dbBitmapId;
+            currRBitmapOffs = currPBitmapOffs = 0;
+
+            reloadScheme();
         }
-	int curr = currIndex;
-	int[] map = dirtyPagesMap;
-	if (header.root[1-curr].index != header.root[curr].shadowIndex) { 
-	    pool.copy(header.root[curr].shadowIndex, header.root[curr].index, 8*committedIndexSize);
-	} else { 
-	    int nPages = (committedIndexSize + dbHandlesPerPage - 1) >>> dbHandlesPerPageBits;
-	    for (int i = 0; i < nPages; i++) { 
-		if ((map[i >> 5] & (1 << (i & 31))) != 0) { 
-		    pool.copy(header.root[curr].shadowIndex + i*Page.pageSize,
-			      header.root[curr].index + i*Page.pageSize,
-			      Page.pageSize);
-		}
-	    }
-	}
-	for (int j = (currIndexSize+dbHandlesPerPage*32-1) >>> (dbHandlesPerPageBits+5);
-	     --j >= 0;
-	     map[j] = 0);
-	header.root[1-curr].index = header.root[curr].shadowIndex;
-	header.root[1-curr].indexSize = header.root[curr].shadowIndexSize;
-	header.root[1-curr].indexUsed = committedIndexSize;
-	header.root[1-curr].freeList  = header.root[curr].freeList; 
-	header.root[1-curr].bitmapEnd = header.root[curr].bitmapEnd; 
-	header.root[1-curr].size = header.root[curr].size;
-        header.root[1-curr].rootObject = header.root[curr].rootObject;
-        header.root[1-curr].classDescList = header.root[curr].classDescList;
-	modified = false;
-	usedSize = header.root[curr].size;
-        currIndexSize = committedIndexSize;
-
-	currRBitmapPage = currPBitmapPage = dbBitmapId;
-	currRBitmapOffs = currPBitmapOffs = 0;
-
-        reloadScheme();
     }
 
     public synchronized java.util.Set createSet() {
@@ -1189,9 +1170,7 @@ public class StorageImpl extends Storage {
         if (!opened) { 
             throw new StorageError(StorageError.STORAGE_NOT_OPENED);
         }
-        Rtree index = new Rtree();
-        setObjectOid(index, 0, false);
-        return index;
+        return new Rtree();
     }
 
     public synchronized FieldIndex createFieldIndex(Class type, String fieldName, boolean unique) {
@@ -1203,6 +1182,13 @@ public class StorageImpl extends Storage {
         return index;
     }
 
+    public SortedCollection createSortedCollection(PersistentComparator comparator, boolean unique) {
+        if (!opened) { 
+            throw new StorageError(StorageError.STORAGE_NOT_OPENED);
+        }        
+        return new Ttree(comparator, unique);
+    }
+        
     public Link createLink() {
         return new LinkImpl(8);
     }
@@ -1461,14 +1447,9 @@ public class StorageImpl extends Storage {
         return offs;
     }
 
-    public synchronized void close() 
+    public void close() 
     {
-        if (!opened) { 
-            throw new StorageError(StorageError.STORAGE_NOT_OPENED);
-        }
-	if (modified) { 
-	    commit();
-	}
+        commit();
 	opened = false;
 	if (header.dirty) { 
 	    Page pg = pool.putPage(0);
@@ -1529,17 +1510,14 @@ public class StorageImpl extends Storage {
     }
 
 
-    protected synchronized void modifyObject(IPersistent obj) {
-        if (truncateModifiedList) { 
-            storeModifiedObjects();
-            truncateModifiedList = false;
-        }
-        if (!obj.isModified()) {
-            modifiedList.add(obj);            
-        }
+    protected void modifyObject(IPersistent obj) {
+        objectCache.setDirty(obj.getOid());
     }
 
     protected synchronized void storeObject(IPersistent obj) {
+        if (!opened) {
+            return;
+        }
         int oid = obj.getOid();
         boolean newObject = false;
         if (oid == 0) { 
@@ -1547,7 +1525,9 @@ public class StorageImpl extends Storage {
             objectCache.put(oid, obj);
             setObjectOid(obj, oid, false);
             newObject = true;
-        }        
+        } else if (obj.isModified()) { 
+            objectCache.clearDirty(oid);
+        }
         byte[] data;
         data = packObject(obj);
 	long pos;
@@ -2486,8 +2466,6 @@ public class StorageImpl extends Storage {
     boolean   gcDone;
     int       btreeClassOid;
     int       btree2ClassOid;
-    ArrayList modifiedList;
-    boolean   truncateModifiedList;
 
     OidHashTable    objectCache;
     HashMap         classDescMap;

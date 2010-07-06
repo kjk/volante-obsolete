@@ -89,4 +89,12 @@ method is not invoked before transaction commit.
 
 --- Release version 1.21 07.10.2003 -------------------------------------
 
-1. Support of main-memory databases. 
+1. Support of main-memory databases.
+
+--- Release version 1.22 17.10.2003 -------------------------------------
+
+1. Add SortedCollection container class
+2. Fix bugs in main-memory database support
+3. Fix bug with lost modifications
+
+ 
