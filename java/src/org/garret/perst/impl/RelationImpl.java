@@ -74,6 +74,10 @@ public class RelationImpl extends Relation {
         return link.indexOf(obj);
     }
        
+    public boolean containsElement(int i, IPersistent obj) {
+        return link.containsElement(i, obj);
+    }
+
     public void clear() {
         link.clear();
         modify();

@@ -32,9 +32,7 @@ public class LinkImpl implements Link {
         for (int i = 0, n = used; i < n; i++) { 
             IPersistent elem = arr[i];
             if (elem != null && !elem.isRaw() && elem.isPersistent()) { 
-                IPersistent stub = new Persistent();
-                stub.assignOid(elem.getStorage(), elem.getOid(), true);
-                arr[i] = stub;
+                arr[i] = new PersistentStub(elem.getStorage(), elem.getOid());
             }
         }
     }
@@ -138,13 +136,19 @@ public class LinkImpl implements Link {
 
     public int indexOf(IPersistent obj) {
         for (int i = used; --i >= 0;) {
-            if (arr[i].equals(obj)) {
+            IPersistent elem = arr[i];
+            if (elem == obj || (elem != null && elem.getOid() == obj.getOid())) {
                 return i;
             }
         }
         return -1;
     }
     
+    public boolean containsElement(int i, IPersistent obj) {
+        IPersistent elem = arr[i];
+        return elem == obj || (elem != null && elem.getOid() == obj.getOid());
+    }
+
     public void clear() { 
         for (int i = used; --i >= 0;) { 
             arr[i] = null;
@@ -183,7 +187,7 @@ public class LinkImpl implements Link {
     private final IPersistent loadElem(int i) 
     {
         IPersistent elem = arr[i];
-        if (elem.isRaw()) { 
+        if (elem != null && elem.isRaw()) { 
             // arr[i] = elem = ((StorageImpl)elem.getStorage()).lookupObject(elem.getOid(), null);
             elem = ((StorageImpl)elem.getStorage()).lookupObject(elem.getOid(), null);
         }

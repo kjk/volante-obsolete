@@ -10,6 +10,9 @@ public class RtreeR2<T extends IPersistent> extends PersistentResource implement
     private transient int updateCounter;
 
     RtreeR2() {}
+    RtreeR2(Storage storage) {
+        super(storage);
+    }
 
     public void put(RectangleR2 r, T obj) {
         if (root == null) { 

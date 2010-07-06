@@ -150,6 +150,16 @@ public class Ttree<T extends IPersistent> extends PersistentResource implements 
     }
  
     /**
+     * T-Tree destructor
+     */
+    public void deallocate() {
+        if (root != null) { 
+            root.prune();
+        }
+        super.deallocate();
+    }
+
+    /**
      * Get all objects in the index as array ordered by index key.
      * @return array of objects in the index ordered by key value
      */

@@ -47,7 +47,7 @@ public interface Link<T extends IPersistent> extends Collection<T> {
      * @param i index of the object in the relation
      * @return stub representing referenced object
      */
-    public T getRaw(int i);
+    public IPersistent getRaw(int i);
 
     /**
      * Replace i-th element of the relation
@@ -107,7 +107,7 @@ public interface Link<T extends IPersistent> extends Collection<T> {
      * size of the array can be greater than actual number of members. 
      * @return array of object with relation members used in implementation of Link class
      */
-    T[] toRawArray(); 
+    public IPersistent[] toRawArray(); 
 
     /**
      * Get relation members as array of object
@@ -139,6 +139,14 @@ public interface Link<T extends IPersistent> extends Collection<T> {
     public boolean contains(Object obj);
 
     /**
+     * Check if i-th element of Link is the same as specified obj
+     * @param i element index
+     * @param obj object to compare with
+     * @return <code>true</code> if i-th element of Link reference the same object as "obj"
+     */
+    public boolean containsElement(int i, T obj);
+
+    /**
      * Get index of the specified object in the relation
      * @param obj specified object
      * @return zero based index of the object or -1 if object is not in the relation
@@ -154,6 +162,23 @@ public interface Link<T extends IPersistent> extends Collection<T> {
      * Get iterator through link members
      */
     public Iterator<T> iterator();
+
+    /**
+     * Replace all direct references to linked objects with stubs. 
+     * This method is needed tyo avoid memory exhaustion in case when 
+     * there is a large numebr of objectys in databasse, mutually
+     * refefencing each other (each object can directly or indirectly 
+     * be accessed from other objects).
+     */
+    public void unpin();
+     
+    /**
+     * Replace references to elements with direct references.
+     * It will impove spped of manipulations with links, but it can cause
+     * recursive loading in memory large number of objects and as a result - memory
+     * overflow, because garbage collector will not be able to collect them
+     */
+    public void pin();     
 }
 
 

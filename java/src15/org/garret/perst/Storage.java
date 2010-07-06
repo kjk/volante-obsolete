@@ -357,6 +357,14 @@ public abstract class Storage {
      * <TR><TD><code>perst.object.cache.init.size</code></TD><TD>Integer</TD><TD>1319</TD>
      * <TD>Initial size of object cache
      * </TD></TR>
+     * <TR><TD><code>perst.object.soft.cache</code></TD><TD>Boolean</TD><TD>false</TD>
+     * <TD>Use <i>soft references</i> in object cache instead of <i>weak references</i>.
+     * Garbage collector is not required to remove soft referenced objects immediately,
+     * so it may improve caching of objects. But it also may increase amount of memory
+     * used  by application, and as far as persistent object requires finalization
+     * it can cause memory overflow even though garbage collector is required
+     * to clear all soft references before throwing OutOfMemoryException.
+     * </TD></TR>
      * <TR><TD><code>perst.object.index.init.size</code></TD><TD>Integer</TD><TD>1024</TD>
      * <TD>Initial size of object index (specifying large value increase initial size of database, but reduce
      * number of index reallocations)

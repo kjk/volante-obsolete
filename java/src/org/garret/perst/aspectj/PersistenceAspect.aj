@@ -54,10 +54,12 @@ privileged public aspect PersistenceAspect {
         t.modify();
     }
     
-    public void AutoPersist.assignOid(Storage s, int o, boolean r) {
+    public void AutoPersist.assignOid(Storage s, int o, boolean raw) {
         oid = o;
         storage = s;
-        state = r? RAW : 0;
+        if (raw) {
+            state |= RAW;
+        }
     }
     
     boolean around(AutoPersist me, Object other):
@@ -110,6 +112,10 @@ privileged public aspect PersistenceAspect {
     
     public final boolean AutoPersist.isModified() { 
         return (state & DIRTY) != 0;
+    } 
+    
+    public final boolean AutoPersist.isDeleted() { 
+        return (state & DELETED) != 0;
     } 
     
     public final boolean AutoPersist.isPersistent() { 
@@ -176,7 +182,7 @@ privileged public aspect PersistenceAspect {
     public void AutoPersist.finalize() { 
         if ((state & DIRTY) != 0 && oid != 0) { 
             storage.storeFinalizedObject(this);
-            state &= ~DIRTY;
+            state = DELETED|RAW;
         }
     }
     
@@ -196,4 +202,5 @@ privileged public aspect PersistenceAspect {
     
     private static final int RAW   = 1;
     private static final int DIRTY = 2;
+    private static final int DELETED = 4;
 }

@@ -280,7 +280,7 @@ class AltBtree<T extends IPersistent> extends PersistentResource implements Inde
                 IPersistent node = rem.node;
                 while (r < n) {
                     if (compare(rem.key, r) == 0) {
-                        if (node == null || items.getRaw(r) == node) {
+                        if (node == null || items.containsElement(r, node)) {
                             rem.oldNode = items.get(r);
                             modify();
                             memcpy(this, r, this, r+1, n - r - 1);

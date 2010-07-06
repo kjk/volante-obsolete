@@ -21,6 +21,12 @@ public interface IPersistent extends java.io.Externalizable {
      */
     public boolean isModified();
 
+    /** 
+     * Check if object is deleted by Java GC from process memory
+     * @return <code>true</code> if object is deleted by GC
+     */
+    public boolean isDeleted();
+
     /**
      * Check if object is persistent 
      * @return <code>true</code> if object has assigned OID

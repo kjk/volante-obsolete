@@ -28,7 +28,7 @@ public class RelationImpl<M extends IPersistent, O extends IPersistent> extends 
         return link.get(i);
     }
 
-    public M getRaw(int i) {
+    public IPersistent getRaw(int i) {
         return link.getRaw(i);
     }
 
@@ -74,7 +74,7 @@ public class RelationImpl<M extends IPersistent, O extends IPersistent> extends 
         return link.toPersistentArray();
     }
 
-    public M[] toRawArray() {
+    public IPersistent[] toRawArray() {
         return link.toRawArray();
     }
 
@@ -108,6 +108,10 @@ public class RelationImpl<M extends IPersistent, O extends IPersistent> extends 
         return link.containsAll(c);
     }
 
+    public boolean containsElement(int i, M obj) {
+        return link.containsElement(i, obj);
+    }
+
     public boolean addAll(Collection<? extends M> c) {
         if (link.addAll(c)) { 
             modify();
@@ -132,6 +136,14 @@ public class RelationImpl<M extends IPersistent, O extends IPersistent> extends 
         return false;            
     }
 
+    public void pin() { 
+        link.pin();
+    }
+    
+    public void unpin() { 
+        link.unpin();
+    }
+    
     RelationImpl() {}
 
     RelationImpl(O owner) { 

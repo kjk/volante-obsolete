@@ -317,7 +317,6 @@ public class XMLImporter {
     final Key createKey(int type, String value) throws XMLImportException
     { 
         try { 
-            IPersistent obj;
             Date date;
             switch (type) { 
                 case ClassDescriptor.tpBoolean:
@@ -331,9 +330,7 @@ public class XMLImporter {
                 case ClassDescriptor.tpInt:
                     return new Key(Integer.parseInt(value));
                 case ClassDescriptor.tpObject:
-                    obj = new Persistent();
-                    storage.assignOid(obj, mapId(Integer.parseInt(value)));
-                    return new Key(obj);
+                    return new Key(new PersistentStub(storage, mapId(Integer.parseInt(value))));
                 case ClassDescriptor.tpLong:
                     return new Key(Long.parseLong(value));
                 case ClassDescriptor.tpFloat:
@@ -473,9 +470,7 @@ public class XMLImporter {
             } else { 
                 key = createKey(btree.type, getAttribute(ref, "key"));
             }
-            IPersistent obj = new Persistent();
-            int entryOid = mapId(getIntAttribute(ref, "id"));
-            storage.assignOid(obj, entryOid);
+            IPersistent obj = new PersistentStub(storage, mapId(getIntAttribute(ref, "id")));
             btree.insert(key, obj, false);
         }
         if (tkn != XMLScanner.XML_LTS 

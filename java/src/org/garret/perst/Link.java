@@ -122,6 +122,14 @@ public interface Link {
     public boolean contains(IPersistent obj);
 
     /**
+     * Check if i-th element of Link is the same as specified obj
+     * @param i element index
+     * @param obj object to compare with
+     * @return <code>true</code> if i-th element of Link reference the same object as "obj"
+     */
+    public boolean containsElement(int i, IPersistent obj);
+
+    /**
      * Get index of the specified object in the relation
      * @param obj specified object
      * @return zero based index of the object or -1 if object is not in the relation

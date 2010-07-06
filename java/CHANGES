@@ -297,3 +297,11 @@ stored in OS file buffers and sooner or later them will be written to the disk)
 4. Fix bug with restoring autoincrement counter in XML import
 5. Add TimeSeries.Deallocate wethod
 6. Fix bug in backup with compactification (incorrect setting of bitmap end)
+
+--- Release version 2.39 14.11.2004 -------------------------------------
+1. Fix problems with handling weak references and finalization
+2. Make it possible to SoftReference instead of WeakReference for object cache
+3. Replace elements of Link with stubs after storing Link in the database
+   to avoid memory overflow caused by pinning objects in memory.
+4. Add Ttree.Deallocate method
+5. Fix bug in SpatialIndexR2 creation in JDK 1.5 version of Perst.

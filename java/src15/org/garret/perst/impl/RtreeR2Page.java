@@ -93,7 +93,7 @@ public class RtreeR2Page extends Persistent {
             }
         } else {
             for (int i = 0; i < n; i++) { 
-                if (branch.getRaw(i) == obj) { 
+                if (branch.containsElement(i, obj)) { 
                     removeBranch(i);
                     return 0;
                 }

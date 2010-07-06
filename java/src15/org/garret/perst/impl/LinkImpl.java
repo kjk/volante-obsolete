@@ -21,15 +21,31 @@ public class LinkImpl<T extends IPersistent> implements Link<T> {
         if (i < 0 || i >= used) { 
             throw new IndexOutOfBoundsException();
         }
-        return loadElem(i);
+        return (T)loadElem(i);
     }
 
-    public T getRaw(int i) {
+    public IPersistent getRaw(int i) {
         if (i < 0 || i >= used) { 
             throw new IndexOutOfBoundsException();
         }
-        return arr[i];
+        return (T)arr[i];
     }
+
+    public void pin() { 
+        for (int i = 0, n = used; i < n; i++) { 
+            arr[i] = loadElem(i);
+        }
+    }
+
+    public void unpin() { 
+        for (int i = 0, n = used; i < n; i++) { 
+            IPersistent elem = arr[i];
+            if (elem != null && !elem.isRaw() && elem.isPersistent()) { 
+                arr[i] = new PersistentStub(elem.getStorage(), elem.getOid());
+            }
+        }
+    }
+
 
     public void set(int i, T obj) {
         if (i < 0 || i >= used) { 
@@ -53,7 +69,7 @@ public class LinkImpl<T extends IPersistent> implements Link<T> {
 
     void reserveSpace(int len) { 
         if (used + len > arr.length) { 
-            T[] newArr = (T[])new IPersistent[used + len > arr.length*2 ? used + len : arr.length*2];
+            IPersistent[] newArr = new IPersistent[used + len > arr.length*2 ? used + len : arr.length*2];
             System.arraycopy(arr, 0, newArr, 0, used);
             arr = newArr;
         }
@@ -99,7 +115,7 @@ public class LinkImpl<T extends IPersistent> implements Link<T> {
         return  toPersistentArray();
     }
 
-    public T[] toRawArray() {
+    public IPersistent[] toRawArray() {
         return arr;
     }
 
@@ -129,14 +145,23 @@ public class LinkImpl<T extends IPersistent> implements Link<T> {
     }
 
     public int indexOf(Object obj) {
-        for (int i = used; --i >= 0;) {
-            if (arr[i].equals(obj)) {
-                return i;
+        if (obj instanceof IPersistent) { 
+            IPersistent p = (IPersistent)obj;
+            for (int i = used; --i >= 0;) {
+                IPersistent elem = arr[i];
+                if (elem == obj || (elem != null && elem.getOid() == p.getOid())) {
+                    return i;
+                }
             }
         }
         return -1;
     }
     
+    public boolean containsElement(int i, T obj) {
+        IPersistent elem = arr[i];
+        return elem == obj || (elem != null && elem.getOid() == obj.getOid());
+    }
+
     public void clear() { 
         for (int i = used; --i >= 0;) { 
             arr[i] = null;
@@ -228,17 +253,17 @@ public class LinkImpl<T extends IPersistent> implements Link<T> {
 
     private final T loadElem(int i) 
     {
-        T elem = arr[i];
-        if (elem.isRaw()) { 
-            arr[i] = elem = (T)((StorageImpl)elem.getStorage()).lookupObject(elem.getOid(), null);
+        IPersistent elem = arr[i];
+        if (elem != null && elem.isRaw()) { 
+            arr[i] = elem = ((StorageImpl)elem.getStorage()).lookupObject(elem.getOid(), null);
         }
-        return elem;
+        return (T)elem;
     }
 
     LinkImpl() {}
 
     LinkImpl(int initSize) {
-        this.arr = (T[])new IPersistent[initSize];
+        arr = new IPersistent[initSize];
     }
 
     LinkImpl(T[] arr) { 
@@ -246,6 +271,6 @@ public class LinkImpl<T extends IPersistent> implements Link<T> {
         used = arr.length;
     }
 
-    T[] arr;
-    int used;
+    IPersistent[] arr;
+    int           used;
 }

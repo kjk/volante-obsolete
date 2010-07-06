@@ -23,6 +23,10 @@ public class Persistent implements IPersistent {
         return (state & DIRTY) != 0;
     } 
     
+    public final boolean isDeleted() { 
+        return (state & DELETED) != 0;
+    } 
+    
     public final boolean isPersistent() { 
         return oid != 0;
     }
@@ -44,7 +48,7 @@ public class Persistent implements IPersistent {
     }
   
     public void modify() { 
-        if ((state & DIRTY) == 0 && oid != 0) { 
+        if ((state & DIRTY) == 0 && oid != 0) {
             if ((state & RAW) != 0) { 
                 throw new StorageError(StorageError.ACCESS_TO_STUB);
             }
@@ -84,7 +88,7 @@ public class Persistent implements IPersistent {
         if (oid == 0) { 
             return super.equals(o);
         }
-        return o instanceof Persistent && ((Persistent)o).getOid() == oid;
+        return o instanceof IPersistent && ((IPersistent)o).getOid() == oid;
     }
 
     public int hashCode() {
@@ -105,8 +109,8 @@ public class Persistent implements IPersistent {
     protected void finalize() { 
         if ((state & DIRTY) != 0 && oid != 0) { 
             storage.storeFinalizedObject(this);
-            state &= ~DIRTY;
         }
+        state = DELETED|RAW;
     }
 
     transient Storage storage;
@@ -115,11 +119,14 @@ public class Persistent implements IPersistent {
 
     static private final int RAW   = 1;
     static private final int DIRTY = 2;
+    static private final int DELETED = 4;
 
     public void assignOid(Storage storage, int oid, boolean raw) { 
         this.oid = oid;
         this.storage = storage;
-        state = raw ? RAW : 0;
+        if (raw) {
+            state |= RAW;
+        }
     }
 
     public void readExternal(java.io.ObjectInput s) throws java.io.IOException, ClassNotFoundException

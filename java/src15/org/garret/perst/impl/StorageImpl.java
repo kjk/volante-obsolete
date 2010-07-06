@@ -2,7 +2,6 @@ package org.garret.perst.impl;
 
 import org.garret.perst.*;
 import java.lang.reflect.*;
-import java.lang.ref.WeakReference;
 import java.util.*;
 import java.io.*;
 
@@ -832,7 +831,9 @@ public class StorageImpl extends Storage {
 
         objectCache = (pagePoolSize == INFINITE_PAGE_POOL)
             ? (OidHashTable)new StrongHashTable(objectCacheInitSize) 
-            : (OidHashTable)new WeakHashTable(objectCacheInitSize);
+            : softCache 
+              ? (OidHashTable)new SoftHashTable(objectCacheInitSize)
+              : (OidHashTable)new WeakHashTable(objectCacheInitSize);
         classDescMap = new HashMap();
         descList = null;
         
@@ -1469,7 +1470,7 @@ public class StorageImpl extends Storage {
         if (!opened) { 
             throw new StorageError(StorageError.STORAGE_NOT_OPENED);
         }
-        return new RtreeR2<T>();
+        return new RtreeR2<T>(this);
     }
 
     public synchronized <T extends IPersistent> FieldIndex<T> createFieldIndex(Class type, String fieldName, boolean unique) {
@@ -2241,6 +2242,9 @@ public class StorageImpl extends Storage {
         if ((value = props.getProperty("perst.object.cache.init.size")) != null) { 
             objectCacheInitSize = (int)getIntegerValue(value);
         }
+        if ((value = props.getProperty("perst.object.soft.cache")) != null) { 
+            softCache = getBooleanValue(value);
+        }
         if ((value = props.getProperty("perst.object.index.init.size")) != null) { 
             initIndexSize = (int)getIntegerValue(value);
         }
@@ -2277,6 +2281,8 @@ public class StorageImpl extends Storage {
             objectCacheInitSize = (int)getIntegerValue(value);
         } else if (name.equals("perst.object.index.init.size")) { 
             initIndexSize = (int)getIntegerValue(value);
+        } else if (name.equals("perst.object.soft.cache")) { 
+            softCache = getBooleanValue(value);
         } else if (name.equals("perst.extension.quantum")) { 
             extensionQuantum = getIntegerValue(value);
         } else if (name.equals("perst.gc.threshold")) { 
@@ -2350,7 +2356,9 @@ public class StorageImpl extends Storage {
         boolean newObject = false;
         if (oid == 0) { 
             oid = allocateId();
-            objectCache.put(oid, obj);
+            if (!obj.isDeleted()) { 
+                objectCache.put(oid, obj);
+            }
             obj.assignOid(this, oid, false);
             newObject = true;
         } else if (obj.isModified()) {
@@ -3051,15 +3059,9 @@ public class StorageImpl extends Storage {
                         for (int j = 0; j < len; j++) { 
                             int elemOid = Bytes.unpack4(body, offs);
                             offs += 4;
-                            IPersistent stub = null;
                             if (elemOid != 0) { 
-                                stub = objectCache.get(elemOid);
-                                if (stub == null) { 
-                                    stub = new Persistent();
-                                    stub.assignOid(this, elemOid, true);
-                                }
+                                arr[j] = new PersistentStub(this, elemOid);
                             }
-                            arr[j] = stub;
                         }
                         provider.set(f, obj, new LinkImpl(arr));
                     }
@@ -3541,6 +3543,7 @@ public class StorageImpl extends Storage {
                             Bytes.pack4(buf.arr, offs, swizzle(link.getRaw(j)));
                             offs += 4;
                         }
+                        link.unpin();
                     }
                     continue;
                 }
@@ -3552,6 +3555,7 @@ public class StorageImpl extends Storage {
     private int     initIndexSize = dbDefaultInitIndexSize;
     private int     objectCacheInitSize = dbDefaultObjectCacheInitSize;
     private long    extensionQuantum = dbDefaultExtensionQuantum;
+    private boolean softCache = false;
     private boolean readOnly = false;
     private boolean noFlush = false;
     private boolean alternativeBtree = false;

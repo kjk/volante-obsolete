@@ -1,6 +1,6 @@
 package org.garret.perst.impl;
 import  org.garret.perst.*;
-import  java.lang.ref.WeakReference;
+import  java.lang.ref.*;
 
 public class WeakHashTable implements OidHashTable { 
     Entry table[];
@@ -34,8 +34,12 @@ public class WeakHashTable implements OidHashTable {
         return false;
     }
 
+    protected Reference createReference(Object obj) { 
+        return new WeakReference(obj);
+    }
+
     public synchronized void put(int oid, IPersistent obj) { 
-        WeakReference ref = new WeakReference(obj);
+        Reference ref = createReference(obj);
         Entry tab[] = table;
         int index = (oid & 0x7FFFFFFF) % tab.length;
         for (Entry e = tab[index]; e != null; e = e.next) {
@@ -64,8 +68,13 @@ public class WeakHashTable implements OidHashTable {
                 for (Entry e = tab[index] ; e != null ; e = e.next) {
                     if (e.oid == oid) {
                         IPersistent obj = (IPersistent)e.ref.get();
-                        if (obj == null && e.dirty != 0) { 
-                            break cs;
+                        if (obj == null) { 
+                            if (e.dirty != 0) { 
+                                break cs;
+                            }
+                        } else if (obj.isDeleted()) {
+                            e.ref.clear();
+                            return null;
                         }
                         return obj;
                     }
@@ -190,22 +199,16 @@ public class WeakHashTable implements OidHashTable {
     }
 
     static class Entry { 
-        Entry         next;
-        WeakReference ref;
-        int           oid;
-        int           dirty;
+        Entry     next;
+        Reference ref;
+        int       oid;
+        int       dirty;
         
-        Entry(int oid, WeakReference ref, Entry chain) { 
+        Entry(int oid, Reference ref, Entry chain) { 
             next = chain;
             this.oid = oid;
             this.ref = ref;
         }
     }
 }
-
-
-
-
-
-
 
