@@ -84,7 +84,7 @@ public class StrRecordComparator:PersistentComparator
 public class TestIndex
 {
     internal const int nRecords = 100000;
-    internal static int pagePoolSize = Storage.INFINITE_PAGE_POOL; // 32 * 1024 * 1024;
+    internal static int pagePoolSize = 0; // infine page pool
 	
     static public void  Main(System.String[] args)
     {

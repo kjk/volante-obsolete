@@ -24,6 +24,8 @@ namespace Perst.Impl
             internal ClassDescriptor valueDesc;
             [NonSerialized()]
             internal FieldInfo       field;
+            [NonSerialized()]
+            internal bool            recursiveLoading;
 #if USE_GENERICS
             [NonSerialized()]
             internal MethodInfo constructor;
@@ -262,6 +264,11 @@ namespace Perst.Impl
             return t.FullName;
         }
 
+        static bool isPerstInternalType(Type t)
+        {
+            return t.Namespace == typeof(IPersistent).Namespace
+                && t != typeof(IPersistent) && t != typeof(PersistentContext) && t != typeof(Persistent);
+        }
 
         internal void  buildFieldList(StorageImpl storage, System.Type cls, ArrayList list)
         {
@@ -274,6 +281,8 @@ namespace Perst.Impl
 #if !COMPACT_NET_FRAMEWORK 
             bool isWrapper = typeof(PersistentWrapper).IsAssignableFrom(cls);
 #endif
+            bool hasTransparentAttribute = cls.GetCustomAttributes(typeof(TransparentPersistenceAttribute), true).Length != 0;
+
             for (int i = 0; i < flds.Length; i++)
             {
                 FieldInfo f = flds[i];
@@ -283,7 +292,8 @@ namespace Perst.Impl
                     fd.field = f;
                     fd.fieldName = f.Name;
                     fd.className = getTypeName(cls);
-                    FieldType type = getTypeCode(f.FieldType);
+                    Type fieldType = f.FieldType;
+                    FieldType type = getTypeCode(fieldType);
                     switch (type) 
                     {
 #if !COMPACT_NET_FRAMEWORK 
@@ -311,6 +321,10 @@ namespace Perst.Impl
                         case FieldType.tpArrayOfObject:
                         case FieldType.tpObject:
                             hasReferences = true;
+                            if (hasTransparentAttribute && isPerstInternalType(fieldType))
+                            {
+                                fd.recursiveLoading = true; 
+                            }
                             break;
                         case FieldType.tpValue:
                             fd.valueDesc = storage.getClassDescriptor(f.FieldType);
@@ -578,13 +592,17 @@ namespace Perst.Impl
         public override void OnLoad()
         {
             cls = lookup(Storage, name);
-            Type scope = cls;
             int n = allFields.Length;
+            bool hasTransparentAttribute = cls.GetCustomAttributes(typeof(TransparentPersistenceAttribute), true).Length != 0;
             for (int i = n; --i >= 0;) 
             { 
                 FieldDescriptor fd = allFields[i];
                 fd.Load();
                 fd.field = cls.GetField(fd.fieldName, BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+                if (hasTransparentAttribute && fd.type == FieldType.tpObject && isPerstInternalType(fd.field.FieldType)) 
+                {
+                    fd.recursiveLoading = true;
+                }                
 #if USE_GENERICS
                 switch (fd.type)
                 {

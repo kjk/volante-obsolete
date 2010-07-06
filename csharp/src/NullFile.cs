@@ -28,5 +28,10 @@ namespace Perst
             get { return false; }
             set {}
         }
+
+        public long Length
+        {
+            get { return 0; }
+        }
     }
 }

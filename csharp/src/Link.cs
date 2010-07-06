@@ -18,7 +18,7 @@ namespace Perst
     /// Storage.createRelation method.
     /// </summary>
 #if USE_GENERICS
-    public interface Link<T> : ICollection<T>, GenericLink where T:class,IPersistent
+    public interface Link<T> : IList<T>, GenericLink where T:class,IPersistent
 #else
     public interface Link : ICollection, GenericLink
 #endif
@@ -39,15 +39,13 @@ namespace Perst
         
         /// <summary> Access element by index
         /// </summary>
-#if USE_GENERICS
-        T this[int i]
-#else
+#if !USE_GENERICS
         IPersistent this[int i]
-#endif
         {
              get;
              set;
         }       
+#endif
 
         /// <summary> Get related object by index
         /// </summary>
@@ -109,9 +107,7 @@ namespace Perst
         /// <param name="obj">object inserted in the relation
         /// 
         /// </param>
-#if USE_GENERICS
-        void  Insert(int i, T obj);
-#else
+#if !USE_GENERICS
         void  Insert(int i, IPersistent obj);
 #endif
 
@@ -212,9 +208,7 @@ namespace Perst
         /// <returns>zero based index of the object or -1 if object is not in the relation
         /// 
         /// </returns>
-#if USE_GENERICS
-        int IndexOf(T obj);
-#else
+#if !USE_GENERICS
         int IndexOf(IPersistent obj);
 #endif
 

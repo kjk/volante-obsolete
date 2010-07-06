@@ -238,6 +238,16 @@
                     BuildAction = "Compile"
                 />
                 <File
+                    RelPath = "src\ReplicationMasterStorage.cs"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "src\ReplicationSlaveStorage.cs"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
                     RelPath = "src\SortedCollection.cs"
                     SubType = "Code"
                     BuildAction = "Compile"
@@ -309,6 +319,11 @@
                 />
                 <File
                     RelPath = "src\impl\AltPersistentSet.cs"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "src\impl\AsyncReplicationMasterFile.cs"
                     SubType = "Code"
                     BuildAction = "Compile"
                 />
@@ -454,6 +469,21 @@
                 />
                 <File
                     RelPath = "src\impl\RelationImpl.cs"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "src\impl\ReplicationMasterFile.cs"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "src\impl\ReplicationMasterStorageImpl.cs"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "src\impl\ReplicationSlaveStorageImpl.cs"
                     SubType = "Code"
                     BuildAction = "Compile"
                 />

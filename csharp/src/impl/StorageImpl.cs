@@ -14,6 +14,8 @@ namespace Perst.Impl
 	
     public class StorageImpl:Storage
     {
+        public const int DEFAULT_PAGE_POOL_SIZE = 4*1024*1024;
+
 #if COMPACT_NET_FRAMEWORK
         static StorageImpl() 
         {
@@ -26,7 +28,7 @@ namespace Perst.Impl
         }
 #endif
 
-        public override IPersistent Root
+        public IPersistent Root
         {
             get
             {
@@ -179,7 +181,7 @@ namespace Perst.Impl
             return oid;
         }
 		
-        protected internal override void  deallocateObject(IPersistent obj)
+        public void  deallocateObject(IPersistent obj)
         {
             lock(this)
             {
@@ -230,7 +232,12 @@ namespace Perst.Impl
             freeId(oid);
         }
 		
- 	
+        virtual protected bool isDirty()
+        { 
+             return header.dirty;
+        } 	
+
+
         internal void setDirty() 
         {
             modified = true;
@@ -321,7 +328,7 @@ namespace Perst.Impl
             }
         }
 		
-        public override long UsedSize
+        public long UsedSize
         { 
             get       
             { 
@@ -329,7 +336,7 @@ namespace Perst.Impl
             }
         }
 
-        public override long DatabaseSize
+        public long DatabaseSize
         { 
             get 
             { 
@@ -915,7 +922,17 @@ namespace Perst.Impl
             }
         }
 		
-        public override void Open(String filePath, int pagePoolSize)
+        public void Open(String filePath)
+        {
+            Open(filePath, DEFAULT_PAGE_POOL_SIZE);
+        }
+
+        public void Open(IFile file)
+        {
+            Open(file, DEFAULT_PAGE_POOL_SIZE);
+        }
+
+        public void Open(String filePath, int pagePoolSize)
         {
             OSFile file = new OSFile(filePath, readOnly, noFlush);      
             try 
@@ -931,7 +948,7 @@ namespace Perst.Impl
 
         protected virtual OidHashTable createObjectCache(string kind, int pagePoolSize, int objectCacheSize) 
         { 
-            if (pagePoolSize == INFINITE_PAGE_POOL || "strong".Equals(kind)) 
+            if (pagePoolSize == 0 || "strong".Equals(kind)) 
             {
                 return new StrongHashTable(objectCacheSize);
             }
@@ -943,7 +960,7 @@ namespace Perst.Impl
         }
         
 
-        public override void Open(String filePath, int pagePoolSize, String cipherKey)
+        public void Open(String filePath, int pagePoolSize, String cipherKey)
         {
             Rc4File file = new Rc4File(filePath, readOnly, noFlush, cipherKey);      
             try 
@@ -957,7 +974,7 @@ namespace Perst.Impl
             }
         }
 
-        public override void Open(IFile file, int pagePoolSize)
+        public virtual void Open(IFile file, int pagePoolSize)
         {
             lock(this)
             {
@@ -999,7 +1016,6 @@ namespace Perst.Impl
                 transactionLock = new PersistentResource();
 
                 modified = false;
-                pool = new PagePool(pagePoolSize / Page.pageSize);
 				
                 objectCache =  createObjectCache(cacheKind, pagePoolSize, objectCacheInitSize);
                 
@@ -1020,6 +1036,11 @@ namespace Perst.Impl
                 if (header.curr < 0 || header.curr > 1)
                 {
                     throw new StorageError(StorageError.ErrorCode.DATABASE_CORRUPTED);
+                }
+                if (pool == null) 
+                {
+                    pool = new PagePool(pagePoolSize / Page.pageSize);
+                    pool.open(file);
                 }
                 if (!header.initialized)
                 {
@@ -1045,8 +1066,6 @@ namespace Perst.Impl
                     long bitmapSize = (long)bitmapPages * Page.pageSize;
                     int usedBitmapSize = (int) ((used + bitmapSize) >> (dbAllocationQuantumBits + 3));
 					
-                    pool.open(file);
-
                     for (i = 0; i < bitmapPages; i++) 
                     { 
                         pg = pool.putPage(used + (long)i*Page.pageSize);
@@ -1101,8 +1120,7 @@ namespace Perst.Impl
                     {
                         throw new StorageError(StorageError.ErrorCode.DATABASE_CORRUPTED);
                     }
-                    pool.open(file);
-                    if (header.dirty)
+                    if (isDirty())
                     {
                         if (listener != null) 
                         {
@@ -1152,7 +1170,7 @@ namespace Perst.Impl
             }
         }
 
-        public override bool IsOpened() 
+        public bool IsOpened() 
         { 
             return opened;
         }
@@ -1252,7 +1270,7 @@ namespace Perst.Impl
         }
 		    
 
-        public override void Commit()
+        public void Commit()
         {
             lock (backgroundGcMonitor) 
             { 
@@ -1459,7 +1477,7 @@ namespace Perst.Impl
         }
         
 		
-        public override void Rollback()
+        public void Rollback()
         {
             lock(this)
             {
@@ -1540,7 +1558,7 @@ namespace Perst.Impl
             }
         }
 #else
-        public override IPersistent CreateClass(Type type) 
+        public IPersistent CreateClass(Type type) 
         {
             lock (this) 
             {
@@ -1573,7 +1591,7 @@ namespace Perst.Impl
             return wrapper;
         }
 #endif
-        public override int MakePersistent(IPersistent obj) 
+        public int MakePersistent(IPersistent obj) 
         {
             if (obj == null) 
             {
@@ -1601,7 +1619,7 @@ namespace Perst.Impl
             }
         }
 
-        public override void Backup(System.IO.Stream stream)
+        public void Backup(System.IO.Stream stream)
         {
             lock(this)
             {
@@ -1793,7 +1811,7 @@ namespace Perst.Impl
         }   
                 
 #if USE_GENERICS
-        public override Index<K,V> CreateIndex<K,V>(bool unique)
+        public Index<K,V> CreateIndex<K,V>(bool unique) where V:class,IPersistent
         {
             lock(this)
             {
@@ -1809,7 +1827,7 @@ namespace Perst.Impl
             }
         }
 
-        public override Index<K,V> CreateThickIndex<K,V>()
+        public Index<K,V> CreateThickIndex<K,V>() where V:class,IPersistent
         {
             lock(this)
             {
@@ -1821,7 +1839,7 @@ namespace Perst.Impl
             }
         }
         
-        public override BitIndex<T> CreateBitIndex<T>()
+        public BitIndex<T> CreateBitIndex<T>() where T:class,IPersistent
         {
             lock(this)
             {
@@ -1836,7 +1854,7 @@ namespace Perst.Impl
         }
 
 
-        public override SpatialIndex<T> CreateSpatialIndex<T>()
+        public SpatialIndex<T> CreateSpatialIndex<T>() where T:class,IPersistent
         {
             lock(this)
             {
@@ -1850,7 +1868,7 @@ namespace Perst.Impl
             }
         }
 		
-        public override SpatialIndexR2<T> CreateSpatialIndexR2<T>()
+        public SpatialIndexR2<T> CreateSpatialIndexR2<T>() where T:class,IPersistent
         {
             lock(this)
             {
@@ -1864,7 +1882,7 @@ namespace Perst.Impl
             }
         }
 		
-        public override SortedCollection<K,V> CreateSortedCollection<K,V>(PersistentComparator<K,V> comparator, bool unique)
+        public SortedCollection<K,V> CreateSortedCollection<K,V>(PersistentComparator<K,V> comparator, bool unique) where V:class,IPersistent
         {
             if (!opened) 
             { 
@@ -1873,7 +1891,7 @@ namespace Perst.Impl
             return new Ttree<K,V>(comparator, unique);
         }
 
-        public override SortedCollection<K,V> CreateSortedCollection<K,V>(bool unique)
+        public SortedCollection<K,V> CreateSortedCollection<K,V>(bool unique) where V:class,IPersistent,IComparable<K>,IComparable<V>
         {
             if (!opened) 
             { 
@@ -1882,7 +1900,7 @@ namespace Perst.Impl
             return new Ttree<K,V>(new DefaultPersistentComparator<K,V>(), unique);
         }
 
-        public override ISet<T> CreateSet<T>()
+        public ISet<T> CreateSet<T>() where T:class,IPersistent
         {
             lock(this)
             {
@@ -1898,12 +1916,12 @@ namespace Perst.Impl
             }
         }
 
-        public override ISet<T> CreateScalableSet<T>()
+        public ISet<T> CreateScalableSet<T>() where T:class,IPersistent
         {
             return CreateScalableSet<T>(8);
         }
 
-        public override ISet<T> CreateScalableSet<T>(int initialSize)
+        public ISet<T> CreateScalableSet<T>(int initialSize) where T:class,IPersistent
         {
             lock(this)
             {
@@ -1915,7 +1933,7 @@ namespace Perst.Impl
             }
         }
 
-        public override FieldIndex<K,V> CreateFieldIndex<K,V>(String fieldName, bool unique)
+        public FieldIndex<K,V> CreateFieldIndex<K,V>(String fieldName, bool unique) where V:class,IPersistent
         {
             lock(this)
             {
@@ -1931,7 +1949,7 @@ namespace Perst.Impl
             }
         }
 		
-        public override MultiFieldIndex<T> CreateFieldIndex<T>(string[] fieldNames, bool unique)
+        public MultiFieldIndex<T> CreateFieldIndex<T>(string[] fieldNames, bool unique) where T:class,IPersistent
         {
             lock(this)
             {
@@ -1955,12 +1973,12 @@ namespace Perst.Impl
             }
         }
 
-        public override Link<T> CreateLink<T>()
+        public Link<T> CreateLink<T>() where T:class,IPersistent
         {
             return CreateLink<T>(8);
         }
 		
-        public override Link<T> CreateLink<T>(int initialSize)
+        public Link<T> CreateLink<T>(int initialSize) where T:class,IPersistent
         {
             return new LinkImpl<T>(initialSize);
         }
@@ -1970,12 +1988,12 @@ namespace Perst.Impl
             return new LinkImpl<T>(arr);
         }
 		
-        public override PArray<T> CreateArray<T>()
+        public PArray<T> CreateArray<T>() where T:class,IPersistent
         {
             return CreateArray<T>(8);
         }
 		
-        public override PArray<T> CreateArray<T>(int initialSize)
+        public PArray<T> CreateArray<T>(int initialSize) where T:class,IPersistent
         {
             return new PArrayImpl<T>(this, initialSize);
         }
@@ -1985,22 +2003,47 @@ namespace Perst.Impl
             return new PArrayImpl<T>(this, arr);
         }
 		
-        public override Relation<M,O> CreateRelation<M,O>(O owner)
+        public Relation<M,O> CreateRelation<M,O>(O owner) where M:class,IPersistent where O:class,IPersistent
         {
             return new RelationImpl<M,O>(owner);
         }
 
-        public override TimeSeries<T> CreateTimeSeries<T>(int blockSize, long maxBlockTimeInterval)
+        public TimeSeries<T> CreateTimeSeries<T>(int blockSize, long maxBlockTimeInterval) where T:TimeSeriesTick
         {
             return new TimeSeriesImpl<T>(this, blockSize, maxBlockTimeInterval);
         }
         
-        public override PatriciaTrie<T> CreatePatriciaTrie<T>()
+        public PatriciaTrie<T> CreatePatriciaTrie<T>() where T:class,IPersistent
         {
             return new PTrie<T>();
         }
+
+        public ISet<IPersistent> CreateSet() 
+        {
+             return CreateSet<IPersistent>();
+        } 
+        
+        public Link<IPersistent> CreateLink()
+        {
+            return CreateLink<IPersistent>(8);
+        }
+		
+        public Link<IPersistent> CreateLink(int initialSize)
+        {
+            return CreateLink<IPersistent>(initialSize);
+        }
+
+        public PArray<IPersistent> CreateArray()
+        {
+            return CreateArray<IPersistent>(8);
+        }
+		
+        public PArray<IPersistent> CreateArray(int initialSize)
+        {
+            return CreateArray<IPersistent>(initialSize);
+        }
 #else
-        public override Index CreateIndex(System.Type keyType, bool unique)
+        public Index CreateIndex(System.Type keyType, bool unique)
         {
             lock(this)
             {
@@ -2016,7 +2059,7 @@ namespace Perst.Impl
             }
         }
 
-        public override Index CreateThickIndex(Type keyType)
+        public Index CreateThickIndex(Type keyType)
         {
             lock(this)
             {
@@ -2028,7 +2071,7 @@ namespace Perst.Impl
             }
         }
         
-        public override BitIndex CreateBitIndex() 
+        public BitIndex CreateBitIndex() 
         {
             lock(this)
             {
@@ -2043,7 +2086,7 @@ namespace Perst.Impl
         }
 
 
-        public override SpatialIndex CreateSpatialIndex() 
+        public SpatialIndex CreateSpatialIndex() 
         {
             lock(this)
             {
@@ -2057,7 +2100,7 @@ namespace Perst.Impl
             }
         }
 		
-        public override SpatialIndexR2 CreateSpatialIndexR2() 
+        public SpatialIndexR2 CreateSpatialIndexR2() 
         {
             lock(this)
             {
@@ -2071,7 +2114,7 @@ namespace Perst.Impl
             }
         }
 		
-        public override SortedCollection CreateSortedCollection(PersistentComparator comparator, bool unique) 
+        public SortedCollection CreateSortedCollection(PersistentComparator comparator, bool unique) 
         {
             if (!opened) 
             { 
@@ -2080,7 +2123,7 @@ namespace Perst.Impl
             return new Ttree(comparator, unique);
         }
 
-        public override SortedCollection CreateSortedCollection(bool unique) 
+        public SortedCollection CreateSortedCollection(bool unique) 
         {
             if (!opened) 
             { 
@@ -2089,7 +2132,7 @@ namespace Perst.Impl
             return new Ttree(new DefaultPersistentComparator(), unique);
         }
 
-        public override ISet CreateSet() 
+        public ISet CreateSet() 
         {
             lock(this)
             {
@@ -2105,12 +2148,12 @@ namespace Perst.Impl
             }
         }
 
-        public override ISet CreateScalableSet() 
+        public ISet CreateScalableSet() 
         {
             return CreateScalableSet(8);
         }
 
-        public override ISet CreateScalableSet(int initialSize) 
+        public ISet CreateScalableSet(int initialSize) 
         {
             lock(this)
             {
@@ -2122,7 +2165,7 @@ namespace Perst.Impl
             }
         }
 
-        public override FieldIndex CreateFieldIndex(System.Type type, String fieldName, bool unique)
+        public FieldIndex CreateFieldIndex(System.Type type, String fieldName, bool unique)
         {
             lock(this)
             {
@@ -2138,7 +2181,7 @@ namespace Perst.Impl
             }
         }
 		
-        public override MultiFieldIndex CreateFieldIndex(System.Type type, String[] fieldNames, bool unique)
+        public MultiFieldIndex CreateFieldIndex(System.Type type, String[] fieldNames, bool unique)
         {
             lock(this)
             {
@@ -2162,48 +2205,48 @@ namespace Perst.Impl
             }
         }
 
-        public override Link CreateLink()
+        public Link CreateLink()
         {
             return CreateLink(8);
         }
 		
-        public override Link CreateLink(int initialSize)
+        public Link CreateLink(int initialSize)
         {
             return new LinkImpl(initialSize);
         }
 		
-        public override PArray CreateArray()
+        public PArray CreateArray()
         {
             return CreateArray(8);
         }
 		
-        public override PArray CreateArray(int initialSize)
+        public PArray CreateArray(int initialSize)
         {
             return new PArrayImpl(this, initialSize);
         }
 		
-        public override Relation CreateRelation(IPersistent owner)
+        public Relation CreateRelation(IPersistent owner)
         {
             return new RelationImpl(owner);
         }
 
-        public override TimeSeries CreateTimeSeries(Type blockClass, long maxBlockTimeInterval)
+        public TimeSeries CreateTimeSeries(Type blockClass, long maxBlockTimeInterval)
         {
             return new TimeSeriesImpl(this, blockClass, maxBlockTimeInterval);
         }
         
-        public override PatriciaTrie CreatePatriciaTrie()
+        public PatriciaTrie CreatePatriciaTrie()
         {
             return new PTrie();
         }
 #endif
-        public override Blob CreateBlob() 
+        public Blob CreateBlob() 
         {
             return new BlobImpl(Page.pageSize - ObjectHeader.Sizeof - 16);
         }
 
         
-        public override void  ExportXML(System.IO.StreamWriter writer)
+        public void  ExportXML(System.IO.StreamWriter writer)
         {
             lock(this)
             {
@@ -2220,7 +2263,7 @@ namespace Perst.Impl
             }
         }
 		
-        public override void  ImportXML(System.IO.StreamReader reader)
+        public void  ImportXML(System.IO.StreamReader reader)
         {
             lock(this)
             {
@@ -2264,12 +2307,12 @@ namespace Perst.Impl
             return pool.getPage(getGCPos(oid) & ~dbFlagsMask);
         }
 
-        public override void SetGcThreshold(long maxAllocatedDelta) 
+        public void SetGcThreshold(long maxAllocatedDelta) 
         {
             gcThreshold = maxAllocatedDelta;
         }
 
-        public override int Gc() 
+        public int Gc() 
         { 
             lock (this) 
             { 
@@ -2489,7 +2532,7 @@ namespace Perst.Impl
         }
  
 
-        public override Hashtable GetMemoryDump() 
+        public Hashtable GetMemoryDump() 
         { 
             lock(this) 
             { 
@@ -2866,13 +2909,18 @@ namespace Perst.Impl
             }			
         }
 
+        public void EndThreadTransaction() 
+        { 
+            EndThreadTransaction(Int32.MaxValue);
+        }
+
 #if COMPACT_NET_FRAMEWORK
-        public override void RegisterAssembly(System.Reflection.Assembly assembly) 
+        public void RegisterAssembly(System.Reflection.Assembly assembly) 
         {
             assemblies.Add(assembly);
         }
 
-        public override void BeginThreadTransaction(TransactionMode mode)
+        public void BeginThreadTransaction(TransactionMode mode)
         {
             if (mode == TransactionMode.Serializable) 
             { 
@@ -2907,8 +2955,7 @@ namespace Perst.Impl
             }
         }
         
-
-        public override void EndThreadTransaction(int maxDelay)
+        public void EndThreadTransaction(int maxDelay)
         {
             ThreadTransactionContext ctx = TransactionContext;
             if (ctx.nested != 0) 
@@ -2985,7 +3032,7 @@ namespace Perst.Impl
         }
 
 
-        public override void RollbackThreadTransaction()
+        public void RollbackThreadTransaction()
         {
             ThreadTransactionContext ctx = TransactionContext;
             if (ctx.nested != 0) 
@@ -3030,7 +3077,7 @@ namespace Perst.Impl
 	    
 
 #else
-        public override void BeginThreadTransaction(TransactionMode mode)
+        public virtual void BeginThreadTransaction(TransactionMode mode)
         {
             if (mode == TransactionMode.Serializable) 
             { 
@@ -3064,7 +3111,7 @@ namespace Perst.Impl
         }
         
 
-        public override void EndThreadTransaction(int maxDelay)
+        public virtual void EndThreadTransaction(int maxDelay)
         {
             ThreadTransactionContext ctx = TransactionContext;
             if (ctx.nested != 0) 
@@ -3139,7 +3186,7 @@ namespace Perst.Impl
         }
 
 
-        public override void RollbackThreadTransaction()
+        public void RollbackThreadTransaction()
         {
             ThreadTransactionContext ctx = TransactionContext;
             if (ctx.nested != 0) 
@@ -3183,7 +3230,7 @@ namespace Perst.Impl
 
 #endif
 
-        public override void Close()
+        public virtual void Close()
         {
             lock (backgroundGcMonitor) {
                 Commit();
@@ -3202,7 +3249,7 @@ namespace Perst.Impl
                 gcThread.Join();
             }
 #endif
-            if (header.dirty)
+            if (isDirty())
             {
                 Page pg = pool.putPage(0);
                 header.pack(pg.data);
@@ -3214,7 +3261,6 @@ namespace Perst.Impl
                 pool.flush();
             }
             pool.close();
-            // make GC easier
             pool = null;
             objectCache = null;
             classDescMap = null;
@@ -3258,7 +3304,7 @@ namespace Perst.Impl
         }
 
      
-        public override void SetProperties(System.Collections.Specialized.NameValueCollection props) 
+        public void SetProperties(System.Collections.Specialized.NameValueCollection props) 
         {
             string val;
             if ((val = props["perst.serialize.transient.objects"]) != null) 
@@ -3313,9 +3359,13 @@ namespace Perst.Impl
             {
                 encoding = Encoding.GetEncoding(val);
             }
+            if ((val = props["perst.replication.ack"]) != null) 
+            {
+                replicationAck = getBooleanValue(val);
+            }
         }
 
-        public override void SetProperty(string name, object val)
+        public void SetProperty(string name, object val)
         {
             if (name.Equals("perst.serialize.transient.objects")) 
             { 
@@ -3369,13 +3419,17 @@ namespace Perst.Impl
             {
                 encoding = Encoding.GetEncoding((string)val);
             }
+            else if (name.Equals("perst.replication.ack")) 
+            {
+                replicationAck = getBooleanValue(val);
+            }
             else 
             { 
                 throw new StorageError(StorageError.ErrorCode.NO_SUCH_PROPERTY);
             }
         }
 
-        public override StorageListener SetListener(StorageListener listener)
+        public StorageListener SetListener(StorageListener listener)
         {
             StorageListener prevListener = this.listener;
             this.listener = listener;
@@ -3383,7 +3437,7 @@ namespace Perst.Impl
         }
 
     
-        public override IPersistent GetObjectByOID(int oid)
+        public IPersistent GetObjectByOID(int oid)
         {
             lock (this) 
             { 
@@ -3393,7 +3447,7 @@ namespace Perst.Impl
 
     
         
-        protected internal override void modifyObject(IPersistent obj) 
+        public void modifyObject(IPersistent obj) 
         {
             lock (this) 
             {                 
@@ -3415,7 +3469,7 @@ namespace Perst.Impl
             }
         }
 
-        protected internal override void lockObject(IPersistent obj) 
+        public void lockObject(IPersistent obj) 
         { 
             if (useSerializableTransactions) 
             { 
@@ -3427,7 +3481,7 @@ namespace Perst.Impl
             }
         }
          
-        protected internal override void storeObject(IPersistent obj) 
+        public void storeObject(IPersistent obj) 
         {
             lock (this) 
             {
@@ -3442,7 +3496,7 @@ namespace Perst.Impl
             }
         }
 
-        protected internal override void storeFinalizedObject(IPersistent obj) 
+        public void storeFinalizedObject(IPersistent obj) 
         {
             if (opened) 
             { 
@@ -3520,7 +3574,7 @@ namespace Perst.Impl
             pool.put(pos & ~dbFlagsMask, data, newSize);
         }
 		
-        protected internal override void loadObject(IPersistent obj)
+        public void loadObject(IPersistent obj)
         {
             lock(this)
             {
@@ -4006,7 +4060,8 @@ namespace Perst.Impl
                     } 
                     else 
                     { 
-                        val = unswizzle(Bytes.unpack4(body, offs), fd.field.FieldType, recursiveLoading);
+                        val = unswizzle(Bytes.unpack4(body, offs), fd.field.FieldType, 
+                                        fd.recursiveLoading|recursiveLoading);
                     }
                     offs += 4;
                     break;
@@ -5158,6 +5213,20 @@ public int packField(ByteBuffer buf, int offs, object val, ClassDescriptor.Field
             return offs;
         }
 		
+        public ClassLoader Loader
+        {
+       
+            set 
+            { 
+                loader = value;
+            }
+
+            get 
+            { 
+                return loader;
+            }
+        }
+
         private int  initIndexSize        = dbDefaultInitIndexSize;
         private int  objectCacheInitSize  = dbDefaultObjectCacheInitSize;
         private long extensionQuantum     = dbDefaultExtensionQuantum;
@@ -5166,6 +5235,8 @@ public int packField(ByteBuffer buf, int offs, object val, ClassDescriptor.Field
         private bool noFlush = false;
         private bool alternativeBtree = false;
         private bool backgroundGc = false;
+        
+        internal bool replicationAck = false;
 
         internal PagePool pool;
         internal Header   header; // base address of database file mapping
@@ -5221,6 +5292,8 @@ public int packField(ByteBuffer buf, int offs, object val, ClassDescriptor.Field
         internal Encoding  encoding;
 
         internal StorageListener  listener;
+
+        private ClassLoader loader;
 
         internal Hashtable        resolvedTypes;
 

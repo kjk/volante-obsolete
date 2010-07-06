@@ -36,7 +36,7 @@ public class TestIndex
         { 
             if ("inmemory" == args[i]) 
             { 
-                pagePoolSize = Storage.INFINITE_PAGE_POOL;
+                pagePoolSize = 0;
             } 
             else if ("altbtree" == args[i]) 
             { 

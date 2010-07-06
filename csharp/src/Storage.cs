@@ -1,37 +1,48 @@
 namespace Perst
 {
     using System;
-	
+    using System.Collections;
+
     public enum TransactionMode
     { 
+        /// <summary>
+        /// Exclusive per-thread transaction: each thread access database in exclusive mode
+        /// </summary>
         Exclusive,
+        /// <summary>
+        /// Cooperative mode; all threads share the same transaction. Commit will commit changes made
+        /// by all threads. To make this schema work correctly, it is necessary to ensure (using locking)
+        /// that no thread is performing update of the database while another one tries to perform commit.
+        /// Also please notice that rollback will undo the work of all threads. 
+        /// </summary>
         Cooperative,
-        Serializable
+        /// <summary>
+        /// Serializable per-thread transaction. Unlike exclusive mode, threads can concurrently access database, 
+        /// but effect will be the same as them work exclusively.
+        /// To provide such behavior, programmer should lock all access objects (or use hierarchical locking).
+        /// When object is updated, exclusive lock should be set, otherwise shared lock is enough.
+        /// Lock should be preserved until the end of transaction.
+        /// </summary>
+        Serializable,
+        /// <summary>
+        /// Read only transaction which can be started at replicastion slave node.
+        /// It runs concurrently with receiving updates from master node.
+        /// </summary>
+        ReplicationSlave
     };
 	
 	
     /// <summary> Object storage
     /// </summary>
-    public abstract class Storage
+    public interface Storage
     {
         /// <summary> Get/set storage root. Storage can have exactly one root object. 
         /// If you need to have several root object and access them by name (as is is possible 
         /// in many other OODBMSes), you should create index and use it as root object.
         /// Previous reference to the root object is rewritten but old root is not automatically deallocated.
         /// </summary>
-        abstract public IPersistent Root {get; set;}
+        IPersistent Root {get; set;}
       
-        /// <summary> 
-        /// Constant specifying that page pool should be dynamically extended 
-        /// to conatins all database file pages
-        /// </summary>
-        public const int INFINITE_PAGE_POOL = 0;
-
-        /// <summary>
-        /// Constant specifying default pool size
-        /// </summary>
-        public const int DEFAULT_PAGE_POOL_SIZE = 4*1024*1024;
-
         /// <summary> Open the storage
         /// </summary>
         /// <param name="filePath">path to the database file
@@ -39,20 +50,17 @@ namespace Perst
         /// <param name="pagePoolSize">size of page pool (in bytes). Page pool should contain
         /// at least ten 4kb pages, so minimal page pool size should be at least 40Kb.
         /// But larger page pool ussually leads to better performance (unless it could not fit
-        /// in memory and cause swapping).
-        /// 
+        /// in memory and cause swapping). If value of pagePoolSize is 0, then page pool will be
+        /// unlimited - dynamically extended to conatins all database file pages.
         /// </param>
-        abstract public void  Open(String filePath, int pagePoolSize);
+        void  Open(String filePath, int pagePoolSize);
 		
         /// <summary> Open the storage with default page pool size
         /// </summary>
         /// <param name="filePath">path to the database file
         /// 
         /// </param>
-        public virtual void  Open(String filePath)
-        {
-            Open(filePath, DEFAULT_PAGE_POOL_SIZE);
-        }
+        void  Open(String filePath);
 		
         /// <summary> Open the storage
         /// </summary>
@@ -64,17 +72,14 @@ namespace Perst
         /// in memory and cause swapping).
         /// 
         /// </param>
-        abstract public void  Open(IFile file, int pagePoolSize);
+        void  Open(IFile file, int pagePoolSize);
 		
         /// <summary> Open the storage with default page pool size
         /// </summary>
         /// <param name="file">user specific implementation of IFile interface
         /// </param>
-        public virtual void  Open(IFile file)
-        {
-            Open(file, DEFAULT_PAGE_POOL_SIZE);
-        }
-		
+        void  Open(IFile file);
+
         /// <summary> Open the encrypted storage
         /// </summary>
         /// <param name="filePath">path to the database file
@@ -85,7 +90,7 @@ namespace Perst
         /// in memory and cause swapping).
         /// </param>
         /// <param name="cipherKey">cipher key</param>
-        abstract public void  Open(String filePath, int pagePoolSize, String cipherKey);
+        void  Open(String filePath, int pagePoolSize, String cipherKey);
 
         
         /// <summary>Check if database is opened
@@ -93,7 +98,7 @@ namespace Perst
         /// <returns><code>true</code> if database was opened by <code>open</code> method, 
         /// <code>false</code> otherwise
         /// </returns>        
-        abstract public bool IsOpened();
+        bool IsOpened();
 		
         /// <summary> Set new storage root object.
         /// </summary>
@@ -105,17 +110,17 @@ namespace Perst
         /// <summary> Commit changes done by the last transaction. Transaction is started implcitlely with forst update
         /// opertation.
         /// </summary>
-        abstract public void  Commit();
+        void  Commit();
 		
         /// <summary> Rollback changes made by the last transaction
         /// </summary>
-        abstract public void  Rollback();
+        void  Rollback();
 		
         /// <summary>
         /// Backup current state of database
         /// </summary>
         /// <param name="stream">output stream to which backup is done</param>
-        abstract public void Backup( System.IO.Stream stream);
+        void Backup( System.IO.Stream stream);
 
 #if USE_GENERICS
         /// <summary> Create new index. K parameter specifies key type, V - associated object type.
@@ -128,7 +133,7 @@ namespace Perst
         /// <exception cref="Perst.StorageError">StorageError(StorageError.ErrorCode.UNSUPPORTED_INDEX_TYPE) exception if 
         /// specified key type is not supported by implementation.
         /// </exception>
-        abstract public Index<K,V> CreateIndex<K,V>(bool unique) where V:class,IPersistent;
+        Index<K,V> CreateIndex<K,V>(bool unique) where V:class,IPersistent;
 #else
         /// <summary> Create new index
         /// </summary>
@@ -143,7 +148,7 @@ namespace Perst
         /// specified key type is not supported by implementation.
         /// 
         /// </exception>
-        abstract public Index CreateIndex(Type type, bool unique);
+        Index CreateIndex(Type type, bool unique);
 #endif
 		
 #if USE_GENERICS
@@ -157,7 +162,7 @@ namespace Perst
         /// specified key type is not supported by implementation.
         /// 
         /// </exception>
-        abstract public Index<K,V> CreateThickIndex<K,V>() where V:class,IPersistent;
+        Index<K,V> CreateThickIndex<K,V>() where V:class,IPersistent;
 #else
         /// <summary> Create new thick index (index with large number of duplicated keys)
         /// </summary>
@@ -170,7 +175,7 @@ namespace Perst
         /// specified key type is not supported by implementation.
         /// 
         /// </exception>
-        abstract public Index CreateThickIndex(Type type);
+        Index CreateThickIndex(Type type);
 #endif
 	
 #if USE_GENERICS
@@ -187,7 +192,7 @@ namespace Perst
         /// <exception cref="Perst.StorageError">StorageError(StorageError.INDEXED_FIELD_NOT_FOUND) if there is no such field in specified class,
         /// StorageError(StorageError.UNSUPPORTED_INDEX_TYPE) exception if type of specified field is not supported by implementation
         /// </exception>
-        abstract public FieldIndex<K,V> CreateFieldIndex<K,V>(string fieldName, bool unique) where V:class,IPersistent;
+        FieldIndex<K,V> CreateFieldIndex<K,V>(string fieldName, bool unique) where V:class,IPersistent;
 #else
         /// <summary> 
         /// Create new field index
@@ -203,7 +208,7 @@ namespace Perst
         /// <exception cref="Perst.StorageError">StorageError(StorageError.INDEXED_FIELD_NOT_FOUND) if there is no such field in specified class,
         /// StorageError(StorageError.UNSUPPORTED_INDEX_TYPE) exception if type of specified field is not supported by implementation
         /// </exception>
-        abstract public FieldIndex CreateFieldIndex(Type type, string fieldName, bool unique);
+        FieldIndex CreateFieldIndex(Type type, string fieldName, bool unique);
 #endif
 		
 #if USE_GENERICS
@@ -219,7 +224,7 @@ namespace Perst
         /// <exception cref="Perst.StorageError">StorageError(StorageError.INDEXED_FIELD_NOT_FOUND) if there is no such field in specified class,
         /// StorageError(StorageError.UNSUPPORTED_INDEX_TYPE) exception if type of specified field is not supported by implementation
         /// </exception>
-        abstract public MultiFieldIndex<V> CreateFieldIndex<V>(string[] fieldNames, bool unique) where V:class,IPersistent;
+        MultiFieldIndex<V> CreateFieldIndex<V>(string[] fieldNames, bool unique) where V:class,IPersistent;
 #else
         /// <summary> 
         /// Create new multi-field index
@@ -235,7 +240,7 @@ namespace Perst
         /// <exception cref="Perst.StorageError">StorageError(StorageError.INDEXED_FIELD_NOT_FOUND) if there is no such field in specified class,
         /// StorageError(StorageError.UNSUPPORTED_INDEX_TYPE) exception if type of specified field is not supported by implementation
         /// </exception>
-        abstract public MultiFieldIndex CreateFieldIndex(Type type, string[] fieldNames, bool unique);
+        MultiFieldIndex CreateFieldIndex(Type type, string[] fieldNames, bool unique);
 #endif
 	
         /// <summary>
@@ -244,9 +249,9 @@ namespace Perst
         /// </summary>
         /// <returns>persistent object implementing bit index</returns>
 #if USE_GENERICS
-        abstract public BitIndex<T> CreateBitIndex<T>() where T:class,IPersistent;
+        BitIndex<T> CreateBitIndex<T>() where T:class,IPersistent;
 #else
-        abstract public BitIndex CreateBitIndex();
+        BitIndex CreateBitIndex();
 #endif
 
         /// <summary>
@@ -256,9 +261,9 @@ namespace Perst
         /// persistent object implementing spatial index
         /// </returns>
 #if USE_GENERICS
-        abstract public SpatialIndex<T> CreateSpatialIndex<T>() where T:class,IPersistent;
+        SpatialIndex<T> CreateSpatialIndex<T>() where T:class,IPersistent;
 #else
-        abstract public SpatialIndex CreateSpatialIndex();
+        SpatialIndex CreateSpatialIndex();
 #endif
 
         /// <summary>
@@ -268,9 +273,9 @@ namespace Perst
         /// persistent object implementing spatial index
         /// </returns>
 #if USE_GENERICS
-        abstract public SpatialIndexR2<T> CreateSpatialIndexR2<T>() where T:class,IPersistent;
+        SpatialIndexR2<T> CreateSpatialIndexR2<T>() where T:class,IPersistent;
 #else
-        abstract public SpatialIndexR2 CreateSpatialIndexR2();
+        SpatialIndexR2 CreateSpatialIndexR2();
 #endif
 
         /// <summary>
@@ -280,9 +285,9 @@ namespace Perst
         /// <param name="unique"> whether collection is unique (members with the same key value are not allowed)</param>
         /// <returns> persistent object implementing sorted collection</returns>
 #if USE_GENERICS
-        abstract public SortedCollection<K,V> CreateSortedCollection<K,V>(PersistentComparator<K,V> comparator, bool unique) where V:class,IPersistent;
+        SortedCollection<K,V> CreateSortedCollection<K,V>(PersistentComparator<K,V> comparator, bool unique) where V:class,IPersistent;
 #else
-        abstract public SortedCollection CreateSortedCollection(PersistentComparator comparator, bool unique);
+        SortedCollection CreateSortedCollection(PersistentComparator comparator, bool unique);
 #endif
 
         /// <summary>
@@ -293,9 +298,9 @@ namespace Perst
         /// <param name="unique"> whether collection is unique (members with the same key value are not allowed)</param>
         /// <returns> persistent object implementing sorted collection</returns>
 #if USE_GENERICS
-        abstract public SortedCollection<K,V> CreateSortedCollection<K,V>(bool unique) where V:class,IPersistent,IComparable<K>,IComparable<V>;
+        SortedCollection<K,V> CreateSortedCollection<K,V>(bool unique) where V:class,IPersistent,IComparable<K>,IComparable<V>;
 #else
-        abstract public SortedCollection CreateSortedCollection(bool unique);
+        SortedCollection CreateSortedCollection(bool unique);
 #endif
 
         /// <summary>
@@ -305,9 +310,9 @@ namespace Perst
         /// empty set of persistent objects
         /// </returns>
 #if USE_GENERICS
-        abstract public ISet<T> CreateSet<T>() where T:class,IPersistent;
+        ISet<T> CreateSet<T>() where T:class,IPersistent;
 #else
-        abstract public ISet CreateSet();
+        ISet CreateSet();
 #endif
 
         /// <summary> Create one-to-many link.
@@ -316,9 +321,9 @@ namespace Perst
         /// 
         /// </returns>
 #if USE_GENERICS
-        abstract public Link<T> CreateLink<T>() where T:class,IPersistent;
+        Link<T> CreateLink<T>() where T:class,IPersistent;
 #else
-        abstract public Link CreateLink();
+        Link CreateLink();
 #endif
 		
         /// <summary> Create one-to-many link with specified initial size.
@@ -328,9 +333,9 @@ namespace Perst
         /// 
         /// </returns>
 #if USE_GENERICS
-        abstract public Link<T> CreateLink<T>(int initialSize) where T:class,IPersistent;
+        Link<T> CreateLink<T>(int initialSize) where T:class,IPersistent;
 #else
-        abstract public Link CreateLink(int initialSize);
+        Link CreateLink(int initialSize);
 #endif
 		
         /// <summary>  Create new scalable set references to persistent objects.
@@ -342,9 +347,9 @@ namespace Perst
         /// <returns>new empty set, new members can be added to the set later.
         /// </returns>
 #if USE_GENERICS
-        abstract public ISet<T> CreateScalableSet<T>() where T:class,IPersistent;
+        ISet<T> CreateScalableSet<T>() where T:class,IPersistent;
 #else
-        abstract public ISet CreateScalableSet();
+        ISet CreateScalableSet();
 #endif
 		
         /// <summary>  Create new scalable set references to persistent objects.
@@ -357,9 +362,9 @@ namespace Perst
         /// <returns>new empty set, new members can be added to the set later.
         /// </returns>
 #if USE_GENERICS
-        abstract public ISet<T> CreateScalableSet<T>(int initialSize) where T:class,IPersistent;
+        ISet<T> CreateScalableSet<T>(int initialSize) where T:class,IPersistent;
 #else
-        abstract public ISet CreateScalableSet(int initialSize);
+        ISet CreateScalableSet(int initialSize);
 #endif
 		
         /// <summary> Create dynamcially extended array of reference to persistent objects.
@@ -369,9 +374,9 @@ namespace Perst
         /// <returns>new empty array, new members can be added to the array later.
         /// </returns>
 #if USE_GENERICS
-        abstract public PArray<T> CreateArray<T>() where T:class,IPersistent;
+        PArray<T> CreateArray<T>() where T:class,IPersistent;
 #else
-        abstract public PArray CreateArray();
+        PArray CreateArray();
 #endif
 		
         /// <summary> Create dynamcially extended array of reference to persistent objects.
@@ -382,9 +387,9 @@ namespace Perst
         /// <returns>new empty array, new members can be added to the array later.
         /// </returns>
 #if USE_GENERICS
-        abstract public PArray<T> CreateArray<T>(int initialSize) where T:class,IPersistent;
+        PArray<T> CreateArray<T>(int initialSize) where T:class,IPersistent;
 #else
-        abstract public PArray CreateArray(int initialSize);
+        PArray CreateArray(int initialSize);
 #endif
 		
         /// <summary> Create relation object. Unlike link which represent embedded relation and stored
@@ -398,9 +403,9 @@ namespace Perst
         /// 
         /// </returns>
 #if USE_GENERICS
-        abstract public Relation<M,O> CreateRelation<M,O>(O owner) where M:class,IPersistent where O:class,IPersistent;
+        Relation<M,O> CreateRelation<M,O>(O owner) where M:class,IPersistent where O:class,IPersistent;
 #else
-        abstract public Relation CreateRelation(IPersistent owner);
+        Relation CreateRelation(IPersistent owner);
 #endif
 
 
@@ -408,7 +413,7 @@ namespace Perst
         /// Create new BLOB. Create object for storing large binary data.
         /// </summary>
         /// <returns>empty BLOB</returns>
-        abstract public Blob CreateBlob();
+        Blob CreateBlob();
 
 #if USE_GENERICS
         /// <summary>
@@ -430,7 +435,7 @@ namespace Perst
         /// value of maxBlockTimeInterval can be set as 100*(24*60*60*10000000L)*2
         /// </param>
         /// <returns>new empty time series</returns>
-        abstract public TimeSeries<T> CreateTimeSeries<T>(int blockSize, long maxBlockTimeInterval) where T:TimeSeriesTick;
+        TimeSeries<T> CreateTimeSeries<T>(int blockSize, long maxBlockTimeInterval) where T:TimeSeriesTick;
 #else
         /// <summary>
         /// Create new time series object. 
@@ -451,7 +456,7 @@ namespace Perst
         /// value of maxBlockTimeInterval can be set as 100*(24*60*60*10000000L)*2
         /// </param>
         /// <returns>new empty time series</returns>
-        abstract public TimeSeries CreateTimeSeries(Type blockClass, long maxBlockTimeInterval);
+        TimeSeries CreateTimeSeries(Type blockClass, long maxBlockTimeInterval);
 #endif
 		
         /// <summary>
@@ -467,9 +472,9 @@ namespace Perst
         /// <returns>created PATRICIA trie</returns>
         ///
 #if USE_GENERICS
-        abstract public PatriciaTrie<T> CreatePatriciaTrie<T>() where T:class,IPersistent;
+        PatriciaTrie<T> CreatePatriciaTrie<T>() where T:class,IPersistent;
 #else
-        abstract public PatriciaTrie CreatePatriciaTrie();
+        PatriciaTrie CreatePatriciaTrie();
 #endif
 
 
@@ -480,10 +485,7 @@ namespace Perst
         /// <returns>
         /// empty set of persistent objects
         /// </returns>
-        public ISet<IPersistent> CreateSet() 
-        {
-             return CreateSet<IPersistent>();
-        } 
+        ISet<IPersistent> CreateSet();
         
         /// <summary>
         /// Create new generic link
@@ -491,10 +493,7 @@ namespace Perst
         /// <returns>
         /// link of IPersistent references
         /// </returns>
-        public Link<IPersistent> CreateLink()
-        {
-            return CreateLink<IPersistent>(8);
-        }
+        Link<IPersistent> CreateLink();
 		
         /// <summary>
         /// Create new generic link with specified initial size
@@ -503,20 +502,14 @@ namespace Perst
         /// <returns>
         /// link of IPersistent references
         /// </returns>
-        public Link<IPersistent> CreateLink(int initialSize)
-        {
-            return CreateLink<IPersistent>(initialSize);
-        }
+        Link<IPersistent> CreateLink(int initialSize);
 
         /// Create new generic array of reference
         /// </summary>
         /// <returns>
         /// array of IPersistent references
         /// </returns>
-        public PArray<IPersistent> CreateArray()
-        {
-            return CreateArray<IPersistent>(8);
-        }
+        PArray<IPersistent> CreateArray();
 		
         /// Create new generic array of reference
         /// </summary>
@@ -524,16 +517,13 @@ namespace Perst
         /// <returns>
         /// array of IPersistent references
         /// </returns>
-        public PArray<IPersistent> CreateArray(int initialSize)
-        {
-            return CreateArray<IPersistent>(initialSize);
-        }
+        PArray<IPersistent> CreateArray(int initialSize);
 #endif		
 
 
         /// <summary> Commit transaction (if needed) and close the storage
         /// </summary>
-        abstract public void  Close();
+        void  Close();
 
         /// <summary> Set threshold for initiation of garbage collection. By default garbage collection is disable (threshold is set to
         /// Int64.MaxValue). If it is set to the value different fro Long.MAX_VALUE, GC will be started each time when
@@ -543,27 +533,27 @@ namespace Perst
         /// <param name="allocatedDelta"> delta between total size of allocated and deallocated object since last GC or storage opening
         /// </param>
         ///
-        abstract public void SetGcThreshold(long allocatedDelta);
+        void SetGcThreshold(long allocatedDelta);
 
         /// <summary>Explicit start of garbage collector
         /// </summary>
         /// <returns>number of collected (deallocated) objects</returns>
         /// 
-        abstract public int Gc();
+        int Gc();
 
         /// <summary> Export database in XML format 
         /// </summary>
         /// <param name="writer">writer for generated XML document
         /// 
         /// </param>
-        abstract public void  ExportXML(System.IO.StreamWriter writer);
+        void  ExportXML(System.IO.StreamWriter writer);
 		
         /// <summary> Import data from XML file
         /// </summary>
         /// <param name="reader">XML document reader
         /// 
         /// </param>
-        abstract public void  ImportXML(System.IO.StreamReader reader);
+        void  ImportXML(System.IO.StreamReader reader);
 		
         		
         /// <summary> 
@@ -574,7 +564,7 @@ namespace Perst
         /// </summary>
         /// <param name="oid">object oid</param>
         /// <returns>reference to the object with specified OID</returns>
-        abstract public IPersistent GetObjectByOID(int oid);
+        IPersistent GetObjectByOID(int oid);
 
         /// <summary> 
         /// Explicitely make object peristent. Usually objects are made persistent
@@ -584,7 +574,7 @@ namespace Perst
         /// </summary>
         /// <param name="obj">object to be made persistent</param>
         /// <returns>OID assigned to the object</returns>
-        abstract public int MakePersistent(IPersistent obj);
+        int MakePersistent(IPersistent obj);
 
         ///
         /// <summary>
@@ -665,12 +655,24 @@ namespace Perst
         /// on all strings  stored in database. So if you already have some data in the storage
         /// and then change encoding, then it can cause incorrect fetching of strings and even database crash.
         /// </TD></TR>
+        /// <TR><TD><code>perst.replication.ack</code></TD><TD>Boolean</TD><TD>false</TD>
+        /// <TD>Request acknowledgement from slave that it receives all data before transaction
+        /// commit. If this option is not set, then replication master node just writes
+        /// data to the socket not warring whether it reaches slave node or not.
+        /// When this option is set to true, master not will wait during each transaction commit acknowledgement
+        /// from slave node. Please notice that this option should be either set or not set both
+        /// at slave and master node. If it is set only on one of this nodes then behavior of
+        /// the system is unpredicted. This option can be used both in synchronous and asynchronous replication
+        /// mode. The only difference is that in first case main application thread will be blocked waiting
+        /// for acknowledgment, while in the asynchronous mode special replication thread will be blocked
+        /// allowing thread performing commit to proceed.
+        /// </TD></TR>
         /// </TABLE>
         /// </remarks>
         /// <param name="name">name of the property</param>
         /// <param name="val">value of the property</param>
         ///
-        abstract public void SetProperty(String name, Object val);
+        void SetProperty(String name, Object val);
 
         ///
         /// <summary>Set database properties. This method should be invoked before opening database. 
@@ -679,7 +681,7 @@ namespace Perst
         /// </summary>
         /// <param name="props">collections with storage properties</param>
         ///
-        abstract public void SetProperties(System.Collections.Specialized.NameValueCollection props);
+        void SetProperties(System.Collections.Specialized.NameValueCollection props);
 
         /// <summary>
         /// Set storage listener.
@@ -687,26 +689,14 @@ namespace Perst
         /// <param name="listener">new storage listener (may be null)</param>
         /// <returns>previous storage listener</returns>
         ///
-        abstract public StorageListener SetListener(StorageListener listener);
+        StorageListener SetListener(StorageListener listener);
 
         /// <summary>
         /// Set class loader. This class loader will be used to locate classes for 
         /// loaded class descriptors. If class loader is not specified or
         /// it did find the class, then class will be searched in all active assemblies
         /// </summary>
-        public ClassLoader Loader
-        {
-       
-            set 
-            { 
-                loader = value;
-            }
-
-            get 
-            { 
-                return loader;
-            }
-        }
+        ClassLoader Loader {get; set;}
 
 
 #if COMPACT_NET_FRAMEWORK
@@ -718,7 +708,7 @@ namespace Perst
         /// Other assemblies has to explicitely registered by programmer.
         /// </summary>
         /// <param name="assembly">registered assembly</param>
-        abstract public void RegisterAssembly(System.Reflection.Assembly assembly);
+        void RegisterAssembly(System.Reflection.Assembly assembly);
 #else
         /// <summary>
         /// Create persistent class wrapper. This wrapper will implement virtual properties
@@ -728,7 +718,7 @@ namespace Perst
         /// <returns>Wrapper for the specified class, implementing all virtual properties defined
         /// in it
         /// </returns>
-        abstract public IPersistent CreateClass(Type type);
+        IPersistent CreateClass(Type type);
 #endif
 
         /// <summary>
@@ -752,9 +742,10 @@ namespace Perst
         /// You should use <code>SortedCollection</code> based on T-Tree instead or alternative
         /// B-Tree implemenataion (set "perst.alternative.btree" property).
         /// </summary>
-        /// <param name="mode"><code>TransactionMode.Exclusive</code>,  <code>TransactionMode.Cooperative</code> or <code>TransactionMode.Serializable</code>
+        /// <param name="mode"><code>TransactionMode.Exclusive</code>,  <code>TransactionMode.Cooperative</code>,
+        /// <code>TransactionMode.ReplicationSlave</code> or <code>TransactionMode.Serializable</code>
         /// </param>
-        abstract public void BeginThreadTransaction(TransactionMode mode);
+        void BeginThreadTransaction(TransactionMode mode);
     
         /// <summary>
         /// End per-thread transaction started by beginThreadTransaction method.
@@ -766,10 +757,7 @@ namespace Perst
         /// If transaction is <i>cooperative</i>, this method decrement counter of cooperative
         /// transactions and if it becomes zero - commit the work</li></ul>
         /// </summary>
-        public void EndThreadTransaction() 
-        { 
-            EndThreadTransaction(Int32.MaxValue);
-        }
+        void EndThreadTransaction();
 
         /// <summary>
         /// End per-thread cooperative transaction with specified maximal delay of transaction
@@ -789,13 +777,13 @@ namespace Perst
         /// If <code>maxDelay</code> is 0, current thread will be blocked until all other cooperative trasnaction are also finished
         /// and changhes will be committed to the database.
         /// </param>
-        abstract public void EndThreadTransaction(int maxDelay);
+        void EndThreadTransaction(int maxDelay);
    
         /// <summary>
         /// Rollback per-thread transaction. It is safe to use this method only for exclusive transactions.
         /// In case of cooperative transactions, this method rollback results of all transactions.
         /// </summary>
-        abstract public void RollbackThreadTransaction();
+        void RollbackThreadTransaction();
 
         /// <summary>
         /// Get database memory dump. This function returns hashmap which key is classes
@@ -809,33 +797,31 @@ namespace Perst
         /// by this method, it means that there is garbage in the database. You can explicitly invoke
         /// garbage collector in this case.</p> 
         /// </summary>
-        abstract public System.Collections.Hashtable GetMemoryDump();
+        Hashtable GetMemoryDump();
 
         /// <summary>
         /// Get total size of all allocated objects in the database
         /// </summary>
-        abstract public long UsedSize {get;}
+        long UsedSize {get;}
 
         /// <summary>
         /// Get size of the database
         /// </summary>
-        abstract public long DatabaseSize {get;}
+        long DatabaseSize {get;}
 
 
         // Internal methods
 		
-        abstract protected internal void  deallocateObject(IPersistent obj);
+        void  deallocateObject(IPersistent obj);
 		
-        abstract protected internal void  storeObject(IPersistent obj);
+        void  storeObject(IPersistent obj);
 		
-        abstract protected internal void  storeFinalizedObject(IPersistent obj);
+        void  storeFinalizedObject(IPersistent obj);
 		
-        abstract protected internal void  loadObject(IPersistent obj);
+        void  loadObject(IPersistent obj);
 		
-        abstract protected internal void  modifyObject(IPersistent obj);
+        void  modifyObject(IPersistent obj);
 
-        abstract protected internal void  lockObject(IPersistent obj);
-		
-        private ClassLoader loader;
+        void  lockObject(IPersistent obj);
     }
 }

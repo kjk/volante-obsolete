@@ -55,6 +55,12 @@ namespace Perst.Impl
 #endif
         }
 
+        public long Length
+        {
+            get { return file.Length; }
+        }
+
+
         internal OSFile(String filePath, bool readOnly, bool noFlush)
         {
             this.noFlush = noFlush;

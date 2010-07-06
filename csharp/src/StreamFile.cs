@@ -95,6 +95,13 @@ namespace Perst
             get { return this.noFlush; }
             set { this.noFlush = value; }
         }
+
+
+        public long Length 
+        {
+            get { return stream.Length; }
+        }
+
     }
     
     #endregion

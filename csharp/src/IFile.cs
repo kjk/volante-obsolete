@@ -47,5 +47,14 @@ namespace Perst
             get;
             set;
         }
+
+        /// <summary>
+        /// Length of the file
+        /// </summary>
+        /// <returns>length of file in bytes</returns>
+        long Length
+        {
+            get;
+        }
     }
 }

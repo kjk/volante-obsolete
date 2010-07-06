@@ -42,13 +42,15 @@ rd /s/q TestBlob\obj
 rd /s/q TestBlob\bin
 rd /s/q TestBit\obj
 rd /s/q TestBit\bin
-del /q *.dbs
+rd /s/q TestReplic\obj
+rd /s/q TestReplic\bin
 rd /s/q TestTimeSeries\obj
 rd /s/q TestTimeSeries\bin
-del /q *.xml
 rd /s/q IpCountry\obj
 rd /s/q IpCountry\bin
 del /q IpCountry\*.dbs
+del /q *.dbs
+del /q *.xml
 del /q *.suo
 del /q *.ncb
 cd ..

@@ -105,6 +105,13 @@ namespace Perst.Impl
             return false;
         }
 
+#if USE_GENERICS
+        public override void RemoveAt(int i)
+        {
+            Remove(i);
+        }
+#endif
+
         public override void Remove(int i)
         {
             link.Remove(i);

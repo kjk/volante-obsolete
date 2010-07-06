@@ -1,7 +1,7 @@
 CSC=csc /debug+ /d:USE_GENERICS,SUPPORT_RAW_TYPE
 #CSC=csc /debug+
 
-EXAMPLES=IpCountry/bin/debug/IpCountry.exe Guess/bin/debug/Guess.exe PropGuess/bin/debug/Guess.exe TestBackup/bin/debug/TestBackup.exe TestBit/bin/debug/TestBit.exe TestBlob/bin/debug/TestBlob.exe TestCompoundIndex/bin/debug/TestCompoundIndex.exe TestConcur/bin/debug/TestConcur.exe TestEnumerator/bin/debug/TestEnumerator.exe TestGC/bin/debug/TestGC.exe TestIndex/bin/debug/TestIndex.exe TestIndex2/bin/debug/TestIndex2.exe TestLink/bin/debug/TestLink.exe TestList/bin/debug/TestList.exe TestR2/bin/debug/TestR2.exe TestRaw/bin/debug/TestRaw.exe TestRtree/bin/debug/TestRtree.exe TestSOD/bin/debug/TestSOD.exe TestSSD/bin/debug/TestSSD.exe TestTimeSeries/bin/debug/TestTimeSeries.exe TestTtree/bin/debug/TestTtree.exe TestXML/bin/debug/TestXML.exe TransparentGuess/bin/debug/Guess.exe
+EXAMPLES=IpCountry/bin/debug/IpCountry.exe Guess/bin/debug/Guess.exe PropGuess/bin/debug/Guess.exe TestBackup/bin/debug/TestBackup.exe TestBit/bin/debug/TestBit.exe TestBlob/bin/debug/TestBlob.exe TestCompoundIndex/bin/debug/TestCompoundIndex.exe TestConcur/bin/debug/TestConcur.exe TestEnumerator/bin/debug/TestEnumerator.exe TestGC/bin/debug/TestGC.exe TestIndex/bin/debug/TestIndex.exe TestIndex2/bin/debug/TestIndex2.exe TestLink/bin/debug/TestLink.exe TestList/bin/debug/TestList.exe TestR2/bin/debug/TestR2.exe TestRaw/bin/debug/TestRaw.exe TestRtree/bin/debug/TestRtree.exe TestSOD/bin/debug/TestSOD.exe TestSSD/bin/debug/TestSSD.exe TestTimeSeries/bin/debug/TestTimeSeries.exe TestTtree/bin/debug/TestTtree.exe TestXML/bin/debug/TestXML.exe TransparentGuess/bin/debug/Guess.exe TestReplic/bin/debug/TestReplic.exe
 
 LIBRARY=bin\\perstnet.dll
 
@@ -129,3 +129,8 @@ TestXML/bin/debug/TestXML.exe: TestXML/TestXML.cs $(LIBRARY)
 	-mkdir TestXML\bin\debug
 	copy $(LIBRARY) TestXML\bin\debug
 	$(CSC) /r:$(LIBRARY) /out:TestXML/bin/debug/TestXML.exe TestXML\\TestXML.cs
+
+TestReplic/bin/debug/TestReplic.exe: TestReplic/TestReplic.cs $(LIBRARY)
+	-mkdir TestReplic\bin\debug
+	copy $(LIBRARY) TestReplic\bin\debug
+	$(CSC) /r:$(LIBRARY) /out:TestReplic/bin/debug/TestReplic.exe TestReplic\\TestReplic.cs

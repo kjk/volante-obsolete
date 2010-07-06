@@ -95,6 +95,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestList", "TestList\TestLi
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestReplic", "TestReplic\TestReplic.csproj", "{3DC0BBA0-DC69-457C-9E19-5A9A5811B743}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfiguration) = preSolution
 		Debug = Debug
@@ -197,6 +201,10 @@ Global
 		{FF1AADED-3F7D-43C5-8BAD-801C98EB7D2B}.Debug.Build.0 = Debug|.NET
 		{FF1AADED-3F7D-43C5-8BAD-801C98EB7D2B}.Release.ActiveCfg = Release|.NET
 		{FF1AADED-3F7D-43C5-8BAD-801C98EB7D2B}.Release.Build.0 = Release|.NET
+		{3DC0BBA0-DC69-457C-9E19-5A9A5811B743}.Debug.ActiveCfg = Debug|.NET
+		{3DC0BBA0-DC69-457C-9E19-5A9A5811B743}.Debug.Build.0 = Debug|.NET
+		{3DC0BBA0-DC69-457C-9E19-5A9A5811B743}.Release.ActiveCfg = Release|.NET
+		{3DC0BBA0-DC69-457C-9E19-5A9A5811B743}.Release.Build.0 = Release|.NET
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 	EndGlobalSection

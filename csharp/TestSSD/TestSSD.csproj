@@ -89,11 +89,6 @@
         <Files>
             <Include>
                 <File
-                    RelPath = "AssemblyInfo.cs"
-                    SubType = "Code"
-                    BuildAction = "Compile"
-                />
-                <File
                     RelPath = "TestSSD.cs"
                     SubType = "Code"
                     BuildAction = "Compile"

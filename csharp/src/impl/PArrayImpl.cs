@@ -160,6 +160,13 @@ using System.Collections;
             return false;
         }
 
+#if USE_GENERICS
+        public virtual void RemoveAt(int i)
+        { 
+            Remove(i);
+        }
+#endif
+
         public virtual void Remove(int i)
         {
             if (i < 0 || i >= used)

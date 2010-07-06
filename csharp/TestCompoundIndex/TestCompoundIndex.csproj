@@ -79,11 +79,6 @@
         <Files>
             <Include>
                 <File
-                    RelPath = "AssemblyInfo.cs"
-                    SubType = "Code"
-                    BuildAction = "Compile"
-                />
-                <File
                     RelPath = "TestCompoundIndex.cs"
                     SubType = "Code"
                     BuildAction = "Compile"

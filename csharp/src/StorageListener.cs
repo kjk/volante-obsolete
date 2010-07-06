@@ -42,5 +42,17 @@ namespace Perst
         /// <param name="nDeallocatedObjects">number of deallocated objects</param>
         ///
         public void GcCompleted(int nDeallocatedObjects) {}
+
+        /// <summary>
+        /// Handle replication error 
+        /// </summary>
+        /// <param name="host">address of host replication to which is failed (null if error jappens at slave node)</param>
+        /// <returns><code>true</code> if host should be reconnected and attempt to send data to it should be 
+        /// repeated, <code>false</code> if no more attmpts to communicate with this host should be performed
+        /// </returns>
+        public bool ReplicationError(string host) 
+        {
+            return false;
+        }        
     }
 }

@@ -51,6 +51,9 @@ namespace Perst
         public abstract bool  Remove(IPersistent obj);
 #endif
 
+#if USE_GENERICS
+        public abstract void  RemoveAt(int i);
+#endif
         public abstract void  Remove(int i);
 
 #if USE_GENERICS
