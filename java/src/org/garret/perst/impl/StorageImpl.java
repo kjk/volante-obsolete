@@ -2,6 +2,7 @@ package org.garret.perst.impl;
 
 import org.garret.perst.*;
 import java.lang.reflect.*;
+import java.lang.ref.WeakReference;
 import java.util.*;
 import java.io.*;
 
@@ -738,7 +739,6 @@ public class StorageImpl extends Storage {
 
         objectCache = new WeakHashTable(dbObjectCacheInitSize);
         classDescMap = new HashMap();
-        modifiedList = new ArrayList();
         descList = null;
 
 	header = new Header();
@@ -957,11 +957,7 @@ public class StorageImpl extends Storage {
         if (!opened) {
             throw new StorageError(StorageError.STORAGE_NOT_OPENED);
         }
-        i = modifiedList.size();
-        while (--i >= 0) { 
-            ((IPersistent)modifiedList.get(i)).store();
-        }
-        modifiedList.clear();
+        objectCache.flush();
 	if (modified) { 
 	    int curr = currIndex;
 	    int[] map = dirtyPagesMap;
@@ -1113,7 +1109,7 @@ public class StorageImpl extends Storage {
         if (!opened) {
             throw new StorageError(StorageError.STORAGE_NOT_OPENED);
         }
-        modifiedList.clear();
+        objectCache.clear();
         if (!modified) { 
             return;
         }
@@ -1152,6 +1148,15 @@ public class StorageImpl extends Storage {
         reloadScheme();
     }
 
+    public synchronized java.util.Set createSet() {
+        if (!opened) { 
+            throw new StorageError(StorageError.STORAGE_NOT_OPENED);
+        }
+        PersistentSet set = new PersistentSet();
+        setObjectOid(set, 0, false);
+        return set;
+    }
+        
     public synchronized Index createIndex(Class keyType, boolean unique) {
         if (!opened) { 
             throw new StorageError(StorageError.STORAGE_NOT_OPENED);
@@ -1504,10 +1509,6 @@ public class StorageImpl extends Storage {
         return oid == 0 ? null : lookupObject(oid, null);
     }
 
-    protected synchronized void modifyObject(IPersistent obj) {
-        Assert.that(!obj.isModified());
-        modifiedList.add(obj);
-    }
 
     protected synchronized void storeObject(IPersistent obj) {
         int oid = obj.getOid();
@@ -2456,7 +2457,6 @@ public class StorageImpl extends Storage {
     boolean   gcDone;
     int       btreeClassOid;
     int       btree2ClassOid;
-    ArrayList modifiedList;
 
     WeakHashTable   objectCache;
     HashMap         classDescMap;

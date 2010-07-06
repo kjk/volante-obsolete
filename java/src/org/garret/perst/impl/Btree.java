@@ -1,6 +1,7 @@
 package org.garret.perst.impl;
 import  org.garret.perst.*;
 import  java.util.*;
+import  java.lang.reflect.Array;
 
 class Btree extends PersistentResource implements Index { 
     int       root;
@@ -178,10 +179,23 @@ class Btree extends PersistentResource implements Index {
         }
     }
         
-    public IPersistent[] toArray() {
+    public IPersistent[] toPersistentArray() {
         IPersistent[] arr = new IPersistent[nElems];
         if (root != 0) { 
             BtreePage.traverseForward((StorageImpl)getStorage(), root, type, height, arr, 0);
+        }
+        return arr;
+    }
+
+    public IPersistent[] toPersistentArray(IPersistent[] arr) {
+        if (arr.length < nElems) { 
+            arr = (IPersistent[])Array.newInstance(arr.getClass().getComponentType(), nElems);
+        }
+        if (root != 0) { 
+            BtreePage.traverseForward((StorageImpl)getStorage(), root, type, height, arr, 0);
+        }
+        if (arr.length > nElems) { 
+            arr[nElems] = null;
         }
         return arr;
     }

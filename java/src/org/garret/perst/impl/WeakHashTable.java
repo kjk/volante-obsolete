@@ -64,6 +64,13 @@ public class WeakHashTable {
 	}
 	return null;
     }
+    
+    public synchronized void clear() { 
+        for (int i = 0; i < table.length; i++) { 
+            table[i] = null;
+        }
+        count = 0;
+    }
 
     void rehash() {
 	int oldCapacity = table.length;
@@ -103,6 +110,17 @@ public class WeakHashTable {
 		newMap[index] = e;
 	    }
 	}
+    }
+
+    public void flush() {
+        for (int i = 0; i < table.length; i++) { 
+            for (Entry e = table[i]; e != null; e = e.next) { 
+                IPersistent obj = (IPersistent)e.ref.get();
+                if (obj != null && obj.isModified()) { 
+                    obj.store();
+                }
+            }
+        }
     }
 
     public int size() { 

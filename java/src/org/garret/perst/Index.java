@@ -79,10 +79,27 @@ public interface Index extends IPersistent, IResource {
     public void          clear();
 
     /**
-     * Get all objects in the index as array orderd by index key
+     * Get all objects in the index as array ordered by index key.
      * @return array of objects in the index ordered by key value
      */
-    public IPersistent[] toArray();
+    public IPersistent[] toPersistentArray();
+
+    /**
+     * Get all objects in the index as array ordered by index key.
+     * The runtime type of the returned array is that of the specified array.  
+     * If the index fits in the specified array, it is returned therein.  
+     * Otherwise, a new array is allocated with the runtime type of the 
+     * specified array and the size of this index.<p>
+     *
+     * If this index fits in the specified array with room to spare
+     * (i.e., the array has more elements than this index), the element
+     * in the array immediately following the end of the index is set to
+     * <tt>null</tt>.  This is useful in determining the length of this
+     * index <i>only</i> if the caller knows that this index does
+     * not contain any <tt>null</tt> elements.)<p>
+     * @return array of objects in the index ordered by key value
+     */
+    public IPersistent[] toPersistentArray(IPersistent[] arr);
 
     /**
      * Get iterator for traversing all objects in the index. 

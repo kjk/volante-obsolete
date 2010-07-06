@@ -88,6 +88,12 @@ public abstract class Storage {
     abstract public void rollback();
 
     /**
+     * Create new peristent set
+     * @return persistent object implementing set
+     */
+    abstract public java.util.Set createSet();
+
+    /**
      * Create new index
      * @param type type of the index key (you should path here <code>String.class</code>, 
      * <code>int.class</code>, ...)
@@ -205,8 +211,6 @@ public abstract class Storage {
     abstract protected void deallocateObject(IPersistent obj);
 
     abstract protected void storeObject(IPersistent obj);
-
-    abstract protected void modifyObject(IPersistent obj);
 
     abstract protected void loadObject(IPersistent obj);
 

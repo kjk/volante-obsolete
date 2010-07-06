@@ -85,10 +85,10 @@ public interface FieldIndex extends IPersistent {
     public void          clear();
 
     /**
-     * Get all objects in the index as array orderd by index key
-     * @return array of specified type conatinin objects in the index ordered by key value
+     * Get all objects in the index as array ordered by index key
+     * @return array of specified type conatining objects in the index ordered by key value
      */
-    public IPersistent[] toArray();
+    public IPersistent[] toPersistentArray();
 
     /**
      * Get iterator for traversing all objects in the index. 
@@ -97,4 +97,40 @@ public interface FieldIndex extends IPersistent {
      * @return index iterator
      */
     public java.util.Iterator iterator();
+    /**
+     * Get iterator for traversing all entries in the index. 
+     * Iterator next() method returns object implementing <code>Map.Entry</code> interface
+     * which allows to get entry key and value.
+     * Objects are iterated in the ascent key order. 
+     * You should not update/remove or add members to the index during iteration
+     * @return index iterator
+     */
+    public java.util.Iterator entryIterator();
+
+    static final int ASCENT_ORDER  = 0;
+    static final int DESCENT_ORDER = 1;
+    /**
+     * Get iterator for traversing objects in the index with key belonging to the specified range. 
+     * You should not update/remove or add members to the index during iteration
+     * @param from low boundary. If <code>null</code> then low boundary is not specified.
+     * Low boundary can be inclusive or exclusive. 
+     * @param till high boundary. If <code>null</code> then high boundary is not specified.
+     * High boundary can be inclusive or exclusive. 
+     * @param order <code>ASCENT_ORDER</code> or <code>DESCENT_ORDER</code>
+     * @return selection iterator
+     */
+    public java.util.Iterator iterator(Key from, Key till, int order);
+
+    /**
+     * Get iterator for traversing index entries with key belonging to the specified range. 
+     * Iterator next() method returns object implementing <code>Map.Entry</code> interface
+     * You should not update/remove or add members to the index during iteration
+     * @param from low boundary. If <code>null</code> then low boundary is not specified.
+     * Low boundary can be inclusive or exclusive. 
+     * @param till high boundary. If <code>null</code> then high boundary is not specified.
+     * High boundary can be inclusive or exclusive. 
+     * @param order <code>ASCENT_ORDER</code> or <code>DESCENT_ORDER</code>
+     * @return selection iterator
+     */
+    public java.util.Iterator entryIterator(Key from, Key till, int order);
 }

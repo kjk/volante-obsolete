@@ -151,7 +151,7 @@ class BtreeFieldIndex extends Btree implements FieldIndex {
         return (IPersistent[])list.toArray((Object[])Array.newInstance(cls, list.size()));
     }
 
-    public IPersistent[] toArray() {
+    public IPersistent[] toPersistentArray() {
         IPersistent[] arr = (IPersistent[])Array.newInstance(cls, nElems);
         if (root != 0) { 
             BtreePage.traverseForward((StorageImpl)getStorage(), root, type, height, arr, 0);
