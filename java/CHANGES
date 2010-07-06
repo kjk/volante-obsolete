@@ -146,3 +146,6 @@ Attention: database format is incompatible with version 1.22!
 
 --- Release version 2.12 12.01.2004 -------------------------------------
 1. Fix bug in backup method
+
+--- Release version 2.13 24.01.2004 -------------------------------------
+1. Add 007 benchmark
