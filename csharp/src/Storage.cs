@@ -198,6 +198,8 @@ namespace Perst
 		
         abstract protected internal void  loadObject(IPersistent obj);
 		
+        abstract protected internal void  modifyObject(IPersistent obj);
+		
         protected internal void  setObjectOid(IPersistent obj, int oid, bool raw)
         {
             Persistent po = (Persistent) obj;

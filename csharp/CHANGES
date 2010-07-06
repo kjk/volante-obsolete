@@ -72,4 +72,9 @@ For example it can be used to work with flash card or encrypted files.
 
 1. Add enumeration and indexation methods to Link interface. 
 
+--- Release version 1.19 24.09.2003 -------------------------------------
 
+1. Provide new implementation of modified object list. Old implementation introduced in 
+version 1.17 and based on weak reference in finalize method in Persistent class
+can cause loose of modifications if weak reference is cleared by GC, but finalize
+method is not invoked before transaction commit.

@@ -75,6 +75,7 @@ namespace Perst
                 { 
                     throw new StorageError(StorageError.ErrorCode.ACCESS_TO_STUB);
                 }
+                storage.modifyObject(this);
                 state |= (int)ObjectState.DIRTY;
             }
         }
@@ -108,15 +109,6 @@ namespace Perst
         {
         }
         
-        
-        ~Persistent() 
-        { 
-            if ((state & (int)ObjectState.DIRTY) != 0) 
-            { 
-                store();
-            }
-        }
-
         [NonSerialized()]
         internal Storage storage;
         [NonSerialized()]

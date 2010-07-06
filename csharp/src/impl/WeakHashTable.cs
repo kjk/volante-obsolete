@@ -102,21 +102,6 @@ namespace Perst.Impl
             }
         }
 
-        public void flush() 
-        {
-            for (int i = 0; i < table.Length; i++) 
-            { 
-                for (Entry e = table[i]; e != null; e = e.next) 
-                { 
-                    IPersistent obj = (IPersistent)e.oref.Target;
-                    if (obj != null && obj.isModified()) 
-                    { 
-                        obj.store();
-                    }
-                }   
-            }
-        }
-   
         internal void  rehash()
         {
             int oldCapacity = table.Length;

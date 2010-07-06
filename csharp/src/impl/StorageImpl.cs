@@ -825,6 +825,7 @@ namespace Perst.Impl
 				
                 objectCache = new WeakHashTable(dbObjectCacheInitSize);
                 classDescMap = new Hashtable();
+                modifiedList = new ArrayList();
                 descList = null;
 				
                 objectFormatter = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
@@ -956,6 +957,7 @@ namespace Perst.Impl
                 }
                 reloadScheme();
                 opened = true;
+                new ModifiedListSupervisor(this);
             }
         }
 
@@ -1047,7 +1049,32 @@ namespace Perst.Impl
             return desc;
         }
 		
-		
+        class ModifiedListSupervisor 
+        { 
+            ~ModifiedListSupervisor() 
+            { 
+                storage.truncateModifiedList = true;
+                new ModifiedListSupervisor(storage);
+            }
+
+            internal ModifiedListSupervisor(StorageImpl storage) 
+            { 
+                this.storage = storage;
+            }
+            private StorageImpl storage;
+        }
+
+        internal void storeModifiedObjects() 
+        {
+            foreach (IPersistent p in modifiedList) 
+            {
+                p.store();
+            }
+            modifiedList.Clear();
+        }    
+
+
+
         public override void  commit()
         {
             lock(this)
@@ -1056,8 +1083,7 @@ namespace Perst.Impl
                 {
                     throw new StorageError(StorageError.ErrorCode.STORAGE_NOT_OPENED);
                 }
-                objectCache.flush();
-                
+                storeModifiedObjects();
                 if (modified)
                 {
                     int curr = currIndex;
@@ -1239,6 +1265,7 @@ namespace Perst.Impl
                     throw new StorageError(StorageError.ErrorCode.STORAGE_NOT_OPENED);
                 }
                 objectCache.clear();
+                modifiedList.Clear();
                 if (!modified) 
                 { 
                     return;
@@ -1716,6 +1743,22 @@ namespace Perst.Impl
         public override IPersistent getObjectByOID(int oid)
         {
             return oid == 0 ? null : lookupObject(oid, null);
+        }
+
+        protected internal override void modifyObject(IPersistent obj) 
+        {
+            lock(this)
+            {
+                if (truncateModifiedList) 
+                { 
+                    storeModifiedObjects();
+                    truncateModifiedList = false;
+                }
+                if (!obj.isModified()) 
+                {
+                    modifiedList.Add(obj);
+                }
+            }
         }
 
         protected internal override void storeObject(IPersistent obj)
@@ -3093,6 +3136,8 @@ namespace Perst.Impl
         internal bool      gcDone;
         internal int       btreeClassOid;
         internal int       btree2ClassOid;
+        internal ArrayList modifiedList;
+        internal bool      truncateModifiedList;
 
         internal WeakHashTable objectCache;
         internal Hashtable classDescMap;
