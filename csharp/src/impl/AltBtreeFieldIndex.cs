@@ -6,7 +6,7 @@ namespace Perst.Impl
     using System.Diagnostics;
     using Perst;
 	
-    class BtreeFieldIndex:Btree, FieldIndex
+    class AltBtreeFieldIndex:AltBtree, FieldIndex
     {
         internal String className;
         internal String fieldName;
@@ -18,7 +18,7 @@ namespace Perst.Impl
         [NonSerialized()]
         Type mbrType;
  
-        internal BtreeFieldIndex()
+        internal AltBtreeFieldIndex()
         {
         }
 
@@ -64,7 +64,8 @@ namespace Perst.Impl
             lookupField(fieldName);
         }
 		
-        internal BtreeFieldIndex(Type cls, String fieldName, bool unique) {
+        internal AltBtreeFieldIndex(Type cls, String fieldName, bool unique) 
+        {
             this.cls = cls;
             this.unique = unique;
             this.fieldName = fieldName;
@@ -72,12 +73,7 @@ namespace Perst.Impl
             lookupField(fieldName);
             type = checkType(mbrType);
         }
-
-        protected override object unpackEnum(int val) 
-        {
-            return Enum.ToObject(mbrType, val);
-        }
-
+		
         private Key extractKey(IPersistent obj) 
         { 
             Object val = mbr is FieldInfo ? ((FieldInfo)mbr).GetValue(obj) : ((PropertyInfo)mbr).GetValue(obj, null);
@@ -144,7 +140,8 @@ namespace Perst.Impl
             }
             return key;
         }
- 
+ 		
+		
         public bool Put(IPersistent obj) 
         {
             return base.Put(extractKey(obj), obj);
@@ -157,18 +154,23 @@ namespace Perst.Impl
 
         public void Remove(IPersistent obj) 
         {
-            base.remove(new BtreeKey(extractKey(obj), obj.Oid));
+            base.Remove(new BtreeKey(extractKey(obj), obj));
         }
         
         public bool Contains(IPersistent obj) 
         {
             Key key = extractKey(obj);
-            if (unique) { 
+            if (unique) 
+            { 
                 return base.Get(key) != null;
-            } else { 
+            } 
+            else 
+            { 
                 IPersistent[] mbrs = Get(key, key);
-                for (int i = 0; i < mbrs.Length; i++) { 
-                    if (mbrs[i] == obj) { 
+                for (int i = 0; i < mbrs.Length; i++) 
+                { 
+                    if (mbrs[i] == obj) 
+                    { 
                         return true;
                     }
                 }
@@ -176,7 +178,8 @@ namespace Perst.Impl
             }
         }
 
-        public void Append(IPersistent obj) {
+        public void Append(IPersistent obj) 
+        {
             lock(this) 
             { 
                 Key key;
@@ -211,9 +214,9 @@ namespace Perst.Impl
         public override IPersistent[] Get(Key from, Key till)
         {
             ArrayList list = new ArrayList();
-            if (root != 0)
+            if (root != null)
             {
-                BtreePage.find((StorageImpl) Storage, root, checkKey(from), checkKey(till), this, height, list);
+                root.find(checkKey(from), checkKey(till), height, list);
             }
             return (IPersistent[]) list.ToArray(cls);
         }
@@ -221,10 +224,11 @@ namespace Perst.Impl
         public override IPersistent[] ToArray() 
         {
             IPersistent[] arr = (IPersistent[])Array.CreateInstance(cls, nElems);
-            if (root != 0) { 
-                BtreePage.traverseForward((StorageImpl)Storage, root, type, height, arr, 0);
+            if (root != null) 
+            { 
+                root.traverseForward(height, arr, 0);
             }
             return arr;
         }
-    }
+	}
 }

@@ -116,6 +116,15 @@ namespace Perst
         /// <returns>created array</returns>
         IPersistent[] ToArray();
 
+        /// <summary> 
+        /// Return array with relation members. Members are not loaded and 
+        /// size of the array can be greater than actual number of members. 
+        /// </summary>
+        /// <returns>array of object with relation members used in implementation of Link class
+        /// </returns>
+        IPersistent[] ToRawArray(); 
+
+
         /// <summary> Get relation members as array with specifed element type
         /// </summary>
         /// <param name="elemType">element type of created array</param>

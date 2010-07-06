@@ -34,7 +34,7 @@ namespace Perst
 
         public virtual void Load()
         {
-            if (storage != null)
+            if (oid != 0)
             {
                 storage.loadObject(this);
             }
@@ -78,7 +78,7 @@ namespace Perst
 		
         public void Modify() 
         { 
-            if ((state & ObjectState.DIRTY) == 0 && storage != null) 
+            if ((state & ObjectState.DIRTY) == 0 && oid != 0) 
             { 
                 if ((state & ObjectState.RAW) != 0) 
                 { 
@@ -91,10 +91,12 @@ namespace Perst
 
         public virtual void Deallocate()
         {
-            if (storage != null) 
+            if (oid != 0) 
             {
                 storage.deallocateObject(this);
                 storage = null;
+                state = 0;
+                oid = 0;
             }
         }
 		
@@ -118,15 +120,26 @@ namespace Perst
         {
         }
         
+        public virtual void OnStore() 
+        {
+        }
+        
         public virtual void Invalidate() 
         {
             state &= ~ObjectState.DIRTY;
             state |= ObjectState.RAW;
         }
         
+        internal protected Persistent() {}
+
+        protected Persistent(Storage storage) 
+        {
+            this.storage = storage;
+        } 
+
         ~Persistent() 
         {
-            if ((state & ObjectState.DIRTY) != 0 && storage != null) 
+            if ((state & ObjectState.DIRTY) != 0 && oid != 0) 
             { 
                 storage.storeFinalizedObject(this);
                 state &= ~ObjectState.DIRTY;
@@ -141,15 +154,15 @@ namespace Perst
         }
 
 
-	    [NonSerialized()]
-        Storage storage;
         [NonSerialized()]
-        int oid;
+        internal protected Storage storage;
         [NonSerialized()]
-        ObjectState state;
+        internal protected int oid;
+        [NonSerialized()]
+        internal protected ObjectState state;
 
         [Flags]
-        enum ObjectState 
+        internal protected enum ObjectState 
         {
             RAW=1,
             DIRTY=2

@@ -21,12 +21,41 @@ public class TestIndex
     internal const int nRecords = 100000;
     internal static int pagePoolSize = 32 * 1024 * 1024;
 	
-    static public void  Main(System.String[] args)
+    static public void  Main(string[] args)
     {
         int i;
         Storage db = StorageFactory.Instance.CreateStorage();
 		
+        bool serializableTransaction = false;
+        for (i = 0; i < args.Length; i++) 
+        { 
+            if ("inmemory" == args[i]) 
+            { 
+                pagePoolSize = Storage.INFINITE_PAGE_POOL;
+            } 
+            else if ("altbtree" == args[i]) 
+            { 
+                db.SetProperty("perst.alternative.btree", true);
+            } 
+            else if ("serializable" == args[i]) 
+            { 
+                db.SetProperty("perst.alternative.btree", true);
+                serializableTransaction = true;
+            } 
+            else 
+            { 
+                Console.WriteLine("Unrecognized option: " + args[i]);
+            }
+        }
         db.Open("testidx.dbs", pagePoolSize);
+
+#if !COMPACT_NET_FRAMEWORK
+        if (serializableTransaction) 
+        { 
+            db.BeginThreadTransaction(TransactionMode.Serializable);
+        }
+#endif
+
         Root root = (Root) db.Root;
         if (root == null)
         {
@@ -48,7 +77,20 @@ public class TestIndex
             intIndex.Put(new Key(rec.intKey), rec);
             strIndex.Put(new Key(rec.strKey), rec);
         }
+
+#if !COMPACT_NET_FRAMEWORK
+        if (serializableTransaction) 
+        { 
+            db.EndThreadTransaction();
+            db.BeginThreadTransaction(TransactionMode.Serializable);
+        } 
+        else 
+        {
+            db.Commit();
+        }
+#else 
         db.Commit();
+#endif
         System.Console.WriteLine("Elapsed time for inserting " + nRecords + " records: " + (DateTime.Now - start));
 		
         start = System.DateTime.Now;

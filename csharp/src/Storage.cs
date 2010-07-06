@@ -5,7 +5,8 @@ namespace Perst
     public enum TransactionMode
     { 
         Exclusive,
-        Cooperative
+        Cooperative,
+        Serializable
     };
 	
 	
@@ -101,7 +102,7 @@ namespace Perst
         /// 
         /// </param>
 		
-        /// <summary> Commit changes done by the lat transaction. Transaction is started implcitlely with forst update
+        /// <summary> Commit changes done by the last transaction. Transaction is started implcitlely with forst update
         /// opertation.
         /// </summary>
         abstract public void  Commit();
@@ -344,6 +345,19 @@ namespace Perst
         /// object store/fetch operations, but generation itself takes additional time at 
         /// startup 
         /// </TD></TR>
+        /// <TR><TD><code>perst.file.readonly</code></TD><TD>Boolean</TD><TD>false</TD>
+        /// <TD>Database file should be opened in read-only mode.
+        /// </TD></TR>
+        /// <TR><TD><code>perst.alternative.btree</code></TD><TD>Boolean</TD><TD>false</TD>
+        /// <TD>Use aternative implementation of B-Tree (not using direct access to database
+        /// file pages). This implementation should be used in case of serialized per thread transctions.
+        /// New implementation of B-Tree will be used instead of old implementation
+        /// if "perst.alternative.btree" property is set. New B-Tree has incompatible format with 
+        /// old B-Tree, so you could not use old database or XML export file with new indices. 
+        /// Alternative B-Tree is needed to provide serializable transaction (old one could not be used).
+        /// Also it provides better performance (about 3 times comaring with old implementation) because
+        /// of object caching. And B-Tree supports keys of user defined types. 
+        /// </TD></TR>
         /// </TABLE>
         /// </remarks>
         /// <param name="name">name of the property</param>
@@ -394,22 +408,39 @@ namespace Perst
 #else
 
         /// <summary>
-        /// Begin per-thread transaction. Two types op per-thread transactions are supported: 
-        /// exclusive and coopertative. In case of exclusive trasnaction, only one thread
-        /// can update the database. In cooperative mode, multiple transaction can work 
-        /// concurrently and commit() method wil be invoked only when transactions of all threads
-        /// are terminated.
+        /// Begin per-thread transaction. Three types of per-thread transactions are supported: 
+        /// exclusive, cooperative and serializable. In case of exclusive transaction, only one 
+        /// thread can update the database. In cooperative mode, multiple transaction can work 
+        /// concurrently and commit() method will be invoked only when transactions of all threads
+        /// are terminated. Serializable transactions can also work concurrently. But unlike
+        /// cooperative transaction, the threads are isolated from each other. Each thread
+        /// has its own associated set of modified objects and committing the transaction will cause
+        /// saving only of these objects to the database.To synchronize access to the objects
+        /// in case of serializable transaction programmer should use lock methods
+        /// of IResource interface. Shared lock should be set before read access to any object, 
+        /// and exclusive lock - before write access. Locks will be automatically released when
+        /// transaction is committed (so programmer should not explicitly invoke unlock method)
+        /// In this case it is guaranteed that transactions are serializable.
+        /// It is not possible to use <code>IPersistent.store()</code> method in
+        /// serializable transactions. That is why it is also not possible to use Index and FieldIndex
+        /// containers (since them are based on B-Tree and B-Tree directly access database pages
+        /// and use <code>store()</code> method to assign OID to inserted object. 
+        /// You should use <code>SortedCollection</code> based on T-Tree instead or alternative
+        /// B-Tree implemenataion (set "perst.alternative.btree" property).
         /// </summary>
-        /// <param name="mode"><code>TransactionMode.Exclusive</code> or <code>TransactionMode.Cooperative</code>
+        /// <param name="mode"><code>TransactionMode.Exclusive</code>,  <code>TransactionMode.Cooperative</code> or <code>TransactionMode.Serializable</code>
         /// </param>
         abstract public void BeginThreadTransaction(TransactionMode mode);
     
         /// <summary>
         /// End per-thread transaction started by beginThreadTransaction method.
-        /// If transaction is <i>exclusive</i>, this method commits the transaction and
-        /// allows other thread to proceed.
+        /// <ul>
+        /// <li>If transaction is <i>exclusive</i>, this method commits the transaction and
+        /// allows other thread to proceed.</li><li>
+        /// If transaction is <i>serializable</i>, this method commits sll changes done by this thread
+        /// and release all locks set by this thread.</li><li>     
         /// If transaction is <i>cooperative</i>, this method decrement counter of cooperative
-        /// transactions and if it becomes zero - commit the work
+        /// transactions and if it becomes zero - commit the work</li></ul>
         /// </summary>
         public void EndThreadTransaction() 
         { 
@@ -469,7 +500,9 @@ namespace Perst
         abstract protected internal void  loadObject(IPersistent obj);
 		
         abstract protected internal void  modifyObject(IPersistent obj);
+
+        abstract protected internal void  lockObject(IPersistent obj);
 		
-         private ClassLoader loader;
+        private ClassLoader loader;
     }
 }

@@ -28,7 +28,7 @@ namespace Perst
 
         public virtual void Load()
         {
-            if (storage != null)
+            if (oid != 0)
             {
                 storage.loadObject(this);
             }
@@ -72,7 +72,7 @@ namespace Perst
 		
         public void Modify() 
         { 
-            if ((state & ObjectState.DIRTY) == 0 && storage != null) 
+            if ((state & ObjectState.DIRTY) == 0 && oid != 0) 
             { 
                 if ((state & ObjectState.RAW) != 0) 
                 { 
@@ -85,10 +85,12 @@ namespace Perst
 
         public virtual void Deallocate()
         {
-            if (storage != null) 
+            if (oid != 0) 
             {
                 storage.deallocateObject(this);
                 storage = null;
+                oid = 0;
+                state = 0;
             }
         }
 		
@@ -112,14 +114,26 @@ namespace Perst
         {
         }
         
+        public virtual void OnStore() 
+        {
+        }
+        
         public virtual void Invalidate() 
         {
             state |= ObjectState.RAW;
         }
         
+        protected MarshalByRefPersistent() {}
+
+        protected MarshalByRefPersistent(Storage storage) 
+        {
+            this.storage = storage;
+        }
+
+
         ~MarshalByRefPersistent() 
         {
-            if ((state & ObjectState.DIRTY) != 0 && storage != null) 
+            if ((state & ObjectState.DIRTY) != 0 && oid != 0) 
             { 
                 storage.storeFinalizedObject(this);
                 state &= ~ObjectState.DIRTY;

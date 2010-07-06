@@ -41,6 +41,8 @@ namespace Perst
 		
         public abstract IPersistent[] ToArray();
 
+        public abstract IPersistent[] ToRawArray();
+
         public abstract Array ToArray(Type elemType);
 
         public abstract bool  Contains(IPersistent obj);

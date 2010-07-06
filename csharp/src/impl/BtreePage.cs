@@ -5,7 +5,7 @@ namespace Perst.Impl
     using System.Diagnostics;
     using Perst;
 	
-    class BtreePage
+    internal class BtreePage
     {
         internal const int firstKeyOffs = 4;
         internal const int keySpace = Page.pageSize - firstKeyOffs;
@@ -552,6 +552,9 @@ namespace Perst.Impl
                     {
                         if (overwrite) 
                         { 
+                            db.pool.unfix(pg);
+                            pg = null;
+                            pg = db.putPage(pageId);
                             setKeyStrOid(pg, r, ins.oid);
                             return Btree.op_overwrite;
                         }
@@ -593,6 +596,9 @@ namespace Perst.Impl
                     {
                         if (overwrite) 
                         { 
+                            db.pool.unfix(pg);
+                            pg = null;
+                            pg = db.putPage(pageId);
                             setKeyStrOid(pg, r, ins.oid);
                             return Btree.op_overwrite;
                         }
@@ -632,6 +638,9 @@ namespace Perst.Impl
                     {
                         if (overwrite) 
                         { 
+                            db.pool.unfix(pg);
+                            pg = null;
+                            pg = db.putPage(pageId);
                             setReference(pg, maxItems - r - 1, ins.oid);
                             return Btree.op_overwrite;
                         }

@@ -135,6 +135,11 @@ namespace Perst.Impl
             used += n;
         }
 		
+        public virtual IPersistent[] ToRawArray()
+        {
+            return arr;
+        }
+
         public virtual IPersistent[] ToArray()
         {
             IPersistent[] a = new IPersistent[used];

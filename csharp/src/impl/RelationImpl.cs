@@ -93,6 +93,11 @@ namespace Perst.Impl
             return link.ToArray();
         }
 		
+        public override IPersistent[] ToRawArray()
+        {
+            return link.ToRawArray();
+        }
+		
         public override Array ToArray(Type elemType)
         {
             return link.ToArray(elemType);

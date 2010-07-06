@@ -260,3 +260,20 @@ really flush changes to the disk.
 --- Release version 2.31 06.08.2004 -------------------------------------
 1. Add L2List and L2ListElem classes
 2. Fix bug in importing/exporting of raw fields introduced in version 2.23
+3. Fix critical sycnhronization bug in writing modified objects to the disk
+
+--- Release version 2.32 21.08.2004 -------------------------------------
+1. Fix critical synchronization bug in writing modified objects to the disk
+2. Support new kind of per-thread transactions: serializable transactions
+3. Alternative B-Tree implementation (as normal C# object and not using direct access 
+   database pages). New implementation of B-Tree will be used instead of old implementation
+   if "perst.alternative.btree" property is set. New B-Tree has incompatible format with 
+   old B-Tree, so you could not use old database or XML export file with new indices. 
+   Alternative B-Tree is needed to provide serializable transaction (old one could not be used).
+   Also it provides better performance (about 3 times comaring with old implementation) because
+   of object caching. And B-Tree supports keys of user defined types. 
+4. Fix bug in Index.set method
+5. Fix bug in packing array of string
+6. Fields of System.Object type are now serialized decpite to whether 
+   "perst.serialize.transient.objects" property was set or not
+7. Add Persistent OnStore method which is invoked before object is stored in the database

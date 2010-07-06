@@ -109,16 +109,22 @@ namespace Perst
 
         /// <summary> Constructor of date key (boundary is inclusive)
         /// </summary>
-        public Key(System.DateTime v):this(v, true)
+        public Key(DateTime v):this(v, true)
         {
         }
 		
         /// <summary> Constructor of string key (boundary is inclusive)
         /// </summary>
-        public Key(System.String v):this(v, true)
+        public Key(string v):this(v, true)
         {
         }
 		
+        /// <summary> Constructor of key of user defined type (boundary is inclusive)
+        /// </summary>
+        public Key(IComparable v):this(v, true)
+        {
+        }
+
         /// <summary> Constructor of array of char key (boundary is inclusive)
         /// </summary>
         public Key(char[] v):this(v, true)
@@ -348,12 +354,10 @@ namespace Perst
         /// <param name="inclusive">whether boundary is inclusive or exclusive
         /// 
         /// </param>
-        public Key(System.DateTime v, bool inclusive):this(ClassDescriptor.FieldType.tpDate, inclusive)
+        public Key(DateTime v, bool inclusive):this(ClassDescriptor.FieldType.tpDate, inclusive)
         {
             lval = v.Ticks;
         }
-
-		static readonly char[] EMPTY_STRING = new char[0];
 
         /// <summary> Constructor of string key
         /// </summary>
@@ -364,7 +368,7 @@ namespace Perst
         /// </param>
         public Key(string v, bool inclusive):this(ClassDescriptor.FieldType.tpString, inclusive)
         {
-            oval = v == null ? EMPTY_STRING : v.ToCharArray();
+            oval = v;
         }
 		
         /// <summary> Constructor of array of char key
@@ -418,7 +422,20 @@ namespace Perst
         /// </param>
         public Key(IPersistent v, bool inclusive):this(ClassDescriptor.FieldType.tpObject, inclusive)
         {
-            ival = v.Oid;
+            ival = v != null ? v.Oid : 0;
+            oval = v;
+        }
+
+        /// <summary> Constructor of key of user defined type
+        /// </summary>
+        /// <param name="v">key value
+        /// </param>
+        /// <param name="inclusive">whether boundary is inclusive or exclusive
+        /// 
+        /// </param>
+        public Key(IComparable v, bool inclusive):this(ClassDescriptor.FieldType.tpObject, inclusive)
+        {
+            oval = v;
         }
     }
 }

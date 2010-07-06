@@ -182,6 +182,10 @@ namespace Perst
                     } 
                     else if (nWriters == 0) 
                     { 
+                        if (nReaders == 0 && storage != null) 
+                        { 
+                            storage.lockObject(this);
+                        }
                         nReaders += 1;
                         break;
                     } 
@@ -209,6 +213,10 @@ namespace Perst
                     } 
                     else if (nWriters == 0) 
                     { 
+                        if (nReaders == 0 && storage != null) 
+                        { 
+                            storage.lockObject(this);
+                        }
                         nReaders += 1;
                         return true;
                     } 
@@ -242,6 +250,10 @@ namespace Perst
                     { 
                         nWriters = 1;
                         owner = currThread;
+                        if (storage != null) 
+                        { 
+                            storage.lockObject(this);
+                        }
                         break;
                     } 
                     else 
@@ -270,6 +282,10 @@ namespace Perst
                     { 
                         nWriters = 1;
                         owner = currThread;
+                        if (storage != null) 
+                        { 
+                            storage.lockObject(this);
+                        }
                         return true;
                     } 
                     else 

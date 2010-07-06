@@ -1,4 +1,4 @@
-        namespace Perst.Impl
+namespace Perst.Impl
 {
     using System;
     using System.Collections;
@@ -155,6 +155,8 @@
                         return typeof(Guid);
                     case ClassDescriptor.FieldType.tpDecimal:
                         return typeof(decimal);
+                    case ClassDescriptor.FieldType.tpEnum:
+                        return typeof(Enum);
                     default:
                         return null;
                 }
@@ -172,13 +174,26 @@
                 Set(key, (IPersistent)value);
             }
         } 
-      
+     
+        protected Key checkKey(Key key) 
+        {
+            if (key != null) 
+            { 
+                if (key.type != type)
+                {
+                    throw new StorageError(StorageError.ErrorCode.INCOMPATIBLE_KEY_TYPE);
+                }
+                if (type == ClassDescriptor.FieldType.tpString && key.oval is string) 
+                {
+                    key = new Key(((string)key.oval).ToCharArray(), key.inclusion != 0);
+                }
+            }
+            return key;
+        }
+
         public virtual IPersistent Get(Key key)
         {
-            if (key.type != type)
-            {
-                throw new StorageError(StorageError.ErrorCode.INCOMPATIBLE_KEY_TYPE);
-            }
+            key = checkKey(key);
             if (root != 0)
             {
                 ArrayList list = new ArrayList();
@@ -200,7 +215,7 @@
         }
 
 
-        internal Key getKeyFromObject(object o) 
+        internal static Key getKeyFromObject(object o) 
         {
             if (o == null) 
             { 
@@ -256,7 +271,7 @@
             }
             else if (o is String) 
             {
-                return new Key((String)o);
+                return new Key(((String)o).ToCharArray());
             }
             else if (o is DateTime) 
             {
@@ -286,6 +301,10 @@
             {
                 return new Key((Decimal)o);
             }
+            else if (o is IComparable)
+            {
+                return new Key((IComparable)o);
+            }
             throw new StorageError(StorageError.ErrorCode.UNSUPPORTED_TYPE);
         }
 
@@ -299,14 +318,10 @@
 		
         public virtual IPersistent[] Get(Key from, Key till)
         {
-            if ((from != null && from.type != type) || (till != null && till.type != type))
-            {
-                throw new StorageError(StorageError.ErrorCode.INCOMPATIBLE_KEY_TYPE);
-            }
             if (root != 0)
             {
                 ArrayList list = new ArrayList();
-                BtreePage.find((StorageImpl) Storage, root, from, till, this, height, list);
+                BtreePage.find((StorageImpl) Storage, root, checkKey(from), checkKey(till), this, height, list);
                 if (list.Count != 0)
                 {
                     return (IPersistent[]) list.ToArray(typeof(IPersistent));
@@ -340,7 +355,8 @@
             
         public virtual IPersistent[] GetPrefix(string prefix)
         {
-            return Get(new Key(prefix), new Key(prefix + Char.MaxValue, false));
+            return Get(new Key(prefix.ToCharArray()), 
+                       new Key((prefix + Char.MaxValue).ToCharArray(), false));
         }
         
         public virtual bool Put(Key key, IPersistent obj)
@@ -371,15 +387,11 @@
             { 
                 throw new StorageError(Perst.StorageError.ErrorCode.DELETED_OBJECT);
             }
-            if (key.type != type)
-            {
-                throw new StorageError(StorageError.ErrorCode.INCOMPATIBLE_KEY_TYPE);
-            }
             if (!obj.IsPersistent())
             {
                 db.storeObject(obj);
             }
-            BtreeKey ins = new BtreeKey(key, obj.Oid);
+            BtreeKey ins = new BtreeKey(checkKey(key), obj.Oid);
             if (root == 0)
             {
                 root = BtreePage.allocate(db, 0, type, ins);
@@ -410,7 +422,7 @@
 		
         public virtual void  Remove(Key key, IPersistent obj)
         {
-            remove(new BtreeKey(key, obj.Oid));
+            remove(new BtreeKey(checkKey(key), obj.Oid));
         }
 		
         public virtual void  Remove(object key, IPersistent obj)
@@ -424,10 +436,6 @@
             if (db == null) 
             { 
                 throw new StorageError(Perst.StorageError.ErrorCode.DELETED_OBJECT);
-            }
-            if (rem.key.type != type)
-            {
-                throw new StorageError(StorageError.ErrorCode.INCOMPATIBLE_KEY_TYPE);
             }
             if (root == 0)
             {
@@ -474,7 +482,7 @@
             {
                 throw new StorageError(StorageError.ErrorCode.KEY_NOT_UNIQUE);
             }
-            BtreeKey rk = new BtreeKey(key, 0);
+            BtreeKey rk = new BtreeKey(checkKey(key), 0);
             StorageImpl db = (StorageImpl)Storage;
             remove(rk);
             return db.lookupObject(rk.oldOid, null);
@@ -1757,11 +1765,7 @@
 
         public virtual IEnumerable Range(Key from, Key till, IterationOrder order) 
         { 
-            if ((from != null && from.type != type) || (till != null && till.type != type)) 
-            { 
-                throw new StorageError(StorageError.ErrorCode.INCOMPATIBLE_KEY_TYPE);
-            }
-            return new BtreeSelectionIterator(this, from, till, order);
+            return new BtreeSelectionIterator(this, checkKey(from), checkKey(till), order);
         }
 
         public virtual IEnumerable Range(Key from, Key till) 
@@ -1781,16 +1785,13 @@
  
         public IEnumerable StartsWith(string prefix) 
         { 
-            return Range(new Key(prefix), new Key(prefix + Char.MaxValue, false), IterationOrder.AscentOrder);
+            return Range(new Key(prefix.ToCharArray()), 
+                         new Key((prefix + Char.MaxValue).ToCharArray(), false), IterationOrder.AscentOrder);
         }
  
         public virtual IDictionaryEnumerator GetDictionaryEnumerator(Key from, Key till, IterationOrder order) 
         { 
-            if ((from != null && from.type != type) || (till != null && till.type != type)) 
-            { 
-                throw new StorageError(StorageError.ErrorCode.INCOMPATIBLE_KEY_TYPE);
-            }
-            return new BtreeDictionarySelectionIterator(this, from, till, order);
+            return new BtreeDictionarySelectionIterator(this, checkKey(from), checkKey(till), order);
         }
     }
 }

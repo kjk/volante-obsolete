@@ -122,9 +122,6 @@ namespace Perst.Impl
                     pg.writeQueueIndex = nDirtyPages++;
                     pg.state |= Page.psDirty;
                 }
-            }
-            lock(pg)
-            {
                 if ((pg.state & Page.psRaw) != 0)
                 {
                     if (file.Read(pg.offs, pg.data) < Page.pageSize)

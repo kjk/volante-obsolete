@@ -352,7 +352,7 @@ namespace Perst.Impl
             else
             {
 #if SUPPORT_RAW_TYPE
-                if (serializeNonPersistentObjects) 
+                if (serializeNonPersistentObjects || c == typeof(object) || c == typeof(IComparable)) 
                 {
                     type = FieldType.tpRaw;
                 } 

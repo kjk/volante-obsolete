@@ -903,7 +903,7 @@ namespace Perst.Impl
 		
         public override void Open(String filePath, int pagePoolSize)
         {
-            OSFile file = new OSFile(filePath);      
+            OSFile file = new OSFile(filePath, readOnly);      
             try 
             {
                 Open(file, pagePoolSize);
@@ -917,7 +917,7 @@ namespace Perst.Impl
 
         public override void Open(String filePath, int pagePoolSize, String cipherKey)
         {
-            Rc4File file = new Rc4File(filePath, cipherKey);      
+            Rc4File file = new Rc4File(filePath, readOnly, cipherKey);      
             try 
             {
                 Open(file, pagePoolSize);
@@ -1217,69 +1217,45 @@ namespace Perst.Impl
                 {
                     return;
                 }
-                int curr = currIndex;
-                int i, j, n;
-                int[] map = dirtyPagesMap;
-                int oldIndexSize = header.root[curr].indexSize;
-                int newIndexSize = header.root[1-curr].indexSize;
-                int nPages = committedIndexSize >> dbHandlesPerPageBits;
-                Page pg;
-                if (newIndexSize > oldIndexSize)
-                {
-                    cloneBitmap(header.root[curr].index, oldIndexSize*8L);
-                    long newIndex;
-                    while (true) 
+                commit0();
+                modified = false;
+            }
+        }
+
+        private void commit0()
+        {
+            int curr = currIndex;
+            int i, j, n;
+            int[] map = dirtyPagesMap;
+            int oldIndexSize = header.root[curr].indexSize;
+            int newIndexSize = header.root[1-curr].indexSize;
+            int nPages = committedIndexSize >> dbHandlesPerPageBits;
+            Page pg;
+            if (newIndexSize > oldIndexSize)
+            {
+                cloneBitmap(header.root[curr].index, oldIndexSize*8L);
+                long newIndex;
+                while (true) 
+                { 
+                    newIndex = allocate(newIndexSize*8L, 0);
+                    if (newIndexSize == header.root[1-curr].indexSize) 
                     { 
-                        newIndex = allocate(newIndexSize*8L, 0);
-                        if (newIndexSize == header.root[1-curr].indexSize) 
-                        { 
-                            break;
-                        }
-                        free(newIndex, newIndexSize*8L);
-                        newIndexSize = header.root[1-curr].indexSize;
+                        break;
                     }
-                    header.root[1-curr].shadowIndex = newIndex;
-                    header.root[1-curr].shadowIndexSize = newIndexSize;
-                    free(header.root[curr].index, oldIndexSize*8L);
+                    free(newIndex, newIndexSize*8L);
+                    newIndexSize = header.root[1-curr].indexSize;
                 }
-                for (i = 0; i < nPages; i++)
-                {
-                    if ((map[i >> 5] & (1 << (i & 31))) != 0)
-                    {
-                        Page srcIndex = pool.getPage(header.root[1-curr].index + i * Page.pageSize);
-                        Page dstIndex = pool.getPage(header.root[curr].index + i * Page.pageSize);
-                        for (j = 0; j < Page.pageSize; j += 8)
-                        {
-                            long pos = Bytes.unpack8(dstIndex.data, j);
-                            if (Bytes.unpack8(srcIndex.data, j) != pos)
-                            {
-                                if ((pos & dbFreeHandleFlag) == 0)
-                                {
-                                    if ((pos & dbPageObjectFlag) != 0)
-                                    {
-                                        free(pos & ~ dbFlagsMask, Page.pageSize);
-                                    }
-                                    else
-                                    {
-                                        int offs = (int) pos & (Page.pageSize - 1);
-                                        pg = pool.getPage(pos - offs);
-                                        free(pos, ObjectHeader.getSize(pg.data, offs));
-                                        pool.unfix(pg);
-                                    }
-                                }
-                            }
-                        }
-                        pool.unfix(srcIndex);
-                        pool.unfix(dstIndex);
-                    }
-                }
-                n = committedIndexSize & (dbHandlesPerPage - 1);
-                if (n != 0 && (map[i >> 5] & (1 << (i & 31))) != 0)
+                header.root[1-curr].shadowIndex = newIndex;
+                header.root[1-curr].shadowIndexSize = newIndexSize;
+                free(header.root[curr].index, oldIndexSize*8L);
+            }
+            for (i = 0; i < nPages; i++)
+            {
+                if ((map[i >> 5] & (1 << (i & 31))) != 0)
                 {
                     Page srcIndex = pool.getPage(header.root[1-curr].index + i * Page.pageSize);
                     Page dstIndex = pool.getPage(header.root[curr].index + i * Page.pageSize);
-                    j = 0;
-                    do 
+                    for (j = 0; j < Page.pageSize; j += 8)
                     {
                         long pos = Bytes.unpack8(dstIndex.data, j);
                         if (Bytes.unpack8(srcIndex.data, j) != pos)
@@ -1299,103 +1275,133 @@ namespace Perst.Impl
                                 }
                             }
                         }
-                        j += 8;
                     }
-                    while (--n != 0);
-		
                     pool.unfix(srcIndex);
                     pool.unfix(dstIndex);
                 }
-                for (i = 0; i <= nPages; i++)
+            }
+            n = committedIndexSize & (dbHandlesPerPage - 1);
+            if (n != 0 && (map[i >> 5] & (1 << (i & 31))) != 0)
+            {
+                Page srcIndex = pool.getPage(header.root[1-curr].index + i * Page.pageSize);
+                Page dstIndex = pool.getPage(header.root[curr].index + i * Page.pageSize);
+                j = 0;
+                do 
+                {
+                    long pos = Bytes.unpack8(dstIndex.data, j);
+                    if (Bytes.unpack8(srcIndex.data, j) != pos)
+                    {
+                        if ((pos & dbFreeHandleFlag) == 0)
+                        {
+                            if ((pos & dbPageObjectFlag) != 0)
+                            {
+                                free(pos & ~ dbFlagsMask, Page.pageSize);
+                            }
+                            else
+                            {
+                                int offs = (int) pos & (Page.pageSize - 1);
+                                pg = pool.getPage(pos - offs);
+                                free(pos, ObjectHeader.getSize(pg.data, offs));
+                                pool.unfix(pg);
+                            }
+                        }
+                    }
+                    j += 8;
+                }
+                while (--n != 0);
+		
+                pool.unfix(srcIndex);
+                pool.unfix(dstIndex);
+            }
+            for (i = 0; i <= nPages; i++)
+            {
+                if ((map[i >> 5] & (1 << (i & 31))) != 0)
+                {
+                    pg = pool.putPage(header.root[1-curr].index + i * Page.pageSize);
+                    for (j = 0; j < Page.pageSize; j += 8)
+                    {
+                        Bytes.pack8(pg.data, j, Bytes.unpack8(pg.data, j) & ~ dbModifiedFlag);
+                    }
+                    pool.unfix(pg);
+                }
+            }
+            if (currIndexSize > committedIndexSize)
+            {
+                long page = (header.root[1-curr].index + committedIndexSize * 8L) & ~ (Page.pageSize - 1);
+                long end = (header.root[1-curr].index + Page.pageSize - 1 + currIndexSize * 8L) & ~ (Page.pageSize - 1);
+                while (page < end)
+                {
+                    pg = pool.putPage(page);
+                    for (j = 0; j < Page.pageSize; j += 8)
+                    {
+                        Bytes.pack8(pg.data, j, Bytes.unpack8(pg.data, j) & ~ dbModifiedFlag);
+                    }
+                    pool.unfix(pg);
+                    page += Page.pageSize;
+                }
+            }
+            header.root[1-curr].usedSize = usedSize;
+            pg = pool.putPage(0);
+            header.pack(pg.data);
+            pool.flush();
+            pool.modify(pg);
+            header.curr = curr ^= 1;
+            header.dirty = true;
+            header.pack(pg.data);
+            pool.unfix(pg);
+            pool.flush();
+	
+            header.root[1-curr].size = header.root[curr].size;
+            header.root[1-curr].indexUsed = currIndexSize;
+            header.root[1-curr].freeList = header.root[curr].freeList;
+            header.root[1-curr].bitmapEnd = header.root[curr].bitmapEnd;
+            header.root[1-curr].rootObject = header.root[curr].rootObject;
+            header.root[1-curr].classDescList = header.root[curr].classDescList;
+            header.root[1-curr].bitmapExtent = header.root[curr].bitmapExtent;
+	
+            if (currIndexSize == 0 || newIndexSize != oldIndexSize)
+            {
+                if (currIndexSize == 0)
+                {
+                    currIndexSize = header.root[1-curr].indexUsed;
+                }
+                header.root[1-curr].index = header.root[curr].shadowIndex;
+                header.root[1-curr].indexSize = header.root[curr].shadowIndexSize;
+                header.root[1-curr].shadowIndex = header.root[curr].index;
+                header.root[1-curr].shadowIndexSize = header.root[curr].indexSize;
+                pool.copy(header.root[1-curr].index, header.root[curr].index, currIndexSize * 8L);
+                i = (currIndexSize + dbHandlesPerPage * 32 - 1) >> (dbHandlesPerPageBits + 5);
+                while (--i >= 0)
+                {
+                    map[i] = 0;
+                }
+            }
+            else
+            {
+                for (i = 0; i < nPages; i++)
                 {
                     if ((map[i >> 5] & (1 << (i & 31))) != 0)
                     {
-                        pg = pool.putPage(header.root[1-curr].index + i * Page.pageSize);
-                        for (j = 0; j < Page.pageSize; j += 8)
-                        {
-                            Bytes.pack8(pg.data, j, Bytes.unpack8(pg.data, j) & ~ dbModifiedFlag);
-                        }
-                        pool.unfix(pg);
+                        map[i >> 5] -= (1 << (i & 31));
+                        pool.copy(header.root[1-curr].index + i * Page.pageSize, header.root[curr].index + i * Page.pageSize, Page.pageSize);
                     }
                 }
-                if (currIndexSize > committedIndexSize)
+                if (currIndexSize > i * dbHandlesPerPage && ((map[i >> 5] & (1 << (i & 31))) != 0 || currIndexSize != committedIndexSize))
                 {
-                    long page = (header.root[1-curr].index + committedIndexSize * 8L) & ~ (Page.pageSize - 1);
-                    long end = (header.root[1-curr].index + Page.pageSize - 1 + currIndexSize * 8L) & ~ (Page.pageSize - 1);
-                    while (page < end)
+                    pool.copy(header.root[1-curr].index + i * Page.pageSize, header.root[curr].index + i * Page.pageSize, 8 * currIndexSize - i * Page.pageSize);
+                    j = i >> 5;
+                    n = (currIndexSize + dbHandlesPerPage * 32 - 1) >> (dbHandlesPerPageBits + 5);
+                    while (j < n)
                     {
-                        pg = pool.putPage(page);
-                        for (j = 0; j < Page.pageSize; j += 8)
-                        {
-                            Bytes.pack8(pg.data, j, Bytes.unpack8(pg.data, j) & ~ dbModifiedFlag);
-                        }
-                        pool.unfix(pg);
-                        page += Page.pageSize;
+                        map[j++] = 0;
                     }
                 }
-                header.root[1-curr].usedSize = usedSize;
-                pg = pool.putPage(0);
-                header.pack(pg.data);
-                pool.flush();
-                pool.modify(pg);
-                header.curr = curr ^= 1;
-                header.dirty = true;
-                header.pack(pg.data);
-                pool.unfix(pg);
-                pool.flush();
-	
-                header.root[1-curr].size = header.root[curr].size;
-                header.root[1-curr].indexUsed = currIndexSize;
-                header.root[1-curr].freeList = header.root[curr].freeList;
-                header.root[1-curr].bitmapEnd = header.root[curr].bitmapEnd;
-                header.root[1-curr].rootObject = header.root[curr].rootObject;
-                header.root[1-curr].classDescList = header.root[curr].classDescList;
-                header.root[1-curr].bitmapExtent = header.root[curr].bitmapExtent;
-	
-                if (currIndexSize == 0 || newIndexSize != oldIndexSize)
-                {
-                    if (currIndexSize == 0)
-                    {
-                        currIndexSize = header.root[1-curr].indexUsed;
-                    }
-                    header.root[1-curr].index = header.root[curr].shadowIndex;
-                    header.root[1-curr].indexSize = header.root[curr].shadowIndexSize;
-                    header.root[1-curr].shadowIndex = header.root[curr].index;
-                    header.root[1-curr].shadowIndexSize = header.root[curr].indexSize;
-                    pool.copy(header.root[1-curr].index, header.root[curr].index, currIndexSize * 8L);
-                    i = (currIndexSize + dbHandlesPerPage * 32 - 1) >> (dbHandlesPerPageBits + 5);
-                    while (--i >= 0)
-                    {
-                        map[i] = 0;
-                    }
-                }
-                else
-                {
-                    for (i = 0; i < nPages; i++)
-                    {
-                        if ((map[i >> 5] & (1 << (i & 31))) != 0)
-                        {
-                            map[i >> 5] -= (1 << (i & 31));
-                            pool.copy(header.root[1-curr].index + i * Page.pageSize, header.root[curr].index + i * Page.pageSize, Page.pageSize);
-                        }
-                    }
-                    if (currIndexSize > i * dbHandlesPerPage && ((map[i >> 5] & (1 << (i & 31))) != 0 || currIndexSize != committedIndexSize))
-                    {
-                        pool.copy(header.root[1-curr].index + i * Page.pageSize, header.root[curr].index + i * Page.pageSize, 8 * currIndexSize - i * Page.pageSize);
-                        j = i >> 5;
-                        n = (currIndexSize + dbHandlesPerPage * 32 - 1) >> (dbHandlesPerPageBits + 5);
-                        while (j < n)
-                        {
-                            map[j++] = 0;
-                        }
-                    }
-                }
-                modified = false;
-                gcDone = false;
-                currIndex = curr;
-                committedIndexSize = currIndexSize;
             }
+            gcDone = false;
+            currIndex = curr;
+            committedIndexSize = currIndexSize;
         }
+        
 		
         public override void Rollback()
         {
@@ -1411,45 +1417,51 @@ namespace Perst.Impl
                 { 
                     return;
                 }
-                int curr = currIndex;
-                int[] map = dirtyPagesMap;
-                if (header.root[1-curr].index != header.root[curr].shadowIndex)
-                {
-                    pool.copy(header.root[curr].shadowIndex, header.root[curr].index, 8 * committedIndexSize);
-                }
-                else
-                {
-                    int nPages = (committedIndexSize + dbHandlesPerPage - 1) >> dbHandlesPerPageBits;
-                    for (int i = 0; i < nPages; i++)
-                    {
-                        if ((map[i >> 5] & (1 << (i & 31))) != 0)
-                        {
-                            pool.copy(header.root[curr].shadowIndex + i * Page.pageSize, header.root[curr].index + i * Page.pageSize, Page.pageSize);
-                        }
-                    }
-                }
-                for (int j = (currIndexSize + dbHandlesPerPage * 32 - 1) >> (dbHandlesPerPageBits + 5); --j >= 0; map[j] = 0)
-                    ;
-                header.root[1-curr].index = header.root[curr].shadowIndex;
-                header.root[1-curr].indexSize = header.root[curr].shadowIndexSize;
-                header.root[1-curr].indexUsed = committedIndexSize;
-                header.root[1-curr].freeList = header.root[curr].freeList;
-                header.root[1-curr].bitmapEnd = header.root[curr].bitmapEnd;
-                header.root[1-curr].size = header.root[curr].size;
-                header.root[1-curr].rootObject = header.root[curr].rootObject;
-                header.root[1-curr].classDescList = header.root[curr].classDescList;
-                header.root[1-curr].bitmapExtent = header.root[curr].bitmapExtent;
-                header.dirty = true;
+                rollback0();
                 modified = false;
-                usedSize = header.root[curr].size;
-                currIndexSize = committedIndexSize;
-				
-                currRBitmapPage = currPBitmapPage = 0;
-                currRBitmapOffs = currPBitmapOffs = 0;
-				
-                reloadScheme();
             }
         }
+
+        private void rollback0()
+        {
+            int curr = currIndex;
+            int[] map = dirtyPagesMap;
+            if (header.root[1-curr].index != header.root[curr].shadowIndex)
+            {
+                pool.copy(header.root[curr].shadowIndex, header.root[curr].index, 8 * committedIndexSize);
+            }
+            else
+            {
+                int nPages = (committedIndexSize + dbHandlesPerPage - 1) >> dbHandlesPerPageBits;
+                for (int i = 0; i < nPages; i++)
+                {
+                    if ((map[i >> 5] & (1 << (i & 31))) != 0)
+                    {
+                        pool.copy(header.root[curr].shadowIndex + i * Page.pageSize, header.root[curr].index + i * Page.pageSize, Page.pageSize);
+                    }
+                }
+            }
+            for (int j = (currIndexSize + dbHandlesPerPage * 32 - 1) >> (dbHandlesPerPageBits + 5); --j >= 0; map[j] = 0)
+                ;
+            header.root[1-curr].index = header.root[curr].shadowIndex;
+            header.root[1-curr].indexSize = header.root[curr].shadowIndexSize;
+            header.root[1-curr].indexUsed = committedIndexSize;
+            header.root[1-curr].freeList = header.root[curr].freeList;
+            header.root[1-curr].bitmapEnd = header.root[curr].bitmapEnd;
+            header.root[1-curr].size = header.root[curr].size;
+            header.root[1-curr].rootObject = header.root[curr].rootObject;
+            header.root[1-curr].classDescList = header.root[curr].classDescList;
+            header.root[1-curr].bitmapExtent = header.root[curr].bitmapExtent;
+            header.dirty = true;
+            usedSize = header.root[curr].size;
+            currIndexSize = committedIndexSize;
+				
+            currRBitmapPage = currPBitmapPage = 0;
+            currRBitmapOffs = currPBitmapOffs = 0;
+				
+            reloadScheme();
+        }
+        
 		
         private void memset(byte[] arr, int off, int len, byte val) 
         { 
@@ -1670,7 +1682,9 @@ namespace Perst.Impl
                 {
                     throw new StorageError(StorageError.ErrorCode.STORAGE_NOT_OPENED);
                 }
-                Btree index = new Btree(keyType, unique);
+                Index index = alternativeBtree 
+                    ? (Index)new AltBtree(keyType, unique)
+                    : (Index)new Btree(keyType, unique);
                 index.AssignOid(this, 0, false);
                 return index;
             }
@@ -1730,7 +1744,9 @@ namespace Perst.Impl
                 {
                     throw new StorageError(StorageError.ErrorCode.STORAGE_NOT_OPENED);
                 }
-                PersistentSet s = new PersistentSet();
+                ISet s = alternativeBtree 
+                    ? (ISet)new AltPersistentSet()
+                    : (ISet)new PersistentSet();
                 s.AssignOid(this, 0, false);
                 return s;
             }
@@ -1744,7 +1760,9 @@ namespace Perst.Impl
                 {
                     throw new StorageError(StorageError.ErrorCode.STORAGE_NOT_OPENED);
                 }
-                BtreeFieldIndex index = new BtreeFieldIndex(type, fieldName, unique);
+                FieldIndex index = alternativeBtree
+                    ? (FieldIndex)new AltBtreeFieldIndex(type, fieldName, unique)
+                    : (FieldIndex)new BtreeFieldIndex(type, fieldName, unique);
                 index.AssignOid(this, 0, false);
                 return index;
             }
@@ -1758,7 +1776,9 @@ namespace Perst.Impl
                 {
                     throw new StorageError(StorageError.ErrorCode.STORAGE_NOT_OPENED);
                 }
-                BtreeMultiFieldIndex index = new BtreeMultiFieldIndex(type, fieldNames, unique);
+                FieldIndex index = alternativeBtree
+                    ? (FieldIndex)new AltBtreeMultiFieldIndex(type, fieldNames, unique)
+                    : (FieldIndex)new BtreeMultiFieldIndex(type, fieldNames, unique);
                 index.AssignOid(this, 0, false);
                 return index;
             }
@@ -2326,6 +2346,33 @@ namespace Perst.Impl
         }
 
  
+        internal class ThreadTransactionContext 
+        {
+            internal int       nested;
+            internal ArrayList locked;
+            internal ArrayList modified;
+            
+            internal ThreadTransactionContext() 
+            { 
+                locked = new ArrayList();
+                modified = new ArrayList();
+            }
+        }
+
+        internal static ThreadTransactionContext TransactionContext
+        {
+            get
+            {
+                ThreadTransactionContext ctx = (ThreadTransactionContext)Thread.GetData(transactionContext);
+                if (ctx == null) 
+                { 
+                    ctx = new ThreadTransactionContext();
+                    Thread.SetData(transactionContext, ctx);
+                }
+                return ctx;
+            }			
+        }
+
 #if COMPACT_NET_FRAMEWORK
         public override void RegisterAssembly(System.Reflection.Assembly assembly) 
         {
@@ -2334,65 +2381,103 @@ namespace Perst.Impl
 #else
         public override void BeginThreadTransaction(TransactionMode mode)
         {
-            lock (transactionMonitor) 
-            {
-                if (scheduledCommitTime != Int64.MaxValue) 
-                { 
-                    nBlockedTransactions += 1;
-                    while (DateTime.Now.Ticks >= scheduledCommitTime) 
-                    { 
-                        Monitor.Wait(transactionMonitor);
-                    }
-                    nBlockedTransactions -= 1;
-                }
-                nNestedTransactions += 1;
-            }	    
-            if (mode == TransactionMode.Exclusive) 
+            if (mode == TransactionMode.Serializable) 
             { 
-                transactionLock.ExclusiveLock();
+                useSerializableTransactions = true;
+                TransactionContext.nested += 1;;
             } 
             else 
             { 
-                transactionLock.SharedLock();
+                lock (transactionMonitor) 
+                {
+                    if (scheduledCommitTime != Int64.MaxValue) 
+                    { 
+                        nBlockedTransactions += 1;
+                        while (DateTime.Now.Ticks >= scheduledCommitTime) 
+                        { 
+                            Monitor.Wait(transactionMonitor);
+                        }
+                        nBlockedTransactions -= 1;
+                    }
+                    nNestedTransactions += 1;
+                }	    
+                if (mode == TransactionMode.Exclusive) 
+                { 
+                    transactionLock.ExclusiveLock();
+                } 
+                else 
+                { 
+                    transactionLock.SharedLock();
+                }
             }
         }
+        
 
         public override void EndThreadTransaction(int maxDelay)
         {
-            lock (transactionMonitor) 
-            { 
-                transactionLock.Unlock();
-                if (nNestedTransactions != 0) 
-                { // may be everything is already aborted
-                    if (--nNestedTransactions == 0) 
+            ThreadTransactionContext ctx = TransactionContext;
+            if (ctx.nested != 0) 
+            { // serializable transaction
+                if (--ctx.nested == 0) 
+                { 
+                    int i = ctx.modified.Count;
+                    if (i != 0) 
                     { 
-                        nCommittedTransactions += 1;
-                        Commit();
-                        scheduledCommitTime = Int64.MaxValue;
-                        if (nBlockedTransactions != 0) 
+                        do 
                         { 
-                            Monitor.PulseAll(transactionMonitor);
+                            ((IPersistent)ctx.modified[--i]).Store();
+                        } while (i != 0);
+
+                        lock(this) 
+                        { 
+                            commit0();
                         }
-                    } 
-                    else 
-                    {
-                        if (maxDelay != Int32.MaxValue) 
+                    }
+                    for (i = ctx.locked.Count; --i >= 0;) 
+                    { 
+                        ((IResource)ctx.locked[i]).Reset();
+                    }
+                    ctx.modified.Clear();
+                    ctx.locked.Clear();
+                } 
+            } 
+            else 
+            { // exclusive or aooperative transaction        
+                lock (transactionMonitor) 
+                { 
+                    transactionLock.Unlock();
+                    if (nNestedTransactions != 0) 
+                    { // may be everything is already aborted
+                        if (--nNestedTransactions == 0) 
                         { 
-                            long nextCommit = DateTime.Now.Ticks + maxDelay;
-                            if (nextCommit < scheduledCommitTime) 
+                            nCommittedTransactions += 1;
+                            Commit();
+                            scheduledCommitTime = Int64.MaxValue;
+                            if (nBlockedTransactions != 0) 
                             { 
-                                scheduledCommitTime = nextCommit;
+                                Monitor.PulseAll(transactionMonitor);
                             }
-                            if (maxDelay == 0) 
+                        } 
+                        else 
+                        {
+                            if (maxDelay != Int32.MaxValue) 
                             { 
-                                int n = nCommittedTransactions;
-                                nBlockedTransactions += 1;
-                                do 
+                                long nextCommit = DateTime.Now.Ticks + maxDelay;
+                                if (nextCommit < scheduledCommitTime) 
                                 { 
-                                    Monitor.Wait(transactionMonitor);
-                                } while (nCommittedTransactions == n);
-                                nBlockedTransactions -= 1;
-                            }				    
+                                    scheduledCommitTime = nextCommit;
+                                }
+                                if (maxDelay == 0) 
+                                { 
+                                    int n = nCommittedTransactions;
+                                    nBlockedTransactions += 1;
+                                    do 
+                                    { 
+                                        Monitor.Wait(transactionMonitor);
+                                    } while (nCommittedTransactions == n);
+                                    nBlockedTransactions -= 1;
+                                }				    
+                            }
                         }
                     }
                 }
@@ -2402,15 +2487,42 @@ namespace Perst.Impl
 
         public override void RollbackThreadTransaction()
         {
-            lock (transactionMonitor) 
-            { 
-                transactionLock.Reset();
-                nNestedTransactions = 0;
-                if (nBlockedTransactions != 0) 
+            ThreadTransactionContext ctx = TransactionContext;
+            if (ctx.nested != 0) 
+            { // serializable transaction
+                ctx.nested = 0; 
+                int i = ctx.modified.Count;
+                if (i != 0) 
                 { 
-                    Monitor.PulseAll(transactionMonitor);
+                    do 
+                    { 
+                        ((IPersistent)ctx.modified[--i]).Invalidate();
+                    } while (i != 0);
+                
+                    lock(this) 
+                    { 
+                        rollback0();
+                    }
                 }
-                Rollback();
+                for (i = ctx.locked.Count; --i >= 0;) 
+                { 
+                    ((IResource)ctx.locked[i]).Reset();
+                } 
+                ctx.modified.Clear();
+                ctx.locked.Clear();
+            } 
+            else 
+            { 
+                lock (transactionMonitor) 
+                { 
+                    transactionLock.Reset();
+                    nNestedTransactions = 0;
+                    if (nBlockedTransactions != 0) 
+                    { 
+                        Monitor.PulseAll(transactionMonitor);
+                    }
+                    Rollback();
+                }
             }
         }
 	    
@@ -2503,6 +2615,14 @@ namespace Perst.Impl
             { 
                 enableCodeGeneration = getBooleanValue(val);
             }
+            if ((val = props["perst.file.readonly"]) != null) 
+            { 
+                readOnly = getBooleanValue(val);
+            }
+            if ((val = props["perst.alternative.btree"]) != null) 
+            { 
+                alternativeBtree = getBooleanValue(val);
+            }
         }
 
         public override void SetProperty(String name, Object val)
@@ -2531,6 +2651,14 @@ namespace Perst.Impl
             { 
                 enableCodeGeneration = getBooleanValue(val);
             }
+            else if (name.Equals("perst.file.readonly")) 
+            { 
+                readOnly = getBooleanValue(val);
+            }
+            else if (name.Equals("perst.alternative.btree")) 
+            { 
+                alternativeBtree = getBooleanValue(val);
+            }
             else 
             { 
                 throw new StorageError(StorageError.ErrorCode.NO_SUCH_PROPERTY);
@@ -2555,12 +2683,32 @@ namespace Perst.Impl
                 { 
                     if (!obj.IsModified()) 
                     { 
+                        if (useSerializableTransactions) 
+                        { 
+                            ThreadTransactionContext ctx = TransactionContext;
+                            if (ctx.nested != 0) 
+                            { // serializable transaction
+                                ctx.modified.Add(obj);
+                            }
+                        }
                         objectCache.setDirty(obj.Oid);
                     }
                 }
             }
         }
 
+        protected internal override void lockObject(IPersistent obj) 
+        { 
+            if (useSerializableTransactions) 
+            { 
+                ThreadTransactionContext ctx = TransactionContext;
+                if (ctx.nested != 0) 
+                { // serializable transaction
+                    ctx.locked.Add(obj);
+                }
+            }
+        }
+         
         protected internal override void storeObject(IPersistent obj) 
         {
             lock (this) 
@@ -2592,6 +2740,7 @@ namespace Perst.Impl
 
         void storeObject0(IPersistent obj) 
         {
+            obj.OnStore();
             int oid = obj.Oid;
             bool newObject = false;
             if (oid == 0)
@@ -4236,6 +4385,8 @@ public int packField(ByteBuffer buf, int offs, object val, ClassDescriptor.Field
         private int  initIndexSize        = dbDefaultInitIndexSize;
         private int  objectCacheInitSize  = dbDefaultObjectCacheInitSize;
         private long extensionQuantum     = dbDefaultExtensionQuantum;
+        private bool readOnly = false;
+        private bool alternativeBtree = false;
 
         internal PagePool pool;
         internal Header   header; // base address of database file mapping
@@ -4284,6 +4435,11 @@ public int packField(ByteBuffer buf, int offs, object val, ClassDescriptor.Field
         internal OidHashTable     objectCache;
         internal Hashtable        classDescMap;
         internal ClassDescriptor  descList;
+
+        internal static readonly LocalDataStoreSlot transactionContext = Thread.AllocateDataSlot();
+        internal bool useSerializableTransactions;
+		
+
     }
 	
     class RootPage

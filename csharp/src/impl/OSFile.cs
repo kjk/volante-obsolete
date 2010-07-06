@@ -36,9 +36,10 @@ namespace Perst.Impl
             file.Close();
         }
 		
-        internal OSFile(String filePath)
+        internal OSFile(String filePath, bool readOnly)
         {
-            file = new FileStream(filePath, FileMode.OpenOrCreate, FileAccess.ReadWrite);
+            file = new FileStream(filePath, FileMode.OpenOrCreate, 
+                                  readOnly ? FileAccess.Read : FileAccess.ReadWrite);
         }
 		
         protected FileStream file;

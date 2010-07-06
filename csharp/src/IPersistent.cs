@@ -89,6 +89,12 @@ namespace Perst
         /// </summary>
         void OnLoad();        
 
+        /// <summary> This method is  called by the database befire storing of the object.
+        /// It can be used to initialize transient fields of the object. 
+        /// Default implementation of this method do nothing 
+        /// </summary>
+        void OnStore();        
+
         /// <summary>
         /// Invalidate object. Invalidated object has to be explicitly
         /// reloaded using load() method. Attempt to store invalidated object

@@ -3,8 +3,6 @@ TestIndex\bin\debug\TestIndex
 del *.dbs
 TestIndex\bin\debug\TestIndex altbtree
 del *.dbs
-TestIndex\bin\debug\TestIndex altbtree serializable
-del *.dbs
 TestIndex\bin\debug\TestIndex inmemory
 TestIndex2\bin\debug\TestIndex2
 TestEnumerator\bin\debug\TestEnumerator
@@ -14,8 +12,6 @@ TestCompoundIndex\bin\debug\TestCompoundIndex
 TestRtree\bin\debug\TestRtree
 TestR2\bin\debug\TestR2
 TestTtree\bin\debug\TestTtree
-TestRaw\bin\debug\TestRaw
-TestRaw\bin\debug\TestRaw
 TestGC\bin\debug\TestGC
 TestConcur\bin\debug\TestConcur
 TestXML\bin\debug\TestXML

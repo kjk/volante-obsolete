@@ -248,6 +248,26 @@
                     BuildAction = "Compile"
                 />
                 <File
+                    RelPath = "src\impl\AltBtree.cs"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "src\impl\AltBtreeFieldIndex.cs"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "src\impl\AltBtreeMultiFieldIndex.cs"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "src\impl\AltPersistentSet.cs"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
                     RelPath = "src\impl\BlobImpl.cs"
                     SubType = "Code"
                     BuildAction = "Compile"

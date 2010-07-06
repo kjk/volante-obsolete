@@ -23,7 +23,18 @@ public class TestEnumerator
     {	
         Storage db = StorageFactory.Instance.CreateStorage();
 
-        db.Open("testidx2.dbs", pagePoolSize);
+        if (args.Length > 0) { 
+            if ("altbtree" == args[0]) 
+            {
+                db.SetProperty("perst.alternative.btree", true);
+            } 
+            else 
+            {
+                Console.WriteLine("Unrecognized option " + args[0]);
+            }
+        } 
+            
+        db.Open("testenum.dbs", pagePoolSize);
         Indices root = (Indices)db.Root;
         if (root == null) 
         { 
