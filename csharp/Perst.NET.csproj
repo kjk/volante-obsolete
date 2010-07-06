@@ -163,6 +163,11 @@
                     BuildAction = "Compile"
                 />
                 <File
+                    RelPath = "src\PersistentContext.cs"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
                     RelPath = "src\PersistentResource.cs"
                     SubType = "Code"
                     BuildAction = "Compile"
@@ -209,6 +214,11 @@
                 />
                 <File
                     RelPath = "src\TimeSeries.cs"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "src\TransparentPersistenceAttribute.cs"
                     SubType = "Code"
                     BuildAction = "Compile"
                 />
@@ -314,6 +324,11 @@
                 />
                 <File
                     RelPath = "src\impl\PersistentSet.cs"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "src\impl\PerstSink.cs"
                     SubType = "Code"
                     BuildAction = "Compile"
                 />

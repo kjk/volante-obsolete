@@ -232,3 +232,12 @@ methods now return reference to the removed/replaced object.
 1. Add handling of Decimal and Guid types to Btree.getKeyFromObject() method 
 2. Fix bug in XMLExporter.exportBinary
 3. Change R-Tree and rectangle implementation to calculate rectangles area using long type
+
+--- Release version 2.28 28.06.2004 -------------------------------------
+1. Add PersistentContext and TransparentPersistenceAttrribute classes to provide
+transparent persistence for C# objects using .Net remoting API. If application
+class is derived from PersistentContext and marked with TransparentPersistence attribute, 
+it will automatically load on demand its content from the database and automatically store
+content if the object is modified. But remoting API can handle only public members of the class
+and also cause significant performance overhead (invocation of method through remoting API
+is about 100 times slower than normal method invocation)
