@@ -1238,7 +1238,7 @@ public class XMLImporter {
                         }
                         if (i == size) { 
                             char[] newBuf = new char[size *= 2];
-                            System.arraycopy(sconst, 0, newBuf, 0, slen);
+                            System.arraycopy(sconst, 0, newBuf, 0, i);
                             sconst = newBuf;
                         }
                         sconst[i++] = (char)ch;

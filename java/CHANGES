@@ -137,3 +137,5 @@ Attention: database format is incompatible with version 1.22!
 1. Fix bug in Link.insert method
 2. Add Storage.setClassLoader and Storage.getClassLoader methods
 
+--- Release version 2.10 30.12.2003 -------------------------------------
+1. Fix bug in XML import
