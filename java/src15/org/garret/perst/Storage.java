@@ -357,13 +357,22 @@ public abstract class Storage {
      * <TR><TD><code>perst.object.cache.init.size</code></TD><TD>Integer</TD><TD>1319</TD>
      * <TD>Initial size of object cache
      * </TD></TR>
-     * <TR><TD><code>perst.object.soft.cache</code></TD><TD>Boolean</TD><TD>false</TD>
-     * <TD>Use <i>soft references</i> in object cache instead of <i>weak references</i>.
-     * Garbage collector is not required to remove soft referenced objects immediately,
-     * so it may improve caching of objects. But it also may increase amount of memory
+     * <TR><TD><code>perst.object.cache.kind</code></TD><TD>String</TD><TD>"lru"</TD>
+     * <TD>Kind of object cache. The following values are supported:
+     * "strong", "weak", "soft", "lru". <B>Strong</B> cache uses strong (normal) 
+     * references to refer persistent objects. Thus none of loaded persistent objects
+     * can be deallocated by GC. <B>Weak</B> cache use weak references and
+     * soft cache - <B>soft</B> references. The main difference between soft and weak references is
+     * that garbage collector is not required to remove soft referenced objects immediately
+     * when object is detected to be <i>soft referenced</i>, so it may improve caching of objects. 
+     * But it also may increase amount of memory
      * used  by application, and as far as persistent object requires finalization
      * it can cause memory overflow even though garbage collector is required
-     * to clear all soft references before throwing OutOfMemoryException.
+     * to clear all soft references before throwing OutOfMemoryException.<br>
+     * But Java specification says nothing about the policy used by GC for soft references
+     * (except the rule mentioned above). Unlike it <B>lru</B> cache provide determined behavior, 
+     * pinning most recently used objects in memory. Number of pinned objects is determined 
+     * for lru cache by <code>perst.object.index.init.size</code> parameter (it can be 0).      
      * </TD></TR>
      * <TR><TD><code>perst.object.index.init.size</code></TD><TD>Integer</TD><TD>1024</TD>
      * <TD>Initial size of object index (specifying large value increase initial size of database, but reduce

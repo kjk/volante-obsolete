@@ -10,9 +10,7 @@ public class WeakHashTable implements OidHashTable {
 
     public WeakHashTable(int initialCapacity) {
         threshold = (int)(initialCapacity * loadFactor);
-        if (initialCapacity != 0) { 
-            table = new Entry[initialCapacity];
-        }
+        table = new Entry[initialCapacity];
     }
 
     public synchronized boolean remove(int oid) {
@@ -20,14 +18,13 @@ public class WeakHashTable implements OidHashTable {
         int index = (oid & 0x7FFFFFFF) % tab.length;
         for (Entry e = tab[index], prev = null; e != null; prev = e, e = e.next) {
             if (e.oid == oid) {
-                e.dirty = 0;
-                e.ref.clear();
-                count -= 1;
                 if (prev != null) {
                     prev.next = e.next;
                 } else {
                     tab[index] = e.next;
                 }
+                e.clear();
+                count -= 1;
                 return true;
             }
         }
@@ -65,7 +62,7 @@ public class WeakHashTable implements OidHashTable {
             cs:synchronized(this) { 
                 Entry tab[] = table;
                 int index = (oid & 0x7FFFFFFF) % tab.length;
-                for (Entry e = tab[index] ; e != null ; e = e.next) {
+                for (Entry e = tab[index]; e != null; e = e.next) {
                     if (e.oid == oid) {
                         IPersistent obj = (IPersistent)e.ref.get();
                         if (obj == null) { 
@@ -135,13 +132,16 @@ public class WeakHashTable implements OidHashTable {
         Entry oldMap[] = table;
         int i;
         for (i = oldCapacity; --i >= 0;) {
-            for (Entry prev = null, e = oldMap[i]; e != null; e = e.next) { 
+            Entry e, next, prev;
+            for (prev = null, e = oldMap[i]; e != null; e = next) { 
+                next = e.next;
                 if (e.ref.get() == null && e.dirty == 0) { 
                     count -= 1;
+                    e.clear();
                     if (prev == null) { 
-                        oldMap[i] = e.next;
+                        oldMap[i] = next;
                     } else { 
-                        prev.next = e.next;
+                        prev.next = next;
                     }
                 } else { 
                     prev = e;
@@ -204,6 +204,13 @@ public class WeakHashTable implements OidHashTable {
         int       oid;
         int       dirty;
         
+        void clear() { 
+            ref.clear();
+            ref = null;
+            dirty = 0;
+            next = null;
+        }
+
         Entry(int oid, Reference ref, Entry chain) { 
             next = chain;
             this.oid = oid;

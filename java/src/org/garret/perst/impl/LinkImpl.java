@@ -135,10 +135,19 @@ public class LinkImpl implements Link {
     }
 
     public int indexOf(IPersistent obj) {
-        for (int i = used; --i >= 0;) {
-            IPersistent elem = arr[i];
-            if (elem == obj || (elem != null && elem.getOid() == obj.getOid())) {
-                return i;
+        int oid;
+        if (obj != null && (oid = ((IPersistent)obj).getOid()) != 0) { 
+            for (int i = used; --i >= 0;) {
+                IPersistent elem = arr[i];
+                if (elem != null && elem.getOid() == oid) {
+                    return i;
+                }
+            }
+        } else { 
+            for (int i = used; --i >= 0;) {
+                if (arr[i] == obj) {
+                    return i;
+                }
             }
         }
         return -1;
@@ -146,7 +155,7 @@ public class LinkImpl implements Link {
     
     public boolean containsElement(int i, IPersistent obj) {
         IPersistent elem = arr[i];
-        return elem == obj || (elem != null && elem.getOid() == obj.getOid());
+        return elem == obj || (elem != null && elem.getOid() != 0 && elem.getOid() == obj.getOid());
     }
 
     public void clear() { 

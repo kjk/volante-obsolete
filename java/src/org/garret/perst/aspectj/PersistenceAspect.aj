@@ -59,6 +59,8 @@ privileged public aspect PersistenceAspect {
         storage = s;
         if (raw) {
             state |= RAW;
+        } else { 
+            state &= ~RAW;
         }
     }
     
@@ -143,6 +145,7 @@ privileged public aspect PersistenceAspect {
             if ((state & RAW) != 0) { 
                 throw new StorageError(StorageError.ACCESS_TO_STUB);
             }
+            Assert.that((state & DELETED) == 0);
             storage.modifyObject(this);
             state |= DIRTY;
         }
@@ -182,8 +185,8 @@ privileged public aspect PersistenceAspect {
     public void AutoPersist.finalize() { 
         if ((state & DIRTY) != 0 && oid != 0) { 
             storage.storeFinalizedObject(this);
-            state = DELETED|RAW;
         }
+        state = DELETED;
     }
     
     public void AutoPersist.readExternal(java.io.ObjectInput s) throws java.io.IOException, ClassNotFoundException

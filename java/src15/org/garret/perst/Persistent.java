@@ -52,6 +52,7 @@ public class Persistent implements IPersistent {
             if ((state & RAW) != 0) { 
                 throw new StorageError(StorageError.ACCESS_TO_STUB);
             }
+            Assert.that((state & DELETED) == 0);
             storage.modifyObject(this);
             state |= DIRTY;
         }
@@ -110,7 +111,7 @@ public class Persistent implements IPersistent {
         if ((state & DIRTY) != 0 && oid != 0) { 
             storage.storeFinalizedObject(this);
         }
-        state = DELETED|RAW;
+        state = DELETED;
     }
 
     transient Storage storage;
@@ -126,7 +127,9 @@ public class Persistent implements IPersistent {
         this.storage = storage;
         if (raw) { 
             state |= RAW;
-        }
+        } else { 
+            state &= ~RAW;
+        }            
     }
 
     public void readExternal(java.io.ObjectInput s) throws java.io.IOException, ClassNotFoundException

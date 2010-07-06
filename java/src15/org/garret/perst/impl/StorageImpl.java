@@ -797,6 +797,19 @@ public class StorageImpl extends Storage {
         }
     }
 
+    protected OidHashTable createObjectCache(String kind, int pagePoolSize, int objectCacheSize) 
+    { 
+        if (pagePoolSize == INFINITE_PAGE_POOL || "strong".equals(kind)) {
+            return new StrongHashTable(objectCacheSize);
+        }
+        if ("soft".equals(kind)) { 
+            return new SoftHashTable(objectCacheSize);
+        }
+        if ("weak".equals(kind)) { 
+            return new WeakHashTable(objectCacheSize);
+        }
+        return new LruObjectCache(objectCacheSize);
+    }
         
 
     public synchronized void open(IFile file, int pagePoolSize) {
@@ -814,6 +827,7 @@ public class StorageImpl extends Storage {
         dirtyPagesMap = new int[dbDirtyPageBitmapSize/4+1];
         gcThreshold = Long.MAX_VALUE;
         backgroundGcMonitor = new Object();
+        backgroundGcStartMonitor = new Object();
         gcThread = null;
         gcActive = false;
         gcDone = false;
@@ -829,11 +843,8 @@ public class StorageImpl extends Storage {
         modified = false;        
         pool = new PagePool(pagePoolSize/Page.pageSize);
 
-        objectCache = (pagePoolSize == INFINITE_PAGE_POOL)
-            ? (OidHashTable)new StrongHashTable(objectCacheInitSize) 
-            : softCache 
-              ? (OidHashTable)new SoftHashTable(objectCacheInitSize)
-              : (OidHashTable)new WeakHashTable(objectCacheInitSize);
+        objectCache = createObjectCache(cacheKind, pagePoolSize, objectCacheInitSize);
+
         classDescMap = new HashMap();
         descList = null;
         
@@ -1667,30 +1678,34 @@ public class StorageImpl extends Storage {
         }
 
         void activate() { 
-            synchronized(backgroundGcMonitor) { 
+            synchronized(backgroundGcStartMonitor) { 
                 go = true;
-                backgroundGcMonitor.notify();
+                backgroundGcStartMonitor.notify();
             }
         }
 
         public void run() { 
             try { 
-                synchronized(backgroundGcMonitor) { 
-                    while (true) { 
+                while (true) { 
+                    synchronized(backgroundGcStartMonitor) { 
                         while (!go && opened) { 
-                            backgroundGcMonitor.wait();
+                            backgroundGcStartMonitor.wait();
                         }
                         if (!opened) { 
                             return;
                         }
                         go = false;
+                    }
+                    synchronized(backgroundGcMonitor) { 
+                        if (!opened) { 
+                            return;
+                        }
                         mark();
                         synchronized (StorageImpl.this) { 
                             synchronized (objectCache) { 
                                 sweep();
                             }
-                        }
-                        
+                        }                        
                     }
                 }
             } catch (InterruptedException x) { 
@@ -2154,8 +2169,10 @@ public class StorageImpl extends Storage {
          
     public void close() 
     {
-        commit();
-        opened = false;
+        synchronized (backgroundGcMonitor) { 
+            commit();
+            opened = false;
+        }
         if (gcThread != null) { 
             gcThread.activate();
             try { 
@@ -2242,8 +2259,8 @@ public class StorageImpl extends Storage {
         if ((value = props.getProperty("perst.object.cache.init.size")) != null) { 
             objectCacheInitSize = (int)getIntegerValue(value);
         }
-        if ((value = props.getProperty("perst.object.soft.cache")) != null) { 
-            softCache = getBooleanValue(value);
+        if ((value = props.getProperty("perst.object.cache.kind")) != null) { 
+            cacheKind = value;
         }
         if ((value = props.getProperty("perst.object.index.init.size")) != null) { 
             initIndexSize = (int)getIntegerValue(value);
@@ -2281,8 +2298,8 @@ public class StorageImpl extends Storage {
             objectCacheInitSize = (int)getIntegerValue(value);
         } else if (name.equals("perst.object.index.init.size")) { 
             initIndexSize = (int)getIntegerValue(value);
-        } else if (name.equals("perst.object.soft.cache")) { 
-            softCache = getBooleanValue(value);
+        } else if (name.equals("perst.object.cache.kind")) { 
+            cacheKind = (String)value;
         } else if (name.equals("perst.extension.quantum")) { 
             extensionQuantum = getIntegerValue(value);
         } else if (name.equals("perst.gc.threshold")) { 
@@ -3555,7 +3572,7 @@ public class StorageImpl extends Storage {
     private int     initIndexSize = dbDefaultInitIndexSize;
     private int     objectCacheInitSize = dbDefaultObjectCacheInitSize;
     private long    extensionQuantum = dbDefaultExtensionQuantum;
-    private boolean softCache = false;
+    private String  cacheKind = "lru";
     private boolean readOnly = false;
     private boolean noFlush = false;
     private boolean alternativeBtree = false;
@@ -3593,6 +3610,7 @@ public class StorageImpl extends Storage {
     boolean   gcDone;
     boolean   gcActive;
     Object    backgroundGcMonitor;
+    Object    backgroundGcStartMonitor;
     GcThread  gcThread;
 
     StorageListener listener;

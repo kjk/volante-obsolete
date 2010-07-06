@@ -305,3 +305,11 @@ stored in OS file buffers and sooner or later them will be written to the disk)
    to avoid memory overflow caused by pinning objects in memory.
 4. Add Ttree.Deallocate method
 5. Fix bug in SpatialIndexR2 creation in JDK 1.5 version of Perst.
+
+--- Release version 2.40 16.11.2004 -------------------------------------
+1. Add LRU object cache. Make it possible for user to selcet between "weak", "soft" and "lru"
+   cache implementation.
+2. Add PersistentString class to be able to store string in the database as independent object.
+3. Fix bug in Persistent.assignOid method introduced in version 2.39
+4. Fix bug in Link.indexOf method introduced in version 2.39
+5. Fix synchronization problem (deadlock) in background GC activation

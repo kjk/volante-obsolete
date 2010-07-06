@@ -28,7 +28,7 @@ public class LinkImpl<T extends IPersistent> implements Link<T> {
         if (i < 0 || i >= used) { 
             throw new IndexOutOfBoundsException();
         }
-        return (T)arr[i];
+        return arr[i];
     }
 
     public void pin() { 
@@ -112,7 +112,7 @@ public class LinkImpl<T extends IPersistent> implements Link<T> {
     }
 
     public Object[] toArray() {
-        return  toPersistentArray();
+        return toPersistentArray();
     }
 
     public IPersistent[] toRawArray() {
@@ -145,11 +145,17 @@ public class LinkImpl<T extends IPersistent> implements Link<T> {
     }
 
     public int indexOf(Object obj) {
-        if (obj instanceof IPersistent) { 
-            IPersistent p = (IPersistent)obj;
+        int oid;
+        if (obj instanceof IPersistent && (oid = ((IPersistent)obj).getOid()) != 0) { 
             for (int i = used; --i >= 0;) {
                 IPersistent elem = arr[i];
-                if (elem == obj || (elem != null && elem.getOid() == p.getOid())) {
+                if (elem != null && elem.getOid() == oid) {
+                    return i;
+                }
+            }
+        } else { 
+            for (int i = used; --i >= 0;) {
+                if (arr[i] == obj) {
                     return i;
                 }
             }
@@ -159,7 +165,7 @@ public class LinkImpl<T extends IPersistent> implements Link<T> {
     
     public boolean containsElement(int i, T obj) {
         IPersistent elem = arr[i];
-        return elem == obj || (elem != null && elem.getOid() == obj.getOid());
+        return elem == obj || (elem != null && elem.getOid() != 0 && elem.getOid() == obj.getOid());
     }
 
     public void clear() { 
@@ -255,7 +261,7 @@ public class LinkImpl<T extends IPersistent> implements Link<T> {
     {
         IPersistent elem = arr[i];
         if (elem != null && elem.isRaw()) { 
-            arr[i] = elem = ((StorageImpl)elem.getStorage()).lookupObject(elem.getOid(), null);
+            elem = ((StorageImpl)elem.getStorage()).lookupObject(elem.getOid(), null);
         }
         return (T)elem;
     }

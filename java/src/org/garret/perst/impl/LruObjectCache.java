@@ -2,15 +2,23 @@ package org.garret.perst.impl;
 import  org.garret.perst.*;
 import  java.lang.ref.*;
 
-public class WeakHashTable implements OidHashTable { 
+public class LruObjectCache implements OidHashTable { 
     Entry table[];
     static final float loadFactor = 0.75f;
+    static final int defaultInitSize = 1319;
     int count;
     int threshold;
+    int pinLimit;
+    int nPinned;
+    Entry pinList;
 
-    public WeakHashTable(int initialCapacity) {
+    public LruObjectCache(int size) {
+        int initialCapacity = size == 0 ? defaultInitSize : size;
         threshold = (int)(initialCapacity * loadFactor);
         table = new Entry[initialCapacity];
+        pinList = new Entry(0, null, null);
+        pinLimit = size;
+        pinList.lru = pinList.mru = pinList;
     }
 
     public synchronized boolean remove(int oid) {
@@ -24,6 +32,7 @@ public class WeakHashTable implements OidHashTable {
                     tab[index] = e.next;
                 }
                 e.clear();
+                unpinObject(e);
                 count -= 1;
                 return true;
             }
@@ -35,6 +44,31 @@ public class WeakHashTable implements OidHashTable {
         return new WeakReference(obj);
     }
 
+    private final void unpinObject(Entry e) 
+    {
+        if (e.pin != null) { 
+            e.unpin();
+            nPinned -= 1;
+        }
+    }
+        
+
+    private final void pinObject(Entry e, IPersistent obj) 
+    { 
+        if (pinLimit != 0) { 
+            if (e.pin != null) { 
+                e.unlink();
+            } else { 
+                if (nPinned == pinLimit) {
+                    pinList.lru.unpin();
+                } else { 
+                    nPinned += 1;
+                }
+            }
+            e.linkAfter(pinList, obj);
+        }
+    }
+
     public synchronized void put(int oid, IPersistent obj) { 
         Reference ref = createReference(obj);
         Entry tab[] = table;
@@ -42,6 +76,7 @@ public class WeakHashTable implements OidHashTable {
         for (Entry e = tab[index]; e != null; e = e.next) {
             if (e.oid == oid) {
                 e.ref = ref;
+                pinObject(e, obj);
                 return;
             }
         }
@@ -54,6 +89,7 @@ public class WeakHashTable implements OidHashTable {
 
         // Creates the new entry.
         tab[index] = new Entry(oid, ref, tab[index]);
+        pinObject(tab[index], obj);
         count++;
     }
     
@@ -69,9 +105,13 @@ public class WeakHashTable implements OidHashTable {
                             if (e.dirty != 0) { 
                                 break cs;
                             }
-                        } else if (obj.isDeleted()) {
-                            e.ref.clear();
-                            return null;
+                        } else  { 
+                            if (obj.isDeleted()) {
+                                e.ref.clear();
+                                unpinObject(e);
+                                return null;
+                            }
+                            pinObject(e, obj);
                         }
                         return obj;
                     }
@@ -112,6 +152,7 @@ public class WeakHashTable implements OidHashTable {
                         if (obj != null) { 
                             if (obj.isModified()) { 
                                 e.dirty = 0;
+                                unpinObject(e);
                                 obj.invalidate();
                             }
                         } else if (e.dirty != 0) { 
@@ -199,11 +240,33 @@ public class WeakHashTable implements OidHashTable {
     }
 
     static class Entry { 
-        Entry     next;
-        Reference ref;
-        int       oid;
-        int       dirty;
-        
+        Entry       next;
+        Reference   ref;
+        int         oid;
+        int         dirty;
+        Entry       lru;
+        Entry       mru;
+        IPersistent pin;
+
+        void unlink() { 
+            lru.mru = mru;
+            mru.lru = lru;
+        } 
+
+        void unpin() { 
+            unlink();
+            lru = mru = null;
+            pin = null;
+        }
+
+        void linkAfter(Entry head, IPersistent obj) { 
+            mru = head.mru;
+            mru.lru = this;
+            head.mru = this;
+            lru = head;
+            pin = obj;
+        }
+
         void clear() { 
             ref.clear();
             ref = null;

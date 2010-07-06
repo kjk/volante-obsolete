@@ -24,6 +24,8 @@ public class TestIndex {
                 pagePoolSize = Storage.INFINITE_PAGE_POOL;
             } else if ("altbtree".equals(args[i])) { 
                 db.setProperty("perst.alternative.btree", Boolean.TRUE);
+                //db.setProperty("perst.object.cache.kind", "weak");
+                db.setProperty("perst.object.cache.init.size", new Integer(1013));
             } else if ("serializable".equals(args[i])) { 
                 db.setProperty("perst.alternative.btree", Boolean.TRUE);
                 serializableTransaction = true;
@@ -56,6 +58,10 @@ public class TestIndex {
             rec.strKey = Long.toString(key);
             intIndex.put(new Key(rec.intKey), rec);                
             strIndex.put(new Key(rec.strKey), rec);                
+            if (i % 100000 == 0) { 
+                System.out.print("Insert " + i + " records\r");
+                db.commit();
+            }
         }
         
         if (serializableTransaction) { 
