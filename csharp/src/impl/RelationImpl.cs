@@ -1,10 +1,31 @@
 namespace Perst.Impl
 {
     using System;
+    using System.Collections;
     using Perst;
 	
     public class RelationImpl:Relation
     {
+        public override int Length 
+        {
+             get 
+             {
+                 return link.Length;
+             }
+        }        
+
+        public override IPersistent this[int i] 
+        {
+            get 
+            {
+                return link.get(i);
+            }
+            set 
+            {
+                link.set(i, value);
+            }
+        }
+
         public override int size()
         {
             return link.size();
@@ -55,9 +76,14 @@ namespace Perst.Impl
             link.addAll(anotherLink);
         }
 		
-        public override IPersistent[] toArray()
+        public override IPersistent[] ToArray()
         {
-            return link.toArray();
+            return link.ToArray();
+        }
+		
+        public override Array ToArray(Type elemType)
+        {
+            return link.ToArray(elemType);
         }
 		
         public override bool contains(IPersistent obj)
@@ -70,6 +96,12 @@ namespace Perst.Impl
             return link.indexOf(obj);
         }
 		
+        public override IEnumerator GetEnumerator() 
+        {
+            return link.GetEnumerator();
+
+        }
+
         public override void  clear()
         {
             link.clear();

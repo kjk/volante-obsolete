@@ -1,6 +1,7 @@
 namespace Perst.Impl
 {
     using System;
+    using System.Collections;
     using Perst;
 	
     public class LinkImpl : Link
@@ -10,6 +11,27 @@ namespace Perst.Impl
             return used;
         }
 		
+        public virtual int Length 
+        {
+             get 
+             {
+                 return used;
+             }
+        }        
+
+        public virtual IPersistent this[int i] 
+        {
+             get
+             {
+                 return get(i);
+             }
+           
+             set 
+             { 
+                 set(i, value);
+             }
+        }    
+   
         public virtual IPersistent get(int i)
         {
             if (i < 0 || i >= used)
@@ -99,12 +121,22 @@ namespace Perst.Impl
             used += n;
         }
 		
-        public virtual IPersistent[] toArray()
+        public virtual IPersistent[] ToArray()
         {
             IPersistent[] a = new IPersistent[used];
             for (int i = used; --i >= 0; )
             {
                 a[i] = loadElem(i);
+            }
+            return a;
+        }
+		
+        public virtual Array ToArray(Type elemType)
+        {
+            Array a = Array.CreateInstance(elemType, used);
+            for (int i = used; --i >= 0; )
+            {
+                a.SetValue(loadElem(i), i);
             }
             return a;
         }
@@ -135,6 +167,43 @@ namespace Perst.Impl
             used = 0;
         }
 		
+        class LinkEnumerator : IEnumerator { 
+            public bool MoveNext() 
+            {
+                if (i+1 < link.size()) { 
+                    i += 1;
+                    return true;
+                }
+                return false;
+            }
+
+            public object Current
+            {
+                get 
+                {
+                    return link[i];
+                }
+            }
+
+            public void Reset() 
+            {
+                i = -1;
+            }
+
+            internal LinkEnumerator(Link link) { 
+                this.link = link;
+                i = -1;
+            }
+
+            private int  i;
+            private Link link;
+        }      
+
+        public IEnumerator GetEnumerator() 
+        { 
+            return new LinkEnumerator(this);
+        }
+
         private IPersistent loadElem(int i)
         {
             IPersistent elem = arr[i];

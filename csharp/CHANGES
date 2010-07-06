@@ -67,3 +67,9 @@ For example it can be used to work with flash card or encrypted files.
 
 1. Store weak references in modified object list to make it possible to GC to reclaim these objects
 2. Support sets of persistent objects (Storage.createSet method)
+
+--- Release version 1.18 19.09.2003 -------------------------------------
+
+1. Add enumeration and indexation methods to Link interface. 
+
+

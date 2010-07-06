@@ -1,12 +1,24 @@
 namespace Perst
 {
     using System;
+    using System.Collections;
 	
     /// <summary> Class representing relation between owner and members
     /// </summary>
     public abstract class Relation:Persistent, Link
     {
         public abstract int size();
+
+        public abstract int Length 
+        {
+            get;
+        }
+
+        public abstract IPersistent this[int i] 
+        {
+            get;
+            set;
+        }
 		
         public abstract IPersistent get(int i);
 		
@@ -26,13 +38,17 @@ namespace Perst
 		
         public abstract void  addAll(Link anotherLink);
 		
-        public abstract IPersistent[] toArray();
+        public abstract IPersistent[] ToArray();
+
+        public abstract Array ToArray(Type elemType);
 
         public abstract bool contains(IPersistent obj);
 		
         public abstract int indexOf(IPersistent obj);
 		
         public abstract void  clear();
+
+        public abstract IEnumerator GetEnumerator();
 
         public virtual IPersistent Owner
         {
