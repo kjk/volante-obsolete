@@ -116,6 +116,16 @@ namespace Perst.Impl
             Modify();
         }
 		
+        public override void Unpin()
+        {
+            link.Unpin();
+        }
+
+        public override void Pin()
+        {
+            link.Pin();
+        }
+
         internal RelationImpl(IPersistent owner):base(owner)
         {
             link = new LinkImpl(8);

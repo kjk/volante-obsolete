@@ -197,3 +197,10 @@ above criteria.
 3. Add perst.code.generation property which allows to enable or disable dynamic generation
 of pack/unpack methods.
 4. Generation of pack/unpack methods in background (by separate thread)
+
+--- Release version 2.20 04.04.2004 -------------------------------------
+1. Add Link.Pin and Link.Unpin methods. Do not implicitely pin accessed Link elements.
+2. Change class descriptor loading algorithm to avoid stack overflow
+   in applications with large number of classes
+3. Detect bugs related with incorrect serialization of persistent object as raw or value type
+4. Fix bug in automatic scheme evalaution implementation.

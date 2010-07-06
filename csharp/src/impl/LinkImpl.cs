@@ -204,16 +204,40 @@ namespace Perst.Impl
             return new LinkEnumerator(this);
         }
 
+        public void Pin() 
+        { 
+            for (int i = 0, n = used; i < n; i++) 
+            { 
+                arr[i] = loadElem(i);
+            }
+        }
+
+        public void Unpin() 
+        { 
+            for (int i = 0, n = used; i < n; i++) 
+            { 
+                IPersistent elem = arr[i];
+                if (elem != null && !elem.IsRaw() && elem.IsPersistent()) 
+                { 
+                    IPersistent stub = new Persistent();
+                    stub.AssignOid(elem.Storage, elem.Oid, true);
+                    arr[i] = stub;
+                }
+            }
+        }
+
         private IPersistent loadElem(int i)
         {
             IPersistent elem = arr[i];
             if (elem.IsRaw())
             {
-                arr[i] = elem = ((StorageImpl) elem.Storage).lookupObject(elem.Oid, null);
+                // arr[i] = elem = ((StorageImpl) elem.Storage).lookupObject(elem.Oid, null);
+                elem = ((StorageImpl) elem.Storage).lookupObject(elem.Oid, null);
             }
             return elem;
         }
 		
+
         internal LinkImpl()
         {
         }

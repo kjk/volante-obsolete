@@ -48,6 +48,10 @@ namespace Perst
 		
         public abstract void  Clear();
 
+        public abstract void  Pin();
+
+        public abstract void  Unpin();
+ 
         public abstract IEnumerator GetEnumerator();
 
         public virtual IPersistent Owner

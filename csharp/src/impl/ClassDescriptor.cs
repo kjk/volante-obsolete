@@ -243,11 +243,11 @@ namespace Perst.Impl
                             hasReferences = true;
                             break;
                         case FieldType.tpValue:
-                            fd.valueDesc = storage.getClassDescriptor(f.FieldType).resolve();
+                            fd.valueDesc = storage.getClassDescriptor(f.FieldType);
                             hasReferences |= fd.valueDesc.hasReferences;
                             break;
                         case FieldType.tpArrayOfValue:
-                            fd.valueDesc = storage.getClassDescriptor(f.FieldType.GetElementType()).resolve();
+                            fd.valueDesc = storage.getClassDescriptor(f.FieldType.GetElementType());
                             hasReferences |= fd.valueDesc.hasReferences;
                             break;
                     }
@@ -467,6 +467,7 @@ namespace Perst.Impl
             for (int i = n; --i >= 0;) 
             { 
                 FieldDescriptor fd = allFields[i];
+                fd.Load();
                 if (!fd.className.Equals(scope.FullName)) 
                 {
                     for (scope = cls; scope != null; scope = scope.BaseType) 
@@ -516,23 +517,30 @@ namespace Perst.Impl
             { 
                 throw new StorageError(StorageError.ErrorCode.DESCRIPTOR_FAILURE, cls);
             }
-            ((StorageImpl)Storage).classDescMap[cls] = this;
+            StorageImpl s = (StorageImpl)Storage;
+            if (!s.classDescMap.Contains(cls)) 
+            {
+                ((StorageImpl)Storage).classDescMap.Add(cls, this);
+            }
         }
 
-        internal ClassDescriptor resolve() 
+        internal void resolve() 
         {
             if (!resolved) 
             { 
                 StorageImpl classStorage = (StorageImpl)Storage;
                 ClassDescriptor desc = new ClassDescriptor(classStorage, cls);
+                resolved = true;
                 if (!desc.equals(this)) 
                 { 
                     classStorage.registerClassDescriptor(desc);
-                    return desc;
                 }
-                resolved = true;
             }
-            return this;
         }            
+
+        public override bool RecursiveLoading()
+        {
+            return false;
+        }
     }
 }

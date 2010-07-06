@@ -1009,6 +1009,7 @@ namespace Perst.Impl
             System.Type cls = desc.cls;
             for (ClassDescriptor next = desc.next; next != null; next = next.next)
             {
+                next.Load();
                 if (cls.IsAssignableFrom(next.cls))
                 {
                     desc.hasSubclasses = true;
@@ -1033,7 +1034,14 @@ namespace Perst.Impl
                 descList = findClassDescriptor(descListOid);
                 for (desc = descList; desc != null; desc = desc.next)
                 {
-                    desc.resolve();
+                    desc.Load();
+                }
+                for (desc = descList; desc != null; desc = desc.next)
+                {
+                    if (classDescMap[desc.cls] == desc) 
+                    { 
+                        desc.resolve();
+                    }
                     checkIfFinal(desc);
                 }
             }
@@ -1046,6 +1054,7 @@ namespace Perst.Impl
             { 
                 Thread thread = new Thread(new ThreadStart(generateSerializers));
                 thread.Priority = ThreadPriority.BelowNormal;
+                thread.IsBackground = true;
                 thread.Start();
             }
 #endif
@@ -3358,6 +3367,10 @@ namespace Perst.Impl
                         buf.extend(offs + 4);
                         Bytes.pack4(buf.arr, offs, - 1);
                         offs += 4;
+                    } 
+                    else if (val is IPersistent) 
+                    { 
+                        throw new StorageError(StorageError.ErrorCode.SERIALIZE_PERSISTENT);
                     }
                     else
                     {

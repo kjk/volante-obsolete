@@ -140,5 +140,22 @@ namespace Perst
         /// <summary> Remove all members from the relation
         /// </summary>
         void  Clear();
+
+        /// <summary>
+        /// Replace all direct references to linked objects with stubs. 
+        /// This method is needed tyo avoid memory exhaustion in case when 
+        /// there is a large numebr of objectys in databasse, mutually
+        /// refefencing each other (each object can directly or indirectly 
+        /// be accessed from other objects).
+        /// </summary>
+        void Unpin();     
+     
+       /// <summary>
+       /// Replace references to elements with direct references.
+       /// It will impove spped of manipulations with links, but it can cause
+       /// recursive loading in memory large number of objects and as a result - memory
+       /// overflow, because garabge collector will not be able to collect them
+       /// </summary>
+       void Pin();     
     }
 }
