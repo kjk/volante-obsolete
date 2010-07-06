@@ -6,7 +6,7 @@ namespace Perst
     ///<summary>
     /// Interface of objects set
     /// </summary>
-    public interface ISet : ICollection
+    public interface ISet : IPersistent, IResource, ICollection
     {
         /// <summary>
         /// Check if set contains specified element

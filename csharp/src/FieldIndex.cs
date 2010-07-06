@@ -130,6 +130,16 @@ namespace Perst
         /// </exception>
         void  Remove(IPersistent obj);
 
+        /// <summary> Remove object with specified key from the unique index.
+        /// </summary>
+        /// <param name="key">wrapper of removed key
+        /// </param>
+        /// <exception cref="Perst.StorageError">StorageError(StorageError.ErrorCode.KEY_NOT_FOUND) exception if there is no such key in the index,
+        /// or StorageError(StorageError.ErrorCode.KEY_NOT_UNIQUE) if index is not unique.
+        /// 
+        /// </exception>
+        void  Remove(Key key);
+
         /// <summary> Get number of objects in the index
         /// </summary>
         /// <returns>number of objects in the index

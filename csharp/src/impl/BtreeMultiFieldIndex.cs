@@ -502,6 +502,11 @@ namespace Perst.Impl
             base.remove(new BtreeKey(extractKey(obj), obj.Oid));
         }
         
+        public void Remove(Key key) 
+        {
+            base.Remove(convertKey(key));
+        }       
+
         public bool Contains(IPersistent obj) 
         {
             Key key = extractKey(obj);

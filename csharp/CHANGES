@@ -118,3 +118,6 @@ Attention: database format is incompatible with version 1.22!
 2. Support per-thread transactions (Storage.beginTransaction and Storage.endTranasction methods)
 3. Yet another attempt to eliminate modification list and handle modified object using weak references.
 4. Rename all public Perst methods according to C# naming convention.
+
+--- Release version 2.04 26.11.2003 -------------------------------------
+1. Derive ISet from IPersistent and IResource interfaces
