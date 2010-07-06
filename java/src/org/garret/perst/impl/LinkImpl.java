@@ -117,6 +117,10 @@ public class LinkImpl implements Link {
 
     LinkImpl() {}
 
+    LinkImpl(int initSize) {
+        this.arr = new IPersistent[initSize];
+    }
+
     LinkImpl(IPersistent[] arr) { 
         this.arr = arr;
         used = arr.length;

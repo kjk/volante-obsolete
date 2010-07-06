@@ -110,6 +110,9 @@ public class StorageImpl extends Storage {
     protected synchronized void deallocateObject(IPersistent obj) 
     {
         int oid = obj.getOid();
+        if (oid == 0) { 
+            return;
+        }
 	long pos = getPos(oid);
 	int offs = (int)pos & (Page.pageSize-1);
 	if ((offs & (dbFreeHandleFlag|dbPageObjectFlag)) != 0) { 
@@ -126,6 +129,7 @@ public class StorageImpl extends Storage {
 	    cloneBitmap(pos, size);
 	}
 	modified = true;
+        setObjectOid(obj, 0, false);
     }
 
     final void freePage(int oid) {
@@ -154,6 +158,7 @@ public class StorageImpl extends Storage {
     int allocateId() {
 	int oid;
 	int curr = 1-currIndex;
+        setDirty();
 	if ((oid = header.root[curr].freeList) != 0) { 
 	    header.root[curr].freeList = (int)(getPos(oid) >> dbFlagsBits);
 	    dirtyPagesMap[oid >>> (dbHandlesPerPageBits+5)] 
@@ -175,7 +180,6 @@ public class StorageImpl extends Storage {
 	}
 	oid = currIndexSize;
 	header.root[curr].indexUsed = ++currIndexSize;
-	modified = true;
 	return oid;
     }
     
@@ -184,7 +188,6 @@ public class StorageImpl extends Storage {
 	setPos(oid, ((long)(header.root[1-currIndex].freeList) << dbFlagsBits)
 	       | dbFreeHandleFlag);
 	header.root[1-currIndex].freeList = oid;
-	modified = true;
     }
     
     final static byte firstHoleSize [] = {
@@ -279,8 +282,21 @@ public class StorageImpl extends Storage {
     }
 
 
+    final void setDirty() 
+    {
+        modified = true;
+        if (!header.dirty) { 
+            header.dirty = true;
+	    Page pg = pool.putPage(0);
+	    header.pack(pg.data);
+	    pool.flush();
+	    pool.unfix(pg);
+        }
+    }
+
     final long allocate(int size, int oid)
     {
+        setDirty();
 	size = (size + dbAllocationQuantum-1) & ~(dbAllocationQuantum-1);
 	Assert.that(size != 0);
 	int  objBitSize = size >> dbAllocationQuantumBits;
@@ -756,8 +772,7 @@ public class StorageImpl extends Storage {
 	    header.root[0].size = used;
 	    header.root[1].size = used;
             usedSize = used;
-	    committedIndexSize = 0;
-	    currIndexSize = dbFirstUserId;
+	    committedIndexSize = currIndexSize = dbFirstUserId;
 	    pool.open(file, used);
 
 	    long indexPage = header.root[1].index;
@@ -1044,10 +1059,12 @@ public class StorageImpl extends Storage {
         if (!opened) {
             throw new StorageError(StorageError.STORAGE_NOT_OPENED);
         }
+        if (!modified) { 
+            return;
+        }
 	int curr = currIndex;
 	int[] map = dirtyPagesMap;
-	if (committedIndexSize == 0 || header.root[1-curr].index != header.root[curr].shadowIndex) { 
-	    committedIndexSize = header.root[curr].indexUsed;
+	if (header.root[1-curr].index != header.root[curr].shadowIndex) { 
 	    pool.copy(header.root[curr].shadowIndex, header.root[curr].index, 8*committedIndexSize);
 	} else { 
 	    int nPages = (committedIndexSize + dbHandlesPerPage - 1) >>> dbHandlesPerPageBits;
@@ -1070,9 +1087,9 @@ public class StorageImpl extends Storage {
 	header.root[1-curr].size = header.root[curr].size;
         header.root[1-curr].rootObject = header.root[curr].rootObject;
         header.root[1-curr].classDescList = header.root[curr].classDescList;
-	header.dirty = true;
 	modified = false;
 	usedSize = header.root[curr].size;
+        currIndexSize = committedIndexSize;
 
 	currRBitmapPage = currPBitmapPage = dbBitmapId;
 	currRBitmapOffs = currPBitmapOffs = 0;
@@ -1095,7 +1112,7 @@ public class StorageImpl extends Storage {
     }
 
     public Link createLink() {
-        return new LinkImpl();
+        return new LinkImpl(8);
     }
 
     public Relation createRelation(IPersistent owner) {
@@ -1228,7 +1245,7 @@ public class StorageImpl extends Storage {
             pool.unfix(pg);
             desc = (ClassDescriptor)lookupObject(typeOid, ClassDescriptor.class);
         }
-        stub = desc.newInstance();
+        stub = (IPersistent)desc.newInstance();
         setObjectOid(stub, oid, true);
         objectCache.put(oid, stub);
         return stub;
@@ -1251,7 +1268,7 @@ public class StorageImpl extends Storage {
                 int typeOid = ObjectHeader.getType(body, 0);
                 desc = (ClassDescriptor)lookupObject(typeOid, ClassDescriptor.class);
             }
-            obj = desc.newInstance();
+            obj = (IPersistent)desc.newInstance();
             objectCache.put(oid, obj);
         } else { 
             desc = getClassDescriptor(cls);
@@ -1262,6 +1279,7 @@ public class StorageImpl extends Storage {
         } catch (Exception x) { 
             throw new StorageError(StorageError.ACCESS_VIOLATION, x);
         }
+        obj.onLoad();
         return obj;
     }
 

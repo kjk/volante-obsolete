@@ -1,7 +1,6 @@
 import org.garret.perst.*;
 import java.io.*;
 
-
 public class Guess extends Persistent {
     public Guess  yes;
     public Guess  no;

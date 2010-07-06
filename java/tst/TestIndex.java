@@ -5,22 +5,22 @@ class Record extends Persistent {
     long   intKey;
 };
 
-class Root extends Persistent {
+class Indices extends Persistent {
     Index strIndex;
     Index intIndex;
 }
 
 public class TestIndex extends Thread { 
-    final static int nRecords = 200000;
+    final static int nRecords = 100000;
     final static int pagePoolSize = 32*1024*1024;
 
     static public void main(String[] args) {	
         Storage db = StorageFactory.getInstance().createStorage();
 
 	db.open("testidx.dbs", pagePoolSize);
-        Root root = (Root)db.getRoot();
+        Indices root = (Indices)db.getRoot();
         if (root == null) { 
-            root = new Root();
+            root = new Indices();
             root.strIndex = db.createIndex(String.class, true);
             root.intIndex = db.createIndex(long.class, true);
             db.setRoot(root);

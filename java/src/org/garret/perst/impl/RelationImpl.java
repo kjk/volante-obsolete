@@ -60,7 +60,7 @@ public class RelationImpl extends Relation {
     
     RelationImpl(IPersistent owner) { 
         super(owner);
-        link = new LinkImpl();
+        link = new LinkImpl(8);
     }
 
     LinkImpl link;

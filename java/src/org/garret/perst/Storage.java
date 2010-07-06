@@ -62,10 +62,10 @@ public abstract class Storage {
 
     /**
      * Create new field index
-     * @param type objects of whioch type (or derived from which type) will be included in the index
+     * @param type objects of which type (or derived from which type) will be included in the index
      * @param fieldName name of the index field. Field with such name should be present in specified class <code>type</code>
      * @param unique whether index is unique (duplicate value of keys are not allowed)
-     * @return persistent object implementing index
+     * @return persistent object implementing field index
      * @exception StorageError(StorageError.INDEXED_FIELD_NOT_FOUND) if there is no such field in specified class,<BR> 
      * StorageError(StorageError.UNSUPPORTED_INDEX_TYPE) exception if type of specified field is not supported by implementation
      */

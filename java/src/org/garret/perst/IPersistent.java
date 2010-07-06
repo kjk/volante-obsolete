@@ -5,7 +5,7 @@ package org.garret.perst;
  */
 public interface IPersistent {
     /**
-     * Load obejct from the database (if needed)
+     * Load object from the database (if needed)
      */
     public void load();
 
@@ -62,5 +62,12 @@ public interface IPersistent {
      * @return storage containing this object (null if object is not persistent yet)
      */
     public Storage getStorage();
+
+    /**
+     * Method called by the database after loading of the object.
+     * It can be used to initialize transient fields of the object. 
+     * Default implementation of this method do nothing
+     */
+    public void onLoad();
 }
 

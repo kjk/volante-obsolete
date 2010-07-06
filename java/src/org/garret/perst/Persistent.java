@@ -55,6 +55,9 @@ public class Persistent implements IPersistent {
         return oid;
     }
 
+    public void onLoad() {
+    }
+
     transient Storage storage;
     transient int     oid;
     transient boolean raw;

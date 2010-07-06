@@ -56,9 +56,9 @@ public final class ClassDescriptor extends Persistent {
 
     static final Class[] defaultConstructorProfile = new Class[0];
 
-    Persistent newInstance() {
+    Object newInstance() {
         try { 
-            return (Persistent)defaultConstructor.newInstance(null);
+            return defaultConstructor.newInstance(null);
         } catch (Exception x) { 
             throw new StorageError(StorageError.CONSTRUCTOR_FAILURE, cls, x);
         }
@@ -113,11 +113,15 @@ public final class ClassDescriptor extends Persistent {
                 throw new StorageError(StorageError.UNSUPPORTED_TYPE, c);
             }
             type += tpArrayOfBoolean;
+        } else if (treateAnyNonPersistentClassAsValue) {
+            type = tpValue;            
         } else { 
             throw new StorageError(StorageError.UNSUPPORTED_TYPE, c);
         }
         return type;
     }
+
+    static boolean treateAnyNonPersistentClassAsValue = Boolean.getBoolean("perst.implicit.values");
 
     ClassDescriptor() {}
 

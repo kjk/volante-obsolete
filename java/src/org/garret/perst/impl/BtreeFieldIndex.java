@@ -3,6 +3,7 @@ import  org.garret.perst.*;
 
 import java.lang.reflect.*;
 import java.util.Date;
+import java.util.ArrayList;
 
 class BtreeFieldIndex extends Btree implements FieldIndex { 
     String className;
@@ -10,13 +11,17 @@ class BtreeFieldIndex extends Btree implements FieldIndex {
     transient Class cls;
     transient Field fld;
 
-    BtreeFieldIndex() {
+    BtreeFieldIndex() {}
+    
+    public void onLoad()
+    {
         try { 
             cls = Class.forName(className);
             fld = cls.getDeclaredField(fieldName);            
             fld.setAccessible(true);
         } catch (Exception x) { 
-             throw new StorageError(StorageError.INDEXED_FIELD_NOT_FOUND, className + "." + fieldName, x);
+            System.out.println("Field " + className + "." + fieldName + "  not found");
+            throw new StorageError(StorageError.INDEXED_FIELD_NOT_FOUND, className + "." + fieldName, x);
         }                   
     }
 
@@ -72,6 +77,9 @@ class BtreeFieldIndex extends Btree implements FieldIndex {
               case ClassDescriptor.tpDouble:
                 key = new Key(f.getDouble(obj));
                 break;
+              case ClassDescriptor.tpString:
+                key = new Key((String)f.get(obj));
+                break;
               default:
                 Assert.failed("Invalid type");
             }
@@ -90,6 +98,17 @@ class BtreeFieldIndex extends Btree implements FieldIndex {
         super.remove(new BtreeKey(extractKey(obj), obj.getOid()));
     }
         
+    public IPersistent[] get(Key from, Key till) {
+        if ((from != null && from.type != type) || (till != null && till.type != type)) { 
+            throw new StorageError(StorageError.INCOMPATIBLE_KEY_TYPE);
+        }
+        ArrayList list = new ArrayList();
+        if (root != 0) { 
+            BtreePage.find((StorageImpl)getStorage(), root, from, till, type, height, list);
+        }
+        return (IPersistent[])list.toArray((Object[])Array.newInstance(cls, list.size()));
+    }
+
     public IPersistent[] toArray() {
         IPersistent[] arr = (IPersistent[])Array.newInstance(cls, nElems);
         if (root != 0) { 
