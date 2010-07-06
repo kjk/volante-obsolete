@@ -7,5 +7,7 @@ TestTtree\bin\debug\TestTtree
 TestGC\bin\debug\TestGC
 TestConcur\bin\debug\TestConcur
 TestXML\bin\debug\TestXML
+TestBackup\bin\debug\TestBackup
 TestBlob\bin\debug\TestBlob
 TestBlob\bin\debug\TestBlob
+TestTimeSeries\bin\debug\TestTimeSeries

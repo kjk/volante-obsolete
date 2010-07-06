@@ -147,3 +147,8 @@ Attention: database format is incompatible with version 1.22!
 
 --- Release version 2.10 30.12.2003 -------------------------------------
 1. Fix bug in XML import
+
+--- Release version 2.11 07.01.2004 -------------------------------------
+1. Add Storage.backup method which can be used for online backups and database compactification
+2. Add support of time series
+3. Fix bugs in unpacking arrays of values

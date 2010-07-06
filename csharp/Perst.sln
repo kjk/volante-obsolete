@@ -55,6 +55,14 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestBlob", "TestBlob\TestBl
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestBackup", "TestBackup\TestBackup.csproj", "{51C11273-2861-4088-8391-15785E7D210D}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestTimeSeries", "TestTimeSeries\TestTimeSeries.csproj", "{2E7C9D04-D830-427D-9BEE-15595C3B1537}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfiguration) = preSolution
 		Debug = Debug
@@ -117,6 +125,14 @@ Global
 		{5F572942-DB1D-4E32-80EB-3E978B70F66B}.Debug.Build.0 = Debug|.NET
 		{5F572942-DB1D-4E32-80EB-3E978B70F66B}.Release.ActiveCfg = Release|.NET
 		{5F572942-DB1D-4E32-80EB-3E978B70F66B}.Release.Build.0 = Release|.NET
+		{51C11273-2861-4088-8391-15785E7D210D}.Debug.ActiveCfg = Debug|.NET
+		{51C11273-2861-4088-8391-15785E7D210D}.Debug.Build.0 = Debug|.NET
+		{51C11273-2861-4088-8391-15785E7D210D}.Release.ActiveCfg = Release|.NET
+		{51C11273-2861-4088-8391-15785E7D210D}.Release.Build.0 = Release|.NET
+		{2E7C9D04-D830-427D-9BEE-15595C3B1537}.Debug.ActiveCfg = Debug|.NET
+		{2E7C9D04-D830-427D-9BEE-15595C3B1537}.Debug.Build.0 = Debug|.NET
+		{2E7C9D04-D830-427D-9BEE-15595C3B1537}.Release.ActiveCfg = Release|.NET
+		{2E7C9D04-D830-427D-9BEE-15595C3B1537}.Release.Build.0 = Release|.NET
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 	EndGlobalSection

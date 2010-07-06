@@ -97,6 +97,12 @@ namespace Perst
         /// </summary>
         abstract public void  Rollback();
 		
+        /// <summary>
+        /// Backup current state of database
+        /// </summary>
+        /// <param name="stream">output stream to which backup is done</param>
+        abstract public void Backup( System.IO.Stream stream);
+
         /// <summary> Create new index
         /// </summary>
         /// <param name="type">type of the index key (you should path here <code>String.class</code>, 
@@ -202,6 +208,26 @@ namespace Perst
         /// <returns>empty BLOB</returns>
         abstract public Blob CreateBlob();
 
+        /// <summary>
+        /// Create new time series object. 
+        /// </summary>
+        /// <param name="blockClass">class derived from TimeSeriesBlock</param>
+        /// <param name="maxBlockTimeInterval">maximal difference in system ticks (100 nanoseconds) between timestamps 
+        /// of the first and the last elements in a block. 
+        /// If value of this parameter is too small, then most blocks will contains less elements 
+        /// than preallocated. 
+        /// If it is too large, then searching of block will be inefficient, because index search 
+        /// will select a lot of extra blocks which do not contain any element from the 
+        /// specified range.
+        /// Usually the value of this parameter should be set as
+        /// (number of elements in block)*(tick interval)*2. 
+        /// Coefficient 2 here is used to compencate possible holes in time series.
+        /// For example, if we collect stocks data, we will have data only for working hours.
+        /// If number of element in block is 100, time series period is 1 day, then
+        /// value of maxBlockTimeInterval can be set as 100*(24*60*60*10000000L)*2
+        /// </param>
+        /// <returns>new empty time series</returns>
+        abstract public TimeSeries CreateTimeSeries(Type blockClass, long maxBlockTimeInterval);
 		
         /// <summary> Commit transaction (if needed) and close the storage
         /// </summary>
@@ -383,7 +409,7 @@ namespace Perst
         /// Get database memory dump. This function returns hashmap which key is classes
         /// of stored objects and value - MemoryUsage object which specifies number of instances
         /// of particular class in the storage and total size of memory used by these instance.
-        /// Size of internal database structures (object index,* memory allocation bitmap) is associated with 
+        /// Size of internal database structures (object index, memory allocation bitmap) is associated with 
         /// <code>Storage</code> class. Size of class descriptors  - with <code>System.Type</code> class.
         /// <p>This method traverse the storage as garbage collection do - starting from the root object
         /// and recursively visiting all reachable objects. So it reports statistic only for visible objects.

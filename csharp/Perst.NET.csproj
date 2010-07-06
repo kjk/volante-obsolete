@@ -208,6 +208,11 @@
                     BuildAction = "Compile"
                 />
                 <File
+                    RelPath = "src\TimeSeries.cs"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
                     RelPath = "src\XMLImportException.cs"
                     SubType = "Code"
                     BuildAction = "Compile"
@@ -319,6 +324,11 @@
                 />
                 <File
                     RelPath = "src\impl\StrongHashTable.cs"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "src\impl\TimeSeriesImpl.cs"
                     SubType = "Code"
                     BuildAction = "Compile"
                 />

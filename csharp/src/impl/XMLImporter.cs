@@ -340,6 +340,7 @@ namespace Perst.Impl
                         dst += 2;
                         break;
                     case ClassDescriptor.FieldType.tpInt:
+                    case ClassDescriptor.FieldType.tpEnum:
                         buf.extend(dst+4);
                         Bytes.pack4(buf.arr, dst, Int32.Parse(val));
                         dst += 4;

@@ -286,6 +286,10 @@ namespace Perst.Impl
         internal bool insert(Key key, IPersistent obj, bool overwrite)
         {
             StorageImpl db = (StorageImpl) Storage;
+            if (db == null) 
+            { 
+                throw new StorageError(Perst.StorageError.ErrorCode.DELETED_OBJECT);
+            }
             if (key.type != type)
             {
                 throw new StorageError(StorageError.ErrorCode.INCOMPATIBLE_KEY_TYPE);
@@ -335,6 +339,10 @@ namespace Perst.Impl
         internal virtual void remove(BtreeKey rem)
         {
             StorageImpl db = (StorageImpl) Storage;
+            if (db == null) 
+            { 
+                throw new StorageError(Perst.StorageError.ErrorCode.DELETED_OBJECT);
+            }
             if (rem.key.type != type)
             {
                 throw new StorageError(StorageError.ErrorCode.INCOMPATIBLE_KEY_TYPE);
@@ -563,23 +571,7 @@ namespace Perst.Impl
             internal BtreeEnumerator(Btree tree) 
             { 
                 this.tree = tree;
-                db = (StorageImpl)tree.Storage;
-                int height = tree.height;
-                pageStack = new int[height];
-                posStack =  new int[height];
-                sp = 0;
-                int pageId = tree.root;
-                hasCurrent = false;
-                while (--height >= 0) 
-                { 
-                    posStack[sp] = 0;
-                    pageStack[sp] = pageId;
-                    Page pg = db.getPage(pageId);
-                    pageId = getReference(pg, 0);
-                    end = BtreePage.getnItems(pg);
-                    db.pool.unfix(pg);
-                    sp += 1;
-                }
+                Reset();
             }
 
             protected virtual int getReference(Page pg, int pos) 
@@ -649,9 +641,17 @@ namespace Perst.Impl
 
             public void Reset() 
             {
+                db = (StorageImpl)tree.Storage;
+                if (db == null) 
+                { 
+                    throw new StorageError(Perst.StorageError.ErrorCode.DELETED_OBJECT);
+                }
                 sp = 0;
+                int height = tree.height;
+                pageStack = new int[height];
+                posStack =  new int[height];
                 int pageId = tree.root;
-                for (int height = pageStack.Length; --height >= 0;) 
+                while (--height >= 0) 
                 { 
                     posStack[sp] = 0;
                     pageStack[sp] = pageId;
@@ -663,7 +663,7 @@ namespace Perst.Impl
                 }
                 hasCurrent = false;
             }
-
+ 
             protected StorageImpl db;
             protected Btree       tree;
             protected int[]       pageStack;
@@ -787,14 +787,11 @@ namespace Perst.Impl
         { 
             internal BtreeSelectionIterator(Btree tree, Key from, Key till, IterationOrder order) 
             { 
-                this.db = (StorageImpl)tree.Storage;
                 this.from = from;
                 this.till = till;
                 this.type = tree.type;
                 this.order = order;
                 this.tree = tree;
-                pageStack = new int[tree.height];
-                posStack =  new int[tree.height];
                 Reset();
             }
 
@@ -807,7 +804,7 @@ namespace Perst.Impl
             {
                 int i, l, r;
                 Page pg;
-                int height = pageStack.Length;
+                int height = tree.height;
                 int pageId = tree.root;
                 hasCurrent = false;
                 sp = 0;
@@ -816,6 +813,13 @@ namespace Perst.Impl
                 { 
                     return;
                 }
+                db = (StorageImpl)tree.Storage;
+                if (db == null) 
+                { 
+                    throw new StorageError(Perst.StorageError.ErrorCode.DELETED_OBJECT);
+                }
+                pageStack = new int[height];
+                posStack = new int[height];
 
                 if (type == ClassDescriptor.FieldType.tpString) 
                 { 
@@ -1644,6 +1648,21 @@ namespace Perst.Impl
             return Range(from, till, order).GetEnumerator();
         }
 
+        public IEnumerator GetEnumerator(object from, object till, IterationOrder order) 
+        {
+            return Range(from, till, order).GetEnumerator();
+        }
+
+        public IEnumerator GetEnumerator(Key from, Key till) 
+        {
+            return Range(from, till).GetEnumerator();
+        }
+
+        public IEnumerator GetEnumerator(object from, object till) 
+        {
+            return Range(from, till).GetEnumerator();
+        }
+
         public virtual IEnumerable Range(Key from, Key till, IterationOrder order) 
         { 
             if ((from != null && from.type != type) || (till != null && till.type != type)) 
@@ -1653,6 +1672,11 @@ namespace Perst.Impl
             return new BtreeSelectionIterator(this, from, till, order);
         }
 
+        public virtual IEnumerable Range(Key from, Key till) 
+        { 
+            return Range(from, till, IterationOrder.AscentOrder);
+        }
+            
         public IEnumerable Range(object from, object till, IterationOrder order) 
         { 
             return Range(getKeyFromObject(from), getKeyFromObject(till), order);

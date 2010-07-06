@@ -207,6 +207,45 @@ namespace Perst
         IEnumerator GetEnumerator(Key from, Key till, IterationOrder order);
 
         /// <summary>
+        /// Get iterator for traversing objects in the index with key belonging to the specified range. 
+        /// You should not update/remove or add members to the index during iteration
+        /// </summary>
+        /// <param name="from">Low boundary. If <code>null</code> then low boundary is not specified.
+        /// Low boundary can be inclusive or exclusive.</param>
+        /// <param name="till">High boundary. If <code>null</code> then high boundary is not specified.
+        /// High boundary can be inclusive or exclusive.</param>
+        /// <param name="order"><code>IterationOrder.AscentOrder</code> or <code>IterationOrder.DescentOrder</code></param>
+        /// <returns>selection iterator</returns>
+        ///
+        IEnumerator GetEnumerator(object from, object till, IterationOrder order);
+
+        /// <summary>
+        /// Get iterator for traversing objects in ascent order belonging to the specified range. 
+        /// You should not update/remove or add members to the index during iteration
+        /// </summary>
+        /// <param name="from">Low boundary. If <code>null</code> then low boundary is not specified.
+        /// Low boundary can be inclusive or exclusive.</param>
+        /// <param name="till">High boundary. If <code>null</code> then high boundary is not specified.
+        /// High boundary can be inclusive or exclusive.</param>
+        /// <param name="order"><code>IterationOrder.AscentOrder</code> or <code>IterationOrder.DescentOrder</code></param>
+        /// <returns>selection iterator</returns>
+        ///
+        IEnumerator GetEnumerator(Key from, Key till);
+
+        /// <summary>
+        /// Get iterator for traversing objects in ascent order belonging to the specified range. 
+        /// You should not update/remove or add members to the index during iteration
+        /// </summary>
+        /// <param name="from">Low boundary. If <code>null</code> then low boundary is not specified.
+        /// Low boundary can be inclusive or exclusive.</param>
+        /// <param name="till">High boundary. If <code>null</code> then high boundary is not specified.
+        /// High boundary can be inclusive or exclusive.</param>
+        /// <param name="order"><code>IterationOrder.AscentOrder</code> or <code>IterationOrder.DescentOrder</code></param>
+        /// <returns>selection iterator</returns>
+        ///
+        IEnumerator GetEnumerator(object from, object till);
+
+        /// <summary>
         /// Get enumerable collection of objects in the index with key belonging to the specified range. 
         /// You should not update/remove or add members to the index during iteration
         /// </summary>
@@ -218,6 +257,18 @@ namespace Perst
         /// <returns>enumerable collection</returns>
         ///
         IEnumerable Range(Key from, Key till, IterationOrder order);
+
+        /// <summary>
+        /// Get enumerable ascent ordered collection of objects in the index with key belonging to the specified range. 
+        /// You should not update/remove or add members to the index during iteration
+        /// </summary>
+        /// <param name="from">Low boundary. If <code>null</code> then low boundary is not specified.
+        /// Low boundary can be inclusive or exclusive.</param>
+        /// <param name="till">High boundary. If <code>null</code> then high boundary is not specified.
+        /// High boundary can be inclusive or exclusive.</param>
+        /// <returns>enumerable collection</returns>
+        ///
+        IEnumerable Range(Key from, Key till);
 
         /// <summary>
         /// Get enumerable collection of objects in the index with key belonging to the specified range. 

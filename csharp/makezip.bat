@@ -16,6 +16,8 @@ rd /s/q TestTtree\obj
 rd /s/q TestTtree\bin
 rd /s/q TestXML\obj
 rd /s/q TestXML\bin
+rd /s/q TestBackup\obj
+rd /s/q TestBackup\bin
 rd /s/q TestRaw\obj
 rd /s/q TestRaw\bin
 rd /s/q TestSSD\obj
@@ -27,6 +29,8 @@ rd /s/q TestCompoundIndex\bin
 rd /s/q TestBlob\obj
 rd /s/q TestBlob\bin
 del /q *.dbs
+rd /s/q TestTimeSeries\obj
+rd /s/q TestTimeSeries\bin
 del /q *.xml
 del /q *.suo
 cd ..

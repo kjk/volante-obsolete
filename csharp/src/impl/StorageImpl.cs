@@ -1294,6 +1294,208 @@ namespace Perst.Impl
             }
         }
 		
+        private void memset(byte[] arr, int off, int len, byte val) 
+        { 
+            while (--len >= 0) 
+            { 
+                arr[off++] = val;
+            }
+        }
+
+#if COMPACT_NET_FRAMEWORK
+        class PositionComparer : System.Collections.IComparer 
+        {
+            public int Compare(object o1, object o2) 
+            {
+                long i1 = (long)o1;
+                long i2 = (long)o2;
+                return i1 < i2 ? -1 : i1 == i2 ? 0 : 1;
+            }
+        }
+#endif
+
+        public override void Backup(System.IO.Stream stream)
+        {
+            lock(this)
+            {
+                if (!opened)
+                {
+                    throw new StorageError(StorageError.ErrorCode.STORAGE_NOT_OPENED);
+                }
+                objectCache.flush();
+                int   curr = 1-currIndex;
+                int nObjects = header.root[curr].indexUsed;
+                long  indexOffs = header.root[curr].index;
+                int   i, j, k;
+                int   nUsedIndexPages = (nObjects + dbHandlesPerPage - 1) / dbHandlesPerPage;
+                int   nIndexPages = (int)((header.root[curr].indexSize + dbHandlesPerPage - 1) / dbHandlesPerPage);
+                long  totalRecordsSize = 0;
+                long  nPagedObjects = 0;
+                long[] index = new long[nObjects];
+                int[]  oids = new int[nObjects];
+            
+                for (i = 0, j = 0; i < nUsedIndexPages; i++) 
+                {
+                    Page pg = pool.getPage(indexOffs + i*Page.pageSize);
+                    for (k = 0; k < dbHandlesPerPage && j < nObjects; k++, j++) 
+                    { 
+                        long pos = Bytes.unpack8(pg.data, k*8);
+                        index[j] = pos;
+                        oids[j] = j;
+                        if ((pos & dbFreeHandleFlag) == 0) 
+                        { 
+                            if ((pos & dbPageObjectFlag) != 0) 
+                            {
+                                nPagedObjects += 1;
+                            } 
+                            else 
+                            { 
+                                int offs = (int)pos & (Page.pageSize-1);
+                                Page op = pool.getPage(pos - offs);
+                                int size = ObjectHeader.getSize(op.data, offs & ~dbFlagsMask);
+                                size = (size + dbAllocationQuantum-1) & ~(dbAllocationQuantum-1);
+                                totalRecordsSize += size; 
+                                pool.unfix(op);
+                            }
+                        }
+                    }
+                    pool.unfix(pg);
+        
+                } 
+                Header newHeader = new Header();
+                newHeader.curr = 0;
+                newHeader.dirty = false;
+                newHeader.initialized = true;
+                long newFileSize = (nPagedObjects + nIndexPages*2 + 1)*Page.pageSize + totalRecordsSize;
+                newFileSize = (newFileSize + Page.pageSize-1) & ~(Page.pageSize-1);	
+                newHeader.root = new RootPage[2];
+                newHeader.root[0] = new RootPage();
+                newHeader.root[1] = new RootPage();
+                newHeader.root[0].size = newHeader.root[1].size = newFileSize;
+                newHeader.root[0].index = newHeader.root[1].shadowIndex = Page.pageSize;
+                newHeader.root[0].shadowIndex = newHeader.root[1].index = Page.pageSize + nIndexPages*Page.pageSize;
+                newHeader.root[0].shadowIndexSize = newHeader.root[0].indexSize = 
+                    newHeader.root[1].shadowIndexSize = newHeader.root[1].indexSize = nIndexPages*dbHandlesPerPage;
+                newHeader.root[0].indexUsed = newHeader.root[1].indexUsed = nObjects;
+                newHeader.root[0].freeList = newHeader.root[1].freeList = header.root[curr].freeList;
+                newHeader.root[0].bitmapEnd = newHeader.root[1].bitmapEnd = dbBitmapId + 
+                    (int)((newFileSize + dbAllocationQuantum*Page.pageSize*8 - 1) / (dbAllocationQuantum*Page.pageSize*8));
+                newHeader.root[0].rootObject = newHeader.root[1].rootObject = header.root[curr].rootObject;
+                newHeader.root[0].classDescList = newHeader.root[1].classDescList = header.root[curr].classDescList;
+
+                byte[] page = new byte[Page.pageSize];
+                newHeader.pack(page);
+                stream.Write(page, 0, Page.pageSize);
+        
+                long pageOffs = (nIndexPages*2 + 1)*Page.pageSize;
+                long recOffs = (nPagedObjects + nIndexPages*2 + 1)*Page.pageSize;
+#if COMPACT_NET_FRAMEWORK
+                Array.Sort(index, oids, 0, nObjects, new PositionComparer());
+#else
+                Array.Sort(index, oids);
+#endif
+                byte[] newIndex = new byte[nIndexPages*dbHandlesPerPage*8];
+                for (i = 0; i < nObjects; i++) 
+                {
+                    long pos = index[i];
+                    int oid = oids[i];
+                    if ((pos & dbFreeHandleFlag) == 0) 
+                    { 
+                        if ((pos & dbPageObjectFlag) != 0) 
+                        {
+                            Bytes.pack8(newIndex, oid*8, pageOffs | dbPageObjectFlag);
+                            pageOffs += Page.pageSize;
+                        } 
+                        else 
+                        { 
+                            Bytes.pack8(newIndex, oid*8, recOffs);
+                            int offs = (int)pos & (Page.pageSize-1);
+                            Page op = pool.getPage(pos - offs);
+                            int size = ObjectHeader.getSize(op.data, offs & ~dbFlagsMask);
+                            size = (size + dbAllocationQuantum-1) & ~(dbAllocationQuantum-1);
+                            recOffs += size; 
+                            pool.unfix(op);
+                        }
+                    } 
+                    else 
+                    { 
+                        Bytes.pack8(newIndex, oid*8, pos);
+                    }
+                }
+                stream.Write(newIndex, 0, newIndex.Length);
+                stream.Write(newIndex, 0, newIndex.Length);
+
+                for (i = 0; i < nObjects; i++) 
+                {
+                    long pos = index[i];
+                    if (((int)pos & (dbFreeHandleFlag|dbPageObjectFlag)) == dbPageObjectFlag) 
+                    { 
+                        if (oids[i] < dbFirstUserId) 
+                        { 
+                            long mappedSpace = (oids[i] - dbBitmapId)*Page.pageSize*8*dbAllocationQuantum;
+                            if (mappedSpace >= newFileSize) 
+                            { 
+                                memset(page, 0, Page.pageSize, (byte)0);
+                            } 
+                            else if (mappedSpace + Page.pageSize*8*dbAllocationQuantum <= newFileSize) 
+                            { 
+                                memset(page, 0, Page.pageSize, (byte)0xFF);
+                            } 
+                            else 
+                            { 
+                                int nBits = (int)((newFileSize - mappedSpace) >> dbAllocationQuantumBits);
+                                memset(page, 0, nBits >> 3, (byte)0xFF);
+                                page[nBits >> 3] = (byte)((1 << (nBits & 7)) - 1);
+                                memset(page, (nBits >> 3) + 1, Page.pageSize - (nBits >> 3) - 1, (byte)0);
+                            }
+                            stream.Write(page, 0, Page.pageSize);
+                        } 
+                        else 
+                        {                        
+                            Page pg = pool.getPage(pos & ~dbFlagsMask);
+                            stream.Write(pg.data, 0, Page.pageSize);
+                            pool.unfix(pg);
+                        }
+                    }
+                }
+                for (i = 0; i < nObjects; i++) 
+                {
+                    long pos = index[i];
+                    if (((int)pos & (dbFreeHandleFlag|dbPageObjectFlag)) == 0) 
+                    { 
+                        pos &= ~dbFlagsMask;
+                        int offs = (int)pos & (Page.pageSize-1);
+                        Page pg = pool.getPage(pos - offs);
+                        int size = ObjectHeader.getSize(pg.data, offs);
+                        size = (size + dbAllocationQuantum-1) & ~(dbAllocationQuantum-1);
+
+                        while (true) 
+                        { 
+                            if (Page.pageSize - offs >= size) 
+                            { 
+                                stream.Write(pg.data, offs, size);
+                                break;
+                            }
+                            stream.Write(pg.data, offs, Page.pageSize - offs);
+                            size -= Page.pageSize - offs;
+                            pos += Page.pageSize - offs;
+                            offs = 0;
+                            pool.unfix(pg); 
+                            pg = pool.getPage(pos);
+                        }
+                        pool.unfix(pg);
+                    }
+                }
+                if (recOffs != newFileSize) 
+                {       
+                    Assert.That(newFileSize - recOffs < Page.pageSize);
+                    int align = (int)(newFileSize - recOffs);
+                    memset(page, 0, align, (byte)0);
+                    stream.Write(page, 0, align);
+                }        
+            }
+        }   
+                
         public override Index CreateIndex(System.Type keyType, bool unique)
         {
             lock(this)
@@ -1393,6 +1595,11 @@ namespace Perst.Impl
             return new BlobImpl(Page.pageSize - ObjectHeader.Sizeof - 16);
         }
 
+        public override TimeSeries CreateTimeSeries(Type blockClass, long maxBlockTimeInterval)
+        {
+            return new TimeSeriesImpl(this, blockClass, maxBlockTimeInterval);
+        }
+        
         public override void  ExportXML(System.IO.StreamWriter writer)
         {
             lock(this)
@@ -2566,9 +2773,9 @@ namespace Perst.Impl
                         case ClassDescriptor.FieldType.tpValue: 
                         {
                             ClassDescriptor valueDesc = fd.valueDesc;
-                            Object value = valueDesc.newInstance();
-                            offs = unpackObject(value, valueDesc, recursiveLoading, body, offs);
-                            f.SetValue(obj, value);
+                            Object val = f.GetValue(obj);
+                            offs = unpackObject(val, valueDesc, recursiveLoading, body, offs);
+                            f.SetValue(obj, val);
                             continue;
                         }
 					
@@ -2914,9 +3121,9 @@ namespace Perst.Impl
                                 ClassDescriptor valueDesc = fd.valueDesc;
                                 for (int j = 0; j < len; j++) 
                                 { 
-                                    Object value = valueDesc.newInstance();
-                                    offs = unpackObject(value, valueDesc, recursiveLoading, body, offs);
-                                    arr.SetValue(value, j);
+                                    Object val = arr.GetValue(j);
+                                    offs = unpackObject(val, valueDesc, recursiveLoading, body, offs);
+                                    arr.SetValue(val, j);
                                 }
                                 f.SetValue(obj, arr);
                             }
@@ -3570,7 +3777,7 @@ namespace Perst.Impl
                             ClassDescriptor elemDesc = fd.valueDesc;
                             for (int j = 0; j < len; j++)
                             {
-                                offs = packObject(arr.GetValue(i), elemDesc, offs, buf);
+                                offs = packObject(arr.GetValue(j), elemDesc, offs, buf);
                             }
                         }
                         continue;
@@ -3595,11 +3802,11 @@ namespace Perst.Impl
                             ClassDescriptor elemDesc = fd.valueDesc;
                             for (int j = 0; j < len; j++)
                             {
-                                Object raw = arr.GetValue(i);
+                                Object raw = arr.GetValue(j);
                                 if (raw == null)
                                 {
                                     buf.extend(offs + 4);
-                                    Bytes.pack4(buf.arr, offs, - 1);
+                                    Bytes.pack4(buf.arr, offs, -1);
                                     offs += 4;
                                 }
                                 else
