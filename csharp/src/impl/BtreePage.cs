@@ -1889,7 +1889,7 @@ namespace Perst.Impl
                                 int oid = getKeyStrOid(pg, r);
                                 if (oid == rem.oid || rem.oid == 0)
                                 {
-                                    rem.oid = oid;
+                                    rem.oldOid = oid;
                                     db.pool.unfix(pg);
                                     pg = null;
                                     pg = db.putPage(pageId);
@@ -1952,7 +1952,7 @@ namespace Perst.Impl
                                 int oid = getKeyStrOid(pg, r);
                                 if (oid == rem.oid || rem.oid == 0)
                                 {
-                                    rem.oid = oid;
+                                    rem.oldOid = oid;
                                     db.pool.unfix(pg);
                                     pg = null;
                                     pg = db.putPage(pageId);
@@ -1991,7 +1991,7 @@ namespace Perst.Impl
                             {
                                 if (getReference(pg, maxItems - r - 1) == oid || oid == 0)
                                 {
-                                    rem.oid = getReference(pg, maxItems - r - 1);
+                                    rem.oldOid = getReference(pg, maxItems - r - 1);
                                     db.pool.unfix(pg);
                                     pg = null;
                                     pg = db.putPage(pageId);

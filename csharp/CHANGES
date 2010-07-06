@@ -225,3 +225,5 @@ methods now return reference to the removed/replaced object.
 --- Release version 2.25 28.05.2004 -------------------------------------
 1. Optimized version of T-Tree algorithm
 
+--- Release version 2.26 05.07.2004 -------------------------------------
+1. Fix bug in FieldIndex.remove(Key) introduced in version 2.24
