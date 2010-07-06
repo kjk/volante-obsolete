@@ -68,14 +68,14 @@ public class TestLink
         Supplier[] suppliers;
         Detail[] details;
         Order order;
-        Storage db = StorageFactory.Instance.CreateStorage();
-        db.Open("testlist.dbs");
+        Storage db = StorageFactory.Instance.createStorage();
+        db.open("testlist.dbs");
         Root root = (Root)db.Root;
         
         if (root == null) { 
             root = new Root();
-            root.details = db.CreateFieldIndex(typeof(Detail), "name", true);
-            root.suppliers = db.CreateFieldIndex(typeof(Supplier), "name", true);
+            root.details = db.createFieldIndex(typeof(Detail), "name", true);
+            root.suppliers = db.createFieldIndex(typeof(Supplier), "name", true);
             db.Root = root;
         }
         while (true) { 
@@ -101,41 +101,41 @@ public class TestLink
                 supplier = new Supplier();
                 supplier.name = input("Supplier name: ");
                 supplier.address = input("Supplier address: ");
-                supplier.orders = db.CreateLink();
-                root.suppliers.Put(supplier);
+                supplier.orders = db.createLink();
+                root.suppliers.put(supplier);
                 break;
               case 2:
                 detail = new Detail();
                 detail.name = input("Detail name: ");
                 detail.weight = inputReal("Detail weight: ");
                 detail.color = input("Detail color: ");
-                detail.orders = db.CreateLink();
-                root.details.Put(detail);
+                detail.orders = db.createLink();
+                root.details.put(detail);
                 break;
               case 3:
                 order = new Order();
                 name = input("Supplier name: ");
-                order.supplier = (Supplier)root.suppliers.Get(new Key(name));
+                order.supplier = (Supplier)root.suppliers.get(new Key(name));
                 if (order.supplier == null) {
                     Console.WriteLine("No such supplier");
                     continue;
                 }
                 name = input("Detail name: ");
-                order.detail = (Detail)root.details.Get(new Key(name));
+                order.detail = (Detail)root.details.get(new Key(name));
                 if (order.detail == null) {
                     Console.WriteLine("No such detail");
                     continue;
                 }
                 order.quantity = inputInt("Quantity: ");
                 order.price = inputInt("Price: ");
-                order.detail.orders.Add(order);
-                order.supplier.orders.Add(order);
-                order.detail.Store();
-                order.supplier.Store();
+                order.detail.orders.add(order);
+                order.supplier.orders.add(order);
+                order.detail.store();
+                order.supplier.store();
                 break;
               case 4:
                 name = input("Supplier name prefix: ");
-                suppliers = (Supplier[])root.suppliers.Get(new Key(name), new Key(name + (char)255, false));
+                suppliers = (Supplier[])root.suppliers.get(new Key(name), new Key(name + (char)255, false));
                 if (suppliers.Length == 0) {
                     Console.WriteLine("No such suppliers found");
                 } else {
@@ -146,7 +146,7 @@ public class TestLink
                 continue;
               case 5:
                 name = input("Detail name prefix: ");
-                details = (Detail[])root.details.Get(new Key(name), new Key(name + (char)255, false));
+                details = (Detail[])root.details.get(new Key(name), new Key(name + (char)255, false));
                 if (details.Length == 0) {
                     Console.WriteLine("No such details found");
                 } else {
@@ -157,35 +157,35 @@ public class TestLink
                 continue;
               case 6:
                 name = input("Detail name: ");
-                detail = (Detail)root.details.Get(new Key(name));
+                detail = (Detail)root.details.get(new Key(name));
                 if (detail == null) { 
                     Console.WriteLine("No such detail");
                 } else {
-                    for (int i = detail.orders.Length; --i >= 0;) { 
-                        Console.WriteLine(((Order)detail.orders[i]).supplier.name);
+                    for (int i = detail.orders.size(); --i >= 0;) { 
+                        Console.WriteLine(((Order)detail.orders.get(i)).supplier.name);
                     }
                 }
                 continue;
               case 7:
                 name = input("Supplier name: ");
-                supplier = (Supplier)root.suppliers.Get(new Key(name));
+                supplier = (Supplier)root.suppliers.get(new Key(name));
                 if (supplier == null) { 
                     Console.WriteLine("No such supplier");
                 } else {
-                    for (int i = supplier.orders.Length; --i >= 0;) { 
-                        Console.WriteLine(((Order)supplier.orders[i]).detail.name);
+                    for (int i = supplier.orders.size(); --i >= 0;) { 
+                        Console.WriteLine(((Order)supplier.orders.get(i)).detail.name);
                     }
                 }
                 continue;
               case 8:
-                db.Close();
+                db.close();
                 Console.WriteLine("End of session");
                 return;
               default:
                 Console.WriteLine("Invalid command");
                 continue;
             }
-            db.Commit();
+            db.commit();
         }
     }
 }

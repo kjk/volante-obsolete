@@ -1,8 +1,6 @@
 namespace Perst.Impl    
 {
     using System;
-    using System.Reflection;
-    using Perst;
 	
     public class XMLExporter
     {
@@ -37,25 +35,20 @@ namespace Perst.Impl
                                 markedBitmap[i] &= ~ bit;
                                 byte[] obj = storage.get(oid);
                                 int typeOid = ObjectHeader.getType(obj, 0);
-                                ClassDescriptor desc = storage.findClassDescriptor(typeOid);
-                                if (desc.cls == typeof(Btree))
+                                if (typeOid == storage.btreeClassOid)
                                 {
                                     exportIndex(oid, obj);
                                 }
-                                else if (desc.cls == typeof(BtreeFieldIndex))
+                                else if (typeOid == storage.btree2ClassOid)
                                 {
                                     exportFieldIndex(oid, obj);
                                 }
-                                else if (desc.cls == typeof(BtreeMultiFieldIndex))
-                                {
-                                    exportMultiFieldIndex(oid, obj);
-                                }
                                 else
                                 {
-                                    String className = exportIdentifier(desc.name);
-                                    writer.Write(" <" + className + " id=\"" + oid + "\">\n");
+                                    ClassDescriptor desc = (ClassDescriptor) storage.lookupObject(typeOid, typeof(ClassDescriptor));
+                                    writer.Write(" <" + desc.name + " id=\"" + oid + "\">\n");
                                     exportObject(desc, obj, ObjectHeader.Sizeof, 2);
-                                    writer.Write(" </" + className + ">\n");
+                                    writer.Write(" </" + desc.name + ">\n");
                                 }
                                 nExportedObjects += 1;
                             }
@@ -67,134 +60,87 @@ namespace Perst.Impl
             writer.Write("</database>\n");
         }
 		
-        internal String exportIdentifier(String name) 
-        { 
-            return name.Replace('+', '-');
-        }
-
         internal void  exportIndex(int oid, byte[] data)
         {
             Btree btree = new Btree(data, ObjectHeader.Sizeof);
             storage.assignOid(btree, oid);
-            writer.Write(" <Perst.Impl.Btree id=\"" + oid + "\" unique=\"" + (btree.unique?'1':'0') + "\" type=\"" + btree.type + "\">\n");
+            writer.Write(" <btree-index id=\"" + oid + "\" unique=\"" + (btree.unique?'1':'0') + "\" type=\"" + btree.type + "\">\n");
             btree.export(this);
-            writer.Write(" </Perst.Impl.Btree>\n");
+            writer.Write(" </btree-index>\n");
         }
 		
         internal void  exportFieldIndex(int oid, byte[] data)
         {
             Btree btree = new Btree(data, ObjectHeader.Sizeof);
             storage.assignOid(btree, oid);
-            writer.Write(" <Perst.Impl.BtreeFieldIndex id=\"" + oid + "\" unique=\"" + (btree.unique?'1':'0') + "\" class=");
+            writer.Write(" <btree-index id=\"" + oid + "\" unique=\"" + (btree.unique?'1':'0') + "\" class=");
             int offs = exportString(data, Btree.Sizeof);
             writer.Write(" field=");
             exportString(data, offs);
             writer.Write(">\n");
             btree.export(this);
-            writer.Write(" </Perst.Impl.BtreeFieldIndex>\n");
+            writer.Write(" </btree-index>\n");
         }
 		
-        internal void exportMultiFieldIndex(int oid,  byte[] data) 
-        { 
-            Btree btree = new Btree(data, ObjectHeader.Sizeof);
-            storage.assignOid(btree, oid);
-            writer.Write(" <Perst.Impl.BtreeMultiFieldIndex id=\"" + oid + "\" unique=\"" + (btree.unique ? '1' : '0') 
-                + "\" class=");
-            int offs = exportString(data, Btree.Sizeof);
-            int nFields = Bytes.unpack4(data, offs);
-            offs += 4;
-            for (int i = 0; i < nFields; i++) 
-            { 
-                writer.Write(" field" + i + "=");
-                offs = exportString(data, offs);
-            }
-            writer.Write(">\n");
-            int nTypes = Bytes.unpack4(data, offs);
-            offs += 4;
-            compoundKeyTypes = new ClassDescriptor.FieldType[nTypes];
-            for (int i = 0; i < nTypes; i++) 
-            { 
-                compoundKeyTypes[i] = (ClassDescriptor.FieldType)Bytes.unpack4(data, offs);
-                offs += 4;
-            }
-            btree.export(this); 
-            compoundKeyTypes = null;
-            writer.Write(" </Perst.Impl.BtreeMultiFieldIndex>\n");
-        }
-
-        int exportKey(byte[] body, int offs, int size, ClassDescriptor.FieldType type) 
+        internal void  exportAssoc(int oid, byte[] body, int offs, int size, ClassDescriptor.FieldType type)
         {
+            writer.Write("  <ref id=\"" + oid + "\" key=\"");
+            if ((exportedBitmap[oid >> 5] & (1 << (oid & 31))) == 0)
+            {
+                markedBitmap[oid >> 5] |= 1 << (oid & 31);
+            }
             switch (type)
             {
                 case ClassDescriptor.FieldType.tpBoolean: 
-                    writer.Write(body[offs++] != 0?"1":"0");
+                    writer.Write(body[offs] != 0?"1":"0");
                     break;
 				
                 case ClassDescriptor.FieldType.tpByte: 
-                    writer.Write(System.Convert.ToString((byte) body[offs++]));
+                    writer.Write(System.Convert.ToString((byte) body[offs]));
                     break;
 				
                 case ClassDescriptor.FieldType.tpSByte: 
-                    writer.Write(System.Convert.ToString((sbyte) body[offs++]));
+                    writer.Write(System.Convert.ToString((sbyte) body[offs]));
                     break;
 				
                 case ClassDescriptor.FieldType.tpChar: 
-                    writer.Write(System.Convert.ToString((ushort)Bytes.unpack2(body, offs)));
-                    offs += 2;
+                    writer.Write(System.Convert.ToString((char) Bytes.unpack2(body, offs)));
                     break;
 				
                 case ClassDescriptor.FieldType.tpShort: 
-                    writer.Write(System.Convert.ToString((ushort)Bytes.unpack2(body, offs)));
-                    offs += 2;
+                    writer.Write(System.Convert.ToString(Bytes.unpack2(body, offs)));
                     break;
 				
                 case ClassDescriptor.FieldType.tpUShort: 
                     writer.Write(System.Convert.ToString((ushort)Bytes.unpack2(body, offs)));
-                    offs += 2;
                     break;
 				
                 case ClassDescriptor.FieldType.tpInt: 
                     writer.Write(System.Convert.ToString(Bytes.unpack4(body, offs)));
-                    offs += 4;
                     break;
 				
                 case ClassDescriptor.FieldType.tpUInt: 
                 case ClassDescriptor.FieldType.tpObject:  
                 case ClassDescriptor.FieldType.tpEnum:
                     writer.Write(System.Convert.ToString((uint)Bytes.unpack4(body, offs)));
-                    offs += 4;
                     break;
 				
                 case ClassDescriptor.FieldType.tpLong: 
                     writer.Write(System.Convert.ToString(Bytes.unpack8(body, offs)));
-                    offs += 8;
                     break;
 				
                 case ClassDescriptor.FieldType.tpULong: 
                     writer.Write(System.Convert.ToString((ulong)Bytes.unpack8(body, offs)));
-                    offs += 8;
                     break;
 				
                 case ClassDescriptor.FieldType.tpFloat: 
-                    writer.Write(System.Convert.ToString(Bytes.unpackF4(body, offs)));
-                    offs += 4;
+                    writer.Write(System.Convert.ToString(BitConverter.ToSingle(BitConverter.GetBytes(Bytes.unpack4(body, offs)), 0)));
                     break;
 				
                 case ClassDescriptor.FieldType.tpDouble: 
-                    writer.Write(System.Convert.ToString(Bytes.unpackF8(body, offs)));
-                    offs += 8;
+                    writer.Write(System.Convert.ToString(BitConverter.Int64BitsToDouble(Bytes.unpack8(body, offs))));
                     break;
 				
-                case ClassDescriptor.FieldType.tpGuid:
-                    writer.Write(Bytes.unpackGuid(body, offs).ToString());
-                    offs += 16;
-                    break;
-
-                case ClassDescriptor.FieldType.tpDecimal:
-                    writer.Write(Bytes.unpackDecimal(body, offs).ToString());
-                    offs += 16;
-                    break;
-
                 case ClassDescriptor.FieldType.tpString: 
                     for (int i = 0; i < size; i++)
                     {
@@ -203,64 +149,21 @@ namespace Perst.Impl
                     }
                     break;
 				
-                case ClassDescriptor.FieldType.tpArrayOfByte:
-                    for (int i = 0; i < size; i++) 
-                    { 
-                        byte b = body[offs++];
-                        writer.Write(hexDigit[(b >> 4) & 0xFF]);
-                        writer.Write(hexDigit[b & 0xF]);
+                case ClassDescriptor.FieldType.tpDate: 
+                {
+                    long msec = Bytes.unpack8(body, offs);
+                    if (msec >= 0)
+                    {
+                        writer.Write(new System.DateTime(msec).ToString());
+                    }
+                    else
+                    {
+                        writer.Write("null");
                     }
                     break;
-
-                case ClassDescriptor.FieldType.tpDate: 
-                    writer.Write(Bytes.unpackDate(body, offs).ToString());
-                    offs += 8;
-                    break;
-
-                default:
-                    Assert.Failed("Invalid type");
-                    break;
-            }              
-            return offs;                                            
-        }
-                                                                    
-        void exportCompoundKey(byte[] body, int offs, int size, ClassDescriptor.FieldType type) 
-        { 
-            Assert.That(type == ClassDescriptor.FieldType.tpArrayOfByte);
-            int end = offs + size;
-            for (int i = 0; i < compoundKeyTypes.Length; i++) 
-            { 
-                type = compoundKeyTypes[i];
-                if (type == ClassDescriptor.FieldType.tpArrayOfByte || type == ClassDescriptor.FieldType.tpString) 
-                { 
-                    size = Bytes.unpack4(body, offs);
-                    offs += 4;
                 }
-                writer.Write(" key" + i + "=\"");
-                offs = exportKey(body, offs, size, type); 
-                writer.Write("\"");
             }
-            Assert.That(offs == end);
-        }
-
-        internal void  exportAssoc(int oid, byte[] body, int offs, int size, ClassDescriptor.FieldType type)
-        {
-            writer.Write("  <ref id=\"" + oid + "\"");
-            if ((exportedBitmap[oid >> 5] & (1 << (oid & 31))) == 0)
-            {
-                markedBitmap[oid >> 5] |= 1 << (oid & 31);
-            }
-            if (compoundKeyTypes != null) 
-            { 
-                exportCompoundKey(body, offs, size, type);
-            } 
-            else 
-            { 
-                writer.Write(" key=\"");
-                exportKey(body, offs, size, type);
-                writer.Write("\"");
-            }
-            writer.Write("/>\n");
+            writer.Write("\"/>\n");
         }
 		
         internal void  indentation(int indent)
@@ -345,16 +248,15 @@ namespace Perst.Impl
     
        internal int exportObject(ClassDescriptor desc, byte[] body, int offs, int indent)
         {
-            ClassDescriptor.FieldDescriptor[] all = desc.allFields;
+            System.Reflection.FieldInfo[] all = desc.allFields;
+            ClassDescriptor.FieldType[] type = desc.fieldTypes;
 			
             for (int i = 0, n = all.Length; i < n; i++)
             {
-                ClassDescriptor.FieldDescriptor fd = all[i];
-                FieldInfo f = fd.field;
+                System.Reflection.FieldInfo f = all[i];
                 indentation(indent);
-                String fieldName = exportIdentifier(fd.fieldName);
-                writer.Write("<" + fieldName + ">");
-                switch (fd.type)
+                writer.Write("<" + f.Name + ">");
+                switch (type[i])
                 {
                     case ClassDescriptor.FieldType.tpBoolean: 
                         writer.Write(body[offs++] != 0?"1":"0");
@@ -369,12 +271,12 @@ namespace Perst.Impl
                         break;
 					
                     case ClassDescriptor.FieldType.tpChar: 
-                        writer.Write(System.Convert.ToString((ushort)Bytes.unpack2(body, offs)));
+                        writer.Write(System.Convert.ToString((char) Bytes.unpack2(body, offs)));
                         offs += 2;
                         break;
 					
                     case ClassDescriptor.FieldType.tpShort: 
-                        writer.Write(System.Convert.ToString((ushort)Bytes.unpack2(body, offs)));
+                        writer.Write(System.Convert.ToString(Bytes.unpack2(body, offs)));
                         offs += 2;
                         break;
 					
@@ -409,23 +311,13 @@ namespace Perst.Impl
                         break;
 					
                     case ClassDescriptor.FieldType.tpFloat: 
-                        writer.Write(System.Convert.ToString(Bytes.unpackF4(body, offs)));
+                        writer.Write(System.Convert.ToString(BitConverter.ToSingle(BitConverter.GetBytes(Bytes.unpack4(body, offs)), 0)));
                         offs += 4;
                         break;
 				
                     case ClassDescriptor.FieldType.tpDouble: 
-                        writer.Write(System.Convert.ToString(Bytes.unpackF8(body, offs)));
+                        writer.Write(System.Convert.ToString(BitConverter.Int64BitsToDouble(Bytes.unpack8(body, offs))));
                         offs += 8;
-                        break;
-				
-                    case ClassDescriptor.FieldType.tpGuid:
-                        writer.Write("\"" + Bytes.unpackGuid(body, offs) + "\"");
-                        offs += 16;
-                        break;
-
-                    case ClassDescriptor.FieldType.tpDecimal:
-                        writer.Write("\"" + Bytes.unpackDecimal(body, offs) + "\"");
-                        offs += 16;
                         break;
 
                     case ClassDescriptor.FieldType.tpString: 
@@ -461,13 +353,11 @@ namespace Perst.Impl
 					
                     case ClassDescriptor.FieldType.tpValue: 
                         writer.Write('\n');
-                        offs = exportObject(fd.valueDesc, body, offs, indent + 1);
+                        offs = exportObject(storage.getClassDescriptor(f.FieldType), body, offs, indent + 1);
                         indentation(indent);
                         break;
 					
-#if SUPPORT_RAW_TYPE
                     case ClassDescriptor.FieldType.tpRaw: 
-#endif
                     case ClassDescriptor.FieldType.tpArrayOfByte: 
                     case ClassDescriptor.FieldType.tpArrayOfSByte: 
                         offs = exportBinary(body, offs);
@@ -685,7 +575,7 @@ namespace Perst.Impl
                             while (--len >= 0)
                             {
                                 indentation(indent + 1);
-                                writer.Write("<array-element>" + Bytes.unpackF4(body, offs) + "</array-element>\n");
+                                writer.Write("<array-element>" + BitConverter.ToSingle(BitConverter.GetBytes(Bytes.unpack4(body, offs)), 0) + "</array-element>\n");
                                 offs += 4;
                             }
                             indentation(indent);
@@ -707,7 +597,7 @@ namespace Perst.Impl
                             while (--len >= 0)
                             {
                                 indentation(indent + 1);
-                                writer.Write("<array-element>" + Bytes.unpackF8(body, offs) + "</array-element>\n");
+                                writer.Write("<array-element>" + BitConverter.Int64BitsToDouble(Bytes.unpack8(body, offs)) + "</array-element>\n");
                                 offs += 8;
                             }
                             indentation(indent);
@@ -729,53 +619,21 @@ namespace Perst.Impl
                             while (--len >= 0)
                             {
                                 indentation(indent + 1);
-                                writer.Write("<array-element>\"" + Bytes.unpackDate(body, offs) + "\"</array-element>\n");
+                                long msec = Bytes.unpack8(body, offs);
                                 offs += 8;
+                                if (msec >= 0)
+                                {
+                                    writer.Write("<array-element>\"" + new System.DateTime(Bytes.unpack8(body, offs)) + "\"</array-element>\n");
+                                }
+                                else
+                                {
+                                    writer.Write("<array-element>null</array-element>\n");
+                                }
                             }
                         }
                         break;
                     }
 					
-                    case ClassDescriptor.FieldType.tpArrayOfGuid: 
-                    {
-                        int len = Bytes.unpack4(body, offs);
-                        offs += 4;
-                        if (len < 0)
-                        {
-                            writer.Write("null");
-                        }
-                        else
-                        {
-                            writer.Write('\n');
-                            while (--len >= 0)
-                            {
-                                writer.Write("<array-element>\"" + Bytes.unpackGuid(body, offs) + "\"</array-element>\n");
-                                offs += 16;
-                            }
-                        }
-                        break;
-                    }
-
-                    case ClassDescriptor.FieldType.tpArrayOfDecimal: 
-                    {
-                        int len = Bytes.unpack4(body, offs);
-                        offs += 4;
-                        if (len < 0)
-                        {
-                            writer.Write("null");
-                        }
-                        else
-                        {
-                            writer.Write('\n');
-                            while (--len >= 0)
-                            {
-                                writer.Write("<array-element>\"" + Bytes.unpackDecimal(body, offs) + "\"</array-element>\n");
-                                offs += 16;
-                            }
-                        }
-                        break;
-                    }
-
                     case ClassDescriptor.FieldType.tpArrayOfString: 
                     {
                         int len = Bytes.unpack4(body, offs);
@@ -842,7 +700,7 @@ namespace Perst.Impl
                             {
                                 indentation(indent + 1);
                                 writer.Write("<array-element>\n");
-                                offs = exportObject(fd.valueDesc, body, offs, indent + 2);
+                                offs = exportObject(storage.getClassDescriptor(f.FieldType), body, offs, indent + 2);
                                 indentation(indent + 1);
                                 writer.Write("</array-element>\n");
                             }
@@ -851,7 +709,6 @@ namespace Perst.Impl
                         break;
                     }
 					
-#if SUPPORT_RAW_TYPE
                     case ClassDescriptor.FieldType.tpArrayOfRaw: 
                     {
                         int len = Bytes.unpack4(body, offs);
@@ -874,9 +731,9 @@ namespace Perst.Impl
                         }
                         break;
                     }
-#endif				
+					
                 }
-                writer.Write("</" + fieldName + ">\n");
+                writer.Write("</" + f.Name + ">\n");
             }
             return offs;
         }
@@ -886,6 +743,5 @@ namespace Perst.Impl
         private System.IO.StreamWriter writer;
         private int[] markedBitmap;
         private int[] exportedBitmap;
-        private ClassDescriptor.FieldType[] compoundKeyTypes;
     }
 }

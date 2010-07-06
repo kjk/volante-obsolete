@@ -6,31 +6,66 @@ namespace Perst.Impl
 	
     public class OSFile : IFile
     {
-        public void Write(long pos, byte[] buf)
+        public void write(long pos, byte[] buf)
         {
-            file.Seek(pos, SeekOrigin.Begin);
-            file.Write(buf, 0, buf.Length);
+            try
+            {
+                file.Seek(pos, SeekOrigin.Begin);
+                file.Write(buf, 0, buf.Length);
+            }
+            catch (System.IO.IOException x)
+            {
+                throw new StorageError(StorageError.ErrorCode.FILE_ACCESS_ERROR, x);
+            }
         }
 		
-        public int Read(long pos, byte[] buf)
+        public int read(long pos, byte[] buf)
         {
-            file.Seek(pos, SeekOrigin.Begin);
-            return file.Read(buf, 0, buf.Length);
+            try
+            {
+                file.Seek(pos, SeekOrigin.Begin);
+                return file.Read(buf, 0, buf.Length);
+            }
+            catch (IOException x)
+            {
+                throw new StorageError(StorageError.ErrorCode.FILE_ACCESS_ERROR, x);
+            }
         }
 		
-        public void  Sync()
+        public void  sync()
         {
-            file.Flush();
+            try
+            {
+                file.Flush();
+            }
+            catch (IOException x)
+            {
+                throw new StorageError(StorageError.ErrorCode.FILE_ACCESS_ERROR, x);
+            }
         }
 		
-        public void  Close()
+        public void  close()
         {
-            file.Close();
+            try
+            {
+                file.Close();
+            }
+            catch (IOException x)
+            {
+                throw new StorageError(StorageError.ErrorCode.FILE_ACCESS_ERROR, x);
+            }
         }
 		
         internal OSFile(String filePath)
         {
-            file = new FileStream(filePath, FileMode.OpenOrCreate, FileAccess.ReadWrite);
+            try
+            {
+                file = new FileStream(filePath, FileMode.OpenOrCreate, FileAccess.ReadWrite);
+            }
+            catch (IOException x)
+            {
+                throw new StorageError(StorageError.ErrorCode.FILE_ACCESS_ERROR, x);
+            }
         }
 		
         private FileStream file;

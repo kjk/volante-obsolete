@@ -12,15 +12,15 @@ class L2Elem : Persistent {
     internal L2Elem prev;
     internal int    count;
 
-    public override bool RecursiveLoading() { 
+    public override bool recursiveLoading() { 
         return false;
     }
 
     internal void unlink() { 
         next.prev = prev;
         prev.next = next;
-        next.Store();
-        prev.Store();
+        next.store();
+        prev.store();
     }
 
     internal void linkAfter(L2Elem elem) {         
@@ -28,9 +28,9 @@ class L2Elem : Persistent {
         next = elem.next;
         elem.next = this;
         prev = elem;
-        Store();
-        next.Store();
-        prev.Store();
+        store();
+        next.store();
+        prev.store();
     }
 }
 
@@ -40,43 +40,32 @@ public class TestConcur {
     const int nThreads = 4;
 
     static Storage db;
-#if COMPACT_NET_FRAMEWORK
-    static int nFinishedThreads;
-#endif
+
     public static void run() { 
         L2List list = (L2List)db.Root;
         for (int i = 0; i < nIterations; i++) { 
             long sum = 0, n = 0;
-            list.SharedLock();
+            list.sharedLock();
             L2Elem head = list.head; 
             L2Elem elem = head;
             do { 
-                elem.Load();
+                elem.load();
                 sum += elem.count;
                 n += 1;
             } while ((elem = elem.next) != head);
-            Assert.That(n == nElements && sum == (long)nElements*(nElements-1)/2);
-            list.Unlock();
-            list.ExclusiveLock();
+            Assert.that(n == nElements && sum == (long)nElements*(nElements-1)/2);
+            list.unlock();
+            list.exclusiveLock();
             L2Elem last = list.head.prev;
             last.unlink();
             last.linkAfter(list.head);
-            list.Unlock();
+            list.unlock();
         }
-#if COMPACT_NET_FRAMEWORK
-        lock (typeof(TestConcur)) 
-        {
-            if (++nFinishedThreads == nThreads) 
-            {
-                db.Close();
-            }
-        }
-#endif
     }
 
     public static void Main(String[] args) {
-        db = StorageFactory.Instance.CreateStorage();
-	db.Open("testconcur.dbs");
+        db = StorageFactory.Instance.createStorage();
+	db.open("testconcur.dbs");
         L2List list = (L2List)db.Root;
         if (list == null) { 
             list = new L2List();
@@ -94,13 +83,10 @@ public class TestConcur {
             threads[i] = new Thread(new ThreadStart(run));
             threads[i].Start();
         }
-#if !COMPACT_NET_FRAMEWORK
-        for (int i = 0; i < nThreads; i++) 
-        { 
+        for (int i = 0; i < nThreads; i++) { 
             threads[i].Join();
         }
-        db.Close();
-#endif
+        db.close();
     }
  }
 

@@ -50,7 +50,7 @@ public class Guess:Persistent
         {
             if (yes == null)
             {
-                System.Console.WriteLine("It was very simple question for me...");
+                System.Console.Out.WriteLine("It was very simple question for me...");
             }
             else
             {
@@ -58,7 +58,7 @@ public class Guess:Persistent
                 if (clarify != null)
                 {
                     yes = clarify;
-                    Store();
+                    store();
                 }
             }
         }
@@ -73,7 +73,7 @@ public class Guess:Persistent
                 else
                 {
                     no = whoIsIt(null);
-                    Store();
+                    store();
                 }
             }
             else
@@ -82,7 +82,7 @@ public class Guess:Persistent
                 if (clarify != null)
                 {
                     no = clarify;
-                    Store();
+                    store();
                 }
             }
         }
@@ -91,9 +91,9 @@ public class Guess:Persistent
 	
     static public void  Main(System.String[] args)
     {
-        Storage db = StorageFactory.Instance.CreateStorage();
+        Storage db = StorageFactory.Instance.createStorage();
 		
-        db.Open("guess.dbs");
+        db.open("guess.dbs");
         Guess root = (Guess) db.Root;
 		
         while (askQuestion("Think of an animal. Ready (y/n) ? "))
@@ -107,10 +107,10 @@ public class Guess:Persistent
             {
                 root.dialog();
             }
-            db.Commit();
+            db.commit();
         }
 		
-        System.Console.WriteLine("End of the game");
-        db.Close();
+        System.Console.Out.WriteLine("End of the game");
+        db.close();
     }
 }

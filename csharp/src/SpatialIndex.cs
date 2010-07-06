@@ -10,22 +10,13 @@ namespace Perst
     public interface SpatialIndex : IPersistent, IResource
     {
         /// <summary>
-        /// Get number of objects in the index
-        /// </summary>
-        int Count 
-        { 
-            get;
-        }
-                
-                
-        /// <summary>
         /// Find all objects located in the selected rectangle
         /// </summary>
         /// <param name="r">selected rectangle
         /// </param>
         /// <returns>array of objects which enveloping rectangle intersects with specified rectangle
         /// </returns>             
-        IPersistent[] Get(Rectangle r);
+        IPersistent[] get(Rectangle r);
     
         /// <summary>
         /// Put new object in the index. 
@@ -35,7 +26,7 @@ namespace Perst
         /// <param name="obj"> object associated with this rectangle. Object can be not yet persistent, in this case
         /// its forced to become persistent by assigning OID to it.
         /// </param>
-        void Put(Rectangle r, IPersistent obj);
+        void put(Rectangle r, IPersistent obj);
 
         /// <summary>
         /// Remove object with specified enveloping rectangle from the tree.
@@ -46,18 +37,18 @@ namespace Perst
         /// </param>
         /// <exception  cref="Perst.StorageError">StorageError(StorageError.KEY_NOT_FOUND) exception if there is no such key in the index
         /// </exception>
-        void Remove(Rectangle r, IPersistent obj);
+        void remove(Rectangle r, IPersistent obj);
 
         /// <summary>
         /// Get number of objects in the index
         /// </summary>
         /// <returns>number of objects in the index
         /// </returns>
-        int  Size();
+        int  size();
     
         /// <summary>
         /// Remove all objects from the index
         /// </summary>
-        void Clear();
+        void clear();
     }
 }
