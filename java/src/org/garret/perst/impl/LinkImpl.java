@@ -51,7 +51,7 @@ public class LinkImpl implements Link {
             throw new IndexOutOfBoundsException();
         }
         reserveSpace(1);
-        System.arraycopy(arr, i+1, arr, i, used-i);
+        System.arraycopy(arr, i, arr, i+1, used-i);
         arr[i] = obj;
         used += 1;
     }

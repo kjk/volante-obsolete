@@ -1188,7 +1188,11 @@ public class StorageImpl extends Storage {
     }
         
     public Link createLink() {
-        return new LinkImpl(8);
+        return createLink(8);
+    }
+
+    public Link createLink(int initialSize) {
+        return new LinkImpl(initialSize);
     }
 
     public Relation createRelation(IPersistent owner) {

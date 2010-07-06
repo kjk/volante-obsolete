@@ -231,12 +231,22 @@ public final class ClassDescriptor extends Persistent {
         resolved = true;
     }
 
-    public void onLoad() {         
+    protected static Class loadClass(Storage storage, String name) { 
+        ClassLoader loader = storage.getClassLoader();
+        if (loader != null) { 
+            try { 
+                return loader.loadClass(name);
+            } catch (ClassNotFoundException x) {}
+        }
         try { 
-            cls = Class.forName(name);
+            return Class.forName(name);
         } catch (ClassNotFoundException x) { 
             throw new StorageError(StorageError.CLASS_NOT_FOUND, name, x);
         }
+    }
+
+    public void onLoad() {         
+        cls = loadClass(getStorage(), name);
         Class scope = cls;
         int n = allFields.length;
         for (int i = n; --i >= 0;) { 

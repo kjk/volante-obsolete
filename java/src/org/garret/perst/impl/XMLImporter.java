@@ -437,12 +437,7 @@ public class XMLImporter {
             throwException("ID is not specified or index");
         }
         if (className != null) { 
-            Class cls = null;
-            try { 
-                cls = Class.forName(className);
-            } catch (ClassNotFoundException x) { 
-                 throwException("Class " + className + " not found");
-            }
+            Class cls = ClassDescriptor.loadClass(storage, className); 
             if (fieldName != null) { 
                 btree = new BtreeFieldIndex(cls, fieldName, unique);
             } else if (fieldNames != null) { 
@@ -498,12 +493,7 @@ public class XMLImporter {
 
     final void createObject(XMLElement elem) throws XMLImportException
     {
-        Class cls = null;
-        try { 
-            cls = Class.forName(elem.name);
-        } catch (ClassNotFoundException x) { 
-            throwException("Class " + elem.name + " not found");
-        }
+        Class cls = ClassDescriptor.loadClass(storage, elem.name); 
         ClassDescriptor desc = storage.getClassDescriptor(cls);
         int oid = mapId(getIntAttribute(elem, "id"));
         ByteBuffer buf = new ByteBuffer();

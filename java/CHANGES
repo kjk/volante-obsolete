@@ -132,3 +132,8 @@ Attention: database format is incompatible with version 1.22!
 
 1. Add Blob class
 2. Make it possible to specify in Index string key directly without Key wrapper.
+
+--- Release version 2.09 23.12.2003 -------------------------------------
+1. Fix bug in Link.insert method
+2. Add Storage.setClassLoader and Storage.getClassLoader methods
+

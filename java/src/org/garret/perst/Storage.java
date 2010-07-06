@@ -210,6 +210,13 @@ public abstract class Storage {
     abstract public Link createLink();
     
     /**
+     * Create one-to-many link with specified initial size.
+     * @param initialSize initial size of array
+     * @return new empty link, new members can be added to the link later.
+     */
+    abstract public Link createLink(int initialSize);
+    
+    /**
      * Create relation object. Unlike link which represent embedded relation and stored
      * inside owner object, this Relation object is standalone persisitent object
      * containing references to owner and members of the relation
@@ -338,6 +345,33 @@ public abstract class Storage {
      */
     abstract public java.util.HashMap getMemoryDump();
     
+
+    /**
+     * Set class loader. This class loader will be used to locate classes for 
+     * loaded class descriptors. If class loader is not specified or
+     * it did find the class, then <code>Class.forName()</code> method
+     * will be used to get class for the specified name.
+     * @param loader class loader
+     * @return previous class loader or null if not specified
+     */
+    public ClassLoader setClassLoader(ClassLoader loader) 
+    { 
+        ClassLoader prev = loader;
+        this.loader = loader;
+        return prev;
+    }
+
+    /**
+     * Get class loader used to locate classes for 
+     * loaded class descriptors.
+     * @return class loader previously set by <code>setClassLoader</code>
+     * method or <code>null</code> if not specified. 
+     */
+    public ClassLoader getClassLoader() {
+        return loader;
+    }
+
+
     // Internal methods
 
     abstract protected void deallocateObject(IPersistent obj);
@@ -356,6 +390,8 @@ public abstract class Storage {
         po.storage = this;
         po.state = raw ? Persistent.RAW : 0;
     }
+
+    private ClassLoader loader;
 }
 
 
