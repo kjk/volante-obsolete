@@ -83,4 +83,14 @@ public interface Index extends IPersistent, IResource {
      * @return array of objects in the index ordered by key value
      */
     public IPersistent[] toArray();
+
+    /**
+     * Get iterator for traversing all objects in the index. 
+     * Objects are iterated in the ascent key order. 
+     * You should not update/remove or add members to the index during iteration
+     * @return index iterator
+     */
+    public java.util.Iterator iterator();
 }
+
+

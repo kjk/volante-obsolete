@@ -1,5 +1,7 @@
 import org.garret.perst.*;
 
+import java.util.Iterator;
+
 class Record extends Persistent { 
     String strKey;
     long   intKey;
@@ -53,6 +55,25 @@ public class TestIndex {
         System.out.println("Elapsed time for performing " + nRecords*2 + " index searches: " 
                            + (System.currentTimeMillis() - start) + " milliseconds");
         
+        start = System.currentTimeMillis();
+        Iterator iterator = intIndex.iterator();
+        key = Long.MIN_VALUE;
+        for (i = 0; iterator.hasNext(); i++) { 
+            Record rec = (Record)iterator.next();
+            Assert.that(rec.intKey >= key);
+            key = rec.intKey;
+        }
+        Assert.that(i == nRecords);
+        iterator = strIndex.iterator();
+        String strKey = "";
+        for (i = 0; iterator.hasNext(); i++) { 
+            Record rec = (Record)iterator.next();
+            Assert.that(rec.strKey.compareTo(strKey) >= 0);
+            strKey = rec.strKey;
+        }
+        Assert.that(i == nRecords);
+        System.out.println("Elapsed time for iterating through " + (nRecords*2) + " records: " 
+                           + (System.currentTimeMillis() - start) + " milliseconds");
         start = System.currentTimeMillis();
         key = 1999;
         for (i = 0; i < nRecords; i++) { 

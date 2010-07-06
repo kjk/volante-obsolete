@@ -85,6 +85,12 @@ public abstract class Storage {
     abstract public FieldIndex createFieldIndex(Class type, String fieldName, boolean unique);
 
     /**
+     * Create new spatial index
+     * @return persistent object implementing spatial index
+     */
+    abstract public SpatialIndex createSpatialIndex();
+
+    /**
      * Create one-to-many link.
      * @return new empty link, new members can be added to the link later.
      */
@@ -126,13 +132,15 @@ public abstract class Storage {
 
     abstract protected void storeObject(IPersistent obj);
 
+    abstract protected void modifyObject(IPersistent obj);
+
     abstract protected void loadObject(IPersistent obj);
 
     final protected void setObjectOid(IPersistent obj, int oid, boolean raw) { 
         Persistent po = (Persistent)obj;
         po.oid = oid;
         po.storage = this;
-        po.raw = raw;
+        po.state = raw ? Persistent.RAW : 0;
     }
 }
 

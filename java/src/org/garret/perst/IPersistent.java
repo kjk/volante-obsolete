@@ -15,6 +15,12 @@ public interface IPersistent {
      */
     public boolean isRaw();
 
+    /** 
+     * Check if object was modified within current transaction
+     * @param return <code>true</code> if object is persistent and was modified within current transaction
+     */
+    public boolean isModified();
+
     /**
      * Check if object is persistent 
      * @return <code>true</code> if object has assigned OID
@@ -30,9 +36,14 @@ public interface IPersistent {
     public void makePersistent(Storage storage);
 
     /**
-     * save object in the database
+     * Save object in the database
      */
     public void store();
+    
+    /**
+     * Mark object as modified. Object will be saved to the database during transaction commit.
+     */
+    public void modify();
     
     /**
      * Get object identifier (OID)

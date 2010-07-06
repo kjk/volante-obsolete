@@ -2,6 +2,7 @@ package org.garret.perst.impl;
 import  org.garret.perst.*;
 import  java.lang.reflect.*;
 import  java.util.HashMap;
+import  java.util.ArrayList;
 import  java.util.Date;
 
 public class StorageImpl extends Storage { 
@@ -727,6 +728,7 @@ public class StorageImpl extends Storage {
 
         objectCache = new WeakHashTable(dbObjectCacheInitSize);
         classDescMap = new HashMap();
+        modifiedList = new ArrayList();
         descList = null;
 
 	FileIO file = new FileIO(filePath);
@@ -929,12 +931,17 @@ public class StorageImpl extends Storage {
 
     public synchronized void commit() 
     {
+        int i, j, n;
         if (!opened) {
             throw new StorageError(StorageError.STORAGE_NOT_OPENED);
         }
+        i = modifiedList.size();
+        while (--i >= 0) { 
+            ((IPersistent)modifiedList.get(i)).store();
+        }
+        modifiedList.clear();
 	if (modified) { 
 	    int curr = currIndex;
-	    int i, j, n;
 	    int[] map = dirtyPagesMap;
 	    int oldIndexSize = header.root[curr].indexSize;
 	    int newIndexSize = header.root[1-curr].indexSize;
@@ -1084,6 +1091,7 @@ public class StorageImpl extends Storage {
         if (!opened) {
             throw new StorageError(StorageError.STORAGE_NOT_OPENED);
         }
+        modifiedList.clear();
         if (!modified) { 
             return;
         }
@@ -1126,14 +1134,27 @@ public class StorageImpl extends Storage {
         if (!opened) { 
             throw new StorageError(StorageError.STORAGE_NOT_OPENED);
         }
-        return new Btree(keyType, unique);
+        Btree index = new Btree(keyType, unique);
+        setObjectOid(index, 0, false);
+        return index;
+    }
+
+    public synchronized SpatialIndex createSpatialIndex() {
+        if (!opened) { 
+            throw new StorageError(StorageError.STORAGE_NOT_OPENED);
+        }
+        Rtree index = new Rtree();
+        setObjectOid(index, 0, false);
+        return index;
     }
 
     public synchronized FieldIndex createFieldIndex(Class type, String fieldName, boolean unique) {
         if (!opened) { 
             throw new StorageError(StorageError.STORAGE_NOT_OPENED);
         }        
-        return new BtreeFieldIndex(type, fieldName, unique);
+        FieldIndex index = new BtreeFieldIndex(type, fieldName, unique);
+        setObjectOid(index, 0, false);
+        return index;
     }
 
     public Link createLink() {
@@ -1374,7 +1395,11 @@ public class StorageImpl extends Storage {
         descList = null;
     }
 
-   
+    protected synchronized void modifyObject(IPersistent obj) {
+        Assert.that(!obj.isModified());
+        modifiedList.add(obj);
+    }
+
     protected synchronized void storeObject(IPersistent obj) {
         int oid = obj.getOid();
         boolean newObject = false;
@@ -2225,6 +2250,7 @@ public class StorageImpl extends Storage {
     long      allocatedDelta;
     boolean   gcDone;
     int       btreeClassOid;
+    ArrayList modifiedList;
 
     WeakHashTable   objectCache;
     HashMap         classDescMap;

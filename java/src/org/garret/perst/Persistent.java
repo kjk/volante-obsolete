@@ -11,7 +11,11 @@ public class Persistent implements IPersistent {
     }
     
     public final boolean isRaw() { 
-        return raw;
+        return (state & RAW) != 0;
+    } 
+    
+    public final boolean isModified() { 
+        return (state & DIRTY) != 0;
     } 
     
     public final boolean isPersistent() { 
@@ -25,20 +29,36 @@ public class Persistent implements IPersistent {
     }
 
     public void store() {
-        if (raw) { 
+        if ((state & RAW) != 0) { 
             throw new StorageError(StorageError.ACCESS_TO_STUB);
         }
         if (storage != null) { 
             storage.storeObject(this);
+            state &= ~DIRTY;
         }
     }
   
+    public void modify() { 
+        if ((state & DIRTY) == 0 && storage != null) { 
+            if ((state & RAW) != 0) { 
+                throw new StorageError(StorageError.ACCESS_TO_STUB);
+            }
+            storage.modifyObject(this);
+            state |= DIRTY;
+        }
+    }
+
+
+
     public final int getOid() {
         return oid;
     }
 
     public void deallocate() { 
-        storage.deallocateObject(this);
+        if (storage != null) { 
+            storage.deallocateObject(this);
+            storage = null;
+        }
     }
 
     public boolean recursiveLoading() {
@@ -62,7 +82,10 @@ public class Persistent implements IPersistent {
 
     transient Storage storage;
     transient int     oid;
-    transient boolean raw;
+    transient int     state;
+
+    static final int RAW   = 1;
+    static final int DIRTY = 2;
 }
 
 
