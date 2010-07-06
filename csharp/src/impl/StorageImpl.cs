@@ -1041,8 +1041,25 @@ namespace Perst.Impl
             {
                 descList = null;
             }
+#if !COMPACT_NET_FRAMEWORK
+            if (enableCodeGeneration) 
+            { 
+                Thread thread = new Thread(new ThreadStart(generateSerializers));
+                thread.Priority = ThreadPriority.BelowNormal;
+                thread.Start();
+            }
+#endif
         }
  
+
+        internal void generateSerializers() 
+        {
+            for (ClassDescriptor desc = descList; desc != null; desc = desc.next) 
+            {
+                desc.generateSerializer();
+            }
+        }
+
         internal void  assignOid(IPersistent obj, int oid)
         {
             obj.AssignOid(this, oid, false);
@@ -2287,6 +2304,10 @@ namespace Perst.Impl
             { 
                 gcThreshold = getIntegerValue(val);
             }
+            if ((val = props["perst.code.generation"]) != null) 
+            { 
+                enableCodeGeneration = getBooleanValue(val);
+            }
         }
 
         public override void SetProperty(String name, Object val)
@@ -2310,6 +2331,10 @@ namespace Perst.Impl
             else if (name.Equals("perst.gc.threshold")) 
             { 
                 gcThreshold = getIntegerValue(val);
+            }
+            else if (name.Equals("perst.code.generation")) 
+            { 
+                enableCodeGeneration = getBooleanValue(val);
             }
             else 
             { 
@@ -3846,6 +3871,8 @@ namespace Perst.Impl
         internal int committedIndexSize;
         internal int currIndexSize;
         
+        internal bool enableCodeGeneration = true;
+
 #if COMPACT_NET_FRAMEWORK
         internal static ArrayList assemblies;
 #else

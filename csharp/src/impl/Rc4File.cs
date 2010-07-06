@@ -6,20 +6,41 @@ namespace Perst.Impl
     {
         public override void Write(long pos, byte[] buf) 
         {
+            if (pos > length) 
+            { 
+                if (zeroPage == null) 
+                { 
+                    zeroPage = new byte[Page.pageSize];
+                    encrypt(zeroPage, 0, zeroPage, 0, Page.pageSize);
+                }
+                do 
+                { 
+                    base.Write(length, zeroPage);
+                } while ((length += Page.pageSize) < pos);
+            }
+            if (pos == length) 
+            { 
+                length += Page.pageSize;
+            }        
             encrypt(buf, 0, cipherBuf, 0, buf.Length);
             base.Write(pos, cipherBuf);
         }
 
         public override int Read(long pos, byte[] buf) 
         { 
-            int rc = base.Read(pos, buf);
-            decrypt(buf, 0, buf, 0, rc);
-            return rc;
+            if (pos < length) 
+            { 
+                int rc = base.Read(pos, buf);
+                decrypt(buf, 0, buf, 0, rc);
+                return rc;
+            }
+            return 0;
         }
 
         public Rc4File(String filePath, String key) 
         : base(filePath)
         {
+            length = file.Length & ~(Page.pageSize-1);
             setKey(key);
         }
 
@@ -77,6 +98,8 @@ namespace Perst.Impl
         private byte[] cipherBuf = new byte[Page.pageSize];
         private byte[] initState = new byte[256];
         private byte[] state = new byte[256];
-        private int x, y;
+        private int    x, y;
+        private long   length;
+        private byte[] zeroPage;
     }
 }

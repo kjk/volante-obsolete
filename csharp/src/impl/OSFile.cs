@@ -33,6 +33,6 @@ namespace Perst.Impl
             file = new FileStream(filePath, FileMode.OpenOrCreate, FileAccess.ReadWrite);
         }
 		
-        private FileStream file;
+        protected FileStream file;
     }
 }

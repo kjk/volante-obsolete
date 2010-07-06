@@ -328,6 +328,13 @@ namespace Perst
         /// when delta between total size of allocated and deallocated objects exceeds specified threashold OR                                                                                                                                                                                                                           
         /// after reaching end of allocation bitmap in allocator.
         /// </TD></TR>
+        /// <TR><TD><code>perst.code.generation</code></TD><TD>bool</TD><TD>true</TD>
+        /// <TD>enable or disable dynamic generation of pack/unpack methods for persistent 
+        /// classes. Such methods can be generated only for classes with public fields.
+        /// Using generated methods instead of .Net reflection API increase speed of
+        /// object store/fetch operations, but generation itself takes additional time at 
+        /// startup 
+        /// </TD></TR>
         /// </TABLE>
         /// </remarks>
         /// <param name="name">name of the property</param>

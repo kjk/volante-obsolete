@@ -12,6 +12,7 @@ namespace Perst.Impl
         internal String            name;
         internal FieldDescriptor[] allFields;
         internal bool              hasReferences;
+        internal static Module     lastModule;
 
         public class FieldDescriptor : Persistent 
         { 
@@ -383,7 +384,6 @@ namespace Perst.Impl
                 throw new StorageError(StorageError.ErrorCode.DESCRIPTOR_FAILURE, cls);
             }
             resolved = true;
-            generateSerializer();
         }
 		
         internal static bool FindTypeByName(Type t, object name) 
@@ -403,6 +403,15 @@ namespace Perst.Impl
                     return cls;
                 }
             }
+            Module last = lastModule;
+            if (last != null) 
+            {
+                Type t = last.GetType(name);
+                if (t != null) 
+                {
+                    return t;
+                }
+            }
 #if COMPACT_NET_FRAMEWORK
             foreach (Assembly ass in StorageImpl.assemblies) 
             { 
@@ -417,6 +426,7 @@ namespace Perst.Impl
                         } 
                         else 
                         { 
+                            lastModule = mod;
                             cls = t;
                         }
                     }
@@ -435,6 +445,7 @@ namespace Perst.Impl
                         } 
                         else 
                         { 
+                            lastModule = mod;
                             cls = t;
                         }
                     }
@@ -506,7 +517,6 @@ namespace Perst.Impl
                 throw new StorageError(StorageError.ErrorCode.DESCRIPTOR_FAILURE, cls);
             }
             ((StorageImpl)Storage).classDescMap[cls] = this;
-            generateSerializer();
         }
 
         internal ClassDescriptor resolve() 
