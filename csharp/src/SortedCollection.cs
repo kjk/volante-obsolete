@@ -87,7 +87,7 @@ namespace Perst
         /// <summary>
         /// Number of objects in the collection
         /// </summary>
-        int Length 
+        int Count 
         {
             get;
         }

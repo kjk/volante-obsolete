@@ -252,4 +252,7 @@ SpatialIndexR2 class provides iterator to accessed overlaped object one-by-one.
 3. Add SpatialIndex.WrappingRectangle and  SpatialIndexR2.WrappingRectangle properties
 4. Add set method to Link.Length property.
 
-
+--- Release version 2.30 15.07.2004 -------------------------------------
+1. Invoke Win32 FlushFileBuffers in addition to System.FileStream.Flush to 
+really flush changes to the disk. 
+2. Port to Mono compiler

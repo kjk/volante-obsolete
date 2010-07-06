@@ -101,7 +101,7 @@ namespace Perst
         /// <summary> Put new object in the index. 
         /// </summary>
         /// <param name="obj">object to be inserted in index. Object should contain indexed field. 
-        /// Object can be not yet peristent, in this case its forced to become persistent by assigning OID to it.
+        /// Object can be not yet persistent, in this case its forced to become persistent by assigning OID to it.
         /// </param>
         /// <returns><code>true</code> if object is successfully inserted in the index, 
         /// <code>false</code> if index was declared as unique and there is already object with such value
@@ -176,6 +176,14 @@ namespace Perst
         /// 
         /// </returns>
         int Size();
+
+        /// <summary>
+        /// Number of objects in the collection
+        /// </summary>
+        int Count 
+        {
+            get;
+        }
 
         /// <summary> Remove all objects from the index
         /// </summary>

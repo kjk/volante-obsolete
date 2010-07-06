@@ -88,7 +88,7 @@ namespace Perst.Impl
                 set
                 {
                     ivalue = value;
-                    valueType = ValueType.INT_VALUE;
+                    valueType = XMLValueType.INT_VALUE;
                 }
 				
             }
@@ -102,7 +102,7 @@ namespace Perst.Impl
                 set
                 {
                     rvalue = value;
-                    valueType = ValueType.REAL_VALUE;
+                    valueType = XMLValueType.REAL_VALUE;
                 }
 				
             }
@@ -116,7 +116,7 @@ namespace Perst.Impl
                 set
                 {
                     svalue = value;
-                    valueType = ValueType.STRING_VALUE;
+                    valueType = XMLValueType.STRING_VALUE;
                 }
 				
             }
@@ -129,18 +129,18 @@ namespace Perst.Impl
                 }
             }
 
-            private XMLElement next;
-            private XMLElement prev;
-            private String     name;
-            private Hashtable  siblings;
-            private Hashtable  attributes;
-            private String     svalue;
-            private long       ivalue;
-            private double     rvalue;
-            private ValueType  valueType;
-            private int        counter;
+            private XMLElement   next;
+            private XMLElement   prev;
+            private String       name;
+            private Hashtable    siblings;
+            private Hashtable    attributes;
+            private String       svalue;
+            private long         ivalue;
+            private double       rvalue;
+            private XMLValueType valueType;
+            private int          counter;
 			
-            enum ValueType 
+            enum XMLValueType 
             { 
                 NO_VALUE,
                 STRING_VALUE,
@@ -152,7 +152,7 @@ namespace Perst.Impl
             internal XMLElement(System.String name)
             {
                 this.name = name;
-                valueType = ValueType.NO_VALUE;
+                valueType = XMLValueType.NO_VALUE;
             }
 			
             internal void  addSibling(XMLElement elem)
@@ -208,27 +208,27 @@ namespace Perst.Impl
 			
             internal void  setNullValue()
             {
-                valueType = ValueType.NULL_VALUE;
+                valueType = XMLValueType.NULL_VALUE;
             }
 			
             internal bool isIntValue()
             {
-                return valueType == ValueType.INT_VALUE;
+                return valueType == XMLValueType.INT_VALUE;
             }
 			
             internal bool isRealValue()
             {
-                return valueType == ValueType.REAL_VALUE;
+                return valueType == XMLValueType.REAL_VALUE;
             }
 			
             internal bool isStringValue()
             {
-                return valueType == ValueType.STRING_VALUE;
+                return valueType == XMLValueType.STRING_VALUE;
             }
 			
             internal bool isNullValue()
             {
-                return valueType == ValueType.NULL_VALUE;
+                return valueType == XMLValueType.NULL_VALUE;
             }
         }
 		

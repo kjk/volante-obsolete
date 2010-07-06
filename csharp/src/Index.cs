@@ -334,7 +334,7 @@ namespace Perst
         /// Get iterator for traversing all entries in the index 
         /// You should not update/remove or add members to the index during iteration
         /// </summary>
-        /// <returns>entry terator</returns>
+        /// <returns>entry iterator</returns>
         ///
         IDictionaryEnumerator GetDictionaryEnumerator();
         

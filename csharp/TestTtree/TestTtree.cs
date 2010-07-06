@@ -131,7 +131,7 @@ public class TestTtree
         Debug.Assert(i == nRecords);
         Console.WriteLine("Elapsed time for removing " + nRecords + " records: " 
             + (DateTime.Now - start) + " milliseconds");
-        Debug.Assert(list.Length == 0);
+        Debug.Assert(list.Count == 0);
         db.Close();
     }
 }

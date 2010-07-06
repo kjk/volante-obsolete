@@ -13,14 +13,6 @@ namespace Perst.Impl
     
         private Ttree() {} 
 
-        public int Length 
-        { 
-            get 
-            {
-                return nMembers;
-            }
-        }
-
         public int Count 
         { 
             get 
