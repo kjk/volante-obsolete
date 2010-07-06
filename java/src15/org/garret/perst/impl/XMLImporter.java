@@ -524,6 +524,59 @@ public class XMLImporter {
         return -1;
     }
 
+    final int importBinary(XMLElement elem, int offs, ByteBuffer buf, String fieldName) 
+        throws XMLImportException
+    { 
+        if (elem == null || elem.isNullValue()) {
+            buf.extend(offs + 4);
+            Bytes.pack4(buf.arr, offs, -1);
+            offs += 4;
+        } else if (elem.isStringValue()) {
+            String hexStr = elem.getStringValue();
+            int len = hexStr.length();
+            if (hexStr.startsWith("#")) { 
+                buf.extend(offs + 4 + len/2-1);
+                Bytes.pack4(buf.arr, offs, -2-getHexValue(hexStr.charAt(1)));  
+                offs += 4;
+                for (int j = 2; j < len; j += 2) { 
+                    buf.arr[offs++] = (byte)((getHexValue(hexStr.charAt(j)) << 4) | getHexValue(hexStr.charAt(j+1)));
+                }
+             } else { 
+                buf.extend(offs + 4 + len/2);
+                Bytes.pack4(buf.arr, offs, len/2);
+                offs += 4;
+                for (int j = 0; j < len; j += 2) { 
+                    buf.arr[offs++] = (byte)((getHexValue(hexStr.charAt(j)) << 4) | getHexValue(hexStr.charAt(j+1)));
+                }
+            }
+        } else { 
+            XMLElement ref = elem.getSibling("ref");
+            if (ref != null) { 
+                buf.extend(offs + 4);
+                Bytes.pack4(buf.arr, offs, mapId(getIntAttribute(ref, "id")));
+                offs += 4;
+            } else { 
+                XMLElement item = elem.getSibling("array-element");
+                int len = (item == null) ? 0 : item.getCounter(); 
+                buf.extend(offs + 4 + len);
+                Bytes.pack4(buf.arr, offs, len);
+                offs += 4;
+                while (--len >= 0) { 
+                    if (item.isIntValue()) { 
+                        buf.arr[offs] = (byte)item.getIntValue();
+                    } else if (item.isRealValue()) { 
+                        buf.arr[offs] = (byte)item.getRealValue();
+                    } else {
+                        throwException("Conversion for field " + fieldName + " is not possible");
+                    }
+                    item = item.getNextSibling();
+                    offs += 1;
+                }
+            }
+        }
+        return offs;
+    }
+
     final int packObject(XMLElement objElem, ClassDescriptor desc, int offs, ByteBuffer buf) 
         throws XMLImportException
     { 
@@ -695,37 +748,7 @@ public class XMLImporter {
                     continue;
                 case ClassDescriptor.tpRaw:
                 case ClassDescriptor.tpArrayOfByte:
-                    if (elem == null || elem.isNullValue()) {
-                        buf.extend(offs + 4);
-                        Bytes.pack4(buf.arr, offs, -1);
-                        offs += 4;
-                    } else if (elem.isStringValue()) {
-                        String hexStr = elem.getStringValue();
-                        int len = hexStr.length();
-                        buf.extend(offs + 4 + len/2);
-                        Bytes.pack4(buf.arr, offs, len/2);
-                        offs += 4;
-                        for (int j = 0; j < len; j += 2) { 
-                            buf.arr[offs++] = (byte)((getHexValue(hexStr.charAt(j)) << 4) | getHexValue(hexStr.charAt(j+1)));
-                        }
-                    } else { 
-                        XMLElement item = elem.getSibling("array-element");
-                        int len = (item == null) ? 0 : item.getCounter(); 
-                        buf.extend(offs + 4 + len);
-                        Bytes.pack4(buf.arr, offs, len);
-                        offs += 4;
-                        while (--len >= 0) { 
-                            if (item.isIntValue()) { 
-                                buf.arr[offs] = (byte)item.getIntValue();
-                            } else if (item.isRealValue()) { 
-                                buf.arr[offs] = (byte)item.getRealValue();
-                            } else {
-                                throwException("Conversion for field " + fieldName + " is not possible");
-                            }
-                            item = item.getNextSibling();
-                            offs += 1;
-                        }
-                    }
+                    offs = importBinary(elem, offs, buf, fieldName);
                     continue;
                 case ClassDescriptor.tpArrayOfBoolean:
                     if (elem == null || elem.isNullValue()) {
@@ -994,22 +1017,7 @@ public class XMLImporter {
                         Bytes.pack4(buf.arr, offs, len);
                         offs += 4;
                         while (--len >= 0) {
-                            if (item.isNullValue()) {
-                                buf.extend(offs + 4);
-                                Bytes.pack4(buf.arr, offs, -1);
-                                offs += 4;
-                            } else if (item.isStringValue()) {
-                                String hexStr = item.getStringValue();
-                                int strlen = hexStr.length();
-                                buf.extend(offs + 4 + strlen/2);
-                                Bytes.pack4(buf.arr, offs, strlen/2);
-                                offs += 4;
-                                for (int j = 0; j < strlen; j += 2) { 
-                                    buf.arr[offs++] = (byte)((getHexValue(hexStr.charAt(j)) << 4) | getHexValue(hexStr.charAt(j+1)));
-                                }
-                            } else { 
-                                throwException("String with hexadecimal dump expected");
-                            }
+                            offs = importBinary(item, offs, buf, fieldName);
                             item = item.getNextSibling();
                         }
                     }

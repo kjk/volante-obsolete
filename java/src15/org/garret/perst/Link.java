@@ -21,7 +21,7 @@ public interface Link<T extends IPersistent> extends Collection<T> {
     
     /**
      * Set number of the linked objects 
-     * @param size new number of linked objects (if it is greater than original number, 
+     * @param newSize new number of linked objects (if it is greater than original number, 
      * than extra elements will be set to null)
      */
     public void setSize(int newSize);

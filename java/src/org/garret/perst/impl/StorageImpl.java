@@ -2286,6 +2286,7 @@ public class StorageImpl extends Storage {
       throws Exception
     {
         ClassDescriptor.FieldDescriptor[] all = desc.allFields;
+        ReflectionProvider provider = ClassDescriptor.getReflectionProvider();
         int len;
 
         for (int i = 0, n = all.length; i < n; i++) { 
@@ -2402,33 +2403,33 @@ public class StorageImpl extends Storage {
             } else {                 
                 switch (fd.type) { 
                 case ClassDescriptor.tpBoolean:
-                    f.setBoolean(obj, body[offs++] != 0);
+                    provider.setBoolean(f, obj, body[offs++] != 0);
                     continue;
                 case ClassDescriptor.tpByte:
-                    f.setByte(obj, body[offs++]);
+                    provider.setByte(f, obj, body[offs++]);
                     continue;
                 case ClassDescriptor.tpChar:
-                    f.setChar(obj, (char)Bytes.unpack2(body, offs));
+                    provider.setChar(f, obj, (char)Bytes.unpack2(body, offs));
                     offs += 2;
                     continue;
                 case ClassDescriptor.tpShort:
-                    f.setShort(obj, Bytes.unpack2(body, offs));
+                    provider.setShort(f, obj, Bytes.unpack2(body, offs));
                     offs += 2;
                     continue;
                 case ClassDescriptor.tpInt:
-                    f.setInt(obj, Bytes.unpack4(body, offs));
+                    provider.setInt(f, obj, Bytes.unpack4(body, offs));
                     offs += 4;
                     continue;
                 case ClassDescriptor.tpLong:
-                    f.setLong(obj, Bytes.unpack8(body, offs));
+                    provider.setLong(f, obj, Bytes.unpack8(body, offs));
                     offs += 8;
                     continue;
                 case ClassDescriptor.tpFloat:
-                    f.setFloat(obj, Float.intBitsToFloat(Bytes.unpack4(body, offs)));
+                    provider.setFloat(f, obj, Float.intBitsToFloat(Bytes.unpack4(body, offs)));
                     offs += 4;
                     continue;
                 case ClassDescriptor.tpDouble:
-                    f.setDouble(obj, Double.longBitsToDouble(Bytes.unpack8(body, offs)));
+                    provider.setDouble(f, obj, Double.longBitsToDouble(Bytes.unpack8(body, offs)));
                     offs += 8;
                     continue;
                 case ClassDescriptor.tpString:
@@ -2444,7 +2445,7 @@ public class StorageImpl extends Storage {
                         }
                         str = new String(chars);
                     } 
-                    f.set(obj, str);
+                    provider.set(f, obj, str);
                     continue;
                 }
                 case ClassDescriptor.tpDate:
@@ -2455,12 +2456,12 @@ public class StorageImpl extends Storage {
                     if (msec >= 0) { 
                         date = new Date(msec);
                     }
-                    f.set(obj, date);
+                    provider.set(f, obj, date);
                     continue;
                 }
                 case ClassDescriptor.tpObject:
                 {
-                    f.set(obj, unswizzle(Bytes.unpack4(body, offs), f.getType(), recursiveLoading));
+                    provider.set(f, obj, unswizzle(Bytes.unpack4(body, offs), f.getType(), recursiveLoading));
                     offs += 4;
                     continue;
                 }
@@ -2468,7 +2469,7 @@ public class StorageImpl extends Storage {
                 {
                     Object value = fd.valueDesc.newInstance();
                     offs = unpackObject(value, fd.valueDesc, recursiveLoading, body, offs);
-                    f.set(obj, value);
+                    provider.set(f, obj, value);
                     continue;
                 }
                 case ClassDescriptor.tpRaw:
@@ -2477,7 +2478,7 @@ public class StorageImpl extends Storage {
                     if (len >= 0) { 
                         ByteArrayInputStream bin = new ByteArrayInputStream(body, offs, len);
                         ObjectInputStream in = new PersistentObjectInputStream(bin);
-                        f.set(obj, in.readObject());
+                        provider.set(f, obj, in.readObject());
                         in.close();
                         offs += len;
                     } else if (len < 0) { 
@@ -2521,123 +2522,123 @@ public class StorageImpl extends Storage {
                             val = unswizzle(Bytes.unpack4(body, offs), Persistent.class, recursiveLoading);
                             offs += 4;
                         }
-                        f.set(obj, val);
+                        provider.set(f, obj, val);
                     }
                     continue;
                 case ClassDescriptor.tpArrayOfByte:
                     len = Bytes.unpack4(body, offs);
                     offs += 4;
                     if (len < 0) { 
-                        f.set(obj, null);
+                        provider.set(f, obj, null);
                     } else {
                         byte[] arr = new byte[len];
                         System.arraycopy(body, offs, arr, 0, len);
                         offs += len;
-                        f.set(obj, arr);
+                        provider.set(f, obj, arr);
                     }
                     continue;
                 case ClassDescriptor.tpArrayOfBoolean:
                     len = Bytes.unpack4(body, offs);
                     offs += 4;
                     if (len < 0) { 
-                        f.set(obj, null);
+                        provider.set(f, obj, null);
                     } else {
                         boolean[] arr = new boolean[len];
                         for (int j = 0; j < len; j++) { 
                             arr[j] = body[offs++] != 0;
                         }
-                        f.set(obj, arr);
+                        provider.set(f, obj, arr);
                     }
                     continue;
                 case ClassDescriptor.tpArrayOfShort:
                     len = Bytes.unpack4(body, offs);
                     offs += 4;
                     if (len < 0) { 
-                        f.set(obj, null);
+                        provider.set(f, obj, null);
                     } else {
                         short[] arr = new short[len];
                         for (int j = 0; j < len; j++) { 
                             arr[j] = Bytes.unpack2(body, offs);
                             offs += 2;
                         }
-                        f.set(obj, arr);
+                        provider.set(f, obj, arr);
                     }
                     continue;
                 case ClassDescriptor.tpArrayOfChar:
                     len = Bytes.unpack4(body, offs);
                     offs += 4;
                     if (len < 0) { 
-                        f.set(obj, null);
+                        provider.set(f, obj, null);
                     } else {
                         char[] arr = new char[len];
                         for (int j = 0; j < len; j++) { 
                             arr[j] = (char)Bytes.unpack2(body, offs);
                             offs += 2;
                         }
-                        f.set(obj, arr);
+                        provider.set(f, obj, arr);
                     }
                     continue;
                 case ClassDescriptor.tpArrayOfInt:
                     len = Bytes.unpack4(body, offs);
                     offs += 4;
                     if (len < 0) { 
-                        f.set(obj, null);
+                        provider.set(f, obj, null);
                     } else {
                         int[] arr = new int[len];
                         for (int j = 0; j < len; j++) { 
                             arr[j] = Bytes.unpack4(body, offs);
                             offs += 4;
                         }
-                        f.set(obj, arr);
+                        provider.set(f, obj, arr);
                     }
                     continue;
                 case ClassDescriptor.tpArrayOfLong:
                     len = Bytes.unpack4(body, offs);
                     offs += 4;
                     if (len < 0) { 
-                        f.set(obj, null);
+                        provider.set(f, obj, null);
                     } else {
                         long[] arr = new long[len];
                         for (int j = 0; j < len; j++) { 
                             arr[j] = Bytes.unpack8(body, offs);
                             offs += 8;
                         }
-                        f.set(obj, arr);
+                        provider.set(f, obj, arr);
                     }
                     continue;
                 case ClassDescriptor.tpArrayOfFloat:
                     len = Bytes.unpack4(body, offs);
                     offs += 4;
                     if (len < 0) { 
-                        f.set(obj, null);
+                        provider.set(f, obj, null);
                     } else {
                         float[] arr = new float[len];
                         for (int j = 0; j < len; j++) { 
                             arr[j] = Float.intBitsToFloat(Bytes.unpack4(body, offs));
                             offs += 4;
                         }
-                        f.set(obj, arr);
+                        provider.set(f, obj, arr);
                     }
                     continue;
                 case ClassDescriptor.tpArrayOfDouble:
                     len = Bytes.unpack4(body, offs);
                     offs += 4;
                     if (len < 0) { 
-                        f.set(obj, null);
+                        provider.set(f, obj, null);
                     } else {
                         double[] arr = new double[len];
                         for (int j = 0; j < len; j++) { 
                             arr[j] = Double.longBitsToDouble(Bytes.unpack8(body, offs));
                             offs += 8;
                         }
-                        f.set(obj, arr);
+                        provider.set(f, obj, arr);
                     }
                     continue;
                 case ClassDescriptor.tpArrayOfDate:
                     len = Bytes.unpack4(body, offs);
                     offs += 4;
                     if (len < 0) { 
-                        f.set(obj, null);
+                        provider.set(f, obj, null);
                     } else {
                         Date[] arr = new Date[len];
                         for (int j = 0; j < len; j++) { 
@@ -2647,14 +2648,14 @@ public class StorageImpl extends Storage {
                                 arr[j] = new Date(msec);
                             }
                         }
-                        f.set(obj, arr);
+                        provider.set(f, obj, arr);
                     }
                     continue;
                 case ClassDescriptor.tpArrayOfString:
                     len = Bytes.unpack4(body, offs);
                     offs += 4;
                     if (len < 0) { 
-                        f.set(obj, null);
+                        provider.set(f, obj, null);
                     } else {
                         String[] arr = new String[len];
                         for (int j = 0; j < len; j++) {
@@ -2669,14 +2670,14 @@ public class StorageImpl extends Storage {
                                 arr[j] = new String(chars);
                             }
                         }
-                        f.set(obj, arr);
+                        provider.set(f, obj, arr);
                     }
                     continue;
                 case ClassDescriptor.tpArrayOfObject:
                     len = Bytes.unpack4(body, offs);
                     offs += 4;
                     if (len < 0) { 
-                        f.set(obj, null);
+                        provider.set(f, obj, null);
                     } else {
                         Class elemType = f.getType().getComponentType();
                         IPersistent[] arr = (IPersistent[])Array.newInstance(elemType, len);
@@ -2684,14 +2685,14 @@ public class StorageImpl extends Storage {
                             arr[j] = unswizzle(Bytes.unpack4(body, offs), elemType, recursiveLoading);
                             offs += 4;
                         }
-                        f.set(obj, arr);
+                        provider.set(f, obj, arr);
                     }
                     continue;
                 case ClassDescriptor.tpArrayOfValue:
                     len = Bytes.unpack4(body, offs);
                     offs += 4;
                     if (len < 0) { 
-                        f.set(obj, null);
+                        provider.set(f, obj, null);
                     } else {
                         Class elemType = f.getType().getComponentType();
                         Object[] arr = (Object[])Array.newInstance(elemType, len);
@@ -2701,14 +2702,14 @@ public class StorageImpl extends Storage {
                             offs = unpackObject(value, valueDesc, recursiveLoading, body, offs);
                             arr[j] = value;
                         }
-                        f.set(obj, arr);
+                        provider.set(f, obj, arr);
                     }
                     continue;
                 case ClassDescriptor.tpArrayOfRaw:
                     len = Bytes.unpack4(body, offs);
                     offs += 4;
                     if (len < 0) { 
-                        f.set(obj, null);
+                        provider.set(f, obj, null);
                     } else {
                         Class elemType = f.getType().getComponentType();
                         Object[] arr = (Object[])Array.newInstance(elemType, len);
@@ -2765,14 +2766,14 @@ public class StorageImpl extends Storage {
                                 arr[j] = val;
                             }
                         }
-                        f.set(obj, arr);
+                        provider.set(f, obj, arr);
                     }
                     continue;
                 case ClassDescriptor.tpLink:
                     len = Bytes.unpack4(body, offs);
                     offs += 4;
                     if (len < 0) { 
-                        f.set(obj, null);
+                        provider.set(f, obj, null);
                     } else {
                         IPersistent[] arr = new IPersistent[len];
                         for (int j = 0; j < len; j++) { 
@@ -2788,7 +2789,7 @@ public class StorageImpl extends Storage {
                             }
                             arr[j] = stub;
                         }
-                        f.set(obj, new LinkImpl(arr));
+                        provider.set(f, obj, new LinkImpl(arr));
                     }
                 }
             }

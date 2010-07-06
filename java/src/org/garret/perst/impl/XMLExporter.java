@@ -254,7 +254,22 @@ public class XMLExporter {
         int len = Bytes.unpack4(body, offs);
         offs += 4;
         if (len < 0) { 
-            writer.write("null");
+            if (len == -2-ClassDescriptor.tpObject) { 
+                exportRef(Bytes.unpack4(body, offs));
+                offs += 4;
+            } else if (len < -1) { 
+                writer.write("\"#");
+                writer.write(hexDigit[-2-len]);
+                len = ClassDescriptor.sizeof[-2-len];
+                while (--len >= 0) {
+                    byte b = body[offs++];
+                    writer.write(hexDigit[(b >>> 4) & 0xF]);
+                    writer.write(hexDigit[b & 0xF]);
+                }
+                writer.write('\"');
+            } else { 
+                writer.write("null");
+            }
         } else {
             writer.write('\"');
             while (--len >= 0) {
@@ -265,6 +280,13 @@ public class XMLExporter {
             writer.write('\"');
         }
         return offs;
+    }
+    
+    final void exportRef(int oid) throws IOException { 
+        writer.write("<ref id=\"" + oid + "\"/>");
+        if (oid != 0 && (exportedBitmap[oid >> 5] & (1 << (oid & 31))) == 0) { 
+            markedBitmap[oid >> 5] |= 1 << (oid & 31);
+        }
     }
 
     final int exportObject(ClassDescriptor desc, byte[] body, int offs, int indent) throws IOException {
@@ -321,15 +343,9 @@ public class XMLExporter {
                     break;
                 }
                 case ClassDescriptor.tpObject:
-                {
-                    int oid = Bytes.unpack4(body, offs);
-                    writer.write("<ref id=\"" + oid + "\"/>");
-                    if (oid != 0 && (exportedBitmap[oid >> 5] & (1 << (oid & 31))) == 0) { 
-                        markedBitmap[oid >> 5] |= 1 << (oid & 31);
-                    }
+                    exportRef(Bytes.unpack4(body, offs));
                     offs += 4;
                     break;
-                }
                 case ClassDescriptor.tpValue:
                     writer.write('\n');
                     offs = exportObject(fd.valueDesc, body, offs, indent+1);

@@ -232,3 +232,8 @@ SpatialIndexR2 class provides iterator to accessed overlaped object one-by-one.
 
 --- Release version 2.30 15.07.2004 -------------------------------------
 1. Fix bug in JAssist translator class
+
+--- Release version 2.31 06.08.2004 -------------------------------------
+1. Support final fields in peristent object. 
+2. Add L2List and L2ListElem classes
+3. Fix bug in importing/exporting of raw fields introduced in version 2.23

@@ -1,5 +1,6 @@
 del src\org\garret\perst\*.class
 del src\org\garret\perst\impl\*.class
+del src\org\garret\perst\impl\sun14\*.class
 del src\org\garret\perst\aspectj\*.class
 del src\org\garret\perst\jassist\*.class
 del src15\org\garret\perst\*.class
