@@ -50,5 +50,5 @@ public class OSFile implements IFile {
         }
     }
 
-    private RandomAccessFile file;
+    protected RandomAccessFile file;
 }

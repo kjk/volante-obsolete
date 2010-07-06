@@ -5,20 +5,40 @@ public class Rc4File extends OSFile
 { 
     public void write(long pos, byte[] buf) 
     {
+        if (pos > length) { 
+            if (zeroPage == null) { 
+                zeroPage = new byte[Page.pageSize];
+                encrypt(zeroPage, 0, zeroPage, 0, Page.pageSize);
+            }
+            do { 
+                super.write(length, zeroPage);
+            } while ((length += Page.pageSize) < pos);
+        } 
+        if (pos == length) { 
+            length += Page.pageSize;
+        }        
         encrypt(buf, 0, cipherBuf, 0, buf.length);
         super.write(pos, cipherBuf);
     }
 
     public int read(long pos, byte[] buf) 
     { 
-        int rc = super.read(pos, buf);
-        decrypt(buf, 0, buf, 0, rc);
-        return rc;
+        if (pos < length) { 
+            int rc = super.read(pos, buf);
+            decrypt(buf, 0, buf, 0, rc);
+            return rc;
+        } 
+        return 0;
     }
 
     public Rc4File(String filePath, boolean readOnly, String key) 
     { 
         super(filePath, readOnly);
+        try { 
+            length = file.length() & ~(Page.pageSize-1);
+        } catch(java.io.IOException x) { 
+            throw new StorageError(StorageError.FILE_ACCESS_ERROR, x);
+        }
         setKey(key.getBytes());
     }
 
@@ -72,4 +92,6 @@ public class Rc4File extends OSFile
     private byte[] initState = new byte[256];
     private byte[] state = new byte[256];
     private int x, y;
+    private long   length;
+    private byte[] zeroPage;
 }
