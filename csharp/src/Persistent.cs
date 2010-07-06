@@ -2,28 +2,37 @@ namespace Perst
 {
     using System;
     using System.Runtime.InteropServices;
+#if !COMPACT_NET_FRAMEWORK
+    using System.ComponentModel;
+#endif
 	
     /// <summary> Base class for all persistent capable objects
     /// </summary>
     public class Persistent : IPersistent
     {
+#if !COMPACT_NET_FRAMEWORK
+        [Browsable(false)]
+#endif
         public virtual int Oid
         {
             get
             {
                 return oid;
-            }
-			
+            }	
         }
+
+#if !COMPACT_NET_FRAMEWORK
+        [Browsable(false)]
+#endif
         public virtual Storage Storage
         {
             get
             {
                 return storage;
-            }
-			
+            }			
         }
-        public virtual void  load()
+
+        public virtual void Load()
         {
             if (storage != null)
             {
@@ -31,22 +40,22 @@ namespace Perst
             }
         }
 		
-        public bool isRaw() 
+        public bool IsRaw() 
         { 
             return (state & (int)ObjectState.RAW) != 0;
         } 
     
-        public bool isModified() 
+        public bool IsModified() 
         { 
             return (state & (int)ObjectState.DIRTY) != 0;
         } 
  
-        public bool isPersistent()
+        public bool IsPersistent()
         {
             return oid != 0;
         }
 		
-        public virtual void  makePersistent(Storage storage)
+        public virtual void MakePersistent(Storage storage)
         {
             if (oid == 0)
             {
@@ -54,7 +63,7 @@ namespace Perst
             }
         }
 		
-        public virtual void  store()
+        public virtual void Store()
         {
             if ((state & (int)ObjectState.RAW) != 0)
             {
@@ -67,7 +76,7 @@ namespace Perst
             }
         }
 		
-        public void modify() 
+        public void Modify() 
         { 
             if ((state & (int)ObjectState.DIRTY) == 0 && storage != null) 
             { 
@@ -80,7 +89,7 @@ namespace Perst
             }
         }
 
-        public virtual void  deallocate()
+        public virtual void Deallocate()
         {
             if (storage != null) 
             {
@@ -89,7 +98,7 @@ namespace Perst
             }
         }
 		
-        public virtual bool recursiveLoading()
+        public virtual bool RecursiveLoading()
         {
             return true;
         }
@@ -105,11 +114,25 @@ namespace Perst
             return oid;
         }
 		
-        public virtual void onLoad() 
+        public virtual void OnLoad() 
         {
         }
+        
+        public virtual void Invalidate() 
+        {
+	    state |= (int)ObjectState.RAW;
+        }
+        
+        ~Persistent() 
+        {
+            if ((state & (int)ObjectState.DIRTY) != 0 && storage != null) 
+            { 
+                storage.storeFinalizedObject(this);
+                state &= ~(int)ObjectState.DIRTY;
+            }
+        }
 
-        [NonSerialized()]
+	[NonSerialized()]
         internal Storage storage;
         [NonSerialized()]
         internal int oid;

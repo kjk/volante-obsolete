@@ -12,8 +12,27 @@ rd /s/q TestConcur\obj
 rd /s/q TestConcur\bin
 rd /s/q TestRtree\obj
 rd /s/q TestRtree\bin
+rd /s/q TestTtree\obj
+rd /s/q TestTtree\bin
 rd /s/q TestXML\obj
 rd /s/q TestXML\bin
+rd /s/q TestBackup\obj
+rd /s/q TestBackup\bin
+rd /s/q TestRaw\obj
+rd /s/q TestRaw\bin
+rd /s/q TestSSD\obj
+rd /s/q TestSSD\bin
+rd /s/q TestEnumerator\obj
+rd /s/q TestEnumerator\bin
+rd /s/q TestCompoundIndex\obj
+rd /s/q TestCompoundIndex\bin
+rd /s/q TestBlob\obj
+rd /s/q TestBlob\bin
+del /q *.dbs
+rd /s/q TestTimeSeries\obj
+rd /s/q TestTimeSeries\bin
+del /q *.xml
+del /q *.suo
 cd ..
 del /q perstnet.zip
 zip -r perstnet.zip Perst.NET

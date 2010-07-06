@@ -8,23 +8,41 @@ namespace Perst.Impl
 	
     public sealed class ClassDescriptor:Persistent
     {
-        internal ClassDescriptor next;
-        internal System.String name;
-        internal int nFields;
-		
+        internal ClassDescriptor   next;
+        internal String            name;
+        internal FieldDescriptor[] allFields;
+        internal bool              hasReferences;
+
+        public class FieldDescriptor : Persistent 
+        { 
+            internal String          fieldName;
+            internal String          className;
+            internal FieldType       type;
+            internal ClassDescriptor valueDesc;
+            [NonSerialized()]
+            internal FieldInfo       field;
+
+            public bool equals(FieldDescriptor fd) 
+            { 
+                return fieldName.Equals(fd.fieldName) 
+                    && className.Equals(fd.className)
+                    && valueDesc == fd.valueDesc
+                    && type == fd.type;
+            }
+        }    
         [NonSerialized()]
-        internal System.Reflection.FieldInfo[] allFields;
-        [NonSerialized()]
-        internal FieldType[] fieldTypes;
-        [NonSerialized()]
-        internal System.Type cls;
+        internal Type cls;
         [NonSerialized()]
         internal bool hasSubclasses;
         [NonSerialized()]
-        internal bool hasReferences;
+        internal ConstructorInfo defaultConstructor;
         [NonSerialized()]
-        internal System.Reflection.ConstructorInfo defaultConstructor;
+        internal bool resolved;
+        [NonSerialized()]
+        internal GeneratedSerializer serializer;
 		
+        internal static bool serializeNonPersistentObjects;
+
         public enum FieldType 
         {
             tpBoolean,
@@ -44,6 +62,9 @@ namespace Perst.Impl
             tpDate,
             tpObject,
             tpValue,
+            tpRaw,
+            tpGuid,
+            tpDecimal,
             tpLink,
             tpArrayOfBoolean,
             tpArrayOfByte,
@@ -61,14 +82,92 @@ namespace Perst.Impl
             tpArrayOfString,
             tpArrayOfDate,
             tpArrayOfObject,
-            tpArrayOfValue
+            tpArrayOfValue,
+            tpArrayOfRaw,
+            tpArrayOfGuid,
+            tpArrayOfDecimal,
+            tpLast
         };
 		
-        internal static int[] Sizeof = new int[] {1, 1, 1, 2, 2, 2, 4, 4, 4, 8, 8, 4, 8, 0, 8, 4};
+        internal static int[] Sizeof = new int[] 
+        {
+            1, // tpBoolean,
+            1, // tpByte,
+            1, // tpSByte,
+            2, // tpShort, 
+            2, // tpUShort,
+            2, // tpChar,
+            4, // tpEnum,
+            4, // tpInt,
+            4, // tpUInt,
+            8, // tpLong,
+            8, // tpULong,
+            4, // tpFloat,
+            8, // tpDouble,
+            0, // tpString,
+            8, // tpDate,
+            4, // tpObject,
+            0, // tpValue,
+            0, // tpRaw,
+            16,// tpGuid,
+            16,// tpDecimal,
+            0, // tpLink,
+            0, // tpArrayOfBoolean,
+            0, // tpArrayOfByte,
+            0, // tpArrayOfSByte,
+            0, // tpArrayOfShort, 
+            0, // tpArrayOfUShort,
+            0, // tpArrayOfChar,
+            0, // tpArrayOfEnum,
+            0, // tpArrayOfInt,
+            0, // tpArrayOfUInt,
+            0, // tpArrayOfLong,
+            0, // tpArrayOfULong,
+            0, // tpArrayOfFloat,
+            0, // tpArrayOfDouble,
+            0, // tpArrayOfString,
+            0, // tpArrayOfDate,
+            0, // tpArrayOfObject,
+            0, // tpArrayOfValue,
+            0, // tpArrayOfRaw,
+            0, // tpArrayOfGuid,
+            4 // tpArrayOfDecimal,
+        };
 		
         internal static System.Type[] defaultConstructorProfile = new System.Type[0];
         internal static System.Object[] noArgs = new System.Object[0];
-		
+	
+	
+#if COMPACT_NET_FRAMEWORK
+        static internal object parseEnum(Type type, String value) 
+        {
+            foreach (FieldInfo fi in type.GetFields()) 
+            {
+                if (fi.IsLiteral && fi.Name.Equals(value)) 
+                {
+                    return fi.GetValue(null);
+                }
+            }
+            throw new ArgumentException(value);
+        }
+#endif
+
+        public bool equals(ClassDescriptor cd) 
+        { 
+            if (cd == null || allFields.Length != cd.allFields.Length) 
+            { 
+                return false;
+            }
+            for (int i = 0; i < allFields.Length; i++) 
+            { 
+                if (!allFields[i].equals(cd.allFields[i])) 
+                { 
+                    return false;
+                }
+            }
+            return true;
+        }
+        
         internal Object newInstance()
         {
             try
@@ -81,20 +180,78 @@ namespace Perst.Impl
             }
         }
 		
-        internal void  buildFieldList(System.Type cls, ArrayList list)
+#if COMPACT_NET_FRAMEWORK
+        internal void generateSerializer() {}
+#else
+        private static CodeGenerator serializerGenerator = new CodeGenerator();
+
+        internal void generateSerializer()
+        {
+            if (!cls.IsPublic) 
+            { 
+                return;
+            }
+            FieldDescriptor[] flds = allFields;
+            for (int i = 0, n = flds.Length; i < n; i++) 
+            {
+                FieldDescriptor fd = flds[i];
+                switch (fd.type) 
+                { 
+                    case FieldType.tpValue:
+                    case FieldType.tpArrayOfValue:
+                    case FieldType.tpArrayOfObject:
+                    case FieldType.tpArrayOfEnum:
+                    case FieldType.tpArrayOfRaw:
+                        return;
+                    default:
+                        break;
+                }
+                FieldInfo f = flds[i].field;
+                if (f != null && !f.IsPublic) 
+                {
+                    return;
+                }
+            }
+            serializer = serializerGenerator.Generate(this);
+        }
+#endif
+        
+        internal void  buildFieldList(StorageImpl storage, System.Type cls, ArrayList list)
         {
             System.Type superclass = cls.BaseType;
             if (superclass != null)
             {
-                buildFieldList(superclass, list);
+                buildFieldList(storage, superclass, list);
             }
             System.Reflection.FieldInfo[] flds = cls.GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.DeclaredOnly);
             for (int i = 0; i < flds.Length; i++)
             {
-                System.Reflection.FieldInfo f = flds[i];
+                FieldInfo f = flds[i];
                 if (!f.IsNotSerialized && !f.IsStatic)
                 {
-                    list.Add(f);
+                    FieldDescriptor fd = new FieldDescriptor();
+                    fd.field = f;
+                    fd.fieldName = f.Name;
+                    fd.className = cls.FullName;
+                    FieldType type = getTypeCode(f.FieldType);
+                    switch (type) 
+                    {
+                        case FieldType.tpObject:
+                        case FieldType.tpLink:
+                        case FieldType.tpArrayOfObject:
+                            hasReferences = true;
+                            break;
+                        case FieldType.tpValue:
+                            fd.valueDesc = storage.getClassDescriptor(f.FieldType).resolve();
+                            hasReferences |= fd.valueDesc.hasReferences;
+                            break;
+                        case FieldType.tpArrayOfValue:
+                            fd.valueDesc = storage.getClassDescriptor(f.FieldType.GetElementType()).resolve();
+                            hasReferences |= fd.valueDesc.hasReferences;
+                            break;
+                    }
+                    fd.type = type;
+                    list.Add(fd);
                 }
             }
         }
@@ -162,6 +319,14 @@ namespace Perst.Impl
             { 
                 type = FieldType.tpEnum;
             }
+            else if (c.Equals(typeof(decimal)))
+            { 
+                type = FieldType.tpDecimal;
+            }
+            else if (c.Equals(typeof(Guid))) 
+            { 
+                type = FieldType.tpGuid;
+            }
             else if (typeof(IPersistent).IsAssignableFrom(c))
             {
                 type = FieldType.tpObject;
@@ -185,7 +350,18 @@ namespace Perst.Impl
             }
             else
             {
+#if SUPPORT_RAW_TYPE
+                if (serializeNonPersistentObjects) 
+                {
+                    type = FieldType.tpRaw;
+                } 
+                else 
+                { 
+                    throw new StorageError(StorageError.ErrorCode.UNSUPPORTED_TYPE, c);
+                }
+#else
                 throw new StorageError(StorageError.ErrorCode.UNSUPPORTED_TYPE, c);
+#endif
             }
             return type;
         }
@@ -194,12 +370,20 @@ namespace Perst.Impl
         {
         }
 		
-        internal ClassDescriptor(System.Type cls)
+        internal ClassDescriptor(StorageImpl storage, Type cls)
         {
             this.cls = cls;
             name = cls.FullName;
-            build();
-            nFields = allFields.Length;
+            ArrayList list = new ArrayList();
+            buildFieldList(storage, cls, list);
+            allFields = (FieldDescriptor[]) list.ToArray(typeof(FieldDescriptor));
+            defaultConstructor = cls.GetConstructor(BindingFlags.Instance|BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic|BindingFlags.DeclaredOnly, null, defaultConstructorProfile, null);
+            if (defaultConstructor == null && !typeof(ValueType).IsAssignableFrom(cls)) 
+            { 
+                throw new StorageError(StorageError.ErrorCode.DESCRIPTOR_FAILURE, cls);
+            }
+            resolved = true;
+            generateSerializer();
         }
 		
         internal static bool FindTypeByName(Type t, object name) 
@@ -207,9 +391,38 @@ namespace Perst.Impl
             return t.FullName.Equals(name);
         }
 
-        internal static Type lookup(String name)
+        internal static Type lookup(Storage storage, String name)
         {
             Type cls = null;
+            ClassLoader loader = storage.Loader;
+            if (loader != null) 
+            { 
+                cls = loader.LoadClass(name);
+                if (cls != null) 
+                { 
+                    return cls;
+                }
+            }
+#if COMPACT_NET_FRAMEWORK
+            foreach (Assembly ass in StorageImpl.assemblies) 
+            { 
+                foreach (Module mod in ass.GetModules()) 
+                { 
+                    Type t = mod.GetType(name);
+                    if (t != null) 
+                    {
+                        if (cls != null) 
+                        { 
+                            throw new StorageError(StorageError.ErrorCode.AMBIGUITY_CLASS, name);
+                        } 
+                        else 
+                        { 
+                            cls = t;
+                        }
+                    }
+                }
+            }
+#else
             foreach (Assembly ass in AppDomain.CurrentDomain.GetAssemblies()) 
             { 
                 foreach (Module mod in ass.GetModules()) 
@@ -227,6 +440,7 @@ namespace Perst.Impl
                     }
                 }
             }
+#endif
             if (cls == null) 
             {
                 throw new StorageError(StorageError.ErrorCode.CLASS_NOT_FOUND, name);
@@ -234,45 +448,56 @@ namespace Perst.Impl
             return cls;
         }
 
-        public void  resolve()
+        public override void OnLoad()
         {
-            if (cls == null) 
-            {
-                cls = lookup(name);
-                build();
-                if (nFields != allFields.Length)
+            cls = lookup(Storage, name);
+            Type scope = cls;
+            int n = allFields.Length;
+            for (int i = n; --i >= 0;) 
+            { 
+                FieldDescriptor fd = allFields[i];
+                if (!fd.className.Equals(scope.FullName)) 
                 {
-                    throw new StorageError(StorageError.ErrorCode.SCHEMA_CHANGED, cls);
+                    for (scope = cls; scope != null; scope = scope.BaseType) 
+                    { 
+                        if (fd.className.Equals(scope.FullName)) 
+                        {
+                            break;
+                        }
+                    }
+                }
+                if (scope != null) 
+                {
+                    fd.field = scope.GetField(fd.fieldName, BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.DeclaredOnly);
+                } 
+                else 
+                { 
+                    scope = cls;
                 }
             }
-        }
-    
-		
-        internal void  build()
-        {
-            ArrayList list = new ArrayList();
-            buildFieldList(cls, list);
-            int nFields = list.Count;
-            allFields = (System.Reflection.FieldInfo[]) list.ToArray(typeof(System.Reflection.FieldInfo));
-            fieldTypes = new FieldType[nFields];
-            for (int i = 0; i < nFields; i++)
-            {
-                Type fieldType = allFields[i].FieldType;
-                FieldType type = getTypeCode(fieldType);
-                fieldTypes[i] = type;
-                switch (type) 
-                {
-                    case FieldType.tpObject:
-                    case FieldType.tpLink:
-                    case FieldType.tpArrayOfObject:
-                        hasReferences = true;
-                        break;
-                    case FieldType.tpValue:
-                        hasReferences |= new ClassDescriptor(fieldType).hasReferences;
-                        break;
-                    case FieldType.tpArrayOfValue:
-                        hasReferences |= new ClassDescriptor(fieldType.GetElementType()).hasReferences;
-                        break;
+            for (int i = n; --i >= 0;) 
+            { 
+                FieldDescriptor fd = allFields[i];
+                if (fd.field == null) 
+                { 
+                
+                    for (scope = cls; scope != null; scope = scope.BaseType) 
+                    { 
+                        FieldInfo f = scope.GetField(fd.fieldName, BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.DeclaredOnly);
+                        if (f != null) 
+                        { 
+                            for (int j = 0; j < n; j++) 
+                            { 
+                                if (allFields[j].field == f) 
+                                { 
+                                    goto hierarchyLoop;
+                                }
+                            }
+                            fd.field = f;
+                            break;
+                        }
+                        hierarchyLoop:;
+                    }
                 }
             }
             defaultConstructor = cls.GetConstructor(BindingFlags.Instance|BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic|BindingFlags.DeclaredOnly, null, defaultConstructorProfile, null);
@@ -280,6 +505,24 @@ namespace Perst.Impl
             { 
                 throw new StorageError(StorageError.ErrorCode.DESCRIPTOR_FAILURE, cls);
             }
+            ((StorageImpl)Storage).classDescMap[cls] = this;
+            generateSerializer();
         }
+
+        internal ClassDescriptor resolve() 
+        {
+            if (!resolved) 
+            { 
+                StorageImpl classStorage = (StorageImpl)storage;
+                ClassDescriptor desc = new ClassDescriptor(classStorage, cls);
+                if (!desc.equals(this)) 
+                { 
+                    classStorage.registerClassDescriptor(desc);
+                    return desc;
+                }
+                resolved = true;
+            }
+            return this;
+        }            
     }
 }

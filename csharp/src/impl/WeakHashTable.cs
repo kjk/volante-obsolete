@@ -3,7 +3,7 @@ namespace Perst.Impl
     using System;
     using Perst;
 	
-    public class WeakHashTable
+    public class WeakHashTable : OidHashTable
     {
         internal Entry[] table;
         internal const float loadFactor = 0.75f;
@@ -29,6 +29,8 @@ namespace Perst.Impl
                 {
                     if (e.oid == oid)
                     {
+                        e.dirty = 0;
+                        e.oref.Target = null;
                         count -= 1;
                         if (prev != null)
                         {
@@ -75,21 +77,32 @@ namespace Perst.Impl
 		
         public IPersistent get(int oid)
         {
-            lock(this)
-            {
-                Entry[] tab = table;
-                int index = (oid & 0x7FFFFFFF) % tab.Length;
-                for (Entry e = tab[index]; e != null; e = e.next)
+            while (true) 
+            { 
+                lock(this)
                 {
-                    if (e.oid == oid)
+                    Entry[] tab = table;
+                    int index = (oid & 0x7FFFFFFF) % tab.Length;
+                    for (Entry e = tab[index]; e != null; e = e.next)
                     {
-                        return (IPersistent) e.oref.Target;
+                        if (e.oid == oid)
+                        {
+                            IPersistent obj = (IPersistent)e.oref.Target;
+                            if (obj == null && e.dirty > 0) 
+                            { 
+                                goto waitFinalization;
+                            }
+                            return obj;
+                        }
                     }
+                    return null;
                 }
-                return null;
+            waitFinalization:
+                GC.WaitForPendingFinalizers();
             }
         }
 		
+
         internal void  rehash()
         {
             int oldCapacity = table.Length;
@@ -99,7 +112,7 @@ namespace Perst.Impl
             {
                 for (Entry prev = null, e = oldMap[i]; e != null; e = e.next)
                 {
-                    if (!e.oref.IsAlive)
+                    if (!e.oref.IsAlive && e.dirty == 0)
                     {
                         count -= 1;
                         if (prev == null)
@@ -142,23 +155,144 @@ namespace Perst.Impl
             }
         }
 		
-        public virtual int size()
+        public void flush() 
+        {
+            while (true) 
+            {
+                lock (this) 
+                { 
+                    for (int i = 0; i < table.Length; i++) 
+                    { 
+                        for (Entry e = table[i]; e != null; e = e.next) 
+                        { 
+                            IPersistent obj = (IPersistent)e.oref.Target;
+                            if (obj != null) 
+                            { 
+                                if (obj.IsModified()) 
+                                { 
+                                    obj.Store();
+                                }
+                            } 
+                            else if (e.dirty != 0) 
+                            { 
+                                goto waitFinalization;
+                            }
+                        }
+                    }
+                    return;
+                }
+            waitFinalization:
+                GC.WaitForPendingFinalizers();
+            }
+        }
+
+        public void invalidate() 
+        {
+            while (true) 
+            {
+                lock (this) 
+                { 
+                    for (int i = 0; i < table.Length; i++) 
+                    { 
+                        for (Entry e = table[i]; e != null; e = e.next) 
+                        { 
+                            IPersistent obj = (IPersistent)e.oref.Target;
+                            if (obj != null) 
+                            { 
+                                if (obj.IsModified()) 
+                                { 
+                                    e.dirty = 0;
+                                    obj.Invalidate();
+                                }
+                            } 
+                            else if (e.dirty != 0) 
+                            { 
+                                goto waitFinalization;
+                            }
+                        }
+                    }
+                    return;
+                }
+            waitFinalization:
+                GC.WaitForPendingFinalizers();
+            }
+        }
+
+        public void setDirty(int oid) 
+        {
+            lock (this) 
+            { 
+                Entry[] tab = table;
+                int index = (oid & 0x7FFFFFFF) % tab.Length;
+                for (Entry e = tab[index] ; e != null ; e = e.next) 
+                {
+                    if (e.oid == oid) 
+                    {
+                        e.dirty += 1;
+                        return;
+                    }
+                }
+            }
+        }
+
+        public void clearDirty(int oid) 
+        {
+            lock (this) 
+            { 
+                Entry[] tab = table;
+                int index = (oid & 0x7FFFFFFF) % tab.Length;
+                for (Entry e = tab[index], prev = null; e != null; prev = e, e = e.next)
+                {
+                    if (e.oid == oid) 
+                    {
+                        if (e.oref.IsAlive) 
+                        { 
+                            if (e.dirty > 0) 
+                            { 
+                                e.dirty -= 1;
+                            }
+                        } 
+                        else 
+                        { 
+                            e.dirty = 0;
+                            e.oref.Target = null;
+                            count -= 1;
+                            if (prev != null)
+                            {
+                                prev.next = e.next;
+                            }
+                            else
+                            {
+                                tab[index] = e.next;
+                            }
+                        }
+                        return;
+                    }
+                }
+            }
+        }
+
+        public int size()
         {
             return count;
         }
-    }
+
 	
-    class Entry
-    {
-        internal Entry next;
-        internal WeakReference oref;
-        internal int oid;
-		
-        internal Entry(int oid, WeakReference oref, Entry chain)
+        internal class Entry
         {
-            next = chain;
-            this.oid = oid;
-            this.oref = oref;
+            internal Entry next;
+            internal WeakReference oref;
+            internal int oid;
+            internal int dirty;
+		
+            internal Entry(int oid, WeakReference oref, Entry chain)
+            {
+                next = chain;
+                this.oid = oid;
+                this.oref = oref;
+            }
         }
     }
 }
+
+

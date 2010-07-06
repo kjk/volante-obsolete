@@ -14,7 +14,7 @@ namespace Perst
         /// <summary>
         /// Smallest Y coordinate of the rectangle
         /// </summary>
-        public int top 
+        public int Top 
         { 
             get 
             { 
@@ -25,7 +25,7 @@ namespace Perst
         /// <summary>
         /// Smallest X coordinate of the rectangle
         /// </summary>
-        public int left 
+        public int Left 
         {
             get 
             { 
@@ -36,7 +36,7 @@ namespace Perst
         /// <summary>
         /// Greatest Y coordinate  of the rectangle
         /// </summary>
-        public int bottom 
+        public int Bottom 
         {
             get 
             { 
@@ -47,7 +47,7 @@ namespace Perst
         /// <summary>
         /// Greatest X coordinate  of the rectangle
         /// </summary>
-        public int right 
+        public int Right 
         {
             get 
             { 
@@ -58,7 +58,7 @@ namespace Perst
         /// <summary>
         /// Rectangle area
         /// </summary>
-        public int area() 
+        public int Area() 
         { 
             return (_bottom-_top)*(_right-_left);
         }
@@ -66,7 +66,7 @@ namespace Perst
         /// <summary>
         /// Area of covered rectangle for two sepcified rectangles
         /// </summary>
-        public static int joinArea(Rectangle a, Rectangle b) 
+        public static int JoinArea(Rectangle a, Rectangle b) 
         {
             int _left = (a._left < b._left) ? a._left : b._left;
             int _right = (a._right > b._right) ? a._right : b._right;
@@ -92,7 +92,7 @@ namespace Perst
         /// </summary>
         public Rectangle(int _top, int _left, int _bottom, int _right) 
         { 
-            Assert.that(_top <= _bottom && _left <= _right);
+            Assert.That(_top <= _bottom && _left <= _right);
             this._top = _top;
             this._left = _left;
             this._bottom = _bottom;
@@ -104,7 +104,7 @@ namespace Perst
         /// </summary>
         /// <param name="r">rectangle to be joined with this rectangle
         /// </param>
-        public void join(Rectangle r) 
+        public void Join(Rectangle r) 
         { 
             if (_left > r._left) 
             { 
@@ -134,17 +134,17 @@ namespace Perst
         /// </param>
         /// <returns>rectangle containing cover of these two rectangles
         /// </returns>
-        public static Rectangle join(Rectangle a, Rectangle b) 
+        public static Rectangle Join(Rectangle a, Rectangle b) 
         {
             Rectangle r = new Rectangle(a);
-            r.join(b);
+            r.Join(b);
             return r;
         }
 
         /// <summary>
         /// Checks if this rectangle intersects with specified rectangle
         /// </summary>
-        public bool intersects(Rectangle r) 
+        public bool Intersects(Rectangle r) 
         { 
             return _left <= r._right && _top <= r._bottom && _right >= r._left && _bottom >= r._top;
         }
@@ -152,7 +152,7 @@ namespace Perst
         /// <summary>
         /// Checks if this rectangle contains the specified rectangle
         /// </summary>
-        public bool contains(Rectangle r) 
+        public bool Contains(Rectangle r) 
         { 
             return _left <= r._left && _top <= r._top && _right >= r._right && _bottom >= r._bottom;
         }

@@ -11,15 +11,15 @@ public class TestRtree : Persistent {
     const int nIterations = 100000;
 
     public static void Main(String[] args) { 
-        Storage db = StorageFactory.Instance.createStorage();
+        Storage db = StorageFactory.Instance.CreateStorage();
         SpatialObject so;
         Rectangle r;
         DateTime start = DateTime.Now;
-	db.open("testrtree.dbs");
+	db.Open("testrtree.dbs");
         TestRtree root = (TestRtree)db.Root;
         if (root == null) { 
             root = new TestRtree();
-            root.index = db.createSpatialIndex();
+            root.index = db.CreateSpatialIndex();
             db.Root = root;
         }
 
@@ -29,7 +29,7 @@ public class TestRtree : Persistent {
             int j = i % nObjectsInTree;
             if (i >= nObjectsInTree) { 
                 r = rectangles[j];
-                IPersistent[] sos = root.index.get(r);
+                IPersistent[] sos = root.index.Get(r);
                 IPersistent po = null;
                 int n = 0;
                 for (int k = 0; k < sos.Length; k++) { 
@@ -37,17 +37,18 @@ public class TestRtree : Persistent {
                     if (r.Equals(so.rect)) { 
                         po = so;
                     } else { 
-                        Assert.that(r.intersects(so.rect));
+                        Assert.That(r.Intersects(so.rect));
                     }
                 }    
-                Assert.that(po != null);
+                Assert.That(po != null);
                 for (int k = 0; k < nObjectsInTree; k++) { 
-                    if (r.intersects(rectangles[k])) {
+                    if (r.Intersects(rectangles[k])) {
                         n += 1;
                     }
                 }
-                Assert.that(n == sos.Length);
-                root.index.remove(r, po);
+                Assert.That(n == sos.Length);
+                root.index.Remove(r, po);
+                po.Deallocate();
             }
             key = (3141592621L*key + 2718281829L) % 1000000007L;
             int top = (int)(key % 1000);
@@ -59,16 +60,16 @@ public class TestRtree : Persistent {
             r = new Rectangle(top, left, bottom, right);
             so.rect = r;
             rectangles[j] = r;
-            root.index.put(r, so);
+            root.index.Put(r, so);
 
             if (i % 100 == 0) { 
                 Console.Write("Iteration " + i + "\r");
-                db.commit();
+                db.Commit();
             }
         }        
-        root.index.clear();
+        root.index.Clear();
         Console.WriteLine();
         Console.WriteLine("Elapsed time " + (DateTime.Now - start));
-        db.close();
+        db.Close();
     }
 }
