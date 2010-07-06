@@ -13,7 +13,7 @@ public interface SortedCollection extends IPersistent, IResource {
     /**
      * Get member with specified key.
      * @param key specified key. It should match with type of the index and should be inclusive.
-     * @return object with this value of the key or <code>null</code> if key nmot found
+     * @return object with this value of the key or <code>null</code> if key not found
      * @exception StorageError(StorageError.KEY_NOT_UNIQUE) exception if there are more than 
      * one objects in the collection with specified value of the key.  
      */

@@ -202,3 +202,6 @@ and references to persistent object in raw field.
 --- Release version 2.24 17.05.2004 -------------------------------------
 1. Index.remove(Key), Index.set(Key,IPersistent), FieldIndex.remove(Key) and FieldIndex.set(IPersistent)
 methods now return reference to the removed/replaced object.
+
+--- Release version 2.25 28.05.2004 -------------------------------------
+1. Optimized version of T-Tree algorithm

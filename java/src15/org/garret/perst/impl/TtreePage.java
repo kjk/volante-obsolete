@@ -4,7 +4,7 @@ import org.garret.perst.*;
 import java.util.ArrayList;
 
 public class TtreePage extends Persistent  { 
-    static final int maxItems = (Page.pageSize-ObjectHeader.sizeof-4*4)/4;
+    static final int maxItems = (Page.pageSize-ObjectHeader.sizeof-4*5)/4;
     static final int minItems = maxItems - 2; // minimal number of items in internal node
 
     TtreePage   left;
@@ -163,7 +163,8 @@ public class TtreePage extends Persistent  {
             }
             if ((left == null || diff == 0) && n != maxItems) { 
                 modify();
-                for (int i = n; i > 0; i--) item[i] = item[i-1];
+                //for (int i = n; i > 0; i--) item[i] = item[i-1];
+                System.arraycopy(item, 0, item, 1, n);
                 item[0] = mbr;
                 nItems += 1;
                 return OK;
@@ -292,7 +293,8 @@ public class TtreePage extends Persistent  {
         // Insert before item[r]
         modify();
         if (n != maxItems) {
-            for (int i = n; i > r; i--) item[i] = item[i-1]; 
+            System.arraycopy(item, r, item, r+1, n-r);
+            //for (int i = n; i > r; i--) item[i] = item[i-1]; 
             item[r] = mbr;
             nItems += 1;
             return OK;
@@ -300,11 +302,13 @@ public class TtreePage extends Persistent  {
             IPersistent reinsertItem;
             if (balance >= 0) { 
                 reinsertItem = loadItem(0);
-                for (int i = 1; i < r; i++) item[i-1] = item[i]; 
+                System.arraycopy(item, 1, item, 0, r-1);
+                //for (int i = 1; i < r; i++) item[i-1] = item[i]; 
                 item[r-1] = mbr;
             } else { 
                 reinsertItem = loadItem(n-1);
-                for (int i = n-1; i > r; i--) item[i] = item[i-1]; 
+                System.arraycopy(item, r, item, r+1, n-r-1);
+                //for (int i = n-1; i > r; i--) item[i] = item[i-1]; 
                 item[r] = mbr;
             }
             return insert(comparator, reinsertItem, unique, ref);
@@ -421,7 +425,7 @@ public class TtreePage extends Persistent  {
         diff = comparator.compareMembers(mbr, loadItem(n-1));
         if (diff <= 0) {            
             for (int i = 0; i < n; i++) { 
-                if (loadItem(i) == mbr) { 
+                if (item[i] == mbr) { 
                     if (n == 1) { 
                         if (right == null) { 
                             deallocate();
@@ -442,9 +446,10 @@ public class TtreePage extends Persistent  {
                                 prev = prev.right;
                                 prev.load();
                             }
-                            while (--i >= 0) { 
-                                item[i+1] = item[i];
-                            }
+                            System.arraycopy(item, 0, item, 1, i);
+                            //while (--i >= 0) { 
+                            //    item[i+1] = item[i];
+                            //}
                             item[0] = prev.item[prev.nItems-1];
                             pg = ref.pg;
                             ref.pg = left;
@@ -462,9 +467,10 @@ public class TtreePage extends Persistent  {
                                 next = next.left;
                                 next.load();
                             }
-                            while (++i < n) { 
-                                item[i-1] = item[i];
-                            }
+                            System.arraycopy(item, i+1, item, i, n-i-1);
+                            //while (++i < n) { 
+                            //    item[i-1] = item[i];
+                            //}
                             item[n-1] = next.item[0];
                             pg = ref.pg;
                             ref.pg = right;
@@ -477,9 +483,10 @@ public class TtreePage extends Persistent  {
                             return h;
                         }
                     }
-                    while (++i < n) { 
-                        item[i-1] = item[i];
-                    }
+                    System.arraycopy(item, i+1, item, i, n-i-1);
+                    //while (++i < n) { 
+                    //    item[i-1] = item[i];
+                    //}
                     nItems -= 1;
                     return OK;
                 }
