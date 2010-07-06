@@ -4,16 +4,34 @@ import  java.lang.reflect.*;
 import  java.util.ArrayList;
 
 public final class ClassDescriptor extends Persistent { 
-    ClassDescriptor next;
-    String          name;
-    int             nFields;
+    ClassDescriptor   next;
+    String            name;
+    boolean           hasReferences;
+    FieldDescriptor[] allFields;
 
-    transient Field[] allFields;
-    transient int[]   fieldTypes;
-    transient Class   cls;
-    transient boolean hasSubclasses;
+    static class FieldDescriptor extends Persistent { 
+        String          fieldName;
+        String          className;
+        int             type;
+        ClassDescriptor valueDesc;
+        transient Field field;
+
+        public boolean equals(FieldDescriptor fd) { 
+            return fieldName.equals(fd.fieldName) 
+                && className.equals(fd.className)
+                && valueDesc == fd.valueDesc
+                && type == fd.type;
+        }
+    }    
+
+    transient Class       cls;
     transient Constructor defaultConstructor;
-    transient boolean hasReferences;
+    transient Constructor perstConstructor;
+    transient LoadFactory factory;
+    transient Object[]    perstConstructorParams;
+    transient boolean     hasSubclasses;
+    transient boolean     resolved;
+
 
     public static final int tpBoolean          = 0;
     public static final int tpByte             = 1;
@@ -95,26 +113,68 @@ public final class ClassDescriptor extends Persistent {
     };
 
     static final Class[] defaultConstructorProfile = new Class[0];
+    static final Class[] perstConstructorProfile = new Class[]{ClassDescriptor.class};
+
+    public boolean equals(ClassDescriptor cd) { 
+        if (cd == null || allFields.length != cd.allFields.length) { 
+            return false;
+        }
+        for (int i = 0; i < allFields.length; i++) { 
+            if (!allFields[i].equals(cd.allFields[i])) { 
+                return false;
+            }
+        }
+        return true;
+    }
+        
 
     Object newInstance() {
-        try { 
-            return defaultConstructor.newInstance(null);
-        } catch (Exception x) { 
-            throw new StorageError(StorageError.CONSTRUCTOR_FAILURE, cls, x);
+        if (factory != null) { 
+            return factory.create(this);
+        } else { 
+            try { 
+                if (perstConstructor != null) {
+                    return perstConstructor.newInstance(perstConstructorParams);
+                } else {                 
+                    return defaultConstructor.newInstance(null);
+                }
+            } catch (Exception x) { 
+                throw new StorageError(StorageError.CONSTRUCTOR_FAILURE, cls, x);
+            }
         }
     }
 
-    void buildFieldList(Class cls, ArrayList list) throws Exception { 
+    void buildFieldList(StorageImpl storage, Class cls, ArrayList list) { 
         Class superclass = cls.getSuperclass();
         if (superclass != null) { 
-            buildFieldList(superclass, list);
+            buildFieldList(storage, superclass, list);
         }
         Field[] flds = cls.getDeclaredFields();
         for (int i = 0; i < flds.length; i++) { 
             Field f = flds[i];
             if ((f.getModifiers() & (Modifier.TRANSIENT|Modifier.STATIC)) == 0) {
                 f.setAccessible(true);
-                list.add(f);
+                FieldDescriptor fd = new FieldDescriptor();
+                fd.field = f;
+                fd.fieldName = f.getName();
+                fd.className = cls.getName();
+                int type = getTypeCode(f.getType());
+                switch (type) {
+                  case tpObject:
+                  case tpLink:
+                  case tpArrayOfObject:
+                    hasReferences = true;
+                    break;
+                  case tpValue:
+                    fd.valueDesc = storage.getClassDescriptor(f.getType()).resolve();
+                    hasReferences |= fd.valueDesc.hasReferences;                    
+                    break;
+                  case tpArrayOfValue:
+                    fd.valueDesc = storage.getClassDescriptor(f.getType().getComponentType()).resolve();
+                    hasReferences |= fd.valueDesc.hasReferences;
+                }
+                fd.type = type;
+                list.add(fd);
             }
         }
     }
@@ -168,56 +228,111 @@ public final class ClassDescriptor extends Persistent {
 
     ClassDescriptor() {}
 
-    ClassDescriptor(Class cls) { 
+    private void locateConstructor() { 
+        try { 
+            Class c = Class.forName(cls.getName() + "LoadFactory");
+            factory = (LoadFactory)c.newInstance();
+        } catch (Exception x1) { 
+            try {             
+                perstConstructor = cls.getDeclaredConstructor(perstConstructorProfile);
+                perstConstructorParams = new Object[]{this};
+                perstConstructor.setAccessible(true);
+            } catch (NoSuchMethodException x2) {
+                try { 
+                    defaultConstructor = cls.getDeclaredConstructor(defaultConstructorProfile);
+                    defaultConstructor.setAccessible(true);
+                } catch (NoSuchMethodException x3) {
+                    throw new StorageError(StorageError.DESCRIPTOR_FAILURE, cls, x3);
+                }
+            }
+        }
+    }
+
+    ClassDescriptor(StorageImpl storage, Class cls) { 
         this.cls = cls;
         name = cls.getName();
-        build();
-        nFields = allFields.length;
+        ArrayList list = new ArrayList();
+        buildFieldList(storage, cls, list);
+        allFields = (FieldDescriptor[])list.toArray(new FieldDescriptor[list.size()]);
+        locateConstructor();
+        resolved = true;
     }
 
-    public void resolve() {         
-        if (cls == null) {
+    protected static Class loadClass(Storage storage, String name) { 
+        ClassLoader loader = storage.getClassLoader();
+        if (loader != null) { 
             try { 
-                cls = Class.forName(name);
-            } catch (ClassNotFoundException x) { 
-                throw new StorageError(StorageError.CLASS_NOT_FOUND, name, x);
-            }
-            build();
-            if (nFields != allFields.length) { 
-                throw new StorageError(StorageError.SCHEMA_CHANGED, cls);
-            }                
+                return loader.loadClass(name);
+            } catch (ClassNotFoundException x) {}
+        }
+        try { 
+            return Class.forName(name);
+        } catch (ClassNotFoundException x) { 
+            throw new StorageError(StorageError.CLASS_NOT_FOUND, name, x);
         }
     }
 
-    void build() 
-    {
-        try { 
-            ArrayList list = new ArrayList();
-            buildFieldList(cls, list);
-            int nFields = list.size();
-            allFields = (Field[])list.toArray(new Field[nFields]);
-            fieldTypes = new int[nFields];
-            for (int i = 0; i < nFields; i++) {
-                Class cls = allFields[i].getType();
-                int type = getTypeCode(cls);
-                fieldTypes[i] = type;
-                switch (type) {
-                  case tpObject:
-                  case tpLink:
-                  case tpArrayOfObject:
-                    hasReferences = true;
-                    break;
-                  case tpValue:
-                    hasReferences |= new ClassDescriptor(cls).hasReferences;
-                    break;
-                  case tpArrayOfValue:
-                    hasReferences |= new ClassDescriptor(cls.getComponentType()).hasReferences;
+    public void onLoad() {         
+        cls = loadClass(getStorage(), name);
+        Class scope = cls;
+        int n = allFields.length;
+        for (int i = n; --i >= 0;) { 
+            FieldDescriptor fd = allFields[i];
+            if (!fd.className.equals(scope.getName())) {
+                for (scope = cls; scope != null; scope = scope.getSuperclass()) { 
+                    if (fd.className.equals(scope.getName())) {
+                        break;
+                    }
                 }
-            }        
-            defaultConstructor = cls.getDeclaredConstructor(defaultConstructorProfile);
-            defaultConstructor.setAccessible(true);
-        } catch (Exception x) {
-            throw new StorageError(StorageError.DESCRIPTOR_FAILURE, cls, x);
+            }
+            if (scope != null) {
+                try { 
+                    Field f = scope.getDeclaredField(fd.fieldName);
+                    if ((f.getModifiers() & (Modifier.TRANSIENT|Modifier.STATIC)) == 0) {
+                        f.setAccessible(true);
+                        fd.field = f;
+                    }
+                } catch (NoSuchFieldException x) {}
+            } else { 
+                scope = cls;
+            }
         }
+        for (int i = n; --i >= 0;) { 
+            FieldDescriptor fd = allFields[i];
+            if (fd.field == null) { 
+            hierarchyLoop:
+                for (scope = cls; scope != null; scope = scope.getSuperclass()) { 
+                    try { 
+                        Field f = scope.getDeclaredField(fd.fieldName);
+                        if ((f.getModifiers() & (Modifier.TRANSIENT|Modifier.STATIC)) == 0) {
+                            for (int j = 0; j < n; j++) { 
+                                if (allFields[j].field == f) { 
+                                    continue hierarchyLoop;
+                                }
+                            }
+                            f.setAccessible(true);
+                            fd.field = f;
+                            break;
+                        }
+                    } catch (NoSuchFieldException x) {}
+                }
+            }
+        }
+        locateConstructor();
+        ((StorageImpl)getStorage()).classDescMap.put(cls, this);
     }
+
+       
+    ClassDescriptor resolve() {
+        if (!resolved) { 
+            StorageImpl classStorage = (StorageImpl)getStorage();
+            ClassDescriptor desc = new ClassDescriptor(classStorage, cls);
+            if (!desc.equals(this)) { 
+                classStorage.registerClassDescriptor(desc);
+                return desc;
+            }
+            resolved = true;
+        }
+        return this;
+    }            
 }

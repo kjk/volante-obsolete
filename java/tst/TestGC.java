@@ -16,10 +16,10 @@ public class TestGC {
     final static int nObjectsInTree = 10000;
     final static int nIterations = 100000;
 
-    static public void main(String[] args) {	
+    static public void main(String[] args) {    
         Storage db = StorageFactory.getInstance().createStorage();
 
-	db.open("testgc.dbs");
+        db.open("testgc.dbs");
         db.setGcThreshold(1000000);
         StorageRoot root = new StorageRoot();
         root.strIndex = db.createIndex(String.class, true);

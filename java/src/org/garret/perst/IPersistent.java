@@ -11,13 +11,13 @@ public interface IPersistent extends java.io.Serializable {
 
     /** 
      * Check if object is stub and has to be loaded from the database
-     * @param return <code>true</code> if object has to be loaded from the database
+     * @return <code>true</code> if object has to be loaded from the database
      */
     public boolean isRaw();
 
     /** 
      * Check if object was modified within current transaction
-     * @param return <code>true</code> if object is persistent and was modified within current transaction
+     * @return <code>true</code> if object is persistent and was modified within current transaction
      */
     public boolean isModified();
 
@@ -45,6 +45,11 @@ public interface IPersistent extends java.io.Serializable {
      */
     public void modify();
     
+    /**
+     * Load object from the database (if needed) and mark it as modified
+     */
+    public void loadAndModify();
+
     /**
      * Get object identifier (OID)
      * @return OID (0 if object is not persistent yet)
@@ -80,5 +85,21 @@ public interface IPersistent extends java.io.Serializable {
      * Default implementation of this method do nothing
      */
     public void onLoad();
+
+    /**
+     * Invalidate object. Invalidated object has to be explicitly
+     * reloaded usin3g load() method. Attempt to store invalidated object
+     * will cause StoraegError exception.
+     */
+    public void invalidate();
+
+    /**
+     * Assign OID to the object. This method is used by storage class and 
+     * you should not invoke it directly
+     * @param storage associated storage
+     * @param oid object identifier
+     * @return if object is a stub
+     */
+    public void assignOid(Storage storage, int oid, boolean raw);
 }
 

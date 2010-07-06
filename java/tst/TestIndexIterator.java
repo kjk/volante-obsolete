@@ -16,10 +16,10 @@ public class TestIndexIterator {
     final static int nRecords = 1000;
     final static int pagePoolSize = 32*1024*1024;
 
-    static public void main(String[] args) {	
+    static public void main(String[] args) {    
         Storage db = StorageFactory.getInstance().createStorage();
 
-	db.open("testidx.dbs", pagePoolSize);
+        db.open("testidx2.dbs", pagePoolSize);
         Indices root = (Indices)db.getRoot();
         if (root == null) { 
             root = new Indices();
@@ -335,6 +335,13 @@ public class TestIndexIterator {
         
         strIndex.clear();
         intIndex.clear();
+
+        Assert.that(!strIndex.iterator().hasNext());
+        Assert.that(!intIndex.iterator().hasNext());
+        Assert.that(!strIndex.iterator(null, null, Index.ASCENT_ORDER).hasNext());
+        Assert.that(!intIndex.iterator(null, null, Index.ASCENT_ORDER).hasNext());
+        Assert.that(!strIndex.iterator(null, null, Index.DESCENT_ORDER).hasNext());
+        Assert.that(!intIndex.iterator(null, null, Index.DESCENT_ORDER).hasNext());
         db.commit();
         db.gc();
         db.close();

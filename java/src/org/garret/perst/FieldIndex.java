@@ -1,5 +1,7 @@
 package org.garret.perst;
 
+import java.util.Iterator;
+
 /**
  * Interface of indexed field.
  * Index is used to provide fast access to the object by the value of indexed field. 
@@ -18,6 +20,15 @@ public interface FieldIndex extends IPersistent {
      * one objects in the index with specified value of the key.
      */
     public IPersistent   get(Key key);
+    
+    /**
+     * Get object by string key (exact match)     
+     * @param key string key 
+     * @return object with this value of the key or <code>null</code> if key not[ found
+     * @exception StorageError(StorageError.KEY_NOT_UNIQUE) exception if there are more than 
+     * one objects in the index with specified value of the key.
+     */
+    public IPersistent   get(String key);
     
     /**
      * Get objects which key value belongs to the specified range.
@@ -74,6 +85,21 @@ public interface FieldIndex extends IPersistent {
     public void          remove(IPersistent obj);
 
     /**
+     * Remove object with specified key from the unique index
+     * @param key value of removed key
+     * @exception StorageError(StorageError.KEY_NOT_FOUND) exception if there is no such key in the index,
+     * or StorageError(StorageError.KEY_NOT_UNIQUE) if index is not unique.
+     */
+    public void          remove(Key key);
+
+    /**
+     * Check if index contains specified object
+     * @param obj object to be searched in the index. Object should contain indexed field. 
+     * @return <code>true</code> if object is present in the index, <code>false</code> otherwise
+     */
+    public boolean       contains(IPersistent obj);
+
+    /**
      * Get number of objects in the index
      * @return number of objects in the index
      */
@@ -85,10 +111,10 @@ public interface FieldIndex extends IPersistent {
     public void          clear();
 
     /**
-     * Get all objects in the index as array orderd by index key
-     * @return array of specified type conatinin objects in the index ordered by key value
+     * Get all objects in the index as array ordered by index key
+     * @return array of specified type conatining objects in the index ordered by key value
      */
-    public IPersistent[] toArray();
+    public IPersistent[] toPersistentArray();
 
     /**
      * Get iterator for traversing all objects in the index. 
@@ -96,5 +122,42 @@ public interface FieldIndex extends IPersistent {
      * You should not update/remove or add members to the index during iteration
      * @return index iterator
      */
-    public java.util.Iterator iterator();
+    public Iterator iterator();
+    /**
+     * Get iterator for traversing all entries in the index. 
+     * Iterator next() method returns object implementing <code>Map.Entry</code> interface
+     * which allows to get entry key and value.
+     * Objects are iterated in the ascent key order. 
+     * You should not update/remove or add members to the index during iteration
+     * @return index iterator
+     */
+    public Iterator entryIterator();
+
+    static final int ASCENT_ORDER  = 0;
+    static final int DESCENT_ORDER = 1;
+    /**
+     * Get iterator for traversing objects in the index with key belonging to the specified range. 
+     * You should not update/remove or add members to the index during iteration
+     * @param from low boundary. If <code>null</code> then low boundary is not specified.
+     * Low boundary can be inclusive or exclusive. 
+     * @param till high boundary. If <code>null</code> then high boundary is not specified.
+     * High boundary can be inclusive or exclusive. 
+     * @param order <code>ASCENT_ORDER</code> or <code>DESCENT_ORDER</code>
+     * @return selection iterator
+     */
+    public Iterator iterator(Key from, Key till, int order);
+
+    /**
+     * Get iterator for traversing index entries with key belonging to the specified range. 
+     * Iterator next() method returns object implementing <code>Map.Entry</code> interface
+     * You should not update/remove or add members to the index during iteration
+     * @param from low boundary. If <code>null</code> then low boundary is not specified.
+     * Low boundary can be inclusive or exclusive. 
+     * @param till high boundary. If <code>null</code> then high boundary is not specified.
+     * High boundary can be inclusive or exclusive. 
+     * @param order <code>ASCENT_ORDER</code> or <code>DESCENT_ORDER</code>
+     * @return selection iterator
+     */
+    public Iterator entryIterator(Key from, Key till, int order);
 }
+

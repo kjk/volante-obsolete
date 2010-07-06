@@ -5,11 +5,16 @@ package org.garret.perst;
  */
 public class Persistent implements IPersistent { 
     public void load() {
-        if (storage != null) { 
+        if (storage != null && (state & RAW) != 0) { 
             storage.loadObject(this);
         }
     }
-    
+
+    public void loadAndModify() {
+        load();
+        modify();
+    }
+
     public final boolean isRaw() { 
         return (state & RAW) != 0;
     } 
@@ -48,8 +53,6 @@ public class Persistent implements IPersistent {
         }
     }
 
-
-
     public final int getOid() {
         return oid;
     }
@@ -57,6 +60,7 @@ public class Persistent implements IPersistent {
     public void deallocate() { 
         if (storage != null) { 
             storage.deallocateObject(this);
+            state = 0;
             storage = null;
         }
     }
@@ -80,12 +84,29 @@ public class Persistent implements IPersistent {
     public void onLoad() {
     }
 
-    transient Storage storage;
-    transient int     oid;
-    transient int     state;
+    public void invalidate() { 
+        state |= RAW;
+    }
 
-    static final int RAW   = 1;
-    static final int DIRTY = 2;
+    protected void finalize() { 
+        if ((state & DIRTY) != 0 && storage != null) { 
+            storage.storeFinalizedObject(this);
+            state &= ~DIRTY;
+        }
+    }
+
+    transient private Storage storage;
+    transient private int     oid;
+    transient private int     state;
+
+    static private final int RAW   = 1;
+    static private final int DIRTY = 2;
+
+    public void assignOid(Storage storage, int oid, boolean raw) { 
+        this.oid = oid;
+        this.storage = storage;
+        state = raw ? RAW : 0;
+    }
 }
 
 

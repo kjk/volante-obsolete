@@ -5,12 +5,25 @@ package org.garret.perst;
  */
 public abstract class Storage { 
     /**
+     * Constant specifying that page pool should be dynamically extended 
+     * to conatins all database file pages
+     */
+    public static final int INFINITE_PAGE_POOL = 0;
+    /**
+     * Constant specifying default pool size
+     */
+    public static final int DEFAULT_PAGE_POOL_SIZE = 4*1024*1024;
+
+    /**
      * Open the storage
      * @param filePath path to the database file
      * @param pagePoolSize size of page pool (in bytes). Page pool should contain
      * at least ten 4kb pages, so minimal page pool size should be at least 40Kb.
-     * But larger page pool ussually leads to better performance (unless it could not fit
-     * in memory and cause swapping).
+     * But larger page pool usually leads to better performance (unless it could not fit
+     * in memory and cause swapping). Value 0 of this paremeter corresponds to infinite
+     * page pool (all pages are cashed in memory). It is especially useful for in-memory
+     * database, when storage is created with NullFile.
+     * 
      */
     abstract public void open(String filePath, int pagePoolSize);
 
@@ -29,7 +42,7 @@ public abstract class Storage {
      * @param file user specific implementation of IFile interface
      */ 
     public void open(IFile file) {
-        open(file, 4*1024*1024);
+        open(file, DEFAULT_PAGE_POOL_SIZE);
     }
 
     /**
@@ -37,7 +50,7 @@ public abstract class Storage {
      * @param filePath path to the database file
      */ 
     public void open(String filePath) {
-        open(filePath, 4*1024*1024);
+        open(filePath, DEFAULT_PAGE_POOL_SIZE);
     }
 
     /**
@@ -87,6 +100,68 @@ public abstract class Storage {
      */
     abstract public void rollback();
 
+
+    /**
+     * Backup current state of database
+     * @param out output stream to which backup is done
+     */
+    abstract public void backup(java.io.OutputStream out) throws java.io.IOException;
+
+    public static final int EXCLUSIVE_TRANSACTION   = 0;
+    public static final int COOPERATIVE_TRANSACTION = 1;
+
+    /** 
+     * Begin per-thread transaction. Two types op per-thread transactions are supported: 
+     * exclusive and coopertative. In case of exclusive trasnaction, only one thread
+     * can update the database. In cooperative mode, multiple transaction can work 
+     * concurrently and commit() method wil be invoked only when transactions of all threads
+     * are terminated.
+     * @param mode <code>EXCLUSIVE_TRANSACTION</code> or <code>COOPERATIVE_TRANSACTION</code>
+     */
+    abstract public void beginThreadTransaction(int mode);
+    
+    /**
+     * End per-thread transaction started by beginThreadTransaction method.<br>
+     * If transaction is <i>exclusive</i>, this method commits the transaction and
+     * allows other thread to proceed.<br>
+     * If transaction is <i>cooperative</i>, this method decrement counter of cooperative
+     * transactions and if it becomes zero - commit the work
+     */
+    public void endThreadTransaction() { 
+        endThreadTransaction(Integer.MAX_VALUE);
+    }
+
+    /**
+     * End per-thread cooperative transaction with specified maximal delay of transaction
+     * commit. When cooperative transaction is ended, data is not immediately committed to the
+     * disk (because other cooperative transaction can be active at this moment of time).
+     * Instead of it cooperative transaction counter is decremented. Commit is performed
+     * only when this counter reaches zero value. But in case of heavy load there can be a lot of
+     * requests and so a lot of active cooperative transactions. So transaction counter never reaches zero value.
+     * If system crash happens a large amount of work will be lost in this case. 
+     * To prevent such scenario, it is possible to specify maximal delay of pending transaction commit.
+     * In this case when such timeout is expired, new cooperative transaction will be blocked until
+     * transaction is committed.
+     * @param maxDelay maximal delay in milliseconds of committing transaction.  Please notice, that Perst could 
+     * not force other threads to commit their cooperative transactions when this timeout is expired. It will only
+     * block new cooperative transactions to make it possible to current transaction to complete their work.
+     * If <code>maxDelay</code> is 0, current thread will be blocked until all other cooperative trasnaction are also finished
+     * and changhes will be committed to the database.
+     */
+    abstract public void endThreadTransaction(int maxDelay);
+   
+    /**
+     * Rollback per-thread transaction. It is safe to use this method only for exclusive transactions.
+     * In case of cooperative transactions, this method rollback results of all transactions.
+     */
+    abstract public void rollbackThreadTransaction();
+
+    /**
+     * Create new peristent set
+     * @return persistent object implementing set
+     */
+    abstract public IPersistentSet createSet();
+
     /**
      * Create new index
      * @param type type of the index key (you should path here <code>String.class</code>, 
@@ -110,16 +185,42 @@ public abstract class Storage {
     abstract public FieldIndex createFieldIndex(Class type, String fieldName, boolean unique);
 
     /**
+     * Create new mutlifield index
+     * @param type objects of which type (or derived from which type) will be included in the index
+     * @param fieldNames names of the index fields. Fields with such name should be present in specified class <code>type</code>
+     * @param unique whether index is unique (duplicate value of keys are not allowed)
+     * @return persistent object implementing field index
+     * @exception StorageError(StorageError.INDEXED_FIELD_NOT_FOUND) if there is no such field in specified class,<BR> 
+     * StorageError(StorageError.UNSUPPORTED_INDEX_TYPE) exception if type of specified field is not supported by implementation
+     */
+    abstract public FieldIndex createFieldIndex(Class type, String[] fieldNames, boolean unique);
+
+    /**
      * Create new spatial index
      * @return persistent object implementing spatial index
      */
     abstract public SpatialIndex createSpatialIndex();
 
     /**
+     * Create new sorted collection
+     * @param comparator comparator class specifying order in the collection
+     * @param unique whether index is collection (members with the same key value are not allowed)
+     * @return persistent object implementing sorted collection
+     */
+    abstract public SortedCollection createSortedCollection(PersistentComparator comparator, boolean unique);
+
+    /**
      * Create one-to-many link.
      * @return new empty link, new members can be added to the link later.
      */
     abstract public Link createLink();
+    
+    /**
+     * Create one-to-many link with specified initial size.
+     * @param initialSize initial size of array
+     * @return new empty link, new members can be added to the link later.
+     */
+    abstract public Link createLink(int initialSize);
     
     /**
      * Create relation object. Unlike link which represent embedded relation and stored
@@ -130,6 +231,34 @@ public abstract class Storage {
      * new members can be added to the link later.
      */
     abstract public Relation createRelation(IPersistent owner);
+
+
+    /**
+     * Create new BLOB. Create object for storing large binary data.
+     * @return empty BLOB
+     */
+    abstract public Blob createBlob();
+
+    /**
+     * Create new time series object. 
+     * @param blockClass class derived from TimeSeries.Block
+     * @param maxBlockTimeInterval maximal difference in milliseconds between timestamps 
+     * of the first and the last elements in a block. 
+     * If value of this parameter is too small, then most blocks will contains less elements 
+     * than preallocated. 
+     * If it is too large, then searching of block will be inefficient, because index search 
+     * will select a lot of extra blocks which do not contain any element from the 
+     * specified range.
+     * Usually the value of this parameter should be set as
+     * (number of elements in block)*(tick interval)*2. 
+     * Coefficient 2 here is used to compencate possible holes in time series.
+     * For example, if we collect stocks data, we will have data only for working hours.
+     * If number of element in block is 100, time series period is 1 day, then
+     * value of maxBlockTimeInterval can be set as 100*(24*60*60*1000)*2
+     * @return new empty time series
+     */
+    abstract public TimeSeries createTimeSeries(Class blockClass, long maxBlockTimeInterval);
+
 
     /**
      * Commit transaction (if needed) and close the storage
@@ -174,10 +303,11 @@ public abstract class Storage {
     abstract public IPersistent getObjectByOID(int oid);
 
     /**
-     * Set database property. Now the following boolean properties are supported:
-     * <TABLE><TR><TH>Property name</TH><TH>Default value</TH><TH>Description</TH></TR>
-     * <TR><TD><code>perst.implicit.values</code></TD><TD>false</TD>
-     * <TD>Treat any class not derived from IPersistent as <i>value</i>. 
+     * Set database property. This method should be invoked before opening database. 
+     * Currently the following boolean properties are supported:
+     * <TABLE><TR><TH>Property name</TH><TH>Parameter type</TH><TH>Default value</TH><TH>Description</TH></TR>
+     * <TR><TD><code>perst.implicit.values</code></TD><TD>Boolean</TD><TD>false</TD>
+     * <TD>Treate any class not derived from IPersistent as <i>value</i>. 
      * This object will be embedded inside persistent object containing reference to this object.
      * If this object is referenced from N persistent object, N instances of this object
      * will be stored in the database and after loading there will be N instances in memory. 
@@ -186,36 +316,100 @@ public abstract class Storage {
      * class can not be stored as value in PERST because it has no such constructor. In this case 
      * serialization mechanism can be used (see below)
      * </TD></TR>
-     * <TR><TD><code>perst.serialize.transient.objects</code></TD><TD>false</TD>
-     * <DD>Serialize any class not derived from IPersistent or IValue using standard Java serialization
+     * <TR><TD><code>perst.serialize.transient.objects</code></TD><TD>Boolean</TD><TD>false</TD>
+     * <TD>Serialize any class not derived from IPersistent or IValue using standard Java serialization
      * mechanism. Packed object closure is stored in database as byte array. Latter the same mechanism is used
      * to unpack the objects. To be able to use this mechanism object and all objects referenced from it
      * should implement <code>java.io.Serializable</code> interface and should not contain references
      * to persistent objects. If such object is referenced from N persistent object, N instances of this object
      * will be stored in the database and after loading there will be N instances in memory.
      * </TD></TR>
+     * <TR><TD><code>perst.object.cache.init.size</code></TD><TD>Integer</TD><TD>1319</TD>
+     * <TD>Initial size of object cache
+     * </TD></TR>
+     * <TR><TD><code>perst.object.index.init.size</code></TD><TD>Integer</TD><TD>1024</TD>
+     * <TD>Initial size of object index (specifying large value increase initial size of database, but reduce
+     * number of index reallocations)
+     * </TD></TR>
+     * <TR><TD><code>perst.extension.quantum</code></TD><TD>Long</TD><TD>1048576</TD>
+     * <TD>Object allocation bitmap extension quantum. Memory is allocate by scanning bitmap. If there is no
+     * large enough hole, then database is extended by the value of dbDefaultExtensionQuantum. 
+     * This parameter should not be smaller than 64Kb.
+     * </TD></TR>
+     * <TR><TD><code>perst.gc.threshold</code></TD><TD>Long</TD><TD>Long.MAX_VALUE</TD>
+     * <TD>Threshold for initiation of garbage collection. 
+     * If it is set to the value different from Long.MAX_VALUE, GC will be started each time 
+     * when delta between total size of allocated and deallocated objects exceeds specified threashold OR
+     * after reaching end of allocation bitmap in allocator.
+     * </TD></TR>
+     * </TABLE>
      * @param name name of the property
      * @param value value of the property (for boolean properties pass <code>java.lang.Boolean.TRUE</code>
      * and <code>java.lang.Boolean.FALSE</code>
      */
     abstract public void setProperty(String name, Object value);
 
+   /**
+     * Set database properties. This method should be invoked before opening database. 
+     * For list of supported properties please see <code>setProperty</code> command. 
+     * All not recognized properties are ignored.
+     */
+    abstract public void setProperties(java.util.Properties props);
+
+    /**
+     * Get database memory dump. This function returns hashmap which key is classes
+     * of stored objects and value - MemoryUsage object which specifies number of instances
+     * of particular class in the storage and total size of memory used by these instance.
+     * Size of internal database structures (object index,* memory allocation bitmap) is associated with 
+     * <code>Storage</code> class. Size of class descriptors  - with <code>java.lang.Class</code> class.
+     * <p>This method traverse the storage as garbage collection do - starting from the root object
+     * and recursively visiting all reachable objects. So it reports statistic only for visible objects.
+     * If total database size is significantly larger than total size of all instances reported
+     * by this method, it means that there is garbage in the database. You can explicitly invoke
+     * garbage collector in this case.</p> 
+     */
+    abstract public java.util.HashMap getMemoryDump();
+    
+
+    /**
+     * Set class loader. This class loader will be used to locate classes for 
+     * loaded class descriptors. If class loader is not specified or
+     * it did find the class, then <code>Class.forName()</code> method
+     * will be used to get class for the specified name.
+     * @param loader class loader
+     * @return previous class loader or null if not specified
+     */
+    public ClassLoader setClassLoader(ClassLoader loader) 
+    { 
+        ClassLoader prev = loader;
+        this.loader = loader;
+        return prev;
+    }
+
+    /**
+     * Get class loader used to locate classes for 
+     * loaded class descriptors.
+     * @return class loader previously set by <code>setClassLoader</code>
+     * method or <code>null</code> if not specified. 
+     */
+    public ClassLoader getClassLoader() {
+        return loader;
+    }
+
+
     // Internal methods
 
-    abstract protected void deallocateObject(IPersistent obj);
+    abstract public/*protected*/  void deallocateObject(IPersistent obj);
 
-    abstract protected void storeObject(IPersistent obj);
+    abstract public/*protected*/ void storeObject(IPersistent obj);
 
-    abstract protected void modifyObject(IPersistent obj);
+    abstract public/*protected*/ void storeFinalizedObject(IPersistent obj);
 
-    abstract protected void loadObject(IPersistent obj);
+    abstract public/*protected*/ void modifyObject(IPersistent obj);
 
-    final protected void setObjectOid(IPersistent obj, int oid, boolean raw) { 
-        Persistent po = (Persistent)obj;
-        po.oid = oid;
-        po.storage = this;
-        po.state = raw ? Persistent.RAW : 0;
-    }
+    abstract public/*protected*/ void loadObject(IPersistent obj);
+
+    private ClassLoader loader;
 }
 
 

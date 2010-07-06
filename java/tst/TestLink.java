@@ -30,16 +30,16 @@ public class TestLink {
     static byte[] inputBuffer = new byte[256];
 
     static String input(String prompt) {
-	while (true) { 
-	    try { 
-		System.out.print(prompt);
-		int len = System.in.read(inputBuffer);
-		String answer = new String(inputBuffer, 0, len).trim();
-		if (answer.length() != 0) {
-		    return answer;
-		}
-	    } catch (IOException x) {}
-	}
+        while (true) { 
+            try { 
+                System.out.print(prompt);
+                int len = System.in.read(inputBuffer);
+                String answer = new String(inputBuffer, 0, len).trim();
+                if (answer.length() != 0) {
+                    return answer;
+                }
+            } catch (IOException x) {}
+        }
     }
 
     static int inputInt(String prompt) { 
