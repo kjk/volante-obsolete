@@ -167,12 +167,26 @@ namespace Perst.Impl
 		
         public virtual int IndexOf(IPersistent obj)
         {
-            for (int i = used; --i >= 0; )
-            {
-                IPersistent elem = arr[i];
-                if (elem == obj || (elem != null && elem.Oid == obj.Oid))
+            int oid;
+            if (obj != null && (oid = ((IPersistent)obj).Oid) != 0) 
+            { 
+                for (int i = used; --i >= 0;) 
                 {
-                    return i;
+                    IPersistent elem = arr[i];
+                    if (elem != null && elem.Oid == oid) 
+                    {
+                        return i;
+                    }
+                }
+            } 
+            else 
+            { 
+                for (int i = used; --i >= 0;) 
+                {
+                    if (arr[i] == obj) 
+                    {
+                        return i;
+                    }
                 }
             }
             return - 1;
@@ -181,7 +195,7 @@ namespace Perst.Impl
         public virtual bool ContainsElement(int i, IPersistent obj) 
         {
             IPersistent elem = arr[i];
-            return elem == obj || (elem != null && elem.Oid == obj.Oid);
+            return elem == obj || (elem != null && elem.Oid != 0 && elem.Oid == obj.Oid);
         }
 
         public virtual void Clear()

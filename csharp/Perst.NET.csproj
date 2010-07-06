@@ -193,6 +193,11 @@
                     BuildAction = "Compile"
                 />
                 <File
+                    RelPath = "src\PersistentString.cs"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
                     RelPath = "src\Projection.cs"
                     SubType = "Code"
                     BuildAction = "Compile"
@@ -349,6 +354,11 @@
                 />
                 <File
                     RelPath = "src\impl\LRU.cs"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "src\impl\LruObjectCache.cs"
                     SubType = "Code"
                     BuildAction = "Compile"
                 />

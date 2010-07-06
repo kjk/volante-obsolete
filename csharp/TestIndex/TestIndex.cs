@@ -74,6 +74,11 @@ public class TestIndex
             rec.strKey = System.Convert.ToString(key);
             intIndex.Put(new Key(rec.intKey), rec);
             strIndex.Put(new Key(rec.strKey), rec);
+            if (i % 100000 == 0) 
+            { 
+                db.Commit();
+                Console.Write("Iteration " + i + "\r");
+            }
         }
 
         if (serializableTransaction) 

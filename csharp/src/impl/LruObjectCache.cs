@@ -3,17 +3,25 @@ namespace Perst.Impl
     using System;
     using Perst;
 	
-    public class WeakHashTable : OidHashTable
+    public class LruObjectCache : OidHashTable
     {
         internal Entry[] table;
         internal const float loadFactor = 0.75f;
+        internal const int defaultInitSize = 1319;
         internal int count;
         internal int threshold;
+        internal int pinLimit;
+        internal int nPinned;
+        internal Entry pinList;
 		
-        public WeakHashTable(int initialCapacity)
+        public LruObjectCache(int size)
         {
-            threshold = (int) (initialCapacity * loadFactor);
+            int initialCapacity = size == 0 ? defaultInitSize : size;
+            threshold = (int)(initialCapacity * loadFactor);
             table = new Entry[initialCapacity];
+            pinList = new Entry(0, null, null);
+            pinLimit = size;
+            pinList.lru = pinList.mru = pinList;
         }
 		
         public bool remove(int oid)
@@ -35,6 +43,7 @@ namespace Perst.Impl
                             tab[index] = e.next;
                         }
                         e.clear();
+                        unpinObject(e);
                         count -= 1;
                         return true;
                     }
@@ -43,6 +52,39 @@ namespace Perst.Impl
             }
         }
 		
+        private void unpinObject(Entry e) 
+        {
+            if (e.pin != null) 
+            { 
+                e.unpin();
+                nPinned -= 1;
+            }
+        }
+        
+
+        private void pinObject(Entry e, IPersistent obj) 
+        { 
+            if (pinLimit != 0) 
+            { 
+                if (e.pin != null) 
+                { 
+                    e.unlink();
+                } 
+                else 
+                { 
+                    if (nPinned == pinLimit) 
+                    {
+                        pinList.lru.unpin();
+                    } 
+                    else 
+                    { 
+                        nPinned += 1;
+                    }
+                }
+                e.linkAfter(pinList, obj);
+            }
+        }
+
         public void  put(int oid, IPersistent obj)
         {
             lock(this)
@@ -54,7 +96,8 @@ namespace Perst.Impl
                     if (e.oid == oid)
                     {
                         e.oref.Target = obj;
-                        return ;
+                        pinObject(e, obj);
+                        return;
                     }
                 }
                 if (count >= threshold)
@@ -67,6 +110,7 @@ namespace Perst.Impl
 				
                 // Creates the new entry.
                 tab[index] = new Entry(oid, new WeakReference(obj), tab[index]);
+                pinObject(tab[index], obj);
                 count++;
             }
         }
@@ -91,21 +135,26 @@ namespace Perst.Impl
                                     goto waitFinalization;
                                 }
                             } 
-                            else if (obj.IsDeleted()) 
-                            {
-                                if (prev != null)
+                            else 
+                            { 
+                                if (obj.IsDeleted()) 
                                 {
-                                    prev.next = e.next;
+                                    if (prev != null)
+                                    {
+                                        prev.next = e.next;
+                                    }
+                                    else
+                                    {
+                                        tab[index] = e.next;
+                                    }
+                                    unpinObject(e);
+                                    e.clear();
+                                    count -= 1;
+                                    return null;
                                 }
-                                else
-                                {
-                                    tab[index] = e.next;
-                                }
-                                e.clear();
-                                count -= 1;
-                                return null;
+                                pinObject(e, obj);
                             }
-                            return obj;
+                            return obj;                            
                         }
                     }
                     return null;
@@ -149,7 +198,7 @@ namespace Perst.Impl
 			
             if ((uint)count <= ((uint)threshold >> 1))
             {
-                return ;
+                return;
             }
             int newCapacity = oldCapacity * 2 + 1;
             Entry[] newMap = new Entry[newCapacity];
@@ -218,6 +267,7 @@ namespace Perst.Impl
                                 if (obj.IsModified()) 
                                 { 
                                     e.dirty = 0;
+                                    unpinObject(e);
                                     obj.Invalidate();
                                 }
                             } 
@@ -272,7 +322,7 @@ namespace Perst.Impl
                         } 
                         else 
                         { 
-                             if (prev != null)
+                            if (prev != null)
                             {
                                 prev.next = e.next;
                             }
@@ -280,6 +330,7 @@ namespace Perst.Impl
                             {
                                 tab[index] = e.next;
                             }
+                            unpinObject(e);
                             e.clear();
                             count -= 1;
                         }
@@ -297,10 +348,35 @@ namespace Perst.Impl
 	
         internal class Entry
         {
-            internal Entry next;
+            internal Entry         next;
             internal WeakReference oref;
-            internal int oid;
-            internal int dirty;
+            internal int           oid;
+            internal int           dirty;
+            internal Entry         lru;
+            internal Entry         mru;
+            internal IPersistent   pin;
+
+            internal void unlink() 
+            { 
+                lru.mru = mru;
+                mru.lru = lru;
+            } 
+
+            internal void unpin() 
+            { 
+                unlink();
+                lru = mru = null;
+                pin = null;
+            }
+
+            internal void linkAfter(Entry head, IPersistent obj) 
+            { 
+                mru = head.mru;
+                mru.lru = this;
+                head.mru = this;
+                lru = head;
+                pin = obj;
+            }
 		
             internal void clear() 
             { 

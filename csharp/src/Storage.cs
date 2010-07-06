@@ -337,6 +337,13 @@ namespace Perst
         /// <TR><TD><code>perst.object.cache.init.size</code></TD><TD>int</TD><TD>1319</TD>
         /// <TD>Initial size of object cache
         /// </TD></TR>
+        /// <TR><TD><code>perst.object.cache.kind</code></TD><TD>String</TD><TD>"lru"</TD>
+        /// <TD>Kind of object cache. The following values are supported:
+        /// "strong", "weak", "lru". <B>Strong</B> cache uses strong (normal)                                                                         
+        /// references to refer persistent objects. Thus none of loaded persistent objects                                                                                                                                         
+        /// can be deallocated by GC. <B>Weak</B> and <b>lru</b> caches use weak references. 
+        /// But <b>lru</b> cache also pin some number of recently used objects.
+        /// </TD></TR>
         /// <TR><TD><code>perst.object.index.init.size</code></TD><TD>int</TD><TD>1024</TD>
         /// <TD>Initial size of object index (specifying large value increase initial size of database, but reduce
         /// number of index reallocations)

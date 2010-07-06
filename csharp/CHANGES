@@ -315,10 +315,18 @@ stored in OS file buffers and sooner or later them will be written to the disk)
 5. Add TimeSeries.Deallocate wethod
 6. Fix bug in backup with compactification (incorrect setting of bitmap end)
 
---- Release version 2.39 ??.11.2004 -------------------------------------
+--- Release version 2.39 14.11.2004 -------------------------------------
 1. Fix problems with handling weak references and finalization
 2. Replace elements of Link with stubs after storing Link in the database
    to avoid memory overflow caused by pinning objects in memory.
 3. Stop pack/unpack code generation thread in Storage.Close method
 4. Add Ttree.Deallocate method
 5. Support per-thread transactions for Compact.Net framework
+
+--- Release version 2.40 16.11.2004 -------------------------------------
+1. Add LRU object cache. Make it possible for user to selcet between "weak", "soft" and "lru"
+   cache implementation.
+2. Add PersistentString class to be able to store string in the database as independent object.
+3. Fix bug in Persistent.assignOid method introduced in version 2.39
+4. Fix bug in Link.indexOf method introduced in version 2.39
+5. Fix synchronization problem (deadlock) in background GC activation

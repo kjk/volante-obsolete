@@ -925,6 +925,20 @@ namespace Perst.Impl
             }
         }
 
+        protected virtual OidHashTable createObjectCache(string kind, int pagePoolSize, int objectCacheSize) 
+        { 
+            if (pagePoolSize == INFINITE_PAGE_POOL || "strong".Equals(kind)) 
+            {
+                return new StrongHashTable(objectCacheSize);
+            }
+            if ("weak".Equals(kind)) 
+            { 
+                return new WeakHashTable(objectCacheSize);
+            }
+            return new LruObjectCache(objectCacheSize);
+        }
+        
+
         public override void Open(String filePath, int pagePoolSize, String cipherKey)
         {
             Rc4File file = new Rc4File(filePath, readOnly, noFlush, cipherKey);      
@@ -959,6 +973,7 @@ namespace Perst.Impl
                 dirtyPagesMap = new int[dbDirtyPageBitmapSize / 4 + 1];
                 gcThreshold = Int64.MaxValue;
                 backgroundGcMonitor = new object();
+                backgroundGcStartMonitor = new object();
                 gcThread = null;
                 gcGo = false;
                 gcActive = false;
@@ -979,9 +994,8 @@ namespace Perst.Impl
                 modified = false;
                 pool = new PagePool(pagePoolSize / Page.pageSize);
 				
-                objectCache = (pagePoolSize == INFINITE_PAGE_POOL)
-                    ? (OidHashTable)new StrongHashTable(objectCacheInitSize) 
-                    : (OidHashTable)new WeakHashTable(objectCacheInitSize);
+                objectCache =  createObjectCache(cacheKind, pagePoolSize, objectCacheInitSize);
+                
                 classDescMap = new Hashtable();
                 descList = null;
 				
@@ -2052,19 +2066,26 @@ namespace Perst.Impl
 #if !COMPACT_NET_FRAMEWORK
         public void backgroundGcThread() 
         { 
-            lock (backgroundGcMonitor) 
+            while (true) 
             { 
-                while (true) 
+                lock (backgroundGcStartMonitor) 
                 { 
                     while (!gcGo && opened) 
                     { 
-                        Monitor.Wait(backgroundGcMonitor);
+                        Monitor.Wait(backgroundGcStartMonitor);
                     }
                     if (!opened) 
                     { 
                         return;
                     }
                     gcGo = false;
+                }
+                lock (backgroundGcMonitor) 
+                {
+                    if (!opened) 
+                    { 
+                        return;
+                    }
                     mark();
                     lock (this) 
                     { 
@@ -2079,10 +2100,10 @@ namespace Perst.Impl
 
         private void activateGc() 
         { 
-            lock (backgroundGcMonitor) 
+            lock (backgroundGcStartMonitor) 
             {
                 gcGo = true;
-                Monitor.Pulse(backgroundGcMonitor);
+                Monitor.Pulse(backgroundGcStartMonitor);
             }
         }
 #endif
@@ -2828,8 +2849,10 @@ namespace Perst.Impl
 
         public override void Close()
         {
-            Commit();
-            opened = false;
+            lock (backgroundGcMonitor) {
+                Commit();
+                opened = false;
+            }
 #if !COMPACT_NET_FRAMEWORK
             if (codeGenerationThread != null)
             {   
@@ -2909,6 +2932,10 @@ namespace Perst.Impl
             { 
                 objectCacheInitSize = (int)getIntegerValue(val);
             }
+            if ((val = props["perst.object.cache.kind"]) != null) 
+            { 
+                cacheKind = val;
+            }
             if ((val = props["perst.object.index.init.size"]) != null) 
             { 
                 initIndexSize = (int)getIntegerValue(val);
@@ -2947,7 +2974,7 @@ namespace Perst.Impl
             }
         }
 
-        public override void SetProperty(String name, Object val)
+        public override void SetProperty(string name, object val)
         {
             if (name.Equals("perst.serialize.transient.objects")) 
             { 
@@ -2956,6 +2983,10 @@ namespace Perst.Impl
             else if (name.Equals("perst.object.cache.init.size")) 
             { 
                 objectCacheInitSize = (int)getIntegerValue(val);
+            } 
+            else if (name.Equals("perst.object.cache.kind")) 
+            { 
+               cacheKind = (string)val;
             } 
             else if (name.Equals("perst.object.index.init.size")) 
             { 
@@ -4733,6 +4764,7 @@ public int packField(ByteBuffer buf, int offs, object val, ClassDescriptor.Field
         private int  initIndexSize        = dbDefaultInitIndexSize;
         private int  objectCacheInitSize  = dbDefaultObjectCacheInitSize;
         private long extensionQuantum     = dbDefaultExtensionQuantum;
+        private string cacheKind = "lru";
         private bool readOnly = false;
         private bool noFlush = false;
         private bool alternativeBtree = false;
@@ -4786,6 +4818,7 @@ public int packField(ByteBuffer buf, int offs, object val, ClassDescriptor.Field
         internal bool      gcActive;
         internal bool      gcGo;
         internal object    backgroundGcMonitor;
+        internal object    backgroundGcStartMonitor;
         internal Thread    gcThread;
         internal Encoding  encoding;
 

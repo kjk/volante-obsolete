@@ -3,6 +3,7 @@ namespace Perst
     using System;
     using System.Runtime.InteropServices;
     using System.ComponentModel;
+    using System.Diagnostics;
 	
     /// <summary>Base class for context bound object with provided
     /// transparent persistence. Objects derived from this class and marked with
@@ -86,6 +87,7 @@ namespace Perst
                 { 
                     throw new StorageError(StorageError.ErrorCode.ACCESS_TO_STUB);
                 }
+                Debug.Assert((state & ObjectState.DELETED) == 0);
                 storage.modifyObject(this);
                 state |= ObjectState.DIRTY;
             }
@@ -144,7 +146,7 @@ namespace Perst
             { 
                 storage.storeFinalizedObject(this);
             }
-            state = ObjectState.DELETED|ObjectState.RAW;
+            state = ObjectState.DELETED;
         }
 
         public void AssignOid(Storage storage, int oid, bool raw)
@@ -154,6 +156,10 @@ namespace Perst
             if (raw) 
             {
                 state |= ObjectState.RAW;
+            }
+            else 
+            { 
+                state &= ~ObjectState.RAW;
             }
         }
 
