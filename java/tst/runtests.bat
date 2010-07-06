@@ -1,6 +1,7 @@
 del *.dbs
 call TestIndex
 call TestCompoundIndex
+call TestMod
 call TestIndexIterator
 call TestRtree
 call TestTtree

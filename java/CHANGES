@@ -108,3 +108,9 @@ Attention: database format is incompatible with version 1.22!
 
 1. Support indices for byte arrays
 2. Support compound indices
+
+--- Release version 2.03 19.11.2003 -------------------------------------
+
+1. Add IPersistent.invalidate method. Transaction rollback will now invalidate all modified objects.
+2. Support per-thread transactions (Storage.beginTransaction and Storage.endTranasction methods)
+3. Yet another attempt to eliminate modification list and handle modified object using weak references.

@@ -100,6 +100,56 @@ public abstract class Storage {
      */
     abstract public void rollback();
 
+
+    public static final int EXCLUSIVE_TRANSACTION   = 0;
+    public static final int COOPERATIVE_TRANSACTION = 1;
+
+    /** 
+     * Begin per-thread transaction. Two types op per-thread transactions are supported: 
+     * exclusive and coopertative. In case of exclusive trasnaction, only one thread
+     * can update the database. In cooperative mode, multiple transaction can work 
+     * concurrently and commit() method wil be invoked only when transactions of all threads
+     * are terminated.
+     * @param mode <code>EXCLUSIVE_TRANSACTION</code> or <code>COOPERATIVE_TRANSACTION</code>
+     */
+    abstract public void beginThreadTransaction(int mode);
+    
+    /**
+     * End per-thread transaction started by beginThreadTransaction method.<br>
+     * If transaction is <i>exclusive</i>, this method commits the transaction and
+     * allows other thread to proceed.<br>
+     * If transaction is <i>cooperative</i>, this method decrement counter of cooperative
+     * transactions and if it becomes zero - commit the work
+     */
+    public void endThreadTransaction() { 
+	endThreadTransaction(Integer.MAX_VALUE);
+    }
+
+    /**
+     * End per-thread cooperative transaction with specified maximal delay of transaction
+     * commit. When cooperative transaction is ended, data is not immediately committed to the
+     * disk (because other cooperative transaction can be active at this moment of time).
+     * Instead of it cooperative transaction counter is decremented. Commit is performed
+     * only when this counter reaches zero value. But in case of heavy load there can be a lot of
+     * requests and so a lot of active cooperative transactions. So transaction counter never reaches zero value.
+     * If system crash happens a large amount of work will be lost in this case. 
+     * To prevent such scenario, it is possible to specify maximal delay of pending transaction commit.
+     * In this case when such timeout is expired, new cooperative transaction will be blocked until
+     * transaction is committed.
+     * @param maxDelay maximal delay in milliseconds of committing transaction.  Please notice, that Perst could 
+     * not force other threads to commit their cooperative transactions when this timeout is expired. It will only
+     * block new cooperative transactions to make it possible to current transaction to complete their work.
+     * If <code>maxDelay</code> is 0, current thread will be blocked until all other cooperative trasnaction are also finished
+     * and changhes will be committed to the database.
+     */
+    abstract public void endThreadTransaction(int maxDelay);
+   
+    /**
+     * Rollback per-thread transaction. It is safe to use this method only for exclusive transactions.
+     * In case of cooperative transactions, this method rollback results of all transactions.
+     */
+    abstract public void rollbackThreadTransaction();
+
     /**
      * Create new peristent set
      * @return persistent object implementing set
@@ -137,7 +187,7 @@ public abstract class Storage {
      * @exception StorageError(StorageError.INDEXED_FIELD_NOT_FOUND) if there is no such field in specified class,<BR> 
      * StorageError(StorageError.UNSUPPORTED_INDEX_TYPE) exception if type of specified field is not supported by implementation
      */
-    abstract public FieldIndex createFieldIndex(Class type, String[] fieldName, boolean unique);
+    abstract public FieldIndex createFieldIndex(Class type, String[] fieldNames, boolean unique);
 
     /**
      * Create new spatial index
@@ -245,14 +295,6 @@ public abstract class Storage {
      * large enough hole, then database is extended by the value of dbDefaultExtensionQuantum. 
      * This parameter should not be smaller than 64Kb.
      * </TD></TR>
-     * <TR><TD><code>perst.modification.list.limit</code></TD><TD>Integer</TD><TD>Integer.MAX_INT</TD>
-     * <TD>Maximal size of modified object list. When this limit is reached, PERST will 
-     * store and remove objects from the head of the list. Setting this parameter will help to 
-     * prevent memory exhaustion if a lot of persistent objects are modified during transaction. 
-     * When list is not limited, all modified objects are pinned in memory. 
-     * To prevent loose of modifications in case of limited modification list, you should
-     * invoke <code>Persistent.modify</code> method <b>after</b> object has been updated.
-     * </TD></TR>
      * <TR><TD><code>perst.gc.threshold</code></TD><TD>Long</TD><TD>Long.MAX_VALUE</TD>
      * <TD>Threshold for initiation of garbage collection. 
      * If it is set to the value different from Long.MAX_VALUE, GC will be started each time 
@@ -279,6 +321,8 @@ public abstract class Storage {
     abstract protected void deallocateObject(IPersistent obj);
 
     abstract protected void storeObject(IPersistent obj);
+
+    abstract protected void storeFinalizedObject(IPersistent obj);
 
     abstract protected void modifyObject(IPersistent obj);
 

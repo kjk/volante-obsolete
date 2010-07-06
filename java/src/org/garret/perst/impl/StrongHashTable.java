@@ -64,13 +64,6 @@ public class StrongHashTable implements OidHashTable {
 	return null;
     }
     
-    public synchronized void clear() { 
-        for (int i = 0; i < table.length; i++) { 
-            table[i] = null;
-        }
-        count = 0;
-    }
-
     void rehash() {
 	int oldCapacity = table.length;
 	Entry oldMap[] = table;
@@ -92,6 +85,32 @@ public class StrongHashTable implements OidHashTable {
 		newMap[index] = e;
 	    }
 	}
+    }
+
+    public synchronized void flush() {
+        for (int i = 0; i < table.length; i++) { 
+            for (Entry e = table[i]; e != null; e = e.next) { 
+                if (e.obj.isModified()) { 
+                    e.obj.store();
+                }
+            }
+        }
+    }
+
+    public synchronized void invalidate() {
+        for (int i = 0; i < table.length; i++) { 
+            for (Entry e = table[i]; e != null; e = e.next) { 
+                if (e.obj.isModified()) { 
+                    e.obj.invalidate();
+                }
+            }
+        }
+    }
+
+    public void setDirty(int oid) {
+    } 
+
+    public void clearDirty(int oid) {
     }
 
     public int size() { 

@@ -103,11 +103,18 @@ public class PersistentResource extends Persistent implements IResource {
                 owner = null;
                 notifyAll();
             }
-        } else { 
+        } else if (nReaders != 0) { 
             if (--nReaders == 0) { 
                 notifyAll();
             }
         }
+    }
+
+    public synchronized void reset() { 
+	nReaders = 0;
+	nWriters = 0;
+	owner = null;
+	notifyAll();
     }
 
     private transient Thread owner;

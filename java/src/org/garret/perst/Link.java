@@ -80,7 +80,7 @@ public interface Link {
 
     /**
      * Get relation members as array of obejct
-     * @param array of object with relation members
+     * @return array of object with relation members
      */
     public IPersistent[] toArray();
     

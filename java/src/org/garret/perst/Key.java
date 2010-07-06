@@ -243,7 +243,7 @@ public class Key {
 
     /**
      * Constructor of compound key
-     * @param vals array of key values
+     * @param v array of key values
      * @param inclusive whether boundary is inclusive or exclusive
      */
     public Key(Object[] v, boolean inclusive) { 

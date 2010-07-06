@@ -20,6 +20,7 @@ public class WeakHashTable implements OidHashTable {
 	int index = (oid & 0x7FFFFFFF) % tab.length;
 	for (Entry e = tab[index], prev = null; e != null; prev = e, e = e.next) {
 	    if (e.oid == oid) {
+                e.dirty = 0;
                 e.ref.clear();
 		count -= 1;
 		if (prev != null) {
@@ -55,22 +56,67 @@ public class WeakHashTable implements OidHashTable {
 	count++;
     }
     
-    public synchronized IPersistent get(int oid) {
-        Entry tab[] = table;
-        int index = (oid & 0x7FFFFFFF) % tab.length;
-        for (Entry e = tab[index] ; e != null ; e = e.next) {
-            if (e.oid == oid) {
-                return (IPersistent)e.ref.get();
+    public IPersistent get(int oid) {
+        while (true) { 
+            cs:synchronized(this) { 
+		Entry tab[] = table;
+		int index = (oid & 0x7FFFFFFF) % tab.length;
+		for (Entry e = tab[index] ; e != null ; e = e.next) {
+		    if (e.oid == oid) {
+			IPersistent obj = (IPersistent)e.ref.get();
+			if (obj == null && e.dirty != 0) { 
+			    break cs;
+			}
+			return obj;
+		    }
+		}
+		return null;
             }
+            System.runFinalization();
         } 
-        return null;
     }
     
-    public synchronized void clear() { 
-        for (int i = 0; i < table.length; i++) { 
-            table[i] = null;
+    public void flush() {
+        while (true) { 
+            cs:synchronized(this) { 
+		for (int i = 0; i < table.length; i++) { 
+		    for (Entry e = table[i]; e != null; e = e.next) { 
+			IPersistent obj = (IPersistent)e.ref.get();
+			if (obj != null) { 
+			    if (obj.isModified()) { 
+				obj.store();
+			    }
+			} else if (e.dirty != 0) { 
+			    break cs;
+			}
+		    }
+		}
+		return;
+            }
+            System.runFinalization();
         }
-        count = 0;
+    }
+
+    public void invalidate() {
+        while (true) { 
+            cs:synchronized(this) { 
+		for (int i = 0; i < table.length; i++) { 
+		    for (Entry e = table[i]; e != null; e = e.next) { 
+			IPersistent obj = (IPersistent)e.ref.get();
+			if (obj != null) { 
+			    if (obj.isModified()) { 
+				e.dirty = 0;
+				obj.invalidate();
+			    }
+			} else if (e.dirty != 0) { 
+			    break cs;
+			}
+		    }
+		}
+		return;
+	    }
+            System.runFinalization();
+        }
     }
 
     void rehash() {
@@ -79,7 +125,7 @@ public class WeakHashTable implements OidHashTable {
 	int i;
 	for (i = oldCapacity; --i >= 0;) {
 	    for (Entry prev = null, e = oldMap[i]; e != null; e = e.next) { 
-		if (e.ref.get() == null) { 
+		if (e.ref.get() == null && e.dirty == 0) { 
 		    count -= 1;
 		    if (prev == null) { 
 			oldMap[i] = e.next;
@@ -113,6 +159,30 @@ public class WeakHashTable implements OidHashTable {
 	}
     }
 
+    public synchronized void setDirty(int oid) {
+	Entry tab[] = table;
+	int index = (oid & 0x7FFFFFFF) % tab.length;
+	for (Entry e = tab[index] ; e != null ; e = e.next) {
+	    if (e.oid == oid) {
+                e.dirty += 1;
+		return;
+	    }
+	}
+    }
+
+    public synchronized void clearDirty(int oid) {
+	Entry tab[] = table;
+	int index = (oid & 0x7FFFFFFF) % tab.length;
+	for (Entry e = tab[index] ; e != null ; e = e.next) {
+	    if (e.oid == oid) {
+                if (e.dirty > 0) { 
+                    e.dirty -= 1;
+                }
+		return;
+	    }
+	}
+    }
+
     public int size() { 
 	return count;
     }
@@ -121,6 +191,7 @@ public class WeakHashTable implements OidHashTable {
         Entry         next;
         WeakReference ref;
         int           oid;
+	int           dirty;
         
         Entry(int oid, WeakReference ref, Entry chain) { 
             next = chain;
