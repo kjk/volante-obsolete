@@ -1,5 +1,7 @@
 package org.garret.perst.impl;
 import  org.garret.perst.*;
+import  java.util.Iterator;
+import  java.lang.reflect.Array;
 
 public class LinkImpl implements Link { 
     public int size() {
@@ -86,6 +88,19 @@ public class LinkImpl implements Link {
         return a;
     }
     
+    public IPersistent[] toArray(IPersistent[] arr) {
+        if (arr.length < used) { 
+            arr = (IPersistent[])Array.newInstance(arr.getClass().getComponentType(), used);
+        }
+        for (int i = used; --i >= 0;) { 
+            arr[i] = loadElem(i);
+        }
+        if (arr.length > used) { 
+            arr[used] = null;
+        }
+        return arr;
+    }
+    
     public boolean contains(IPersistent obj) {
         return indexOf(obj) >= 0;
     }
@@ -104,6 +119,31 @@ public class LinkImpl implements Link {
             arr[i] = null;
         }
         used = 0;
+    }
+
+    static class LinkIterator implements Iterator { 
+        private Link link;
+        private int  i;
+
+        LinkIterator(Link link) { 
+            this.link = link;
+        }
+
+        public boolean hasNext() {
+            return i < link.size();
+        }
+
+        public Object next() { 
+            return link.get(i++);
+        }
+
+        public void remove() {
+            link.remove(i);
+        }
+    }
+
+    public Iterator iterator() { 
+        return new LinkIterator(this);
     }
 
     private final IPersistent loadElem(int i) 

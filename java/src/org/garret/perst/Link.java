@@ -101,6 +101,11 @@ public interface Link {
      * Remove all members from the relation
      */
     public void clear();
+
+    /**
+     * Get iterator through link members
+     */
+    public java.util.Iterator iterator();
 }
 
 
