@@ -4,7 +4,7 @@ import org.garret.perst.*;
 import java.lang.reflect.Array;
 import java.util.*;
 
-public class Ttree<T extends IPersistent> extends PersistentResource implements SortedCollection<T> {
+public class Ttree<T extends IPersistent> extends PersistentCollection<T> implements SortedCollection<T> {
     private PersistentComparator<T> comparator;
     private boolean                 unique;
     private TtreePage               root;
@@ -169,6 +169,10 @@ public class Ttree<T extends IPersistent> extends PersistentResource implements 
         return arr;
     }
 
+    public Object[] toArray() {
+        return toPersistentArray();
+    }
+
     /**
      * Get all objects in the index as array ordered by index key.
      * The runtime type of the returned array is that of the specified array.  
@@ -184,12 +188,12 @@ public class Ttree<T extends IPersistent> extends PersistentResource implements 
      * not contain any <tt>null</tt> elements.)<p>
      * @return array of objects in the index ordered by key value
      */
-    public T[] toArray(T[] arr) {
+    public <E> E[] toArray(E[] arr) {
         if (arr.length < nMembers) { 
-            arr = (T[])Array.newInstance(arr.getClass().getComponentType(), nMembers);
+            arr = (E[])Array.newInstance(arr.getClass().getComponentType(), nMembers);
         }
         if (root != null) { 
-            root.toArray(arr, 0);
+            root.toArray((IPersistent[])arr, 0);
         }
         if (arr.length > nMembers) { 
             arr[nMembers] = null;

@@ -3,7 +3,7 @@ import  org.garret.perst.*;
 import  java.util.*;
 import  java.lang.reflect.Array;
 
-class Btree<T extends IPersistent> extends PersistentResource implements Index<T> { 
+class Btree<T extends IPersistent> extends PersistentCollection<T> implements Index<T> { 
     int       root;
     int       height;
     int       type;
@@ -299,13 +299,17 @@ class Btree<T extends IPersistent> extends PersistentResource implements Index<T
         }
         return arr;
     }
+  
+    public Object[] toArray() {
+        return toPersistentArray();
+    }
 
-    public T[] toArray(T[] arr) {
+    public <E> E[] toArray(E[] arr) {
         if (arr.length < nElems) { 
-            arr = (T[])Array.newInstance(arr.getClass().getComponentType(), nElems);
+            arr = (E[])Array.newInstance(arr.getClass().getComponentType(), nElems);
         }
         if (root != 0) { 
-            BtreePage.traverseForward((StorageImpl)getStorage(), root, type, height, arr, 0);
+            BtreePage.traverseForward((StorageImpl)getStorage(), root, type, height, (IPersistent[])arr, 0);
         }
         if (arr.length > nElems) { 
             arr[nElems] = null;

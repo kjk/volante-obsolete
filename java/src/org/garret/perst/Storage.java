@@ -267,7 +267,7 @@ public abstract class Storage {
     abstract public Link createLink();
     
     /**
-     * Create one-to-many link with specified initial size.
+     * Create one-to-many link with specified initially allocated size.
      * @param initialSize initial size of array
      * @return new empty link, new members can be added to the link later.
      */

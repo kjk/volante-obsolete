@@ -1,7 +1,6 @@
 package org.garret.perst;
 
-import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.*;
 
 /**
  * Interface of sorted collection.
@@ -12,7 +11,7 @@ import java.util.Iterator;
  * can cause trashing and so very bad performance. Unlike other index structures SortedCollection
  * doesn't store values of keys and so search in the collection requires fetching of its members.
  */
-public interface SortedCollection<T extends IPersistent> extends IPersistent, IResource, Iterable<T> { 
+public interface SortedCollection<T extends IPersistent> extends IPersistent, IResource, Collection<T> { 
     /**
      * Get member with specified key.
      * @param key specified key. It should match with type of the index and should be inclusive.
@@ -106,23 +105,6 @@ public interface SortedCollection<T extends IPersistent> extends IPersistent, IR
     public IPersistent[] toPersistentArray();
 
     /**
-     * Get all objects in the index as array ordered by index key.
-     * The runtime type of the returned array is that of the specified array.  
-     * If the index fits in the specified array, it is returned therein.  
-     * Otherwise, a new array is allocated with the runtime type of the 
-     * specified array and the size of this index.<p>
-     *
-     * If this index fits in the specified array with room to spare
-     * (i.e., the array has more elements than this index), the element
-     * in the array immediately following the end of the index is set to
-     * <tt>null</tt>.  This is useful in determining the length of this
-     * index <i>only</i> if the caller knows that this index does
-     * not contain any <tt>null</tt> elements.)<p>
-     * @return array of objects in the index ordered by key value
-     */
-    public T[] toArray(T[] arr);
-
-     /**
      * Get iterator for traversing all collection members.
      * @return collection iterator
      */

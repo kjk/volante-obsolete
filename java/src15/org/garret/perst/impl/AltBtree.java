@@ -3,7 +3,7 @@ import  org.garret.perst.*;
 import  java.util.*;
 import  java.lang.reflect.Array;
 
-class AltBtree<T extends IPersistent> extends PersistentResource implements Index<T> { 
+class AltBtree<T extends IPersistent> extends PersistentCollection<T> implements Index<T> { 
     int       height;
     int       type;
     int       nElems;
@@ -1046,12 +1046,16 @@ class AltBtree<T extends IPersistent> extends PersistentResource implements Inde
         return arr;
     }
 
-    public T[] toArray(T[] arr) {
+    public Object[] toArray() {
+        return toPersistentArray();
+    }
+
+    public <E> E[] toArray(E[] arr) {
         if (arr.length < nElems) { 
-            arr = (T[])Array.newInstance(arr.getClass().getComponentType(), nElems);
+            arr = (E[])Array.newInstance(arr.getClass().getComponentType(), nElems);
         }
         if (root != null) { 
-            root.traverseForward(height, arr, 0);
+            root.traverseForward(height, (IPersistent[])arr, 0);
         }
         if (arr.length > nElems) { 
             arr[nElems] = null;

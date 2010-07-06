@@ -12,51 +12,7 @@ import java.lang.reflect.Field;
  * (each boundary can be specified or unspecified and can be inclusive or exclusive)
  * Key should be of scalar, String, java.util.Date or peristent object type.
  */
-public interface FieldIndex extends IPersistent, IResource { 
-    /**
-     * Get object by key (exact match)     
-     * @param key specified key. It should match with type of the index and should be inclusive.
-     * @return object with this value of the key or <code>null</code> if key nmot found
-     * @exception StorageError(StorageError.KEY_NOT_UNIQUE) exception if there are more than 
-     * one objects in the index with specified value of the key.
-     */
-    public IPersistent   get(Key key);
-    
-    /**
-     * Get object by string key (exact match)     
-     * @param key string key 
-     * @return object with this value of the key or <code>null</code> if key not[ found
-     * @exception StorageError(StorageError.KEY_NOT_UNIQUE) exception if there are more than 
-     * one objects in the index with specified value of the key.
-     */
-    public IPersistent   get(String key);
-    
-    /**
-     * Get objects with string key prefix 
-     * @param prefix string key prefix
-     * @return array of objects which key starts with this prefix 
-     */
-    public IPersistent[] getPrefix(String prefix);
-
-    /**
-     * Locate all objects which key is prefix of specified word.
-     * @param word string which prefixes are located in index
-     * @return array of objects which key is prefix of specified word, ordered by key value
-     */
-    public IPersistent[] prefixSearch(String word);
-    
-    /**
-     * Get objects which key value belongs to the specified range.
-     * Either from boundary, either till boundary either both of them can be <code>null</code>.
-     * In last case the method returns all objects from the index.
-     * @param from low boundary. If <code>null</code> then low boundary is not specified.
-     * Low boundary can be inclusive or exclusive. 
-     * @param till high boundary. If <code>null</code> then high boundary is not specified.
-     * High boundary can be inclusive or exclusive. 
-     * @return array of objects which keys belongs to the specified interval, ordered by key value
-     */
-    public IPersistent[] get(Key from, Key till);
-
+public interface FieldIndex extends GenericIndex { 
     /**
      * Put new object in the index. 
      * @param obj object to be inserted in index. Object should contain indexed field. 
@@ -115,76 +71,6 @@ public interface FieldIndex extends IPersistent, IResource {
      * @return <code>true</code> if object is present in the index, <code>false</code> otherwise
      */
     public boolean       contains(IPersistent obj);
-
-    /**
-     * Get number of objects in the index
-     * @return number of objects in the index
-     */
-    public int           size();
-    
-    /**
-     * Remove all objects from the index
-     */
-    public void          clear();
-
-    /**
-     * Get all objects in the index as array ordered by index key
-     * @return array of specified type conatining objects in the index ordered by key value
-     */
-    public IPersistent[] toPersistentArray();
-
-    /**
-     * Get iterator for traversing all objects in the index. 
-     * Objects are iterated in the ascent key order. 
-     * You should not update/remove or add members to the index during iteration
-     * @return index iterator
-     */
-    public Iterator iterator();
-    /**
-     * Get iterator for traversing all entries in the index. 
-     * Iterator next() method returns object implementing <code>Map.Entry</code> interface
-     * which allows to get entry key and value.
-     * Objects are iterated in the ascent key order. 
-     * You should not update/remove or add members to the index during iteration
-     * @return index iterator
-     */
-    public Iterator entryIterator();
-
-    static final int ASCENT_ORDER  = 0;
-    static final int DESCENT_ORDER = 1;
-    /**
-     * Get iterator for traversing objects in the index with key belonging to the specified range. 
-     * You should not update/remove or add members to the index during iteration
-     * @param from low boundary. If <code>null</code> then low boundary is not specified.
-     * Low boundary can be inclusive or exclusive. 
-     * @param till high boundary. If <code>null</code> then high boundary is not specified.
-     * High boundary can be inclusive or exclusive. 
-     * @param order <code>ASCENT_ORDER</code> or <code>DESCENT_ORDER</code>
-     * @return selection iterator
-     */
-    public Iterator iterator(Key from, Key till, int order);
-
-    /**
-     * Get iterator for traversing index entries with key belonging to the specified range. 
-     * Iterator next() method returns object implementing <code>Map.Entry</code> interface
-     * You should not update/remove or add members to the index during iteration
-     * @param from low boundary. If <code>null</code> then low boundary is not specified.
-     * Low boundary can be inclusive or exclusive. 
-     * @param till high boundary. If <code>null</code> then high boundary is not specified.
-     * High boundary can be inclusive or exclusive. 
-     * @param order <code>ASCENT_ORDER</code> or <code>DESCENT_ORDER</code>
-     * @return selection iterator
-     */
-    public Iterator entryIterator(Key from, Key till, int order);
-
-    /**
-     * Get iterator for records which keys started with specified prefix
-     * Objects are iterated in the ascent key order. 
-     * You should not update/remove or add members to the index during iteration
-     * @param prefix key prefix
-     * @return selection iterator
-     */
-    public Iterator prefixIterator(String prefix);
 
     /**
      * Get class obejct objects which can be inserted in this index
