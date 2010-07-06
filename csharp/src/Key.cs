@@ -433,7 +433,7 @@ namespace Perst
         /// <param name="inclusive">whether boundary is inclusive or exclusive
         /// 
         /// </param>
-        public Key(IComparable v, bool inclusive):this(ClassDescriptor.FieldType.tpObject, inclusive)
+        public Key(IComparable v, bool inclusive):this(ClassDescriptor.FieldType.tpRaw, inclusive)
         {
             oval = v;
         }

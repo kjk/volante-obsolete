@@ -1335,7 +1335,7 @@ namespace Perst.Impl
 			
 			internal override Key getKey(int i)
 			{
-				return new Key(((IComparable[]) data)[i]);
+				return new Key((IComparable)((object[]) data)[i]);
 			}
 			
 			internal override object getKeyValue(int i)

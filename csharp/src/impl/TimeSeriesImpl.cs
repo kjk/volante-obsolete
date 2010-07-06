@@ -329,7 +329,7 @@ namespace Perst.Impl
             get 
             {
                 long time = timestamp.Ticks;
-                foreach (TimeSeriesBlock block in index) 
+                foreach (TimeSeriesBlock block in index.Range(time - maxBlockTimeInterval, time, IterationOrder.AscentOrder))
                 {
                     int n = block.used;
                     int l = 0, r = n;

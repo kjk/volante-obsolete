@@ -68,7 +68,8 @@ namespace Perst.Impl
             type = ClassDescriptor.FieldType.tpRaw;        
         }
 		
-		internal class CompoundKey : IComparable
+        [Serializable]
+        internal class CompoundKey : IComparable
 		{
 			internal object[] keys;
 			

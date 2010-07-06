@@ -13,9 +13,16 @@ public class TestCompoundIndex
     };
 
     static public void Main(string[] args) {	
+        int i;
         Storage db = StorageFactory.Instance.CreateStorage();
-
-	db.Open("testcidx.dbs", pagePoolSize);
+        for (i = 0; i < args.Length; i++) 
+        { 
+            if ("altbtree" == args[i]) 
+            { 
+                db.SetProperty("perst.alternative.btree", true);
+            }
+        } 
+	    db.Open("testcidx.dbs", pagePoolSize);
         FieldIndex root = (FieldIndex)db.Root;
         if (root == null) { 
             root = db.CreateFieldIndex(typeof(Record), new string[]{"intKey", "strKey"}, true);
@@ -23,7 +30,6 @@ public class TestCompoundIndex
         }
         DateTime start = DateTime.Now;
         long key = 1999;
-        int i;
         for (i = 0; i < nRecords; i++) { 
             Record rec = new Record();
             key = (3141592621L*key + 2718281829L) % 1000000007L;
