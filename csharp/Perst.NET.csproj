@@ -138,6 +138,11 @@
                     BuildAction = "Compile"
                 />
                 <File
+                    RelPath = "src\NullFile.cs"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
                     RelPath = "src\Persistent.cs"
                     SubType = "Code"
                     BuildAction = "Compile"
@@ -233,6 +238,11 @@
                     BuildAction = "Compile"
                 />
                 <File
+                    RelPath = "src\impl\OidHashTable.cs"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
                     RelPath = "src\impl\OSFile.cs"
                     SubType = "Code"
                     BuildAction = "Compile"
@@ -269,6 +279,11 @@
                 />
                 <File
                     RelPath = "src\impl\StorageImpl.cs"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "src\impl\StrongHashTable.cs"
                     SubType = "Code"
                     BuildAction = "Compile"
                 />

@@ -12,6 +12,17 @@ namespace Perst
         /// Previous reference to the root object is rewritten but old root is not automatically deallocated.
         /// </summary>
         abstract public IPersistent Root {get; set;}
+        
+        /// <summary> 
+        /// Constant specifying that page pool should be dynamically extended 
+        /// to conatins all database file pages
+        /// </summary>
+        public const int INFINITE_PAGE_POOL = 0;
+
+        /// <summary>
+        /// Constant specifying default pool size
+        /// </summary>
+        public const int DEFAULT_PAGE_POOL_SIZE = 4*1024*1024;
 
         /// <summary> Open the storage
         /// </summary>
@@ -32,7 +43,7 @@ namespace Perst
         /// </param>
         public virtual void  open(String filePath)
         {
-            open(filePath, 4 * 1024 * 1024);
+            open(filePath, DEFAULT_PAGE_POOL_SIZE);
         }
 		
         /// <summary> Open the storage
@@ -53,7 +64,7 @@ namespace Perst
         /// </param>
         public virtual void  open(IFile file)
         {
-            open(file, 4 * 1024 * 1024);
+            open(file, DEFAULT_PAGE_POOL_SIZE);
         }
 		
         /// <summary>Check if database is opened

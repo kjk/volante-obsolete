@@ -3,14 +3,14 @@ namespace Perst.Impl
     using System;
     using Perst;
 	
-    public class WeakHashTable : OidHashTable
+    public class StrongHashTable : OidHashTable
     {
         internal Entry[] table;
         internal const float loadFactor = 0.75f;
         internal int count;
         internal int threshold;
 		
-        public WeakHashTable(int initialCapacity)
+        public StrongHashTable(int initialCapacity)
         {
             threshold = (int) (initialCapacity * loadFactor);
             if (initialCapacity != 0)
@@ -55,7 +55,7 @@ namespace Perst.Impl
                 {
                     if (e.oid == oid)
                     {
-                        e.oref.Target = obj;
+                        e.oref = obj;
                         return ;
                     }
                 }
@@ -68,7 +68,7 @@ namespace Perst.Impl
                 }
 				
                 // Creates the new entry.
-                tab[index] = new Entry(oid, new WeakReference(obj), tab[index]);
+                tab[index] = new Entry(oid, obj, tab[index]);
                 count++;
             }
         }
@@ -83,7 +83,7 @@ namespace Perst.Impl
                 {
                     if (e.oid == oid)
                     {
-                        return (IPersistent) e.oref.Target;
+                        return e.oref;
                     }
                 }
                 return null;
@@ -107,33 +107,7 @@ namespace Perst.Impl
             int oldCapacity = table.Length;
             Entry[] oldMap = table;
             int i;
-            for (i = oldCapacity; --i >= 0; )
-            {
-                for (Entry prev = null, e = oldMap[i]; e != null; e = e.next)
-                {
-                    if (!e.oref.IsAlive)
-                    {
-                        count -= 1;
-                        if (prev == null)
-                        {
-                            oldMap[i] = e.next;
-                        }
-                        else
-                        {
-                            prev.next = e.next;
-                        }
-                    }
-                    else
-                    {
-                        prev = e;
-                    }
-                }
-            }
-			
-            if ((uint)count <= ((uint)threshold >> 1))
-            {
-                return ;
-            }
+
             int newCapacity = oldCapacity * 2 + 1;
             Entry[] newMap = new Entry[newCapacity];
 			
@@ -159,14 +133,14 @@ namespace Perst.Impl
             return count;
         }
 
-	
+        	
         internal class Entry
         {
             internal Entry next;
-            internal WeakReference oref;
+            internal IPersistent oref;
             internal int oid;
 		
-            internal Entry(int oid, WeakReference oref, Entry chain)
+            internal Entry(int oid, IPersistent oref, Entry chain)
             {
                 next = chain;
                 this.oid = oid;
@@ -175,5 +149,3 @@ namespace Perst.Impl
         }
     }
 }
-
-

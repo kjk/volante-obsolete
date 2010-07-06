@@ -87,3 +87,7 @@ method is not invoked before transaction commit.
 4. Conditional compilation of code supporting raw binary type
 (System.Runtime.Serialization.Formatters.Binary.BinaryFormatter class in not supported in Compact.Net framework)
 5. Replace '+' in C# identifiers during XML export
+
+--- Release version 1.21 08.10.2003 -------------------------------------
+
+1. Support of main-memory databases. 

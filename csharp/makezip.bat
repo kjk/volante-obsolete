@@ -18,7 +18,6 @@ rd /s/q TestRaw\obj
 rd /s/q TestRaw\bin
 rd /s/q TestSSD\obj
 rd /s/q TestSSD\bin
-del /f *.suo
 cd ..
 del /q perstnet.zip
 zip -r perstnet.zip Perst.NET

@@ -829,13 +829,11 @@ namespace Perst.Impl
                 allocatedDelta = 0;
                 gcDone = false;
                 modified = false;
-                if (pagePoolSize == 0)
-                {
-                    pagePoolSize = Page.pageSize * 256;
-                }
                 pool = new PagePool(pagePoolSize / Page.pageSize);
 				
-                objectCache = new WeakHashTable(dbObjectCacheInitSize);
+                objectCache = (pagePoolSize == INFINITE_PAGE_POOL)
+                    ? (OidHashTable)new StrongHashTable(dbObjectCacheInitSize) 
+                    : (OidHashTable)new WeakHashTable(dbObjectCacheInitSize);
                 classDescMap = new Hashtable();
                 modifiedList = new ArrayList();
                 descList = null;
@@ -3188,8 +3186,8 @@ namespace Perst.Impl
         internal ArrayList modifiedList;
         internal bool      truncateModifiedList;
 
-        internal WeakHashTable objectCache;
-        internal Hashtable classDescMap;
+        internal OidHashTable    objectCache;
+        internal Hashtable       classDescMap;
         internal ClassDescriptor descList;
     }
 	

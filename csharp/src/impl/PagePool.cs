@@ -5,20 +5,27 @@ namespace Perst.Impl
 	
     class PagePool
     {
-        internal LRU lru;
-        internal Page freePages;
+        internal LRU    lru;
+        internal Page   freePages;
         internal Page[] hashTable;
-        internal int poolSize;
-        internal long fileSize;
-        internal IFile file;
+        internal int    poolSize;
+        internal long   fileSize;
+        internal bool   autoExtended;
+        internal IFile  file;
 		
         internal int nDirtyPages;
         internal Page[] dirtyPages;
 		
         internal bool flushing;
 		
+        const int INFINITE_POOL_INITIAL_SIZE = 8;
+
         internal PagePool(int poolSize)
         {
+            if (poolSize == 0) { 
+                autoExtended = true;
+                poolSize = INFINITE_POOL_INITIAL_SIZE;
+            }            
             this.poolSize = poolSize;
         }
 		
@@ -26,7 +33,8 @@ namespace Perst.Impl
         {
             Assert.that((addr & (Page.pageSize - 1)) == 0);
             Page pg;
-            int hashCode = (int)(addr >> Page.pageBits) % poolSize;
+            int pageNo = (int)((ulong)addr >> Page.pageBits);
+            int hashCode =  pageNo % poolSize;
 			
             lock(this)
             {
@@ -47,6 +55,18 @@ namespace Perst.Impl
                     if (pg != null)
                     {
                         freePages = (Page) pg.next;
+                    }
+                    else if (autoExtended) 
+                    { 
+                        if (pageNo >= poolSize) {
+                            int newPoolSize = pageNo >= poolSize*2 ? pageNo+1 : poolSize*2;
+                            Page[] newHashTable = new Page[newPoolSize];
+                            Array.Copy(hashTable, 0, newHashTable, 0, hashTable.Length);
+                            hashTable = newHashTable;
+                            poolSize = newPoolSize;
+                        }
+                        pg = new Page();
+                        hashCode = pageNo;
                     }
                     else
                     {
@@ -95,6 +115,11 @@ namespace Perst.Impl
                 if ((pg.state & Page.psDirty) == 0 && (state & Page.psDirty) != 0)
                 {
                     Assert.that(!flushing);
+                    if (nDirtyPages >= dirtyPages.Length) {                     
+                        Page[] newDirtyPages = new Page[nDirtyPages*2];
+                        Array.Copy(dirtyPages, 0, newDirtyPages, 0, dirtyPages.Length);
+                        dirtyPages = newDirtyPages;
+                    }
                     dirtyPages[nDirtyPages] = pg;
                     pg.writeQueueIndex = nDirtyPages++;
                     pg.state |= Page.psDirty;
@@ -170,11 +195,13 @@ namespace Perst.Impl
             nDirtyPages = 0;
             lru = new LRU();
             freePages = null;
-            for (int i = poolSize; --i >= 0; )
-            {
-                Page pg = new Page();
-                pg.next = freePages;
-                freePages = pg;
+            if (!autoExtended) { 
+                for (int i = poolSize; --i >= 0; )
+                {
+                    Page pg = new Page();
+                    pg.next = freePages;
+                    freePages = pg;
+                }
             }
         }
 		
@@ -211,6 +238,11 @@ namespace Perst.Impl
                 {
                     Assert.that(!flushing);
                     pg.state |= Page.psDirty;
+                    if (nDirtyPages >= dirtyPages.Length) {                     
+                        Page[] newDirtyPages = new Page[nDirtyPages*2];
+                        Array.Copy(dirtyPages, 0, newDirtyPages, 0, dirtyPages.Length);
+                        dirtyPages = newDirtyPages;
+                    }
                     dirtyPages[nDirtyPages] = pg;
                     pg.writeQueueIndex = nDirtyPages++;
                 }
