@@ -26,9 +26,8 @@ public interface SortedCollection<T extends IPersistent> extends IPersistent, IR
      * Get members which key value belongs to the specified range.
      * Either from boundary, either till boundary either both of them can be <code>null</code>.
      * In last case the method returns all objects from the collection.
-     * @param from low boundary. If <code>null</code> then low boundary is not specified.
-     * Low boundary can be inclusive or exclusive. 
-     * @param till high boundary. If <code>null</code> then high boundary is not specified.
+     * @param from inclusive low boundary. If <code>null</code> then low boundary is not specified.
+     * @param till inclusive high boundary. If <code>null</code> then high boundary is not specified.
      * High boundary can be inclusive or exclusive. 
      * @return array of objects which keys belongs to the specified interval, ordered by key value
      */
@@ -38,13 +37,35 @@ public interface SortedCollection<T extends IPersistent> extends IPersistent, IR
      * Get members which key value belongs to the specified range.
      * Either from boundary, either till boundary either both of them can be <code>null</code>.
      * In last case the method returns all objects from the collection.
-     * @param from low boundary. If <code>null</code> then low boundary is not specified.
-     * Low boundary can be inclusive or exclusive. 
-     * @param till high boundary. If <code>null</code> then high boundary is not specified.
-     * High boundary can be inclusive or exclusive. 
+     * @param from inclusive low boundary. If <code>null</code> then low boundary is not specified.
+     * @param fromInclusive specifies whether from boundary is inclusive or exclusive
+     * @param till inclusive high boundary. If <code>null</code> then high boundary is not specified.
+     * @param tillInclusive specifies whether till boundary is inclusive or exclusive
+     * @return array of objects which keys belongs to the specified interval, ordered by key value
+     */
+    public IPersistent[] get(Object from, boolean fromInclusive, Object till, boolean tillInclusive);
+
+    /**
+     * Get members which key value belongs to the specified range.
+     * Either from boundary, either till boundary either both of them can be <code>null</code>.
+     * In last case the method returns all objects from the collection.
+     * @param from inclusive low boundary. If <code>null</code> then low boundary is not specified.
+     * @param till inclusive high boundary. If <code>null</code> then high boundary is not specified.
      * @return array of objects which keys belongs to the specified interval, ordered by key value
      */
     public ArrayList<T> getList(Object from, Object till);
+
+    /**
+     * Get members which key value belongs to the specified range.
+     * Either from boundary, either till boundary either both of them can be <code>null</code>.
+     * In last case the method returns all objects from the collection.
+     * @param from inclusive low boundary. If <code>null</code> then low boundary is not specified.
+     * @param fromInclusive specifies whether from boundary is inclusive or exclusive
+     * @param till inclusive high boundary. If <code>null</code> then high boundary is not specified.
+     * @param tillInclusive specifies whether till boundary is inclusive or exclusive
+     * @return array of objects which keys belongs to the specified interval, ordered by key value
+     */
+    public ArrayList<T> getList(Object from, boolean fromInclusive, Object till, boolean tillInclusive);
 
     /**
      * Add new member to collection
@@ -108,13 +129,21 @@ public interface SortedCollection<T extends IPersistent> extends IPersistent, IR
     public Iterator<T> iterator();
     /**
      * Get iterator for traversing collection members  with key belonging to the specified range. 
-     * @param from low boundary. If <code>null</code> then low boundary is not specified.
-     * Low boundary can be inclusive or exclusive. 
-     * @param till high boundary. If <code>null</code> then high boundary is not specified.
-     * High boundary can be inclusive or exclusive. 
+     * @param from inclusive low boundary. If <code>null</code> then low boundary is not specified.
+     * @param till inclusive high boundary. If <code>null</code> then high boundary is not specified.
      * @return selection iterator
      */
     public Iterator<T> iterator(Object from, Object till);
+
+    /**
+     * Get iterator for traversing collection members  with key belonging to the specified range. 
+     * @param from inclusive low boundary. If <code>null</code> then low boundary is not specified.
+     * @param fromInclusive specifies whether from boundary is inclusive or exclusive
+     * @param till inclusive high boundary. If <code>null</code> then high boundary is not specified.
+     * @param tillInclusive specifies whether till boundary is inclusive or exclusive
+     * @return selection iterator
+     */
+    public Iterator<T> iterator(Object from, boolean fromInclusive, Object till, boolean tillInclusive);
 
     /**
      * Get comparator used in this collection

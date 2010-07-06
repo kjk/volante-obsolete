@@ -38,22 +38,23 @@ public class TtreePage extends Persistent  {
         return mbr;
     }
 
-    final boolean find(PersistentComparator comparator, Object minValue, Object maxValue, ArrayList selection)
+    final boolean find(PersistentComparator comparator, Object minValue, int minInclusive, 
+                       Object maxValue, int maxInclusive, ArrayList selection)
     { 
         int l, r, m, n;
         load();
         n = nItems;
         if (minValue != null) { 
-            if (comparator.compareMemberWithKey(loadItem(0), minValue) < 0) {       
-                if (comparator.compareMemberWithKey(loadItem(n-1), maxValue) < 0) { 
+            if (-comparator.compareMemberWithKey(loadItem(0), minValue) >= minInclusive) {       
+                if (-comparator.compareMemberWithKey(loadItem(n-1), minValue) >= minInclusive) { 
                     if (right != null) { 
-                        return right.find(comparator, minValue, maxValue, selection); 
+                        return right.find(comparator, minValue, minInclusive, maxValue, maxInclusive, selection); 
                     } 
                     return true;
                 }
                 for (l = 0, r = n; l < r;) { 
                     m = (l + r) >> 1;
-                    if (comparator.compareMemberWithKey(loadItem(m), minValue) < 0) {
+                    if (-comparator.compareMemberWithKey(loadItem(m), minValue) >= minInclusive) {
                         l = m+1;
                     } else { 
                         r = m;
@@ -61,7 +62,7 @@ public class TtreePage extends Persistent  {
                 }
                 while (r < n) { 
                     if (maxValue != null
-                        && comparator.compareMemberWithKey(loadItem(r), maxValue) > 0)
+                        && comparator.compareMemberWithKey(loadItem(r), maxValue) >= maxInclusive)
                     { 
                         return false;
                     }
@@ -69,24 +70,24 @@ public class TtreePage extends Persistent  {
                     r += 1;
                 }
                 if (right != null) { 
-                    return right.find(comparator, minValue, maxValue, selection); 
+                    return right.find(comparator, minValue, minInclusive, maxValue, maxInclusive, selection); 
                 } 
                 return true;    
             }
         }       
         if (left != null) { 
-            if (!left.find(comparator, minValue, maxValue, selection)) { 
+            if (!left.find(comparator, minValue, minInclusive, maxValue, maxInclusive, selection)) { 
                 return false;
             }
         }
         for (l = 0; l < n; l++) { 
-            if (maxValue != null && comparator.compareMemberWithKey(loadItem(l), maxValue) > 0) {
+            if (maxValue != null && comparator.compareMemberWithKey(loadItem(l), maxValue) >= maxInclusive) {
                 return false;
             }
             selection.add(loadItem(l));
         }
         if (right != null) { 
-            return right.find(comparator, minValue, maxValue, selection);
+            return right.find(comparator, minValue, minInclusive, maxValue, maxInclusive, selection);
         }         
         return true;
     }

@@ -318,3 +318,7 @@ stored in OS file buffers and sooner or later them will be written to the disk)
 1. Change entry interator for AltBtree to resolve references in lazy way (only when requested)
 2. Fix bug in comparison of int keys in multifield index
 3. Fix problems with supporting more than 2^28 objects
+
+--- Release version 2.42 06.12.2004 -------------------------------------
+1. Fix bug in range search implementation in T-Tree (SortedCollection)
+2. Make it possible to specify different range types (inclusive/exclusive) in SortedCollection search methods

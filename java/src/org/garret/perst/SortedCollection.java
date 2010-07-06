@@ -30,6 +30,18 @@ public interface SortedCollection extends IPersistent, IResource {
     public IPersistent[] get(Object from, Object till);
 
     /**
+     * Get members which key value belongs to the specified range.
+     * Either from boundary, either till boundary either both of them can be <code>null</code>.
+     * In last case the method returns all objects from the collection.
+     * @param from inclusive low boundary. If <code>null</code> then low boundary is not specified.
+     * @param fromInclusive specifies whether from boundary is inclusive or exclusive
+     * @param till inclusive high boundary. If <code>null</code> then high boundary is not specified.
+     * @param tillInclusive specifies whether till boundary is inclusive or exclusive
+     * @return array of objects which keys belongs to the specified interval, ordered by key value
+     */
+    public IPersistent[] get(Object from, boolean fromInclusive, Object till, boolean tillInclusive);
+
+    /**
      * Add new member to collection
      * @param obj new member
      * @return <code>true</code> if object is successfully added in the index, 
@@ -89,6 +101,7 @@ public interface SortedCollection extends IPersistent, IResource {
      * @return collection iterator
      */
     public java.util.Iterator iterator();
+
     /**
      * Get iterator for traversing collection members  with key belonging to the specified range. 
      * @param from inclusive low boundary. If <code>null</code> then low boundary is not specified.
@@ -96,6 +109,16 @@ public interface SortedCollection extends IPersistent, IResource {
      * @return selection iterator
      */
     public java.util.Iterator iterator(Object from, Object till);
+
+    /**
+     * Get iterator for traversing collection members  with key belonging to the specified range. 
+     * @param from inclusive low boundary. If <code>null</code> then low boundary is not specified.
+     * @param fromInclusive specifies whether from boundary is inclusive or exclusive
+     * @param till inclusive high boundary. If <code>null</code> then high boundary is not specified.
+     * @param tillInclusive specifies whether till boundary is inclusive or exclusive
+     * @return selection iterator
+     */
+    public java.util.Iterator iterator(Object from, boolean fromInclusive, Object till, boolean tillInclusive);
 
     /**
      * Get comparator used in this collection

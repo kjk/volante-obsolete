@@ -39,7 +39,7 @@ public class Ttree extends PersistentResource implements SortedCollection {
     public IPersistent get(Object key) { 
         if (root != null) { 
             ArrayList list = new ArrayList();
-            root.find(comparator, key, key, list);
+            root.find(comparator, key, 1, key, 1, list);
             if (list.size() > 1) { 
                 throw new StorageError(StorageError.KEY_NOT_UNIQUE);
             } else if (list.size() == 0) { 
@@ -64,9 +64,13 @@ public class Ttree extends PersistentResource implements SortedCollection {
     static final IPersistent[] emptySelection = new IPersistent[0];
 
     public IPersistent[] get(Object from, Object till) { 
+        return get(from, true, till, true);
+    }
+
+    public IPersistent[] get(Object from, boolean fromInclusive, Object till, boolean tillInclusive) { 
         if (root != null) { 
             ArrayList list = new ArrayList();
-            root.find(comparator, from, till, list);
+            root.find(comparator, from, fromInclusive ? 1 : 0, till, tillInclusive ? 1 : 0, list);
             if (list.size() != 0) { 
                 return (IPersistent[])list.toArray(new IPersistent[list.size()]);
             }
@@ -241,20 +245,16 @@ public class Ttree extends PersistentResource implements SortedCollection {
         return iterator(null, null);
     }
 
-    /**
-     * Get iterator for traversing collection members  with key belonging to the specified range. 
-     * You should not update/remove or add members to the index during iteration
-     * @param from inclusive low boundary. If <code>null</code> then low boundary is not specified.
-     * @param till inclusive high boundary. If <code>null</code> then high boundary is not specified.
-     * @return selection iterator
-     */
     public java.util.Iterator iterator(Object from, Object till) {
+        return iterator(from, true, till, true);
+    }
+
+    public java.util.Iterator iterator(Object from, boolean fromInclusive, Object till, boolean tillInclusive) {
         ArrayList list = new ArrayList();
         if (root != null) { 
-            root.find(comparator, from, till, list);
+            root.find(comparator, from, fromInclusive ? 1 : 0, till, tillInclusive ? 1 : 0, list);
         }            
         return new TtreeIterator(this, list);
     }
-
 }
 
