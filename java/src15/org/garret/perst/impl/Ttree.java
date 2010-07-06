@@ -63,7 +63,7 @@ public class Ttree<T extends IPersistent> extends PersistentResource implements 
      * High boundary can be inclusive or exclusive. 
      * @return array of objects which keys belongs to the specified interval, ordered by key value
      */
-    public ArrayList<T> getList(Key from, Key till) { 
+    public ArrayList<T> getList(Object from, Object till) { 
         ArrayList list = new ArrayList();
         if (root != null) { 
             root.find(comparator, from, till, list);
@@ -72,7 +72,7 @@ public class Ttree<T extends IPersistent> extends PersistentResource implements 
     }
 
 
-    public IPersistent[] get(Key from, Key till) { 
+    public IPersistent[] get(Object from, Object till) { 
         ArrayList<T> list = getList(from, till);
         return (IPersistent[])list.toArray(new IPersistent[list.size()]);
 
@@ -245,7 +245,7 @@ public class Ttree<T extends IPersistent> extends PersistentResource implements 
      * High boundary can be inclusive or exclusive. 
      * @return selection iterator
      */
-    public java.util.Iterator<T> iterator(Key from, Key till) {
+    public java.util.Iterator<T> iterator(Object from, Object till) {
         ArrayList list = new ArrayList();
         if (root != null) { 
             root.find(comparator, from, till, list);

@@ -1,6 +1,6 @@
 package org.garret.perst.impl;
 import  org.garret.perst.*;
-import  java.util.Iterator;
+import  java.util.*;
 import  java.lang.reflect.Array;
 
 public class LinkImpl implements Link { 
@@ -115,6 +115,10 @@ public class LinkImpl implements Link {
         return a;
     }
     
+    public IPersistent[] toRawArray() {
+        return arr;
+    }
+
     public IPersistent[] toArray(IPersistent[] arr) {
         if (arr.length < used) { 
             arr = (IPersistent[])Array.newInstance(arr.getClass().getComponentType(), used);
@@ -160,7 +164,10 @@ public class LinkImpl implements Link {
             return i < link.size();
         }
 
-        public Object next() { 
+        public Object next() throws NoSuchElementException { 
+            if (!hasNext()) { 
+                throw new NoSuchElementException();
+            }
             return link.get(i++);
         }
 

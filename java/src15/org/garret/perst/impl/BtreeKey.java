@@ -49,6 +49,7 @@ class BtreeKey {
             break;
           case ClassDescriptor.tpInt:
           case ClassDescriptor.tpObject:
+          case ClassDescriptor.tpEnum:
             key = new Key(Bytes.unpack4(data, offs));
             break;
           case ClassDescriptor.tpLong:
@@ -79,6 +80,7 @@ class BtreeKey {
             break;
           case ClassDescriptor.tpInt:
           case ClassDescriptor.tpObject:
+          case ClassDescriptor.tpEnum:
             Bytes.pack4(dst, BtreePage.firstKeyOffs + i*4, key.ival);
             break;
           case ClassDescriptor.tpLong:

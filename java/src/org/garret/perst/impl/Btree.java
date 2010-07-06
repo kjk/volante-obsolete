@@ -95,10 +95,20 @@ class Btree extends PersistentResource implements Index {
         }
     }
 
-    public IPersistent get(Key key) { 
-        if (key.type != type) { 
-            throw new StorageError(StorageError.INCOMPATIBLE_KEY_TYPE);
+    Key checkKey(Key key) { 
+        if (key != null) { 
+            if (key.type != type) { 
+                throw new StorageError(StorageError.INCOMPATIBLE_KEY_TYPE);
+            }
+            if (key.oval instanceof String) { 
+                key = new Key(((String)key.oval).toCharArray(), key.inclusion != 0);
+            }
         }
+        return key;
+    }            
+
+    public IPersistent get(Key key) { 
+        key = checkKey(key);
         if (root != 0) { 
             ArrayList list = new ArrayList();
             BtreePage.find((StorageImpl)getStorage(), root, key, key, this, height, list);
@@ -130,12 +140,9 @@ class Btree extends PersistentResource implements Index {
     }
 
     public IPersistent[] get(Key from, Key till) {
-        if ((from != null && from.type != type) || (till != null && till.type != type)) { 
-            throw new StorageError(StorageError.INCOMPATIBLE_KEY_TYPE);
-        }
         if (root != 0) { 
             ArrayList list = new ArrayList();
-            BtreePage.find((StorageImpl)getStorage(), root, from, till, this, height, list);
+            BtreePage.find((StorageImpl)getStorage(), root, checkKey(from), checkKey(till), this, height, list);
             if (list.size() != 0) { 
                 return (IPersistent[])list.toArray(new IPersistent[list.size()]);
             }
@@ -157,9 +164,7 @@ class Btree extends PersistentResource implements Index {
         if (db == null) {             
             throw new StorageError(StorageError.DELETED_OBJECT);
         }
-        if (key.type != type) { 
-            throw new StorageError(StorageError.INCOMPATIBLE_KEY_TYPE);
-        }
+        key = checkKey(key);
         if (!obj.isPersistent()) { 
             db.storeObject(obj);
         }
@@ -185,7 +190,7 @@ class Btree extends PersistentResource implements Index {
     }
 
     public void remove(Key key, IPersistent obj) {
-        remove(new BtreeKey(key, obj.getOid()));
+        remove(new BtreeKey(checkKey(key), obj.getOid()));
     }
 
     
@@ -193,9 +198,6 @@ class Btree extends PersistentResource implements Index {
         StorageImpl db = (StorageImpl)getStorage();
         if (db == null) {             
             throw new StorageError(StorageError.DELETED_OBJECT);
-        }
-        if (rem.key.type != type) { 
-            throw new StorageError(StorageError.INCOMPATIBLE_KEY_TYPE);
         }
         if (root == 0) {
             throw new StorageError(StorageError.KEY_NOT_FOUND);
@@ -231,7 +233,7 @@ class Btree extends PersistentResource implements Index {
         if (!unique) { 
             throw new StorageError(StorageError.KEY_NOT_UNIQUE);
         }
-        BtreeKey rk = new BtreeKey(key, 0);
+        BtreeKey rk = new BtreeKey(checkKey(key), 0);
         StorageImpl db = (StorageImpl)getStorage();
         remove(rk);
         return db.lookupObject(rk.oldOid, null);
@@ -239,27 +241,28 @@ class Btree extends PersistentResource implements Index {
         
         
     public IPersistent get(String key) { 
-        return get(new Key(key, true));
+        return get(new Key(key.toCharArray(), true));
     }
 
     public IPersistent[] getPrefix(String prefix) { 
-        return get(new Key(prefix, true), new Key(prefix + Character.MAX_VALUE, false));
+        return get(new Key(prefix.toCharArray(), true), 
+                   new Key((prefix + Character.MAX_VALUE).toCharArray(), false));
     }
 
     public boolean put(String key, IPersistent obj) {
-        return put(new Key(key, true), obj);
+        return put(new Key(key.toCharArray(), true), obj);
     }
 
     public IPersistent set(String key, IPersistent obj) {
-        return set(new Key(key, true), obj);
+        return set(new Key(key.toCharArray(), true), obj);
     }
 
     public void  remove(String key, IPersistent obj) {
-        remove(new Key(key, true), obj);
+        remove(new Key(key.toCharArray(), true), obj);
     }
     
     public IPersistent remove(String key) {
-        return remove(new Key(key, true));
+        return remove(new Key(key.toCharArray(), true));
     }
 
     public int size() {
@@ -360,7 +363,7 @@ class Btree extends PersistentResource implements Index {
         int offs =  BtreePage.firstKeyOffs + pos*ClassDescriptor.sizeof[type];
         switch (type) { 
           case ClassDescriptor.tpBoolean:
-            return new Boolean(data[offs] != 0);
+            return Boolean.valueOf(data[offs] != 0);
           case ClassDescriptor.tpByte:
             return new Byte(data[offs]);
           case ClassDescriptor.tpShort:
@@ -440,6 +443,9 @@ class Btree extends PersistentResource implements Index {
         }
 
         public boolean hasNext() {
+            if (counter != updateCounter) { 
+                throw new ConcurrentModificationException();
+            }
             return sp > 0 && posStack[sp-1] < end;
         }
 
@@ -449,13 +455,10 @@ class Btree extends PersistentResource implements Index {
         }
 
         public Object next() {
-            StorageImpl db = (StorageImpl)getStorage();
-            if (sp == 0 || posStack[sp-1] >= end) { 
+            if (!hasNext()) { 
                 throw new NoSuchElementException();
             }
-            if (counter != updateCounter) { 
-                throw new ConcurrentModificationException();
-            }
+            StorageImpl db = (StorageImpl)getStorage();
             int pos = posStack[sp-1];   
             Page pg = db.getPage(pageStack[sp-1]);
             Object curr = getCurrent(pg, pos);
@@ -535,6 +538,7 @@ class Btree extends PersistentResource implements Index {
             int i, l, r;
             
             sp = 0;
+            counter = updateCounter;
             if (height == 0) { 
                 return;
             }
@@ -543,7 +547,6 @@ class Btree extends PersistentResource implements Index {
             if (db == null) {             
                 throw new StorageError(StorageError.DELETED_OBJECT);
             }
-            counter = updateCounter;
             int h = height;
             this.from = from;
             this.till = till;
@@ -926,15 +929,15 @@ class Btree extends PersistentResource implements Index {
                 
 
         public boolean hasNext() {
+            if (counter != updateCounter) { 
+                throw new ConcurrentModificationException();
+            }
             return sp != 0;
         }
 
         public Object next() {
-            if (sp == 0) { 
+            if (!hasNext()) { 
                 throw new NoSuchElementException();
-            }
-            if (counter != updateCounter) { 
-                throw new ConcurrentModificationException();
             }
             StorageImpl db = (StorageImpl)getStorage();
             int pos = posStack[sp-1];   
@@ -1148,22 +1151,17 @@ class Btree extends PersistentResource implements Index {
     }
 
     public Iterator iterator(Key from, Key till, int order) { 
-        if ((from != null && from.type != type) || (till != null && till.type != type)) { 
-            throw new StorageError(StorageError.INCOMPATIBLE_KEY_TYPE);
-        }
-        return new BtreeSelectionIterator(from, till, order);
+        return new BtreeSelectionIterator(checkKey(from), checkKey(till), order);
     }
 
     public Iterator prefixIterator(String prefix) {
-        return iterator(new Key(prefix), new Key(prefix + Character.MAX_VALUE, false), ASCENT_ORDER);
+        return iterator(new Key(prefix.toCharArray()), 
+                        new Key((prefix + Character.MAX_VALUE).toCharArray(), false), ASCENT_ORDER);
     }
 
 
     public Iterator entryIterator(Key from, Key till, int order) { 
-        if ((from != null && from.type != type) || (till != null && till.type != type)) { 
-            throw new StorageError(StorageError.INCOMPATIBLE_KEY_TYPE);
-        }
-        return new BtreeSelectionEntryIterator(from, till, order);
+        return new BtreeSelectionEntryIterator(checkKey(from), checkKey(till), order);
     }
 }
 

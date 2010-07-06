@@ -175,7 +175,7 @@ class BtreeMultiFieldIndex extends Btree implements FieldIndex {
             Object v = null;
             switch (types[i]) { 
               case ClassDescriptor.tpBoolean:
-                v = new Boolean(data[offs++] != 0);
+                v = Boolean.valueOf(data[offs++] != 0);
                 break;
               case ClassDescriptor.tpByte:
                 v = new Byte(data[offs++]);

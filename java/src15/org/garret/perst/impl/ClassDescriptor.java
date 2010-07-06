@@ -47,6 +47,7 @@ public final class ClassDescriptor extends Persistent {
     public static final int tpValue            = 11;
     public static final int tpRaw              = 12;
     public static final int tpLink             = 13;
+    public static final int tpEnum             = 14;
     public static final int tpArrayOfBoolean   = 20;
     public static final int tpArrayOfByte      = 21;
     public static final int tpArrayOfChar      = 22;
@@ -60,6 +61,8 @@ public final class ClassDescriptor extends Persistent {
     public static final int tpArrayOfObject    = 30;
     public static final int tpArrayOfValue     = 31;
     public static final int tpArrayOfRaw       = 32;
+    public static final int tpArrayOfLink      = 33; // not supported
+    public static final int tpArrayOfEnum      = 34;
 
     static final String signature[] = {
         "boolean", 
@@ -76,6 +79,7 @@ public final class ClassDescriptor extends Persistent {
         "Value",
         "Raw",
         "Link",
+        "enum",
         "", 
         "", 
         "", 
@@ -90,11 +94,14 @@ public final class ClassDescriptor extends Persistent {
         "ArrayOfLong",
         "ArrayOfFloat",
         "ArrayOfDouble",
+        "ArrayOfEnum",
         "ArrayOfString",
         "ArrayOfDate",
         "ArrayOfObject",
         "ArrayOfValue",
-        "ArrayOfRaw"
+        "ArrayOfRaw",
+        "ArrayOfLink",
+        "ArrayOfEnum"
     };
         
 
@@ -109,8 +116,12 @@ public final class ClassDescriptor extends Persistent {
         8, // tpDouble
         0, // tpString
         8, // tpDate
-        4  // tpObject
-    };
+        4, // tpObject
+        0, // tpValue
+        0, // tpRaw
+        0, // tpLink
+        4  // tpEnum
+     };
 
     static final Class[] perstConstructorProfile = new Class[]{ClassDescriptor.class};
 
@@ -208,6 +219,8 @@ public final class ClassDescriptor extends Persistent {
             type = tpString;
         } else if (c.equals(boolean.class)) {
             type = tpBoolean;
+        } else if (c.isEnum()) {
+            type = tpEnum;
         } else if (c.equals(java.util.Date.class)) {
             type = tpDate;
         } else if (IPersistent.class.isAssignableFrom(c)) {

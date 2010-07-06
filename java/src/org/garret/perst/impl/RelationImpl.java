@@ -58,6 +58,10 @@ public class RelationImpl extends Relation {
         return link.toArray();
     }
 
+    public IPersistent[] toRawArray() {
+        return link.toRawArray();
+    }
+
     public IPersistent[] toArray(IPersistent[] arr) {
         return link.toArray(arr);
     }

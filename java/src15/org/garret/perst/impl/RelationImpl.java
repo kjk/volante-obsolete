@@ -74,6 +74,10 @@ public class RelationImpl<M extends IPersistent, O extends IPersistent> extends 
         return link.toPersistentArray();
     }
 
+    public M[] toRawArray() {
+        return link.toRawArray();
+    }
+
     public Object[] toArray() {
         return link.toArray();
     }

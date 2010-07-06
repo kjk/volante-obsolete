@@ -127,6 +127,7 @@ public class XMLExporter {
                 break;
             case ClassDescriptor.tpInt:
             case ClassDescriptor.tpObject:
+            case ClassDescriptor.tpEnum:
                 writer.write(Integer.toString(Bytes.unpack4(body, offs)));
                 offs += 4;
                 break;
@@ -328,6 +329,10 @@ public class XMLExporter {
                     writer.write(Double.toString(Double.longBitsToDouble(Bytes.unpack8(body, offs))));
                     offs += 8;
                     break;
+                case ClassDescriptor.tpEnum:
+                    writer.write("\"" + ((Enum)fd.field.getType().getEnumConstants()[Bytes.unpack4(body, offs)]).name() + "\"");
+                    offs += 4;
+                    break;
                 case ClassDescriptor.tpString:
                     offs = exportString(body, offs);
                     break;
@@ -413,9 +418,10 @@ public class XMLExporter {
                         writer.write("null");
                     } else {
                         writer.write('\n');
+                        Enum[] enumConstants = (Enum[])fd.field.getType().getEnumConstants();
                         while (--len >= 0) { 
                             indentation(indent+1);
-                            writer.write("<array-element>" + Bytes.unpack4(body, offs) + "</array-element>\n");
+                            writer.write("<array-element>\"" + enumConstants[Bytes.unpack4(body, offs)].name() + "\"</array-element>\n");
                             offs += 4;
                         }
                         indentation(indent);

@@ -85,6 +85,13 @@ public interface Link {
      */
     public void addAll(Link link);
 
+   /**
+     * Return array with relation members. Members are not loaded and 
+     * size of the array can be greater than actual number of members. 
+     * @return array of object with relation members used in implementation of Link class
+     */
+    IPersistent[] toRawArray(); 
+
     /**
      * Get relation members as array of object
      * @return array of object with relation members

@@ -96,7 +96,7 @@ public interface IResource {
 
     /**
      * Reset resource to original state.
-     * Wakrup all threads waiting for this resource.
+     * Wakeup all threads waiting for this resource.
      */
     public void    reset();
 }

@@ -1038,10 +1038,8 @@ public class StorageImpl extends Storage {
         header.root[1-currIndex].rootObject = root.getOid();
         modified = true;
     }
-
-    public synchronized void commit() 
-    {
-        int i, j, n;
+ 
+    public synchronized void commit() {
         if (!opened) {
             throw new StorageError(StorageError.STORAGE_NOT_OPENED);
         }
@@ -1049,6 +1047,13 @@ public class StorageImpl extends Storage {
         if (!modified) { 
             return;
         }
+        commit0();
+        modified = false;
+    }
+
+    private final void commit0() 
+    {
+        int i, j, n;
         int curr = currIndex;
         int[] map = dirtyPagesMap;
         int oldIndexSize = header.root[curr].indexSize;
@@ -1192,7 +1197,6 @@ public class StorageImpl extends Storage {
                 }
             }
         }
-        modified = false;
         gcDone = false;
         currIndex = curr;
         committedIndexSize = currIndexSize;
@@ -1206,6 +1210,11 @@ public class StorageImpl extends Storage {
         if (!modified) { 
             return;
         }
+        rollback0();
+        modified = false;
+    }
+
+    private final void rollback0() {
         int curr = currIndex;
         int[] map = dirtyPagesMap;
         if (header.root[1-curr].index != header.root[curr].shadowIndex) { 
@@ -1232,7 +1241,6 @@ public class StorageImpl extends Storage {
         header.root[1-curr].rootObject = header.root[curr].rootObject;
         header.root[1-curr].classDescList = header.root[curr].classDescList;
         header.root[1-curr].bitmapExtent = header.root[curr].bitmapExtent;
-        modified = false;
         usedSize = header.root[curr].size;
         currIndexSize = committedIndexSize;
         currRBitmapPage = currPBitmapPage = 0;
@@ -1415,7 +1423,9 @@ public class StorageImpl extends Storage {
         if (!opened) { 
             throw new StorageError(StorageError.STORAGE_NOT_OPENED);
         }
-        PersistentSet set = new PersistentSet();
+        IPersistentSet set = alternativeBtree 
+            ? (IPersistentSet)new AltPersistentSet()
+            : (IPersistentSet)new PersistentSet();
         set.assignOid(this, 0, false);
         return set;
     }
@@ -1424,7 +1434,9 @@ public class StorageImpl extends Storage {
         if (!opened) { 
             throw new StorageError(StorageError.STORAGE_NOT_OPENED);
         }
-        Btree index = new Btree(keyType, unique);
+        Index index = alternativeBtree 
+            ? (Index)new AltBtree(keyType, unique)
+            : (Index)new Btree(keyType, unique);
         index.assignOid(this, 0, false);
         return index;
     }
@@ -1449,7 +1461,9 @@ public class StorageImpl extends Storage {
         if (!opened) { 
             throw new StorageError(StorageError.STORAGE_NOT_OPENED);
         }        
-        FieldIndex index = new BtreeFieldIndex(type, fieldName, unique);
+        FieldIndex index = alternativeBtree
+            ? (FieldIndex)new AltBtreeFieldIndex(type, fieldName, unique)
+            : (FieldIndex)new BtreeFieldIndex(type, fieldName, unique);
         index.assignOid(this, 0, false);
         return index;
     }
@@ -1458,7 +1472,9 @@ public class StorageImpl extends Storage {
         if (!opened) { 
             throw new StorageError(StorageError.STORAGE_NOT_OPENED);
         }        
-        FieldIndex index = new BtreeMultiFieldIndex(type, fieldNames, unique);
+        FieldIndex index = alternativeBtree
+            ? (FieldIndex)new AltBtreeMultiFieldIndex(type, fieldNames, unique)
+            : (FieldIndex)new BtreeMultiFieldIndex(type, fieldNames, unique);
         index.assignOid(this, 0, false);
         return index;
     }
@@ -1901,55 +1917,93 @@ public class StorageImpl extends Storage {
         return offs;
     }
 
+
+    static class ThreadTransactionContext { 
+        int       nested;
+        ArrayList locked = new ArrayList();
+        ArrayList modified = new ArrayList();
+    }
+
+    static ThreadTransactionContext getTransactionContext() { 
+        return (ThreadTransactionContext)transactionContext.get();
+    }
+
     public void beginThreadTransaction(int mode)
     {
-        synchronized (transactionMonitor) {
-            if (scheduledCommitTime != Long.MAX_VALUE) { 
-                nBlockedTransactions += 1;
-                while (System.currentTimeMillis() >= scheduledCommitTime) { 
-                    try { 
-                        transactionMonitor.wait();
-                    } catch (InterruptedException x) {}
-                }
-                nBlockedTransactions -= 1;
-            }
-            nNestedTransactions += 1;
-        }           
-        if (mode == EXCLUSIVE_TRANSACTION) { 
-            transactionLock.exclusiveLock();
+        if (mode == SERIALIZABLE_TRANSACTION) { 
+            useSerializableTransactions = true;
+            getTransactionContext().nested += 1;;
         } else { 
-            transactionLock.sharedLock();
+            synchronized (transactionMonitor) {
+                if (scheduledCommitTime != Long.MAX_VALUE) { 
+                    nBlockedTransactions += 1;
+                    while (System.currentTimeMillis() >= scheduledCommitTime) { 
+                        try { 
+                            transactionMonitor.wait();
+                        } catch (InterruptedException x) {}
+                    }
+                    nBlockedTransactions -= 1;
+                }
+                nNestedTransactions += 1;
+            }           
+            if (mode == EXCLUSIVE_TRANSACTION) { 
+                transactionLock.exclusiveLock();
+            } else { 
+                transactionLock.sharedLock();
+            }
         }
     }
 
     public void endThreadTransaction(int maxDelay)
     {
-        synchronized (transactionMonitor) { 
-            transactionLock.unlock();
-            if (nNestedTransactions != 0) { // may be everything is already aborted
-                if (--nNestedTransactions == 0) { 
-                    nCommittedTransactions += 1;
-                    commit();
-                    scheduledCommitTime = Long.MAX_VALUE;
-                    if (nBlockedTransactions != 0) { 
-                        transactionMonitor.notifyAll();
+        ThreadTransactionContext ctx = getTransactionContext();
+        if (ctx.nested != 0) { // serializable transaction
+            if (--ctx.nested == 0) { 
+                int i = ctx.modified.size();
+                if (i != 0) { 
+                    do { 
+                        ((IPersistent)ctx.modified.get(--i)).store();
+                    } while (i != 0);
+
+                    synchronized(this) { 
+                        commit0();
                     }
-                } else {
-                    if (maxDelay != Integer.MAX_VALUE) { 
-                        long nextCommit = System.currentTimeMillis() + maxDelay;
-                        if (nextCommit < scheduledCommitTime) { 
-                            scheduledCommitTime = nextCommit;
+                }
+                for (i = ctx.locked.size(); --i >= 0;) { 
+                    ((IResource)ctx.locked.get(i)).reset();
+                }
+                ctx.modified.clear();
+                ctx.locked.clear();
+            } 
+        } else { // exclusive or cooperative transaction        
+            synchronized (transactionMonitor) { 
+                transactionLock.unlock();
+                
+                if (nNestedTransactions != 0) { // may be everything is already aborted
+                    if (--nNestedTransactions == 0) { 
+                        nCommittedTransactions += 1;
+                        commit();
+                        scheduledCommitTime = Long.MAX_VALUE;
+                        if (nBlockedTransactions != 0) { 
+                            transactionMonitor.notifyAll();
                         }
-                        if (maxDelay == 0) { 
-                            int n = nCommittedTransactions;
-                            nBlockedTransactions += 1;
-                            do { 
+                    } else {
+                        if (maxDelay != Integer.MAX_VALUE) { 
+                            long nextCommit = System.currentTimeMillis() + maxDelay;
+                            if (nextCommit < scheduledCommitTime) { 
+                                scheduledCommitTime = nextCommit;
+                            }
+                            if (maxDelay == 0) { 
+                                int n = nCommittedTransactions;
+                                nBlockedTransactions += 1;
+                                do { 
                                 try { 
                                     transactionMonitor.wait();
                                 } catch (InterruptedException x) {}
-                            } while (nCommittedTransactions == n);
-                            nBlockedTransactions -= 1;
-                        }                                   
+                                } while (nCommittedTransactions == n);
+                                nBlockedTransactions -= 1;
+                            }                                   
+                        }
                     }
                 }
             }
@@ -1959,16 +2013,44 @@ public class StorageImpl extends Storage {
 
     public void rollbackThreadTransaction()
     {
-        synchronized (transactionMonitor) { 
-            transactionLock.reset();
-            nNestedTransactions = 0;
-            if (nBlockedTransactions != 0) { 
-                transactionMonitor.notifyAll();
+        ThreadTransactionContext ctx = getTransactionContext();
+        if (ctx.nested != 0) { // serializable transaction
+            ctx.nested = 0; 
+            int i = ctx.modified.size();
+            if (i != 0) { 
+                do { 
+                    ((IPersistent)ctx.modified.get(--i)).invalidate();
+                } while (i != 0);
+                
+                synchronized(this) { 
+                    rollback0();
+                }
             }
-            rollback();
+            for (i = ctx.locked.size(); --i >= 0;) { 
+                ((IResource)ctx.locked.get(i)).reset();
+            } 
+            ctx.modified.clear();
+            ctx.locked.clear();
+        } else { 
+            synchronized (transactionMonitor) { 
+                transactionLock.reset();
+                nNestedTransactions = 0;
+                if (nBlockedTransactions != 0) { 
+                    transactionMonitor.notifyAll();
+                }
+                rollback();
+            }
         }
     }
             
+    public/*protected*/ void lockObject(IPersistent obj) { 
+        if (useSerializableTransactions) { 
+            ThreadTransactionContext ctx = getTransactionContext();
+            if (ctx.nested != 0) { // serializable transaction
+                ctx.locked.add(obj);
+            }
+        }
+    }
          
     public void close() 
     {
@@ -2066,6 +2148,9 @@ public class StorageImpl extends Storage {
         if ((value = props.getProperty("perst.file.readonly")) != null) { 
             readOnly = getBooleanValue(value);
         }
+        if ((value = props.getProperty("perst.alternative.btree")) != null) { 
+            alternativeBtree = getBooleanValue(value);
+        }
     }
 
     public void setProperty(String name, Object value)
@@ -2084,6 +2169,8 @@ public class StorageImpl extends Storage {
             gcThreshold = getIntegerValue(value);
         } else if (name.equals("perst.file.readonly")) { 
             readOnly = getBooleanValue(value);
+        } else if (name.equals("perst.alternative.btree")) { 
+            alternativeBtree = getBooleanValue(value);
         } else { 
             throw new StorageError(StorageError.NO_SUCH_PROPERTY);
         }
@@ -2099,6 +2186,12 @@ public class StorageImpl extends Storage {
     public/*protected*/ synchronized void modifyObject(IPersistent obj) {
         synchronized(objectCache) { 
             if (!obj.isModified()) { 
+                if (useSerializableTransactions) { 
+                    ThreadTransactionContext ctx = getTransactionContext();
+                    if (ctx.nested != 0) { // serializable transaction
+                        ctx.modified.add(obj);
+                    }
+                }
                 objectCache.setDirty(obj.getOid());
             }
         }
@@ -2127,6 +2220,7 @@ public class StorageImpl extends Storage {
 
     private final void storeObject0(IPersistent obj) 
     {
+        obj.onStore();
         int oid = obj.getOid();
         boolean newObject = false;
         if (oid == 0) { 
@@ -2485,7 +2579,7 @@ public class StorageImpl extends Storage {
                         Object val = null;
                         switch (-2-len) { 
                         case ClassDescriptor.tpBoolean:
-                            val = new Boolean(body[offs++] != 0);
+                            val = Boolean.valueOf(body[offs++] != 0);
                             break;
                         case ClassDescriptor.tpByte:
                             val = new Byte(body[offs++]);
@@ -2726,7 +2820,7 @@ public class StorageImpl extends Storage {
                                 Object val = null;
                                 switch (-2-rawlen) { 
                                 case ClassDescriptor.tpBoolean:
-                                    val = new Boolean(body[offs++] != 0);
+                                    val = Boolean.valueOf(body[offs++] != 0);
                                     break;
                                 case ClassDescriptor.tpByte:
                                     val = new Byte(body[offs++]);
@@ -3165,12 +3259,13 @@ public class StorageImpl extends Storage {
                         offs += 4;
                     } else {
                         int len = arr.length;                        
-                        buf.extend(offs + 4 + len*4);
+                        buf.extend(offs + 4);
                         Bytes.pack4(buf.arr, offs, len);
                         offs += 4;
                         for (int j = 0; j < len; j++) {
                             String str = (String)arr[j];
                             if (str == null) { 
+                                buf.extend(offs + 4);
                                 Bytes.pack4(buf.arr, offs, -1);
                                 offs += 4;
                             } else { 
@@ -3275,6 +3370,7 @@ public class StorageImpl extends Storage {
     private int     objectCacheInitSize = dbDefaultObjectCacheInitSize;
     private long    extensionQuantum = dbDefaultExtensionQuantum;
     private boolean readOnly = false;
+    private boolean alternativeBtree = false;
 
 
     PagePool  pool;
@@ -3311,6 +3407,14 @@ public class StorageImpl extends Storage {
     long      scheduledCommitTime;
     Object    transactionMonitor;
     PersistentResource transactionLock;
+
+    static final ThreadLocal transactionContext = new ThreadLocal() {
+         protected synchronized Object initialValue() {
+             return new ThreadTransactionContext();
+         }
+    };
+    boolean useSerializableTransactions;
+
 
     OidHashTable     objectCache;
     HashMap          classDescMap;

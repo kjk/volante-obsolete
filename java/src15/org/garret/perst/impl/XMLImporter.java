@@ -267,6 +267,7 @@ public class XMLImporter {
                     dst += 2;
                     break;
                   case ClassDescriptor.tpInt:
+                  case ClassDescriptor.tpEnum:
                     buf.extend(dst+4);
                     Bytes.pack4(buf.arr, dst, Integer.parseInt(value));
                     dst += 4;
@@ -335,6 +336,7 @@ public class XMLImporter {
                 case ClassDescriptor.tpShort:
                     return new Key(Short.parseShort(value));
                 case ClassDescriptor.tpInt:
+                case ClassDescriptor.tpEnum:
                     return new Key(Integer.parseInt(value));
                 case ClassDescriptor.tpObject:
                     obj = new Persistent();
@@ -679,6 +681,21 @@ public class XMLImporter {
                     }
                     offs += 8;
                     continue;
+                case ClassDescriptor.tpEnum:
+                    buf.extend(offs + 4);
+                    if (elem != null) { 
+                        if (elem.isIntValue()) {
+                            Bytes.pack4(buf.arr, offs, (int)elem.getIntValue());
+                        } else if (elem.isRealValue()) {
+                            Bytes.pack4(buf.arr, offs, (int)elem.getRealValue());
+                        } else if (elem.isStringValue()) {
+                            Bytes.pack4(buf.arr, offs, Enum.valueOf(fd.field.getType(), elem.getStringValue()).ordinal());
+                        } else { 
+                            throwException("Conversion for field " + fieldName + " is not possible");
+                        }
+                    }
+                    offs += 4;
+                    continue;
                 case ClassDescriptor.tpDate:
                     buf.extend(offs + 8);
                     if (elem != null) { 
@@ -815,6 +832,33 @@ public class XMLImporter {
                                 Bytes.pack4(buf.arr, offs, (int)item.getIntValue());
                             } else if (item.isRealValue()) { 
                                 Bytes.pack4(buf.arr, offs, (int)item.getRealValue());
+                            } else {
+                                throwException("Conversion for field " + fieldName + " is not possible");
+                            }
+                            item = item.getNextSibling();
+                            offs += 4;
+                        }
+                    }
+                    continue;
+                case ClassDescriptor.tpArrayOfEnum:
+                    if (elem == null || elem.isNullValue()) {
+                        buf.extend(offs + 4);
+                        Bytes.pack4(buf.arr, offs, -1);
+                        offs += 4;
+                    } else {
+                        XMLElement item = elem.getSibling("array-element");
+                        int len = (item == null) ? 0 : item.getCounter(); 
+                        buf.extend(offs + 4 + len*4);
+                        Bytes.pack4(buf.arr, offs, len);
+                        Class enumType = fd.field.getType();
+                        offs += 4;
+                        while (--len >= 0) { 
+                            if (item.isIntValue()) { 
+                                Bytes.pack4(buf.arr, offs, (int)item.getIntValue());
+                            } else if (item.isRealValue()) { 
+                                Bytes.pack4(buf.arr, offs, (int)item.getRealValue());
+                            } else if (item.isStringValue()) { 
+                                Bytes.pack4(buf.arr, offs, Enum.valueOf(enumType, item.getStringValue()).ordinal());
                             } else {
                                 throwException("Conversion for field " + fieldName + " is not possible");
                             }

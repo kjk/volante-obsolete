@@ -156,10 +156,10 @@ public class Projection<From extends IPersistent, To extends IPersistent> {
                     for (int i = 0; i < arr.length; i++) { 
                         add((To)arr[i]);
                     }
-                } else if (o instanceof To[]) { 
-                    To[] arr = (To[])o;
+                } else if (o instanceof Object[]) { 
+                    Object[] arr = (Object[])o;
                     for (int i = 0; i < arr.length; i++) { 
-                        add(arr[i]);
+                        add((To)arr[i]);
                     }
                 } else { 
                     add((To)o);

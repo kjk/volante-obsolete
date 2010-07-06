@@ -88,12 +88,13 @@ privileged public aspect PersistenceAspect {
     }
     
     public void AutoPersist.commit() {
-        if (storage !=null)
+        if (storage != null) { 
             storage.commit();
+        }
     }
     
     public void AutoPersist.load() {
-        if (storage != null && (state & RAW) != 0) { 
+        if (oid != 0 && (state & RAW) != 0) { 
             storage.loadObject(this);
         }
     }
@@ -132,7 +133,7 @@ privileged public aspect PersistenceAspect {
     }
     
     public void AutoPersist.modify() { 
-        if ((state & DIRTY) == 0 && storage != null) { 
+        if ((state & DIRTY) == 0 && oid != 0) { 
             if ((state & RAW) != 0) { 
                 throw new StorageError(StorageError.ACCESS_TO_STUB);
             }
@@ -146,9 +147,10 @@ privileged public aspect PersistenceAspect {
     }
     
     public void AutoPersist.deallocate() { 
-        if (storage != null) { 
+        if (oid != 0) { 
             storage.deallocateObject(this);
             state = 0;
+            oid = 0;
             storage = null;
         }
     }
@@ -163,13 +165,16 @@ privileged public aspect PersistenceAspect {
     
     public void AutoPersist.onLoad() {
     }
+
+    public void AutoPersist.onStore() {
+    }
     
     public void AutoPersist.invalidate() { 
         state |= RAW;
     }
     
     public void AutoPersist.finalize() { 
-        if ((state & DIRTY) != 0 && storage != null) { 
+        if ((state & DIRTY) != 0 && oid != 0) { 
             storage.storeFinalizedObject(this);
             state &= ~DIRTY;
         }

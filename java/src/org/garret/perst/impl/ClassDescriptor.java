@@ -222,6 +222,8 @@ public final class ClassDescriptor extends Persistent {
                 throw new StorageError(StorageError.UNSUPPORTED_TYPE, c);
             }
             type += tpArrayOfBoolean;
+        } else if (c.equals(Object.class) || c.equals(Comparable.class)) {
+            type = tpRaw;
         } else if (serializeNonPersistentObjects) {
             type = tpRaw;            
         } else if (treateAnyNonPersistentObjectAsValue) {

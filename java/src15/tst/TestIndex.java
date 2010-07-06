@@ -2,9 +2,16 @@ import org.garret.perst.*;
 
 import java.util.*;
 
+enum Color { 
+    RED, 
+    GREEN,
+    BLUE
+}
+
 class Record extends Persistent { 
     String strKey;
     long   intKey;
+    Color  c;
 };
 
 class Indices extends Persistent {
@@ -19,7 +26,8 @@ public class TestIndex {
     static public void main(String[] args) {    
         Storage db = StorageFactory.getInstance().createStorage();
 
-        db.open("testidx.dbs", pagePoolSize);
+        //db.open("testidx.dbs", pagePoolSize);
+        db.open(new MappedFile("testidx.dbs", pagePoolSize, false), pagePoolSize);
         Indices root = (Indices)db.getRoot();
         if (root == null) { 
             root = new Indices();
@@ -37,6 +45,7 @@ public class TestIndex {
             key = (3141592621L*key + 2718281829L) % 1000000007L;
             rec.intKey = key;
             rec.strKey = Long.toString(key);
+            rec.c = Color.GREEN;
             intIndex.put(new Key(rec.intKey), rec);                
             strIndex.put(new Key(rec.strKey), rec);                
         }
@@ -51,6 +60,7 @@ public class TestIndex {
             Record rec1 = (Record)intIndex.get(new Key(key));
             Record rec2 = (Record)strIndex.get(new Key(Long.toString(key)));
             Assert.that(rec1 != null && rec1 == rec2);
+            assert(rec1.c == Color.GREEN);
         }
         System.out.println("Elapsed time for performing " + nRecords*2 + " index searches: " 
                            + (System.currentTimeMillis() - start) + " milliseconds");

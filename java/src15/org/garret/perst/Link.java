@@ -102,6 +102,13 @@ public interface Link<T extends IPersistent> extends Collection<T> {
      */
     public boolean addAll(Link<T> link);
 
+   /**
+     * Return array with relation members. Members are not loaded and 
+     * size of the array can be greater than actual number of members. 
+     * @return array of object with relation members used in implementation of Link class
+     */
+    T[] toRawArray(); 
+
     /**
      * Get relation members as array of object
      * @return array of object with relation members

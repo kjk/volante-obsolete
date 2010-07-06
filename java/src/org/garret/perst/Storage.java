@@ -101,7 +101,7 @@ public abstract class Storage {
     
 
     /**
-     * Commit changes done by the lat transaction. Transaction is started implcitlely with forst update
+     * Commit changes done by the last transaction. Transaction is started implcitlely with forst update
      * opertation.
      */
     abstract public void commit();
@@ -120,14 +120,30 @@ public abstract class Storage {
 
     public static final int EXCLUSIVE_TRANSACTION   = 0;
     public static final int COOPERATIVE_TRANSACTION = 1;
+    public static final int SERIALIZABLE_TRANSACTION = 2;
 
     /** 
-     * Begin per-thread transaction. Two types op per-thread transactions are supported: 
-     * exclusive and coopertative. In case of exclusive trasnaction, only one thread
-     * can update the database. In cooperative mode, multiple transaction can work 
+     * Begin per-thread transaction. Three types of per-thread transactions are supported: 
+     * exclusive, cooperative and serializable. In case of exclusive transaction, only one 
+     * thread can update the database. In cooperative mode, multiple transaction can work 
      * concurrently and commit() method will be invoked only when transactions of all threads
-     * are terminated.
-     * @param mode <code>EXCLUSIVE_TRANSACTION</code> or <code>COOPERATIVE_TRANSACTION</code>
+     * are terminated. Serializable transactions can also work concurrently. But unlike
+     * cooperative transaction, the threads are isolated from each other. Each thread
+     * has its own associated set of modified objects and committing the transaction will cause
+     * saving only of these objects to the database.To synchronize access to the objects
+     * in case of serializable transaction programmer should use lock methods
+     * of IResource interface. Shared lock should be set before read access to any object, 
+     * and exclusive lock - before write access. Locks will be automatically released when
+     * transaction is committed (so programmer should not explicitly invoke unlock method)
+     * In this case it is guaranteed that transactions are serializable.<br>
+     * It is not possible to use <code>IPersistent.store()</code> method in
+     * serializable transactions. That is why it is also not possible to use Index and FieldIndex
+     * containers (since them are based on B-Tree and B-Tree directly access database pages
+     * and use <code>store()</code> method to assign OID to inserted object. 
+     * You should use <code>SortedCollection</code> based on T-Tree instead or alternative
+     * B-Tree implemenataion (set "perst.alternative.btree" property).
+     * @param mode <code>EXCLUSIVE_TRANSACTION</code>, <code>COOPERATIVE_TRANSACTION</code>
+     * or <code>SERIALIZABLE_TRANSACTION</code>
      */
     abstract public void beginThreadTransaction(int mode);
     
@@ -135,6 +151,8 @@ public abstract class Storage {
      * End per-thread transaction started by beginThreadTransaction method.<br>
      * If transaction is <i>exclusive</i>, this method commits the transaction and
      * allows other thread to proceed.<br>
+     * If transaction is <i>serializable</i>, this method commits sll changes done by this thread
+     * and release all locks set by this thread.<br>     
      * If transaction is <i>cooperative</i>, this method decrement counter of cooperative
      * transactions and if it becomes zero - commit the work
      */
@@ -372,6 +390,16 @@ public abstract class Storage {
      * <TR><TD><code>perst.file.readonly</code></TD><TD>Boolean</TD><TD>false</TD>
      * <TD>Database file should be opened in read-only mode.
      * </TD></TR>
+     * <TR><TD><code>perst.alternative.btree</code></TD><TD>Boolean</TD><TD>false</TD>
+     * <TD>Use aternative implementation of B-Tree (not using direct access to database
+     * file pages). This implementation should be used in case of serialized per thread transctions.
+     * New implementation of B-Tree will be used instead of old implementation
+     * if "perst.alternative.btree" property is set. New B-Tree has incompatible format with 
+     * old B-Tree, so you could not use old database or XML export file with new indices. 
+     * Alternative B-Tree is needed to provide serializable transaction (old one could not be used).
+     * Also it provides better performance (about 3 times comaring with old implementation) because
+     * of object caching. And B-Tree supports keys of user defined types. 
+     * </TD></TR>
      * </TABLE>
      * @param name name of the property
      * @param value value of the property (for boolean properties pass <code>java.lang.Boolean.TRUE</code>
@@ -438,6 +466,8 @@ public abstract class Storage {
     abstract public/*protected*/ void modifyObject(IPersistent obj);
 
     abstract public/*protected*/ void loadObject(IPersistent obj);
+
+    abstract public/*protected*/ void lockObject(IPersistent obj);
 
     private ClassLoader loader;
 }

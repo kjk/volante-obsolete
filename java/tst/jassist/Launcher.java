@@ -9,6 +9,7 @@ public class Launcher {
             Translator trans = new PerstTranslator();
             ClassPool pool = ClassPool.getDefault(trans);
             Loader cl = new Loader(pool);
+            Thread.currentThread().setContextClassLoader(cl);
             cl.run(args[0], args);
         }
     }

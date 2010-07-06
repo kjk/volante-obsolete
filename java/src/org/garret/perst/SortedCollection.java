@@ -23,13 +23,11 @@ public interface SortedCollection extends IPersistent, IResource {
      * Get members which key value belongs to the specified range.
      * Either from boundary, either till boundary either both of them can be <code>null</code>.
      * In last case the method returns all objects from the collection.
-     * @param from low boundary. If <code>null</code> then low boundary is not specified.
-     * Low boundary can be inclusive or exclusive. 
-     * @param till high boundary. If <code>null</code> then high boundary is not specified.
-     * High boundary can be inclusive or exclusive. 
+     * @param from inclusive low boundary. If <code>null</code> then low boundary is not specified.
+     * @param till inclusive high boundary. If <code>null</code> then high boundary is not specified.
      * @return array of objects which keys belongs to the specified interval, ordered by key value
      */
-    public IPersistent[] get(Key from, Key till);
+    public IPersistent[] get(Object from, Object till);
 
     /**
      * Add new member to collection
@@ -93,13 +91,11 @@ public interface SortedCollection extends IPersistent, IResource {
     public java.util.Iterator iterator();
     /**
      * Get iterator for traversing collection members  with key belonging to the specified range. 
-     * @param from low boundary. If <code>null</code> then low boundary is not specified.
-     * Low boundary can be inclusive or exclusive. 
-     * @param till high boundary. If <code>null</code> then high boundary is not specified.
-     * High boundary can be inclusive or exclusive. 
+     * @param from inclusive low boundary. If <code>null</code> then low boundary is not specified.
+     * @param till inclusive high boundary. If <code>null</code> then high boundary is not specified.
      * @return selection iterator
      */
-    public java.util.Iterator iterator(Key from, Key till);
+    public java.util.Iterator iterator(Object from, Object till);
 
     /**
      * Get comparator used in this collection

@@ -1038,10 +1038,8 @@ public class StorageImpl extends Storage {
         header.root[1-currIndex].rootObject = root.getOid();
         modified = true;
     }
-
-    public synchronized void commit() 
-    {
-        int i, j, n;
+ 
+    public synchronized void commit() {
         if (!opened) {
             throw new StorageError(StorageError.STORAGE_NOT_OPENED);
         }
@@ -1049,6 +1047,13 @@ public class StorageImpl extends Storage {
         if (!modified) { 
             return;
         }
+        commit0();
+        modified = false;
+    }
+
+    private final void commit0() 
+    {
+        int i, j, n;
         int curr = currIndex;
         int[] map = dirtyPagesMap;
         int oldIndexSize = header.root[curr].indexSize;
@@ -1192,7 +1197,6 @@ public class StorageImpl extends Storage {
                 }
             }
         }
-        modified = false;
         gcDone = false;
         currIndex = curr;
         committedIndexSize = currIndexSize;
@@ -1206,6 +1210,11 @@ public class StorageImpl extends Storage {
         if (!modified) { 
             return;
         }
+        rollback0();
+        modified = false;
+    }
+
+    private final void rollback0() {
         int curr = currIndex;
         int[] map = dirtyPagesMap;
         if (header.root[1-curr].index != header.root[curr].shadowIndex) { 
@@ -1232,7 +1241,6 @@ public class StorageImpl extends Storage {
         header.root[1-curr].rootObject = header.root[curr].rootObject;
         header.root[1-curr].classDescList = header.root[curr].classDescList;
         header.root[1-curr].bitmapExtent = header.root[curr].bitmapExtent;
-        modified = false;
         usedSize = header.root[curr].size;
         currIndexSize = committedIndexSize;
         currRBitmapPage = currPBitmapPage = 0;
@@ -1415,7 +1423,9 @@ public class StorageImpl extends Storage {
         if (!opened) { 
             throw new StorageError(StorageError.STORAGE_NOT_OPENED);
         }
-        PersistentSet<T> set = new PersistentSet<T>();
+        IPersistentSet<T> set = alternativeBtree 
+            ? (IPersistentSet<T>)new AltPersistentSet<T>()
+            : (IPersistentSet<T>)new PersistentSet<T>();
         set.assignOid(this, 0, false);
         return set;
     }
@@ -1424,7 +1434,9 @@ public class StorageImpl extends Storage {
         if (!opened) { 
             throw new StorageError(StorageError.STORAGE_NOT_OPENED);
         }
-        Btree<T> index = new Btree<T>(keyType, unique);
+        Index<T> index = alternativeBtree 
+            ? (Index<T>)new AltBtree<T>(keyType, unique)
+            : (Index<T>)new Btree<T>(keyType, unique);
         index.assignOid(this, 0, false);
         return index;
     }
@@ -1447,7 +1459,9 @@ public class StorageImpl extends Storage {
         if (!opened) { 
             throw new StorageError(StorageError.STORAGE_NOT_OPENED);
         }        
-        FieldIndex<T> index = new BtreeFieldIndex<T>(type, fieldName, unique);
+        FieldIndex<T> index = alternativeBtree
+            ? (FieldIndex<T>)new AltBtreeFieldIndex<T>(type, fieldName, unique)
+            : (FieldIndex<T>)new BtreeFieldIndex<T>(type, fieldName, unique);
         index.assignOid(this, 0, false);
         return index;
     }
@@ -1456,7 +1470,9 @@ public class StorageImpl extends Storage {
         if (!opened) { 
             throw new StorageError(StorageError.STORAGE_NOT_OPENED);
         }        
-        FieldIndex<T> index = new BtreeMultiFieldIndex<T>(type, fieldNames, unique);
+        FieldIndex<T> index = alternativeBtree
+            ? (FieldIndex<T>)new AltBtreeMultiFieldIndex(type, fieldNames, unique)
+            : (FieldIndex<T>)new BtreeMultiFieldIndex(type, fieldNames, unique);
         index.assignOid(this, 0, false);
         return index;
     }
@@ -1762,6 +1778,7 @@ public class StorageImpl extends Storage {
                     offs += 2;
                     continue;
                 case ClassDescriptor.tpInt:
+                case ClassDescriptor.tpEnum:
                 case ClassDescriptor.tpFloat:
                     offs += 4;
                     continue;
@@ -1787,6 +1804,19 @@ public class StorageImpl extends Storage {
                     offs = markObject(obj, offs, fd.valueDesc);
                     continue;
                 case ClassDescriptor.tpRaw:
+                {
+                    int len = Bytes.unpack4(obj, offs);
+                    offs += 4;
+                    if (len > 0) { 
+                        offs += len;
+                    } else if (len == -2-ClassDescriptor.tpObject) { 
+                        markOid(Bytes.unpack4(obj, offs));
+                        offs += 4;
+                    } else if (len < -1) { 
+                        offs += ClassDescriptor.sizeof[-2-len];
+                    }
+                    continue;
+                }
                 case ClassDescriptor.tpArrayOfByte:
                 case ClassDescriptor.tpArrayOfBoolean:
                 {
@@ -1794,8 +1824,6 @@ public class StorageImpl extends Storage {
                     offs += 4;
                     if (len > 0) { 
                         offs += len;
-                    } else if (len < -1) { 
-                        offs += ClassDescriptor.sizeof[-2-len];
                     }
                     continue;
                 }
@@ -1810,6 +1838,7 @@ public class StorageImpl extends Storage {
                     continue;
                 }
                 case ClassDescriptor.tpArrayOfInt:
+                case ClassDescriptor.tpArrayOfEnum:
                 case ClassDescriptor.tpArrayOfFloat:
                 {
                     int len = Bytes.unpack4(obj, offs);
@@ -1873,6 +1902,9 @@ public class StorageImpl extends Storage {
                         offs += 4;
                         if (rawlen >= 0) { 
                             offs += rawlen;
+                        } else if (rawlen == -2-ClassDescriptor.tpObject) { 
+                            markOid(Bytes.unpack4(obj, offs));
+                            offs += 4;
                         } else if (rawlen < -1) { 
                             offs += ClassDescriptor.sizeof[-2-rawlen];
                         }
@@ -1885,55 +1917,97 @@ public class StorageImpl extends Storage {
         return offs;
     }
 
+
+    static class ThreadTransactionContext { 
+        int       nested;
+        ArrayList locked = new ArrayList();
+        ArrayList modified = new ArrayList();
+    }
+
+    static ThreadTransactionContext getTransactionContext() { 
+        return (ThreadTransactionContext)transactionContext.get();
+    }
+
+    static void setTransactionContext(ThreadTransactionContext ctx) { 
+        transactionContext.set(ctx);
+    }
+
     public void beginThreadTransaction(int mode)
     {
-        synchronized (transactionMonitor) {
-            if (scheduledCommitTime != Long.MAX_VALUE) { 
-                nBlockedTransactions += 1;
-                while (System.currentTimeMillis() >= scheduledCommitTime) { 
-                    try { 
-                        transactionMonitor.wait();
-                    } catch (InterruptedException x) {}
-                }
-                nBlockedTransactions -= 1;
-            }
-            nNestedTransactions += 1;
-        }           
-        if (mode == EXCLUSIVE_TRANSACTION) { 
-            transactionLock.exclusiveLock();
+        if (mode == SERIALIZABLE_TRANSACTION) { 
+            useSerializableTransactions = true;
+            getTransactionContext().nested += 1;;
         } else { 
-            transactionLock.sharedLock();
+            synchronized (transactionMonitor) {
+                if (scheduledCommitTime != Long.MAX_VALUE) { 
+                    nBlockedTransactions += 1;
+                    while (System.currentTimeMillis() >= scheduledCommitTime) { 
+                        try { 
+                            transactionMonitor.wait();
+                        } catch (InterruptedException x) {}
+                    }
+                    nBlockedTransactions -= 1;
+                }
+                nNestedTransactions += 1;
+            }           
+            if (mode == EXCLUSIVE_TRANSACTION) { 
+                transactionLock.exclusiveLock();
+            } else { 
+                transactionLock.sharedLock();
+            }
         }
     }
 
     public void endThreadTransaction(int maxDelay)
     {
-        synchronized (transactionMonitor) { 
-            transactionLock.unlock();
-            if (nNestedTransactions != 0) { // may be everything is already aborted
-                if (--nNestedTransactions == 0) { 
-                    nCommittedTransactions += 1;
-                    commit();
-                    scheduledCommitTime = Long.MAX_VALUE;
-                    if (nBlockedTransactions != 0) { 
-                        transactionMonitor.notifyAll();
+        ThreadTransactionContext ctx = getTransactionContext();
+        if (ctx.nested != 0) { // serializable transaction
+            if (--ctx.nested == 0) { 
+                int i = ctx.modified.size();
+                if (i != 0) { 
+                    do { 
+                        ((IPersistent)ctx.modified.get(--i)).store();
+                    } while (i != 0);
+
+                    synchronized(this) { 
+                        commit0();
                     }
-                } else {
-                    if (maxDelay != Integer.MAX_VALUE) { 
-                        long nextCommit = System.currentTimeMillis() + maxDelay;
-                        if (nextCommit < scheduledCommitTime) { 
-                            scheduledCommitTime = nextCommit;
+                }
+                for (i = ctx.locked.size(); --i >= 0;) { 
+                    ((IResource)ctx.locked.get(i)).reset();
+                }
+                ctx.modified.clear();
+                ctx.locked.clear();
+            } 
+        } else { // exclusive or aooperative transaction        
+            synchronized (transactionMonitor) { 
+                transactionLock.unlock();
+                
+                if (nNestedTransactions != 0) { // may be everything is already aborted
+                    if (--nNestedTransactions == 0) { 
+                        nCommittedTransactions += 1;
+                        commit();
+                        scheduledCommitTime = Long.MAX_VALUE;
+                        if (nBlockedTransactions != 0) { 
+                            transactionMonitor.notifyAll();
                         }
-                        if (maxDelay == 0) { 
-                            int n = nCommittedTransactions;
-                            nBlockedTransactions += 1;
-                            do { 
+                    } else {
+                        if (maxDelay != Integer.MAX_VALUE) { 
+                            long nextCommit = System.currentTimeMillis() + maxDelay;
+                            if (nextCommit < scheduledCommitTime) { 
+                                scheduledCommitTime = nextCommit;
+                            }
+                            if (maxDelay == 0) { 
+                                int n = nCommittedTransactions;
+                                nBlockedTransactions += 1;
+                                do { 
                                 try { 
                                     transactionMonitor.wait();
                                 } catch (InterruptedException x) {}
-                            } while (nCommittedTransactions == n);
-                            nBlockedTransactions -= 1;
-                        }                                   
+                                } while (nCommittedTransactions == n);
+                                nBlockedTransactions -= 1;
+                            }                                   
+                        }
                     }
                 }
             }
@@ -1943,16 +2017,44 @@ public class StorageImpl extends Storage {
 
     public void rollbackThreadTransaction()
     {
-        synchronized (transactionMonitor) { 
-            transactionLock.reset();
-            nNestedTransactions = 0;
-            if (nBlockedTransactions != 0) { 
-                transactionMonitor.notifyAll();
+        ThreadTransactionContext ctx = getTransactionContext();
+        if (ctx.nested != 0) { // serializable transaction
+            ctx.nested = 0; 
+            int i = ctx.modified.size();
+            if (i != 0) { 
+                do { 
+                    ((IPersistent)ctx.modified.get(--i)).invalidate();
+                } while (i != 0);
+                
+                synchronized(this) { 
+                    rollback0();
+                }
             }
-            rollback();
+            for (i = ctx.locked.size(); --i >= 0;) { 
+                ((IResource)ctx.locked.get(i)).reset();
+            } 
+            ctx.modified.clear();
+            ctx.locked.clear();
+        } else { 
+            synchronized (transactionMonitor) { 
+                transactionLock.reset();
+                nNestedTransactions = 0;
+                if (nBlockedTransactions != 0) { 
+                    transactionMonitor.notifyAll();
+                }
+                rollback();
+            }
         }
     }
             
+    public/*protected*/ void lockObject(IPersistent obj) { 
+        if (useSerializableTransactions) { 
+            ThreadTransactionContext ctx = getTransactionContext();
+            if (ctx.nested != 0) { // serializable transaction
+                ctx.locked.add(obj);
+            }
+        }
+    }
          
     public void close() 
     {
@@ -2050,6 +2152,9 @@ public class StorageImpl extends Storage {
         if ((value = props.getProperty("perst.file.readonly")) != null) { 
             readOnly = getBooleanValue(value);
         }
+        if ((value = props.getProperty("perst.alternative.btree")) != null) { 
+            alternativeBtree = getBooleanValue(value);
+        }
     }
 
     public void setProperty(String name, Object value)
@@ -2068,6 +2173,8 @@ public class StorageImpl extends Storage {
             gcThreshold = getIntegerValue(value);
         } else if (name.equals("perst.file.readonly")) { 
             readOnly = getBooleanValue(value);
+        } else if (name.equals("perst.alternative.btree")) { 
+            alternativeBtree = getBooleanValue(value);
         } else { 
             throw new StorageError(StorageError.NO_SUCH_PROPERTY);
         }
@@ -2083,6 +2190,12 @@ public class StorageImpl extends Storage {
     public/*protected*/ synchronized void modifyObject(IPersistent obj) {
         synchronized(objectCache) { 
             if (!obj.isModified()) { 
+                if (useSerializableTransactions) { 
+                    ThreadTransactionContext ctx = getTransactionContext();
+                    if (ctx.nested != 0) { // serializable transaction
+                        ctx.modified.add(obj);
+                    }
+                }
                 objectCache.setDirty(obj.getOid());
             }
         }
@@ -2111,6 +2224,7 @@ public class StorageImpl extends Storage {
 
     private final void storeObject0(IPersistent obj) 
     {
+        obj.onStore();
         int oid = obj.getOid();
         boolean newObject = false;
         if (oid == 0) { 
@@ -2270,6 +2384,7 @@ public class StorageImpl extends Storage {
       throws Exception
     {
         ClassDescriptor.FieldDescriptor[] all = desc.allFields;
+        ReflectionProvider provider = ClassDescriptor.getReflectionProvider();
         int len;
 
         for (int i = 0, n = all.length; i < n; i++) { 
@@ -2289,6 +2404,7 @@ public class StorageImpl extends Storage {
                 case ClassDescriptor.tpInt:
                 case ClassDescriptor.tpFloat:
                 case ClassDescriptor.tpObject:
+                case ClassDescriptor.tpEnum:
                     offs += 4;
                     continue;
                 case ClassDescriptor.tpLong:
@@ -2326,6 +2442,7 @@ public class StorageImpl extends Storage {
                     }
                     continue;
                 case ClassDescriptor.tpArrayOfInt:
+                case ClassDescriptor.tpArrayOfEnum:
                 case ClassDescriptor.tpArrayOfFloat:
                 case ClassDescriptor.tpArrayOfObject:
                 case ClassDescriptor.tpLink:
@@ -2386,34 +2503,38 @@ public class StorageImpl extends Storage {
             } else {                 
                 switch (fd.type) { 
                 case ClassDescriptor.tpBoolean:
-                    f.setBoolean(obj, body[offs++] != 0);
+                    provider.setBoolean(f, obj, body[offs++] != 0);
                     continue;
                 case ClassDescriptor.tpByte:
-                    f.setByte(obj, body[offs++]);
+                    provider.setByte(f, obj, body[offs++]);
                     continue;
                 case ClassDescriptor.tpChar:
-                    f.setChar(obj, (char)Bytes.unpack2(body, offs));
+                    provider.setChar(f, obj, (char)Bytes.unpack2(body, offs));
                     offs += 2;
                     continue;
                 case ClassDescriptor.tpShort:
-                    f.setShort(obj, Bytes.unpack2(body, offs));
+                    provider.setShort(f, obj, Bytes.unpack2(body, offs));
                     offs += 2;
                     continue;
                 case ClassDescriptor.tpInt:
-                    f.setInt(obj, Bytes.unpack4(body, offs));
+                    provider.setInt(f, obj, Bytes.unpack4(body, offs));
                     offs += 4;
                     continue;
                 case ClassDescriptor.tpLong:
-                    f.setLong(obj, Bytes.unpack8(body, offs));
+                    provider.setLong(f, obj, Bytes.unpack8(body, offs));
                     offs += 8;
                     continue;
                 case ClassDescriptor.tpFloat:
-                    f.setFloat(obj, Float.intBitsToFloat(Bytes.unpack4(body, offs)));
+                    provider.setFloat(f, obj, Float.intBitsToFloat(Bytes.unpack4(body, offs)));
                     offs += 4;
                     continue;
                 case ClassDescriptor.tpDouble:
-                    f.setDouble(obj, Double.longBitsToDouble(Bytes.unpack8(body, offs)));
+                    provider.setDouble(f, obj, Double.longBitsToDouble(Bytes.unpack8(body, offs)));
                     offs += 8;
+                    continue;
+                 case ClassDescriptor.tpEnum:
+                    provider.set(f, obj, fd.field.getType().getEnumConstants()[Bytes.unpack4(body, offs)]);
+                    offs += 4;
                     continue;
                 case ClassDescriptor.tpString:
                 {
@@ -2428,7 +2549,7 @@ public class StorageImpl extends Storage {
                         }
                         str = new String(chars);
                     } 
-                    f.set(obj, str);
+                    provider.set(f, obj, str);
                     continue;
                 }
                 case ClassDescriptor.tpDate:
@@ -2439,12 +2560,12 @@ public class StorageImpl extends Storage {
                     if (msec >= 0) { 
                         date = new Date(msec);
                     }
-                    f.set(obj, date);
+                    provider.set(f, obj, date);
                     continue;
                 }
                 case ClassDescriptor.tpObject:
                 {
-                    f.set(obj, unswizzle(Bytes.unpack4(body, offs), f.getType(), recursiveLoading));
+                    provider.set(f, obj, unswizzle(Bytes.unpack4(body, offs), f.getType(), recursiveLoading));
                     offs += 4;
                     continue;
                 }
@@ -2452,7 +2573,7 @@ public class StorageImpl extends Storage {
                 {
                     Object value = fd.valueDesc.newInstance();
                     offs = unpackObject(value, fd.valueDesc, recursiveLoading, body, offs);
-                    f.set(obj, value);
+                    provider.set(f, obj, value);
                     continue;
                 }
                 case ClassDescriptor.tpRaw:
@@ -2461,14 +2582,14 @@ public class StorageImpl extends Storage {
                     if (len >= 0) { 
                         ByteArrayInputStream bin = new ByteArrayInputStream(body, offs, len);
                         ObjectInputStream in = new PersistentObjectInputStream(bin);
-                        f.set(obj, in.readObject());
+                        provider.set(f, obj, in.readObject());
                         in.close();
                         offs += len;
                     } else if (len < 0) { 
                         Object val = null;
                         switch (-2-len) { 
                         case ClassDescriptor.tpBoolean:
-                            val = new Boolean(body[offs++] != 0);
+                            val = Boolean.valueOf(body[offs++] != 0);
                             break;
                         case ClassDescriptor.tpByte:
                             val = new Byte(body[offs++]);
@@ -2505,71 +2626,87 @@ public class StorageImpl extends Storage {
                             val = unswizzle(Bytes.unpack4(body, offs), Persistent.class, recursiveLoading);
                             offs += 4;
                         }
-                        f.set(obj, val);
+                        provider.set(f, obj, val);
                     }
                     continue;
                 case ClassDescriptor.tpArrayOfByte:
                     len = Bytes.unpack4(body, offs);
                     offs += 4;
                     if (len < 0) { 
-                        f.set(obj, null);
+                        provider.set(f, obj, null);
                     } else {
                         byte[] arr = new byte[len];
                         System.arraycopy(body, offs, arr, 0, len);
                         offs += len;
-                        f.set(obj, arr);
+                        provider.set(f, obj, arr);
                     }
                     continue;
                 case ClassDescriptor.tpArrayOfBoolean:
                     len = Bytes.unpack4(body, offs);
                     offs += 4;
                     if (len < 0) { 
-                        f.set(obj, null);
+                        provider.set(f, obj, null);
                     } else {
                         boolean[] arr = new boolean[len];
                         for (int j = 0; j < len; j++) { 
                             arr[j] = body[offs++] != 0;
                         }
-                        f.set(obj, arr);
+                        provider.set(f, obj, arr);
                     }
                     continue;
                 case ClassDescriptor.tpArrayOfShort:
                     len = Bytes.unpack4(body, offs);
                     offs += 4;
                     if (len < 0) { 
-                        f.set(obj, null);
+                        provider.set(f, obj, null);
                     } else {
                         short[] arr = new short[len];
                         for (int j = 0; j < len; j++) { 
                             arr[j] = Bytes.unpack2(body, offs);
                             offs += 2;
                         }
-                        f.set(obj, arr);
+                        provider.set(f, obj, arr);
                     }
                     continue;
                 case ClassDescriptor.tpArrayOfChar:
                     len = Bytes.unpack4(body, offs);
                     offs += 4;
                     if (len < 0) { 
-                        f.set(obj, null);
+                        provider.set(f, obj, null);
                     } else {
                         char[] arr = new char[len];
                         for (int j = 0; j < len; j++) { 
                             arr[j] = (char)Bytes.unpack2(body, offs);
                             offs += 2;
                         }
-                        f.set(obj, arr);
+                        provider.set(f, obj, arr);
                     }
                     continue;
                 case ClassDescriptor.tpArrayOfInt:
                     len = Bytes.unpack4(body, offs);
                     offs += 4;
                     if (len < 0) { 
-                        f.set(obj, null);
+                        provider.set(f, obj, null);
                     } else {
                         int[] arr = new int[len];
                         for (int j = 0; j < len; j++) { 
                             arr[j] = Bytes.unpack4(body, offs);
+                            offs += 4;
+                        }
+                        provider.set(f, obj, arr);
+                    }
+                    continue;
+                case ClassDescriptor.tpArrayOfEnum:
+                    len = Bytes.unpack4(body, offs);
+                    offs += 4;
+                    if (len < 0) { 
+                        f.set(obj, null);
+                    } else {
+                        Class elemType = f.getType().getComponentType();
+                        Enum[] enumConstants = (Enum[])elemType.getEnumConstants();
+                        Enum[] arr = (Enum[])Array.newInstance(elemType, len);
+                        for (int j = 0; j < len; j++) { 
+                            arr[j] = enumConstants[Bytes.unpack4(body, offs)];
                             offs += 4;
                         }
                         f.set(obj, arr);
@@ -2579,49 +2716,49 @@ public class StorageImpl extends Storage {
                     len = Bytes.unpack4(body, offs);
                     offs += 4;
                     if (len < 0) { 
-                        f.set(obj, null);
+                        provider.set(f, obj, null);
                     } else {
                         long[] arr = new long[len];
                         for (int j = 0; j < len; j++) { 
                             arr[j] = Bytes.unpack8(body, offs);
                             offs += 8;
                         }
-                        f.set(obj, arr);
+                        provider.set(f, obj, arr);
                     }
                     continue;
                 case ClassDescriptor.tpArrayOfFloat:
                     len = Bytes.unpack4(body, offs);
                     offs += 4;
                     if (len < 0) { 
-                        f.set(obj, null);
+                        provider.set(f, obj, null);
                     } else {
                         float[] arr = new float[len];
                         for (int j = 0; j < len; j++) { 
                             arr[j] = Float.intBitsToFloat(Bytes.unpack4(body, offs));
                             offs += 4;
                         }
-                        f.set(obj, arr);
+                        provider.set(f, obj, arr);
                     }
                     continue;
                 case ClassDescriptor.tpArrayOfDouble:
                     len = Bytes.unpack4(body, offs);
                     offs += 4;
                     if (len < 0) { 
-                        f.set(obj, null);
+                        provider.set(f, obj, null);
                     } else {
                         double[] arr = new double[len];
                         for (int j = 0; j < len; j++) { 
                             arr[j] = Double.longBitsToDouble(Bytes.unpack8(body, offs));
                             offs += 8;
                         }
-                        f.set(obj, arr);
+                        provider.set(f, obj, arr);
                     }
                     continue;
                 case ClassDescriptor.tpArrayOfDate:
                     len = Bytes.unpack4(body, offs);
                     offs += 4;
                     if (len < 0) { 
-                        f.set(obj, null);
+                        provider.set(f, obj, null);
                     } else {
                         Date[] arr = new Date[len];
                         for (int j = 0; j < len; j++) { 
@@ -2631,14 +2768,14 @@ public class StorageImpl extends Storage {
                                 arr[j] = new Date(msec);
                             }
                         }
-                        f.set(obj, arr);
+                        provider.set(f, obj, arr);
                     }
                     continue;
                 case ClassDescriptor.tpArrayOfString:
                     len = Bytes.unpack4(body, offs);
                     offs += 4;
                     if (len < 0) { 
-                        f.set(obj, null);
+                        provider.set(f, obj, null);
                     } else {
                         String[] arr = new String[len];
                         for (int j = 0; j < len; j++) {
@@ -2653,14 +2790,14 @@ public class StorageImpl extends Storage {
                                 arr[j] = new String(chars);
                             }
                         }
-                        f.set(obj, arr);
+                        provider.set(f, obj, arr);
                     }
                     continue;
                 case ClassDescriptor.tpArrayOfObject:
                     len = Bytes.unpack4(body, offs);
                     offs += 4;
                     if (len < 0) { 
-                        f.set(obj, null);
+                        provider.set(f, obj, null);
                     } else {
                         Class elemType = f.getType().getComponentType();
                         IPersistent[] arr = (IPersistent[])Array.newInstance(elemType, len);
@@ -2668,14 +2805,14 @@ public class StorageImpl extends Storage {
                             arr[j] = unswizzle(Bytes.unpack4(body, offs), elemType, recursiveLoading);
                             offs += 4;
                         }
-                        f.set(obj, arr);
+                        provider.set(f, obj, arr);
                     }
                     continue;
                 case ClassDescriptor.tpArrayOfValue:
                     len = Bytes.unpack4(body, offs);
                     offs += 4;
                     if (len < 0) { 
-                        f.set(obj, null);
+                        provider.set(f, obj, null);
                     } else {
                         Class elemType = f.getType().getComponentType();
                         Object[] arr = (Object[])Array.newInstance(elemType, len);
@@ -2685,14 +2822,14 @@ public class StorageImpl extends Storage {
                             offs = unpackObject(value, valueDesc, recursiveLoading, body, offs);
                             arr[j] = value;
                         }
-                        f.set(obj, arr);
+                        provider.set(f, obj, arr);
                     }
                     continue;
                 case ClassDescriptor.tpArrayOfRaw:
                     len = Bytes.unpack4(body, offs);
                     offs += 4;
                     if (len < 0) { 
-                        f.set(obj, null);
+                        provider.set(f, obj, null);
                     } else {
                         Class elemType = f.getType().getComponentType();
                         Object[] arr = (Object[])Array.newInstance(elemType, len);
@@ -2709,7 +2846,7 @@ public class StorageImpl extends Storage {
                                 Object val = null;
                                 switch (-2-rawlen) { 
                                 case ClassDescriptor.tpBoolean:
-                                    val = new Boolean(body[offs++] != 0);
+                                    val = Boolean.valueOf(body[offs++] != 0);
                                     break;
                                 case ClassDescriptor.tpByte:
                                     val = new Byte(body[offs++]);
@@ -2749,14 +2886,14 @@ public class StorageImpl extends Storage {
                                 arr[j] = val;
                             }
                         }
-                        f.set(obj, arr);
+                        provider.set(f, obj, arr);
                     }
                     continue;
                 case ClassDescriptor.tpLink:
                     len = Bytes.unpack4(body, offs);
                     offs += 4;
                     if (len < 0) { 
-                        f.set(obj, null);
+                        provider.set(f, obj, null);
                     } else {
                         IPersistent[] arr = new IPersistent[len];
                         for (int j = 0; j < len; j++) { 
@@ -2772,7 +2909,7 @@ public class StorageImpl extends Storage {
                             }
                             arr[j] = stub;
                         }
-                        f.set(obj, new LinkImpl(arr));
+                        provider.set(f, obj, new LinkImpl(arr));
                     }
                 }
             }
@@ -2843,6 +2980,7 @@ public class StorageImpl extends Storage {
                 Bytes.pack8(buf.arr, offs+4, ((Long)value).longValue());
                 offs += 12;                                                   
             } else if (c == Float.class) { 
+                buf.extend(offs + 8);
                 Bytes.pack4(buf.arr, offs, -2-ClassDescriptor.tpFloat);
                 Bytes.pack4(buf.arr, offs+4, Float.floatToIntBits(((Float)value).floatValue()));
                 offs += 8;                                                   
@@ -2918,6 +3056,11 @@ public class StorageImpl extends Storage {
                     buf.extend(offs + 8);
                     Bytes.pack8(buf.arr, offs, Double.doubleToLongBits(f.getDouble(obj)));
                     offs += 8;
+                    continue;
+                case ClassDescriptor.tpEnum:
+                    buf.extend(offs + 4);
+                    Bytes.pack4(buf.arr, offs, ((Enum)f.get(obj)).ordinal());
+                    offs += 4;
                     continue;
                 case ClassDescriptor.tpDate:
                 {
@@ -3060,6 +3203,25 @@ public class StorageImpl extends Storage {
                     }
                     continue;
                 }
+                case ClassDescriptor.tpArrayOfEnum:
+                {
+                    Enum[] arr = (Enum[])f.get(obj);
+                    if (arr == null) { 
+                        buf.extend(offs + 4);
+                        Bytes.pack4(buf.arr, offs, -1);
+                        offs += 4;
+                    } else {
+                        int len = arr.length;                        
+                        buf.extend(offs + 4 + len*4);
+                        Bytes.pack4(buf.arr, offs, len);
+                        offs += 4;
+                        for (int j = 0; j < len; j++) {
+                            Bytes.pack4(buf.arr, offs, arr[j].ordinal());
+                            offs += 4;
+                        }
+                    }
+                    continue;
+                }
                 case ClassDescriptor.tpArrayOfLong:
                 {
                     long[] arr = (long[])f.get(obj);
@@ -3147,12 +3309,13 @@ public class StorageImpl extends Storage {
                         offs += 4;
                     } else {
                         int len = arr.length;                        
-                        buf.extend(offs + 4 + len*4);
+                        buf.extend(offs + 4);
                         Bytes.pack4(buf.arr, offs, len);
                         offs += 4;
                         for (int j = 0; j < len; j++) {
                             String str = (String)arr[j];
                             if (str == null) { 
+                                buf.extend(offs + 4);
                                 Bytes.pack4(buf.arr, offs, -1);
                                 offs += 4;
                             } else { 
@@ -3257,6 +3420,7 @@ public class StorageImpl extends Storage {
     private int     objectCacheInitSize = dbDefaultObjectCacheInitSize;
     private long    extensionQuantum = dbDefaultExtensionQuantum;
     private boolean readOnly = false;
+    private boolean alternativeBtree = false;
 
 
     PagePool  pool;
@@ -3294,6 +3458,14 @@ public class StorageImpl extends Storage {
     Object    transactionMonitor;
     PersistentResource transactionLock;
 
+    static final ThreadLocal transactionContext = new ThreadLocal() {
+         protected synchronized Object initialValue() {
+             return new ThreadTransactionContext();
+         }
+    };
+    boolean useSerializableTransactions;
+
+
     OidHashTable     objectCache;
     HashMap          classDescMap;
     ClassDescriptor  descList;
@@ -3311,7 +3483,7 @@ class RootPage {
     int  bitmapEnd;       // index of last allocated bitmap page
     int  rootObject;      // OID of root object
     int  classDescList;   // List of class descriptors
-    int  bitmapExtent;     // Allocation bitmap offset and size
+    int  bitmapExtent;    // Allocation bitmap offset and size
 
     final static int sizeof = 64;
 } 

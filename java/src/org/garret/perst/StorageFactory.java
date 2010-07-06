@@ -23,5 +23,5 @@ public class StorageFactory {
         return instance;
     }
 
-    protected static StorageFactory instance = new StorageFactory();
+    protected static final StorageFactory instance = new StorageFactory();
 };

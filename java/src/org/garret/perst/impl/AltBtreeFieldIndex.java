@@ -5,14 +5,14 @@ import java.lang.reflect.*;
 import java.util.Date;
 import java.util.ArrayList;
 
-class BtreeFieldIndex extends Btree implements FieldIndex { 
+class AltBtreeFieldIndex extends AltBtree implements FieldIndex { 
     String className;
     String fieldName;
     long   autoincCount;
     transient Class cls;
     transient Field fld;
 
-    BtreeFieldIndex() {}
+    AltBtreeFieldIndex() {}
     
     private final void locateField() 
     {
@@ -49,7 +49,7 @@ class BtreeFieldIndex extends Btree implements FieldIndex {
         locateField();
     }
 
-    BtreeFieldIndex(Class cls, String fieldName, boolean unique) {
+    AltBtreeFieldIndex(Class cls, String fieldName, boolean unique) {
         this.cls = cls;
         this.unique = unique;
         this.fieldName = fieldName;
@@ -94,7 +94,10 @@ class BtreeFieldIndex extends Btree implements FieldIndex {
                 key = new Key(f.getDouble(obj));
                 break;
               case ClassDescriptor.tpString:
-                key = new Key(((String)f.get(obj)).toCharArray());
+                key = new Key((String)f.get(obj));
+                break;
+              case ClassDescriptor.tpRaw:
+                key = new Key((Comparable)f.get(obj));
                 break;
               default:
                 Assert.failed("Invalid type");
@@ -107,7 +110,7 @@ class BtreeFieldIndex extends Btree implements FieldIndex {
             
 
     public boolean put(IPersistent obj) {
-        return super.insert(extractKey(obj), obj, false) >= 0;
+        return super.insert(extractKey(obj), obj, false) == null;
     }
 
     public IPersistent set(IPersistent obj) {
@@ -115,7 +118,7 @@ class BtreeFieldIndex extends Btree implements FieldIndex {
     }
 
     public void  remove(IPersistent obj) {
-        super.remove(new BtreeKey(extractKey(obj), obj.getOid()));
+        super.remove(new BtreeKey(extractKey(obj), obj));
     }
 
     public boolean contains(IPersistent obj) {
@@ -158,16 +161,16 @@ class BtreeFieldIndex extends Btree implements FieldIndex {
 
     public IPersistent[] get(Key from, Key till) {
         ArrayList list = new ArrayList();
-        if (root != 0) { 
-            BtreePage.find((StorageImpl)getStorage(), root, checkKey(from), checkKey(till), this, height, list);
+        if (root != null) { 
+            root.find(checkKey(from), checkKey(till), height, list);
         }
         return (IPersistent[])list.toArray((Object[])Array.newInstance(cls, list.size()));
     }
 
     public IPersistent[] toPersistentArray() {
         IPersistent[] arr = (IPersistent[])Array.newInstance(cls, nElems);
-        if (root != 0) { 
-            BtreePage.traverseForward((StorageImpl)getStorage(), root, type, height, arr, 0);
+        if (root != null) { 
+            root.traverseForward(height, arr, 0);
         }
         return arr;
     }

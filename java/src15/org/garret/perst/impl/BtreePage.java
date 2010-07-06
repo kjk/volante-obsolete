@@ -72,6 +72,7 @@ class BtreePage {
             return (char)key.ival - (char)Bytes.unpack2(pg.data, BtreePage.firstKeyOffs + i*2);
           case ClassDescriptor.tpObject:
           case ClassDescriptor.tpInt:
+          case ClassDescriptor.tpEnum:
             i4 = Bytes.unpack4(pg.data, BtreePage.firstKeyOffs + i*4);
             return key.ival < i4 ? -1 : key.ival == i4 ? 0 : 1;
           case ClassDescriptor.tpLong:
@@ -394,6 +395,9 @@ class BtreePage {
                     }                                             
                 } else if (r < n && compareStr(ins.key, pg, r) == 0) {
                     if (overwrite) { 
+                        db.pool.unfix(pg);
+                        pg = null;
+                        pg = db.putPage(pageId);
                         ins.oldOid = getKeyStrOid(pg, r);
                         setKeyStrOid(pg, r, ins.oid);
                         return Btree.op_overwrite;
@@ -423,6 +427,9 @@ class BtreePage {
                     }                                             
                 } else if (r < n && tree.compareByteArrays(ins.key, pg, r) == 0) {
                     if (overwrite) { 
+                        db.pool.unfix(pg);
+                        pg = null;
+                        pg = db.putPage(pageId);
                         ins.oldOid = getKeyStrOid(pg, r);
                         setKeyStrOid(pg, r, ins.oid);
                         return Btree.op_overwrite;
@@ -450,6 +457,9 @@ class BtreePage {
                     n += 1;
                 } else if (r < n && compare(ins.key, pg, r) == 0) { 
                     if (overwrite) { 
+                        db.pool.unfix(pg);
+                        pg = null;
+                        pg = db.putPage(pageId);
                         ins.oldOid = getReference(pg, maxItems-r-1);
                         setReference(pg, maxItems-r-1, ins.oid);
                         return Btree.op_overwrite;

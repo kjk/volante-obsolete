@@ -1,8 +1,18 @@
 del *.dbs
 call TestIndex
+del *.dbs
+call TestIndex altbtree
+del *.dbs
+call TestIndex altbtree serializable
+del *.dbs
+call TestIndex inmemory
+del *.dbs
+call TestIndex2
 call TestCompoundIndex
 call TestMod
 call TestIndexIterator
+del *.dbs
+call TestIndexIterator altbtree
 call TestRtree
 call TestR2
 call TestTtree

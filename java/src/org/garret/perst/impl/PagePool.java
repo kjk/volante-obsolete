@@ -98,8 +98,6 @@ class PagePool {
                 pg.writeQueueIndex = nDirtyPages++;
                 pg.state |= Page.psDirty;
             }
-        }                   
-        synchronized (pg) { 
             if ((pg.state & Page.psRaw) != 0) {
                 if (file.read(pg.offs, pg.data) < Page.pageSize) {
                     for (int i = 0; i < Page.pageSize; i++) { 

@@ -1,7 +1,6 @@
 package org.garret.perst.impl;
 import  org.garret.perst.*;
-import  java.util.Iterator;
-import  java.util.Collection;
+import  java.util.*;
 import  java.lang.reflect.Array;
 
 public class LinkImpl<T extends IPersistent> implements Link<T> { 
@@ -100,6 +99,10 @@ public class LinkImpl<T extends IPersistent> implements Link<T> {
         return  toPersistentArray();
     }
 
+    public T[] toRawArray() {
+        return arr;
+    }
+
     public IPersistent[] toPersistentArray() {
         IPersistent[] a = new IPersistent[used];
         for (int i = used; --i >= 0;) { 
@@ -153,7 +156,10 @@ public class LinkImpl<T extends IPersistent> implements Link<T> {
             return i < link.size();
         }
 
-        public T next() { 
+        public T next() throws NoSuchElementException { 
+            if (!hasNext()) { 
+                throw new NoSuchElementException();
+            }
             return link.get(i++);
         }
 

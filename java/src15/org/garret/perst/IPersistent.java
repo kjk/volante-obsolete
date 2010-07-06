@@ -86,6 +86,13 @@ public interface IPersistent extends java.io.Serializable {
      */
     public void onLoad();
 
+   /**
+     * Method called by the database before storing of the object.
+     * It can be used to save or close transient fields of the object. 
+     * Default implementation of this method do nothing
+     */
+    public void onStore();
+
     /**
      * Invalidate object. Invalidated object has to be explicitly
      * reloaded usin3g load() method. Attempt to store invalidated object

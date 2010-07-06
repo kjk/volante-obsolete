@@ -5,7 +5,7 @@ package org.garret.perst;
  */
 public class Persistent implements IPersistent { 
     public void load() {
-        if (storage != null && (state & RAW) != 0) { 
+        if (oid != 0 && (state & RAW) != 0) { 
             storage.loadObject(this);
         }
     }
@@ -44,7 +44,7 @@ public class Persistent implements IPersistent {
     }
   
     public void modify() { 
-        if ((state & DIRTY) == 0 && storage != null) { 
+        if ((state & DIRTY) == 0 && oid != 0) { 
             if ((state & RAW) != 0) { 
                 throw new StorageError(StorageError.ACCESS_TO_STUB);
             }
@@ -53,14 +53,21 @@ public class Persistent implements IPersistent {
         }
     }
 
+    public Persistent() {}
+
+    public Persistent(Storage storage) { 
+        this.storage = storage;
+    }
+
     public final int getOid() {
         return oid;
     }
 
     public void deallocate() { 
-        if (storage != null) { 
+        if (oid != 0) { 
             storage.deallocateObject(this);
             state = 0;
+            oid = 0;
             storage = null;
         }
     }
@@ -84,21 +91,24 @@ public class Persistent implements IPersistent {
     public void onLoad() {
     }
 
+    public void onStore() {
+    }
+
     public void invalidate() { 
         state &= ~DIRTY;
         state |= RAW;
     }
 
     protected void finalize() { 
-        if ((state & DIRTY) != 0 && storage != null) { 
+        if ((state & DIRTY) != 0 && oid != 0) { 
             storage.storeFinalizedObject(this);
             state &= ~DIRTY;
         }
     }
 
-    transient private Storage storage;
-    transient private int     oid;
-    transient private int     state;
+    transient Storage storage;
+    transient int     oid;
+    transient int     state;
 
     static private final int RAW   = 1;
     static private final int DIRTY = 2;

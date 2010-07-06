@@ -58,6 +58,10 @@ class BtreeFieldIndex<T extends IPersistent> extends Btree<T> implements FieldIn
         type = checkType(fld.getType());
     }
 
+    protected Object unpackEnum(int val) {
+        return fld.getType().getEnumConstants()[val];
+    }
+
     private Key extractKey(IPersistent obj) { 
         try { 
             Field f = fld;
@@ -92,6 +96,9 @@ class BtreeFieldIndex<T extends IPersistent> extends Btree<T> implements FieldIn
                 break;
               case ClassDescriptor.tpDouble:
                 key = new Key(f.getDouble(obj));
+                break;
+              case ClassDescriptor.tpEnum:
+                  key = new Key((Enum)f.get(obj));
                 break;
               case ClassDescriptor.tpString:
                 key = new Key((String)f.get(obj));
@@ -157,7 +164,8 @@ class BtreeFieldIndex<T extends IPersistent> extends Btree<T> implements FieldIn
     }
 
     public T[] getPrefix(String prefix) { 
-        return get(new Key(prefix, true), new Key(prefix + Character.MAX_VALUE, false));
+        ArrayList<T> list = getList(new Key(prefix, true), new Key(prefix + Character.MAX_VALUE, false));
+        return (T[])list.toArray((T[])Array.newInstance(cls, list.size()));        
     }
 
     public T[] prefixSearch(String key) { 
@@ -166,12 +174,9 @@ class BtreeFieldIndex<T extends IPersistent> extends Btree<T> implements FieldIn
     }
 
     public T[] get(Key from, Key till) {
-        if ((from != null && from.type != type) || (till != null && till.type != type)) { 
-            throw new StorageError(StorageError.INCOMPATIBLE_KEY_TYPE);
-        }
         ArrayList list = new ArrayList();
         if (root != 0) { 
-            BtreePage.find((StorageImpl)getStorage(), root, from, till, this, height, list);
+            BtreePage.find((StorageImpl)getStorage(), root, checkKey(from), checkKey(till), this, height, list);
         }
         return (T[])list.toArray((T[])Array.newInstance(cls, list.size()));
     }

@@ -10,13 +10,18 @@ class Btree<T extends IPersistent> extends PersistentResource implements Index<T
     int       nElems;
     boolean   unique;
 
+    transient int updateCounter;
+
     static final int sizeof = ObjectHeader.sizeof + 4*4 + 1;
 
     Btree() {}
 
     static int checkType(Class c) { 
         int elemType = ClassDescriptor.getTypeCode(c);
-        if (elemType > ClassDescriptor.tpObject && elemType != ClassDescriptor.tpArrayOfByte) { 
+        if (elemType > ClassDescriptor.tpObject 
+            && elemType != ClassDescriptor.tpEnum 
+            && elemType != ClassDescriptor.tpArrayOfByte) 
+        { 
             throw new StorageError(StorageError.UNSUPPORTED_INDEX_TYPE, c);
         }
         return elemType;
@@ -80,6 +85,8 @@ class Btree<T extends IPersistent> extends PersistentResource implements Index<T
             return float.class;
         case ClassDescriptor.tpDouble:
             return double.class;
+        case ClassDescriptor.tpEnum:
+            return Enum.class;
         case ClassDescriptor.tpString:
             return String.class;
         case ClassDescriptor.tpDate:
@@ -93,10 +100,20 @@ class Btree<T extends IPersistent> extends PersistentResource implements Index<T
         }
     }
 
-    public T get(Key key) { 
-        if (key.type != type) { 
-            throw new StorageError(StorageError.INCOMPATIBLE_KEY_TYPE);
+    Key checkKey(Key key) { 
+        if (key != null) { 
+            if (key.type != type) { 
+                throw new StorageError(StorageError.INCOMPATIBLE_KEY_TYPE);
+            }
+            if (key.oval instanceof String) { 
+                key = new Key(((String)key.oval).toCharArray(), key.inclusion != 0);
+            }
         }
+        return key;
+    }            
+
+    public T get(Key key) { 
+        key = checkKey(key);
         if (root != 0) { 
             ArrayList list = new ArrayList();
             BtreePage.find((StorageImpl)getStorage(), root, key, key, this, height, list);
@@ -128,12 +145,9 @@ class Btree<T extends IPersistent> extends PersistentResource implements Index<T
     }
 
     public ArrayList<T> getList(Key from, Key till) {
-        if ((from != null && from.type != type) || (till != null && till.type != type)) { 
-            throw new StorageError(StorageError.INCOMPATIBLE_KEY_TYPE);
-        }
         ArrayList<T> list = new ArrayList<T>();
         if (root != 0) { 
-            BtreePage.find((StorageImpl)getStorage(), root, from, till, this, height, list);
+            BtreePage.find((StorageImpl)getStorage(), root, checkKey(from), checkKey(till), this, height, list);
         }
         return list;
     }
@@ -157,9 +171,7 @@ class Btree<T extends IPersistent> extends PersistentResource implements Index<T
         if (db == null) {             
             throw new StorageError(StorageError.DELETED_OBJECT);
         }
-        if (key.type != type) { 
-            throw new StorageError(StorageError.INCOMPATIBLE_KEY_TYPE);
-        }
+        key = checkKey(key);
         if (!obj.isPersistent()) { 
             db.storeObject(obj);
         }
@@ -178,13 +190,14 @@ class Btree<T extends IPersistent> extends PersistentResource implements Index<T
                 return ins.oldOid;
             }
         }
+        updateCounter += 1;
         nElems += 1;
         modify();
         return 0;
     }
 
     public void remove(Key key, T obj) {
-        remove(new BtreeKey(key, obj.getOid()));
+        remove(new BtreeKey(checkKey(key), obj.getOid()));
     }
 
     
@@ -192,9 +205,6 @@ class Btree<T extends IPersistent> extends PersistentResource implements Index<T
         StorageImpl db = (StorageImpl)getStorage();
         if (db == null) {             
             throw new StorageError(StorageError.DELETED_OBJECT);
-        }
-        if (rem.key.type != type) { 
-            throw new StorageError(StorageError.INCOMPATIBLE_KEY_TYPE);
         }
         if (root == 0) {
             throw new StorageError(StorageError.KEY_NOT_FOUND);
@@ -222,6 +232,7 @@ class Btree<T extends IPersistent> extends PersistentResource implements Index<T
             root = BtreePage.allocate(db, root, type, rem);
             height += 1;
         }
+        updateCounter += 1;
         modify();
     }
         
@@ -229,7 +240,7 @@ class Btree<T extends IPersistent> extends PersistentResource implements Index<T
         if (!unique) { 
             throw new StorageError(StorageError.KEY_NOT_UNIQUE);
         }
-        BtreeKey rk = new BtreeKey(key, 0);
+        BtreeKey rk = new BtreeKey(checkKey(key), 0);
         StorageImpl db = (StorageImpl)getStorage();
         remove(rk);
         return (T)db.lookupObject(rk.oldOid, null);
@@ -237,31 +248,33 @@ class Btree<T extends IPersistent> extends PersistentResource implements Index<T
         
         
     public T get(String key) { 
-        return get(new Key(key, true));
+        return get(new Key(key.toCharArray(), true));
     }
 
     public ArrayList<T> getPrefixList(String prefix) { 
-        return getList(new Key(prefix, true), new Key(prefix + Character.MAX_VALUE, false));
+        return getList(new Key(prefix.toCharArray(), true), 
+                       new Key((prefix + Character.MAX_VALUE).toCharArray(), false));
     }
 
     public IPersistent[] getPrefix(String prefix) { 
-        return get(new Key(prefix, true), new Key(prefix + Character.MAX_VALUE, false));
+        return get(new Key(prefix.toCharArray(), true), 
+                   new Key((prefix + Character.MAX_VALUE).toCharArray(), false));
     }
 
     public boolean put(String key, T obj) {
-        return put(new Key(key, true), obj);
+        return put(new Key(key.toCharArray(), true), obj);
     }
 
     public T set(String key, T obj) {
-        return set(new Key(key, true), obj);
+        return set(new Key(key.toCharArray(), true), obj);
     }
 
     public void remove(String key, T obj) {
-        remove(new Key(key, true), obj);
+        remove(new Key(key.toCharArray(), true), obj);
     }
     
     public T remove(String key) {
-        return remove(new Key(key, true));
+        return remove(new Key(key.toCharArray(), true));
     }
 
     public int size() {
@@ -274,6 +287,7 @@ class Btree<T extends IPersistent> extends PersistentResource implements Index<T
             root = 0;
             nElems = 0;
             height = 0;
+            updateCounter += 1;
             modify();
         }
     }
@@ -313,6 +327,13 @@ class Btree<T extends IPersistent> extends PersistentResource implements Index<T
         }
         return 0;
     }        
+
+    protected Object unpackEnum(int val) 
+    {
+        // Base B-Tree class has no information about particular enum type
+        // so it is not able to correctly unpack enum key
+        return (Object)val;
+    }
 
     public void export(XMLExporter exporter) throws java.io.IOException 
     { 
@@ -361,7 +382,7 @@ class Btree<T extends IPersistent> extends PersistentResource implements Index<T
         int offs =  BtreePage.firstKeyOffs + pos*ClassDescriptor.sizeof[type];
         switch (type) { 
           case ClassDescriptor.tpBoolean:
-            return new Boolean(data[offs] != 0);
+              return Boolean.valueOf(data[offs] != 0);
           case ClassDescriptor.tpByte:
             return new Byte(data[offs]);
           case ClassDescriptor.tpShort:
@@ -380,6 +401,8 @@ class Btree<T extends IPersistent> extends PersistentResource implements Index<T
             return new Float(Float.intBitsToFloat(Bytes.unpack4(data, offs)));
           case ClassDescriptor.tpDouble:
             return new Double(Double.longBitsToDouble(Bytes.unpack8(data, offs)));
+          case ClassDescriptor.tpEnum:
+            return unpackEnum(Bytes.unpack4(data, offs));
           case ClassDescriptor.tpString:
             return unpackStrKey(pg, pos);
           case ClassDescriptor.tpArrayOfByte:
@@ -419,6 +442,7 @@ class Btree<T extends IPersistent> extends PersistentResource implements Index<T
             }
             int pageId = root;
             int h = height;
+            counter = updateCounter;
             pageStack = new int[h];
             posStack =  new int[h];
             sp = 0;
@@ -440,6 +464,9 @@ class Btree<T extends IPersistent> extends PersistentResource implements Index<T
         }
 
         public boolean hasNext() {
+            if (counter != updateCounter) { 
+                throw new ConcurrentModificationException();
+            }
             return sp > 0 && posStack[sp-1] < end;
         }
 
@@ -449,10 +476,10 @@ class Btree<T extends IPersistent> extends PersistentResource implements Index<T
         }
 
         public E next() {
-            StorageImpl db = (StorageImpl)getStorage();
-            if (sp == 0 || posStack[sp-1] >= end) { 
+            if (!hasNext()) { 
                 throw new NoSuchElementException();
             }
+            StorageImpl db = (StorageImpl)getStorage();
             int pos = posStack[sp-1];   
             Page pg = db.getPage(pageStack[sp-1]);
             E curr = (E)getCurrent(pg, pos);
@@ -489,6 +516,7 @@ class Btree<T extends IPersistent> extends PersistentResource implements Index<T
         int[]       posStack;
         int         sp;
         int         end;
+        int         counter;
     }
 
     class BtreeEntryIterator extends BtreeIterator<Map.Entry<Object,T>> { 
@@ -539,6 +567,7 @@ class Btree<T extends IPersistent> extends PersistentResource implements Index<T
             if (db == null) {             
                 throw new StorageError(StorageError.DELETED_OBJECT);
             }
+            counter = updateCounter;
             int h = height;
             this.from = from;
             this.till = till;
@@ -921,11 +950,14 @@ class Btree<T extends IPersistent> extends PersistentResource implements Index<T
                 
 
         public boolean hasNext() {
+            if (counter != updateCounter) { 
+                throw new ConcurrentModificationException();
+            }
             return sp != 0;
         }
 
         public E next() {
-            if (sp == 0) { 
+            if (!hasNext()) { 
                 throw new NoSuchElementException();
             }
             StorageImpl db = (StorageImpl)getStorage();
@@ -1118,6 +1150,7 @@ class Btree<T extends IPersistent> extends PersistentResource implements Index<T
         Key         from;
         Key         till;
         int         order;
+        int         counter;
     }
 
     class BtreeSelectionEntryIterator extends BtreeSelectionIterator<Map.Entry<Object,T>> { 
@@ -1139,22 +1172,17 @@ class Btree<T extends IPersistent> extends PersistentResource implements Index<T
     }
 
     public Iterator<T> iterator(Key from, Key till, int order) { 
-        if ((from != null && from.type != type) || (till != null && till.type != type)) { 
-            throw new StorageError(StorageError.INCOMPATIBLE_KEY_TYPE);
-        }
-        return new BtreeSelectionIterator<T>(from, till, order);
+        return new BtreeSelectionIterator<T>(checkKey(from), checkKey(till), order);
     }
 
     public Iterator<T> prefixIterator(String prefix) {
-        return iterator(new Key(prefix), new Key(prefix + Character.MAX_VALUE, false), ASCENT_ORDER);
+        return iterator(new Key(prefix.toCharArray()), 
+                        new Key((prefix + Character.MAX_VALUE).toCharArray(), false), ASCENT_ORDER);
     }
 
 
     public Iterator<Map.Entry<Object,T>> entryIterator(Key from, Key till, int order) { 
-        if ((from != null && from.type != type) || (till != null && till.type != type)) { 
-            throw new StorageError(StorageError.INCOMPATIBLE_KEY_TYPE);
-        }
-        return new BtreeSelectionEntryIterator(from, till, order);
+        return new BtreeSelectionEntryIterator(checkKey(from), checkKey(till), order);
     }
 }
 

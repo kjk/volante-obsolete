@@ -99,6 +99,13 @@ public class Key {
     }
 
     /**
+     * Constructor of key of user defined type (boundary is inclusive)
+     * @param v user defined value
+     */
+    public Key(Comparable v) { 
+        this(v, true);
+    }    
+    /**
      * Constructor of compound key (boundary is inclusive)
      * @param v array of compound key values
      */
@@ -212,15 +219,13 @@ public class Key {
         this(ClassDescriptor.tpDate, v == null ? -1 : v.getTime(), 0.0, null, inclusive);
     }
 
-    static final char[] EMPTY_STRING = new char[0];
-
     /**
      * Constructor of string key
      * @param v key value
      * @param inclusive whether boundary is inclusive or exclusive
      */
     public Key(String v, boolean inclusive) { 
-        this(ClassDescriptor.tpString, 0, 0.0, v == null ? EMPTY_STRING : v.toCharArray(), inclusive);
+        this(ClassDescriptor.tpString, 0, 0.0, v, inclusive);
     }
 
     /**
@@ -229,7 +234,7 @@ public class Key {
      * @param inclusive whether boundary is inclusive or exclusive
      */
     public Key(char[] v, boolean inclusive) { 
-        this(ClassDescriptor.tpString, 0, 0.0, v == null ? EMPTY_STRING : v, inclusive);
+        this(ClassDescriptor.tpString, 0, 0.0, v, inclusive);
     }
 
     /**
@@ -238,7 +243,7 @@ public class Key {
      * @param inclusive whether boundary is inclusive or exclusive
      */
     public Key(IPersistent v, boolean inclusive) { 
-        this(ClassDescriptor.tpObject, v == null ? 0 : v.getOid(), 0.0, null, inclusive);
+        this(ClassDescriptor.tpObject, v == null ? 0 : v.getOid(), 0.0, v, inclusive);
     }
 
     /**
@@ -248,6 +253,15 @@ public class Key {
      */
     public Key(Object[] v, boolean inclusive) { 
         this(ClassDescriptor.tpArrayOfObject, 0, 0.0, v, inclusive);        
+    }    
+
+    /**
+     * Constructor of key of used defined type
+     * @param v array of key values
+     * @param inclusive whether boundary is inclusive or exclusive
+     */
+    public Key(Comparable v, boolean inclusive) { 
+        this(ClassDescriptor.tpRaw, 0, 0.0, v, inclusive);        
     }    
 
     /**

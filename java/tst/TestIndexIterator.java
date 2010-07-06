@@ -19,7 +19,14 @@ public class TestIndexIterator {
     static public void main(String[] args) {    
         Storage db = StorageFactory.getInstance().createStorage();
 
-        db.open("testidx2.dbs", pagePoolSize);
+        if (args.length > 0) { 
+            if ("altbtree".equals(args[0])) { 
+                db.setProperty("perst.alternative.btree", Boolean.TRUE);
+            } else { 
+                System.err.println("Unrecognized option: " + args[0]);
+            }
+        }
+        db.open("testiter.dbs", pagePoolSize);
         Indices root = (Indices)db.getRoot();
         if (root == null) { 
             root = new Indices();

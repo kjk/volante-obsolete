@@ -90,6 +90,7 @@ class BtreeMultiFieldIndex<T extends IPersistent> extends Btree<T> implements Fi
                 break;
               case ClassDescriptor.tpInt:
               case ClassDescriptor.tpObject:
+              case ClassDescriptor.tpEnum:
                 diff = Bytes.unpack4(a1, o1) - Bytes.unpack4(a2, o2);
                 o1 += 4;
                 o2 += 4;
@@ -175,7 +176,7 @@ class BtreeMultiFieldIndex<T extends IPersistent> extends Btree<T> implements Fi
             Object v = null;
             switch (types[i]) { 
               case ClassDescriptor.tpBoolean:
-                v = new Boolean(data[offs++] != 0);
+                v = Boolean.valueOf(data[offs++] != 0);
                 break;
               case ClassDescriptor.tpByte:
                 v = new Byte(data[offs++]);
@@ -202,6 +203,10 @@ class BtreeMultiFieldIndex<T extends IPersistent> extends Btree<T> implements Fi
               case ClassDescriptor.tpLong:
                 v = new Long(Bytes.unpack8(data, offs));
                 offs += 8;
+                break;
+              case ClassDescriptor.tpEnum:
+                v = fld[i].getType().getEnumConstants()[Bytes.unpack4(data, offs)];
+                offs += 4;
                 break;
               case ClassDescriptor.tpDate:
               {
@@ -310,6 +315,11 @@ class BtreeMultiFieldIndex<T extends IPersistent> extends Btree<T> implements Fi
                     Bytes.pack8(buf.arr, dst, Double.doubleToLongBits(f.getDouble(obj)));
                     dst += 8;
                     break;
+                  case ClassDescriptor.tpEnum:
+                    buf.extend(dst+4);
+                    Bytes.pack4(buf.arr, dst, ((Enum)f.get(obj)).ordinal());
+                    dst += 4;
+                    break;
                   case ClassDescriptor.tpString:
                   {
                       buf.extend(dst+4);
@@ -417,6 +427,11 @@ class BtreeMultiFieldIndex<T extends IPersistent> extends Btree<T> implements Fi
                 buf.extend(dst+8);
                 Bytes.pack8(buf.arr, dst, Double.doubleToLongBits(((Number)v).doubleValue()));
                 dst += 8;
+                break;
+              case ClassDescriptor.tpEnum:
+                buf.extend(dst+4);
+                Bytes.pack4(buf.arr, dst, ((Enum)v).ordinal());
+                dst += 4;
                 break;
               case ClassDescriptor.tpString:
               {

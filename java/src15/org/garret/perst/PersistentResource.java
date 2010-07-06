@@ -13,6 +13,9 @@ public class PersistentResource extends Persistent implements IResource {
                     nWriters += 1;
                     break;
                 } else if (nWriters == 0) { 
+                    if (nReaders == 0 && storage != null) { 
+                        storage.lockObject(this);
+                    }
                     nReaders += 1;
                     break;
                 } else { 
@@ -34,6 +37,9 @@ public class PersistentResource extends Persistent implements IResource {
                         nWriters += 1;
                         return true;
                     } else if (nWriters == 0) { 
+                        if (nReaders == 0 && storage != null) { 
+                            storage.lockObject(this);
+                        }
                         nReaders += 1;
                         return true;
                     } else { 
@@ -60,6 +66,9 @@ public class PersistentResource extends Persistent implements IResource {
                 } else if (nReaders == 0 && nWriters == 0) { 
                     nWriters = 1;
                     owner = currThread;
+                    if (storage != null) { 
+                        storage.lockObject(this);
+                    }
                     break;
                 } else { 
                     wait();
@@ -82,6 +91,9 @@ public class PersistentResource extends Persistent implements IResource {
                     } else if (nReaders == 0 && nWriters == 0) { 
                         nWriters = 1;
                         owner = currThread;
+                        if (storage != null) { 
+                            storage.lockObject(this);
+                        }
                         return true;
                     } else { 
                         long currTime = System.currentTimeMillis();

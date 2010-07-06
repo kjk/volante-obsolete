@@ -65,7 +65,7 @@ public class Ttree extends PersistentResource implements SortedCollection {
      */
     static final IPersistent[] emptySelection = new IPersistent[0];
 
-    public IPersistent[] get(Key from, Key till) { 
+    public IPersistent[] get(Object from, Object till) { 
         if (root != null) { 
             ArrayList list = new ArrayList();
             root.find(comparator, from, till, list);
@@ -242,7 +242,7 @@ public class Ttree extends PersistentResource implements SortedCollection {
      * High boundary can be inclusive or exclusive. 
      * @return selection iterator
      */
-    public java.util.Iterator iterator(Key from, Key till) {
+    public java.util.Iterator iterator(Object from, Object till) {
         ArrayList list = new ArrayList();
         if (root != null) { 
             root.find(comparator, from, till, list);

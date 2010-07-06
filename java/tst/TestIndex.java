@@ -14,13 +14,29 @@ class Indices extends Persistent {
 
 public class TestIndex { 
     final static int nRecords = 100000;
-    final static int pagePoolSize = 32*1024*1024;
-    //final static int pagePoolSize = Storage.INFINITE_PAGE_POOL;
+    static int pagePoolSize = 32*1024*1024;
 
     static public void main(String[] args) {    
         Storage db = StorageFactory.getInstance().createStorage();
-
+        boolean serializableTransaction = false;
+        for (int i = 0; i < args.length; i++) { 
+            if ("inmemory".equals(args[i])) { 
+                pagePoolSize = Storage.INFINITE_PAGE_POOL;
+            } else if ("altbtree".equals(args[i])) { 
+                db.setProperty("perst.alternative.btree", Boolean.TRUE);
+            } else if ("serializable".equals(args[i])) { 
+                db.setProperty("perst.alternative.btree", Boolean.TRUE);
+                serializableTransaction = true;
+            } else { 
+                System.err.println("Unrecognized option: " + args[i]);
+            }
+        }
         db.open("testidx.dbs", pagePoolSize);
+
+        if (serializableTransaction) { 
+            db.beginThreadTransaction(Storage.SERIALIZABLE_TRANSACTION);
+        }
+            
         Indices root = (Indices)db.getRoot();
         if (root == null) { 
             root = new Indices();
@@ -41,7 +57,13 @@ public class TestIndex {
             intIndex.put(new Key(rec.intKey), rec);                
             strIndex.put(new Key(rec.strKey), rec);                
         }
-        db.commit();
+        
+        if (serializableTransaction) { 
+            db.endThreadTransaction();
+            db.beginThreadTransaction(Storage.SERIALIZABLE_TRANSACTION);
+        } else { 
+            db.commit();
+        }
         db.gc();
         System.out.println("Elapsed time for inserting " + nRecords + " records: " 
                            + (System.currentTimeMillis() - start) + " milliseconds");

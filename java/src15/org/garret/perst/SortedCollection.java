@@ -32,7 +32,7 @@ public interface SortedCollection<T extends IPersistent> extends IPersistent, IR
      * High boundary can be inclusive or exclusive. 
      * @return array of objects which keys belongs to the specified interval, ordered by key value
      */
-    public IPersistent[] get(Key from, Key till);
+    public IPersistent[] get(Object from, Object till);
 
     /**
      * Get members which key value belongs to the specified range.
@@ -44,7 +44,7 @@ public interface SortedCollection<T extends IPersistent> extends IPersistent, IR
      * High boundary can be inclusive or exclusive. 
      * @return array of objects which keys belongs to the specified interval, ordered by key value
      */
-    public ArrayList<T> getList(Key from, Key till);
+    public ArrayList<T> getList(Object from, Object till);
 
     /**
      * Add new member to collection
@@ -114,7 +114,7 @@ public interface SortedCollection<T extends IPersistent> extends IPersistent, IR
      * High boundary can be inclusive or exclusive. 
      * @return selection iterator
      */
-    public Iterator<T> iterator(Key from, Key till);
+    public Iterator<T> iterator(Object from, Object till);
 
     /**
      * Get comparator used in this collection

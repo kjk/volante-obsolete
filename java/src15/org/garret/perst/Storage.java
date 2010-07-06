@@ -101,7 +101,7 @@ public abstract class Storage {
     
 
     /**
-     * Commit changes done by the lat transaction. Transaction is started implcitlely with forst update
+     * Commit changes done by the last transaction. Transaction is started implcitlely with forst update
      * opertation.
      */
     abstract public void commit();
@@ -120,6 +120,7 @@ public abstract class Storage {
 
     public static final int EXCLUSIVE_TRANSACTION   = 0;
     public static final int COOPERATIVE_TRANSACTION = 1;
+    public static final int SERIALIZABLE_TRANSACTION = 2;
 
     /** 
      * Begin per-thread transaction. Two types op per-thread transactions are supported: 
@@ -361,6 +362,16 @@ public abstract class Storage {
      * <TR><TD><code>perst.file.readonly</code></TD><TD>Boolean</TD><TD>false</TD>
      * <TD>Database file should be opened in read-only mode.
      * </TD></TR>
+     * <TR><TD><code>perst.alternative.btree</code></TD><TD>Boolean</TD><TD>false</TD>
+     * <TD>Use aternative implementation of B-Tree (not using direct access to database
+     * file pages). This implementation should be used in case of serialized per thread transctions.
+     * New implementation of B-Tree will be used instead of old implementation
+     * if "perst.alternative.btree" property is set. New B-Tree has incompatible format with 
+     * old B-Tree, so you could not use old database or XML export file with new indices. 
+     * Alternative B-Tree is needed to provide serializable transaction (old one could not be used).
+     * Also it provides better performance (about 3 times comaring with old implementation) because
+     * of object caching. And B-Tree supports keys of user defined types. 
+     * </TD></TR>
      * </TABLE>
      * @param name name of the property
      * @param value value of the property (for boolean properties pass <code>java.lang.Boolean.TRUE</code>
@@ -427,6 +438,8 @@ public abstract class Storage {
     abstract protected void modifyObject(IPersistent obj);
 
     abstract protected void loadObject(IPersistent obj);
+
+    abstract protected void lockObject(IPersistent obj);
 
     private ClassLoader loader;
 }

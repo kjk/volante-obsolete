@@ -237,3 +237,23 @@ SpatialIndexR2 class provides iterator to accessed overlaped object one-by-one.
 1. Support final fields in peristent object. 
 2. Add L2List and L2ListElem classes
 3. Fix bug in importing/exporting of raw fields introduced in version 2.23
+
+--- Release version 2.32 21.08.2004 -------------------------------------
+1. Fix bug in Launcher.java class to be compatible with new Perst class loading policy 
+introduced in version 2.26
+2. Add support of enum fields for JDK 1.5
+3. Fix critical synchronization bug in writing modified objects to the disk
+4. Fix problem with building JDK 1.5 version of Perst with latest javac compiler
+5. Support new kind of per-thread transactions: serializable transactions
+6. Alternative B-Tree implementation (as normal Java object and not using direct access 
+   database pages). New implementation of B-Tree will be used instead of old implementation
+   if "perst.alternative.btree" property is set. New B-Tree has incompatible format with 
+   old B-Tree, so you could not use old database or XML export file with new indices. 
+   Alternative B-Tree is needed to provide serializable transaction (old one could not be used).
+   Also it provides better performance (about 3 times comaring with old implementation) because
+   of object caching. And B-Tree supports keys of user defined types. 
+7. Fix bug in Index.set method
+8. Fix bug in packing array of string
+9. Fields of java.lang.Object and java.lang.Comparable type 
+   are now serialized decpite to whether "perst.serialize.transient.objects" property was set or not
+10. Add Persistent onStore method which is invoked before object is stored in the database
