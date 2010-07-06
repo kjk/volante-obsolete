@@ -48,15 +48,15 @@ namespace Perst.Impl
 
         RtreePage() {}
 
-        public bool recursiveLoading() 
+        public override bool RecursiveLoading() 
         {
             return false;
         }
 
         internal RtreePage insert(Rectangle r, IPersistent obj, int level) 
         {
-            load();
-            modify();
+            Load();
+            Modify();
             if (--level != 0) 
             { 
                 // not leaf page
@@ -65,8 +65,8 @@ namespace Perst.Impl
                 int minArea = Int32.MaxValue;
                 for (i = 0; i < n; i++) 
                 { 
-                    int area = b[i].r.area();
-                    int incr = Rectangle.joinArea(b[i].r, r) - area;
+                    int area = b[i].r.Area();
+                    int incr = Rectangle.JoinArea(b[i].r, r) - area;
                     if (incr < minIncr) 
                     { 
                         minIncr = incr;
@@ -84,7 +84,7 @@ namespace Perst.Impl
                 if (q == null) 
                 { 
                     // child was not split
-                    b[mini].r.join(r);
+                    b[mini].r.Join(r);
                     return null;
                 } 
                 else 
@@ -102,13 +102,13 @@ namespace Perst.Impl
 
         internal int remove(Rectangle r, IPersistent obj, int level, ArrayList reinsertList) 
         {
-            load();
-            modify();
+            Load();
+            Modify();
             if (--level != 0) 
             { 
                 for (int i = 0; i < n; i++) 
                 { 
-                    if (r.intersects(b[i].r)) 
+                    if (r.Intersects(b[i].r)) 
                     { 
                         RtreePage pg = (RtreePage)b[i].p;
                         int reinsertLevel = pg.remove(r, obj, level, reinsertList);
@@ -146,12 +146,12 @@ namespace Perst.Impl
 
        internal void find(Rectangle r, ArrayList result, int level) 
         {
-            load();
+            Load();
             if (--level != 0) 
             { /* this is an internal node in the tree */
                 for (int i = 0; i < n; i++) 
                 { 
-                    if (r.intersects(b[i].r)) 
+                    if (r.Intersects(b[i].r)) 
                     {
                         ((RtreePage)b[i].p).find(r, result, level); 
                     }
@@ -161,10 +161,10 @@ namespace Perst.Impl
             { /* this is a leaf node */
                 for (int i = 0; i < n; i++) 
                 { 
-                    if (r.intersects(b[i].r)) 
+                    if (r.Intersects(b[i].r)) 
                     { 
                         IPersistent obj = b[i].p;
-                        obj.load();
+                        obj.Load();
                         result.Add(obj);
                     }
                 }
@@ -173,7 +173,7 @@ namespace Perst.Impl
 
         internal void purge(int level) 
         {
-            load();
+            Load();
             if (--level != 0) 
             { /* this is an internal node in the tree */
                 for (int i = 0; i < n; i++) 
@@ -181,7 +181,7 @@ namespace Perst.Impl
                     ((RtreePage)b[i].p).purge(level);
                 }
             }
-            deallocate();
+            Deallocate();
         }
     
         internal void removeBranch(int i) 
@@ -213,17 +213,17 @@ namespace Perst.Impl
             // As the seeds for the two groups, find two rectangles which waste 
             // the most area if covered by a single rectangle.
             //
-            rectArea[0] = br.r.area();
+            rectArea[0] = br.r.Area();
             for (i = 0; i < card; i++) 
             { 
-                rectArea[i+1] = b[i].r.area();
+                rectArea[i+1] = b[i].r.Area();
             }
             Branch bp = br;
             for (i = 0; i < card; i++) 
             { 
                 for (j = i+1; j <= card; j++) 
                 { 
-                    waste = Rectangle.joinArea(bp.r, b[j-1].r) - rectArea[i] - rectArea[j];
+                    waste = Rectangle.JoinArea(bp.r, b[j-1].r) - rectArea[i] - rectArea[j];
                     if (waste > worstWaste) 
                     {
                         worstWaste = waste;
@@ -272,8 +272,8 @@ namespace Perst.Impl
                 { 
                     if (taken[i] == 0) 
                     { 
-                        int diff = (Rectangle.joinArea(group0, b[i].r) - groupArea0)
-                            - (Rectangle.joinArea(group1, b[i].r) - groupArea1);
+                        int diff = (Rectangle.JoinArea(group0, b[i].r) - groupArea0)
+                            - (Rectangle.JoinArea(group1, b[i].r) - groupArea1);
                         if (diff > biggestDiff || -diff > biggestDiff) 
                         { 
                             chosen = i;
@@ -290,19 +290,19 @@ namespace Perst.Impl
                         }
                     }
                 }
-                Assert.that(chosen >= 0);
+                Assert.That(chosen >= 0);
                 if (betterGroup == 0) 
                 { 
-                    group0.join(b[chosen].r);
-                    groupArea0 = group0.area();
+                    group0.Join(b[chosen].r);
+                    groupArea0 = group0.Area();
                     taken[chosen] = 1;
                     pg.b[groupCard0++] = b[chosen];
                 } 
                 else 
                 {
                     groupCard1 += 1;
-                    group1.join(b[chosen].r);
-                    groupArea1 = group1.area();
+                    group1.Join(b[chosen].r);
+                    groupArea1 = group1.Area();
                     taken[chosen] = 2;
                 }
             }
@@ -346,7 +346,7 @@ namespace Perst.Impl
             Rectangle r = b[0].r;
             for (int i = 1; i < n; i++) 
             { 
-                r.join(b[i].r);
+                r.Join(b[i].r);
             }
             return r;
         }

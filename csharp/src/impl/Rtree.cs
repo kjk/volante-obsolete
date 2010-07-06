@@ -12,9 +12,17 @@ namespace Perst.Impl
 
         internal Rtree() {}
 
-        public void put(Rectangle r, IPersistent obj) 
+        public int Count 
+        { 
+            get 
+            {
+                return n;
+            }
+        }
+
+        public void Put(Rectangle r, IPersistent obj) 
         {
-            if (!obj.isPersistent()) 
+            if (!obj.IsPersistent()) 
             { 
                 ((StorageImpl)Storage).storeObject(obj);
             }
@@ -33,15 +41,15 @@ namespace Perst.Impl
                 }
             }
             n += 1;
-            modify();
+            Modify();
         }
     
-        public int size() 
+        public int Size() 
         { 
             return n;
         }
 
-        public void remove(Rectangle r, IPersistent obj) 
+        public void Remove(Rectangle r, IPersistent obj) 
         {
             if (root == null) 
             { 
@@ -67,20 +75,20 @@ namespace Perst.Impl
                     }
                 }
                 reinsertLevel -= 1;
-                p.deallocate();
+                p.Deallocate();
             }
             if (root.n == 1 && height > 1) 
             { 
                 RtreePage newRoot = (RtreePage)root.b[0].p;
-                root.deallocate();
+                root.Deallocate();
                 root = newRoot;
                 height -= 1;
             }
             n -= 1;
-            modify();
+            Modify();
         }
     
-        public IPersistent[] get(Rectangle r) 
+        public IPersistent[] Get(Rectangle r) 
         {
             ArrayList result = new ArrayList();
             if (root != null) 
@@ -91,7 +99,7 @@ namespace Perst.Impl
         }
 
 
-        public void clear() 
+        public void Clear() 
         {
             if (root != null) 
             { 
@@ -100,13 +108,13 @@ namespace Perst.Impl
             }
             height = 0;
             n = 0;
-            modify();
+            Modify();
         }
 
-        public void deallocate() 
+        public override void Deallocate() 
         {
-            clear();
-            base.deallocate();
+            Clear();
+            base.Deallocate();
         }
     }
 }

@@ -48,7 +48,7 @@ public class TestSSD : Persistent {
             try { 
                 return Int32.Parse(input(prompt));
             } catch (FormatException) { 
-                Console.Error.WriteLine("Invalid integer constant");
+                Console.WriteLine("Invalid integer constant");
             }
         }
     }
@@ -58,28 +58,28 @@ public class TestSSD : Persistent {
             try { 
                 return Double.Parse(input(prompt));
             } catch (FormatException) { 
-                Console.Error.WriteLine("Invalid floating point constant");
+                Console.WriteLine("Invalid floating point constant");
             }
         }
     }
 
     static public void Main(String[] args) {	
-        Storage db = StorageFactory.Instance.createStorage();
+        Storage db = StorageFactory.Instance.CreateStorage();
         Supplier   supplier;
         Detail     detail;
         Shipment   shipment;
         Shipment[] shipments;
         int        i;
 
-	db.open("testssd.dbs");
+	db.Open("testssd.dbs");
 
         TestSSD root = (TestSSD)db.Root;
         if (root == null) { 
             root = new TestSSD();
-            root.supplierName = db.createFieldIndex(typeof(Supplier), "name", true);
-            root.detailId = db.createFieldIndex(typeof(Detail), "id", true);
-            root.shipmentSupplier = db.createFieldIndex(typeof(Shipment), "supplier", false);
-            root.shipmentDetail = db.createFieldIndex(typeof(Shipment), "detail", false);
+            root.supplierName = db.CreateFieldIndex(typeof(Supplier), "name", true);
+            root.detailId = db.CreateFieldIndex(typeof(Detail), "id", true);
+            root.shipmentSupplier = db.CreateFieldIndex(typeof(Shipment), "supplier", false);
+            root.shipmentDetail = db.CreateFieldIndex(typeof(Shipment), "detail", false);
             db.Root = root;
         }
         while (true) { 
@@ -99,25 +99,25 @@ public class TestSSD : Persistent {
                     supplier = new Supplier();
                     supplier.name = input("Supplier name: ");
                     supplier.location = input("Supplier location: ");
-                    root.supplierName.put(supplier);
-                    db.commit();
+                    root.supplierName.Put(supplier);
+                    db.Commit();
                     continue;
                   case 2:
                     detail = new Detail();
                     detail.id = input("Detail id: ");
                     detail.weight = (float)inputDouble("Detail weight: ");
-                    root.detailId.put(detail);
-                    db.commit();
+                    root.detailId.Put(detail);
+                    db.Commit();
                     continue;
                   case 3:
-                    supplier = (Supplier)root.supplierName.get(new Key(input("Supplier name: ")));
+                    supplier = (Supplier)root.supplierName.Get(new Key(input("Supplier name: ")));
                     if (supplier == null) { 
-                        Console.Error.WriteLine("No such supplier!");
+                        Console.WriteLine("No such supplier!");
                         break;
                     }
-                    detail = (Detail)root.detailId.get(new Key(input("Detail ID: ")));
+                    detail = (Detail)root.detailId.Get(new Key(input("Detail ID: ")));
                     if (detail == null) { 
-                        Console.Error.WriteLine("No such detail!");
+                        Console.WriteLine("No such detail!");
                         break;
                     }
                     shipment = new Shipment();
@@ -125,9 +125,9 @@ public class TestSSD : Persistent {
                     shipment.price = inputLong("Shipment price: ");
                     shipment.detail = detail;
                     shipment.supplier = supplier;
-                    root.shipmentSupplier.put(shipment);
-                    root.shipmentDetail.put(shipment);
-                    db.commit();
+                    root.shipmentSupplier.Put(shipment);
+                    root.shipmentDetail.Put(shipment);
+                    db.Commit();
                     continue;
                   case 4:
                     foreach (Supplier s in root.supplierName) { 
@@ -140,29 +140,29 @@ public class TestSSD : Persistent {
                     }
                     break;
                   case 6:
-                    detail = (Detail)root.detailId.get(new Key(input("Detail ID: ")));
+                    detail = (Detail)root.detailId.Get(new Key(input("Detail ID: ")));
                     if (detail == null) { 
-                        Console.Error.WriteLine("No such detail!");
+                        Console.WriteLine("No such detail!");
                         break;
                     }
-                    shipments = (Shipment[])root.shipmentDetail.get(new Key(detail), new Key(detail));
+                    shipments = (Shipment[])root.shipmentDetail.Get(new Key(detail), new Key(detail));
                     for (i = 0; i < shipments.Length; i++) { 
                         Console.WriteLine("Suppplier name: " + shipments[i].supplier.name);
                     }
                     break;
                   case 7:
-                    supplier = (Supplier)root.supplierName.get(new Key(input("Supplier name: ")));
+                    supplier = (Supplier)root.supplierName.Get(new Key(input("Supplier name: ")));
                     if (supplier == null) { 
-                        Console.Error.WriteLine("No such supplier!");
+                        Console.WriteLine("No such supplier!");
                         break;
                     }
-                    shipments = (Shipment[])root.shipmentSupplier.get(new Key(supplier), new Key(supplier));
+                    shipments = (Shipment[])root.shipmentSupplier.Get(new Key(supplier), new Key(supplier));
                     for (i = 0; i < shipments.Length; i++) { 
                         Console.WriteLine("Detail ID: " + shipments[i].detail.id);
                     }
                     break;
                   case 8:
-                    db.close();
+                    db.Close();
                     return;
                 }
                 skip("Press ENTER to continue...");

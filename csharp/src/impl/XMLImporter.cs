@@ -2,6 +2,7 @@ namespace Perst.Impl
 {
     using System;
     using System.Collections;
+    using System.Reflection;
     using Perst;
 	
     public class XMLImporter
@@ -28,7 +29,7 @@ namespace Perst.Impl
             {
                 rootId = System.Int32.Parse(scanner.String);
             }
-            catch (System.FormatException x)
+            catch (System.FormatException)
             {
                 throwException("Incorrect root object specification");
             }
@@ -36,7 +37,6 @@ namespace Perst.Impl
             idMap[rootId] = storage.allocateId();
             storage.header.root[1 - storage.currIndex].rootObject = idMap[rootId];
 			
-            XMLElement elem;
             XMLScanner.Token tkn;
             while ((tkn = scanner.scan()) == XMLScanner.Token.LT)
             {
@@ -45,9 +45,9 @@ namespace Perst.Impl
                     throwException("Element name expected");
                 }
                 System.String elemName = scanner.Identifier;
-                if (elemName.Equals("btree-index"))
+                if (elemName.Equals("Perst.Impl.Btree") || elemName.Equals("Perst.Impl.BtreeFieldIndex") || elemName.Equals("Perst.Impl.BtreeMultiFieldIndex"))
                 {
-                    createIndex();
+                    createIndex(elemName);
                 }
                 else
                 {
@@ -254,7 +254,7 @@ namespace Perst.Impl
             {
                 return System.Int32.Parse(val);
             }
-            catch (System.FormatException x)
+            catch (System.FormatException)
             {
                 throwException("Attribute " + name + " should has integer value");
             }
@@ -289,94 +289,187 @@ namespace Perst.Impl
         {
             try 
             { 
+#if COMPACT_NET_FRAMEWORK
+                return (ClassDescriptor.FieldType)ClassDescriptor.parseEnum(typeof(ClassDescriptor.FieldType), signature);
+#else
                 return (ClassDescriptor.FieldType)Enum.Parse(typeof(ClassDescriptor.FieldType), signature);
+#endif
             } 
-            catch (ArgumentException x) 
+            catch (ArgumentException) 
             {
                 throwException("Bad type");
                 return ClassDescriptor.FieldType.tpObject;
             }
         }
-		
-        internal Key createKey(ClassDescriptor.FieldType type, System.String val)
+
+        Key createCompoundKey(ClassDescriptor.FieldType[] types, String[] values) 
         {
-            try
-            {
-                IPersistent obj;
-                switch (type)
-                {
-                    case ClassDescriptor.FieldType.tpBoolean: 
-                        return new Key(System.Int32.Parse(val) != 0);
-					
-                    case ClassDescriptor.FieldType.tpByte: 
-                        return new Key((byte) System.Int32.Parse(val));
-					
-                    case ClassDescriptor.FieldType.tpSByte: 
-                        return new Key((sbyte) System.Int32.Parse(val));
-					
-                    case ClassDescriptor.FieldType.tpChar: 
-                        return new Key((char) System.Int32.Parse(val));
-					
-                    case ClassDescriptor.FieldType.tpShort: 
-                        return new Key(System.UInt32.Parse(val));
-					
-                    case ClassDescriptor.FieldType.tpUShort: 
-                        return new Key((ushort) System.Int32.Parse(val));
-					
-                    case ClassDescriptor.FieldType.tpInt: 
-                        return new Key(System.Int32.Parse(val));
-					
-                    case ClassDescriptor.FieldType.tpUInt: 
+            ByteBuffer buf = new ByteBuffer();
+            int dst = 0;
+
+            for (int i = 0; i < types.Length; i++) 
+            { 
+                String val = values[i];
+                switch (types[i]) 
+                { 
+                    case ClassDescriptor.FieldType.tpBoolean:
+                        dst = buf.packBool(dst, Int32.Parse(val) != 0);
+                        break;
+
+                    case ClassDescriptor.FieldType.tpByte:
+                    case ClassDescriptor.FieldType.tpSByte:
+                        dst = buf.packI1(dst, Int32.Parse(val));
+                        break;
+
+                    case ClassDescriptor.FieldType.tpChar:
+                    case ClassDescriptor.FieldType.tpShort:
+                    case ClassDescriptor.FieldType.tpUShort:
+                        dst = buf.packI2(dst, Int32.Parse(val));
+                        break;
+
+                    case ClassDescriptor.FieldType.tpInt:
+                        dst = buf.packI4(dst, Int32.Parse(val));
+                        break;
+
                     case ClassDescriptor.FieldType.tpEnum:
-                        return new Key(System.UInt32.Parse(val));
-					
-                    case ClassDescriptor.FieldType.tpObject: 
-                        obj = new Persistent();
-                        storage.assignOid(obj, mapId(System.Int32.Parse(val)));
-                        return new Key(obj);
-					
-                    case ClassDescriptor.FieldType.tpLong: 
-                        return new Key(System.Int64.Parse(val));
-					
-                    case ClassDescriptor.FieldType.tpULong: 
-                        return new Key(System.UInt64.Parse(val));
-					
-                    case ClassDescriptor.FieldType.tpFloat: 
-                        return new Key(System.Single.Parse(val));
-					
-                    case ClassDescriptor.FieldType.tpDouble: 
-                        return new Key(System.Double.Parse(val));
-					
-                    case ClassDescriptor.FieldType.tpString: 
-                        return new Key(val);
-					
-                    case ClassDescriptor.FieldType.tpDate: 
-                        return new Key(DateTime.Parse(val));
-					
-                    default: 
+                    case ClassDescriptor.FieldType.tpUInt:
+                        dst = buf.packI4(dst, (int)UInt32.Parse(val));
+                        break;
+
+                    case ClassDescriptor.FieldType.tpObject:
+                        dst = buf.packI4(dst, mapId((int)UInt32.Parse(val)));
+                        break;
+
+                    case ClassDescriptor.FieldType.tpLong:
+                        dst = buf.packI8(dst, Int64.Parse(val));
+                        break;
+
+                    case ClassDescriptor.FieldType.tpULong:
+                        dst = buf.packI8(dst, (long)UInt64.Parse(val));
+                        break;
+
+                    case ClassDescriptor.FieldType.tpDate:
+                        dst = buf.packDate(dst, DateTime.Parse(val));
+                        break;
+
+                    case ClassDescriptor.FieldType.tpFloat:
+                        dst = buf.packF4(dst, Single.Parse(val));
+                        break;
+
+                    case ClassDescriptor.FieldType.tpDouble:
+                        dst = buf.packF8(dst, Double.Parse(val));
+                        break;
+
+                    case ClassDescriptor.FieldType.tpDecimal: 
+                        dst = buf.packDecimal(dst, Decimal.Parse(val));
+                        break;
+
+                    case ClassDescriptor.FieldType.tpGuid: 
+                        dst = buf.packGuid(dst, new Guid(val));
+                        break;
+
+                    case ClassDescriptor.FieldType.tpString:
+                        dst = buf.packString(dst, val);
+                        break;
+
+                    case ClassDescriptor.FieldType.tpArrayOfByte:
+                        buf.extend(dst + 4 + (val.Length >> 1));
+                        Bytes.pack4(buf.arr, dst, val.Length >> 1);
+                        dst += 4;
+                        for (int j = 0, n = val.Length; j < n; j+=2) 
+                        { 
+                            buf.arr[dst++] = (byte)((getHexValue(val[j]) << 4) | getHexValue(val[j+1]));
+                        }
+                        break;
+                    default:
                         throwException("Bad key type");
                         break;
-					
                 }
             }
-            catch (System.FormatException x)
+            return new Key(buf.toArray());
+        }
+
+        Key createKey(ClassDescriptor.FieldType type, String val)
+        {
+            IPersistent obj;
+
+            switch (type)
             {
-                throwException("Failed to convert key value");
+                case ClassDescriptor.FieldType.tpBoolean: 
+                    return new Key(Int32.Parse(val) != 0);
+					
+                case ClassDescriptor.FieldType.tpByte: 
+                    return new Key(Byte.Parse(val));
+					
+                case ClassDescriptor.FieldType.tpSByte: 
+                    return new Key(SByte.Parse(val));
+					
+                case ClassDescriptor.FieldType.tpChar: 
+                    return new Key((char)Int32.Parse(val));
+					
+                case ClassDescriptor.FieldType.tpShort: 
+                    return new Key(Int16.Parse(val));
+					
+                case ClassDescriptor.FieldType.tpUShort: 
+                    return new Key(UInt16.Parse(val));
+					
+                case ClassDescriptor.FieldType.tpInt: 
+                    return new Key(Int32.Parse(val));
+					
+                case ClassDescriptor.FieldType.tpUInt: 
+                case ClassDescriptor.FieldType.tpEnum:
+                    return new Key(UInt32.Parse(val));
+					
+                case ClassDescriptor.FieldType.tpObject: 
+                    obj = new Persistent();
+                    storage.assignOid(obj, mapId((int)UInt32.Parse(val)));
+                    return new Key(obj);
+					
+                case ClassDescriptor.FieldType.tpLong: 
+                    return new Key(Int64.Parse(val));
+					
+                case ClassDescriptor.FieldType.tpULong: 
+                    return new Key(UInt64.Parse(val));
+					
+                case ClassDescriptor.FieldType.tpFloat: 
+                    return new Key(Single.Parse(val));
+					
+                case ClassDescriptor.FieldType.tpDouble: 
+                    return new Key(Double.Parse(val));
+					
+                case ClassDescriptor.FieldType.tpDecimal: 
+                    return new Key(Decimal.Parse(val));
+
+                case ClassDescriptor.FieldType.tpGuid: 
+                    return new Key(new Guid(val));
+
+                case ClassDescriptor.FieldType.tpString: 
+                    return new Key(val);
+					
+                case ClassDescriptor.FieldType.tpArrayOfByte:
+                {
+                    byte[] buf = new byte[val.Length >> 1];
+                    for (int i = 0; i < buf.Length; i++) 
+                    { 
+                        buf[i] = (byte)((getHexValue(val[i*2]) << 4) | getHexValue(val[i*2+1]));
+                    }
+                    return new Key(buf);
+                }
+
+                case ClassDescriptor.FieldType.tpDate: 
+                    return new Key(DateTime.Parse(val));
+					
+                default: 
+                    throwException("Bad key type");
+                    break;
+					
             }
             return null;
         }
 		
         internal int parseInt(String str)
         {
-            try
-            {
-                return System.Int32.Parse(str);
-            }
-            catch (FormatException x)
-            {
-                throwException("Bad integer constant");
-            }
-            return -1;
+            return Int32.Parse(str);
         }
 		
         internal Type findClassByName(String className) 
@@ -384,21 +477,22 @@ namespace Perst.Impl
             Type type = (Type)classMap[className];
             if (type == null) 
             {
-                type = ClassDescriptor.lookup(className);
+                type = ClassDescriptor.lookup(storage, className);
                 classMap[className] = type;
             }
             return type;
         }
 
-        internal void  createIndex()
+        internal void  createIndex(String indexType)
         {
-            Btree btree;
+            Btree btree = null;
             XMLScanner.Token tkn;
             int oid = 0;
-            bool unique = false;
-            System.String className = null;
-            System.String fieldName = null;
-            System.String type = null;
+            bool     unique = false;
+            String   className = null;
+            String   fieldName = null;
+            String[] fieldNames = null;
+            String   type = null;
             while ((tkn = scanner.scan()) == XMLScanner.Token.IDENT)
             {
                 System.String attrName = scanner.Identifier;
@@ -419,13 +513,31 @@ namespace Perst.Impl
                 {
                     className = attrValue;
                 }
-                else if (attrName.Equals("field"))
-                {
-                    fieldName = attrValue;
-                }
                 else if (attrName.Equals("type"))
                 {
                     type = attrValue;
+                }
+                else if (attrName.StartsWith("field"))
+                {
+                    int len = attrName.Length;
+                    if (len == 5) 
+                    {
+                        fieldName = attrValue;
+                    } 
+                    else 
+                    { 
+                        int fieldNo = Int32.Parse(attrName.Substring(5));
+                        if (fieldNames == null || fieldNames.Length <= fieldNo) 
+                        { 
+                            String[] newFieldNames = new String[fieldNo+1];
+                            if (fieldNames != null) 
+                            { 
+                                Array.Copy(fieldNames, 0, newFieldNames, 0, fieldNames.Length);
+                            }
+                            fieldNames = newFieldNames;
+                        }
+                        fieldNames[fieldNo] = attrValue;
+                    }
                 }
             }
             if (tkn != XMLScanner.Token.GT)
@@ -438,11 +550,19 @@ namespace Perst.Impl
             }
             if (className != null)
             {
-                if (fieldName == null)
+                Type cls = findClassByName(className);
+                if (fieldName != null) 
+                { 
+                    btree = new BtreeFieldIndex(cls, fieldName, unique);
+                } 
+                else if (fieldNames != null) 
+                { 
+                    btree = new BtreeMultiFieldIndex(cls, fieldNames, unique);
+                } 
+                else
                 {
                     throwException("Field name is not specified for field index");
                 }
-                btree = new BtreeFieldIndex(findClassByName(className), fieldName, unique);
             }
             else
             {
@@ -461,14 +581,30 @@ namespace Perst.Impl
                     throwException("<ref> element expected");
                 }
                 XMLElement refElem = readElement("ref");
-                System.String entryKey = getAttribute(refElem, "key");
-                int entryOid = mapId(getIntAttribute(refElem, "id"));
-                Key key = createKey(btree.type, entryKey);
+                Key key;
+                if (fieldNames != null) 
+                { 
+                    String[] values = new String[fieldNames.Length];                
+                    ClassDescriptor.FieldType[] types = ((BtreeMultiFieldIndex)btree).types;
+                    for (int i = 0; i < values.Length; i++) 
+                    { 
+                        values[i] = getAttribute(refElem, "key"+i);
+                    }
+                    key = createCompoundKey(types, values);
+                } 
+                else 
+                { 
+                    key = createKey(btree.type, getAttribute(refElem, "key"));
+                }
                 IPersistent obj = new Persistent();
+                int entryOid = mapId(getIntAttribute(refElem, "id"));
                 storage.assignOid(obj, entryOid);
                 btree.insert(key, obj, false);
             }
-            if (tkn != XMLScanner.Token.LTS || scanner.scan() != XMLScanner.Token.IDENT || !scanner.Identifier.Equals("btree-index") || scanner.scan() != XMLScanner.Token.GT)
+            if (tkn != XMLScanner.Token.LTS 
+                || scanner.scan() != XMLScanner.Token.IDENT 
+                || !scanner.Identifier.Equals(indexType) 
+                || scanner.scan() != XMLScanner.Token.GT)
             {
                 throwException("Element is not closed");
             }
@@ -521,14 +657,15 @@ namespace Perst.Impl
 		
         internal int packObject(XMLElement objElem, ClassDescriptor desc, int offs, ByteBuffer buf)
         {
-            System.Reflection.FieldInfo[] flds = desc.allFields;
-            ClassDescriptor.FieldType[] types = desc.fieldTypes;
+            ClassDescriptor.FieldDescriptor[] flds = desc.allFields;
             for (int i = 0, n = flds.Length; i < n; i++)
             {
-                System.Reflection.FieldInfo f = flds[i];
-                XMLElement elem = (objElem != null)?objElem.getSibling(f.Name):null;
+                ClassDescriptor.FieldDescriptor fd = flds[i];
+                FieldInfo f = fd.field;
+                String fieldName = fd.fieldName;
+                XMLElement elem = (objElem != null)?objElem.getSibling(fieldName):null;
 				
-                switch (types[i])
+                switch (fd.type)
                 {
                     case ClassDescriptor.FieldType.tpByte: 
                     case ClassDescriptor.FieldType.tpSByte: 
@@ -545,7 +682,7 @@ namespace Perst.Impl
                             }
                             else
                             {
-                                throwException("Conversion for field " + f.Name + " is not possible");
+                                throwException("Conversion for field " + fieldName + " is not possible");
                             }
                         }
                         offs += 1;
@@ -565,7 +702,7 @@ namespace Perst.Impl
                             }
                             else
                             {
-                                throwException("Conversion for field " + f.Name + " is not possible");
+                                throwException("Conversion for field " + fieldName + " is not possible");
                             }
                         }
                         offs += 1;
@@ -587,7 +724,7 @@ namespace Perst.Impl
                             }
                             else
                             {
-                                throwException("Conversion for field " + f.Name + " is not possible");
+                                throwException("Conversion for field " + fieldName + " is not possible");
                             }
                         }
                         offs += 2;
@@ -609,16 +746,20 @@ namespace Perst.Impl
                             {
                                 try 
                                 {
+#if COMPACT_NET_FRAMEWORK
+                                    Bytes.pack4(buf.arr, offs, (int)ClassDescriptor.parseEnum(f.FieldType, elem.StringValue));
+#else
                                     Bytes.pack4(buf.arr, offs, (int)Enum.Parse(f.FieldType, elem.StringValue));
+#endif
                                 } 
-                                catch (ArgumentException x)
+                                catch (ArgumentException)
                                 {
                                     throwException("Invalid enum value");
                                 }
                             }
                             else
                             {
-                                throwException("Conversion for field " + f.Name + " is not possible");
+                                throwException("Conversion for field " + fieldName + " is not possible");
                             }
                         }
                         offs += 4;
@@ -640,7 +781,7 @@ namespace Perst.Impl
                             }
                             else
                             {
-                                throwException("Conversion for field " + f.Name + " is not possible");
+                                throwException("Conversion for field " + fieldName + " is not possible");
                             }
                         }
                         offs += 4;
@@ -661,7 +802,7 @@ namespace Perst.Impl
                             }
                             else
                             {
-                                throwException("Conversion for field " + f.Name + " is not possible");
+                                throwException("Conversion for field " + fieldName + " is not possible");
                             }
                         }
                         offs += 8;
@@ -673,15 +814,15 @@ namespace Perst.Impl
                         {
                             if (elem.isIntValue())
                             {
-                                Bytes.pack4(buf.arr, offs, BitConverter.ToInt32(BitConverter.GetBytes((float) elem.IntValue), 0));
+                                Bytes.packF4(buf.arr, offs, (float)elem.IntValue);
                             }
                             else if (elem.isRealValue())
                             {
-                                Bytes.pack4(buf.arr, offs, BitConverter.ToInt32(BitConverter.GetBytes((float) elem.RealValue), 0));
+                                Bytes.packF4(buf.arr, offs, (float) elem.RealValue);
                             }
                             else
                             {
-                                throwException("Conversion for field " + f.Name + " is not possible");
+                                throwException("Conversion for field " + fieldName + " is not possible");
                             }
                         }
                         offs += 4;
@@ -693,20 +834,72 @@ namespace Perst.Impl
                         {
                             if (elem.isIntValue())
                             {
-                                Bytes.pack8(buf.arr, offs, BitConverter.DoubleToInt64Bits((double) elem.IntValue));
+                                Bytes.packF8(buf.arr, offs, (double) elem.IntValue);
                             }
                             else if (elem.isRealValue())
                             {
-                                Bytes.pack8(buf.arr, offs, BitConverter.DoubleToInt64Bits((double) elem.RealValue));
+                                Bytes.packF8(buf.arr, offs, elem.RealValue);
                             }
                             else
                             {
-                                throwException("Conversion for field " + f.Name + " is not possible");
+                                throwException("Conversion for field " + fieldName + " is not possible");
                             }
                         }
                         offs += 8;
                         continue;
 					
+                    case ClassDescriptor.FieldType.tpDecimal: 
+                        buf.extend(offs + 16);
+                        if (elem != null)
+                        {
+                            decimal d = 0;
+                            if (elem.isIntValue())
+                            {
+                                d = elem.IntValue;
+                            }
+                            else if (elem.isRealValue())
+                            {
+                                d = (decimal)elem.RealValue;
+                            }
+                            else if (elem.isStringValue())
+                            {
+                                try 
+                                { 
+                                    d = Decimal.Parse(elem.StringValue);
+                                } 
+                                catch (FormatException) 
+                                {
+                                    throwException("Invalid date");
+                                }
+                            }
+                            else
+                            {
+                                throwException("Conversion for field " + fieldName + " is not possible");
+                            }
+                            Bytes.packDecimal(buf.arr, offs, d);
+
+                        }
+                        offs += 16;
+                        continue;
+  
+                    case ClassDescriptor.FieldType.tpGuid: 
+                        buf.extend(offs + 16);
+                        if (elem != null)
+                        {
+                            if (elem.isStringValue())
+                            {
+                                Guid guid = new Guid(elem.StringValue);
+                                byte[] bits = guid.ToByteArray();
+                                Array.Copy(bits, 0, buf.arr, offs, 16);
+                            }
+                            else
+                            {
+                                throwException("Conversion for field " + fieldName + " is not possible");
+                            }
+                        }
+                        offs += 16;
+                        continue;
+                    
                     case ClassDescriptor.FieldType.tpDate: 
                         buf.extend(offs + 8);
                         if (elem != null)
@@ -723,16 +916,16 @@ namespace Perst.Impl
                             {
                                 try 
                                 { 
-                                    Bytes.pack8(buf.arr, offs, DateTime.Parse(elem.StringValue).Ticks);
+                                    Bytes.packDate(buf.arr, offs, DateTime.Parse(elem.StringValue));
                                 } 
-                                catch (FormatException x) 
+                                catch (FormatException) 
                                 {
                                     throwException("Invalid date");
                                 }
                             }
                             else
                             {
-                                throwException("Conversion for field " + f.Name + " is not possible");
+                                throwException("Conversion for field " + fieldName + " is not possible");
                             }
                         }
                         offs += 8;
@@ -760,7 +953,7 @@ namespace Perst.Impl
                             }
                             else
                             {
-                                throwException("Conversion for field " + f.Name + " is not possible");
+                                throwException("Conversion for field " + fieldName + " is not possible");
                             }
                             if (val != null)
                             {
@@ -800,10 +993,12 @@ namespace Perst.Impl
                     }
 					
                     case ClassDescriptor.FieldType.tpValue: 
-                        offs = packObject(elem, storage.getClassDescriptor(f.FieldType), offs, buf);
+                        offs = packObject(elem, fd.valueDesc, offs, buf);
                         continue;
 					
+#if SUPPORT_RAW_TYPE
                     case ClassDescriptor.FieldType.tpRaw: 
+#endif
                     case ClassDescriptor.FieldType.tpArrayOfByte: 
                     case ClassDescriptor.FieldType.tpArrayOfSByte: 
                         if (elem == null || elem.isNullValue())
@@ -843,7 +1038,7 @@ namespace Perst.Impl
                                 }
                                 else
                                 {
-                                    throwException("Conversion for field " + f.Name + " is not possible");
+                                    throwException("Conversion for field " + fieldName + " is not possible");
                                 }
                                 item = item.NextSibling;
                                 offs += 1;
@@ -877,7 +1072,7 @@ namespace Perst.Impl
                                 }
                                 else
                                 {
-                                    throwException("Conversion for field " + f.Name + " is not possible");
+                                    throwException("Conversion for field " + fieldName + " is not possible");
                                 }
                                 item = item.NextSibling;
                                 offs += 1;
@@ -913,7 +1108,7 @@ namespace Perst.Impl
                                 }
                                 else
                                 {
-                                    throwException("Conversion for field " + f.Name + " is not possible");
+                                    throwException("Conversion for field " + fieldName + " is not possible");
                                 }
                                 item = item.NextSibling;
                                 offs += 2;
@@ -950,16 +1145,20 @@ namespace Perst.Impl
                                 {
                                     try 
                                     {
+#if COMPACT_NET_FRAMEWORK
+                                        Bytes.pack4(buf.arr, offs, (int)ClassDescriptor.parseEnum(elemType, item.StringValue));
+#else
                                         Bytes.pack4(buf.arr, offs, (int)Enum.Parse(elemType, item.StringValue));
+#endif
                                     } 
-                                    catch (ArgumentException x)
+                                    catch (ArgumentException)
                                     {
                                         throwException("Invalid enum value");
                                     }
                                 }
                                 else
                                 {
-                                    throwException("Conversion for field " + f.Name + " is not possible");
+                                    throwException("Conversion for field " + fieldName + " is not possible");
                                 }
                                 item = item.NextSibling;
                                 offs += 4;
@@ -995,7 +1194,7 @@ namespace Perst.Impl
                                 }
                                 else
                                 {
-                                    throwException("Conversion for field " + f.Name + " is not possible");
+                                    throwException("Conversion for field " + fieldName + " is not possible");
                                 }
                                 item = item.NextSibling;
                                 offs += 4;
@@ -1030,7 +1229,7 @@ namespace Perst.Impl
                                 }
                                 else
                                 {
-                                    throwException("Conversion for field " + f.Name + " is not possible");
+                                    throwException("Conversion for field " + fieldName + " is not possible");
                                 }
                                 item = item.NextSibling;
                                 offs += 8;
@@ -1056,15 +1255,15 @@ namespace Perst.Impl
                             {
                                 if (item.isIntValue())
                                 {
-                                   Bytes.pack4(buf.arr, offs, BitConverter.ToInt32(BitConverter.GetBytes((float)item.IntValue), 0));
+                                   Bytes.packF4(buf.arr, offs, (float)item.IntValue);
                                 }
                                 else if (item.isRealValue())
                                 {
-                                    Bytes.pack4(buf.arr, offs, BitConverter.ToInt32(BitConverter.GetBytes((float)item.RealValue), 0));
+                                    Bytes.packF4(buf.arr, offs, (float)item.RealValue);
                                 }
                                 else
                                 {
-                                    throwException("Conversion for field " + f.Name + " is not possible");
+                                    throwException("Conversion for field " + fieldName + " is not possible");
                                 }
                                 item = item.NextSibling;
                                 offs += 4;
@@ -1090,15 +1289,15 @@ namespace Perst.Impl
                             {
                                 if (item.isIntValue())
                                 {
-                                    Bytes.pack8(buf.arr, offs,  BitConverter.DoubleToInt64Bits((double) item.IntValue));
+                                    Bytes.packF8(buf.arr, offs, (double)item.IntValue);
                                 }
                                 else if (item.isRealValue())
                                 {
-                                    Bytes.pack8(buf.arr, offs,  BitConverter.DoubleToInt64Bits(item.RealValue));
+                                    Bytes.packF8(buf.arr, offs, item.RealValue);
                                 }
                                 else
                                 {
-                                    throwException("Conversion for field " + f.Name + " is not possible");
+                                    throwException("Conversion for field " + fieldName + " is not possible");
                                 }
                                 item = item.NextSibling;
                                 offs += 8;
@@ -1130,15 +1329,81 @@ namespace Perst.Impl
                                 {
                                     try 
                                     { 
-                                        Bytes.pack8(buf.arr, offs, DateTime.Parse(item.StringValue).Ticks);
+                                        Bytes.packDate(buf.arr, offs, DateTime.Parse(item.StringValue));
                                     }
-                                    catch (FormatException x)
+                                    catch (FormatException)
                                     {
-                                        throwException("Conversion for field " + f.Name + " is not possible");
+                                        throwException("Conversion for field " + fieldName + " is not possible");
                                     }
                                 }
                                 item = item.NextSibling;
                                 offs += 8;
+                            }
+                        }
+                        continue;
+					
+                    case ClassDescriptor.FieldType.tpArrayOfDecimal: 
+                        if (elem == null || elem.isNullValue())
+                        {
+                            buf.extend(offs + 4);
+                            Bytes.pack4(buf.arr, offs, - 1);
+                            offs += 4;
+                        }
+                        else
+                        {
+                            XMLElement item = elem.getSibling("array-element");
+                            int len = (item == null)?0:item.Counter;
+                            buf.extend(offs + 4 + len * 16);
+                            Bytes.pack4(buf.arr, offs, len);
+                            offs += 4;
+                            while (--len >= 0)
+                            {
+                                if (item.isStringValue())
+                                {
+                                    try 
+                                    { 
+                                        Bytes.packDecimal(buf.arr, offs, Decimal.Parse(item.StringValue));
+                                    }
+                                    catch (FormatException)
+                                    {
+                                        throwException("Conversion for field " + fieldName + " is not possible");
+                                    }
+                                }
+                                item = item.NextSibling;
+                                offs += 16;
+                            }
+                        }
+                        continue;
+					
+                    case ClassDescriptor.FieldType.tpArrayOfGuid: 
+                        if (elem == null || elem.isNullValue())
+                        {
+                            buf.extend(offs + 4);
+                            Bytes.pack4(buf.arr, offs, - 1);
+                            offs += 4;
+                        }
+                        else
+                        {
+                            XMLElement item = elem.getSibling("array-element");
+                            int len = (item == null)?0:item.Counter;
+                            buf.extend(offs + 4 + len * 16);
+                            Bytes.pack4(buf.arr, offs, len);
+                            offs += 4;
+                            while (--len >= 0)
+                            {
+                                if (item.isStringValue())
+                                {
+                                    try 
+                                    { 
+                                        Bytes.packGuid(buf.arr, offs, new Guid(item.StringValue));
+                                    }
+                                    catch (FormatException)
+                                    {
+                                        throwException("Conversion for field " + fieldName + " is not possible");
+                                    }
+                                }
+                                item = item.NextSibling;
+                                offs += 16;
                             }
                         }
                         continue;
@@ -1178,7 +1443,7 @@ namespace Perst.Impl
                                 }
                                 else
                                 {
-                                    throwException("Conversion for field " + f.Name + " is not possible");
+                                    throwException("Conversion for field " + fieldName + " is not possible");
                                 }
                                 if (val == null)
                                 {
@@ -1246,7 +1511,7 @@ namespace Perst.Impl
                             int len = (item == null)?0:item.Counter;
                             Bytes.pack4(buf.arr, offs, len);
                             offs += 4;
-                            ClassDescriptor elemDesc = storage.getClassDescriptor(f.FieldType);
+                            ClassDescriptor elemDesc = fd.valueDesc;
                             while (--len >= 0)
                             {
                                 offs = packObject(item, elemDesc, offs, buf);
@@ -1255,6 +1520,7 @@ namespace Perst.Impl
                         }
                         continue;
 					
+#if SUPPORT_RAW_TYPE
                     case ClassDescriptor.FieldType.tpArrayOfRaw: 
                         if (elem == null || elem.isNullValue())
                         {
@@ -1296,7 +1562,7 @@ namespace Perst.Impl
                             }
                         }
                         continue;
-					
+#endif		
                 }
             }
             return offs;
@@ -1627,7 +1893,7 @@ namespace Perst.Impl
                                 if (i == size)
                                 {
                                     char[] newBuf = new char[size *= 2];
-                                    Array.Copy(sconst, 0, newBuf, 0, slen);
+                                    Array.Copy(sconst, 0, newBuf, 0, i);
                                     sconst = newBuf;
                                 }
                                 sconst[i++] = (char) ch;
@@ -1654,7 +1920,7 @@ namespace Perst.Impl
                                             return Token.ICONST;
                                         }
                                     }
-                                    catch (System.FormatException x)
+                                    catch (System.FormatException)
                                     {
                                         throw new XMLImportException(line, column, "Bad XML file format");
                                     }
@@ -1670,15 +1936,18 @@ namespace Perst.Impl
                                 }
                                 ch = get();
                             }
-                            goto default;
 						
                         default: 
                             i = 0;
-                            while (System.Char.IsLetterOrDigit((char) ch) || ch == '+' || ch == '$' || ch == '-' || ch == ':' || ch == '_' || ch == '.')
+                            while (System.Char.IsLetterOrDigit((char) ch) || ch == '-' || ch == ':' || ch == '_' || ch == '.')
                             {
                                 if (i == size)
                                 {
                                     throw new XMLImportException(line, column, "Bad XML file format");
+                                }
+                                if (ch == '-') 
+                                { 
+                                    ch = '+';
                                 }
                                 sconst[i++] = (char) ch;
                                 ch = get();

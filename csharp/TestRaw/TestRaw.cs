@@ -26,8 +26,9 @@ public class TestRaw : Persistent
 
     public static void Main(String[] args) 
     { 
-        Storage db = StorageFactory.Instance.createStorage();
-        db.open("testraw.dbs");
+        Storage db = StorageFactory.Instance.CreateStorage();
+        db.SetProperty("perst.serialize.transient.objects", true);
+        db.Open("testraw.dbs");
         TestRaw root = (TestRaw)db.Root;
         if (root == null) 
         { 
@@ -49,15 +50,15 @@ public class TestRaw : Persistent
         L1List elem = root.list;
         for (int i = nListMembers; --i >= 0;) 
         { 
-            Assert.that(elem.obj.Equals(i));
+            Assert.That(elem.obj.Equals(i));
             elem = elem.next;
         }
         for (int i = nHashMembers; --i >= 0;) 
         { 
-            Assert.that(root.map["key-" + i].Equals("value-" + i));
+            Assert.That(root.map["key-" + i].Equals("value-" + i));
         }
         Console.WriteLine("Database is OK");
-        db.close();
+        db.Close();
     }
 }
 

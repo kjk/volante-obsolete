@@ -2,28 +2,37 @@ namespace Perst
 {
     using System;
     using System.Runtime.InteropServices;
+#if !COMPACT_NET_FRAMEWORK
+    using System.ComponentModel;
+#endif
 	
     /// <summary> Base class for all persistent capable objects
     /// </summary>
     public class Persistent : IPersistent
     {
+#if !COMPACT_NET_FRAMEWORK
+        [Browsable(false)]
+#endif
         public virtual int Oid
         {
             get
             {
                 return oid;
-            }
-			
+            }	
         }
+
+#if !COMPACT_NET_FRAMEWORK
+        [Browsable(false)]
+#endif
         public virtual Storage Storage
         {
             get
             {
                 return storage;
-            }
-			
+            }			
         }
-        public virtual void  load()
+
+        public virtual void Load()
         {
             if (storage != null)
             {
@@ -31,22 +40,22 @@ namespace Perst
             }
         }
 		
-        public bool isRaw() 
+        public bool IsRaw() 
         { 
-            return (state & (int)ObjectState.RAW) != 0;
+            return (state & ObjectState.RAW) != 0;
         } 
     
-        public bool isModified() 
+        public bool IsModified() 
         { 
-            return (state & (int)ObjectState.DIRTY) != 0;
+            return (state & ObjectState.DIRTY) != 0;
         } 
  
-        public bool isPersistent()
+        public bool IsPersistent()
         {
             return oid != 0;
         }
 		
-        public virtual void  makePersistent(Storage storage)
+        public virtual void MakePersistent(Storage storage)
         {
             if (oid == 0)
             {
@@ -54,33 +63,33 @@ namespace Perst
             }
         }
 		
-        public virtual void  store()
+        public virtual void Store()
         {
-            if ((state & (int)ObjectState.RAW) != 0)
+            if ((state & ObjectState.RAW) != 0)
             {
                 throw new StorageError(StorageError.ErrorCode.ACCESS_TO_STUB);
             }
             if (storage != null) 
             {
                 storage.storeObject(this);
-                state &= ~(int)ObjectState.DIRTY;
+                state &= ~ObjectState.DIRTY;
             }
         }
 		
-        public void modify() 
+        public void Modify() 
         { 
-            if ((state & (int)ObjectState.DIRTY) == 0 && storage != null) 
+            if ((state & ObjectState.DIRTY) == 0 && storage != null) 
             { 
-                if ((state & (int)ObjectState.RAW) != 0) 
+                if ((state & ObjectState.RAW) != 0) 
                 { 
                     throw new StorageError(StorageError.ErrorCode.ACCESS_TO_STUB);
                 }
                 storage.modifyObject(this);
-                state |= (int)ObjectState.DIRTY;
+                state |= ObjectState.DIRTY;
             }
         }
 
-        public virtual void  deallocate()
+        public virtual void Deallocate()
         {
             if (storage != null) 
             {
@@ -89,7 +98,7 @@ namespace Perst
             }
         }
 		
-        public virtual bool recursiveLoading()
+        public virtual bool RecursiveLoading()
         {
             return true;
         }
@@ -105,18 +114,41 @@ namespace Perst
             return oid;
         }
 		
-        public virtual void onLoad() 
+        public virtual void OnLoad() 
         {
         }
+        
+        public virtual void Invalidate() 
+        {
+	        state |= ObjectState.RAW;
+        }
+        
+        ~Persistent() 
+        {
+            if ((state & ObjectState.DIRTY) != 0 && storage != null) 
+            { 
+                storage.storeFinalizedObject(this);
+                state &= ~ObjectState.DIRTY;
+            }
+        }
 
-        [NonSerialized()]
-        internal Storage storage;
-        [NonSerialized()]
-        internal int oid;
-        [NonSerialized()]
-        internal int state;
+        public void AssignOid(Storage storage, int oid, bool raw)
+        {
+            this.oid = oid;
+            this.storage = storage;
+            state = raw ? ObjectState.RAW : 0;
+        }
 
-        internal enum ObjectState 
+
+	    [NonSerialized()]
+        Storage storage;
+        [NonSerialized()]
+        int oid;
+        [NonSerialized()]
+        ObjectState state;
+
+        [Flags]
+        enum ObjectState 
         {
             RAW=1,
             DIRTY=2

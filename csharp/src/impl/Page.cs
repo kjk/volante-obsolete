@@ -12,9 +12,9 @@ namespace Perst.Impl
         internal long offs;
         internal byte[] data;
 		
-        internal static int psDirty = 0x01; // page has been modified
-        internal static int psRaw   = 0x02; // page is loaded from the disk
-        internal static int psWait  = 0x04; // other thread(s) wait load operation completion
+        internal const int psDirty = 0x01; // page has been modified
+        internal const int psRaw   = 0x02; // page is loaded from the disk
+        internal const int psWait  = 0x04; // other thread(s) wait load operation completion
 		
         internal const int pageBits = 12;
         internal const int pageSize = 1 << pageBits;

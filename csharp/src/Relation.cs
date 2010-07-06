@@ -1,38 +1,54 @@
 namespace Perst
 {
     using System;
+    using System.Collections;
 	
     /// <summary> Class representing relation between owner and members
     /// </summary>
     public abstract class Relation:Persistent, Link
     {
-        public abstract int size();
-		
-        public abstract IPersistent get(int i);
-		
-        public abstract IPersistent getRaw(int i);
-		
-        public abstract void  set(int i, IPersistent obj);
-		
-        public abstract void  remove(int i);
+        public abstract int Size();
 
-        public abstract void  insert(int i, IPersistent obj);
-		
-        public abstract void  add(IPersistent obj);
-		
-        public abstract void  addAll(IPersistent[] arr);
-		
-        public abstract void  addAll(IPersistent[] arr, int from, int length);
-		
-        public abstract void  addAll(Link anotherLink);
-		
-        public abstract IPersistent[] toArray();
+        public abstract int Length 
+        {
+            get;
+        }
 
-        public abstract bool contains(IPersistent obj);
+        public abstract IPersistent this[int i] 
+        {
+            get;
+            set;
+        }
 		
-        public abstract int indexOf(IPersistent obj);
+        public abstract IPersistent Get(int i);
 		
-        public abstract void  clear();
+        public abstract IPersistent GetRaw(int i);
+		
+        public abstract void  Set(int i, IPersistent obj);
+		
+        public abstract void  Remove(int i);
+
+        public abstract void  Insert(int i, IPersistent obj);
+		
+        public abstract void  Add(IPersistent obj);
+		
+        public abstract void  AddAll(IPersistent[] arr);
+		
+        public abstract void  AddAll(IPersistent[] arr, int from, int length);
+		
+        public abstract void  AddAll(Link anotherLink);
+		
+        public abstract IPersistent[] ToArray();
+
+        public abstract Array ToArray(Type elemType);
+
+        public abstract bool  Contains(IPersistent obj);
+		
+        public abstract int   IndexOf(IPersistent obj);
+		
+        public abstract void  Clear();
+
+        public abstract IEnumerator GetEnumerator();
 
         public virtual IPersistent Owner
         {
@@ -54,7 +70,7 @@ namespace Perst
             set
             {
                 this.owner = value;
-                store();
+                Store();
             }
 			
         }

@@ -18,7 +18,7 @@ namespace Perst
         /// <param name="cond">result of checked condition 
         /// 
         /// </param>
-        public static void  that(bool cond)
+        public static void  That(bool cond)
         {
             if (!cond)
             {
@@ -35,7 +35,7 @@ namespace Perst
         /// <param name="cond">result of checked condition 
         /// 
         /// </param>
-        public static void  that(System.String description, bool cond)
+        public static void  That(System.String description, bool cond)
         {
             if (!cond)
             {
@@ -45,14 +45,14 @@ namespace Perst
 		
         /// <summary> Throw assertion failed exception.
         /// </summary>
-        public static void  failed()
+        public static void  Failed()
         {
             throw new AssertionFailed();
         }
 		
         /// <summary> Throw assertion failed exception with given description.
         /// </summary>
-        public static void  failed(System.String description)
+        public static void  Failed(System.String description)
         {
             throw new AssertionFailed(description);
         }
