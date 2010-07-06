@@ -14,13 +14,6 @@ namespace Perst.Impl
         int           nItems;
         IPersistent[] item;
 
-        internal class PageReference 
-        { 
-            internal TtreePage pg;
-        
-            internal PageReference(TtreePage p) { pg = p; }
-        }
-
         public override bool RecursiveLoading() 
         {
             return false;
@@ -187,7 +180,7 @@ namespace Perst.Impl
         internal const int OVERFLOW   = 3;
         internal const int UNDERFLOW  = 4;
 
-        internal int insert(PersistentComparator comparator, IPersistent mbr, bool unique, PageReference pgRef) 
+        internal int insert(PersistentComparator comparator, IPersistent mbr, bool unique, ref TtreePage pgRef) 
         { 
             Load();
             int n = nItems;
@@ -214,16 +207,16 @@ namespace Perst.Impl
                 } 
                 else 
                 {
-                    pg = pgRef.pg;
-                    pgRef.pg = left;
-                    int result = left.insert(comparator, mbr, unique, pgRef);
+                    pg = pgRef;
+                    pgRef = left;
+                    int result = left.insert(comparator, mbr, unique, ref pgRef);
                     if (result == NOT_UNIQUE) 
                     { 
                         return NOT_UNIQUE;
                     }
                     Modify();
-                    left = pgRef.pg;
-                    pgRef.pg = pg;
+                    left = pgRef;
+                    pgRef = pg;
                     if (result == OK) return OK;
                 }
                 if (balance > 0) 
@@ -247,7 +240,7 @@ namespace Perst.Impl
                         lp.right = this;
                         balance = 0;
                         lp.balance = 0;
-                        pgRef.pg = lp;
+                        pgRef = lp;
                     } 
                     else 
                     { // double LR turn
@@ -261,7 +254,7 @@ namespace Perst.Impl
                         balance = (rp.balance < 0) ? 1 : 0;
                         lp.balance = (rp.balance > 0) ? -1 : 0;
                         rp.balance = 0;
-                        pgRef.pg = rp;
+                        pgRef = rp;
                     }
                     return OK;
                 }
@@ -287,16 +280,16 @@ namespace Perst.Impl
                 } 
                 else 
                 { 
-                    pg = pgRef.pg;
-                    pgRef.pg = right;
-                    int result = right.insert(comparator, mbr, unique, pgRef);
+                    pg = pgRef;
+                    pgRef = right;
+                    int result = right.insert(comparator, mbr, unique, ref pgRef);
                     if (result == NOT_UNIQUE) 
                     { 
                         return NOT_UNIQUE;
                     }
                     Modify();
-                    right = pgRef.pg;
-                    pgRef.pg = pg;
+                    right = pgRef;
+                    pgRef = pg;
                     if (result == OK) return OK;
                 }
                 if (balance < 0) 
@@ -320,7 +313,7 @@ namespace Perst.Impl
                         rp.left = this;
                         balance = 0;
                         rp.balance = 0;
-                        pgRef.pg = rp;
+                        pgRef = rp;
                     } 
                     else 
                     { // double RL turn
@@ -334,7 +327,7 @@ namespace Perst.Impl
                         balance = (lp.balance > 0) ? -1 : 0;
                         rp.balance = (lp.balance < 0) ? 1 : 0;
                         lp.balance = 0;
-                        pgRef.pg = lp;
+                        pgRef = lp;
                     }
                     return OK;
                 }
@@ -385,11 +378,11 @@ namespace Perst.Impl
                     for (int i = n-1; i > r; i--) item[i] = item[i-1]; 
                     item[r] = mbr;
                 }
-                return insert(comparator, reinsertItem, unique, pgRef);
+                return insert(comparator, reinsertItem, unique, ref pgRef);
             }
         }
        
-        internal int balanceLeftBranch(PageReference pgRef) 
+        internal int balanceLeftBranch(ref TtreePage pgRef) 
         {
             if (balance < 0) 
             { 
@@ -414,14 +407,14 @@ namespace Perst.Impl
                     { 
                         this.balance = 1;
                         rp.balance = -1;
-                        pgRef.pg = rp;
+                        pgRef = rp;
                         return OK;
                     } 
                     else 
                     { 
                         balance = 0;
                         rp.balance = 0;
-                        pgRef.pg = rp;
+                        pgRef = rp;
                         return UNDERFLOW;
                     }
                 } 
@@ -437,13 +430,13 @@ namespace Perst.Impl
                     balance = lp.balance > 0 ? -1 : 0;
                     rp.balance = lp.balance < 0 ? 1 : 0;
                     lp.balance = 0;
-                    pgRef.pg = lp;
+                    pgRef = lp;
                     return UNDERFLOW;
                 }
             }
         }
 
-        internal int balanceRightBranch(PageReference pgRef) 
+        internal int balanceRightBranch(ref TtreePage pgRef) 
         {
             if (balance > 0) 
             { 
@@ -468,14 +461,14 @@ namespace Perst.Impl
                     { 
                         balance = -1;
                         lp.balance = 1;
-                        pgRef.pg = lp;
+                        pgRef = lp;
                         return OK;
                     } 
                     else 
                     { 
                         balance = 0;
                         lp.balance = 0;
-                        pgRef.pg = lp;
+                        pgRef = lp;
                         return UNDERFLOW;
                     }
                 } 
@@ -491,13 +484,13 @@ namespace Perst.Impl
                     balance = rp.balance < 0 ? 1 : 0;
                     lp.balance = rp.balance > 0 ? -1 : 0;
                     rp.balance = 0;
-                    pgRef.pg = rp;
+                    pgRef = rp;
                     return UNDERFLOW;
                 }
             }
         }
     
-        internal int remove(PersistentComparator comparator, IPersistent mbr, PageReference pgRef)
+        internal int remove(PersistentComparator comparator, IPersistent mbr, ref TtreePage pgRef)
         {
             Load();
             TtreePage pg;
@@ -508,14 +501,14 @@ namespace Perst.Impl
                 if (left != null) 
                 { 
                     Modify();
-                    pg = pgRef.pg;
-                    pgRef.pg = left;
-                    int h = left.remove(comparator, mbr, pgRef);
-                    left = pgRef.pg;
-                    pgRef.pg = pg;
+                    pg = pgRef;
+                    pgRef = left;
+                    int h = left.remove(comparator, mbr, ref pgRef);
+                    left = pgRef;
+                    pgRef = pg;
                     if (h == UNDERFLOW) 
                     { 
-                        return balanceLeftBranch(pgRef);
+                        return balanceLeftBranch(ref pgRef);
                     } 
                     else if (h == OK) 
                     { 
@@ -535,13 +528,13 @@ namespace Perst.Impl
                             if (right == null) 
                             { 
                                 Deallocate();
-                                pgRef.pg = left;
+                                pgRef = left;
                                 return UNDERFLOW;
                             } 
                             else if (left == null) 
                             { 
                                 Deallocate();
-                                pgRef.pg = right;
+                                pgRef = right;
                                 return UNDERFLOW;
                             } 
                         }
@@ -562,14 +555,14 @@ namespace Perst.Impl
                                     item[i+1] = item[i];
                                 }
                                 item[0] = prev.item[prev.nItems-1];
-                                pg = pgRef.pg;
-                                pgRef.pg = left;
-                                int h = left.remove(comparator, loadItem(0), pgRef);
-                                left = pgRef.pg;
-                                pgRef.pg = pg;
+                                pg = pgRef;
+                                pgRef = left;
+                                int h = left.remove(comparator, loadItem(0), ref pgRef);
+                                left = pgRef;
+                                pgRef = pg;
                                 if (h == UNDERFLOW) 
                                 {
-                                    h = balanceLeftBranch(pgRef);
+                                    h = balanceLeftBranch(ref pgRef);
                                 }
                                 return h;
                             } 
@@ -587,14 +580,14 @@ namespace Perst.Impl
                                     item[i-1] = item[i];
                                 }
                                 item[n-1] = next.item[0];
-                                pg = pgRef.pg;
-                                pgRef.pg = right;
-                                int h = right.remove(comparator, loadItem(n-1), pgRef);
-                                right = pgRef.pg;
-                                pgRef.pg = pg;
+                                pg = pgRef;
+                                pgRef = right;
+                                int h = right.remove(comparator, loadItem(n-1), ref pgRef);
+                                right = pgRef;
+                                pgRef = pg;
                                 if (h == UNDERFLOW) 
                                 {
-                                    h = balanceRightBranch(pgRef);
+                                    h = balanceRightBranch(ref pgRef);
                                 }
                                 return h;
                             }
@@ -611,14 +604,14 @@ namespace Perst.Impl
             if (right != null) 
             { 
                 Modify();
-                pg = pgRef.pg;
-                pgRef.pg = right;
-                int h = right.remove(comparator, mbr, pgRef);
-                right = pgRef.pg;
-                pgRef.pg = pg;
+                pg = pgRef;
+                pgRef = right;
+                int h = right.remove(comparator, mbr, ref pgRef);
+                right = pgRef;
+                pgRef = pg;
                 if (h == UNDERFLOW) 
                 { 
-                    return balanceRightBranch(pgRef);
+                    return balanceRightBranch(ref pgRef);
                 }
                 else 
                 { 

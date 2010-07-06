@@ -187,7 +187,7 @@ namespace Perst.Impl
 
         internal void generateSerializer()
         {
-            if (!cls.IsPublic || !defaultConstructor.IsPublic) 
+            if (!cls.IsPublic || defaultConstructor == null || !defaultConstructor.IsPublic) 
             { 
                 return;
             }
@@ -207,7 +207,7 @@ namespace Perst.Impl
                         break;
                 }
                 FieldInfo f = flds[i].field;
-                if (f != null && !f.IsPublic) 
+                if (f == null || !f.IsPublic) 
                 {
                     return;
                 }

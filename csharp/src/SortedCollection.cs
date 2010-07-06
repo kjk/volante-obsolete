@@ -120,7 +120,7 @@ namespace Perst
         /// High boundary can be inclusive or exclusive. </param>
         /// <returns> selection iterator</returns>
         ///
-        IEnumerator GetEnumerator(Key from, Key till);
+        IEnumerator GetEnumerator(object from, object till);
 
         /// <summary>
         /// Get comparator used in this collection

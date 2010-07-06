@@ -1,7 +1,5 @@
 namespace Perst
 {
-    using System;
-	
     /// <summary> Base class for persistent comparator used in SortedCollection class
     /// </summary>
     public abstract class PersistentComparator : Persistent 
@@ -20,6 +18,6 @@ namespace Perst
         /// <param name="mbr"> collection member</param>
         /// <param name="key"> search key</param>
         /// <returns>negative number if mbr &lt; key, zero if mbr == key and positive number if mbr &gt; key</returns>
-        public abstract int CompareMemberWithKey(IPersistent mbr, Object key);
+        public abstract int CompareMemberWithKey(IPersistent mbr, object key);
     }
 }

@@ -23,6 +23,7 @@ namespace Perst.Impl
             set 
             {
                 link.Set(i, value);
+                Modify();
             }
         }
 
@@ -44,36 +45,43 @@ namespace Perst.Impl
         public override void Set(int i, IPersistent obj)
         {
             link.Set(i, obj);
+            Modify();
         }
 		
         public override void Remove(int i)
         {
             link.Remove(i);
+            Modify();
         }
 		
         public override void Insert(int i, IPersistent obj)
         {
             link.Insert(i, obj);
+            Modify();
         }
 		
         public override void Add(IPersistent obj)
         {
             link.Add(obj);
+            Modify();
         }
 		
         public override void AddAll(IPersistent[] arr)
         {
             link.AddAll(arr);
+            Modify();
         }
 		
         public override void AddAll(IPersistent[] arr, int from, int length)
         {
             link.AddAll(arr, from, length);
+            Modify();
         }
 		
         public override void AddAll(Link anotherLink)
         {
             link.AddAll(anotherLink);
+            Modify();
         }
 		
         public override IPersistent[] ToArray()
@@ -105,6 +113,7 @@ namespace Perst.Impl
         public override void Clear()
         {
             link.Clear();
+            Modify();
         }
 		
         internal RelationImpl(IPersistent owner):base(owner)
@@ -112,6 +121,8 @@ namespace Perst.Impl
             link = new LinkImpl(8);
         }
 		
-        internal LinkImpl link;
+        internal RelationImpl() {}
+
+        internal Link link;
     }
 }

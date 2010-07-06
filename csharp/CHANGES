@@ -177,3 +177,10 @@ above criteria.
 
 --- Release version 2.16 10.02.2004 -------------------------------------
 1. Fix bug in Persistent.invalidate method
+
+--- Release version 2.17 26.02.2004 -------------------------------------
+1. Fix bug in code checking when pack/unpack method generation is possible
+2. Add check for concurrent modifications in B-Tree iterator
+3. Add Projection class
+4. Add Index.getPrefix, Index.prefixIterator, FieldIndex.getPrefix and FieldIndex.prefixIterator methods
+5. Fix bugs in RelationImpl class

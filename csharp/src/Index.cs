@@ -79,6 +79,14 @@ namespace Perst
         /// </returns>
         IPersistent[] Get(object from, object till);
 
+        /// <summary> Get objects which key starts with specifid prefix.
+        /// </summary>
+        /// <param name="prefix">String key prefix</param>
+        /// <returns>array of objects which key starts with specifid prefix, ordered by key value 
+        /// </returns>
+        IPersistent[] GetPrefix(string prefix);
+
+        
         /// <summary> Put new object in the index. 
         /// </summary>
         /// <param name="key">object key wrapper
@@ -246,6 +254,15 @@ namespace Perst
         IEnumerator GetEnumerator(object from, object till);
 
         /// <summary>
+        /// Get iterator for traversing objects in ascent order which key starts with specified prefix. 
+        /// You should not update/remove or add members to the index during iteration
+        /// </summary>
+        /// <param name="prefix">String key prefix</param>
+        /// <returns>selection iterator</returns>
+        ///
+        IEnumerator GetEnumerator(string prefix);
+
+        /// <summary>
         /// Get enumerable collection of objects in the index with key belonging to the specified range. 
         /// You should not update/remove or add members to the index during iteration
         /// </summary>
@@ -290,6 +307,15 @@ namespace Perst
         /// <returns>enumerable collection</returns>
         ///
         IEnumerable Range(object from, object till);
+
+        /// <summary>
+        /// Get enumerable ascent ordered collection of objects in the index which key starts with specified prefix. 
+        /// You should not update/remove or add members to the index during iteration
+        /// </summary>
+        /// <param name="prefix">String key prefix</param>
+        /// <returns>enumerable collection</returns>
+        ///
+        IEnumerable StartsWith(string prefix);
 
         /// <summary>
         /// Get iterator for traversing all entries in the index 

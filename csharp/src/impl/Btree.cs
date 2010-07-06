@@ -11,6 +11,8 @@ namespace Perst.Impl
         internal ClassDescriptor.FieldType type;
         internal int nElems;
         internal bool unique;
+        [NonSerialized()]
+        internal int  updateCounter;
 		
         internal static int Sizeof = ObjectHeader.Sizeof + 4 * 4 + 1;
 
@@ -262,7 +264,11 @@ namespace Perst.Impl
             return Get(getKeyFromObject(from), getKeyFromObject(till));
         }
             
-            
+        public virtual IPersistent[] GetPrefix(string prefix)
+        {
+            return Get(new Key(prefix), new Key(prefix + Char.MaxValue, false));
+        }
+        
         public virtual bool Put(Key key, IPersistent obj)
         {
             return insert(key, obj, false);
@@ -322,6 +328,7 @@ namespace Perst.Impl
                 }
             }
             nElems += 1;
+            updateCounter += 1;
             Modify();
             return true;
         }
@@ -380,6 +387,7 @@ namespace Perst.Impl
                 root = BtreePage.allocate(db, root, type, rem);
                 height += 1;
             }
+            updateCounter += 1;
             Modify();
         }
 		
@@ -412,6 +420,7 @@ namespace Perst.Impl
                 root = 0;
                 nElems = 0;
                 height = 0;
+                updateCounter += 1;
                 Modify();
             }
         }
@@ -574,6 +583,10 @@ namespace Perst.Impl
 
             public bool MoveNext() 
             {
+                if (updateCounter != tree.updateCounter) 
+                { 
+                    throw new InvalidOperationException("B-Tree was modified");
+                }
                 if (sp > 0 && posStack[sp-1] < end) 
                 {
                     int pos = posStack[sp-1];   
@@ -638,6 +651,7 @@ namespace Perst.Impl
                 int height = tree.height;
                 pageStack = new int[height];
                 posStack =  new int[height];
+                updateCounter = tree.updateCounter;
                 int pageId = tree.root;
                 while (--height >= 0) 
                 { 
@@ -660,6 +674,7 @@ namespace Perst.Impl
             protected int         end;
             protected int         oid;
             protected bool        hasCurrent;
+            protected int         updateCounter;
         }
         
         class BtreeStrEnumerator : BtreeEnumerator 
@@ -794,6 +809,7 @@ namespace Perst.Impl
                 Page pg;
                 int height = tree.height;
                 int pageId = tree.root;
+                updateCounter = tree.updateCounter;
                 hasCurrent = false;
                 sp = 0;
             
@@ -1306,6 +1322,10 @@ namespace Perst.Impl
 
             public bool MoveNext() 
             {
+                if (updateCounter != tree.updateCounter) 
+                { 
+                    throw new InvalidOperationException("B-Tree was modified");
+                }
                 if (sp != 0) 
                 {
                     int pos = posStack[sp-1];   
@@ -1569,6 +1589,7 @@ namespace Perst.Impl
             protected bool            hasCurrent;
             protected IterationOrder  order;
             protected ClassDescriptor.FieldType type;
+            protected int             updateCounter;
         }
 
         class BtreeDictionarySelectionIterator : BtreeSelectionIterator, IDictionaryEnumerator 
@@ -1651,6 +1672,11 @@ namespace Perst.Impl
             return Range(from, till).GetEnumerator();
         }
 
+        public IEnumerator GetEnumerator(string prefix) 
+        {
+            return StartsWith(prefix).GetEnumerator();
+        }
+
         public virtual IEnumerable Range(Key from, Key till, IterationOrder order) 
         { 
             if ((from != null && from.type != type) || (till != null && till.type != type)) 
@@ -1673,6 +1699,11 @@ namespace Perst.Impl
         public IEnumerable Range(object from, object till) 
         { 
             return Range(getKeyFromObject(from), getKeyFromObject(till), IterationOrder.AscentOrder);
+        }
+ 
+        public IEnumerable StartsWith(string prefix) 
+        { 
+            return Range(new Key(prefix), new Key(prefix + Char.MaxValue, false), IterationOrder.AscentOrder);
         }
  
         public virtual IDictionaryEnumerator GetDictionaryEnumerator(Key from, Key till, IterationOrder order) 

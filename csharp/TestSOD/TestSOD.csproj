@@ -3,13 +3,13 @@
         ProjectType = "Local"
         ProductVersion = "7.10.3077"
         SchemaVersion = "2.0"
-        ProjectGuid = "{2E7C9D04-D830-427D-9BEE-15595C3B1537}"
+        ProjectGuid = "{A56330C0-2CFA-4D48-B5C7-98F9F2CEFCD4}"
     >
         <Build>
             <Settings
                 ApplicationIcon = ""
                 AssemblyKeyContainerName = ""
-                AssemblyName = "TestTimeSeries"
+                AssemblyName = "TestSOD"
                 AssemblyOriginatorKeyFile = ""
                 DefaultClientScript = "JScript"
                 DefaultHTMLPageLayout = "Grid"
@@ -18,7 +18,7 @@
                 OutputType = "Exe"
                 PreBuildEvent = ""
                 PostBuildEvent = ""
-                RootNamespace = "TestTimeSeries"
+                RootNamespace = "TestSOD"
                 RunPostBuildEvent = "OnBuildSuccess"
                 StartupObject = ""
             >
@@ -79,12 +79,7 @@
         <Files>
             <Include>
                 <File
-                    RelPath = "AssemblyInfo.cs"
-                    SubType = "Code"
-                    BuildAction = "Compile"
-                />
-                <File
-                    RelPath = "TestTimeSeries.cs"
+                    RelPath = "TestSOD.cs"
                     SubType = "Code"
                     BuildAction = "Compile"
                 />

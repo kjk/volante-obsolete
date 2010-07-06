@@ -63,6 +63,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestTimeSeries", "TestTimeS
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestSOD", "TestSOD\TestSOD.csproj", "{A56330C0-2CFA-4D48-B5C7-98F9F2CEFCD4}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfiguration) = preSolution
 		Debug = Debug
@@ -133,6 +137,10 @@ Global
 		{2E7C9D04-D830-427D-9BEE-15595C3B1537}.Debug.Build.0 = Debug|.NET
 		{2E7C9D04-D830-427D-9BEE-15595C3B1537}.Release.ActiveCfg = Release|.NET
 		{2E7C9D04-D830-427D-9BEE-15595C3B1537}.Release.Build.0 = Release|.NET
+		{A56330C0-2CFA-4D48-B5C7-98F9F2CEFCD4}.Debug.ActiveCfg = Debug|.NET
+		{A56330C0-2CFA-4D48-B5C7-98F9F2CEFCD4}.Debug.Build.0 = Debug|.NET
+		{A56330C0-2CFA-4D48-B5C7-98F9F2CEFCD4}.Release.ActiveCfg = Release|.NET
+		{A56330C0-2CFA-4D48-B5C7-98F9F2CEFCD4}.Release.Build.0 = Release|.NET
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 	EndGlobalSection

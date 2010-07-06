@@ -22,6 +22,8 @@ rd /s/q TestRaw\obj
 rd /s/q TestRaw\bin
 rd /s/q TestSSD\obj
 rd /s/q TestSSD\bin
+rd /s/q TestSOD\obj
+rd /s/q TestSOD\bin
 rd /s/q TestEnumerator\obj
 rd /s/q TestEnumerator\bin
 rd /s/q TestCompoundIndex\obj

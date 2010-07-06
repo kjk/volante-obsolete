@@ -85,6 +85,8 @@ namespace Perst
             this.owner = owner;
         }
 		
+        internal Relation() {}
+
         private IPersistent owner;
     }
 }

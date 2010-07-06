@@ -86,7 +86,7 @@ namespace Perst.Impl
             return false;
         }
 
-        public IPersistent Get(Object key) 
+        public IPersistent Get(object key) 
         { 
             if (root != null) 
             { 
@@ -110,7 +110,7 @@ namespace Perst.Impl
 
             
 
-        public IPersistent[] Get(Object from, Object till) 
+        public IPersistent[] Get(object from, object till) 
         { 
             ArrayList list = new ArrayList();
             if (root != null) 
@@ -124,19 +124,17 @@ namespace Perst.Impl
 
         public bool Add(IPersistent obj) 
         { 
-            TtreePage newRoot;
+            TtreePage newRoot = root;
             if (root == null) 
             { 
                 newRoot = new TtreePage(obj);
             } 
             else 
             { 
-                TtreePage.PageReference pgRef = new TtreePage.PageReference(root);
-                if (root.insert(comparator, obj, unique, pgRef) == TtreePage.NOT_UNIQUE) 
+                if (root.insert(comparator, obj, unique, ref newRoot) == TtreePage.NOT_UNIQUE) 
                 { 
                     return false;
                 }
-                newRoot = pgRef.pg;
             }
             Modify();
             root = newRoot;
@@ -156,13 +154,13 @@ namespace Perst.Impl
             {
                 throw new StorageError(StorageError.ErrorCode.KEY_NOT_FOUND);
             }
-            TtreePage.PageReference pgRef = new TtreePage.PageReference(root);
-            if (root.remove(comparator, obj, pgRef) == TtreePage.NOT_FOUND) 
+            TtreePage newRoot = root;
+            if (root.remove(comparator, obj, ref newRoot) == TtreePage.NOT_FOUND) 
             {             
                 throw new StorageError(StorageError.ErrorCode.KEY_NOT_FOUND);
             }
             Modify();
-            root = pgRef.pg;
+            root = newRoot;
             nMembers -= 1;        
         }
 
@@ -250,7 +248,7 @@ namespace Perst.Impl
             return GetEnumerator(null, null);
         }
 
-        public IEnumerator GetEnumerator(Key from, Key till) 
+        public IEnumerator GetEnumerator(object from, object till) 
         {
             ArrayList list = new ArrayList();
             if (root != null) 
