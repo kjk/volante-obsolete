@@ -16,7 +16,7 @@ public class StorageImpl extends Storage {
     /**
      * Initial capacity of object hash
      */
-    static final int dbObjectCacheInitSize = 1319;
+    static final int  dbDefaultObjectCacheInitSize = 1319;
 
     /**
      * Database extension quantum. Memory is allocate by scanning bitmap. If there is no
@@ -500,8 +500,7 @@ public class StorageImpl extends Storage {
 		if (i == dbBitmapId + dbBitmapPages) { 
 		    throw new StorageError(StorageError.NOT_ENOUGH_SPACE);
 		}
-		long extension = (size > dbDefaultExtensionQuantum) 
-		    ? size : dbDefaultExtensionQuantum;
+		long extension = (size > extensionQuantum) ? size : extensionQuantum;
 		int morePages = (int) 
 		    ((extension + Page.pageSize*(dbAllocationQuantum*8-1) - 1)
 		     / (Page.pageSize*(dbAllocationQuantum*8-1)));
@@ -714,7 +713,7 @@ public class StorageImpl extends Storage {
         }
 	Page pg;
 	int i;
-	int indexSize = dbDefaultInitIndexSize;
+	int indexSize = initIndexSize;
 	if (indexSize < dbFirstUserId) { 
 	    indexSize = dbFirstUserId;
 	}
@@ -735,9 +734,10 @@ public class StorageImpl extends Storage {
         pool = new PagePool(pagePoolSize/Page.pageSize);
 
         objectCache = (pagePoolSize == INFINITE_PAGE_POOL)
-            ? (OidHashTable)new StrongHashTable(dbObjectCacheInitSize) 
-            : (OidHashTable)new WeakHashTable(dbObjectCacheInitSize);
+            ? (OidHashTable)new StrongHashTable(objectCacheInitSize) 
+            : (OidHashTable)new WeakHashTable(objectCacheInitSize);
         classDescMap = new HashMap();
+        modificationList = new ModificationList(modificationListLimit);
         descList = null;
         
 	header = new Header();
@@ -853,8 +853,8 @@ public class StorageImpl extends Storage {
             committedIndexSize = currIndexSize;
 	    usedSize = header.root[curr].size;
 	}
-        reloadScheme();
         opened = true;
+        reloadScheme();
     }
 
     public boolean isOpened() { 
@@ -873,25 +873,19 @@ public class StorageImpl extends Storage {
     }
         
 
+
     final void reloadScheme() {
-        btreeClassOid = -1;
-        btree2ClassOid = -1;
         classDescMap.clear();
         int descListOid = header.root[1-currIndex].classDescList;
-        classDescMap.put(ClassDescriptor.class, new ClassDescriptor(ClassDescriptor.class));
+        classDescMap.put(ClassDescriptor.class, 
+                         new ClassDescriptor(this, ClassDescriptor.class));
+        classDescMap.put(ClassDescriptor.FieldDescriptor.class, 
+                         new ClassDescriptor(this, ClassDescriptor.FieldDescriptor.class));
         if (descListOid != 0) {             
             ClassDescriptor desc;
-            descList = (ClassDescriptor)lookupObject(descListOid, ClassDescriptor.class);
+            descList = findClassDescriptor(descListOid);
             for (desc = descList; desc != null; desc = desc.next) { 
                 desc.resolve();
-                if (desc.cls.equals(Btree.class)) { 
-                    btreeClassOid = desc.getOid();
-                } else if (desc.cls.equals(BtreeFieldIndex.class)) { 
-                    btree2ClassOid = desc.getOid();
-                }                    
-                classDescMap.put(desc.cls, desc);
-            }
-            for (desc = descList; desc != null; desc = desc.next) { 
                 checkIfFinal(desc);
             }
         } else { 
@@ -903,22 +897,21 @@ public class StorageImpl extends Storage {
         setObjectOid(obj, oid, false);
     }
 
+    final void registerClassDescriptor(ClassDescriptor desc) { 
+        classDescMap.put(desc.cls, desc);
+        desc.next = descList;
+        descList = desc;
+        checkIfFinal(desc);
+        storeObject(desc);
+        header.root[1-currIndex].classDescList = desc.getOid();
+        modified = true;
+    }        
+
     final ClassDescriptor getClassDescriptor(Class cls) { 
         ClassDescriptor desc = (ClassDescriptor)classDescMap.get(cls);
         if (desc == null) { 
-            desc = new ClassDescriptor(cls);
-            classDescMap.put(cls, desc);
-            desc.next = descList;
-            descList = desc;
-            checkIfFinal(desc);
-            storeObject(desc);
-            if (cls.equals(Btree.class)) { 
-                btreeClassOid = desc.getOid();
-            } else if (cls.equals(BtreeFieldIndex.class)) { 
-                btree2ClassOid = desc.getOid();
-            }
-            header.root[1-currIndex].classDescList = desc.getOid();
-            modified = true;
+            desc = new ClassDescriptor(this, cls);
+            registerClassDescriptor(desc);
         }
         return desc;
     }
@@ -943,209 +936,198 @@ public class StorageImpl extends Storage {
         modified = true;
     }
 
-
-    public void commit() 
+    public synchronized void commit() 
     {
-        objectCache.flush();
-        synchronized (this) { 
-            int i, j, n;
-            if (!opened) {
-                throw new StorageError(StorageError.STORAGE_NOT_OPENED);
-            }
-            
-            if (modified) { 
-                int curr = currIndex;
-                int[] map = dirtyPagesMap;
-                int oldIndexSize = header.root[curr].indexSize;
-                int newIndexSize = header.root[1-curr].indexSize;
-                int nPages = committedIndexSize >>> dbHandlesPerPageBits;
-                Page pg;
-                if (newIndexSize > oldIndexSize) { 
-                    long newIndex = allocate(newIndexSize*8, 0);
-                    header.root[1-curr].shadowIndex = newIndex;
-                    header.root[1-curr].shadowIndexSize = newIndexSize;
-                    cloneBitmap(header.root[curr].index, oldIndexSize*8);
-                    free(header.root[curr].index, oldIndexSize*8);
-                }
-                for (i = 0; i < nPages; i++) { 
-                    if ((map[i >> 5] & (1 << (i & 31))) != 0) { 
-                        Page srcIndex = pool.getPage(header.root[1-curr].index+i*Page.pageSize);
-                        Page dstIndex = pool.getPage(header.root[curr].index+i*Page.pageSize);
-                        for (j = 0; j < Page.pageSize; j += 8) {
-                            long pos = Bytes.unpack8(dstIndex.data, j);
-                            if (Bytes.unpack8(srcIndex.data, j) != pos) { 
-                                if ((pos & dbFreeHandleFlag) == 0) {
-                                    if ((pos & dbPageObjectFlag) != 0) {  
-                                        free(pos & ~dbFlagsMask, Page.pageSize);
-                                    } else { 
-                                        int offs = (int)pos & (Page.pageSize-1);
-                                        pg = pool.getPage(pos-offs);
-                                        free(pos, ObjectHeader.getSize(pg.data, offs));
-                                        pool.unfix(pg);
-                                    }
-                                }
+        int i, j, n;
+        if (!opened) {
+            throw new StorageError(StorageError.STORAGE_NOT_OPENED);
+        }
+        modificationList.flush();
+        if (!modified) { 
+            return;
+        }
+        int curr = currIndex;
+        int[] map = dirtyPagesMap;
+        int oldIndexSize = header.root[curr].indexSize;
+        int newIndexSize = header.root[1-curr].indexSize;
+        int nPages = committedIndexSize >>> dbHandlesPerPageBits;
+        Page pg;
+        if (newIndexSize > oldIndexSize) { 
+            long newIndex = allocate(newIndexSize*8, 0);
+            header.root[1-curr].shadowIndex = newIndex;
+            header.root[1-curr].shadowIndexSize = newIndexSize;
+            cloneBitmap(header.root[curr].index, oldIndexSize*8);
+            free(header.root[curr].index, oldIndexSize*8);
+        }
+        for (i = 0; i < nPages; i++) { 
+            if ((map[i >> 5] & (1 << (i & 31))) != 0) { 
+                Page srcIndex = pool.getPage(header.root[1-curr].index+i*Page.pageSize);
+                Page dstIndex = pool.getPage(header.root[curr].index+i*Page.pageSize);
+                for (j = 0; j < Page.pageSize; j += 8) {
+                    long pos = Bytes.unpack8(dstIndex.data, j);
+                    if (Bytes.unpack8(srcIndex.data, j) != pos) { 
+                        if ((pos & dbFreeHandleFlag) == 0) {
+                            if ((pos & dbPageObjectFlag) != 0) {  
+                                free(pos & ~dbFlagsMask, Page.pageSize);
+                            } else { 
+                                int offs = (int)pos & (Page.pageSize-1);
+                                pg = pool.getPage(pos-offs);
+                                free(pos, ObjectHeader.getSize(pg.data, offs));
+                                pool.unfix(pg);
                             }
                         }
-                        pool.unfix(srcIndex);
-                        pool.unfix(dstIndex);
                     }
                 }
-                n = committedIndexSize & (dbHandlesPerPage-1);
-                if (n != 0 && (map[i >> 5] & (1 << (i & 31))) != 0) { 
-                    Page srcIndex = pool.getPage(header.root[1-curr].index+i*Page.pageSize);
-                    Page dstIndex = pool.getPage(header.root[curr].index+i*Page.pageSize);
-                    j = 0;
-                    do { 
-                        long pos = Bytes.unpack8(dstIndex.data, j);
-                        if (Bytes.unpack8(srcIndex.data, j) != pos) { 
-                            if ((pos & dbFreeHandleFlag) == 0) {
-                                if ((pos & dbPageObjectFlag) != 0) { 
-                                    free(pos & ~dbFlagsMask, Page.pageSize);
-                                } else { 
-                                    int offs = (int)pos & (Page.pageSize-1);
-                                    pg = pool.getPage(pos - offs);
-                                    free(pos, ObjectHeader.getSize(pg.data, offs));
-                                    pool.unfix(pg);
-                                }
-                            }
-                        }
-                        j += 8;
-                    } while (--n != 0);
-
-                    pool.unfix(srcIndex);
-                    pool.unfix(dstIndex);
-                }
-                for (i = 0; i <= nPages; i++) { 
-                    if ((map[i >> 5] & (1 << (i & 31))) != 0) { 
-                        pg = pool.putPage(header.root[1-curr].index+i*Page.pageSize);
-                        for (j = 0; j < Page.pageSize; j += 8) {
-                            Bytes.pack8(pg.data, j, Bytes.unpack8(pg.data, j) & ~dbModifiedFlag);
-                        }
-                        pool.unfix(pg);
-                    }
-                }
-                if (currIndexSize > committedIndexSize) { 
-                    long page = (header.root[1-curr].index 
-                                 + committedIndexSize*8) & ~(Page.pageSize-1);
-                    long end = (header.root[1-curr].index + Page.pageSize - 1
-                                + currIndexSize*8) & ~(Page.pageSize-1);
-                    while (page < end) { 
-                        pg = pool.putPage(page);
-                        for (j = 0; j < Page.pageSize; j += 8) {
-                            Bytes.pack8(pg.data, j, Bytes.unpack8(pg.data, j) & ~dbModifiedFlag);
-                        }
-                        pool.unfix(pg);
-                        page += Page.pageSize;
-                    }
-                }
-                header.root[1-curr].usedSize = usedSize;
-                pg = pool.putPage(0);
-                header.pack(pg.data);
-                pool.flush();
-                pool.modify(pg);
-                header.curr = curr ^= 1;
-                header.dirty = true;
-                header.pack(pg.data);
-                pool.unfix(pg);
-                pool.flush();
-	    
-                header.root[1-curr].size = header.root[curr].size;
-                header.root[1-curr].indexUsed = currIndexSize; 
-                header.root[1-curr].freeList  = header.root[curr].freeList; 
-                header.root[1-curr].bitmapEnd = header.root[curr].bitmapEnd; 
-                header.root[1-curr].rootObject = header.root[curr].rootObject; 
-                header.root[1-curr].classDescList = header.root[curr].classDescList; 
-	    
-                if (currIndexSize == 0 || newIndexSize != oldIndexSize) {
-                    if (currIndexSize == 0) { 
-                        currIndexSize = header.root[1-curr].indexUsed;
-                    }
-                    header.root[1-curr].index = header.root[curr].shadowIndex;
-                    header.root[1-curr].indexSize = header.root[curr].shadowIndexSize;
-                    header.root[1-curr].shadowIndex = header.root[curr].index;
-                    header.root[1-curr].shadowIndexSize = header.root[curr].indexSize;
-                    pool.copy(header.root[1-curr].index, header.root[curr].index,
-                              currIndexSize*8);
-                    i = (currIndexSize+dbHandlesPerPage*32-1) >>> (dbHandlesPerPageBits+5);
-                    while (--i >= 0) { 
-                        map[i] = 0;
-                    }
-                } else { 
-                    for (i = 0; i < nPages; i++) { 
-                        if ((map[i >> 5] & (1 << (i & 31))) != 0) { 
-                            map[i >> 5] -= (1 << (i & 31));
-                            pool.copy(header.root[1-curr].index + i*Page.pageSize,
-                                      header.root[curr].index + i*Page.pageSize,
-                                      Page.pageSize);
-                        }
-                    }
-                    if (currIndexSize > i*dbHandlesPerPage &&
-                        ((map[i >> 5] & (1 << (i & 31))) != 0
-                         || currIndexSize != committedIndexSize))
-                    {
-                        pool.copy(header.root[1-curr].index + i*Page.pageSize,
-                                  header.root[curr].index + i*Page.pageSize,
-                                  8*currIndexSize - i*Page.pageSize);
-                        j = i>>>5;
-                        n = (currIndexSize + dbHandlesPerPage*32 - 1) >>> (dbHandlesPerPageBits+5); 
-                        while (j < n) { 
-                            map[j++] = 0;
-                        }
-                    }
-                }
-                modified = false;
-                gcDone = false;
-                currIndex = curr;
-                committedIndexSize = currIndexSize;
+                pool.unfix(srcIndex);
+                pool.unfix(dstIndex);
             }
         }
-    }
-
-    public void rollback() {
-        objectCache.flush();
-        objectCache.clear();
-
-        synchronized (this) { 
-            if (!opened) {
-                throw new StorageError(StorageError.STORAGE_NOT_OPENED);
-            }
-            if (!modified) { 
-                return;
-            }
-            int curr = currIndex;
-            int[] map = dirtyPagesMap;
-            if (header.root[1-curr].index != header.root[curr].shadowIndex) { 
-                pool.copy(header.root[curr].shadowIndex, header.root[curr].index, 8*committedIndexSize);
-            } else { 
-                int nPages = (committedIndexSize + dbHandlesPerPage - 1) >>> dbHandlesPerPageBits;
-                for (int i = 0; i < nPages; i++) { 
-                    if ((map[i >> 5] & (1 << (i & 31))) != 0) { 
-                        pool.copy(header.root[curr].shadowIndex + i*Page.pageSize,
-                                  header.root[curr].index + i*Page.pageSize,
-                                  Page.pageSize);
+        n = committedIndexSize & (dbHandlesPerPage-1);
+        if (n != 0 && (map[i >> 5] & (1 << (i & 31))) != 0) { 
+            Page srcIndex = pool.getPage(header.root[1-curr].index+i*Page.pageSize);
+            Page dstIndex = pool.getPage(header.root[curr].index+i*Page.pageSize);
+            j = 0;
+            do { 
+                long pos = Bytes.unpack8(dstIndex.data, j);
+                if (Bytes.unpack8(srcIndex.data, j) != pos) { 
+                    if ((pos & dbFreeHandleFlag) == 0) {
+                        if ((pos & dbPageObjectFlag) != 0) { 
+                            free(pos & ~dbFlagsMask, Page.pageSize);
+                        } else { 
+                            int offs = (int)pos & (Page.pageSize-1);
+                            pg = pool.getPage(pos - offs);
+                            free(pos, ObjectHeader.getSize(pg.data, offs));
+                            pool.unfix(pg);
+                        }
                     }
                 }
+                j += 8;
+            } while (--n != 0);
+            pool.unfix(srcIndex);
+            pool.unfix(dstIndex);
+        }
+        for (i = 0; i <= nPages; i++) { 
+            if ((map[i >> 5] & (1 << (i & 31))) != 0) { 
+                pg = pool.putPage(header.root[1-curr].index+i*Page.pageSize);
+                for (j = 0; j < Page.pageSize; j += 8) {
+                    Bytes.pack8(pg.data, j, Bytes.unpack8(pg.data, j) & ~dbModifiedFlag);
+                }
+                pool.unfix(pg);
             }
-            for (int j = (currIndexSize+dbHandlesPerPage*32-1) >>> (dbHandlesPerPageBits+5);
-                 --j >= 0;
-                 map[j] = 0);
+        }
+        if (currIndexSize > committedIndexSize) { 
+            long page = (header.root[1-curr].index 
+                         + committedIndexSize*8) & ~(Page.pageSize-1);
+            long end = (header.root[1-curr].index + Page.pageSize - 1
+                        + currIndexSize*8) & ~(Page.pageSize-1);
+            while (page < end) { 
+                pg = pool.putPage(page);
+                for (j = 0; j < Page.pageSize; j += 8) {
+                    Bytes.pack8(pg.data, j, Bytes.unpack8(pg.data, j) & ~dbModifiedFlag);
+                }
+                pool.unfix(pg);
+                page += Page.pageSize;
+            }
+        }
+        header.root[1-curr].usedSize = usedSize;
+        pg = pool.putPage(0);
+        header.pack(pg.data);
+        pool.flush();
+        pool.modify(pg);
+        header.curr = curr ^= 1;
+        header.dirty = true;
+        header.pack(pg.data);
+        pool.unfix(pg);
+        pool.flush();
+        header.root[1-curr].size = header.root[curr].size;
+        header.root[1-curr].indexUsed = currIndexSize; 
+        header.root[1-curr].freeList  = header.root[curr].freeList; 
+        header.root[1-curr].bitmapEnd = header.root[curr].bitmapEnd; 
+        header.root[1-curr].rootObject = header.root[curr].rootObject; 
+        header.root[1-curr].classDescList = header.root[curr].classDescList; 
+        if (currIndexSize == 0 || newIndexSize != oldIndexSize) {
+            if (currIndexSize == 0) { 
+                currIndexSize = header.root[1-curr].indexUsed;
+            }
             header.root[1-curr].index = header.root[curr].shadowIndex;
             header.root[1-curr].indexSize = header.root[curr].shadowIndexSize;
-            header.root[1-curr].indexUsed = committedIndexSize;
-            header.root[1-curr].freeList  = header.root[curr].freeList; 
-            header.root[1-curr].bitmapEnd = header.root[curr].bitmapEnd; 
-            header.root[1-curr].size = header.root[curr].size;
-            header.root[1-curr].rootObject = header.root[curr].rootObject;
-            header.root[1-curr].classDescList = header.root[curr].classDescList;
-            modified = false;
-            usedSize = header.root[curr].size;
-            currIndexSize = committedIndexSize;
-
-            currRBitmapPage = currPBitmapPage = dbBitmapId;
-            currRBitmapOffs = currPBitmapOffs = 0;
-
-            reloadScheme();
+            header.root[1-curr].shadowIndex = header.root[curr].index;
+            header.root[1-curr].shadowIndexSize = header.root[curr].indexSize;
+            pool.copy(header.root[1-curr].index, header.root[curr].index,
+                      currIndexSize*8);
+            i = (currIndexSize+dbHandlesPerPage*32-1) >>> (dbHandlesPerPageBits+5);
+            while (--i >= 0) { 
+                map[i] = 0;
+            }
+        } else { 
+            for (i = 0; i < nPages; i++) { 
+                if ((map[i >> 5] & (1 << (i & 31))) != 0) { 
+                    map[i >> 5] -= (1 << (i & 31));
+                    pool.copy(header.root[1-curr].index + i*Page.pageSize,
+                              header.root[curr].index + i*Page.pageSize,
+                              Page.pageSize);
+                }
+            }
+            if (currIndexSize > i*dbHandlesPerPage &&
+                ((map[i >> 5] & (1 << (i & 31))) != 0
+                 || currIndexSize != committedIndexSize))
+            {
+                pool.copy(header.root[1-curr].index + i*Page.pageSize,
+                          header.root[curr].index + i*Page.pageSize,
+                          8*currIndexSize - i*Page.pageSize);
+                j = i>>>5;
+                n = (currIndexSize + dbHandlesPerPage*32 - 1) >>> (dbHandlesPerPageBits+5); 
+                while (j < n) { 
+                    map[j++] = 0;
+                }
+            }
         }
+        modified = false;
+        gcDone = false;
+        currIndex = curr;
+        committedIndexSize = currIndexSize;
+    }
+
+    public synchronized void rollback() {
+        if (!opened) {
+            throw new StorageError(StorageError.STORAGE_NOT_OPENED);
+        }
+        modificationList.clear();
+        if (!modified) { 
+            return;
+        }
+        objectCache.clear();
+        int curr = currIndex;
+        int[] map = dirtyPagesMap;
+        if (header.root[1-curr].index != header.root[curr].shadowIndex) { 
+            pool.copy(header.root[curr].shadowIndex, header.root[curr].index, 8*committedIndexSize);
+        } else { 
+            int nPages = (committedIndexSize + dbHandlesPerPage - 1) >>> dbHandlesPerPageBits;
+            for (int i = 0; i < nPages; i++) { 
+                if ((map[i >> 5] & (1 << (i & 31))) != 0) { 
+                    pool.copy(header.root[curr].shadowIndex + i*Page.pageSize,
+                              header.root[curr].index + i*Page.pageSize,
+                              Page.pageSize);
+                }
+            }
+        }
+        for (int j = (currIndexSize+dbHandlesPerPage*32-1) >>> (dbHandlesPerPageBits+5);
+             --j >= 0;
+             map[j] = 0);
+        header.root[1-curr].index = header.root[curr].shadowIndex;
+        header.root[1-curr].indexSize = header.root[curr].shadowIndexSize;
+        header.root[1-curr].indexUsed = committedIndexSize;
+        header.root[1-curr].freeList  = header.root[curr].freeList; 
+        header.root[1-curr].bitmapEnd = header.root[curr].bitmapEnd; 
+        header.root[1-curr].size = header.root[curr].size;
+        header.root[1-curr].rootObject = header.root[curr].rootObject;
+        header.root[1-curr].classDescList = header.root[curr].classDescList;
+        modified = false;
+        usedSize = header.root[curr].size;
+        currIndexSize = committedIndexSize;
+        currRBitmapPage = currPBitmapPage = dbBitmapId;
+        currRBitmapOffs = currPBitmapOffs = 0;
+        reloadScheme();
     }
 
     public synchronized java.util.Set createSet() {
@@ -1254,16 +1236,13 @@ public class StorageImpl extends Storage {
                                 Page pg = pool.getPage(pos - offs);
                                 int typeOid = ObjectHeader.getType(pg.data, offs);
                                 if (typeOid != 0) { 
-                                    markOid(typeOid);
-                                    if (typeOid == btreeClassOid || typeOid == btree2ClassOid) { 
+                                    ClassDescriptor desc = findClassDescriptor(typeOid);
+                                    if (desc.cls == Btree.class || desc.cls == BtreeFieldIndex.class) { 
                                         Btree btree = new Btree(pg.data, ObjectHeader.sizeof + offs);
                                         setObjectOid(btree, 0, false);
                                         btree.markTree();
-                                    } else { 
-                                        ClassDescriptor desc = (ClassDescriptor)lookupObject(typeOid, ClassDescriptor.class);
-                                        if (desc.hasReferences) { 
-                                            markObject(pool.get(pos), ObjectHeader.sizeof, desc);
-                                        }
+                                    } else if (desc.hasReferences) { 
+                                        markObject(pool.get(pos), ObjectHeader.sizeof, desc);
                                     }
                                 }
                                 pool.unfix(pg);                                
@@ -1272,7 +1251,7 @@ public class StorageImpl extends Storage {
                     }
                 }
             } while (existsNotMarkedObjects);
-        }
+        }    
         
         // sweep
         gcDone = true;
@@ -1287,18 +1266,21 @@ public class StorageImpl extends Storage {
                     }
                     int offs = (int)pos & (Page.pageSize-1);
                     Page pg = pool.getPage(pos - offs);
-                    int type = ObjectHeader.getType(pg.data, offs);
-                    if (type == btreeClassOid || type == btree2ClassOid) { 
-                        Btree btree = new Btree(pg.data, ObjectHeader.sizeof + offs);
-                        pool.unfix(pg);
-                        setObjectOid(btree, i, false);
-                        btree.deallocate();
-                    } else { 
-                        int size = ObjectHeader.getSize(pg.data, offs);
-                        pool.unfix(pg);
-                        freeId(i);
-                        objectCache.remove(i);                        
-                        cloneBitmap(pos, size);
+                    int typeOid = ObjectHeader.getType(pg.data, offs);
+                    if (typeOid != 0) { 
+                        ClassDescriptor desc = findClassDescriptor(typeOid);
+                        if (desc.cls == Btree.class || desc.cls == BtreeFieldIndex.class) { 
+                            Btree btree = new Btree(pg.data, ObjectHeader.sizeof + offs);
+                            pool.unfix(pg);
+                            setObjectOid(btree, i, false);
+                            btree.deallocate();
+                        } else { 
+                            int size = ObjectHeader.getSize(pg.data, offs);
+                            pool.unfix(pg);
+                            freeId(i);
+                            objectCache.remove(i);                        
+                            cloneBitmap(pos, size);
+                        }
                     }
                 }
             }   
@@ -1312,12 +1294,11 @@ public class StorageImpl extends Storage {
 
     final int markObject(byte[] obj, int offs,  ClassDescriptor desc)
     { 
-        Field[] all = desc.allFields;
-        int[] type = desc.fieldTypes;
+        ClassDescriptor.FieldDescriptor[] all = desc.allFields;
 
         for (int i = 0, n = all.length; i < n; i++) { 
-            Field f = all[i];
-            switch (type[i]) { 
+            ClassDescriptor.FieldDescriptor fd = all[i];
+            switch (fd.type) { 
                 case ClassDescriptor.tpBoolean:
                 case ClassDescriptor.tpByte:
                     offs += 1;
@@ -1349,7 +1330,7 @@ public class StorageImpl extends Storage {
                     offs += 4;
                     continue;
                 case ClassDescriptor.tpValue:
-                    offs = markObject(obj, offs, getClassDescriptor(f.getType()));
+                    offs = markObject(obj, offs, fd.valueDesc);
                     continue;
                 case ClassDescriptor.tpRaw:
                 case ClassDescriptor.tpArrayOfByte:
@@ -1421,8 +1402,7 @@ public class StorageImpl extends Storage {
                 {
                     int len = Bytes.unpack4(obj, offs);
                     offs += 4;
-                    Class elemType = f.getType().getComponentType();
-                    ClassDescriptor valueDesc = getClassDescriptor(elemType);
+                    ClassDescriptor valueDesc = fd.valueDesc;
                     while (--len >= 0) {
                         offs = markObject(obj, offs, valueDesc);
                     }
@@ -1492,32 +1472,134 @@ public class StorageImpl extends Storage {
         xmlImporter.importDatabase();
     }
 
+    private boolean getBooleanValue(Object value) { 
+        if (value instanceof Boolean) { 
+            return ((Boolean)value).booleanValue();
+        } else if (value instanceof String) {
+            String s = (String)value;
+            if ("true".equalsIgnoreCase(s) || "t".equalsIgnoreCase(s) || "1".equals(s)) { 
+                return true;
+            } else if ("false".equalsIgnoreCase(s) || "f".equalsIgnoreCase(s) || "0".equals(s)) { 
+                return false;
+            }
+        }
+        throw new StorageError(StorageError.BAD_PROPERTY_VALUE);
+    }
+
+    private long getIntegerValue(Object value) { 
+        if (value instanceof Number) { 
+            return ((Number)value).longValue();
+        } else if (value instanceof String) {
+            try { 
+                return Long.parseLong((String)value, 10);
+            } catch (NumberFormatException x) {}
+        }
+        throw new StorageError(StorageError.BAD_PROPERTY_VALUE);
+    }
+
+     
+    public void setProperties(Properties props) 
+    {
+        String value;
+        if ((value = props.getProperty("perst.implicit.values")) != null) { 
+            ClassDescriptor.treateAnyNonPersistentObjectAsValue = getBooleanValue(value);
+        } 
+        if ((value = props.getProperty("perst.serialize.transient.objects")) != null) { 
+            ClassDescriptor.serializeNonPersistentObjects = getBooleanValue(value);
+        } 
+        if ((value = props.getProperty("perst.object.cache.init.size")) != null) { 
+            objectCacheInitSize = (int)getIntegerValue(value);
+        }
+        if ((value = props.getProperty("perst.object.index.init.size")) != null) { 
+            initIndexSize = (int)getIntegerValue(value);
+        }
+        if ((value = props.getProperty("perst.extension.quantum")) != null) { 
+            extensionQuantum = getIntegerValue(value);
+        } 
+        if ((value = props.getProperty("perst.modification.list.limit")) != null) { 
+            modificationListLimit = (int)getIntegerValue(value);
+        }
+        if ((value = props.getProperty("perst.gc.threshold")) != null) { 
+            gcThreshold = getIntegerValue(value);
+        }
+    }
+
     public void setProperty(String name, Object value)
     {
-        boolean isTrue = value == java.lang.Boolean.TRUE || "true".equals(value);
         if (name.equals("perst.implicit.values")) { 
-            ClassDescriptor.treateAnyNonPersistentObjectAsValue = isTrue;
+            ClassDescriptor.treateAnyNonPersistentObjectAsValue = getBooleanValue(value);
         } else if (name.equals("perst.serialize.transient.objects")) { 
-            ClassDescriptor.serializeNonPersistentObjects = isTrue;
+            ClassDescriptor.serializeNonPersistentObjects = getBooleanValue(value);
+        } else if (name.equals("perst.object.cache.init.size")) { 
+            objectCacheInitSize = (int)getIntegerValue(value);
+        } else if (name.equals("perst.object.index.init.size")) { 
+            initIndexSize = (int)getIntegerValue(value);
+        } else if (name.equals("perst.extension.quantum")) { 
+            extensionQuantum = getIntegerValue(value);
+        } else if (name.equals("perst.modification.list.limit")) { 
+            modificationListLimit = (int)getIntegerValue(value);
+        } else if (name.equals("perst.gc.threshold")) { 
+            gcThreshold = getIntegerValue(value);
         } else { 
             throw new StorageError(StorageError.NO_SUCH_PROPERTY);
         }
     }
 
-    public IPersistent getObjectByOID(int oid)
+    
+
+    public synchronized IPersistent getObjectByOID(int oid)
     {
         return oid == 0 ? null : lookupObject(oid, null);
     }
 
+    class ModificationList { 
+        ArrayList list;
+        int       curr;
+        int       used;
+        int       limit;
+        
+        static final int initListSize = 256;
 
-    protected void modifyObject(IPersistent obj) {
-        objectCache.setDirty(obj.getOid());
+        ModificationList(int limit) { 
+            this.limit = limit;
+            list = new ArrayList(limit > initListSize ? initListSize : limit);
+        }
+
+        final void add(IPersistent obj) { 
+            if (used == limit) { 
+                if (limit == 0) { 
+                    obj.store();
+                } else { 
+                    IPersistent victim = (IPersistent)list.set(curr, obj);
+                    victim.store();
+                    curr = (curr + 1) % limit;
+                }
+            } else { 
+                used += 1;
+                list.add(obj);
+            }
+        }
+
+        final void flush() { 
+            for (int i = 0, n = used; i < n; i++) { 
+                ((IPersistent)list.get(i)).store();
+            }
+            clear();
+        }
+
+        final void clear() { 
+            list.clear();
+            used = 0;
+        }
+    }
+
+    protected synchronized void modifyObject(IPersistent obj) {
+        if (!obj.isModified()) { 
+            modificationList.add(obj);
+        }
     }
 
     protected synchronized void storeObject(IPersistent obj) {
-        if (!opened) {
-            return;
-        }
         int oid = obj.getOid();
         boolean newObject = false;
         if (oid == 0) { 
@@ -1525,11 +1607,8 @@ public class StorageImpl extends Storage {
             objectCache.put(oid, obj);
             setObjectOid(obj, oid, false);
             newObject = true;
-        } else if (obj.isModified()) { 
-            objectCache.clearDirty(oid);
         }
-        byte[] data;
-        data = packObject(obj);
+        byte[] data = packObject(obj);
 	long pos;
         int newSize = ObjectHeader.getSize(data, 0);
         if (newObject) { 
@@ -1592,6 +1671,10 @@ public class StorageImpl extends Storage {
         return oid;
     }
         
+    final ClassDescriptor findClassDescriptor(int oid) { 
+        return (ClassDescriptor)lookupObject(oid, ClassDescriptor.class);
+    }
+
     final IPersistent unswizzle(int oid, Class cls, boolean recursiveLoading) { 
         if (oid == 0) { 
             return null;
@@ -1616,7 +1699,7 @@ public class StorageImpl extends Storage {
             Page pg = pool.getPage(pos - offs);
             int typeOid = ObjectHeader.getType(pg.data, offs & ~dbFlagsMask);
             pool.unfix(pg);
-            desc = (ClassDescriptor)lookupObject(typeOid, ClassDescriptor.class);
+            desc = findClassDescriptor(typeOid);
         }
         stub = (IPersistent)desc.newInstance();
         setObjectOid(stub, oid, true);
@@ -1632,19 +1715,15 @@ public class StorageImpl extends Storage {
 	}
         byte[] body = pool.get(pos & ~dbFlagsMask);
         ClassDescriptor desc;
+        int typeOid = ObjectHeader.getType(body, 0);
+        if (typeOid == 0) { 
+            desc = (ClassDescriptor)classDescMap.get(cls);
+        } else { 
+            desc = findClassDescriptor(typeOid);
+        }
         if (obj == null) { 
-            if (cls == null 
-                || cls == Persistent.class
-                || (desc = (ClassDescriptor)classDescMap.get(cls)) == null
-                || desc.hasSubclasses)
-            {
-                int typeOid = ObjectHeader.getType(body, 0);
-                desc = (ClassDescriptor)lookupObject(typeOid, ClassDescriptor.class);
-            }
             obj = (IPersistent)desc.newInstance();
             objectCache.put(oid, obj);
-        } else { 
-            desc = getClassDescriptor(cls);
         }
         setObjectOid(obj, oid, false);
         try { 
@@ -1659,12 +1738,118 @@ public class StorageImpl extends Storage {
     final int unpackObject(Object obj, ClassDescriptor desc, boolean recursiveLoading, byte[] body, int offs) 
       throws Exception
     {
-        Field[] all = desc.allFields;
-        int[] type = desc.fieldTypes;
+        ClassDescriptor.FieldDescriptor[] all = desc.allFields;
+        int len;
 
         for (int i = 0, n = all.length; i < n; i++) { 
-            Field f = all[i];
-            switch (type[i]) { 
+            ClassDescriptor.FieldDescriptor fd = all[i];
+            Field f = fd.field;
+
+            if (f == null || obj == null) { 
+                switch (fd.type) { 
+                case ClassDescriptor.tpBoolean:
+                case ClassDescriptor.tpByte:
+                    offs += 1;
+                    continue;
+                case ClassDescriptor.tpChar:
+                case ClassDescriptor.tpShort:
+                    offs += 2;
+                    continue;
+                case ClassDescriptor.tpInt:
+                case ClassDescriptor.tpFloat:
+                case ClassDescriptor.tpObject:
+                    offs += 4;
+                    continue;
+                case ClassDescriptor.tpLong:
+                case ClassDescriptor.tpDouble:
+                case ClassDescriptor.tpDate:
+                    offs += 8;
+                    continue;
+                case ClassDescriptor.tpString:
+                    len = Bytes.unpack4(body, offs);
+                    offs += 4;
+                    if (len > 0) { 
+                        offs += len*2;
+                    } 
+                    continue;
+                case ClassDescriptor.tpValue:
+                    offs = unpackObject(null, fd.valueDesc, recursiveLoading, body, offs);
+                    continue;
+                case ClassDescriptor.tpRaw:
+                case ClassDescriptor.tpArrayOfByte:
+                case ClassDescriptor.tpArrayOfBoolean:
+                    len = Bytes.unpack4(body, offs);
+                    offs += 4;
+                    if (len > 0) { 
+                        offs += len;
+                    }
+                    continue;
+                case ClassDescriptor.tpArrayOfShort:
+                case ClassDescriptor.tpArrayOfChar:
+                    len = Bytes.unpack4(body, offs);
+                    offs += 4;
+                    if (len > 0) { 
+                        offs += len*2;
+                    }
+                    continue;
+                case ClassDescriptor.tpArrayOfInt:
+                case ClassDescriptor.tpArrayOfFloat:
+                case ClassDescriptor.tpArrayOfObject:
+                case ClassDescriptor.tpLink:
+                    len = Bytes.unpack4(body, offs);
+                    offs += 4;
+                    if (len > 0) { 
+                        offs += len*4;
+                    }
+                    continue;
+                case ClassDescriptor.tpArrayOfLong:
+                case ClassDescriptor.tpArrayOfDouble:
+                case ClassDescriptor.tpArrayOfDate:
+                    len = Bytes.unpack4(body, offs);
+                    offs += 4;
+                    if (len > 0) { 
+                        offs += len*8;
+                    }
+                    continue;
+                case ClassDescriptor.tpArrayOfString:
+                    len = Bytes.unpack4(body, offs);
+                    offs += 4;
+                    if (len > 0) { 
+                        for (int j = 0; j < len; j++) {
+                            int strlen = Bytes.unpack4(body, offs);
+                            offs += 4;
+                            if (strlen > 0) {
+                                len += strlen*2;
+                            }
+                        }
+                    }
+                    continue;
+                case ClassDescriptor.tpArrayOfValue:
+                    len = Bytes.unpack4(body, offs);
+                    offs += 4;
+                    if (len > 0) { 
+                        ClassDescriptor valueDesc = fd.valueDesc;
+                        for (int j = 0; j < len; j++) { 
+                            offs = unpackObject(null, valueDesc, recursiveLoading, body, offs);
+                        }
+                    }
+                    continue;
+                case ClassDescriptor.tpArrayOfRaw:
+                    len = Bytes.unpack4(body, offs);
+                    offs += 4;
+                    if (len > 0) { 
+                        for (int j = 0; j < len; j++) {
+                            int rawlen = Bytes.unpack4(body, offs);
+                            offs += 4;
+                            if (rawlen > 0) {
+                                len += rawlen;
+                            }
+                        }
+                    }
+                    continue;
+                }                
+            } else {                 
+                switch (fd.type) { 
                 case ClassDescriptor.tpBoolean:
                     f.setBoolean(obj, body[offs++] != 0);
                     continue;
@@ -1697,7 +1882,7 @@ public class StorageImpl extends Storage {
                     continue;
                 case ClassDescriptor.tpString:
                 {
-                    int len = Bytes.unpack4(body, offs);
+                    len = Bytes.unpack4(body, offs);
                     offs += 4;
                     String str = null;
                     if (len >= 0) { 
@@ -1730,15 +1915,13 @@ public class StorageImpl extends Storage {
                 }
                 case ClassDescriptor.tpValue:
                 {
-                    ClassDescriptor valueDesc = getClassDescriptor(f.getType());
-                    Object value = valueDesc.newInstance();
-                    offs = unpackObject(value, valueDesc, recursiveLoading, body, offs);
+                    Object value = fd.valueDesc.newInstance();
+                    offs = unpackObject(value, fd.valueDesc, recursiveLoading, body, offs);
                     f.set(obj, value);
                     continue;
                 }
                 case ClassDescriptor.tpRaw:
-                {
-                    int len = Bytes.unpack4(body, offs);
+                    len = Bytes.unpack4(body, offs);
                     offs += 4;
                     if (len < 0) { 
                         f.set(obj, null);
@@ -1750,10 +1933,8 @@ public class StorageImpl extends Storage {
                         offs += len;
                     }
                     continue;
-                }
                 case ClassDescriptor.tpArrayOfByte:
-                {
-                    int len = Bytes.unpack4(body, offs);
+                    len = Bytes.unpack4(body, offs);
                     offs += 4;
                     if (len < 0) { 
                         f.set(obj, null);
@@ -1764,10 +1945,8 @@ public class StorageImpl extends Storage {
                         f.set(obj, arr);
                     }
                     continue;
-                }
                 case ClassDescriptor.tpArrayOfBoolean:
-                {
-                    int len = Bytes.unpack4(body, offs);
+                    len = Bytes.unpack4(body, offs);
                     offs += 4;
                     if (len < 0) { 
                         f.set(obj, null);
@@ -1779,10 +1958,8 @@ public class StorageImpl extends Storage {
                         f.set(obj, arr);
                     }
                     continue;
-                }
                 case ClassDescriptor.tpArrayOfShort:
-                {
-                    int len = Bytes.unpack4(body, offs);
+                    len = Bytes.unpack4(body, offs);
                     offs += 4;
                     if (len < 0) { 
                         f.set(obj, null);
@@ -1795,10 +1972,8 @@ public class StorageImpl extends Storage {
                         f.set(obj, arr);
                     }
                     continue;
-                }
                 case ClassDescriptor.tpArrayOfChar:
-                {
-                    int len = Bytes.unpack4(body, offs);
+                    len = Bytes.unpack4(body, offs);
                     offs += 4;
                     if (len < 0) { 
                         f.set(obj, null);
@@ -1811,10 +1986,8 @@ public class StorageImpl extends Storage {
                         f.set(obj, arr);
                     }
                     continue;
-                }
                 case ClassDescriptor.tpArrayOfInt:
-                {
-                    int len = Bytes.unpack4(body, offs);
+                    len = Bytes.unpack4(body, offs);
                     offs += 4;
                     if (len < 0) { 
                         f.set(obj, null);
@@ -1827,10 +2000,8 @@ public class StorageImpl extends Storage {
                         f.set(obj, arr);
                     }
                     continue;
-                }
                 case ClassDescriptor.tpArrayOfLong:
-                {
-                    int len = Bytes.unpack4(body, offs);
+                    len = Bytes.unpack4(body, offs);
                     offs += 4;
                     if (len < 0) { 
                         f.set(obj, null);
@@ -1843,10 +2014,8 @@ public class StorageImpl extends Storage {
                         f.set(obj, arr);
                     }
                     continue;
-                }
                 case ClassDescriptor.tpArrayOfFloat:
-                {
-                    int len = Bytes.unpack4(body, offs);
+                    len = Bytes.unpack4(body, offs);
                     offs += 4;
                     if (len < 0) { 
                         f.set(obj, null);
@@ -1859,10 +2028,8 @@ public class StorageImpl extends Storage {
                         f.set(obj, arr);
                     }
                     continue;
-                }
                 case ClassDescriptor.tpArrayOfDouble:
-                {
-                    int len = Bytes.unpack4(body, offs);
+                    len = Bytes.unpack4(body, offs);
                     offs += 4;
                     if (len < 0) { 
                         f.set(obj, null);
@@ -1875,10 +2042,8 @@ public class StorageImpl extends Storage {
                         f.set(obj, arr);
                     }
                     continue;
-                }
                 case ClassDescriptor.tpArrayOfDate:
-                {
-                    int len = Bytes.unpack4(body, offs);
+                    len = Bytes.unpack4(body, offs);
                     offs += 4;
                     if (len < 0) { 
                         f.set(obj, null);
@@ -1894,10 +2059,8 @@ public class StorageImpl extends Storage {
                         f.set(obj, arr);
                     }
                     continue;
-                }
                 case ClassDescriptor.tpArrayOfString:
-                {
-                    int len = Bytes.unpack4(body, offs);
+                    len = Bytes.unpack4(body, offs);
                     offs += 4;
                     if (len < 0) { 
                         f.set(obj, null);
@@ -1918,10 +2081,8 @@ public class StorageImpl extends Storage {
                         f.set(obj, arr);
                     }
                     continue;
-                }
                 case ClassDescriptor.tpArrayOfObject:
-                {
-                    int len = Bytes.unpack4(body, offs);
+                    len = Bytes.unpack4(body, offs);
                     offs += 4;
                     if (len < 0) { 
                         f.set(obj, null);
@@ -1935,17 +2096,15 @@ public class StorageImpl extends Storage {
                         f.set(obj, arr);
                     }
                     continue;
-                }
                 case ClassDescriptor.tpArrayOfValue:
-                {
-                    int len = Bytes.unpack4(body, offs);
+                    len = Bytes.unpack4(body, offs);
                     offs += 4;
                     if (len < 0) { 
                         f.set(obj, null);
                     } else {
                         Class elemType = f.getType().getComponentType();
                         Object[] arr = (Object[])Array.newInstance(elemType, len);
-                        ClassDescriptor valueDesc = getClassDescriptor(elemType);
+                        ClassDescriptor valueDesc = fd.valueDesc;
                         for (int j = 0; j < len; j++) { 
                             Object value = valueDesc.newInstance();
                             offs = unpackObject(value, valueDesc, recursiveLoading, body, offs);
@@ -1954,10 +2113,8 @@ public class StorageImpl extends Storage {
                         f.set(obj, arr);
                     }
                     continue;
-                }
                 case ClassDescriptor.tpArrayOfRaw:
-                {
-                    int len = Bytes.unpack4(body, offs);
+                    len = Bytes.unpack4(body, offs);
                     offs += 4;
                     if (len < 0) { 
                         f.set(obj, null);
@@ -1978,10 +2135,8 @@ public class StorageImpl extends Storage {
                         f.set(obj, arr);
                     }
                     continue;
-                }
                 case ClassDescriptor.tpLink:
-                { 
-                    int len = Bytes.unpack4(body, offs);
+                    len = Bytes.unpack4(body, offs);
                     offs += 4;
                     if (len < 0) { 
                         f.set(obj, null);
@@ -2026,11 +2181,11 @@ public class StorageImpl extends Storage {
 
     final int packObject(Object obj, ClassDescriptor desc, int offs, ByteBuffer buf) throws Exception 
     { 
-        Field[] flds = desc.allFields;
-        int[] types = desc.fieldTypes;
+        ClassDescriptor.FieldDescriptor[] flds = desc.allFields;
         for (int i = 0, n = flds.length; i < n; i++) {
-            Field f = flds[i];
-            switch(types[i]) {
+            ClassDescriptor.FieldDescriptor fd = flds[i];
+            Field f = fd.field;
+            switch(fd.type) {
                 case ClassDescriptor.tpByte:
                     buf.extend(offs + 1);
                     buf.arr[offs++] = f.getByte(obj);
@@ -2110,7 +2265,7 @@ public class StorageImpl extends Storage {
                     if (value == null) { 
                         throw new StorageError(StorageError.NULL_VALUE);
                     }
-                    offs = packObject(value, getClassDescriptor(value.getClass()), offs, buf);
+                    offs = packObject(value, fd.valueDesc, offs, buf);
                     continue;
                 }
                 case ClassDescriptor.tpRaw:
@@ -2367,7 +2522,7 @@ public class StorageImpl extends Storage {
                         buf.extend(offs + 4);
                         Bytes.pack4(buf.arr, offs, len);
                         offs += 4;
-                        ClassDescriptor elemDesc = getClassDescriptor(f.getType().getComponentType());
+                        ClassDescriptor elemDesc = fd.valueDesc;
                         for (int j = 0; j < len; j++) {
                             Object value = arr[j];
                             if (value == null) { 
@@ -2437,6 +2592,12 @@ public class StorageImpl extends Storage {
         return offs;
     }
                 
+    private int  initIndexSize = dbDefaultInitIndexSize;
+    private int  objectCacheInitSize = dbDefaultObjectCacheInitSize;
+    private int  modificationListLimit = Integer.MAX_VALUE;
+    private long extensionQuantum = dbDefaultExtensionQuantum;
+
+
     PagePool  pool;
     Header    header;           // base address of database file mapping
     int       dirtyPagesMap[];  // bitmap of changed pages in current index
@@ -2464,12 +2625,12 @@ public class StorageImpl extends Storage {
     long      gcThreshold;
     long      allocatedDelta;
     boolean   gcDone;
-    int       btreeClassOid;
-    int       btree2ClassOid;
 
-    OidHashTable    objectCache;
-    HashMap         classDescMap;
-    ClassDescriptor descList;
+    OidHashTable     objectCache;
+    HashMap          classDescMap;
+    ClassDescriptor  descList;
+
+    ModificationList modificationList;
 }
 
 class RootPage { 

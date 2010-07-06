@@ -48,13 +48,6 @@ public class Persistent implements IPersistent {
         }
     }
 
-    protected void finalize() { 
-        if ((state & DIRTY) != 0) { 
-            store();
-        }
-    }
-
-
     public final int getOid() {
         return oid;
     }

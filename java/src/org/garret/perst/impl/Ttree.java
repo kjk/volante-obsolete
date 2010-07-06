@@ -95,9 +95,9 @@ public class Ttree extends PersistentResource implements SortedCollection {
             }
             newRoot = ref.pg;
         }
-        modify();
         root = newRoot;
         nMembers += 1;
+        modify();
         return true;
     }
                 
@@ -123,9 +123,9 @@ public class Ttree extends PersistentResource implements SortedCollection {
         if (root.remove(comparator, obj, ref) == TtreePage.NOT_FOUND) {             
             throw new StorageError(StorageError.KEY_NOT_FOUND);
         }
-        modify();
         root = ref.pg;
         nMembers -= 1;        
+        modify();
     }
 
     /**
@@ -142,9 +142,9 @@ public class Ttree extends PersistentResource implements SortedCollection {
     public void clear() {
         if (root != null) { 
             root.prune();
-            modify();
             root = null;
             nMembers = 0;
+            modify();
         }
     }
  

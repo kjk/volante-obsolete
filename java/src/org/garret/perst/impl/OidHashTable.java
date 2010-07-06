@@ -7,7 +7,4 @@ public interface OidHashTable {
     IPersistent get(int oid);
     void        clear();
     int         size();
-    void        flush();
-    void        setDirty(int oid);
-    void        clearDirty(int oid);
 }

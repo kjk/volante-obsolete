@@ -94,22 +94,6 @@ public class StrongHashTable implements OidHashTable {
 	}
     }
 
-    public synchronized void flush() {
-        for (int i = 0; i < table.length; i++) { 
-            for (Entry e = table[i]; e != null; e = e.next) { 
-                if (e.obj.isModified()) { 
-                    e.obj.store();
-                }
-            }
-        }
-    }
-
-    public void setDirty(int oid) {
-    } 
-
-    public void clearDirty(int oid) {
-    }
-
     public int size() { 
 	return count;
     }

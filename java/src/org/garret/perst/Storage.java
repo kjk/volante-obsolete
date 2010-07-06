@@ -201,10 +201,11 @@ public abstract class Storage {
     abstract public IPersistent getObjectByOID(int oid);
 
     /**
-     * Set database property. Now the following boolean properties are supported:
-     * <TABLE><TR><TH>Property name</TH><TH>Default value</TH><TH>Description</TH></TR>
-     * <TR><TD><code>perst.implicit.values</code></TD><TD>false</TD>
-     * <TD>Treat any class not derived from IPersistent as <i>value</i>. 
+     * Set database property. This method should be invoked before opening database. 
+     * Currently the following boolean properties are supported:
+     * <TABLE><TR><TH>Property name</TH><TH>Parameter type</TH><TH>Default value</TH><TH>Description</TH></TR>
+     * <TR><TD><code>perst.implicit.values</code></TD><TD>Boolean</TD><TD>false</TD>
+     * <TD>Treate any class not derived from IPersistent as <i>value</i>. 
      * This object will be embedded inside persistent object containing reference to this object.
      * If this object is referenced from N persistent object, N instances of this object
      * will be stored in the database and after loading there will be N instances in memory. 
@@ -213,20 +214,55 @@ public abstract class Storage {
      * class can not be stored as value in PERST because it has no such constructor. In this case 
      * serialization mechanism can be used (see below)
      * </TD></TR>
-     * <TR><TD><code>perst.serialize.transient.objects</code></TD><TD>false</TD>
-     * <DD>Serialize any class not derived from IPersistent or IValue using standard Java serialization
+     * <TR><TD><code>perst.serialize.transient.objects</code></TD><TD>Boolean</TD><TD>false</TD>
+     * <TD>Serialize any class not derived from IPersistent or IValue using standard Java serialization
      * mechanism. Packed object closure is stored in database as byte array. Latter the same mechanism is used
      * to unpack the objects. To be able to use this mechanism object and all objects referenced from it
      * should implement <code>java.io.Serializable</code> interface and should not contain references
      * to persistent objects. If such object is referenced from N persistent object, N instances of this object
      * will be stored in the database and after loading there will be N instances in memory.
      * </TD></TR>
+     * <TR><TD><code>perst.object.cache.init.size</code></TD><TD>Integer</TD><TD>1319</TD>
+     * <TD>Initial size of object cache
+     * </TD></TR>
+     * <TR><TD><code>perst.object.index.init.size</code></TD><TD>Integer</TD><TD>1024</TD>
+     * <TD>Initial size of object index (specifying large value increase initial size of database, but reduce
+     * number of index reallocations)
+     * </TD></TR>
+     * <TR><TD><code>perst.extension.quantum</code></TD><TD>Long</TD><TD>1048576</TD>
+     * <TD>Object allocation bitmap extension quantum. Memory is allocate by scanning bitmap. If there is no
+     * large enough hole, then database is extended by the value of dbDefaultExtensionQuantum. 
+     * This parameter should not be smaller than 64Kb.
+     * </TD></TR>
+     * <TR><TD><code>perst.modification.list.limit</code></TD><TD>Integer</TD><TD>Integer.MAX_INT</TD>
+     * <TD>Maximal size of modified object list. When this limit is reached, PERST will 
+     * store and remove objects from the head of the list. Setting this parameter will help to 
+     * prevent memory exhaustion if a lot of persistent objects are modified during transaction. 
+     * When list is not limited, all modified objects are pinned in memory. 
+     * To prevent loose of modifications in case of limited modification list, you should
+     * invoke <code>Persistent.modify</code> method <b>after</b> object has been updated.
+     * </TD></TR>
+     * <TR><TD><code>perst.gc.threshold</code></TD><TD>Long</TD><TD>Long.MAX_VALUE</TD>
+     * <TD>Threshold for initiation of garbage collection. 
+     * If it is set to the value different from Long.MAX_VALUE, GC will be started each time 
+     * when delta between total size of allocated and deallocated objects exceeds specified threashold OR
+     * after reaching end of allocation bitmap in allocator.
+     * </TD></TR>
+     * </TABLE>
      * @param name name of the property
      * @param value value of the property (for boolean properties pass <code>java.lang.Boolean.TRUE</code>
      * and <code>java.lang.Boolean.FALSE</code>
      */
     abstract public void setProperty(String name, Object value);
 
+   /**
+     * Set database properties. This method should be invoked before opening database. 
+     * For list of supported properties please see <code>setProperty</code> command. 
+     * All not recognized properties are ignored.
+     */
+    abstract public void setProperties(java.util.Properties props);
+
+    
     // Internal methods
 
     abstract protected void deallocateObject(IPersistent obj);

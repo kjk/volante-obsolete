@@ -409,13 +409,13 @@ public class XMLImporter {
     final int packObject(XMLElement objElem, ClassDescriptor desc, int offs, ByteBuffer buf) 
         throws XMLImportException
     { 
-        Field[] flds = desc.allFields;
-        int[] types = desc.fieldTypes;
+        ClassDescriptor.FieldDescriptor[] flds = desc.allFields;
         for (int i = 0, n = flds.length; i < n; i++) {
-            Field f = flds[i];
-            XMLElement elem = (objElem != null) ? objElem.getSibling(f.getName()) : null;
+            ClassDescriptor.FieldDescriptor fd = flds[i];
+            String fieldName = fd.fieldName;
+            XMLElement elem = (objElem != null) ? objElem.getSibling(fieldName) : null;
                 
-            switch(types[i]) {
+            switch(fd.type) {
                 case ClassDescriptor.tpByte:
                     buf.extend(offs + 1);
                     if (elem != null) { 
@@ -424,7 +424,7 @@ public class XMLImporter {
                         } else if (elem.isRealValue()) {
                             buf.arr[offs] = (byte)elem.getRealValue();
                         } else { 
-                            throwException("Conversion for field " + f.getName() + " is not possible");
+                            throwException("Conversion for field " + fieldName + " is not possible");
                         }
                     }
                     offs += 1;
@@ -437,7 +437,7 @@ public class XMLImporter {
                         } else if (elem.isRealValue()) {
                             buf.arr[offs] = (byte)(elem.getRealValue() != 0.0 ? 1 : 0);
                         } else { 
-                            throwException("Conversion for field " + f.getName() + " is not possible");
+                            throwException("Conversion for field " + fieldName + " is not possible");
                         }
                     }
                     offs += 1;
@@ -451,7 +451,7 @@ public class XMLImporter {
                         } else if (elem.isRealValue()) {
                             Bytes.pack2(buf.arr, offs, (short)elem.getRealValue());
                         } else { 
-                            throwException("Conversion for field " + f.getName() + " is not possible");
+                            throwException("Conversion for field " + fieldName + " is not possible");
                         }
                     }
                     offs += 2;
@@ -464,7 +464,7 @@ public class XMLImporter {
                         } else if (elem.isRealValue()) {
                             Bytes.pack4(buf.arr, offs, (int)elem.getRealValue());
                         } else { 
-                            throwException("Conversion for field " + f.getName() + " is not possible");
+                            throwException("Conversion for field " + fieldName + " is not possible");
                         }
                     }
                     offs += 4;
@@ -477,7 +477,7 @@ public class XMLImporter {
                         } else if (elem.isRealValue()) {
                             Bytes.pack8(buf.arr, offs, (long)elem.getRealValue());
                         } else { 
-                            throwException("Conversion for field " + f.getName() + " is not possible");
+                            throwException("Conversion for field " + fieldName + " is not possible");
                         }
                     }
                     offs += 8;
@@ -490,7 +490,7 @@ public class XMLImporter {
                         } else if (elem.isRealValue()) {
                             Bytes.pack4(buf.arr, offs, Float.floatToIntBits((float)elem.getRealValue()));
                         } else { 
-                            throwException("Conversion for field " + f.getName() + " is not possible");
+                            throwException("Conversion for field " + fieldName + " is not possible");
                         }
                     }
                     offs += 4;
@@ -503,7 +503,7 @@ public class XMLImporter {
                         } else if (elem.isRealValue()) {
                             Bytes.pack8(buf.arr, offs, Double.doubleToLongBits((double)elem.getRealValue()));
                         } else { 
-                            throwException("Conversion for field " + f.getName() + " is not possible");
+                            throwException("Conversion for field " + fieldName + " is not possible");
                         }
                     }
                     offs += 8;
@@ -522,7 +522,7 @@ public class XMLImporter {
                             }
                             Bytes.pack8(buf.arr, offs, date.getTime());
                         } else { 
-                            throwException("Conversion for field " + f.getName() + " is not possible");
+                            throwException("Conversion for field " + fieldName + " is not possible");
                         }
                     }
                     offs += 8;
@@ -539,7 +539,7 @@ public class XMLImporter {
                         } else if (elem.isNullValue()) {
                             value = null;
                         } else { 
-                            throwException("Conversion for field " + f.getName() + " is not possible");
+                            throwException("Conversion for field " + fieldName + " is not possible");
                         }
                         if (value != null) { 
                             int len = value.length();
@@ -573,7 +573,7 @@ public class XMLImporter {
                     continue;
                 }
                 case ClassDescriptor.tpValue:
-                    offs = packObject(elem, storage.getClassDescriptor(f.getType()), offs, buf);
+                    offs = packObject(elem, fd.valueDesc, offs, buf);
                     continue;
                 case ClassDescriptor.tpRaw:
                 case ClassDescriptor.tpArrayOfByte:
@@ -602,7 +602,7 @@ public class XMLImporter {
                             } else if (item.isRealValue()) { 
                                 buf.arr[offs] = (byte)item.getRealValue();
                             } else {
-                                throwException("Conversion for field " + f.getName() + " is not possible");
+                                throwException("Conversion for field " + fieldName + " is not possible");
                             }
                             item = item.getNextSibling();
                             offs += 1;
@@ -626,7 +626,7 @@ public class XMLImporter {
                             } else if (item.isRealValue()) { 
                                 buf.arr[offs] = (byte)(item.getRealValue() != 0.0 ? 1 : 0);
                             } else {
-                                throwException("Conversion for field " + f.getName() + " is not possible");
+                                throwException("Conversion for field " + fieldName + " is not possible");
                             }
                             item = item.getNextSibling();
                             offs += 1;
@@ -651,7 +651,7 @@ public class XMLImporter {
                             } else if (item.isRealValue()) { 
                                 Bytes.pack2(buf.arr, offs, (short)item.getRealValue());
                             } else {
-                                throwException("Conversion for field " + f.getName() + " is not possible");
+                                throwException("Conversion for field " + fieldName + " is not possible");
                             }
                             item = item.getNextSibling();
                             offs += 2;
@@ -675,7 +675,7 @@ public class XMLImporter {
                             } else if (item.isRealValue()) { 
                                 Bytes.pack4(buf.arr, offs, (int)item.getRealValue());
                             } else {
-                                throwException("Conversion for field " + f.getName() + " is not possible");
+                                throwException("Conversion for field " + fieldName + " is not possible");
                             }
                             item = item.getNextSibling();
                             offs += 4;
@@ -699,7 +699,7 @@ public class XMLImporter {
                             } else if (item.isRealValue()) { 
                                 Bytes.pack8(buf.arr, offs, (long)item.getRealValue());
                             } else {
-                                throwException("Conversion for field " + f.getName() + " is not possible");
+                                throwException("Conversion for field " + fieldName + " is not possible");
                             }
                             item = item.getNextSibling();
                             offs += 8;
@@ -723,7 +723,7 @@ public class XMLImporter {
                             } else if (item.isRealValue()) { 
                                 Bytes.pack4(buf.arr, offs, Float.floatToIntBits((float)item.getRealValue()));
                             } else {
-                                throwException("Conversion for field " + f.getName() + " is not possible");
+                                throwException("Conversion for field " + fieldName + " is not possible");
                             }
                             item = item.getNextSibling();
                             offs += 4;
@@ -747,7 +747,7 @@ public class XMLImporter {
                             } else if (item.isRealValue()) { 
                                 Bytes.pack8(buf.arr, offs, Double.doubleToLongBits((double)item.getRealValue()));
                             } else {
-                                throwException("Conversion for field " + f.getName() + " is not possible");
+                                throwException("Conversion for field " + fieldName + " is not possible");
                             }
                             item = item.getNextSibling();
                             offs += 8;
@@ -775,7 +775,7 @@ public class XMLImporter {
                                 }
                                 Bytes.pack8(buf.arr, offs, date.getTime());
                             } else {
-                                throwException("Conversion for field " + f.getName() + " is not possible");
+                                throwException("Conversion for field " + fieldName + " is not possible");
                             }
                             item = item.getNextSibling();
                             offs += 8;
@@ -804,7 +804,7 @@ public class XMLImporter {
                             } else if (elem.isNullValue()) {
                                 value = null;
                             } else { 
-                                throwException("Conversion for field " + f.getName() + " is not possible");
+                                throwException("Conversion for field " + fieldName + " is not possible");
                             }
                             if (value == null) { 
                                 buf.extend(offs + 4);
@@ -858,7 +858,7 @@ public class XMLImporter {
                         int len = (item == null) ? 0 : item.getCounter(); 
                         Bytes.pack4(buf.arr, offs, len);
                         offs += 4;
-                        ClassDescriptor elemDesc = storage.getClassDescriptor(f.getType());
+                        ClassDescriptor elemDesc = fd.valueDesc;
                         while (--len >= 0) {
                             offs = packObject(item, elemDesc, offs, buf);
                             item = item.getNextSibling();

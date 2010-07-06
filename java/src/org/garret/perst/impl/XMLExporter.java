@@ -30,12 +30,12 @@ public class XMLExporter {
                             markedBitmap[i] &= ~bit;
                             byte[] obj = storage.get(oid);
                             int typeOid = ObjectHeader.getType(obj, 0);                
-                            if (typeOid == storage.btreeClassOid) { 
+                            ClassDescriptor desc = storage.findClassDescriptor(typeOid);
+                            if (desc.cls == Btree.class) { 
                                 exportIndex(oid, obj);
-                            } else if (typeOid == storage.btree2ClassOid) { 
+                            } else if (desc.cls == BtreeFieldIndex.class) { 
                                 exportFieldIndex(oid, obj);
                             } else { 
-                                ClassDescriptor desc = (ClassDescriptor)storage.lookupObject(typeOid, ClassDescriptor.class);
                                 String className = exportIdentifier(desc.name);
                                 writer.write(" <" + className + " id=\"" + oid + "\">\n");
                                 exportObject(desc, obj, ObjectHeader.sizeof, 2);
@@ -193,15 +193,14 @@ public class XMLExporter {
     }
 
     final int exportObject(ClassDescriptor desc, byte[] body, int offs, int indent) throws IOException {
-        Field[] all = desc.allFields;
-        int[] type = desc.fieldTypes;
+        ClassDescriptor.FieldDescriptor[] all = desc.allFields;
 
         for (int i = 0, n = all.length; i < n; i++) { 
-            Field f = all[i];
+            ClassDescriptor.FieldDescriptor fd = all[i];
             indentation(indent);
-            String fieldName = exportIdentifier(f.getName());
+            String fieldName = exportIdentifier(fd.fieldName);
             writer.write("<" + fieldName + ">");
-            switch (type[i]) { 
+            switch (fd.type) { 
                 case ClassDescriptor.tpBoolean:
                     writer.write(body[offs++] != 0 ? "1" : "0");
                     break;
@@ -258,7 +257,7 @@ public class XMLExporter {
                 }
                 case ClassDescriptor.tpValue:
                     writer.write('\n');
-                    offs = exportObject(storage.getClassDescriptor(f.getType()), body, offs, indent+1);
+                    offs = exportObject(fd.valueDesc, body, offs, indent+1);
                     indentation(indent);
                     break;
                 case ClassDescriptor.tpRaw:
@@ -461,7 +460,7 @@ public class XMLExporter {
                         while (--len >= 0) { 
                             indentation(indent+1);
                             writer.write("<array-element>\n");
-                            offs = exportObject(storage.getClassDescriptor(f.getType()), body, offs, indent+2);
+                            offs = exportObject(fd.valueDesc, body, offs, indent+2);
                             indentation(indent+1);
                             writer.write("</array-element>\n");
                         }
