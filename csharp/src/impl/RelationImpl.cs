@@ -8,11 +8,15 @@ namespace Perst.Impl
     {
         public override int Length 
         {
-             get 
-             {
-                 return link.Length;
-             }
-        }        
+            get 
+            {
+                return link.Length;
+            }
+            set 
+            {
+                link.Length = value;
+            }
+        }       
 
         public override IPersistent this[int i] 
         {

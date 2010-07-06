@@ -13,10 +13,24 @@ namespace Perst.Impl
 		
         public virtual int Length 
         {
-             get 
-             {
-                 return used;
-             }
+            get 
+            {
+                return used;
+            }
+
+            set 
+            {
+                if (value < used) 
+                { 
+                    for (int i = value; --i >= value; arr[i] = null);
+                } 
+                else 
+                { 
+                    reserveSpace(value - used);            
+                }
+                used = value;
+
+            }
         }        
 
         public virtual IPersistent this[int i] 

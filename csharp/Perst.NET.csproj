@@ -183,6 +183,11 @@
                     BuildAction = "Compile"
                 />
                 <File
+                    RelPath = "src\RectangleR2.cs"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
                     RelPath = "src\Relation.cs"
                     SubType = "Code"
                     BuildAction = "Compile"
@@ -194,6 +199,11 @@
                 />
                 <File
                     RelPath = "src\SpatialIndex.cs"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "src\SpatialIndexR2.cs"
                     SubType = "Code"
                     BuildAction = "Compile"
                 />
@@ -349,6 +359,16 @@
                 />
                 <File
                     RelPath = "src\impl\RtreePage.cs"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "src\impl\RtreeR2.cs"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "src\impl\RtreeR2Page.cs"
                     SubType = "Code"
                     BuildAction = "Compile"
                 />

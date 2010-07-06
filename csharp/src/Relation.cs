@@ -12,6 +12,7 @@ namespace Perst
         public abstract int Length 
         {
             get;
+            set;
         }
 
         public abstract IPersistent this[int i] 

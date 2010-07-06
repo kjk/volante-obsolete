@@ -4,19 +4,19 @@ namespace Perst
     using System.Diagnostics;
     
     /// <summary>
-    /// Rectangle with integer coordinates. This class is used in spatial index.
+    /// R2 rectangle class. This class is used in spatial index.
     /// </summary>
-    public struct Rectangle  
+    public struct RectangleR2
     {
-        private int _top;
-        private int _left;
-        private int _bottom;
-        private int _right;
+        private double _top;
+        private double _left;
+        private double _bottom;
+        private double _right;
 
         /// <summary>
         /// Smallest Y coordinate of the rectangle
         /// </summary>
-        public int Top 
+        public double Top 
         { 
             get 
             { 
@@ -27,7 +27,7 @@ namespace Perst
         /// <summary>
         /// Smallest X coordinate of the rectangle
         /// </summary>
-        public int Left 
+        public double Left 
         {
             get 
             { 
@@ -38,7 +38,7 @@ namespace Perst
         /// <summary>
         /// Greatest Y coordinate  of the rectangle
         /// </summary>
-        public int Bottom 
+        public double Bottom 
         {
             get 
             { 
@@ -49,7 +49,7 @@ namespace Perst
         /// <summary>
         /// Greatest X coordinate  of the rectangle
         /// </summary>
-        public int Right 
+        public double Right 
         {
             get 
             { 
@@ -60,28 +60,28 @@ namespace Perst
         /// <summary>
         /// Rectangle area
         /// </summary>
-        public long Area() 
+        public double Area() 
         { 
-            return (long)(_bottom-_top)*(_right-_left);
+            return (_bottom-_top)*(_right-_left);
         }
 
         /// <summary>
         /// Area of covered rectangle for two sepcified rectangles
         /// </summary>
-        public static long JoinArea(Rectangle a, Rectangle b) 
+        public static double JoinArea(RectangleR2 a, RectangleR2 b) 
         {
-            int _left = (a._left < b._left) ? a._left : b._left;
-            int _right = (a._right > b._right) ? a._right : b._right;
-            int _top = (a._top < b._top) ? a._top : b._top;
-            int _bottom = (a._bottom > b._bottom) ? a._bottom : b._bottom;
-            return (long)(_bottom-_top)*(_right-_left);
+            double _left = (a._left < b._left) ? a._left : b._left;
+            double _right = (a._right > b._right) ? a._right : b._right;
+            double _top = (a._top < b._top) ? a._top : b._top;
+            double _bottom = (a._bottom > b._bottom) ? a._bottom : b._bottom;
+            return (_bottom-_top)*(_right-_left);
         }
 
 
         /// <summary>
         /// Create copy of the rectangle
         /// </summary>
-        public Rectangle(Rectangle r) 
+        public RectangleR2(RectangleR2 r) 
         {
             this._top = r._top;
             this._left = r._left;
@@ -92,7 +92,7 @@ namespace Perst
         /// <summary>
         /// Construct rectangle with specified coordinates
         /// </summary>
-        public Rectangle(int _top, int _left, int _bottom, int _right) 
+        public RectangleR2(double _top, double _left, double _bottom, double _right) 
         { 
             Debug.Assert(_top <= _bottom && _left <= _right);
             this._top = _top;
@@ -106,7 +106,7 @@ namespace Perst
         /// </summary>
         /// <param name="r">rectangle to be joined with this rectangle
         /// </param>
-        public void Join(Rectangle r) 
+        public void Join(RectangleR2 r) 
         { 
             if (_left > r._left) 
             { 
@@ -136,9 +136,9 @@ namespace Perst
         /// </param>
         /// <returns>rectangle containing cover of these two rectangles
         /// </returns>
-        public static Rectangle Join(Rectangle a, Rectangle b) 
+        public static RectangleR2 Join(RectangleR2 a, RectangleR2 b) 
         {
-            Rectangle r = new Rectangle(a);
+            RectangleR2 r = new RectangleR2(a);
             r.Join(b);
             return r;
         }
@@ -146,7 +146,7 @@ namespace Perst
         /// <summary>
         /// Checks if this rectangle intersects with specified rectangle
         /// </summary>
-        public bool Intersects(Rectangle r) 
+        public bool Intersects(RectangleR2 r) 
         { 
             return _left <= r._right && _top <= r._bottom && _right >= r._left && _bottom >= r._top;
         }
@@ -154,7 +154,7 @@ namespace Perst
         /// <summary>
         /// Checks if this rectangle contains the specified rectangle
         /// </summary>
-        public bool Contains(Rectangle r) 
+        public bool Contains(RectangleR2 r) 
         { 
             return _left <= r._left && _top <= r._top && _right >= r._right && _bottom >= r._bottom;
         }
@@ -168,4 +168,3 @@ namespace Perst
         }
     }
 }
-      

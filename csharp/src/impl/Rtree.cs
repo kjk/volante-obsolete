@@ -116,6 +116,17 @@ namespace Perst.Impl
             Clear();
             base.Deallocate();
         }
+
+        public Rectangle WrappingRectangle
+        {
+            get 
+            {
+                return (root != null) 
+                    ? root.cover() 
+                    : new Rectangle(int.MaxValue, int.MaxValue, int.MinValue, int.MinValue);
+            }
+        }
+
     }
 }
     

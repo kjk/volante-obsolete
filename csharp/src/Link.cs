@@ -20,10 +20,11 @@ namespace Perst
         /// </returns>
         int Size();
 
-        /// <summary> Get number of the linked objects 
+        /// <summary>Number of the linked objects 
         /// </summary>
         int Length {
              get;
+             set;
         }        
         
         /// <summary> Access element by index

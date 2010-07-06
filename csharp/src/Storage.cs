@@ -164,12 +164,20 @@ namespace Perst
         abstract public FieldIndex CreateFieldIndex(Type type, string[] fieldNames, bool unique);
 		
         /// <summary>
-        /// Create new spatial index
+        /// Create new spatial index with integer coordinates
         /// </summary>
         /// <returns>
         /// persistent object implementing spatial index
         /// </returns>
         abstract public SpatialIndex CreateSpatialIndex();
+
+        /// <summary>
+        /// Create new R2 spatial index
+        /// </summary>
+        /// <returns>
+        /// persistent object implementing spatial index
+        /// </returns>
+        abstract public SpatialIndexR2 CreateSpatialIndexR2();
 
         /// <summary>
         /// Create new sorted collection with specified comparator
@@ -267,8 +275,9 @@ namespace Perst
 
         /// <summary>Explicit start of garbage collector
         /// </summary>
+        /// <returns>number of collected (deallocated) objects</returns>
         /// 
-        abstract public void Gc();
+        abstract public int Gc();
 
         /// <summary> Export database in XML format 
         /// </summary>

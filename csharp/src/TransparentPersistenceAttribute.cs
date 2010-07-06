@@ -13,8 +13,6 @@ namespace Perst
     /// Objects of these classes automatically on demand load their 
     /// content from the database and also automatically detect object modification.
     /// </summary>
-
-    /// </summary>
     [AttributeUsage(AttributeTargets.Class)]
     public class TransparentPersistenceAttribute : ContextAttribute, IContributeObjectSink
     {

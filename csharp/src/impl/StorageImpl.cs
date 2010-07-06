@@ -1690,6 +1690,20 @@ namespace Perst.Impl
             }
         }
 		
+        public override SpatialIndexR2 CreateSpatialIndexR2() 
+        {
+            lock(this)
+            {
+                if (!opened)
+                {
+                    throw new StorageError(StorageError.ErrorCode.STORAGE_NOT_OPENED);
+                }
+                RtreeR2 index = new RtreeR2();
+                index.AssignOid(this, 0, false);
+                return index;
+            }
+        }
+		
         public override SortedCollection CreateSortedCollection(PersistentComparator comparator, bool unique) 
         {
             if (!opened) 
@@ -1819,6 +1833,10 @@ namespace Perst.Impl
             if (oid != 0) 
             {  
                 long pos = getGCPos(oid);
+                if ((pos & (dbFreeHandleFlag|dbPageObjectFlag)) != 0) 
+                { 
+                    throw new StorageError(StorageError.ErrorCode.INVALID_OID);
+                }     
                 int bit = (int)((ulong)pos >> dbAllocationQuantumBits);
                 if ((blackBitmap[(uint)bit >> 5] & (1 << (bit & 31))) == 0) 
                 { 
@@ -1837,7 +1855,7 @@ namespace Perst.Impl
             gcThreshold = maxAllocatedDelta;
         }
 
-        public override void Gc() 
+        public override int Gc() 
         { 
             lock (this) 
             { 
@@ -1845,7 +1863,7 @@ namespace Perst.Impl
                 {
                     if (gcDone) 
                     { 
-                        return;
+                        return 0;
                     }
                     // Console.WriteLine("Start GC, allocatedDelta=" + allocatedDelta + ", header[" + currIndex + "].size=" + header.root[currIndex].size + ", gcTreshold=" + gcThreshold);
                     int bitmapSize = (int)((ulong)header.root[currIndex].size >> (dbAllocationQuantumBits + 5)) + 1;
@@ -1902,6 +1920,7 @@ namespace Perst.Impl
                     }
         
                     // sweep
+                    int nDeallocated = 0;
                     gcDone = true;
                     for (i = dbFirstUserId, j = committedIndexSize; i < j; i++) 
                     {
@@ -1922,6 +1941,7 @@ namespace Perst.Impl
                                 if (typeOid != 0) 
                                 { 
                                     ClassDescriptor desc = findClassDescriptor(typeOid);
+                                    nDeallocated += 1;
                                     if (desc != null 
                                         && (typeof(Btree).IsAssignableFrom(desc.cls))) 
                                     { 
@@ -1946,6 +1966,7 @@ namespace Perst.Impl
                     greyBitmap = null;
                     blackBitmap = null;
                     allocatedDelta = 0;
+                    return nDeallocated;
                 }
             }
         }

@@ -7,7 +7,7 @@ namespace Perst
     /// Spatial index is used to allow fast selection of spatial objects belonging to the specified rectangle.
     /// Spatial index is implemented using Guttman R-Tree with quadratic split algorithm.
     /// </summary>
-    public interface SpatialIndex : IPersistent, IResource
+    public interface SpatialIndexR2 : IPersistent, IResource
     {
         /// <summary>
         /// Get number of objects in the index
@@ -25,7 +25,7 @@ namespace Perst
         /// </param>
         /// <returns>array of objects which enveloping rectangle intersects with specified rectangle
         /// </returns>             
-        IPersistent[] Get(Rectangle r);
+        IPersistent[] Get(RectangleR2 r);
     
         /// <summary>
         /// Put new object in the index. 
@@ -35,7 +35,7 @@ namespace Perst
         /// <param name="obj"> object associated with this rectangle. Object can be not yet persistent, in this case
         /// its forced to become persistent by assigning OID to it.
         /// </param>
-        void Put(Rectangle r, IPersistent obj);
+        void Put(RectangleR2 r, IPersistent obj);
 
         /// <summary>
         /// Remove object with specified enveloping rectangle from the tree.
@@ -46,7 +46,7 @@ namespace Perst
         /// </param>
         /// <exception  cref="Perst.StorageError">StorageError(StorageError.KEY_NOT_FOUND) exception if there is no such key in the index
         /// </exception>
-        void Remove(Rectangle r, IPersistent obj);
+        void Remove(RectangleR2 r, IPersistent obj);
 
         /// <summary>
         /// Get number of objects in the index
@@ -63,13 +63,22 @@ namespace Perst
         /// <summary>
         /// Get wrapping rectangle 
         /// </summary>
-        /// <returns>Minimal rectangle containing all rectangles in the index. 
-        /// If index is empty <i>empty rectangle</i> (int.MaxValue, int.MaxValue, int.MinValue, int MinValue)
+        /// <returns>Minimal rectangle containing all rectangles in the index     
+        /// If index is empty <i>empty rectangle</i> (double.MaxValue, double.MaxValue, double.MinValue, double.MinValue)
         /// is returned.
         /// </returns>
-        Rectangle WrappingRectangle 
+        RectangleR2 WrappingRectangle 
         {
             get;
         }
+
+        /// <summary>
+        /// Get enumerator for objects located in the selected rectangle
+        /// </summary>
+        /// <param name="rect">Selected rectangle</param>
+        /// <returns>enumerable collection for objects which enveloping rectangle overlaps with specified rectangle
+        /// </returns>
+        IEnumerable Overlaps(RectangleR2 r);
     }
 }
+
