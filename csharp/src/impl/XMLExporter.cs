@@ -44,6 +44,10 @@ namespace Perst.Impl
                                 {
                                     exportIndex(oid, obj);
                                 }
+                                if (desc.cls == typeof(PersistentSet))
+                                {
+                                    exportSet(oid, obj);
+                                }
                                 else if (desc.cls == typeof(BtreeFieldIndex))
                                 {
                                     exportFieldIndex(oid, obj);
@@ -74,6 +78,15 @@ namespace Perst.Impl
             return name.Replace('+', '-');
         }
 
+        internal void exportSet(int oid,  byte[] data) 
+        { 
+            Btree btree = new Btree(data, ObjectHeader.Sizeof);
+            storage.assignOid(btree, oid);
+            writer.Write(" <Perst.Impl.PersistentSet id=\"" + oid + "\">\n");
+            btree.export(this);
+            writer.Write(" </Perst.Impl.PersistentSet>\n");
+        }
+
         internal void  exportIndex(int oid, byte[] data)
         {
             Btree btree = new Btree(data, ObjectHeader.Sizeof);
@@ -90,8 +103,8 @@ namespace Perst.Impl
             writer.Write(" <Perst.Impl.BtreeFieldIndex id=\"" + oid + "\" unique=\"" + (btree.unique?'1':'0') + "\" class=");
             int offs = exportString(data, Btree.Sizeof);
             writer.Write(" field=");
-            exportString(data, offs);
-            writer.Write(">\n");
+            offs = exportString(data, offs);
+            writer.Write(" autoinc=\"" + Bytes.unpack8(data, offs) + "\">\n");
             btree.export(this);
             writer.Write(" </Perst.Impl.BtreeFieldIndex>\n");
         }
@@ -530,7 +543,7 @@ namespace Perst.Impl
                             while (--len >= 0)
                             {
                                 indentation(indent + 1);
-                                writer.Write("<array-element>" + (body[offs++] != 0?"1":"0") + "</array-element>\n");
+                                writer.Write("<element>" + (body[offs++] != 0?"1":"0") + "</element>\n");
                             }
                             indentation(indent);
                         }
@@ -551,7 +564,7 @@ namespace Perst.Impl
                             while (--len >= 0)
                             {
                                 indentation(indent + 1);
-                                writer.Write("<array-element>" + (Bytes.unpack2(body, offs) & 0xFFFF) + "</array-element>\n");
+                                writer.Write("<element>" + (Bytes.unpack2(body, offs) & 0xFFFF) + "</element>\n");
                                 offs += 2;
                             }
                             indentation(indent);
@@ -573,7 +586,7 @@ namespace Perst.Impl
                             while (--len >= 0)
                             {
                                 indentation(indent + 1);
-                                writer.Write("<array-element>" + Bytes.unpack2(body, offs) + "</array-element>\n");
+                                writer.Write("<element>" + Bytes.unpack2(body, offs) + "</element>\n");
                                 offs += 2;
                             }
                             indentation(indent);
@@ -595,7 +608,7 @@ namespace Perst.Impl
                             while (--len >= 0)
                             {
                                 indentation(indent + 1);
-                                writer.Write("<array-element>" + (ushort)Bytes.unpack2(body, offs) + "</array-element>\n");
+                                writer.Write("<element>" + (ushort)Bytes.unpack2(body, offs) + "</element>\n");
                                 offs += 2;
                             }
                             indentation(indent);
@@ -617,7 +630,7 @@ namespace Perst.Impl
                             while (--len >= 0)
                             {
                                 indentation(indent + 1);
-                                writer.Write("<array-element>" + Bytes.unpack4(body, offs) + "</array-element>\n");
+                                writer.Write("<element>" + Bytes.unpack4(body, offs) + "</element>\n");
                                 offs += 4;
                             }
                             indentation(indent);
@@ -640,7 +653,7 @@ namespace Perst.Impl
                             while (--len >= 0)
                             {
                                 indentation(indent + 1);
-                                writer.Write("<array-element>" + Enum.ToObject(elemType, Bytes.unpack4(body, offs)) + "</array-element>\n");
+                                writer.Write("<element>" + Enum.ToObject(elemType, Bytes.unpack4(body, offs)) + "</element>\n");
                                 offs += 4;
                             }
                             indentation(indent);
@@ -662,7 +675,7 @@ namespace Perst.Impl
                             while (--len >= 0)
                             {
                                 indentation(indent + 1);
-                                writer.Write("<array-element>" + (uint)Bytes.unpack4(body, offs) + "</array-element>\n");
+                                writer.Write("<element>" + (uint)Bytes.unpack4(body, offs) + "</element>\n");
                                 offs += 4;
                             }
                             indentation(indent);
@@ -684,7 +697,7 @@ namespace Perst.Impl
                             while (--len >= 0)
                             {
                                 indentation(indent + 1);
-                                writer.Write("<array-element>" + Bytes.unpack8(body, offs) + "</array-element>\n");
+                                writer.Write("<element>" + Bytes.unpack8(body, offs) + "</element>\n");
                                 offs += 8;
                             }
                             indentation(indent);
@@ -706,7 +719,7 @@ namespace Perst.Impl
                             while (--len >= 0)
                             {
                                 indentation(indent + 1);
-                                writer.Write("<array-element>" + (ulong)Bytes.unpack8(body, offs) + "</array-element>\n");
+                                writer.Write("<element>" + (ulong)Bytes.unpack8(body, offs) + "</element>\n");
                                 offs += 8;
                             }
                             indentation(indent);
@@ -728,7 +741,7 @@ namespace Perst.Impl
                             while (--len >= 0)
                             {
                                 indentation(indent + 1);
-                                writer.Write("<array-element>" + Bytes.unpackF4(body, offs) + "</array-element>\n");
+                                writer.Write("<element>" + Bytes.unpackF4(body, offs) + "</element>\n");
                                 offs += 4;
                             }
                             indentation(indent);
@@ -750,7 +763,7 @@ namespace Perst.Impl
                             while (--len >= 0)
                             {
                                 indentation(indent + 1);
-                                writer.Write("<array-element>" + Bytes.unpackF8(body, offs) + "</array-element>\n");
+                                writer.Write("<element>" + Bytes.unpackF8(body, offs) + "</element>\n");
                                 offs += 8;
                             }
                             indentation(indent);
@@ -772,7 +785,7 @@ namespace Perst.Impl
                             while (--len >= 0)
                             {
                                 indentation(indent + 1);
-                                writer.Write("<array-element>\"" + Bytes.unpackDate(body, offs) + "\"</array-element>\n");
+                                writer.Write("<element>\"" + Bytes.unpackDate(body, offs) + "\"</element>\n");
                                 offs += 8;
                             }
                         }
@@ -792,7 +805,7 @@ namespace Perst.Impl
                             writer.Write('\n');
                             while (--len >= 0)
                             {
-                                writer.Write("<array-element>\"" + Bytes.unpackGuid(body, offs) + "\"</array-element>\n");
+                                writer.Write("<element>\"" + Bytes.unpackGuid(body, offs) + "\"</element>\n");
                                 offs += 16;
                             }
                         }
@@ -812,7 +825,7 @@ namespace Perst.Impl
                             writer.Write('\n');
                             while (--len >= 0)
                             {
-                                writer.Write("<array-element>\"" + Bytes.unpackDecimal(body, offs) + "\"</array-element>\n");
+                                writer.Write("<element>\"" + Bytes.unpackDecimal(body, offs) + "\"</element>\n");
                                 offs += 16;
                             }
                         }
@@ -833,9 +846,9 @@ namespace Perst.Impl
                             while (--len >= 0)
                             {
                                 indentation(indent + 1);
-                                writer.Write("<array-element>");
+                                writer.Write("<element>");
                                 offs = exportString(body, offs);
-                                writer.Write("</array-element>\n");
+                                writer.Write("</element>\n");
                             }
                             indentation(indent);
                         }
@@ -862,7 +875,7 @@ namespace Perst.Impl
                                 {
                                     markedBitmap[oid >> 5] |= 1 << (oid & 31);
                                 }
-                                writer.Write("<array-element><ref id=\"" + oid + "\"/></array-element>\n");
+                                writer.Write("<element><ref id=\"" + oid + "\"/></element>\n");
                                 offs += 4;
                             }
                             indentation(indent);
@@ -884,10 +897,10 @@ namespace Perst.Impl
                             while (--len >= 0)
                             {
                                 indentation(indent + 1);
-                                writer.Write("<array-element>\n");
+                                writer.Write("<element>\n");
                                 offs = exportObject(fd.valueDesc, body, offs, indent + 2);
                                 indentation(indent + 1);
-                                writer.Write("</array-element>\n");
+                                writer.Write("</element>\n");
                             }
                             indentation(indent);
                         }
@@ -909,9 +922,9 @@ namespace Perst.Impl
                             while (--len >= 0)
                             {
                                 indentation(indent+1);
-                                writer.Write("<array-element>");
+                                writer.Write("<element>");
                                 offs = exportBinary(body, offs);
-                                writer.Write("</array-element>\n");
+                                writer.Write("</element>\n");
                             }
                             indentation(indent);
                         }

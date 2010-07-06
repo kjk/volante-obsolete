@@ -164,7 +164,7 @@ namespace Perst.Impl
                 XMLElement head = (XMLElement) siblings[elem.name];
                 if (head != null)
                 {
-                    elem.next = head;
+                    elem.next = null;
                     elem.prev = head.prev;
                     head.prev.next = elem;
                     head.prev = elem;
@@ -172,7 +172,7 @@ namespace Perst.Impl
                 }
                 else
                 {
-                    elem.next = elem.prev = elem;
+                    elem.prev = elem;
                     siblings[elem.name] = elem;
                     elem.counter = 1;
                 }
@@ -492,6 +492,7 @@ namespace Perst.Impl
             String   className = null;
             String   fieldName = null;
             String[] fieldNames = null;
+            long     autoinc = 0;
             String   type = null;
             while ((tkn = scanner.scan()) == XMLScanner.Token.IDENT)
             {
@@ -516,6 +517,10 @@ namespace Perst.Impl
                 else if (attrName.Equals("type"))
                 {
                     type = attrValue;
+                }
+                else if (attrName.Equals("autoinc"))
+                {
+                    autoinc = parseInt(attrValue);
                 }
                 else if (attrName.StartsWith("field"))
                 {
@@ -553,7 +558,7 @@ namespace Perst.Impl
                 Type cls = findClassByName(className);
                 if (fieldName != null) 
                 { 
-                    btree = new BtreeFieldIndex(cls, fieldName, unique);
+                    btree = new BtreeFieldIndex(cls, fieldName, unique, autoinc);
                 } 
                 else if (fieldNames != null) 
                 { 
@@ -699,7 +704,7 @@ namespace Perst.Impl
                 } 
                 else 
                 { 
-                    XMLElement item = elem.getSibling("array-element");
+                    XMLElement item = elem.getSibling("element");
                     int len = (item == null) ? 0 : item.Counter; 
                     buf.extend(offs + 4 + len);
                     Bytes.pack4(buf.arr, offs, len);
@@ -1073,7 +1078,7 @@ namespace Perst.Impl
                         }
                         else
                         {
-                            XMLElement item = elem.getSibling("array-element");
+                            XMLElement item = elem.getSibling("element");
                             int len = (item == null)?0:item.Counter;
                             buf.extend(offs + 4 + len);
                             Bytes.pack4(buf.arr, offs, len);
@@ -1109,7 +1114,7 @@ namespace Perst.Impl
                         }
                         else
                         {
-                            XMLElement item = elem.getSibling("array-element");
+                            XMLElement item = elem.getSibling("element");
                             int len = (item == null)?0:item.Counter;
                             buf.extend(offs + 4 + len * 2);
                             Bytes.pack4(buf.arr, offs, len);
@@ -1143,7 +1148,7 @@ namespace Perst.Impl
                         }
                         else
                         {
-                            XMLElement item = elem.getSibling("array-element");
+                            XMLElement item = elem.getSibling("element");
                             int len = (item == null)?0:item.Counter;
                             Type elemType = f.FieldType.GetElementType();
                             buf.extend(offs + 4 + len * 4);
@@ -1195,7 +1200,7 @@ namespace Perst.Impl
                         }
                         else
                         {
-                            XMLElement item = elem.getSibling("array-element");
+                            XMLElement item = elem.getSibling("element");
                             int len = (item == null)?0:item.Counter;
                             buf.extend(offs + 4 + len * 4);
                             Bytes.pack4(buf.arr, offs, len);
@@ -1230,7 +1235,7 @@ namespace Perst.Impl
                         }
                         else
                         {
-                            XMLElement item = elem.getSibling("array-element");
+                            XMLElement item = elem.getSibling("element");
                             int len = (item == null)?0:item.Counter;
                             buf.extend(offs + 4 + len * 8);
                             Bytes.pack4(buf.arr, offs, len);
@@ -1264,7 +1269,7 @@ namespace Perst.Impl
                         }
                         else
                         {
-                            XMLElement item = elem.getSibling("array-element");
+                            XMLElement item = elem.getSibling("element");
                             int len = (item == null)?0:item.Counter;
                             buf.extend(offs + 4 + len * 4);
                             Bytes.pack4(buf.arr, offs, len);
@@ -1298,7 +1303,7 @@ namespace Perst.Impl
                         }
                         else
                         {
-                            XMLElement item = elem.getSibling("array-element");
+                            XMLElement item = elem.getSibling("element");
                             int len = (item == null)?0:item.Counter;
                             buf.extend(offs + 4 + len * 8);
                             Bytes.pack4(buf.arr, offs, len);
@@ -1332,7 +1337,7 @@ namespace Perst.Impl
                         }
                         else
                         {
-                            XMLElement item = elem.getSibling("array-element");
+                            XMLElement item = elem.getSibling("element");
                             int len = (item == null)?0:item.Counter;
                             buf.extend(offs + 4 + len * 8);
                             Bytes.pack4(buf.arr, offs, len);
@@ -1369,7 +1374,7 @@ namespace Perst.Impl
                         }
                         else
                         {
-                            XMLElement item = elem.getSibling("array-element");
+                            XMLElement item = elem.getSibling("element");
                             int len = (item == null)?0:item.Counter;
                             buf.extend(offs + 4 + len * 16);
                             Bytes.pack4(buf.arr, offs, len);
@@ -1402,7 +1407,7 @@ namespace Perst.Impl
                         }
                         else
                         {
-                            XMLElement item = elem.getSibling("array-element");
+                            XMLElement item = elem.getSibling("element");
                             int len = (item == null)?0:item.Counter;
                             buf.extend(offs + 4 + len * 16);
                             Bytes.pack4(buf.arr, offs, len);
@@ -1435,9 +1440,9 @@ namespace Perst.Impl
                         }
                         else
                         {
-                            XMLElement item = elem.getSibling("array-element");
+                            XMLElement item = elem.getSibling("element");
                             int len = (item == null)?0:item.Counter;
-                            buf.extend(offs + 4 + len * 4);
+                            buf.extend(offs + 4);
                             Bytes.pack4(buf.arr, offs, len);
                             offs += 4;
                             while (--len >= 0)
@@ -1479,19 +1484,19 @@ namespace Perst.Impl
                         }
                         else
                         {
-                            XMLElement item = elem.getSibling("array-element");
+                            XMLElement item = elem.getSibling("element");
                             int len = (item == null)?0:item.Counter;
                             buf.extend(offs + 4 + len * 4);
                             Bytes.pack4(buf.arr, offs, len);
                             offs += 4;
                             while (--len >= 0)
                             {
-                                XMLElement ref_Renamed = item.getSibling("ref");
-                                if (ref_Renamed == null)
+                                XMLElement href = item.getSibling("ref");
+                                if (href == null)
                                 {
                                     throwException("<ref> element expected");
                                 }
-                                int oid = mapId(getIntAttribute(ref_Renamed, "id"));
+                                int oid = mapId(getIntAttribute(href, "id"));
                                 Bytes.pack4(buf.arr, offs, oid);
                                 item = item.NextSibling;
                                 offs += 4;
@@ -1508,7 +1513,7 @@ namespace Perst.Impl
                         }
                         else
                         {
-                            XMLElement item = elem.getSibling("array-element");
+                            XMLElement item = elem.getSibling("element");
                             int len = (item == null)?0:item.Counter;
                             Bytes.pack4(buf.arr, offs, len);
                             offs += 4;
@@ -1531,7 +1536,7 @@ namespace Perst.Impl
                         }
                         else
                         {
-                            XMLElement item = elem.getSibling("array-element");
+                            XMLElement item = elem.getSibling("element");
                             int len = (item == null)?0:item.Counter;
                             Bytes.pack4(buf.arr, offs, len);
                             offs += 4;

@@ -334,6 +334,11 @@ namespace Perst
         }
 
 #endif
+        internal protected PersistentResource() {}
+
+        internal protected PersistentResource(Storage storage) 
+            : base(storage) {}
+
         [NonSerialized()]
         private Thread owner;
         [NonSerialized()]

@@ -520,6 +520,17 @@ namespace Perst.Impl
             lookupConstructor(ClassDescriptor.lookup(Storage, blockClassName));
         }
 
+
+        public override void Deallocate() 
+        {
+            foreach (TimeSeriesBlock block in index) 
+            {
+                block.Deallocate();
+            }
+            index.Deallocate();
+            base.Deallocate();
+        }
+
         private Index  index;
         private long   maxBlockTimeInterval;
         private string blockClassName;

@@ -12,7 +12,7 @@ namespace Perst
     /// (each boundary can be specified or unspecified and can be inclusive or exclusive)
     /// Key should be of scalar, String, DateTime or peristent object type.
     /// </summary>
-    public interface FieldIndex : IPersistent, IEnumerable, ICollection
+    public interface FieldIndex : IPersistent, IResource, IEnumerable, ICollection
     {
         /// <summary> Access element by key
         /// </summary>

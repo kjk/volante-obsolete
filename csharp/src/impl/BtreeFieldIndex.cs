@@ -64,11 +64,17 @@ namespace Perst.Impl
             lookupField(fieldName);
         }
 		
-        internal BtreeFieldIndex(Type cls, String fieldName, bool unique) {
+        internal BtreeFieldIndex(Type cls, String fieldName, bool unique) 
+        : this(cls, fieldName, unique, 0)
+        {
+        }
+
+        internal BtreeFieldIndex(Type cls, String fieldName, bool unique, long autoincCount) {
             this.cls = cls;
             this.unique = unique;
             this.fieldName = fieldName;
             this.className = cls.FullName;
+            this.autoincCount = autoincCount;
             lookupField(fieldName);
             type = checkType(mbrType);
         }
