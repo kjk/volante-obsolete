@@ -3266,22 +3266,26 @@ namespace Perst.Impl
             switch (type)
             {
                 case ClassDescriptor.FieldType.tpByte: 
+                    return buf.packI1(offs, (byte)val);
                 case ClassDescriptor.FieldType.tpSByte: 
-                    return buf.packI1(offs, (int)val);
+                    return buf.packI1(offs, (sbyte)val);
                 case ClassDescriptor.FieldType.tpBoolean: 
                     return buf.packBool(offs, (bool)val);
                 case ClassDescriptor.FieldType.tpShort: 
+                    return buf.packI2(offs, (short)val);
                 case ClassDescriptor.FieldType.tpUShort: 
-                    return buf.packI2(offs, (int)val);
+                    return buf.packI2(offs, (ushort)val);
                 case ClassDescriptor.FieldType.tpChar: 
-                    return buf.packI2(offs, (int)(char)val);
+                    return buf.packI2(offs, (char)val);
                 case ClassDescriptor.FieldType.tpEnum: 
                 case ClassDescriptor.FieldType.tpInt: 
-                case ClassDescriptor.FieldType.tpUInt: 
                     return buf.packI4(offs, (int)val);
+                case ClassDescriptor.FieldType.tpUInt: 
+                    return buf.packI4(offs, (int)(uint)val);
                 case ClassDescriptor.FieldType.tpLong: 
-                case ClassDescriptor.FieldType.tpULong: 
                     return buf.packI8(offs, (long)val);
+                case ClassDescriptor.FieldType.tpULong: 
+                    return buf.packI8(offs, (long)(ulong)val);
                 case ClassDescriptor.FieldType.tpFloat: 
                     return buf.packF4(offs, (float)val);
                 case ClassDescriptor.FieldType.tpDouble: 
