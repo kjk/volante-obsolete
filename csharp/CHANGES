@@ -8,4 +8,10 @@ Initial release
 
 --- Release version 1.03 03.03.2003 -------------------------------------
 1. Fix bug in LinkImpl constructor
-2. Make it possible to call IPersistent.deallate multiple times.
+2. Make it possible to call IPersistent.deallocate multiple times.
+
+--- Release version 1.04 12.03.2003 -------------------------------------
+1. Fix bug in rollback method
+2. Add IPersistent.onLoad method
+3. Fix bugs in BtreeFieldIndex
+4. Add TestLink example

@@ -67,11 +67,11 @@ namespace Perst.Impl
         internal static System.Type[] defaultConstructorProfile = new System.Type[0];
         internal static System.Object[] noArgs = new System.Object[0];
 		
-        internal Persistent newInstance()
+        internal Object newInstance()
         {
             try
             {
-                return (Persistent) defaultConstructor.Invoke(noArgs);
+                return defaultConstructor.Invoke(noArgs);
             }
             catch (System.Exception x)
             {
@@ -202,7 +202,7 @@ namespace Perst.Impl
 		
         internal static bool FindTypeByName(Type t, object name) 
         { 
-            return t.Name.Equals(name);
+            return t.FullName.Equals(name);
         }
 
         internal static Type lookup(String name)

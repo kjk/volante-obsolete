@@ -70,7 +70,7 @@ namespace Perst
         }
 		
 		
-        public  override bool Equals(System.Object o)
+        public override bool Equals(System.Object o)
         {
             return o is Persistent && ((Persistent) o).Oid == oid;
         }
@@ -80,6 +80,10 @@ namespace Perst
             return oid;
         }
 		
+        public virtual void onLoad() 
+        {
+        }
+
         [NonSerialized()]
         internal Storage storage;
         [NonSerialized()]

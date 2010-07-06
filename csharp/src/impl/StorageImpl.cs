@@ -209,10 +209,23 @@ namespace Perst.Impl
         }
 		
 		
+        internal void setDirty() 
+        {
+            modified = true;
+            if (!header.dirty) { 
+                header.dirty = true;
+	        Page pg = pool.putPage(0);
+	        header.pack(pg.data);
+	        pool.flush();
+	        pool.unfix(pg);
+            }
+        }
+
         internal int allocateId()
         {
             int oid;
             int curr = 1 - currIndex;
+            setDirty();
             if ((oid = header.root[curr].freeList) != 0)
             {
                 header.root[curr].freeList = (int) (getPos(oid) >> dbFlagsBits);
@@ -245,7 +258,6 @@ namespace Perst.Impl
         {
             setPos(oid, ((long) (header.root[1 - currIndex].freeList) << dbFlagsBits) | dbFreeHandleFlag);
             header.root[1 - currIndex].freeList = oid;
-            modified = true;
         }
 		
         internal static byte[] firstHoleSize = new byte[]{8, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 6, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 7, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 6, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0};
@@ -310,6 +322,7 @@ namespace Perst.Impl
 		
         internal long allocate(int size, int oid)
         {
+            setDirty();
             size = (size + dbAllocationQuantum - 1) & ~ (dbAllocationQuantum - 1);
             Assert.that(size != 0);
             int objBitSize = size >> dbAllocationQuantumBits;
@@ -846,8 +859,7 @@ namespace Perst.Impl
                     header.root[0].size = used;
                     header.root[1].size = used;
                     usedSize = used;
-                    committedIndexSize = 0;
-                    currIndexSize = dbFirstUserId;
+                    committedIndexSize = currIndexSize = dbFirstUserId;
                     pool.open(file, used);
 					
                     long indexPage = header.root[1].index;
@@ -976,12 +988,6 @@ namespace Perst.Impl
         }
 		
 		
-        //UPGRADE_NOTE: Synchronized keyword was removed from method 'getRoot'. Lock expression was added. 'ms-help://MS.VSCC/commoner/redir/redirect.htm?keyword="jlca1027"'
-		
-        //UPGRADE_NOTE: Synchronized keyword was removed from method 'setRoot'. Lock expression was added. 'ms-help://MS.VSCC/commoner/redir/redirect.htm?keyword="jlca1027"'
-		
-		
-        //UPGRADE_NOTE: Synchronized keyword was removed from method 'commit'. Lock expression was added. 'ms-help://MS.VSCC/commoner/redir/redirect.htm?keyword="jlca1027"'
         public override void  commit()
         {
             lock(this)
@@ -1161,7 +1167,6 @@ namespace Perst.Impl
             }
         }
 		
-        //UPGRADE_NOTE: Synchronized keyword was removed from method 'rollback'. Lock expression was added. 'ms-help://MS.VSCC/commoner/redir/redirect.htm?keyword="jlca1027"'
         public override void  rollback()
         {
             lock(this)
@@ -1172,9 +1177,8 @@ namespace Perst.Impl
                 }
                 int curr = currIndex;
                 int[] map = dirtyPagesMap;
-                if (committedIndexSize == 0 || header.root[1 - curr].index != header.root[curr].shadowIndex)
+                if (header.root[1 - curr].index != header.root[curr].shadowIndex)
                 {
-                    committedIndexSize = header.root[curr].indexUsed;
                     pool.copy(header.root[curr].shadowIndex, header.root[curr].index, 8 * committedIndexSize);
                 }
                 else
@@ -1201,6 +1205,7 @@ namespace Perst.Impl
                 header.dirty = true;
                 modified = false;
                 usedSize = header.root[curr].size;
+                currIndexSize = committedIndexSize;
 				
                 currRBitmapPage = currPBitmapPage = dbBitmapId;
                 currRBitmapOffs = currPBitmapOffs = 0;
@@ -1209,7 +1214,7 @@ namespace Perst.Impl
             }
         }
 		
-         public override Index createIndex(System.Type keyType, bool unique)
+        public override Index createIndex(System.Type keyType, bool unique)
         {
             lock(this)
             {
@@ -1218,6 +1223,18 @@ namespace Perst.Impl
                     throw new StorageError(StorageError.ErrorCode.STORAGE_NOT_OPENED);
                 }
                 return new Btree(keyType, unique);
+            }
+        }
+		
+        public override FieldIndex createFieldIndex(System.Type type, String fieldName, bool unique)
+        {
+            lock(this)
+            {
+                if (!opened)
+                {
+                    throw new StorageError(StorageError.ErrorCode.STORAGE_NOT_OPENED);
+                }
+                return new BtreeFieldIndex(type, fieldName, unique);
             }
         }
 		
@@ -1388,7 +1405,7 @@ namespace Perst.Impl
                 pool.unfix(pg);
                 desc = (ClassDescriptor) lookupObject(typeOid, typeof(ClassDescriptor));
             }
-            stub = desc.newInstance();
+            stub = (IPersistent)desc.newInstance();
             setObjectOid(stub, oid, true);
             objectCache.put(oid, stub);
             return stub;
@@ -1410,7 +1427,7 @@ namespace Perst.Impl
                     int typeOid = ObjectHeader.getType(body, 0);
                     desc = (ClassDescriptor) lookupObject(typeOid, typeof(ClassDescriptor));
                 }
-                obj = desc.newInstance();
+                obj = (IPersistent)desc.newInstance();
                 objectCache.put(oid, obj);
             }
             else
@@ -1419,6 +1436,7 @@ namespace Perst.Impl
             }
             setObjectOid(obj, oid, false);
             unpackObject(obj, desc, obj.recursiveLoading(), body, ObjectHeader.Sizeof);
+            obj.onLoad();
             return obj;
        }
 

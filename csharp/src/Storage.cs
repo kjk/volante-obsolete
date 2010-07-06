@@ -69,6 +69,21 @@ namespace Perst
         /// </exception>
         abstract public Index createIndex(System.Type type, bool unique);
 		
+        /// <summary> 
+        /// Create new field index
+        /// <param name="type">objects of which type (or derived from which type) will be included in the index
+        /// </param>
+        /// <param name="fieldName">name of the index field. Field with such name should be present in specified class <code>type</code>
+        /// </param>
+        /// <param name="unique">whether index is unique (duplicate value of keys are not allowed)
+        /// </param>
+        /// <returns>persistent object implementing field index
+        /// </returns>
+        /// <exception cref="">StorageError(StorageError.INDEXED_FIELD_NOT_FOUND) if there is no such field in specified class,<BR> 
+        /// StorageError(StorageError.UNSUPPORTED_INDEX_TYPE) exception if type of specified field is not supported by implementation
+        /// </exception>
+        abstract public FieldIndex createFieldIndex(System.Type type, String fieldName, bool unique);
+		
         /// <summary> Create one-to-many link.
         /// </summary>
         /// <returns>new empty link, new members can be added to the link later.
