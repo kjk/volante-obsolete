@@ -163,6 +163,15 @@ namespace Perst
 		
         internal Relation() {}
 
+        public void SetOwner(IPersistent obj)
+        { 
+#if USE_GENERICS
+             owner = (O)obj;
+#else
+             owner = obj;
+#endif
+        }
+
 #if USE_GENERICS
         private O owner;
 #else

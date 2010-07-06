@@ -211,9 +211,13 @@ namespace Perst.Impl
                     case FieldType.tpValue:
                     case FieldType.tpArrayOfValue:
                     case FieldType.tpArrayOfObject:
-                    case FieldType.tpArrayOfOid:
                     case FieldType.tpArrayOfEnum:
                     case FieldType.tpArrayOfRaw:
+#if USE_GENERICS
+                    case FieldType.tpLink:
+                    case FieldType.tpArrayOfOid:
+#endif
+    
                         return;
                     default:
                         break;

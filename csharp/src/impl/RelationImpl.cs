@@ -58,7 +58,6 @@ namespace Perst.Impl
             set 
             {
                 link.Set(i, value);
-                Modify();
             }
         }
 
@@ -88,7 +87,6 @@ namespace Perst.Impl
 #endif
         {
             link.Set(i, obj);
-            Modify();
         }
 		
 #if USE_GENERICS
@@ -97,12 +95,7 @@ namespace Perst.Impl
         public override bool Remove(IPersistent obj) 
 #endif
         {
-            if (link.Remove(obj))
-            { 
-                Modify();
-                return true;
-            }
-            return false;
+            return link.Remove(obj);
         }
 
 #if USE_GENERICS
@@ -115,7 +108,6 @@ namespace Perst.Impl
         public override void Remove(int i)
         {
             link.Remove(i);
-            Modify();
         }
 		
 #if USE_GENERICS
@@ -125,7 +117,6 @@ namespace Perst.Impl
 #endif
         {
             link.Insert(i, obj);
-            Modify();
         }
 		
 #if USE_GENERICS
@@ -135,7 +126,6 @@ namespace Perst.Impl
 #endif
         {
             link.Add(obj);
-            Modify();
         }
 		
 #if USE_GENERICS
@@ -145,7 +135,6 @@ namespace Perst.Impl
 #endif
         {
             link.AddAll(arr);
-            Modify();
         }
 		
 #if USE_GENERICS
@@ -155,7 +144,6 @@ namespace Perst.Impl
 #endif
         {
             link.AddAll(arr, from, length);
-            Modify();
         }
 		
 #if USE_GENERICS
@@ -165,7 +153,6 @@ namespace Perst.Impl
 #endif
         {
             link.AddAll(anotherLink);
-            Modify();
         }
 		
 #if USE_GENERICS
@@ -227,7 +214,6 @@ namespace Perst.Impl
         public override void Clear() 
         {
             link.Clear();
-            Modify();
         }
 		
         public override void Unpin()

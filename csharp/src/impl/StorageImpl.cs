@@ -7,10 +7,6 @@ namespace Perst.Impl
     using System.Diagnostics;
     using System.Text;
     using Perst;
-#if USE_GENERICS
-    using Link=Link<IPersistent>;
-    using PArray=PArray<IPersistent>;
-#endif
 	
     public class StorageImpl:Storage
     {
@@ -1983,9 +1979,9 @@ namespace Perst.Impl
             return new LinkImpl<T>(initialSize);
         }
 		
-        internal Link<T> ConstructLink<T>(IPersistent[] arr) where T:class,IPersistent
+        internal Link<T> ConstructLink<T>(IPersistent[] arr, IPersistent owner) where T:class,IPersistent
         {
-            return new LinkImpl<T>(arr);
+            return new LinkImpl<T>(arr, owner);
         }
 		
         public PArray<T> CreateArray<T>() where T:class,IPersistent
@@ -1998,9 +1994,9 @@ namespace Perst.Impl
             return new PArrayImpl<T>(this, initialSize);
         }
 		
-        internal PArray<T> ConstructArray<T>(int[] arr) where T:class,IPersistent
+        internal PArray<T> ConstructArray<T>(int[] arr, IPersistent owner) where T:class,IPersistent
         {
-            return new PArrayImpl<T>(this, arr);
+            return new PArrayImpl<T>(this, arr, owner);
         }
 		
         public Relation<M,O> CreateRelation<M,O>(O owner) where M:class,IPersistent where O:class,IPersistent
@@ -3694,13 +3690,13 @@ namespace Perst.Impl
             } 
             else 
             { 
-                unpackObject(obj, desc, obj.RecursiveLoading(), body, ObjectHeader.Sizeof);
+                unpackObject(obj, desc, obj.RecursiveLoading(), body, ObjectHeader.Sizeof, obj);
             }
             obj.OnLoad();
             return obj;
         }
 
-        internal int unpackObject(object obj, ClassDescriptor desc, bool recursiveLoading, byte[] body, int offs) 
+        internal int unpackObject(object obj, ClassDescriptor desc, bool recursiveLoading, byte[] body, int offs, IPersistent po) 
         {
             ClassDescriptor.FieldDescriptor[] all = desc.allFields;
             for (int i = 0, n = all.Length; i < n; i++)
@@ -3713,7 +3709,7 @@ namespace Perst.Impl
                 else 
                 {
                     object val = obj;
-                    offs = unpackField(body, offs, recursiveLoading, ref val, fd, fd.type);
+                    offs = unpackField(body, offs, recursiveLoading, ref val, fd, fd.type, po);
                     fd.field.SetValue(obj, val);
                 }
             }  
@@ -3761,7 +3757,7 @@ namespace Perst.Impl
 
                     break;
                 case ClassDescriptor.FieldType.tpValue:
-                    return unpackObject(null, fd.valueDesc, false, body, offs);
+                    return unpackObject(null, fd.valueDesc, false, body, offs, null);
 #if SUPPORT_RAW_TYPE
                 case ClassDescriptor.FieldType.tpRaw:
 #endif
@@ -3842,7 +3838,7 @@ namespace Perst.Impl
                         ClassDescriptor valueDesc = fd.valueDesc;
                         for (int j = 0; j < len; j++) 
                         { 
-                            offs = unpackObject(null, valueDesc, false, body, offs);
+                            offs = unpackObject(null, valueDesc, false, body, offs, null);
                         }
                     }
                     break;
@@ -3961,7 +3957,7 @@ namespace Perst.Impl
         }
 #endif					
 
-        public int unpackField(byte[] body, int offs, bool recursiveLoading, ref object val, ClassDescriptor.FieldDescriptor fd, ClassDescriptor.FieldType type)
+        public int unpackField(byte[] body, int offs, bool recursiveLoading, ref object val, ClassDescriptor.FieldDescriptor fd, ClassDescriptor.FieldType type, IPersistent po)
 
         { 
             int len;
@@ -4068,7 +4064,7 @@ namespace Perst.Impl
 
                 case ClassDescriptor.FieldType.tpValue: 
                     val = fd.field.GetValue(val);
-                    offs = unpackObject(val, fd.valueDesc, recursiveLoading, body, offs);
+                    offs = unpackObject(val, fd.valueDesc, recursiveLoading, body, offs, po);
                     break;
 					
 #if SUPPORT_RAW_TYPE
@@ -4429,7 +4425,7 @@ namespace Perst.Impl
                         for (int j = 0; j < len; j++) 
                         { 
                             object elem = arr.GetValue(j);
-                            offs = unpackObject(elem, valueDesc, recursiveLoading, body, offs);
+                            offs = unpackObject(elem, valueDesc, recursiveLoading, body, offs, po);
                             arr.SetValue(elem, j);
                         }
                         val = arr;
@@ -4479,9 +4475,9 @@ namespace Perst.Impl
                             }
                         }
 #if USE_GENERICS
-                        val = fd.constructor.Invoke(this, new object[]{arr});
+                        val = fd.constructor.Invoke(this, new object[]{arr, po});
 #else
-                        val = new LinkImpl(arr);
+                        val = new LinkImpl(arr, po);
 #endif
                     }
                     break;
@@ -4501,9 +4497,9 @@ namespace Perst.Impl
                             offs += 4;
                         }
 #if USE_GENERICS
-                        val = fd.constructor.Invoke(this, new object[]{arr});
+                        val = fd.constructor.Invoke(this, new object[]{arr, po});
 #else
-                        val = new PArrayImpl(this, arr);
+                        val = new PArrayImpl(this, arr, po);
 #endif
                     }
                     break;
@@ -4511,7 +4507,7 @@ namespace Perst.Impl
             return offs;
         }
 		
-        internal byte[] packObject(object obj)
+        internal byte[] packObject(IPersistent obj)
         {
             ByteBuffer buf = new ByteBuffer(encoding);
             int offs = ObjectHeader.Sizeof;
@@ -4523,21 +4519,21 @@ namespace Perst.Impl
             } 
             else 
             { 
-                offs = packObject(obj, desc, offs, buf);
+                offs = packObject(obj, desc, offs, buf, obj);
             }
             ObjectHeader.setSize(buf.arr, 0, offs);
             ObjectHeader.setType(buf.arr, 0, desc.Oid);
             return buf.arr;        
         }
 
-        public int packObject(object obj, ClassDescriptor desc, int offs, ByteBuffer buf)
+        public int packObject(object obj, ClassDescriptor desc, int offs, ByteBuffer buf, IPersistent po)
         { 
             ClassDescriptor.FieldDescriptor[] flds = desc.allFields;
 
             for (int i = 0, n = flds.Length; i < n; i++)
             {
                 ClassDescriptor.FieldDescriptor fd = flds[i];
-                offs = packField(buf, offs, fd.field.GetValue(obj), fd, fd.type);
+                offs = packField(buf, offs, fd.field.GetValue(obj), fd, fd.type, po);
             }
             return offs;
         }            
@@ -4685,7 +4681,7 @@ namespace Perst.Impl
 #endif
 
 
-public int packField(ByteBuffer buf, int offs, object val, ClassDescriptor.FieldDescriptor fd, ClassDescriptor.FieldType type)
+public int packField(ByteBuffer buf, int offs, object val, ClassDescriptor.FieldDescriptor fd, ClassDescriptor.FieldType type, IPersistent po)
         {
             switch (type)
             {
@@ -4724,7 +4720,7 @@ public int packField(ByteBuffer buf, int offs, object val, ClassDescriptor.Field
                 case ClassDescriptor.FieldType.tpString: 
                     return buf.packString(offs, (string)val);					
                 case ClassDescriptor.FieldType.tpValue:
-                    return packObject(val, fd.valueDesc, offs, buf);
+                    return packObject(val, fd.valueDesc, offs, buf, po);
                 case ClassDescriptor.FieldType.tpObject: 
                     return buf.packI4(offs, swizzle((IPersistent)val));
  
@@ -5031,7 +5027,7 @@ public int packField(ByteBuffer buf, int offs, object val, ClassDescriptor.Field
                         ClassDescriptor elemDesc = fd.valueDesc;
                         for (int j = 0; j < len; j++)
                         {
-                            offs = packObject(arr.GetValue(j), elemDesc, offs, buf);
+                            offs = packObject(arr.GetValue(j), elemDesc, offs, buf, po);
                         }
                     }
                     break;
@@ -5175,8 +5171,9 @@ public int packField(ByteBuffer buf, int offs, object val, ClassDescriptor.Field
                     }
                     else
                     {
-                        Link link = (Link)val;
-                        int len = link.Length;
+                        GenericLink link = (GenericLink)val; 
+                        link.SetOwner(po);                       
+                        int len = link.Size();
                         buf.extend(offs + 4 + len * 4);
                         Bytes.pack4(buf.arr, offs, len);
                         offs += 4;
@@ -5197,8 +5194,9 @@ public int packField(ByteBuffer buf, int offs, object val, ClassDescriptor.Field
                     }
                     else
                     {
-                        PArray arr = (PArray)val;
-                        int len = arr.Length;
+                        GenericPArray arr = (GenericPArray)val;
+                        arr.SetOwner(po);
+                        int len = arr.Size();
                         buf.extend(offs + 4 + len * 4);
                         Bytes.pack4(buf.arr, offs, len);
                         offs += 4;

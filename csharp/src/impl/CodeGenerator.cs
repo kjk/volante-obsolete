@@ -146,6 +146,7 @@ namespace Perst.Impl
                         il.Emit(OpCodes.Ldfld, f);
                         il.Emit(OpCodes.Ldnull); // fd
                         il.Emit(OpCodes.Ldc_I4, (int)fd.type);
+                        il.Emit(OpCodes.Ldloc_0, obj);
                         il.Emit(OpCodes.Call, packField);
                         il.Emit(OpCodes.Stloc_1, offs);
                         continue;
@@ -408,6 +409,7 @@ namespace Perst.Impl
                             il.Emit(OpCodes.Ldloca, val);
                             il.Emit(OpCodes.Ldnull); // fd
                             il.Emit(OpCodes.Ldc_I4, (int)fd.type);
+                            il.Emit(OpCodes.Ldloc_0, obj);
                             il.Emit(OpCodes.Call, unpackField);
                             il.Emit(OpCodes.Stloc_1, offs); // offs
                             il.Emit(OpCodes.Ldloc_0, obj);

@@ -6,7 +6,7 @@ namespace Perst.Impl
     public interface GeneratedSerializer
     {
         IPersistent newInstance();
-        int         pack(StorageImpl store, object obj, ByteBuffer buf);
-        void        unpack(StorageImpl store, object obj, byte[] body, bool recursiveLoading, Encoding encoding);
+        int         pack(StorageImpl store, IPersistent obj, ByteBuffer buf);
+        void        unpack(StorageImpl store, IPersistent obj, byte[] body, bool recursiveLoading, Encoding encoding);
     }
 }

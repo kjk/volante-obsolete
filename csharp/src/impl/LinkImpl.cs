@@ -14,6 +14,16 @@ using System.Collections;
     public class LinkImpl : Link
 #endif
     {
+        private void Modify() 
+        {
+            if (owner != null) 
+            {
+                owner.Modify();
+            }
+        } 
+                
+    
+
         public int Count 
         { 
             get 
@@ -74,13 +84,13 @@ using System.Collections;
                 if (value < used) 
                 { 
                     Array.Clear(arr, value, used);
+                    Modify();
                 } 
                 else 
                 { 
                     reserveSpace(value - used);            
                 }
                 used = value;
-
             }
         }        
 
@@ -134,6 +144,7 @@ using System.Collections;
                 throw new IndexOutOfRangeException();
             }
             arr[i] = obj;
+            Modify();
         }
 		
 #if USE_GENERICS
@@ -167,6 +178,7 @@ using System.Collections;
             used -= 1;
             Array.Copy(arr, i + 1, arr, i, used - i);
             arr[used] = null;
+            Modify();
         }
 		
         internal void reserveSpace(int len)
@@ -177,6 +189,7 @@ using System.Collections;
                 Array.Copy(arr, 0, newArr, 0, used);
                 arr = newArr;
             }
+            Modify();
         }
 		
 #if USE_GENERICS
@@ -325,6 +338,7 @@ using System.Collections;
         {
             Array.Clear(arr, 0, used);
             used = 0;
+            Modify();
         }
 		
 #if USE_GENERICS
@@ -424,6 +438,10 @@ using System.Collections;
 #endif
         }
 		
+        public void SetOwner(IPersistent owner)
+        { 
+             this.owner = owner;
+        }
 
         internal LinkImpl()
         {
@@ -434,13 +452,16 @@ using System.Collections;
             arr = new IPersistent[initSize];
         }
 		
-        internal LinkImpl(IPersistent[] arr)
+        internal LinkImpl(IPersistent[] arr, IPersistent owner)
         {
             this.arr = arr;
+            this.owner = owner;
             used = arr.Length;
         }
 		
-        internal IPersistent[] arr;
-        internal int used;
+        IPersistent[] arr;
+        int           used;
+        [NonSerialized()]
+        IPersistent   owner;        
     }
 }

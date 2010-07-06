@@ -1,5 +1,5 @@
-CSC=csc /debug+ /d:USE_GENERICS,SUPPORT_RAW_TYPE
-#CSC=csc /debug+
+#CSC=csc /debug+ /d:USE_GENERICS,SUPPORT_RAW_TYPE
+CSC=csc /d:SUPPORT_RAW_TYPE /debug+
 
 EXAMPLES=IpCountry/bin/debug/IpCountry.exe Guess/bin/debug/Guess.exe PropGuess/bin/debug/Guess.exe TestBackup/bin/debug/TestBackup.exe TestBit/bin/debug/TestBit.exe TestBlob/bin/debug/TestBlob.exe TestCompoundIndex/bin/debug/TestCompoundIndex.exe TestConcur/bin/debug/TestConcur.exe TestEnumerator/bin/debug/TestEnumerator.exe TestGC/bin/debug/TestGC.exe TestIndex/bin/debug/TestIndex.exe TestIndex2/bin/debug/TestIndex2.exe TestLink/bin/debug/TestLink.exe TestList/bin/debug/TestList.exe TestR2/bin/debug/TestR2.exe TestRaw/bin/debug/TestRaw.exe TestRtree/bin/debug/TestRtree.exe TestSOD/bin/debug/TestSOD.exe TestSSD/bin/debug/TestSSD.exe TestTimeSeries/bin/debug/TestTimeSeries.exe TestTtree/bin/debug/TestTtree.exe TestXML/bin/debug/TestXML.exe TransparentGuess/bin/debug/Guess.exe TestReplic/bin/debug/TestReplic.exe
 

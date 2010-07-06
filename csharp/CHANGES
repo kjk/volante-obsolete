@@ -380,3 +380,7 @@ System.Collections.Generic.ICollection<T>
 Single master node replicates changes to one or more slave nodes.
 It is possible to access database at slave nodes in read-only mode.
 Look at TestReplic example.
+
+--- Release version 2.49 09.01.2005 -------------------------------------
+1. Change implementation of Link to automatically set modified bit in contaning object.
+Now it is not necessary to explicitly call modify() for object which Link component is updated.

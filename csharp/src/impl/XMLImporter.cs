@@ -659,7 +659,7 @@ namespace Perst.Impl
 #if USE_GENERICS
             ByteBuffer buf = new ByteBuffer(storage.encoding);
             buf.extend(ObjectHeader.Sizeof);
-            int size = storage.packObject(btree, desc, ObjectHeader.Sizeof, buf);
+            int size = storage.packObject(btree, desc, ObjectHeader.Sizeof, buf, null);
             byte[] data = buf.arr;
             ObjectHeader.setSize(data, 0, size);
             ObjectHeader.setType(data, 0, desc.Oid);

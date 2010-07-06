@@ -14,6 +14,14 @@ using System.Collections;
     public class PArrayImpl : PArray
 #endif
     {
+        private void Modify() 
+        {
+            if (owner != null) 
+            {
+                owner.Modify();
+            }
+        } 
+                
         public int Count 
         { 
             get 
@@ -74,6 +82,7 @@ using System.Collections;
                 if (value < used) 
                 { 
                     Array.Clear(arr, value, used);
+                    Modify();
                 } 
                 else 
                 { 
@@ -143,6 +152,7 @@ using System.Collections;
                 throw new IndexOutOfRangeException();
             }
             arr[i] = storage.MakePersistent(obj);
+            Modify();
         }
 		
 #if USE_GENERICS
@@ -176,6 +186,7 @@ using System.Collections;
             used -= 1;
             Array.Copy(arr, i + 1, arr, i, used - i);
             arr[used] = 0;
+            Modify();
         }
 		
         internal void reserveSpace(int len)
@@ -186,6 +197,7 @@ using System.Collections;
                 Array.Copy(arr, 0, newArr, 0, used);
                 arr = newArr;
             }
+            Modify();
         }
 		
 #if USE_GENERICS
@@ -351,6 +363,7 @@ using System.Collections;
         {
             Array.Clear(arr, 0, used);
             used = 0;
+            Modify();
         }
 		
 #if USE_GENERICS
@@ -432,6 +445,10 @@ using System.Collections;
         }
 #endif
 		
+        public void SetOwner(IPersistent owner)
+        { 
+             this.owner = owner;
+        }
 
         internal PArrayImpl()
         {
@@ -443,15 +460,18 @@ using System.Collections;
             arr = new int[initSize];
         }
 		
-        internal PArrayImpl(StorageImpl storage, int[] oids)
+        internal PArrayImpl(StorageImpl storage, int[] oids, IPersistent owner)
         {
             this.storage = storage;
+            this.owner = owner;
             arr = oids;
             used = oids.Length;
         }
 		
-        internal int[]       arr;
-        internal int         used;
-        internal StorageImpl storage;
+        int[]       arr;
+        int         used;
+        StorageImpl storage;
+        [NonSerialized()]
+        IPersistent owner;        
     }
 }

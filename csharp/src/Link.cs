@@ -7,7 +7,53 @@ namespace Perst
     using System.Collections;
 #endif
 	
-    public interface GenericLink {}
+    /// <summary>
+    /// Common interface for all links
+    /// </summary>
+    public interface GenericLink {
+        /// <summary> Get number of the linked objects 
+        /// </summary>
+        /// <returns>the number of related objects
+        /// 
+        /// </returns>
+        int Size();
+
+        /// <summary> Get related object by index without loading it.
+        /// Returned object can be used only to get it OID or to compare with other objects using
+        /// <code>equals</code> method
+        /// </summary>
+        /// <param name="i">index of the object in the relation
+        /// </param>
+        /// <returns>stub representing referenced object
+        /// 
+        /// </returns>
+        IPersistent GetRaw(int i);
+
+        /// <summary>
+        /// Set owner object for this link. Owner is persistent object contaning this link.
+        /// This method is mostly used by storage itself, but can also used explicityl by programmer if
+        /// link component of one persistent object is assigned to component of another persistent object
+        /// </summary>
+        /// <param name="owner"link owner</param>
+        void SetOwner(IPersistent owner);
+
+        /// <summary>
+        /// Replace all direct references to linked objects with stubs. 
+        /// This method is needed tyo avoid memory exhaustion in case when 
+        /// there is a large numebr of objectys in databasse, mutually
+        /// refefencing each other (each object can directly or indirectly 
+        /// be accessed from other objects).
+        /// </summary>
+        void Unpin();     
+     
+       /// <summary>
+       /// Replace references to elements with direct references.
+       /// It will impove spped of manipulations with links, but it can cause
+       /// recursive loading in memory large number of objects and as a result - memory
+       /// overflow, because garabge collector will not be able to collect them
+       /// </summary>
+       void Pin();     
+    }
 
     /// <summary> Interface for one-to-many relation. There are two types of relations:
     /// embedded (when references to the relarted obejcts are stored in lreation
@@ -23,13 +69,6 @@ namespace Perst
     public interface Link : ICollection, GenericLink
 #endif
     {
-        /// <summary> Get number of the linked objects 
-        /// </summary>
-        /// <returns>the number of related objects
-        /// 
-        /// </returns>
-        int Size();
-
         /// <summary>Number of the linked objects 
         /// </summary>
         int Length {
@@ -59,17 +98,6 @@ namespace Perst
 #else
         IPersistent Get(int i);
 #endif
-
-        /// <summary> Get related object by index without loading it.
-        /// Returned object can be used only to get it OID or to compare with other objects using
-        /// <code>equals</code> method
-        /// </summary>
-        /// <param name="i">index of the object in the relation
-        /// </param>
-        /// <returns>stub representing referenced object
-        /// 
-        /// </returns>
-        IPersistent GetRaw(int i);
 
         /// <summary> Replace i-th element of the relation
         /// </summary>
@@ -217,22 +245,5 @@ namespace Perst
         /// </summary>
         void  Clear();
 #endif
-
-        /// <summary>
-        /// Replace all direct references to linked objects with stubs. 
-        /// This method is needed tyo avoid memory exhaustion in case when 
-        /// there is a large numebr of objectys in databasse, mutually
-        /// refefencing each other (each object can directly or indirectly 
-        /// be accessed from other objects).
-        /// </summary>
-        void Unpin();     
-     
-       /// <summary>
-       /// Replace references to elements with direct references.
-       /// It will impove spped of manipulations with links, but it can cause
-       /// recursive loading in memory large number of objects and as a result - memory
-       /// overflow, because garabge collector will not be able to collect them
-       /// </summary>
-       void Pin();     
     }
 }
