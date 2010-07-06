@@ -59,7 +59,7 @@ public interface IPersistent {
 
     /**
      * Get storage in which this object is stored
-     * @object container (null if object is not persistent yet)
+     * @return storage containing this object (null if object is not persistent yet)
      */
     public Storage getStorage();
 }

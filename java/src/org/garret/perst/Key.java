@@ -185,7 +185,7 @@ public class Key {
      * @param inclusive whether boundary is inclusive or exclusive
      */
     public Key(java.util.Date v, boolean inclusive) { 
-        this(ClassDescriptor.tpDate, v.getTime(), 0.0, null, inclusive);
+        this(ClassDescriptor.tpDate, v == null ? -1 : v.getTime(), 0.0, null, inclusive);
     }
 
     /**
@@ -212,7 +212,7 @@ public class Key {
      * @param inclusive whether boundary is inclusive or exclusive
      */
     public Key(IPersistent v, boolean inclusive) { 
-        this(ClassDescriptor.tpObject, v.getOid(), 0.0, null, inclusive);
+        this(ClassDescriptor.tpObject, v == null ? 0 : v.getOid(), 0.0, null, inclusive);
     }
 }
 

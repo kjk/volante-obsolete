@@ -61,6 +61,17 @@ public abstract class Storage {
     abstract public Index createIndex(Class type, boolean unique);
 
     /**
+     * Create new field index
+     * @param type objects of whioch type (or derived from which type) will be included in the index
+     * @param fieldName name of the index field. Field with such name should be present in specified class <code>type</code>
+     * @param unique whether index is unique (duplicate value of keys are not allowed)
+     * @return persistent object implementing index
+     * @exception StorageError(StorageError.INDEXED_FIELD_NOT_FOUND) if there is no such field in specified class,<BR> 
+     * StorageError(StorageError.UNSUPPORTED_INDEX_TYPE) exception if type of specified field is not supported by implementation
+     */
+    abstract public FieldIndex createFieldIndex(Class type, String fieldName, boolean unique);
+
+    /**
      * Create one-to-many link.
      * @return new empty link, new members can be added to the link later.
      */

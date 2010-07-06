@@ -299,7 +299,7 @@ class BtreePage {
 		    if (result != Btree.op_overflow) {
 			return result;                              
 		    }                                             
-		} else if (unique && compareStr(ins.key, pg, r) == 0) {
+		} else if (unique && r < n && compareStr(ins.key, pg, r) == 0) {
                     if (overwrite) { 
                         setKeyStrOid(pg, r, ins.oid);
                         return Btree.op_overwrite;
@@ -323,7 +323,7 @@ class BtreePage {
 			return result;
 		    }
 		    n += 1;
-		} else if (unique && compare(ins.key, pg, r) == 0) { 
+		} else if (unique && r < n && compare(ins.key, pg, r) == 0) { 
                     if (overwrite) { 
                         setReference(pg, r, ins.oid);
                         return Btree.op_overwrite;

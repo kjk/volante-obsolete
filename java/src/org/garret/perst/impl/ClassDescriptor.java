@@ -25,18 +25,20 @@ public final class ClassDescriptor extends Persistent {
     public static final int tpString           = 8;
     public static final int tpDate             = 9;
     public static final int tpObject           = 10;
-    public static final int tpLink             = 11;
-    public static final int tpArrayOfBoolean   = 12;
-    public static final int tpArrayOfByte      = 13;
-    public static final int tpArrayOfChar      = 14;
-    public static final int tpArrayOfShort     = 15;
-    public static final int tpArrayOfInt       = 16;
-    public static final int tpArrayOfLong      = 17;
-    public static final int tpArrayOfFloat     = 18;
-    public static final int tpArrayOfDouble    = 19;
-    public static final int tpArrayOfString    = 20;
-    public static final int tpArrayOfDate      = 21;
-    public static final int tpArrayOfObject    = 22;
+    public static final int tpValue            = 11;
+    public static final int tpLink             = 12;
+    public static final int tpArrayOfBoolean   = 20;
+    public static final int tpArrayOfByte      = 21;
+    public static final int tpArrayOfChar      = 22;
+    public static final int tpArrayOfShort     = 23;
+    public static final int tpArrayOfInt       = 24;
+    public static final int tpArrayOfLong      = 25;
+    public static final int tpArrayOfFloat     = 26;
+    public static final int tpArrayOfDouble    = 27;
+    public static final int tpArrayOfString    = 28;
+    public static final int tpArrayOfDate      = 29;
+    public static final int tpArrayOfObject    = 30;
+    public static final int tpArrayOfValue     = 31;
 
     static final int sizeof[] = {
         1, // tpBoolean
@@ -101,6 +103,8 @@ public final class ClassDescriptor extends Persistent {
             type = tpDate;
         } else if (IPersistent.class.isAssignableFrom(c)) {
             type = tpObject;
+        } else if (IValue.class.isAssignableFrom(c)) {
+            type = tpValue;
         } else if (c.equals(Link.class)) {
             type = tpLink;
         } else if (c.isArray()) { 

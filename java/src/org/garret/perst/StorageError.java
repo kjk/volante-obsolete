@@ -22,6 +22,8 @@ public class StorageError extends Error {
     public static final int DELETED_OBJECT         = 16;
     public static final int ACCESS_VIOLATION       = 17;
     public static final int CLASS_NOT_FOUND        = 18;
+    public static final int NULL_VALUE             = 19;
+    public static final int INDEXED_FIELD_NOT_FOUND= 20;
 
     private static final String[] messageText = {
         "",
@@ -42,7 +44,9 @@ public class StorageError extends Error {
         "Invalid object reference",
         "Access to the deleted object",
         "Object access violation",
-        "Failed to locate"
+        "Failed to locate",
+        "Null value", 
+        "Could not find indexed field"
     };
 
     /**

@@ -1,3 +1,9 @@
---- Release version 1.01 21.22.2003 -------------------------------------
+--- Release version 1.01 21.02.2003 -------------------------------------
 
 Initial release
+
+--- Release version 1.02 25.02.2003 -------------------------------------
+
+1. Support value types
+2. Add FieldIndex interface
+3. Fix bug in unique index support

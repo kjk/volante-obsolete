@@ -1087,6 +1087,13 @@ public class StorageImpl extends Storage {
         return new Btree(keyType, unique);
     }
 
+    public synchronized FieldIndex createFieldIndex(Class type, String fieldName, boolean unique) {
+        if (!opened) { 
+            throw new StorageError(StorageError.STORAGE_NOT_OPENED);
+        }        
+        return new BtreeFieldIndex(type, fieldName, unique);
+    }
+
     public Link createLink() {
         return new LinkImpl();
     }
@@ -1134,11 +1141,7 @@ public class StorageImpl extends Storage {
             newObject = true;
         }        
         byte[] data;
-        try {
-            data = packObject(obj);
-        } catch (Exception x) { 
-            throw new StorageError(StorageError.ACCESS_VIOLATION, x);
-        }        
+        data = packObject(obj);
 	long pos;
         int newSize = ObjectHeader.getSize(data, 0);
         if (newObject) { 
@@ -1177,21 +1180,13 @@ public class StorageImpl extends Storage {
     }
 
     protected synchronized void loadObject(IPersistent obj) {
-        try { 
-            loadStub(obj.getOid(), obj, obj.getClass());
-        } catch (Exception x) { 
-            throw new StorageError(StorageError.ACCESS_VIOLATION, x);
-        }
+        loadStub(obj.getOid(), obj, obj.getClass());
     }
 
     final IPersistent lookupObject(int oid, Class cls) {
         IPersistent obj = objectCache.get(oid);
         if (obj == null || obj.isRaw()) { 
-            try { 
-                obj = loadStub(oid, obj, cls);
-            } catch (Exception x) { 
-                throw new StorageError(StorageError.ACCESS_VIOLATION, x);
-            }
+            obj = loadStub(oid, obj, cls);
         }
         return obj;
     }
@@ -1207,11 +1202,11 @@ public class StorageImpl extends Storage {
         return oid;
     }
         
-    final IPersistent unswizzle(IPersistent obj, int oid, Class cls) { 
+    final IPersistent unswizzle(int oid, Class cls, boolean recursiveLoading) { 
         if (oid == 0) { 
             return null;
         } 
-        if (obj.recursiveLoading()) {
+        if (recursiveLoading) {
             return lookupObject(oid, cls);
         }
         IPersistent stub = objectCache.get(oid);
@@ -1239,7 +1234,7 @@ public class StorageImpl extends Storage {
         return stub;
     }
 
-    final IPersistent loadStub(int oid, IPersistent obj, Class cls) throws Exception
+    final IPersistent loadStub(int oid, IPersistent obj, Class cls)
     {
 	long pos = getPos(oid);
 	if ((pos & (dbFreeHandleFlag|dbPageObjectFlag)) != 0) { 
@@ -1262,10 +1257,19 @@ public class StorageImpl extends Storage {
             desc = getClassDescriptor(cls);
         }
         setObjectOid(obj, oid, false);
+        try { 
+            unpackObject(obj, desc, obj.recursiveLoading(), body, ObjectHeader.sizeof);
+        } catch (Exception x) { 
+            throw new StorageError(StorageError.ACCESS_VIOLATION, x);
+        }
+        return obj;
+    }
 
+    final int unpackObject(Object obj, ClassDescriptor desc, boolean recursiveLoading, byte[] body, int offs) 
+      throws Exception
+    {
         Field[] all = desc.allFields;
         int[] type = desc.fieldTypes;
-        int offs = ObjectHeader.sizeof;
 
         for (int i = 0, n = all.length; i < n; i++) { 
             Field f = all[i];
@@ -1329,8 +1333,16 @@ public class StorageImpl extends Storage {
                 }
                 case ClassDescriptor.tpObject:
                 {
-                    f.set(obj, unswizzle(obj, Bytes.unpack4(body, offs), f.getType()));
+                    f.set(obj, unswizzle(Bytes.unpack4(body, offs), f.getType(), recursiveLoading));
                     offs += 4;
+                    continue;
+                }
+                case ClassDescriptor.tpValue:
+                {
+                    ClassDescriptor valueDesc = getClassDescriptor(f.getType());
+                    Object value = valueDesc.newInstance();
+                    offs = unpackObject(value, valueDesc, recursiveLoading, body, offs);
+                    f.set(obj, value);
                     continue;
                 }
                 case ClassDescriptor.tpArrayOfByte:
@@ -1511,8 +1523,27 @@ public class StorageImpl extends Storage {
                         Class elemType = f.getType().getComponentType();
                         IPersistent[] arr = (IPersistent[])Array.newInstance(elemType, len);
                         for (int j = 0; j < len; j++) { 
-                            arr[j] = unswizzle(obj, Bytes.unpack4(body, offs), elemType);
+                            arr[j] = unswizzle(Bytes.unpack4(body, offs), elemType, recursiveLoading);
                             offs += 4;
+                        }
+                        f.set(obj, arr);
+                    }
+                    continue;
+                }
+                case ClassDescriptor.tpArrayOfValue:
+                {
+                    int len = Bytes.unpack4(body, offs);
+                    offs += 4;
+                    if (len < 0) { 
+                        f.set(obj, null);
+                    } else {
+                        Class elemType = f.getType().getComponentType();
+                        Object[] arr = (Object[])Array.newInstance(elemType, len);
+                        ClassDescriptor valueDesc = getClassDescriptor(elemType);
+                        for (int j = 0; j < len; j++) { 
+                            Object value = valueDesc.newInstance();
+                            offs = unpackObject(value, valueDesc, recursiveLoading, body, offs);
+                            arr[j] = value;
                         }
                         f.set(obj, arr);
                     }
@@ -1544,16 +1575,29 @@ public class StorageImpl extends Storage {
                 }
             }
         }
-        return obj;
+        return offs;
     }
 
-    final byte[] packObject(Object obj) throws Exception { 
-        ClassDescriptor desc = getClassDescriptor(obj.getClass());
-        Field[] flds = desc.allFields;
-        int[] types = desc.fieldTypes;
+
+    final byte[] packObject(Object obj) { 
         ByteBuffer buf = new ByteBuffer();
         int offs = ObjectHeader.sizeof;
         buf.extend(offs);
+        ClassDescriptor desc = getClassDescriptor(obj.getClass());
+        try {
+            offs = packObject(obj, desc, offs, buf);
+        } catch (Exception x) { 
+            throw new StorageError(StorageError.ACCESS_VIOLATION, x);
+        }        
+        ObjectHeader.setSize(buf.arr, 0, offs);
+        ObjectHeader.setType(buf.arr, 0, desc.getOid());
+        return buf.arr;        
+    }
+
+    final int packObject(Object obj, ClassDescriptor desc, int offs, ByteBuffer buf) throws Exception 
+    { 
+        Field[] flds = desc.allFields;
+        int[] types = desc.fieldTypes;
         for (int i = 0, n = flds.length; i < n; i++) {
             Field f = flds[i];
             switch(types[i]) {
@@ -1628,6 +1672,15 @@ public class StorageImpl extends Storage {
                     buf.extend(offs + 4);
                     Bytes.pack4(buf.arr, offs, swizzle((IPersistent)f.get(obj)));
                     offs += 4;
+                    continue;
+                }
+                case ClassDescriptor.tpValue:
+                {
+                    Object value = f.get(obj);
+                    if (value == null) { 
+                        throw new StorageError(StorageError.NULL_VALUE);
+                    }
+                    offs = packObject(value, getClassDescriptor(value.getClass()), offs, buf);
                     continue;
                 }
                 case ClassDescriptor.tpArrayOfByte:
@@ -1850,6 +1903,29 @@ public class StorageImpl extends Storage {
                     }
                     continue;
                 }
+                case ClassDescriptor.tpArrayOfValue:
+                {
+                    Object[] arr = (Object[])f.get(obj);
+                    if (arr == null) { 
+                        buf.extend(offs + 4);
+                        Bytes.pack4(buf.arr, offs, -1);
+                        offs += 4;
+                    } else {
+                        int len = arr.length;                        
+                        buf.extend(offs + 4);
+                        Bytes.pack4(buf.arr, offs, len);
+                        offs += 4;
+                        ClassDescriptor elemDesc = getClassDescriptor(f.getType().getComponentType());
+                        for (int j = 0; j < len; j++) {
+                            Object value = arr[j];
+                            if (value == null) { 
+                                throw new StorageError(StorageError.NULL_VALUE);
+                            }
+                            offs = packObject(value, elemDesc, offs, buf);
+                        }
+                    }
+                    continue;
+                }
                 case ClassDescriptor.tpLink:
                 {
                     Link link = (Link)f.get(obj);
@@ -1871,9 +1947,7 @@ public class StorageImpl extends Storage {
                 }
             }
         }
-        ObjectHeader.setSize(buf.arr, 0, offs);
-        ObjectHeader.setType(buf.arr, 0, desc.getOid());
-        return buf.arr;
+        return offs;
     }
                 
     PagePool  pool;
