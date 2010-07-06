@@ -7,7 +7,7 @@ import org.garret.perst.impl.StorageImpl;
 public class StorageFactory {
     /**
      * Create new instance of the storage
-     * @return new instance of the storage (unopened,you should explicitely invoke open method)
+     * @param new instance of the storage (unopened,you should explicitely invoke open method)
      */
     public Storage createStorage() {
         return new StorageImpl();

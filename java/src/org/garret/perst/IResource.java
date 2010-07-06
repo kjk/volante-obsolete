@@ -93,10 +93,4 @@ public interface IResource {
     * of unlocks is needed to release the lock.
     */
     public void    unlock();
-
-    /**
-     * Reset resource to original state.
-     * Wakrup all threads waiting for this resource.
-     */
-    public void    reset();
 }

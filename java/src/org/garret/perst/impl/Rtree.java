@@ -11,9 +11,12 @@ public class Rtree extends PersistentResource implements SpatialIndex {
     Rtree() {}
 
     public void put(Rectangle r, IPersistent obj) {
+        if (!obj.isPersistent()) { 
+            ((StorageImpl)getStorage()).storeObject(obj);
+        }
         if (root == null) { 
-            root = new RtreePage(obj, r);
-            height = 1;
+	    root = new RtreePage(obj, r);
+	    height = 1;
         } else { 
             RtreePage p = root.insert(r, obj, height); 
             if (p != null) {

@@ -80,7 +80,7 @@ public interface Link {
 
     /**
      * Get relation members as array of obejct
-     * @return array of object with relation members
+     * @param array of object with relation members
      */
     public IPersistent[] toArray();
     
@@ -101,11 +101,6 @@ public interface Link {
      * Remove all members from the relation
      */
     public void clear();
-
-    /**
-     * Get iterator through link members
-     */
-    public java.util.Iterator iterator();
 }
 
 

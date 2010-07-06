@@ -17,8 +17,8 @@ class Page extends LRU implements Comparable {
 
     public int compareTo(Object o) 
     { 
-        long po = ((Page)o).offs;
-        return offs < po ? -1 : offs == po ? 0 : 1;
+	long po = ((Page)o).offs;
+	return offs < po ? -1 : offs == po ? 0 : 1;
     }
 
     Page() 

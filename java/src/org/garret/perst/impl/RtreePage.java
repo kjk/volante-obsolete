@@ -83,6 +83,7 @@ public class RtreePage extends Persistent {
 
     int remove(Rectangle r, IPersistent obj, int level, ArrayList reinsertList) {
         load();
+        modify();
         if (--level != 0) { 
             for (int i = 0; i < n; i++) { 
                 if (r.intersects(b[i])) { 
@@ -91,7 +92,6 @@ public class RtreePage extends Persistent {
                     if (reinsertLevel >= 0) { 
                         if (pg.n >= minFill) { 
                             b[i] = new Branch(pg.cover(), pg);
-                            modify();
                         } else { 
                             // not enough entries in child
                             reinsertList.add(pg);
@@ -145,7 +145,6 @@ public class RtreePage extends Persistent {
     final void removeBranch(int i) {
         n -= 1;
         System.arraycopy(b, i+1, b, i, n-i);
-        modify();
     }
 
     final RtreePage addBranch(Branch br) { 
