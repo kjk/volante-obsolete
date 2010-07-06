@@ -4,6 +4,9 @@ namespace Perst.Impl
     using System.Collections;
     using Perst;
     using System.Diagnostics;
+#if USE_GENERICS
+    using Link = Perst.Link<IPersistent>;
+#endif
 	
     class RtreeR2Page:Persistent 
     {

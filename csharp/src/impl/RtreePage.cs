@@ -4,120 +4,109 @@ namespace Perst.Impl
     using System.Collections;
     using Perst;
     using System.Diagnostics;
+#if USE_GENERICS
+    using Link = Perst.Link<IPersistent>;
+#endif
 	
     class RtreePage:Persistent 
     {
-        internal struct Branch  
-        { 
-            internal Rectangle   r;
-            internal IPersistent p;
+        const int card = (Page.pageSize-ObjectHeader.Sizeof-4*3)/(4*4+4);
+        const int minFill = card/2;
 
-            internal Branch(Rectangle r, IPersistent p) 
-            { 
-                this.r = r;
-                this.p = p;
-            }
-        };
+        internal int         n;
+        internal Rectangle[] b;
+        internal Link branch;
 
-        internal const int card = (Page.pageSize-ObjectHeader.Sizeof-4-4)/(5*4);
-        internal const int minFill = card/2;
-
-        internal int      n;
-        internal Branch[] b;
-
-        internal RtreePage(IPersistent obj, Rectangle r) 
+        internal RtreePage(Storage storage, IPersistent obj, Rectangle r) 
         {
-            b = new Branch[card];
+            branch = storage.CreateLink(card);
+            branch.Length = card;
+            b = new Rectangle[card]; 
+            setBranch(0, new Rectangle(r), obj);
             n = 1;
-            b[0] = new Branch(r, obj);
             for (int i = 1; i < card; i++) 
             { 
-                b[i] = new Branch();
+                b[i] = new Rectangle();
             }        
         }
     
-        internal RtreePage(RtreePage root, RtreePage p) 
+        internal RtreePage(Storage storage, RtreePage root, RtreePage p) 
         { 
-            b = new Branch[card];
+            branch = storage.CreateLink(card);
+            branch.Length = card;
+            b = new Rectangle[card]; 
             n = 2;
-            b[0] = new Branch(root.cover(), root);
-            b[1] = new Branch(p.cover(), p);
+            setBranch(0, root.cover(), root);
+            setBranch(1, p.cover(), p);
             for (int i = 2; i < card; i++) 
             { 
-                b[i] = new Branch();
+                b[i] = new Rectangle();
             }        
         }
 
-        RtreePage() {}
+        internal RtreePage() {}
 
-        public override bool RecursiveLoading() 
+        internal RtreePage insert(Storage storage, Rectangle r, IPersistent obj, int level) 
         {
-            return false;
-        }
-
-        internal RtreePage insert(Rectangle r, IPersistent obj, int level) 
-        {
-            Load();
             Modify();
             if (--level != 0) 
             { 
                 // not leaf page
                 int i, mini = 0;
-                long minIncr = Int64.MaxValue;
-                long minArea = Int64.MaxValue;
+                long minIncr = long.MaxValue;
+                long minArea = long.MaxValue;
                 for (i = 0; i < n; i++) 
                 { 
-                    long area = b[i].r.Area();
-                    long incr = Rectangle.JoinArea(b[i].r, r) - area;
+                    long area = b[i].Area();
+                    long incr = Rectangle.JoinArea(b[i], r) - area;
                     if (incr < minIncr) 
                     { 
                         minIncr = incr;
                         minArea = area;
                         mini = i;
-                    }
-                    else if (incr == minIncr && area < minArea)
-                    {
+                    } 
+                    else if (incr == minIncr && area < minArea) 
+                    { 
                         minArea = area;
-                        mini = i;        
-                    }
+                        mini = i;
+                    }                    
                 }
-                RtreePage p = (RtreePage)b[mini].p;
-                RtreePage q = p.insert(r, obj, level);
+                RtreePage p = (RtreePage)branch[mini];
+                RtreePage q = p.insert(storage, r, obj, level);
                 if (q == null) 
                 { 
                     // child was not split
-                    b[mini].r.Join(r);
+                    b[mini].Join(r);
                     return null;
                 } 
                 else 
                 { 
                     // child was split
-                    b[mini] = new Branch(p.cover(), p);
-                    return addBranch(new Branch(q.cover(), q));
+                    setBranch(mini, p.cover(),  p);
+                    return addBranch(storage, q.cover(), q);
                 }
             } 
             else 
             { 
-                return addBranch(new Branch(r, obj));
+                return addBranch(storage, new Rectangle(r), obj);
             }
         }
 
         internal int remove(Rectangle r, IPersistent obj, int level, ArrayList reinsertList) 
         {
-            Load();
             if (--level != 0) 
             { 
                 for (int i = 0; i < n; i++) 
                 { 
-                    if (r.Intersects(b[i].r)) 
+                    if (r.Intersects(b[i])) 
                     { 
-                        RtreePage pg = (RtreePage)b[i].p;
+                        RtreePage pg = (RtreePage)branch[i];
                         int reinsertLevel = pg.remove(r, obj, level, reinsertList);
                         if (reinsertLevel >= 0) 
                         { 
                             if (pg.n >= minFill) 
                             { 
-                                b[i] = new Branch(pg.cover(), pg);
+                                setBranch(i, pg.cover(), pg);
                                 Modify();
                             } 
                             else 
@@ -136,7 +125,7 @@ namespace Perst.Impl
             {
                 for (int i = 0; i < n; i++) 
                 { 
-                    if (b[i].p == obj) 
+                    if (branch.ContainsElement(i, obj))
                     { 
                         removeBranch(i);
                         return 0;
@@ -146,16 +135,15 @@ namespace Perst.Impl
             return -1;        
         }
 
-       internal void find(Rectangle r, ArrayList result, int level) 
+        internal void find(Rectangle r, ArrayList result, int level) 
         {
-            Load();
             if (--level != 0) 
             { /* this is an internal node in the tree */
                 for (int i = 0; i < n; i++) 
                 { 
-                    if (r.Intersects(b[i].r)) 
+                    if (r.Intersects(b[i])) 
                     {
-                        ((RtreePage)b[i].p).find(r, result, level); 
+                        ((RtreePage)branch[i]).find(r, result, level); 
                     }
                 }
             } 
@@ -163,11 +151,9 @@ namespace Perst.Impl
             { /* this is a leaf node */
                 for (int i = 0; i < n; i++) 
                 { 
-                    if (r.Intersects(b[i].r)) 
+                    if (r.Intersects(b[i])) 
                     { 
-                        IPersistent obj = b[i].p;
-                        obj.Load();
-                        result.Add(obj);
+                        result.Add(branch[i]);
                     }
                 }
             }
@@ -175,59 +161,65 @@ namespace Perst.Impl
 
         internal void purge(int level) 
         {
-            Load();
             if (--level != 0) 
             { /* this is an internal node in the tree */
                 for (int i = 0; i < n; i++) 
                 { 
-                    ((RtreePage)b[i].p).purge(level);
+                    ((RtreePage)branch[i]).purge(level);
                 }
             }
             Deallocate();
         }
     
-        internal void removeBranch(int i) 
+        void setBranch(int i, Rectangle r, IPersistent obj) 
+        { 
+            b[i] = r;
+            branch[i] = obj;
+        }
+
+        void removeBranch(int i) 
         {
             n -= 1;
             Array.Copy(b, i+1, b, i, n-i);
-            b[n].p = null;
+            branch.Remove(i);
+            branch.Length = card;
             Modify();
         }
 
-        internal RtreePage addBranch(Branch br) 
+        RtreePage addBranch(Storage storage, Rectangle r, IPersistent obj) 
         { 
             if (n < card) 
             { 
-                b[n++] = br;
+                setBranch(n++, r, obj);
                 return null;
             } 
             else 
             { 
-                return splitPage(br);
+                return splitPage(storage, r, obj);
             }
         }
 
-        internal RtreePage splitPage(Branch br) 
+        RtreePage splitPage(Storage storage, Rectangle r, IPersistent obj) 
         { 
             int i, j, seed0 = 0, seed1 = 0;
             long[] rectArea = new long[card+1];
             long   waste;
-            long   worstWaste = Int64.MinValue;
+            long   worstWaste = long.MinValue;
             //
             // As the seeds for the two groups, find two rectangles which waste 
             // the most area if covered by a single rectangle.
             //
-            rectArea[0] = br.r.Area();
+            rectArea[0] = r.Area();
             for (i = 0; i < card; i++) 
             { 
-                rectArea[i+1] = b[i].r.Area();
+                rectArea[i+1] = b[i].Area();
             }
-            Branch bp = br;
+            Rectangle bp = r;
             for (i = 0; i < card; i++) 
             { 
                 for (j = i+1; j <= card; j++) 
                 { 
-                    waste = Rectangle.JoinArea(bp.r, b[j-1].r) - rectArea[i] - rectArea[j];
+                    waste = Rectangle.JoinArea(bp, b[j-1]) - rectArea[i] - rectArea[j];
                     if (waste > worstWaste) 
                     {
                         worstWaste = waste;
@@ -240,22 +232,22 @@ namespace Perst.Impl
             byte[] taken = new byte[card];
             Rectangle group0, group1;
             long      groupArea0, groupArea1;
-            int       groupCard0, groupCard1;
+            int         groupCard0, groupCard1;
             RtreePage pg;
 
             taken[seed1-1] = 2;
-            group1 = b[seed1-1].r;
+            group1 = new Rectangle(b[seed1-1]);
 
             if (seed0 == 0) 
             { 
-                group0 = br.r;
-                pg = new RtreePage(br.p, br.r);
+                group0 = new Rectangle(r);
+                pg = new RtreePage(storage, obj, r);
             } 
             else 
             { 
-                group0 = b[seed0-1].r;
-                pg = new RtreePage(b[seed0-1].p, group0);
-                b[seed0-1] = br;
+                group0 = new Rectangle(b[seed0-1]);
+                pg = new RtreePage(storage, branch.GetRaw(seed0-1), group0);
+                setBranch(seed0-1, r, obj);
             }
             groupCard0 = groupCard1 = 1;
             groupArea0 = rectArea[seed0];
@@ -276,8 +268,8 @@ namespace Perst.Impl
                 { 
                     if (taken[i] == 0) 
                     { 
-                        long diff = (Rectangle.JoinArea(group0, b[i].r) - groupArea0)
-                            - (Rectangle.JoinArea(group1, b[i].r) - groupArea1);
+                        long diff = (Rectangle.JoinArea(group0, b[i]) - groupArea0)
+                            - (Rectangle.JoinArea(group1, b[i]) - groupArea1);
                         if (diff > biggestDiff || -diff > biggestDiff) 
                         { 
                             chosen = i;
@@ -297,15 +289,15 @@ namespace Perst.Impl
                 Debug.Assert(chosen >= 0);
                 if (betterGroup == 0) 
                 { 
-                    group0.Join(b[chosen].r);
+                    group0.Join(b[chosen]);
                     groupArea0 = group0.Area();
                     taken[chosen] = 1;
-                    pg.b[groupCard0++] = b[chosen];
+                    pg.setBranch(groupCard0++, b[chosen], branch.GetRaw(chosen));
                 } 
                 else 
                 {
                     groupCard1 += 1;
-                    group1.Join(b[chosen].r);
+                    group1.Join(b[chosen]);
                     groupArea1 = group1.Area();
                     taken[chosen] = 2;
                 }
@@ -328,33 +320,29 @@ namespace Perst.Impl
                         else 
                         { 
                             taken[i] = 1;
-                            pg.b[groupCard0++] = b[i];               
+                            pg.setBranch(groupCard0++, b[i], branch.GetRaw(i));               
                         }
                     }
                 }
             }
+            pg.n = groupCard0;
+            n = groupCard1;
             for (i = 0, j = 0; i < groupCard1; j++) 
             { 
                 if (taken[j] == 2) 
                 {
-                    b[i++] = b[j];
+                    setBranch(i++, b[j], branch.GetRaw(j));
                 }
             }
-            for (j = n; i < j; i++) 
-            { 
-                b[i].p = null;
-            }       
-            pg.n = groupCard0;
-            n = groupCard1;
             return pg;
         }   
 
         internal Rectangle cover() 
         {
-            Rectangle r = b[0].r;
+            Rectangle r = new Rectangle(b[0]);
             for (int i = 1; i < n; i++) 
             { 
-                r.Join(b[i].r);
+                r.Join(b[i]);
             }
             return r;
         }

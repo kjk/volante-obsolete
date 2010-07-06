@@ -1,11 +1,19 @@
 namespace Perst.Impl
 {
     using System;
+#if USE_GENERICS
+    using System.Collections.Generic;
+#else
     using System.Collections;
+#endif
     using System.Diagnostics;
     using Perst;
 
+#if USE_GENERICS
+    class BitIndexImpl<T> : Btree<IPersistent,T>, BitIndex<T> where T:class,IPersistent
+#else
     class BitIndexImpl : Btree, BitIndex 
+#endif
     { 
     
         class Key 
@@ -25,7 +33,11 @@ namespace Perst.Impl
         {
         }
 
+#if USE_GENERICS
+        public int this[T obj] 
+#else
         public int this[IPersistent obj] 
+#endif
         {
             get 
             {
@@ -37,18 +49,30 @@ namespace Perst.Impl
             }
         } 
          
+#if USE_GENERICS
+        public int Get(T obj) 
+#else
         public int Get(IPersistent obj) 
+#endif
         {
             StorageImpl db = (StorageImpl)Storage;
             if (root == 0) 
             { 
                 throw new StorageError(StorageError.ErrorCode.KEY_NOT_FOUND);
             } 
+#if USE_GENERICS
             return BitIndexPage.find(db, root, obj.Oid, height);
+#else
+            return BitIndexPage.find(db, root, obj.Oid, height);
+#endif
         }
  
 
+#if USE_GENERICS
+        public void Put(T obj, int mask) 
+#else
         public void Put(IPersistent obj, int mask) 
+#endif
         {
             StorageImpl db = (StorageImpl)Storage;
             if (db == null) 
@@ -67,8 +91,8 @@ namespace Perst.Impl
             } 
             else 
             { 
-                int result = BitIndexPage.insert(db, root, ins, height);
-                if (result == op_overflow) 
+                BtreeResult result = BitIndexPage.insert(db, root, ins, height);
+                if (result == BtreeResult.Overflow) 
                 { 
                     root = BitIndexPage.allocate(db, root, ins);
                     height += 1;
@@ -79,7 +103,11 @@ namespace Perst.Impl
             Modify();
         }
 
-        public void Remove(IPersistent obj) 
+#if USE_GENERICS
+        public override bool Remove(T obj) 
+#else
+        public bool Remove(IPersistent obj) 
+#endif
         {
             StorageImpl db = (StorageImpl)Storage;
             if (db == null) 
@@ -88,15 +116,15 @@ namespace Perst.Impl
             }
             if (root == 0) 
             {
-                throw new StorageError(StorageError.ErrorCode.KEY_NOT_FOUND);
+                return false;
             }
-            int result = BitIndexPage.remove(db, root, obj.Oid, height);
-            if (result == op_not_found) 
+            BtreeResult result = BitIndexPage.remove(db, root, obj.Oid, height);
+            if (result == BtreeResult.NotFound) 
             { 
-                throw new StorageError(StorageError.ErrorCode.KEY_NOT_FOUND);
+                return false;
             }
             nElems -= 1;
-            if (result == op_underflow) 
+            if (result == BtreeResult.Underflow) 
             { 
                 Page pg = db.getPage(root);
                 if (BitIndexPage.getnItems(pg) == 0) 
@@ -114,28 +142,46 @@ namespace Perst.Impl
             }
             updateCounter += 1;
             Modify();
+            return true;
         }
     
 
+#if USE_GENERICS
+        public override IEnumerator<T> GetEnumerator() 
+#else
         public override IEnumerator GetEnumerator() 
+#endif
         {
             return GetEnumerator(0, 0);
         }
 
+#if USE_GENERICS
+        public IEnumerator<T> GetEnumerator(int setBits, int clearBits) 
+#else
         public IEnumerator GetEnumerator(int setBits, int clearBits) 
+#endif
         {
             return new BitIndexIterator(this, setBits, clearBits);
         }
 
+#if USE_GENERICS
+        public IEnumerable<T> Select(int setBits, int clearBits) 
+#else
         public IEnumerable Select(int setBits, int clearBits) 
+#endif
         {
             return new BitIndexIterator(this, setBits, clearBits);
         }
     
-    
+#if USE_GENERICS    
+        class BitIndexIterator : IEnumerator<T>, IEnumerable<T>
+        { 
+            internal BitIndexIterator(BitIndexImpl<T> index, int setBits, int clearBits) 
+#else
         class BitIndexIterator : IEnumerator, IEnumerable 
         { 
             internal BitIndexIterator(BitIndexImpl index, int setBits, int clearBits) 
+#endif
             { 
                 sp = 0;
                 counter = index.updateCounter;
@@ -175,13 +221,20 @@ namespace Perst.Impl
                 }
             }
         
+#if USE_GENERICS    
+            public IEnumerator<T> GetEnumerator() 
+#else
             public IEnumerator GetEnumerator() 
+#endif
             {
                 return this;
             }
 
-
+#if USE_GENERICS    
+            public virtual T Current
+#else
             public virtual object Current
+#endif
             {
                 get 
                 {
@@ -193,10 +246,16 @@ namespace Perst.Impl
                     Page pg = db.getPage(pageStack[sp-1]);
                     IPersistent curr = db.lookupObject(BitIndexPage.getItem(pg, BitIndexPage.maxItems-pos), null);
                     db.pool.unfix(pg);
+#if USE_GENERICS    
+                    return (T)curr;
+#else
                     return curr;
+#endif
                 }
             }
 
+
+            public void Dispose() {}
 
             public bool MoveNext() 
             {
@@ -252,14 +311,18 @@ namespace Perst.Impl
             }
 
  
-            StorageImpl  db;
-            BitIndexImpl index;
-            int[]        pageStack;
-            int[]        posStack;
-            int          sp;
-            int          setBits;
-            int          clearBits;
-            int          counter;
+#if USE_GENERICS    
+            BitIndexImpl<T> index;
+#else
+            BitIndexImpl    index;
+#endif
+            StorageImpl     db;
+            int[]           pageStack;
+            int[]           posStack;
+            int             sp;
+            int             setBits;
+            int             clearBits;
+            int             counter;
         }
 
      
@@ -348,7 +411,7 @@ namespace Perst.Impl
                 }
             }
 
-            internal static int insert(StorageImpl db, int pageId, Key ins, int height)
+            internal static BtreeResult insert(StorageImpl db, int pageId, Key ins, int height)
             {
                 Page pg = db.getPage(pageId);
                 int l = 0, n = getnItems(pg), r = n;
@@ -371,9 +434,9 @@ namespace Perst.Impl
                         }
                         Debug.Assert(l == r);
                         /* insert before e[r] */
-                        int result = insert(db, getItem(pg, maxItems-r-1), ins, height);
-                        Debug.Assert(result != op_not_found);
-                        if (result != op_overflow) 
+                        BtreeResult result = insert(db, getItem(pg, maxItems-r-1), ins, height);
+                        Debug.Assert(result != BtreeResult.NotFound);
+                        if (result != BtreeResult.Overflow) 
                         {
                             return result;
                         }
@@ -399,7 +462,7 @@ namespace Perst.Impl
                             pg = null;
                             pg = db.putPage(pageId);
                             setItem(pg, r, ins.key);
-                            return op_overwrite;
+                            return BtreeResult.Overwrite;
                         }
                     }
                     db.pool.unfix(pg);
@@ -412,7 +475,7 @@ namespace Perst.Impl
                         setItem(pg, r, ins.key);
                         setItem(pg, maxItems-1-r, ins.oid);
                         setnItems(pg, getnItems(pg)+1);
-                        return op_done;
+                        return BtreeResult.Done;
                     } 
                     else 
                     { /* page is full then divide page */
@@ -456,7 +519,7 @@ namespace Perst.Impl
                             setnItems(b, m - 1);
                         }                            
                         db.pool.unfix(b);
-                        return op_overflow;
+                        return BtreeResult.Overflow;
                     }
                 } 
                 finally 
@@ -469,7 +532,7 @@ namespace Perst.Impl
             }
 
     
-            internal static int handlePageUnderflow(StorageImpl db, Page pg, int r, int height)
+            internal static BtreeResult handlePageUnderflow(StorageImpl db, Page pg, int r, int height)
             {
                 int nItems = getnItems(pg);
                 Page a = db.putPage(getItem(pg, maxItems-r-1));
@@ -507,7 +570,7 @@ namespace Perst.Impl
                         setnItems(a, getnItems(a) + i);
                         db.pool.unfix(a);
                         db.pool.unfix(b);
-                        return op_done;
+                        return BtreeResult.Done;
                     } 
                     else 
                     { // merge page b to a  
@@ -521,7 +584,7 @@ namespace Perst.Impl
                         setnItems(pg, nItems - 1);
                         db.pool.unfix(a);
                         db.pool.unfix(b);
-                        return nItems < max/2 ? op_underflow : op_done;
+                        return nItems < max/2 ? BtreeResult.Underflow : BtreeResult.Done;
                     }
                 } 
                 else 
@@ -557,7 +620,7 @@ namespace Perst.Impl
                         setnItems(a, getnItems(a) + i);
                         db.pool.unfix(a);
                         db.pool.unfix(b);
-                        return op_done;
+                        return BtreeResult.Done;
                     } 
                     else 
                     { // merge page b to a
@@ -575,12 +638,12 @@ namespace Perst.Impl
                         setnItems(pg, nItems - 1);
                         db.pool.unfix(a);
                         db.pool.unfix(b);
-                        return nItems < max/2 ? op_underflow : op_done;
+                        return nItems < max/2 ? BtreeResult.Underflow : BtreeResult.Done;
                     }
                 }
             }
    
-            internal static int remove(StorageImpl db, int pageId, int oid, int height)
+            internal static BtreeResult remove(StorageImpl db, int pageId, int oid, int height)
             {
                 Page pg = db.getPage(pageId);
                 try 
@@ -608,9 +671,9 @@ namespace Perst.Impl
                             memcpy(pg, r, pg, r+1, n - r - 1);
                             memcpy(pg, maxItems-n+1, pg, maxItems-n, n - r - 1);
                             setnItems(pg, --n);
-                            return n < max/2 ? op_underflow : op_done;
+                            return n < max/2 ? BtreeResult.Underflow : BtreeResult.Done;
                         }
-                        return op_not_found;
+                        return BtreeResult.NotFound;
                     } 
                     else 
                     { 
@@ -626,8 +689,8 @@ namespace Perst.Impl
                                 r = i;
                             }
                         }
-                        int result = remove(db, getItem(pg, maxItems-r-1), oid, height);
-                        if (result == op_underflow) 
+                        BtreeResult result = remove(db, getItem(pg, maxItems-r-1), oid, height);
+                        if (result == BtreeResult.Underflow) 
                         { 
                             db.pool.unfix(pg);
                             pg = null;

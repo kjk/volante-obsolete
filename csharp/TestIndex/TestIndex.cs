@@ -12,8 +12,13 @@ public class Record:Persistent
 
 public class Root:Persistent
 {
+#if USE_GENERICS
+    public Index<string,Record> strIndex;
+    public Index<long,Record>   intIndex;
+#else
     public Index strIndex;
     public Index intIndex;
+#endif
 }
 
 public class TestIndex
@@ -58,12 +63,22 @@ public class TestIndex
         if (root == null)
         {
             root = new Root();
+#if USE_GENERICS
+            root.strIndex = db.CreateIndex<string,Record>(true);
+            root.intIndex = db.CreateIndex<long,Record>(true);
+#else
             root.strIndex = db.CreateIndex(typeof(String), true);
             root.intIndex = db.CreateIndex(typeof(long), true);
+#endif
             db.Root = root;
         }
+#if USE_GENERICS
+        Index<string,Record> strIndex = root.strIndex;
+        Index<long,Record> intIndex = root.intIndex;
+#else
         Index intIndex = root.intIndex;
         Index strIndex = root.strIndex;
+#endif
         DateTime start = DateTime.Now;
         long key = 1999;
         for (i = 0; i < nRecords; i++)
@@ -72,8 +87,8 @@ public class TestIndex
             key = (3141592621L * key + 2718281829L) % 1000000007L;
             rec.intKey = key;
             rec.strKey = System.Convert.ToString(key);
-            intIndex.Put(new Key(rec.intKey), rec);
-            strIndex.Put(new Key(rec.strKey), rec);
+            intIndex[rec.intKey] = rec;
+            strIndex[rec.strKey] = rec;
             if (i % 100000 == 0) 
             { 
                 db.Commit();
@@ -97,8 +112,13 @@ public class TestIndex
         for (i = 0; i < nRecords; i++)
         {
             key = (3141592621L * key + 2718281829L) % 1000000007L;
-            Record rec1 = (Record) intIndex.Get(new Key(key));
-            Record rec2 = (Record) strIndex.Get(new Key(Convert.ToString(key)));
+#if USE_GENERICS
+            Record rec1 = intIndex[key];
+            Record rec2 = strIndex[Convert.ToString(key)];
+#else
+            Record rec1 = (Record) intIndex[key];
+            Record rec2 = (Record) strIndex[Convert.ToString(key)];
+#endif
             Debug.Assert(rec1 != null && rec1 == rec2);
         }     
         System.Console.WriteLine("Elapsed time for performing " + nRecords * 2 + " index searches: " + (DateTime.Now - start));
@@ -140,8 +160,13 @@ public class TestIndex
         for (i = 0; i < nRecords; i++)
         {
             key = (3141592621L * key + 2718281829L) % 1000000007L;
-            Record rec = (Record) intIndex.Get(new Key(key));
-            Record removed = (Record)intIndex.Remove(new Key(key));
+ #if USE_GENERICS
+            Record rec = intIndex.Get(key);
+            Record removed = intIndex.RemoveKey(key);
+#else
+            Record rec = (Record) intIndex[key];
+            Record removed = (Record)intIndex.Remove(key);
+#endif
             Debug.Assert(removed == rec);
             strIndex.Remove(new Key(System.Convert.ToString(key)), rec);
             rec.Deallocate();

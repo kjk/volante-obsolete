@@ -37,7 +37,7 @@ namespace Perst
             ulong mask = 0;
             for (int i = 0; i < bytes.Length; i++) 
             { 
-                mask = (mask << 8) | (ulong)(bytes[i] & 0xFF);
+                mask = (mask << 8) | (uint)(bytes[i] & 0xFF);
             }
             return new PatriciaTrieKey(mask, bytes.Length*8);
 #endif

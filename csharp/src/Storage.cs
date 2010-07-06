@@ -117,6 +117,19 @@ namespace Perst
         /// <param name="stream">output stream to which backup is done</param>
         abstract public void Backup( System.IO.Stream stream);
 
+#if USE_GENERICS
+        /// <summary> Create new index. K parameter specifies key type, V - associated object type.
+        /// </summary>
+        /// </param>
+        /// <param name="unique">whether index is unique (duplicate value of keys are not allowed)
+        /// </param>
+        /// <returns>persistent object implementing index
+        /// </returns>
+        /// <exception cref="Perst.StorageError">StorageError(StorageError.ErrorCode.UNSUPPORTED_INDEX_TYPE) exception if 
+        /// specified key type is not supported by implementation.
+        /// </exception>
+        abstract public Index<K,V> CreateIndex<K,V>(bool unique) where V:class,IPersistent;
+#else
         /// <summary> Create new index
         /// </summary>
         /// <param name="type">type of the index key (you should path here <code>String.class</code>, 
@@ -131,7 +144,21 @@ namespace Perst
         /// 
         /// </exception>
         abstract public Index CreateIndex(Type type, bool unique);
+#endif
 		
+#if USE_GENERICS
+        /// <summary> Create new thick index (index with large number of duplicated keys).
+        /// K parameter specifies key type, V - associated object type.
+        /// </summary>
+        /// </param>
+        /// <returns>persistent object implementing thick index
+        /// </returns>
+        /// <exception cref="Perst.StorageError">StorageError(StorageError.ErrorCode.UNSUPPORTED_INDEX_TYPE) exception if 
+        /// specified key type is not supported by implementation.
+        /// 
+        /// </exception>
+        abstract public Index<K,V> CreateThickIndex<K,V>() where V:class,IPersistent;
+#else
         /// <summary> Create new thick index (index with large number of duplicated keys)
         /// </summary>
         /// <param name="type">type of the index key (you should path here <code>String.class</code>, 
@@ -144,7 +171,24 @@ namespace Perst
         /// 
         /// </exception>
         abstract public Index CreateThickIndex(Type type);
-		
+#endif
+	
+#if USE_GENERICS
+        /// <summary> 
+        /// Create new field index
+        /// K parameter specifies key type, V - associated object type.
+        /// </summary>
+        /// <param name="fieldName">name of the index field. Field with such name should be present in specified class <code>type</code>
+        /// </param>
+        /// <param name="unique">whether index is unique (duplicate value of keys are not allowed)
+        /// </param>
+        /// <returns>persistent object implementing field index
+        /// </returns>
+        /// <exception cref="Perst.StorageError">StorageError(StorageError.INDEXED_FIELD_NOT_FOUND) if there is no such field in specified class,
+        /// StorageError(StorageError.UNSUPPORTED_INDEX_TYPE) exception if type of specified field is not supported by implementation
+        /// </exception>
+        abstract public FieldIndex<K,V> CreateFieldIndex<K,V>(string fieldName, bool unique) where V:class,IPersistent;
+#else
         /// <summary> 
         /// Create new field index
         /// </summary>
@@ -160,7 +204,23 @@ namespace Perst
         /// StorageError(StorageError.UNSUPPORTED_INDEX_TYPE) exception if type of specified field is not supported by implementation
         /// </exception>
         abstract public FieldIndex CreateFieldIndex(Type type, string fieldName, bool unique);
+#endif
 		
+#if USE_GENERICS
+        /// <summary> 
+        /// Create new multi-field index
+        /// </summary>
+        /// <param name="fieldNames">array of names of the fields. Field with such name should be present in specified class <code>type</code>
+        /// </param>
+        /// <param name="unique">whether index is unique (duplicate value of keys are not allowed)
+        /// </param>
+        /// <returns>persistent object implementing field index
+        /// </returns>
+        /// <exception cref="Perst.StorageError">StorageError(StorageError.INDEXED_FIELD_NOT_FOUND) if there is no such field in specified class,
+        /// StorageError(StorageError.UNSUPPORTED_INDEX_TYPE) exception if type of specified field is not supported by implementation
+        /// </exception>
+        abstract public MultiFieldIndex<V> CreateFieldIndex<V>(string[] fieldNames, bool unique) where V:class,IPersistent;
+#else
         /// <summary> 
         /// Create new multi-field index
         /// </summary>
@@ -175,14 +235,19 @@ namespace Perst
         /// <exception cref="Perst.StorageError">StorageError(StorageError.INDEXED_FIELD_NOT_FOUND) if there is no such field in specified class,
         /// StorageError(StorageError.UNSUPPORTED_INDEX_TYPE) exception if type of specified field is not supported by implementation
         /// </exception>
-        abstract public FieldIndex CreateFieldIndex(Type type, string[] fieldNames, bool unique);
-		
+        abstract public MultiFieldIndex CreateFieldIndex(Type type, string[] fieldNames, bool unique);
+#endif
+	
         /// <summary>
         /// Create new bit index. Bit index is used to select object 
         /// with specified set of (boolean) properties.
         /// </summary>
         /// <returns>persistent object implementing bit index</returns>
+#if USE_GENERICS
+        abstract public BitIndex<T> CreateBitIndex<T>() where T:class,IPersistent;
+#else
         abstract public BitIndex CreateBitIndex();
+#endif
 
         /// <summary>
         /// Create new spatial index with integer coordinates
@@ -190,7 +255,11 @@ namespace Perst
         /// <returns>
         /// persistent object implementing spatial index
         /// </returns>
+#if USE_GENERICS
+        abstract public SpatialIndex<T> CreateSpatialIndex<T>() where T:class,IPersistent;
+#else
         abstract public SpatialIndex CreateSpatialIndex();
+#endif
 
         /// <summary>
         /// Create new R2 spatial index
@@ -198,7 +267,11 @@ namespace Perst
         /// <returns>
         /// persistent object implementing spatial index
         /// </returns>
+#if USE_GENERICS
+        abstract public SpatialIndexR2<T> CreateSpatialIndexR2<T>() where T:class,IPersistent;
+#else
         abstract public SpatialIndexR2 CreateSpatialIndexR2();
+#endif
 
         /// <summary>
         /// Create new sorted collection with specified comparator
@@ -206,7 +279,11 @@ namespace Perst
         /// <param name="comparator">comparator class specifying order in the collection</param>
         /// <param name="unique"> whether collection is unique (members with the same key value are not allowed)</param>
         /// <returns> persistent object implementing sorted collection</returns>
+#if USE_GENERICS
+        abstract public SortedCollection<K,V> CreateSortedCollection<K,V>(PersistentComparator<K,V> comparator, bool unique) where V:class,IPersistent;
+#else
         abstract public SortedCollection CreateSortedCollection(PersistentComparator comparator, bool unique);
+#endif
 
         /// <summary>
         /// Create new sorted collection. Members of this collections should implement 
@@ -215,7 +292,11 @@ namespace Perst
         /// </summary>
         /// <param name="unique"> whether collection is unique (members with the same key value are not allowed)</param>
         /// <returns> persistent object implementing sorted collection</returns>
+#if USE_GENERICS
+        abstract public SortedCollection<K,V> CreateSortedCollection<K,V>(bool unique) where V:class,IPersistent,IComparable<K>,IComparable<V>;
+#else
         abstract public SortedCollection CreateSortedCollection(bool unique);
+#endif
 
         /// <summary>
         /// Create new object set
@@ -223,14 +304,22 @@ namespace Perst
         /// <returns>
         /// empty set of persistent objects
         /// </returns>
+#if USE_GENERICS
+        abstract public ISet<T> CreateSet<T>() where T:class,IPersistent;
+#else
         abstract public ISet CreateSet();
+#endif
 
         /// <summary> Create one-to-many link.
         /// </summary>
         /// <returns>new empty link, new members can be added to the link later.
         /// 
         /// </returns>
+#if USE_GENERICS
+        abstract public Link<T> CreateLink<T>() where T:class,IPersistent;
+#else
         abstract public Link CreateLink();
+#endif
 		
         /// <summary> Create one-to-many link with specified initial size.
         /// </summary>
@@ -238,7 +327,11 @@ namespace Perst
         /// <returns>new link with specified size
         /// 
         /// </returns>
+#if USE_GENERICS
+        abstract public Link<T> CreateLink<T>(int initialSize) where T:class,IPersistent;
+#else
         abstract public Link CreateLink(int initialSize);
+#endif
 		
         /// <summary>  Create new scalable set references to persistent objects.
         /// This container can effciently store small number of references as well 
@@ -248,7 +341,11 @@ namespace Perst
         /// </summary>
         /// <returns>new empty set, new members can be added to the set later.
         /// </returns>
+#if USE_GENERICS
+        abstract public ISet<T> CreateScalableSet<T>() where T:class,IPersistent;
+#else
         abstract public ISet CreateScalableSet();
+#endif
 		
         /// <summary>  Create new scalable set references to persistent objects.
         /// This container can effciently store small number of references as well 
@@ -259,7 +356,11 @@ namespace Perst
         /// <param name="intialSize">initial size of the sety</param>
         /// <returns>new empty set, new members can be added to the set later.
         /// </returns>
+#if USE_GENERICS
+        abstract public ISet<T> CreateScalableSet<T>(int initialSize) where T:class,IPersistent;
+#else
         abstract public ISet CreateScalableSet(int initialSize);
+#endif
 		
         /// <summary> Create dynamcially extended array of reference to persistent objects.
         /// It is inteded to be used in classes using virtual properties to 
@@ -267,7 +368,11 @@ namespace Perst
         /// </summary>
         /// <returns>new empty array, new members can be added to the array later.
         /// </returns>
+#if USE_GENERICS
+        abstract public PArray<T> CreateArray<T>() where T:class,IPersistent;
+#else
         abstract public PArray CreateArray();
+#endif
 		
         /// <summary> Create dynamcially extended array of reference to persistent objects.
         /// It is inteded to be used in classes using virtual properties to 
@@ -276,7 +381,11 @@ namespace Perst
         /// <param name="intialSize">initially allocated size of the array</param>
         /// <returns>new empty array, new members can be added to the array later.
         /// </returns>
+#if USE_GENERICS
+        abstract public PArray<T> CreateArray<T>(int initialSize) where T:class,IPersistent;
+#else
         abstract public PArray CreateArray(int initialSize);
+#endif
 		
         /// <summary> Create relation object. Unlike link which represent embedded relation and stored
         /// inside owner object, this Relation object is standalone persisitent object
@@ -288,7 +397,11 @@ namespace Perst
         /// new members can be added to the link later.
         /// 
         /// </returns>
+#if USE_GENERICS
+        abstract public Relation<M,O> CreateRelation<M,O>(O owner) where M:class,IPersistent where O:class,IPersistent;
+#else
         abstract public Relation CreateRelation(IPersistent owner);
+#endif
 
 
         /// <summary>
@@ -297,6 +410,28 @@ namespace Perst
         /// <returns>empty BLOB</returns>
         abstract public Blob CreateBlob();
 
+#if USE_GENERICS
+        /// <summary>
+        /// Create new time series object. 
+        /// </summary>
+        /// <param name="blockSize">number of elements in the block</param>
+        /// <param name="maxBlockTimeInterval">maximal difference in system ticks (100 nanoseconds) between timestamps 
+        /// of the first and the last elements in a block. 
+        /// If value of this parameter is too small, then most blocks will contains less elements 
+        /// than preallocated. 
+        /// If it is too large, then searching of block will be inefficient, because index search 
+        /// will select a lot of extra blocks which do not contain any element from the 
+        /// specified range.
+        /// Usually the value of this parameter should be set as
+        /// (number of elements in block)*(tick interval)*2. 
+        /// Coefficient 2 here is used to compencate possible holes in time series.
+        /// For example, if we collect stocks data, we will have data only for working hours.
+        /// If number of element in block is 100, time series period is 1 day, then
+        /// value of maxBlockTimeInterval can be set as 100*(24*60*60*10000000L)*2
+        /// </param>
+        /// <returns>new empty time series</returns>
+        abstract public TimeSeries<T> CreateTimeSeries<T>(int blockSize, long maxBlockTimeInterval) where T:TimeSeriesTick;
+#else
         /// <summary>
         /// Create new time series object. 
         /// </summary>
@@ -317,6 +452,7 @@ namespace Perst
         /// </param>
         /// <returns>new empty time series</returns>
         abstract public TimeSeries CreateTimeSeries(Type blockClass, long maxBlockTimeInterval);
+#endif
 		
         /// <summary>
         /// Create PATRICIA trie (Practical Algorithm To Retrieve Information Coded In Alphanumeric)
@@ -330,7 +466,70 @@ namespace Perst
         /// </summary>
         /// <returns>created PATRICIA trie</returns>
         ///
+#if USE_GENERICS
+        abstract public PatriciaTrie<T> CreatePatriciaTrie<T>() where T:class,IPersistent;
+#else
         abstract public PatriciaTrie CreatePatriciaTrie();
+#endif
+
+
+#if USE_GENERICS
+        /// <summary>
+        /// Create new generic set of objects
+        /// </summary>
+        /// <returns>
+        /// empty set of persistent objects
+        /// </returns>
+        public ISet<IPersistent> CreateSet() 
+        {
+             return CreateSet<IPersistent>();
+        } 
+        
+        /// <summary>
+        /// Create new generic link
+        /// </summary>
+        /// <returns>
+        /// link of IPersistent references
+        /// </returns>
+        public Link<IPersistent> CreateLink()
+        {
+            return CreateLink<IPersistent>(8);
+        }
+		
+        /// <summary>
+        /// Create new generic link with specified initial size
+        /// </summary>
+        /// <param name="initialSize">Initial link size</param>
+        /// <returns>
+        /// link of IPersistent references
+        /// </returns>
+        public Link<IPersistent> CreateLink(int initialSize)
+        {
+            return CreateLink<IPersistent>(initialSize);
+        }
+
+        /// Create new generic array of reference
+        /// </summary>
+        /// <returns>
+        /// array of IPersistent references
+        /// </returns>
+        public PArray<IPersistent> CreateArray()
+        {
+            return CreateArray<IPersistent>(8);
+        }
+		
+        /// Create new generic array of reference
+        /// </summary>
+        /// <param name="initialSize">Initial array size</param>
+        /// <returns>
+        /// array of IPersistent references
+        /// </returns>
+        public PArray<IPersistent> CreateArray(int initialSize)
+        {
+            return CreateArray<IPersistent>(initialSize);
+        }
+#endif		
+
 
         /// <summary> Commit transaction (if needed) and close the storage
         /// </summary>

@@ -193,6 +193,11 @@
                     BuildAction = "Compile"
                 />
                 <File
+                    RelPath = "src\PersistentCollection.cs"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
                     RelPath = "src\PersistentComparator.cs"
                     SubType = "Code"
                     BuildAction = "Compile"

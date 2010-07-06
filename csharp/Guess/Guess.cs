@@ -5,9 +5,9 @@ public class Guess:Persistent
 {
     public Guess  yes;
     public Guess  no;
-    public String question;
+    public string question;
 	
-    public Guess(Guess no, System.String question, Guess yes)
+    public Guess(Guess no, string question, Guess yes)
     {
         this.yes = yes;
         this.question = question;
@@ -18,12 +18,12 @@ public class Guess:Persistent
     {
     }
 	
-    internal static System.String input(System.String prompt)
+    internal static string input(string prompt)
     {
         while (true)
         {
             Console.Write(prompt);
-            String line = Console.ReadLine().Trim();
+            string line = Console.ReadLine().Trim();
             if (line.Length != 0) 
             { 
                 return line;
@@ -31,16 +31,16 @@ public class Guess:Persistent
         }
     }
 	
-    internal static bool askQuestion(System.String question)
+    internal static bool askQuestion(string question)
     {
-        System.String answer = input(question);
+        string answer = input(question);
         return answer.ToUpper().Equals("y".ToUpper()) || answer.ToUpper().Equals("yes".ToUpper());
     }
 	
     internal static Guess whoIsIt(Guess parent)
     {
-        System.String animal = input("What is it ? ");
-        System.String difference = input("What is a difference from other ? ");
+        string animal = input("What is it ? ");
+        string difference = input("What is a difference from other ? ");
         return new Guess(parent, difference, new Guess(null, animal, null));
     }
 	
@@ -50,7 +50,7 @@ public class Guess:Persistent
         {
             if (yes == null)
             {
-                System.Console.WriteLine("It was very simple question for me...");
+                Console.WriteLine("It was very simple question for me...");
             }
             else
             {
@@ -89,7 +89,7 @@ public class Guess:Persistent
         return null;
     }
 	
-    static public void  Main(System.String[] args)
+    static public void  Main(string[] args)
     {
         Storage db = StorageFactory.Instance.CreateStorage();
 		
@@ -110,7 +110,7 @@ public class Guess:Persistent
             db.Commit();
         }
 		
-        System.Console.WriteLine("End of the game");
+        Console.WriteLine("End of the game");
         db.Close();
     }
 }

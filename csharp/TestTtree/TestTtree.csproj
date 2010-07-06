@@ -7,7 +7,7 @@
     >
         <Build>
             <Settings
-                ApplicationIcon = "App.ico"
+                ApplicationIcon = ""
                 AssemblyKeyContainerName = ""
                 AssemblyName = "TestTtree"
                 AssemblyOriginatorKeyFile = ""
@@ -78,10 +78,6 @@
         </Build>
         <Files>
             <Include>
-                <File
-                    RelPath = "App.ico"
-                    BuildAction = "Content"
-                />
                 <File
                     RelPath = "AssemblyInfo.cs"
                     SubType = "Code"

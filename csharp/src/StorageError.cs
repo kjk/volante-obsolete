@@ -14,7 +14,7 @@ namespace Perst
             }
 			
         }
-        public virtual System.Exception OriginalException
+        public virtual Exception OriginalException
         {
             get
             {
@@ -33,6 +33,7 @@ namespace Perst
             UNSUPPORTED_TYPE,
             UNSUPPORTED_INDEX_TYPE,
             INCOMPATIBLE_KEY_TYPE,
+            INCOMPATIBLE_VALUE_TYPE,
             NOT_ENOUGH_SPACE,
             DATABASE_CORRUPTED,
             CONSTRUCTOR_FAILURE,
@@ -45,10 +46,9 @@ namespace Perst
             AMBIGUITY_CLASS,
             INDEXED_FIELD_NOT_FOUND,
             NO_SUCH_PROPERTY,
-            BAD_PROPERTY_VALUE,
-            SERIALIZE_PERSISTENT
+            BAD_PROPERTY_VALUE
         };
-        private static System.String[] messageText = new System.String[]{"Storage not opened", "Storage already opened", "File access error", "Key not unique", "Key not found", "Database schema was changed for", "Unsupported type", "Unsupported index type", "Incompatible key type", "Not enough space", "Database file is corrupted", "Failed to instantiate the object of", "Failed to build descriptor for", "Stub object is accessed", "Invalid object reference", "Access to the deleted object", "Object access violation", "Failed to locate", "Ambiguity definition of class", "Could not find indexed field","Attempt to store persistent object as raw object"};
+        private static System.String[] messageText = new System.String[]{"Storage not opened", "Storage already opened", "File access error", "Key not unique", "Key not found", "Database schema was changed for", "Unsupported type", "Unsupported index type", "Incompatible key type", "Incompatible value type", "Not enough space", "Database file is corrupted", "Failed to instantiate the object of", "Failed to build descriptor for", "Stub object is accessed", "Invalid object reference", "Access to the deleted object", "Object access violation", "Failed to locate", "Ambiguity definition of class", "Could not find indexed field","No such property","Bad property value"};
 		
         /// <summary> Get exception error code (see definitions above)
         /// </summary>
@@ -67,24 +67,24 @@ namespace Perst
             this.errorCode = errorCode;
         }
 		
-        public StorageError(ErrorCode errorCode, System.Exception x):base(messageText[(int)errorCode] + ": " + x)
+        public StorageError(ErrorCode errorCode, Exception x):base(messageText[(int)errorCode] + ": " + x)
         {
             this.errorCode = errorCode;
             origEx = x;
         }
 		
-        public StorageError(ErrorCode errorCode, System.Object param):base(messageText[(int)errorCode] + " " + param)
+        public StorageError(ErrorCode errorCode, object param):base(messageText[(int)errorCode] + " " + param)
         {
             this.errorCode = errorCode;
         }
 		
-        public StorageError(ErrorCode errorCode, System.Object param, System.Exception x):base(messageText[(int)errorCode] + " " + param + ": " + x)
+        public StorageError(ErrorCode errorCode, object param, System.Exception x):base(messageText[(int)errorCode] + " " + param + ": " + x)
         {
             this.errorCode = errorCode;
             origEx = x;
         }
 		
         private ErrorCode errorCode;
-        private System.Exception origEx;
+        private Exception origEx;
     }
 }

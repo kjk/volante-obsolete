@@ -45,11 +45,11 @@ namespace Perst.Impl
                     throwException("Element name expected");
                 }
                 System.String elemName = scanner.Identifier;
-                if (elemName.Equals("Perst.Impl.Btree") 
-                    || elemName.Equals("Perst.Impl.BitIndexImpl")
-                    || elemName.Equals("Perst.Impl.PersistentSet") 
-                    || elemName.Equals("Perst.Impl.BtreeFieldIndex") 
-                    || elemName.Equals("Perst.Impl.BtreeMultiFieldIndex"))
+                if (elemName.StartsWith("Perst.Impl.Btree") 
+                    || elemName.StartsWith("Perst.Impl.BitIndexImpl")
+                    || elemName.StartsWith("Perst.Impl.PersistentSet") 
+                    || elemName.StartsWith("Perst.Impl.BtreeFieldIndex") 
+                    || elemName.StartsWith("Perst.Impl.BtreeMultiFieldIndex"))
                 {
                     createIndex(elemName);
                 }
@@ -488,7 +488,6 @@ namespace Perst.Impl
 
         internal void  createIndex(String indexType)
         {
-            Btree btree = null;
             XMLScanner.Token tkn;
             int oid = 0;
             bool     unique = false;
@@ -556,16 +555,30 @@ namespace Perst.Impl
             {
                 throwException("ID is not specified or index");
             }
+#if USE_GENERICS
+            ClassDescriptor desc = storage.getClassDescriptor(findClassByName(indexType));
+            Btree btree = (Btree)desc.newInstance();
+#else
+            Btree btree = null;
+#endif            
             if (className != null)
             {
                 Type cls = findClassByName(className);
                 if (fieldName != null) 
                 { 
+#if USE_GENERICS
+                    btree.init(cls, ClassDescriptor.FieldType.tpLast, new string[]{fieldName}, unique, autoinc);
+#else
                     btree = new BtreeFieldIndex(cls, fieldName, unique, autoinc);
+#endif
                 } 
                 else if (fieldNames != null) 
                 { 
+#if USE_GENERICS
+                    btree.init(cls, ClassDescriptor.FieldType.tpLast, fieldNames, unique, autoinc);
+#else
                     btree = new BtreeMultiFieldIndex(cls, fieldNames, unique);
+#endif
                 } 
                 else
                 {
@@ -576,9 +589,11 @@ namespace Perst.Impl
             {
                 if (type == null)
                 {
-                    if (indexType.Equals("Perst.Impl.PersistentSet")) 
+                    if (indexType.StartsWith("Perst.Impl.PersistentSet")) 
                     { 
+#if !USE_GENERICS
                         btree = new PersistentSet();
+#endif
                     } 
                     else 
                     {
@@ -587,13 +602,19 @@ namespace Perst.Impl
                 } 
                 else 
                 {
-                    if (indexType.Equals("org.garret.perst.impl.BitIndexImpl")) 
+                    if (indexType.StartsWith("org.garret.perst.impl.BitIndexImpl")) 
                     { 
+#if !USE_GENERICS
                         btree = new BitIndexImpl();
+#endif
                     } 
                     else 
                     { 
+#if USE_GENERICS
+                        btree.init(null, mapType(type), null, unique, autoinc);
+#else
                         btree = new Btree(mapType(type), unique);
+#endif
                     }
                 }
             }
@@ -610,7 +631,11 @@ namespace Perst.Impl
                 if (fieldNames != null) 
                 { 
                     String[] values = new String[fieldNames.Length];                
+#if USE_GENERICS
+                    ClassDescriptor.FieldType[] types = btree.FieldTypes;
+#else
                     ClassDescriptor.FieldType[] types = ((BtreeMultiFieldIndex)btree).types;
+#endif
                     for (int i = 0; i < values.Length; i++) 
                     { 
                         values[i] = getAttribute(refElem, "key"+i);
@@ -619,7 +644,7 @@ namespace Perst.Impl
                 } 
                 else 
                 { 
-                    key = createKey(btree.type, getAttribute(refElem, "key"));
+                    key = createKey(btree.FieldType, getAttribute(refElem, "key"));
                 }
                 IPersistent obj = new PersistentStub(storage, mapId(getIntAttribute(refElem, "id")));
                 btree.insert(key, obj, false);
@@ -631,8 +656,17 @@ namespace Perst.Impl
             {
                 throwException("Element is not closed");
             }
+#if USE_GENERICS
+            ByteBuffer buf = new ByteBuffer(storage.encoding);
+            buf.extend(ObjectHeader.Sizeof);
+            int size = storage.packObject(btree, desc, ObjectHeader.Sizeof, buf);
+            byte[] data = buf.arr;
+            ObjectHeader.setSize(data, 0, size);
+            ObjectHeader.setType(data, 0, desc.Oid);
+#else
             byte[] data = storage.packObject(btree);
             int size = ObjectHeader.getSize(data, 0);
+#endif
             long pos = storage.allocate(size, 0);
             storage.setPos(oid, pos | StorageImpl.dbModifiedFlag);
 			
@@ -1964,6 +1998,13 @@ namespace Perst.Impl
                                 throw new XMLImportException(line, column, "Bad XML file format");
                             }
                             ident = new String(sconst, 0, i);
+#if USE_GENERICS 
+                            ident = ident.Replace(".1", "`");
+                            ident = ident.Replace(".2", ",");
+                            ident = ident.Replace(".3", "[");
+                            ident = ident.Replace(".4", "]");
+                            ident = ident.Replace(".5", "=");
+#endif
                             return Token.IDENT;
                     }
                 }

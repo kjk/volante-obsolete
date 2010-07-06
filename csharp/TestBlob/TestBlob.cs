@@ -11,12 +11,20 @@ public class TestBlob
         byte[] buf = new byte[1024];
         int rc;
         string[] files = Directory.GetFiles("\\Perst.NET\\src\\impl", "*.cs");
+#if USE_GENERICS
+        Index<string,Blob> root = (Index<string,Blob>)db.Root;
+#else
         Index root = (Index)db.Root;
+#endif
         if (root == null) 
         { 
+#if USE_GENERICS
+            root = db.CreateIndex<string,Blob>(true);
+#else
             root = db.CreateIndex(typeof(string), true);
+#endif
             db.Root = root;
-            foreach (String file in files) 
+            foreach (string file in files) 
             { 
                 FileStream fin = new FileStream(file, FileMode.Open, FileAccess.Read);
                 Blob blob = db.CreateBlob();                    
@@ -31,10 +39,14 @@ public class TestBlob
             }
             Console.WriteLine("Database is initialized");
         } 
-        foreach (String file in files) 
+        foreach (string file in files) 
         {
             byte[] buf2 = new byte[1024];
+#if USE_GENERICS
+            Blob blob = root[file];
+#else
             Blob blob = (Blob)root[file];
+#endif
             if (blob == null) 
             {
                 Console.WriteLine("File " + file + " not found in database");

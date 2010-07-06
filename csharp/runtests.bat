@@ -1,3 +1,5 @@
+set save_path=%path%
+set path=bin;%path%
 del *.dbs
 TestIndex\bin\debug\TestIndex
 del *.dbs
@@ -26,3 +28,5 @@ TestBlob\bin\debug\TestBlob
 TestBlob\bin\debug\TestBlob
 TestTimeSeries\bin\debug\TestTimeSeries
 TestBit\bin\debug\TestBit
+TestList\bin\debug\TestList
+set path=%save_path%

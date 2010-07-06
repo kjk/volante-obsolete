@@ -1,8 +1,14 @@
 namespace Perst
 {
     using System;
+#if USE_GENERICS
+    using System.Collections.Generic;
+#else
     using System.Collections;
+#endif
 	
+    public interface GenericLink {}
+
     /// <summary> Interface for one-to-many relation. There are two types of relations:
     /// embedded (when references to the relarted obejcts are stored in lreation
     /// owner obejct itself) and stanalone (when relation is separate object, which contains
@@ -11,7 +17,11 @@ namespace Perst
     /// and standalone relation is represented by Relation persistent class created by
     /// Storage.createRelation method.
     /// </summary>
-    public interface Link : ICollection
+#if USE_GENERICS
+    public interface Link<T> : ICollection<T>, GenericLink where T:class,IPersistent
+#else
+    public interface Link : ICollection, GenericLink
+#endif
     {
         /// <summary> Get number of the linked objects 
         /// </summary>
@@ -29,7 +39,12 @@ namespace Perst
         
         /// <summary> Access element by index
         /// </summary>
-        IPersistent this[int i] {
+#if USE_GENERICS
+        T this[int i]
+#else
+        IPersistent this[int i]
+#endif
+        {
              get;
              set;
         }       
@@ -41,7 +56,11 @@ namespace Perst
         /// <returns>referenced object
         /// 
         /// </returns>
+#if USE_GENERICS
+        T Get(int i);
+#else
         IPersistent Get(int i);
+#endif
 
         /// <summary> Get related object by index without loading it.
         /// Returned object can be used only to get it OID or to compare with other objects using
@@ -61,7 +80,11 @@ namespace Perst
         /// <param name="obj">object to be included in the relation     
         /// 
         /// </param>
+#if USE_GENERICS
+        void  Set(int i, T obj);
+#else
         void  Set(int i, IPersistent obj);
+#endif
 
         /// <summary> Remove object with specified index from the relation
         /// </summary>
@@ -70,6 +93,15 @@ namespace Perst
         /// </param>
         void  Remove(int i);
 
+#if !USE_GENERICS
+        /// <summary> Remove object from the relation
+        /// </summary>
+        /// <param name="obj">object to be removed
+        /// </param>
+        /// <returns><code>true</code> if member was successfully removed or <code>false</code> if member is not found</returns>
+        bool Remove(IPersistent obj);
+#endif
+
         /// <summary> Insert new object in the relation
         /// </summary>
         /// <param name="i">insert poistion, should be in [0,size()]
@@ -77,21 +109,31 @@ namespace Perst
         /// <param name="obj">object inserted in the relation
         /// 
         /// </param>
+#if USE_GENERICS
+        void  Insert(int i, T obj);
+#else
         void  Insert(int i, IPersistent obj);
+#endif
 
+#if !USE_GENERICS
         /// <summary> Add new object to the relation
         /// </summary>
         /// <param name="obj">object inserted in the relation
         /// 
         /// </param>
         void  Add(IPersistent obj);
+#endif
 
         /// <summary> Add all elements of the array to the relation
         /// </summary>
         /// <param name="arr">array of obects which should be added to the relation
         /// 
         /// </param>
+#if USE_GENERICS
+        void  AddAll(T[] arr);
+#else
         void  AddAll(IPersistent[] arr);
+#endif
 
         /// <summary> Add specified elements of the array to the relation
         /// </summary>
@@ -102,19 +144,31 @@ namespace Perst
         /// <param name="length">number of elements in the array to be added in the relation
         /// 
         /// </param>
+#if USE_GENERICS
+        void  AddAll(T[] arr, int from, int length);
+#else
         void  AddAll(IPersistent[] arr, int from, int length);
+#endif
 
         /// <summary> Add all object members of the other relation to this relation
         /// </summary>
         /// <param name="link">another relation
         /// 
         /// </param>
+#if USE_GENERICS
+        void  AddAll(Link<T> link);
+#else
         void  AddAll(Link link);
+#endif
 
         /// <summary> Get relation members as array of objects
         /// </summary>
         /// <returns>created array</returns>
+#if USE_GENERICS
+        T[] ToArray();
+#else
         IPersistent[] ToArray();
+#endif
 
         /// <summary> 
         /// Return array with relation members. Members are not loaded and 
@@ -131,19 +185,25 @@ namespace Perst
         /// <returns>created array</returns>
         Array ToArray(Type elemType);
 
+#if !USE_GENERICS
         /// <summary> Checks if relation contains specified object
         /// </summary>
         /// <param name="obj">specified object
         /// 
         /// </param>
         bool Contains(IPersistent obj);
+#endif
 
         /// <summary>Check if i-th element of Link is the same as specified obj
         /// </summary>
         /// <param name="i"> element index</param>
         /// <param name="obj">specified object</param>
         /// <returns><code>true</code> if i-th element of Link reference the same object as "obj"</returns>
+#if USE_GENERICS
+        bool ContainsElement(int i, T obj);
+#else
         bool ContainsElement(int i, IPersistent obj);
+#endif
 
         /// <summary> Get index of the specified object in the relation
         /// </summary>
@@ -152,11 +212,17 @@ namespace Perst
         /// <returns>zero based index of the object or -1 if object is not in the relation
         /// 
         /// </returns>
+#if USE_GENERICS
+        int IndexOf(T obj);
+#else
         int IndexOf(IPersistent obj);
+#endif
 
+#if !USE_GENERICS
         /// <summary> Remove all members from the relation
         /// </summary>
         void  Clear();
+#endif
 
         /// <summary>
         /// Replace all direct references to linked objects with stubs. 

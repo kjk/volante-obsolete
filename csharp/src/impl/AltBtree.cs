@@ -4,13 +4,25 @@ namespace Perst.Impl
     using System.Collections;
     using System.Diagnostics;
     using Perst;
+#if USE_GENERICS
+    using System.Collections.Generic;
+    using Link=Link<IPersistent>;
+#endif
+
     
-    class AltBtree:PersistentResource, Index
+#if USE_GENERICS
+    class AltBtree<K,V>:PersistentCollection<V>, Index<K,V> where V:class,IPersistent
+#else
+    class AltBtree:PersistentCollection, Index
+#endif
     {
-        virtual public Type KeyType
+        public Type KeyType
         {
             get
             {
+#if USE_GENERICS
+                return typeof(K);
+#else
                 switch (type)
                 {                   
                     case ClassDescriptor.FieldType.tpBoolean: 
@@ -75,6 +87,7 @@ namespace Perst.Impl
                         return null;
                     
                 }
+#endif
             }
             
         }
@@ -91,6 +104,15 @@ namespace Perst.Impl
         {
         }
         
+#if USE_GENERICS
+        public override void OnLoad()
+        {
+             if (type != ClassDescriptor.getTypeCode(typeof(K))) {
+                throw new StorageError(StorageError.ErrorCode.INCOMPATIBLE_KEY_TYPE, typeof(K));
+            }
+        }
+#endif
+
         internal class BtreeKey
         {
             internal Key key;
@@ -109,7 +131,7 @@ namespace Perst.Impl
             internal abstract Array Data{get;}
             internal int nItems;
             internal Link items;
-            
+       
             internal const int BTREE_PAGE_SIZE = Page.pageSize - ObjectHeader.Sizeof - 4 * 3;
             
             internal abstract object getKeyValue(int i);
@@ -1390,11 +1412,19 @@ namespace Perst.Impl
             return elemType;
         }
         
+#if USE_GENERICS
+        internal AltBtree(bool unique)
+        {
+            type = checkType(typeof(K));
+            this.unique = unique;
+        }
+#else
         internal AltBtree(Type cls, bool unique)
         {
-            this.unique = unique;
             type = checkType(cls);
+            this.unique = unique;
         }
+#endif
         
         internal AltBtree(ClassDescriptor.FieldType type, bool unique)
         {
@@ -1412,7 +1442,7 @@ namespace Perst.Impl
             Overwrite
         }
         
-        public int Count 
+        public override int Count 
         { 
             get 
             {
@@ -1420,31 +1450,11 @@ namespace Perst.Impl
             }
         }
 
-        public bool IsSynchronized 
-        {
-            get 
-            {
-                return true;
-            }
-        }
-
-        public object SyncRoot 
-        {
-            get 
-            {
-                return this;
-            }
-        }
-
-        public void CopyTo(Array dst, int i) 
-        {
-            foreach (object o in this) 
-            { 
-                dst.SetValue(o, i++);
-            }
-        }
-        
+#if USE_GENERICS
+        public V this[K key] 
+#else
         public IPersistent this[object key] 
+#endif
         {
             get 
             {
@@ -1452,10 +1462,23 @@ namespace Perst.Impl
             }
             set 
             {
-                Set(key, (IPersistent)value);
+                Set(key, value);
             }
         } 
         
+#if USE_GENERICS
+        public V[] this[K from, K till] 
+#else
+        public IPersistent[] this[object from, object till] 
+#endif
+        {
+            get 
+            {
+                return Get(from, till);
+            }
+        }
+
+
         internal virtual Key checkKey(Key key)
         {
             if (key != null)
@@ -1478,7 +1501,11 @@ namespace Perst.Impl
             return key;
         }
         
+#if USE_GENERICS
+        public virtual V Get(Key key)
+#else
         public virtual IPersistent Get(Key key)
+#endif
         {
             key = checkKey(key);
             if (root != null)
@@ -1495,21 +1522,35 @@ namespace Perst.Impl
                 }
                 else
                 {
+#if USE_GENERICS
+                    return (V) list[0];
+#else
                     return (IPersistent) list[0];
+#endif
                 }
             }
             return null;
         }
-        
+
+#if USE_GENERICS
+        public virtual V Get(K key) 
+#else
         public virtual IPersistent Get(object key) 
+#endif
         {
-            return Get(Btree.getKeyFromObject(key));
+            return Get(KeyBuilder.getKeyFromObject(key));
         }
 
 
+#if USE_GENERICS
+        internal static V[] emptySelection = new V[0];
+        
+        public virtual V[] PrefixSearch(string key)
+#else
         internal static IPersistent[] emptySelection = new IPersistent[0];
         
         public virtual IPersistent[] PrefixSearch(string key)
+#endif
         {
             if (ClassDescriptor.FieldType.tpString != type)
             {
@@ -1521,13 +1562,21 @@ namespace Perst.Impl
                 ((BtreePageOfString) root).prefixSearch(key, height, list);
                 if (list.Count != 0)
                 {
+#if USE_GENERICS
+                    return (V[]) list.ToArray(typeof(V));
+#else
                     return (IPersistent[]) list.ToArray(typeof(IPersistent));
+#endif
                 }
             }
             return emptySelection;
         }
         
+#if USE_GENERICS
+        public virtual V[] Get(Key from, Key till)
+#else
         public virtual IPersistent[] Get(Key from, Key till)
+#endif
         {
             if (root != null)
             {
@@ -1535,35 +1584,62 @@ namespace Perst.Impl
                 root.find(checkKey(from), checkKey(till), height, list);
                 if (list.Count != 0)
                 {
+#if USE_GENERICS
+                    return (V[]) list.ToArray(typeof(V));
+#else
                     return (IPersistent[]) list.ToArray(typeof(IPersistent));
+#endif
                 }
             }
             return emptySelection;
         }
         
+#if USE_GENERICS
+        public virtual V[] Get(K from, K till)
+#else
         public virtual IPersistent[] Get(object from, object till)
+#endif
         {
-            return Get(Btree.getKeyFromObject(from), Btree.getKeyFromObject(till));
+            return Get(KeyBuilder.getKeyFromObject(from), KeyBuilder.getKeyFromObject(till));
         }
          
+#if USE_GENERICS
+        public virtual bool Put(Key key, V obj)
+#else
         public virtual bool Put(Key key, IPersistent obj)
+#endif
         {
             return insert(key, obj, false) == null;
         }
         
+#if USE_GENERICS
+        public virtual bool Put(K key, V obj)
+#else
         public virtual bool Put(object key, IPersistent obj)
+#endif
         {
-            return Put(Btree.getKeyFromObject(key), obj);
+            return Put(KeyBuilder.getKeyFromObject(key), obj);
         }
 
+#if USE_GENERICS
+        public virtual V Set(Key key, V obj)
+        {
+            return (V)insert(key, obj, true);
+        }
+#else
         public virtual IPersistent Set(Key key, IPersistent obj)
         {
             return insert(key, obj, true);
         }
+#endif
         
+#if USE_GENERICS
+        public virtual V Set(K key, V obj)
+#else
         public virtual IPersistent Set(object key, IPersistent obj)
+#endif
         {
-            return Set(Btree.getKeyFromObject(key), obj);
+            return Set(KeyBuilder.getKeyFromObject(key), obj);
         }
 
         internal void  allocateRootPage(BtreeKey ins)
@@ -1675,14 +1751,22 @@ namespace Perst.Impl
             return null;
         }
         
+#if USE_GENERICS
+        public virtual void  Remove(Key key, V obj)
+#else
         public virtual void  Remove(Key key, IPersistent obj)
+#endif
         {
             Remove(new BtreeKey(checkKey(key), obj));
         }
         
+#if USE_GENERICS
+        public virtual void  Remove(K key, V obj)
+#else
         public virtual void  Remove(object key, IPersistent obj)
+#endif
         {
-            Remove(new BtreeKey(Btree.getKeyFromObject(key), obj));    
+            Remove(new BtreeKey(KeyBuilder.getKeyFromObject(key), obj));    
         }
         
         
@@ -1716,7 +1800,11 @@ namespace Perst.Impl
             Modify();
         }
         
+#if USE_GENERICS
+        public virtual V Remove(Key key)
+#else
         public virtual IPersistent Remove(Key key)
+#endif
         {
             if (!unique)
             {
@@ -1724,15 +1812,27 @@ namespace Perst.Impl
             }
             BtreeKey rk = new BtreeKey(checkKey(key), null);
             Remove(rk);
+#if USE_GENERICS
+            return (V)rk.oldNode;
+#else
             return rk.oldNode;
+#endif
         }
         
+#if USE_GENERICS
+        public virtual V RemoveKey(K key)
+#else
         public virtual IPersistent Remove(object key)
+#endif
         {
-            return Remove(Btree.getKeyFromObject(key));
+            return Remove(KeyBuilder.getKeyFromObject(key));
         }
         
+#if USE_GENERICS
+        public virtual V[] GetPrefix(string prefix)
+#else
         public virtual IPersistent[] GetPrefix(string prefix)
+#endif
         {
             return Get(new Key(prefix, true), new Key(prefix + Char.MaxValue, false));
         }
@@ -1743,7 +1843,11 @@ namespace Perst.Impl
             return nElems;
         }
         
-        public virtual void Clear()
+#if USE_GENERICS
+        public override void Clear() 
+#else
+        public void Clear() 
+#endif
         {
             if (root != null)
             {
@@ -1756,6 +1860,17 @@ namespace Perst.Impl
             }
         }
         
+#if USE_GENERICS
+        public virtual V[] ToArray()
+        {
+            V[] arr = new V[nElems];
+            if (root != null)
+            {
+                root.traverseForward(height, arr, 0);
+            }
+            return (V[])arr;
+        }
+#else
         public virtual IPersistent[] ToArray()
         {
             IPersistent[] arr = new IPersistent[nElems];
@@ -1765,6 +1880,7 @@ namespace Perst.Impl
             }
             return arr;
         }
+#endif
         
         public virtual Array ToArray(Type elemType)
         {
@@ -1785,9 +1901,17 @@ namespace Perst.Impl
             base.Deallocate();
         }
         
+#if USE_GENERICS
+        class BtreeEnumerator : IEnumerator<V>
+#else
         class BtreeEnumerator : IEnumerator 
+#endif
         {
+#if USE_GENERICS
+            internal BtreeEnumerator(AltBtree<K,V> tree) 
+#else
             internal BtreeEnumerator(AltBtree tree) 
+#endif
             { 
                 this.tree = tree;
                 Reset();
@@ -1822,6 +1946,8 @@ namespace Perst.Impl
                 curr = pg.items[pos];
             }
             
+            public void Dispose() {}
+
             public bool MoveNext() 
             {
                 if (tree.updateCounter != tree.updateCounter) 
@@ -1864,8 +1990,12 @@ namespace Perst.Impl
                 hasCurrent = false;
                 return false;
             }
-            
+
+#if USE_GENERICS
+            public virtual V Current
+#else
             public virtual object Current
+#endif
             {
                 get 
                 {
@@ -1873,7 +2003,11 @@ namespace Perst.Impl
                     { 
                         throw new InvalidOperationException();
                     }
+#if USE_GENERICS
+                    return (V)curr;
+#else
                     return curr;
+#endif
                 }
             }
             
@@ -1884,12 +2018,20 @@ namespace Perst.Impl
             protected int counter;
             protected IPersistent curr;
             protected bool hasCurrent;
-            protected AltBtree  tree;
+#if USE_GENERICS
+            protected AltBtree<K,V> tree;
+#else
+            protected AltBtree tree;
+#endif
         }
         
-        class BtreeDictionaryEnumerator : BtreeEnumerator, IDictionaryEnumerator 
+        class BtreeDictionaryEnumerator : BtreeEnumerator, IDictionaryEnumerator
         {
+#if USE_GENERICS
+            internal BtreeDictionaryEnumerator(AltBtree<K,V> tree) 
+#else
             internal BtreeDictionaryEnumerator(AltBtree tree) 
+#endif
                 : base(tree) 
             {   
             }
@@ -1901,7 +2043,11 @@ namespace Perst.Impl
                 key = pg.getKeyValue(pos);
             }
 
+#if USE_GENERICS
+            public new virtual object Current 
+#else
             public override object Current 
+#endif
             {
                 get 
                 {
@@ -1949,7 +2095,11 @@ namespace Perst.Impl
         }
         
         
-        public IEnumerator GetEnumerator() 
+#if USE_GENERICS
+        public override IEnumerator<V> GetEnumerator() 
+#else
+        public override IEnumerator GetEnumerator() 
+#endif
         {
             return new BtreeEnumerator(this);
         }
@@ -1959,10 +2109,17 @@ namespace Perst.Impl
             return new BtreeDictionaryEnumerator(this);
         }
         
-        
+#if USE_GENERICS        
+        class BtreeSelectionIterator : IEnumerator<V>, IEnumerable<V>
+#else
         class BtreeSelectionIterator : IEnumerator, IEnumerable 
+#endif
         { 
+#if USE_GENERICS        
+            internal BtreeSelectionIterator(AltBtree<K,V> tree, Key from, Key till, IterationOrder order) 
+#else
             internal BtreeSelectionIterator(AltBtree tree, Key from, Key till, IterationOrder order) 
+#endif
             { 
                 this.from = from;
                 this.till = till;
@@ -1971,10 +2128,15 @@ namespace Perst.Impl
                 Reset();
             }
 
+#if USE_GENERICS        
+            public IEnumerator<V> GetEnumerator() 
+#else
             public IEnumerator GetEnumerator() 
+#endif
             {
                 return this;
             }
+
             public void Reset() 
             {
                 int i, l, r;
@@ -2145,6 +2307,8 @@ namespace Perst.Impl
                 }
             }
             
+            public void Dispose() {}
+
             public bool MoveNext() 
             {
                 if (tree.updateCounter != tree.updateCounter) 
@@ -2169,7 +2333,11 @@ namespace Perst.Impl
                 curr = pg.items[pos];
             }
             
+#if USE_GENERICS        
+            public virtual V Current 
+#else
             public virtual object Current 
+#endif
             {
                 get 
                 {
@@ -2177,7 +2345,11 @@ namespace Perst.Impl
                     { 
                         throw new InvalidOperationException();
                     }
+#if USE_GENERICS        
+                    return (V)curr;
+#else
                     return curr;
+#endif
                 }
             }
             
@@ -2261,12 +2433,20 @@ namespace Perst.Impl
             protected int counter;
             protected bool hasCurrent;
             protected IPersistent curr;
+#if USE_GENERICS
+            protected AltBtree<K,V> tree;
+#else
             protected AltBtree tree;
+#endif
         }
         
         class BtreeDictionarySelectionIterator : BtreeSelectionIterator, IDictionaryEnumerator 
         { 
+#if USE_GENERICS
+            internal BtreeDictionarySelectionIterator(AltBtree<K,V> tree, Key from, Key till, IterationOrder order) 
+#else
             internal BtreeDictionarySelectionIterator(AltBtree tree, Key from, Key till, IterationOrder order) 
+#endif
                 : base(tree, from, till, order)
             {}
                
@@ -2276,7 +2456,11 @@ namespace Perst.Impl
                 key = pg.getKeyValue(pos);
             }
              
+#if USE_GENERICS        
+            public new virtual object Current 
+#else
             public override object Current 
+#endif
             {
                 get 
                 {
@@ -2323,52 +2507,104 @@ namespace Perst.Impl
             protected object key;
         }
         
+#if USE_GENERICS        
+        public IEnumerator<V> GetEnumerator(Key from, Key till, IterationOrder order) 
+#else
         public IEnumerator GetEnumerator(Key from, Key till, IterationOrder order) 
+#endif
         {
             return Range(from, till, order).GetEnumerator();
         }
 
+#if USE_GENERICS        
+        public IEnumerator<V> GetEnumerator(K from, K till, IterationOrder order) 
+#else
         public IEnumerator GetEnumerator(object from, object till, IterationOrder order) 
+#endif
         {
             return Range(from, till, order).GetEnumerator();
         }
 
+#if USE_GENERICS        
+        public IEnumerator<V> GetEnumerator(Key from, Key till) 
+#else
         public IEnumerator GetEnumerator(Key from, Key till) 
+#endif
         {
             return Range(from, till).GetEnumerator();
         }
 
+#if USE_GENERICS        
+        public IEnumerator<V> GetEnumerator(K from, K till) 
+#else
         public IEnumerator GetEnumerator(object from, object till) 
+#endif
         {
             return Range(from, till).GetEnumerator();
         }
 
+#if USE_GENERICS        
+        public IEnumerator<V> GetEnumerator(string prefix) 
+#else
         public IEnumerator GetEnumerator(string prefix) 
+#endif
         {
             return StartsWith(prefix).GetEnumerator();
         }
 
+#if USE_GENERICS        
+        public virtual IEnumerable<V> Range(Key from, Key till, IterationOrder order) 
+        { 
+            return new BtreeSelectionIterator(this, checkKey(from), checkKey(till), order);
+        }
+#else
         public virtual IEnumerable Range(Key from, Key till, IterationOrder order) 
         { 
             return new BtreeSelectionIterator(this, checkKey(from), checkKey(till), order);
         }
+#endif
 
+#if USE_GENERICS        
+        public virtual IEnumerable<V> Range(Key from, Key till) 
+#else
         public virtual IEnumerable Range(Key from, Key till) 
+#endif
         { 
             return Range(from, till, IterationOrder.AscentOrder);
         }
             
+#if USE_GENERICS        
+        public IEnumerable<V> Range(K from, K till, IterationOrder order) 
+#else
         public IEnumerable Range(object from, object till, IterationOrder order) 
+#endif
         { 
-            return Range(Btree.getKeyFromObject(from), Btree.getKeyFromObject(till), order);
+            return Range(KeyBuilder.getKeyFromObject(from), KeyBuilder.getKeyFromObject(till), order);
         }
 
+#if USE_GENERICS        
+        public IEnumerable<V> Range(K from, K till) 
+#else
         public IEnumerable Range(object from, object till) 
+#endif
         { 
-            return Range(Btree.getKeyFromObject(from), Btree.getKeyFromObject(till), IterationOrder.AscentOrder);
+            return Range(KeyBuilder.getKeyFromObject(from), KeyBuilder.getKeyFromObject(till), IterationOrder.AscentOrder);
         }
  
+#if USE_GENERICS
+        public IEnumerable<V> Reverse()
+#else
+        public IEnumerable Reverse()
+#endif
+        { 
+            return new BtreeSelectionIterator(this, null, null, IterationOrder.DescentOrder);
+        }
+
+#if USE_GENERICS        
+        public IEnumerable<V> StartsWith(string prefix) 
+#else
         public IEnumerable StartsWith(string prefix) 
+#endif
         { 
             return Range(new Key(prefix), new Key(prefix + Char.MaxValue, false), IterationOrder.AscentOrder);
         }

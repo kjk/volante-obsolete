@@ -1,4 +1,9 @@
 using System;
+#if USE_GENERICS
+using System.Collections.Generic;
+#else
+using System.Collections;
+#endif
 
 namespace Perst
 {
@@ -12,7 +17,11 @@ namespace Perst
     /// This structure has it's main use in IP routing software, but can provide an interesting alternative 
     /// to other structures such as hashtables when memory space is of concern.
     /// </summary>
-    public interface PatriciaTrie : IPersistent, IResource 
+#if USE_GENERICS
+    public interface PatriciaTrie<T> : IPersistent, IResource, ICollection<T> where T:class,IPersistent 
+#else
+    public interface PatriciaTrie : IPersistent, IResource, ICollection 
+#endif
     { 
         /// <summary> 
         /// Add new key to the trie
@@ -22,7 +31,11 @@ namespace Perst
         /// <returns>previous object associtated with this key or <code>null</code> if there
         /// was no such object</returns>
         ///
+#if USE_GENERICS
+        T Add(PatriciaTrieKey key, T obj);
+#else
         IPersistent Add(PatriciaTrieKey key, IPersistent obj);
+#endif
     
         /// <summary>
         /// Find best match with specified key
@@ -30,7 +43,11 @@ namespace Perst
         /// <param name="key">bit vector</param>
         /// <returns>object associated with this deepest possible match with specified key</returns>
         ///
+#if USE_GENERICS
+        T FindBestMatch(PatriciaTrieKey key);
+#else
         IPersistent FindBestMatch(PatriciaTrieKey key);
+#endif
     
         /// <summary>
         /// Find exact match with specified key
@@ -38,7 +55,11 @@ namespace Perst
         /// <param name="key">bit vector</param>
         /// <returns>object associated with this key or NULL if match is not found</returns>
         ///
+#if USE_GENERICS
+        T FindExactMatch(PatriciaTrieKey key);
+#else
         IPersistent FindExactMatch(PatriciaTrieKey key);
+#endif
     
         /// <summary>
         /// Removes key from the triesKFind exact match with specified key
@@ -46,12 +67,18 @@ namespace Perst
         /// <param name="key">bit vector</param>
         /// <returns>object associated with removed key or <code>null</code> if such key is not found</returns>
         ///
+#if USE_GENERICS
+        T Remove(PatriciaTrieKey key);
+#else
         IPersistent Remove(PatriciaTrieKey key);
+#endif
 
+#if !USE_GENERICS
         /// <summary>
         /// Clear the trie: remove all elements from trie
         /// </summary>
         ///
         void Clear();
+#endif
     }
 }

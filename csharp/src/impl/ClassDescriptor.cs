@@ -4,6 +4,8 @@ namespace Perst.Impl
     using System.Collections;
     using System.Reflection;
     using System.Runtime.InteropServices;
+    using System.Diagnostics;
+    using System.Text;
     using Perst;
 	
     public sealed class ClassDescriptor:Persistent
@@ -22,7 +24,10 @@ namespace Perst.Impl
             internal ClassDescriptor valueDesc;
             [NonSerialized()]
             internal FieldInfo       field;
-
+#if USE_GENERICS
+            [NonSerialized()]
+            internal MethodInfo constructor;
+#endif
             public bool equals(FieldDescriptor fd) 
             { 
                 return fieldName.Equals(fd.fieldName) 
@@ -84,7 +89,7 @@ namespace Perst.Impl
             tpArrayOfString,
             tpArrayOfDate,
             tpArrayOfObject,
-            tpArrayOfOid, // not used
+            tpArrayOfOid,
             tpArrayOfValue,
             tpArrayOfRaw,
             tpArrayOfGuid,
@@ -139,9 +144,8 @@ namespace Perst.Impl
             0  // tpArrayOfDecimal,
         };
 		
-        internal static System.Type[] defaultConstructorProfile = new System.Type[0];
-        internal static System.Object[] noArgs = new System.Object[0];
-	
+        internal static Type[] defaultConstructorProfile = new Type[0];
+        internal static object[] noArgs = new object[0];
 	
 #if COMPACT_NET_FRAMEWORK
         static internal object parseEnum(Type type, String value) 
@@ -224,8 +228,40 @@ namespace Perst.Impl
         static private bool isObjectProperty(Type cls, FieldInfo f)
         {
             return typeof(PersistentWrapper).IsAssignableFrom(cls) && f.Name.StartsWith("r_");
-         }
+        }
 #endif
+
+#if USE_GENERICS
+        MethodInfo GetConstructor(FieldInfo f, string name)
+        { 
+            MethodInfo mi = typeof(StorageImpl).GetMethod(name, BindingFlags.Instance|BindingFlags.NonPublic|BindingFlags.DeclaredOnly);
+            return mi.BindGenericParameters(f.FieldType.GetGenericArguments());
+        }
+#endif
+
+        internal static String getTypeName(Type t)
+        {
+#if USE_GENERICS
+            if (t.HasGenericArguments)
+            { 
+                Type[] genericArgs = t.GetGenericArguments();
+                t = t.GetGenericTypeDefinition();
+                StringBuilder buf = new StringBuilder(t.FullName);
+                buf.Append('=');
+                char sep = '[';
+                for (int j = 0; j < genericArgs.Length; j++) 
+                { 
+                     buf.Append(sep);
+                     sep = ',';
+                     buf.Append(getTypeName(genericArgs[j]));
+                }
+                buf.Append(']');
+                return buf.ToString();
+            }
+#endif
+            return t.FullName;
+        }
+
 
         internal void  buildFieldList(StorageImpl storage, System.Type cls, ArrayList list)
         {
@@ -246,7 +282,7 @@ namespace Perst.Impl
                     FieldDescriptor fd = new FieldDescriptor();
                     fd.field = f;
                     fd.fieldName = f.Name;
-                    fd.className = cls.FullName;
+                    fd.className = getTypeName(cls);
                     FieldType type = getTypeCode(f.FieldType);
                     switch (type) 
                     {
@@ -259,10 +295,21 @@ namespace Perst.Impl
                             } 
                             break;
 #endif
+#if USE_GENERICS
                         case FieldType.tpArrayOfOid:
+                            fd.constructor = GetConstructor(f, "ConstructArray");
+                            hasReferences = true;
+                            break;
+                        case FieldType.tpLink:
+                            fd.constructor = GetConstructor(f, "ConstructLink");
+                            hasReferences = true;
+                            break;
+#else
+                        case FieldType.tpArrayOfOid:
+                        case FieldType.tpLink:
+#endif
                         case FieldType.tpArrayOfObject:
                         case FieldType.tpObject:
-                        case FieldType.tpLink:
                             hasReferences = true;
                             break;
                         case FieldType.tpValue:
@@ -359,7 +406,11 @@ namespace Perst.Impl
             {
                 type = FieldType.tpValue;
             }
-            else if (c.Equals(typeof(Link)))
+            else if (typeof(GenericPArray).IsAssignableFrom(c))
+            {
+                type = FieldType.tpArrayOfOid;
+            }
+            else if (typeof(GenericLink).IsAssignableFrom(c))
             {
                 type = FieldType.tpLink;
             }
@@ -397,7 +448,7 @@ namespace Perst.Impl
         internal ClassDescriptor(StorageImpl storage, Type cls)
         {
             this.cls = cls;
-            name = cls.FullName;
+            name = getTypeName(cls);
             ArrayList list = new ArrayList();
             buildFieldList(storage, cls, list);
             allFields = (FieldDescriptor[]) list.ToArray(typeof(FieldDescriptor));
@@ -409,85 +460,119 @@ namespace Perst.Impl
             resolved = true;
         }
 		
-        internal static bool FindTypeByName(Type t, object name) 
-        { 
-            return t.FullName.Equals(name);
-        }
-
         internal static Type lookup(Storage storage, String name)
         {
-            Type cls = null;
-            ClassLoader loader = storage.Loader;
-            if (loader != null) 
+            Hashtable resolvedTypes = ((StorageImpl)storage).resolvedTypes;
+            lock (resolvedTypes)
             { 
-                cls = loader.LoadClass(name);
-                if (cls != null) 
+                Type cls = (Type)resolvedTypes[name];
+                if (cls != null)
                 { 
                     return cls;
                 }
-            }
-            Module last = lastModule;
-            if (last != null) 
-            {
-                Type t = last.GetType(name);
-                if (t != null) 
-                {
-                    return t;
-                }
-            }
-#if COMPACT_NET_FRAMEWORK
-            foreach (Assembly ass in StorageImpl.assemblies) 
-            { 
-                foreach (Module mod in ass.GetModules()) 
+                ClassLoader loader = storage.Loader;
+                if (loader != null) 
                 { 
-                    Type t = mod.GetType(name);
-                    if (t != null) 
-                    {
-                        if (cls != null) 
-                        { 
-                            throw new StorageError(StorageError.ErrorCode.AMBIGUITY_CLASS, name);
-                        } 
-                        else 
-                        { 
-                            lastModule = mod;
-                            cls = t;
-                        }
-                    }
-                }
-            }
-#else
-            foreach (Assembly ass in AppDomain.CurrentDomain.GetAssemblies()) 
-            { 
-                foreach (Module mod in ass.GetModules()) 
-                { 
-                    foreach (Type t in mod.FindTypes(new TypeFilter(FindTypeByName), name)) 
+                    cls = loader.LoadClass(name);
+                    if (cls != null) 
                     { 
-                        if (cls != null) 
-                        { 
-                            throw new StorageError(StorageError.ErrorCode.AMBIGUITY_CLASS, name);
-                        } 
-                        else 
-                        { 
-                            lastModule = mod;
-                            cls = t;
+                        resolvedTypes[name] = cls;
+                        return cls;
+                    }
+                }
+                Module last = lastModule;
+                if (last != null) 
+                {
+                    cls = last.GetType(name);
+                    if (cls != null) 
+                    {
+                        resolvedTypes[name] = cls;
+                        return cls;
+                    }
+                }
+#if USE_GENERICS
+                int p = name.IndexOf('=');
+                if (p >= 0)
+                { 
+                    Type genericType = lookup(storage, name.Substring(0, p));
+                    Type[] genericParams = new Type[genericType.GetGenericArguments().Length];
+                    int nest = 0;
+                    int i = p += 2; 
+                    int n = 0;
+
+                    while (true)
+                    {   
+                        switch (name[i++])
+                        {
+                        case '[': 
+                            nest += 1;
+                            break;
+                        case ']': 
+                            if (--nest < 0) 
+                            { 
+                                genericParams[n++] = lookup(storage, name.Substring(p, i-p-1));
+                                Debug.Assert(n == genericParams.Length);
+                                cls = genericType.BindGenericParameters(genericParams);
+                                if (cls == null)
+                                { 
+                                    throw new StorageError(StorageError.ErrorCode.CLASS_NOT_FOUND, name);
+                                }
+                                resolvedTypes[name] = cls;
+                                return cls;
+                            }   
+                            break;
+                        case ',':
+                            if (nest == 0) 
+                            {
+                                genericParams[n++] = lookup(storage, name.Substring(p, i-p-1));
+                                p = i;
+                            }
+                            break;
                         }
                     }
                 }
-            }
-            if (cls == null && name.EndsWith("Wrapper")) 
-            {
-                Type originalType = lookup(storage, name.Substring(0, name.Length-7));
-                lock (storage) 
-                {
-                    return ((StorageImpl)storage).getWrapper(originalType);
-                }
-            }
 #endif
-            if (cls == null) 
-            {
-                throw new StorageError(StorageError.ErrorCode.CLASS_NOT_FOUND, name);
+
+#if COMPACT_NET_FRAMEWORK
+                foreach (Assembly ass in StorageImpl.assemblies) 
+#else
+                foreach (Assembly ass in AppDomain.CurrentDomain.GetAssemblies()) 
+#endif
+                { 
+                    foreach (Module mod in ass.GetModules()) 
+                    { 
+                        Type t = mod.GetType(name);
+                        if (t != null) 
+                        {
+                            if (cls != null) 
+                            { 
+                                throw new StorageError(StorageError.ErrorCode.AMBIGUITY_CLASS, name);
+                            } 
+                            else 
+                            { 
+                                lastModule = mod;
+                                cls = t;
+                            }
+                        }
+                    }
+                }
+#if !COMPACT_NET_FRAMEWORK
+                if (cls == null && name.EndsWith("Wrapper")) 
+                {
+                    Type originalType = lookup(storage, name.Substring(0, name.Length-7));
+                    lock (storage) 
+                    {
+                        cls = ((StorageImpl)storage).getWrapper(originalType);
+                    }
+                }
+#endif
+                if (cls == null) 
+                {
+                    throw new StorageError(StorageError.ErrorCode.CLASS_NOT_FOUND, name);
+                }
+                resolvedTypes[name] = cls;
+                return cls;
             }
-            return cls;
         }
 
         public override void OnLoad()
@@ -499,49 +584,20 @@ namespace Perst.Impl
             { 
                 FieldDescriptor fd = allFields[i];
                 fd.Load();
-                if (!fd.className.Equals(scope.FullName)) 
+                fd.field = cls.GetField(fd.fieldName, BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+#if USE_GENERICS
+                switch (fd.type)
                 {
-                    for (scope = cls; scope != null; scope = scope.BaseType) 
-                    { 
-                        if (fd.className.Equals(scope.FullName)) 
-                        {
-                            break;
-                        }
-                    }
+                case FieldType.tpArrayOfOid:
+                    fd.constructor = GetConstructor(fd.field, "ConstructArray");
+                    break;
+                case FieldType.tpLink:
+                    fd.constructor = GetConstructor(fd.field, "ConstructLink");
+                    break;
+                default:
+                    break;
                 }
-                if (scope != null) 
-                {
-                    fd.field = scope.GetField(fd.fieldName, BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.DeclaredOnly);
-                } 
-                else 
-                { 
-                    scope = cls;
-                }
-            }
-            for (int i = n; --i >= 0;) 
-            { 
-                FieldDescriptor fd = allFields[i];
-                if (fd.field == null) 
-                { 
-                
-                    for (scope = cls; scope != null; scope = scope.BaseType) 
-                    { 
-                        FieldInfo f = scope.GetField(fd.fieldName, BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.DeclaredOnly);
-                        if (f != null) 
-                        { 
-                            for (int j = 0; j < n; j++) 
-                            { 
-                                if (allFields[j].field == f) 
-                                { 
-                                    goto hierarchyLoop;
-                                }
-                            }
-                            fd.field = f;
-                            break;
-                        }
-                        hierarchyLoop:;
-                    }
-                }
+#endif
             }
             defaultConstructor = cls.GetConstructor(BindingFlags.Instance|BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic|BindingFlags.DeclaredOnly, null, defaultConstructorProfile, null);
             if (defaultConstructor == null && !typeof(ValueType).IsAssignableFrom(cls)) 

@@ -170,7 +170,7 @@ namespace Perst.Impl
             height -= 1;
             try
             {
-                if (tree.type == ClassDescriptor.FieldType.tpString)
+                if (tree.FieldType == ClassDescriptor.FieldType.tpString)
                 {
                     if (firstKey != null)
                     {
@@ -244,7 +244,7 @@ namespace Perst.Impl
                         }
                     }
                 }
-                else if (tree.type == ClassDescriptor.FieldType.tpArrayOfByte)
+                else if (tree.FieldType == ClassDescriptor.FieldType.tpArrayOfByte)
                 {
                     if (firstKey != null)
                     {
@@ -518,14 +518,14 @@ namespace Perst.Impl
             Array.Copy(src_pg.data, firstKeyOffs + src_idx * itemSize, dst_pg.data, firstKeyOffs + dst_idx * itemSize, len * itemSize);
         }
 		
-        internal static int insert(StorageImpl db, int pageId, Btree tree, BtreeKey ins, int height, bool unique, bool overwrite)
+        internal static BtreeResult insert(StorageImpl db, int pageId, Btree tree, BtreeKey ins, int height, bool unique, bool overwrite)
         {
             Page pg = db.getPage(pageId);
-            int result;
+            BtreeResult result;
             int l = 0, n = getnItems(pg), r = n;
             try
             {
-                if (tree.type == ClassDescriptor.FieldType.tpString)
+                if (tree.FieldType == ClassDescriptor.FieldType.tpString)
                 {
                     while (l < r)
                     {
@@ -543,8 +543,8 @@ namespace Perst.Impl
                     if (--height != 0)
                     {
                         result = insert(db, getKeyStrOid(pg, r), tree, ins, height, unique, overwrite);
-                        Debug.Assert(result != Btree.op_not_found);
-                        if (result != Btree.op_overflow)
+                        Debug.Assert(result != BtreeResult.NotFound);
+                        if (result != BtreeResult.Overflow)
                         {
                             return result;
                         }
@@ -557,11 +557,11 @@ namespace Perst.Impl
                             pg = null;
                             pg = db.putPage(pageId);
                             setKeyStrOid(pg, r, ins.oid);
-                            return Btree.op_overwrite;
+                            return BtreeResult.Overwrite;
                         }
                         else if (unique) 
                         { 
-                            return Btree.op_duplicate;
+                            return BtreeResult.Duplicate;
                         }
                     }
                     db.pool.unfix(pg);
@@ -569,7 +569,7 @@ namespace Perst.Impl
                     pg = db.putPage(pageId);
                     return insertStrKey(db, pg, r, ins, height);
                 }
-                else if (tree.type == ClassDescriptor.FieldType.tpArrayOfByte)
+                else if (tree.FieldType == ClassDescriptor.FieldType.tpArrayOfByte)
                 {
                     while (l < r)
                     {
@@ -587,8 +587,8 @@ namespace Perst.Impl
                     if (--height != 0)
                     {
                         result = insert(db, getKeyStrOid(pg, r), tree, ins, height, unique, overwrite);
-                        Debug.Assert(result != Btree.op_not_found);
-                        if (result != Btree.op_overflow)
+                        Debug.Assert(result != BtreeResult.NotFound);
+                        if (result != BtreeResult.Overflow)
                         {
                             return result;
                         }
@@ -601,11 +601,11 @@ namespace Perst.Impl
                             pg = null;
                             pg = db.putPage(pageId);
                             setKeyStrOid(pg, r, ins.oid);
-                            return Btree.op_overwrite;
+                            return BtreeResult.Overwrite;
                         }
                         else if (unique) 
                         { 
-                            return Btree.op_duplicate;
+                            return BtreeResult.Duplicate;
                         }
                     }
                     db.pool.unfix(pg);
@@ -628,8 +628,8 @@ namespace Perst.Impl
                     if (--height != 0)
                     {
                         result = insert(db, getReference(pg, maxItems - r - 1), tree, ins, height, unique, overwrite);
-                        Debug.Assert(result != Btree.op_not_found);
-                        if (result != Btree.op_overflow)
+                        Debug.Assert(result != BtreeResult.NotFound);
+                        if (result != BtreeResult.Overflow)
                         {
                             return result;
                         }
@@ -643,17 +643,17 @@ namespace Perst.Impl
                             pg = null;
                             pg = db.putPage(pageId);
                             setReference(pg, maxItems - r - 1, ins.oid);
-                            return Btree.op_overwrite;
+                            return BtreeResult.Overwrite;
                         }
                         else if (unique) 
                         { 
-                            return Btree.op_duplicate;
+                            return BtreeResult.Duplicate;
                         }
                     }
                     db.pool.unfix(pg);
                     pg = null;
                     pg = db.putPage(pageId);
-                    int itemSize = ClassDescriptor.Sizeof[(int)tree.type];
+                    int itemSize = ClassDescriptor.Sizeof[(int)tree.FieldType];
                     int max = keySpace / (4 + itemSize);
                     if (n < max)
                     {
@@ -661,7 +661,7 @@ namespace Perst.Impl
                         memcpy(pg, maxItems - n - 1, pg, maxItems - n, n - r, 4);
                         ins.pack(pg, r);
                         setnItems(pg, getnItems(pg) + 1);
-                        return Btree.op_done;
+                        return BtreeResult.Done;
                     }
                     else
                     {
@@ -691,7 +691,7 @@ namespace Perst.Impl
                             memcpy(pg, maxItems - max + m - 1, pg, maxItems - max, max - r, 4);
                         }
                         ins.oid = pageId;
-                        ins.extract(b, firstKeyOffs + (m - 1) * itemSize, tree.type);
+                        ins.extract(b, firstKeyOffs + (m - 1) * itemSize, tree.FieldType);
                         if (height == 0)
                         {
                             setnItems(pg, max - m + 1);
@@ -703,7 +703,7 @@ namespace Perst.Impl
                             setnItems(b, m - 1);
                         }
                         db.pool.unfix(b);
-                        return Btree.op_overflow;
+                        return BtreeResult.Overflow;
                     }
                 }
             }
@@ -716,7 +716,7 @@ namespace Perst.Impl
             }
         }
 		
-        internal static int insertStrKey(StorageImpl db, Page pg, int r, BtreeKey ins, int height)
+        internal static BtreeResult insertStrKey(StorageImpl db, Page pg, int r, BtreeKey ins, int height)
         {
             int nItems = getnItems(pg);
             int size = getSize(pg);
@@ -819,7 +819,7 @@ namespace Perst.Impl
                         setnItems(pg, nItems);
                         ins.oid = pageId;
                         db.pool.unfix(b);
-                        return Btree.op_overflow;
+                        return BtreeResult.Overflow;
                     }
                     moved += keyLen * 2;
                     prevDelta = delta;
@@ -842,10 +842,10 @@ namespace Perst.Impl
             }
             setnItems(pg, nItems);
             setSize(pg, size);
-            return size + strKeySize * (nItems + 1) < keySpace / 2?Btree.op_underflow:Btree.op_done;
+            return size + strKeySize * (nItems + 1) < keySpace / 2?BtreeResult.Underflow:BtreeResult.Done;
         }
 		
-        internal static int insertByteArrayKey(StorageImpl db, Page pg, int r, BtreeKey ins, int height)
+        internal static BtreeResult insertByteArrayKey(StorageImpl db, Page pg, int r, BtreeKey ins, int height)
         {
             int nItems = getnItems(pg);
             int size = getSize(pg);
@@ -948,7 +948,7 @@ namespace Perst.Impl
                         setnItems(pg, nItems);
                         ins.oid = pageId;
                         db.pool.unfix(b);
-                        return Btree.op_overflow;
+                        return BtreeResult.Overflow;
                     }
                     moved += keyLen;
                     prevDelta = delta;
@@ -971,7 +971,7 @@ namespace Perst.Impl
             }
             setnItems(pg, nItems);
             setSize(pg, size);
-            return size + strKeySize * (nItems + 1) < keySpace / 2?Btree.op_underflow:Btree.op_done;
+            return size + strKeySize * (nItems + 1) < keySpace / 2?BtreeResult.Underflow:BtreeResult.Done;
         }
 		
 		
@@ -1151,7 +1151,7 @@ namespace Perst.Impl
             return nItems;
         }
 		
-        internal static int removeStrKey(Page pg, int r)
+        internal static BtreeResult removeStrKey(Page pg, int r)
         {
             int len = getKeyStrSize(pg, r) * 2;
             int offs = getKeyStrOffs(pg, r);
@@ -1178,10 +1178,10 @@ namespace Perst.Impl
                 setSize(pg, size -= len);
             }
             setnItems(pg, nItems - 1);
-            return size + strKeySize * nItems < keySpace / 2?Btree.op_underflow:Btree.op_done;
+            return size + strKeySize * nItems < keySpace / 2?BtreeResult.Underflow:BtreeResult.Done;
         }
 		
-        internal static int removeByteArrayKey(Page pg, int r)
+        internal static BtreeResult removeByteArrayKey(Page pg, int r)
         {
             int len = getKeyStrSize(pg, r);
             int offs = getKeyStrOffs(pg, r);
@@ -1208,24 +1208,24 @@ namespace Perst.Impl
                 setSize(pg, size -= len);
             }
             setnItems(pg, nItems - 1);
-            return size + strKeySize * nItems < keySpace / 2?Btree.op_underflow:Btree.op_done;
+            return size + strKeySize * nItems < keySpace / 2?BtreeResult.Underflow:BtreeResult.Done;
         }
 		
-        internal static int replaceStrKey(StorageImpl db, Page pg, int r, BtreeKey ins, int height)
+        internal static BtreeResult replaceStrKey(StorageImpl db, Page pg, int r, BtreeKey ins, int height)
         {
             ins.oid = getKeyStrOid(pg, r);
             removeStrKey(pg, r);
             return insertStrKey(db, pg, r, ins, height);
         }
 		
-        internal static int replaceByteArrayKey(StorageImpl db, Page pg, int r, BtreeKey ins, int height)
+        internal static BtreeResult replaceByteArrayKey(StorageImpl db, Page pg, int r, BtreeKey ins, int height)
         {
             ins.oid = getKeyStrOid(pg, r);
             removeByteArrayKey(pg, r);
             return insertByteArrayKey(db, pg, r, ins, height);
         }
 		
-        internal static int handlePageUnderflow(StorageImpl db, Page pg, int r, ClassDescriptor.FieldType type, BtreeKey rem, int height)
+        internal static BtreeResult handlePageUnderflow(StorageImpl db, Page pg, int r, ClassDescriptor.FieldType type, BtreeKey rem, int height)
         {
             int nItems = getnItems(pg);
             if (type == ClassDescriptor.FieldType.tpString)
@@ -1287,7 +1287,7 @@ namespace Perst.Impl
                                 addSize = subSize = getKeyStrSize(b, i);
                             }
                         }
-                        int result = Btree.op_done;
+                        BtreeResult result = BtreeResult.Done;
                         if (i > 0)
                         {
                             k = i;
@@ -1407,7 +1407,7 @@ namespace Perst.Impl
                                 addSize = subSize = getKeyStrSize(b, bn - i - 1);
                             }
                         }
-                        int result = Btree.op_done;
+                        BtreeResult result = BtreeResult.Done;
                         if (i > 0)
                         {
                             k = i;
@@ -1542,7 +1542,7 @@ namespace Perst.Impl
                                 addSize = subSize = getKeyStrSize(b, i);
                             }
                         }
-                        int result = Btree.op_done;
+                        BtreeResult result = BtreeResult.Done;
                         if (i > 0)
                         {
                             k = i;
@@ -1662,7 +1662,7 @@ namespace Perst.Impl
                                 addSize = subSize = getKeyStrSize(b, bn - i - 1);
                             }
                         }
-                        int result = Btree.op_done;
+                        BtreeResult result = BtreeResult.Done;
                         if (i > 0)
                         {
                             k = i;
@@ -1771,7 +1771,7 @@ namespace Perst.Impl
                         setnItems(a, getnItems(a) + i);
                         db.pool.unfix(a);
                         db.pool.unfix(b);
-                        return Btree.op_done;
+                        return BtreeResult.Done;
                     }
                     else
                     {
@@ -1785,7 +1785,7 @@ namespace Perst.Impl
                         setnItems(pg, nItems - 1);
                         db.pool.unfix(a);
                         db.pool.unfix(b);
-                        return nItems * (itemSize + 4) < keySpace / 2?Btree.op_underflow:Btree.op_done;
+                        return nItems * (itemSize + 4) < keySpace / 2?BtreeResult.Underflow:BtreeResult.Done;
                     }
                 }
                 else
@@ -1819,7 +1819,7 @@ namespace Perst.Impl
                         setnItems(a, getnItems(a) + i);
                         db.pool.unfix(a);
                         db.pool.unfix(b);
-                        return Btree.op_done;
+                        return BtreeResult.Done;
                     }
                     else
                     {
@@ -1838,20 +1838,20 @@ namespace Perst.Impl
                         setnItems(pg, nItems - 1);
                         db.pool.unfix(a);
                         db.pool.unfix(b);
-                        return nItems * (itemSize + 4) < keySpace / 2?Btree.op_underflow:Btree.op_done;
+                        return nItems * (itemSize + 4) < keySpace / 2?BtreeResult.Underflow:BtreeResult.Done;
                     }
                 }
             }
         }
 		
-        internal static int remove(StorageImpl db, int pageId, Btree tree, BtreeKey rem, int height)
+        internal static BtreeResult remove(StorageImpl db, int pageId, Btree tree, BtreeKey rem, int height)
         {
             Page pg = db.getPage(pageId);
             try
             {
                 int i, n = getnItems(pg), l = 0, r = n;
 				
-                if (tree.type == ClassDescriptor.FieldType.tpString)
+                if (tree.FieldType == ClassDescriptor.FieldType.tpString)
                 {
                     while (l < r)
                     {
@@ -1871,16 +1871,16 @@ namespace Perst.Impl
                         {
                             switch (remove(db, getKeyStrOid(pg, r), tree, rem, height))
                             {
-                                case Btree.op_underflow: 
+                                case BtreeResult.Underflow: 
                                     db.pool.unfix(pg);
                                     pg = null;
                                     pg = db.putPage(pageId);
-                                    return handlePageUnderflow(db, pg, r, tree.type, rem, height);
+                                    return handlePageUnderflow(db, pg, r, tree.FieldType, rem, height);
 								
-                                case Btree.op_done: 
-                                    return Btree.op_done;
+                                case BtreeResult.Done: 
+                                    return BtreeResult.Done;
 								
-                                case Btree.op_overflow: 
+                                case BtreeResult.Overflow: 
                                     db.pool.unfix(pg);
                                     pg = null;
                                     pg = db.putPage(pageId);
@@ -1914,7 +1914,7 @@ namespace Perst.Impl
                         }
                     }
                 } 
-                else if (tree.type == ClassDescriptor.FieldType.tpArrayOfByte)
+                else if (tree.FieldType == ClassDescriptor.FieldType.tpArrayOfByte)
                 {
                     while (l < r)
                     {
@@ -1934,16 +1934,16 @@ namespace Perst.Impl
                         {
                             switch (remove(db, getKeyStrOid(pg, r), tree, rem, height))
                             {
-                                case Btree.op_underflow: 
+                                case BtreeResult.Underflow: 
                                     db.pool.unfix(pg);
                                     pg = null;
                                     pg = db.putPage(pageId);
-                                    return handlePageUnderflow(db, pg, r, tree.type, rem, height);
+                                    return handlePageUnderflow(db, pg, r, tree.FieldType, rem, height);
 								
-                                case Btree.op_done: 
-                                    return Btree.op_done;
+                                case BtreeResult.Done: 
+                                    return BtreeResult.Done;
 								
-                                case Btree.op_overflow: 
+                                case BtreeResult.Overflow: 
                                     db.pool.unfix(pg);
                                     pg = null;
                                     pg = db.putPage(pageId);
@@ -1979,7 +1979,7 @@ namespace Perst.Impl
                 } 
                 else // scalars
                 {
-                    int itemSize = ClassDescriptor.Sizeof[(int)tree.type];
+                    int itemSize = ClassDescriptor.Sizeof[(int)tree.FieldType];
                     while (l < r)
                     {
                         i = (l + r) >> 1;
@@ -2008,7 +2008,7 @@ namespace Perst.Impl
                                     memcpy(pg, r, pg, r + 1, n - r - 1, itemSize);
                                     memcpy(pg, maxItems - n + 1, pg, maxItems - n, n - r - 1, 4);
                                     setnItems(pg, --n);
-                                    return n * (itemSize + 4) < keySpace / 2?Btree.op_underflow:Btree.op_done;
+                                    return n * (itemSize + 4) < keySpace / 2?BtreeResult.Underflow:BtreeResult.Done;
                                 }
                             }
                             else
@@ -2017,25 +2017,25 @@ namespace Perst.Impl
                             }
                             r += 1;
                         }
-                        return Btree.op_not_found;
+                        return BtreeResult.NotFound;
                     }
                     do 
                     {
                         switch (remove(db, getReference(pg, maxItems - r - 1), tree, rem, height))
                         {
-                            case Btree.op_underflow: 
+                            case BtreeResult.Underflow: 
                                 db.pool.unfix(pg);
                                 pg = db.putPage(pageId);
-                                return handlePageUnderflow(db, pg, r, tree.type, rem, height);
+                                return handlePageUnderflow(db, pg, r, tree.FieldType, rem, height);
 							
-                            case Btree.op_done: 
-                                return Btree.op_done;
+                            case BtreeResult.Done: 
+                                return BtreeResult.Done;
 							
                         }
                     }
                     while (++r <= n);
                 }
-                return Btree.op_not_found;
+                return BtreeResult.NotFound;
             }
             finally
             {

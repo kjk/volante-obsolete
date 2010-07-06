@@ -5,7 +5,7 @@ namespace Perst.Impl
     using System.Diagnostics;
     using System.Text;
     using Perst;
-	
+
     public class XMLExporter
     {
         public XMLExporter(StorageImpl storage, System.IO.StreamWriter writer)
@@ -40,26 +40,46 @@ namespace Perst.Impl
                                 byte[] obj = storage.get(oid);
                                 int typeOid = ObjectHeader.getType(obj, 0);
                                 ClassDescriptor desc = storage.findClassDescriptor(typeOid);
-                                if (desc.cls == typeof(Btree))
+                                string name = desc.name;
+#if USE_GENERICS
+                                if (typeof(Btree).IsAssignableFrom(desc.cls)) 
                                 {
-                                    exportIndex(oid, obj, "Perst.Impl.Btree");
+                                    Type t = desc.cls.GetGenericTypeDefinition();
+                                    if (t == typeof(Btree<,>) || t == typeof(BitIndex<>)) 
+                                    { 
+                                        exportIndex(oid, obj, name);
+                                    }
+                                    else if (t == typeof(PersistentSet<>))
+                                    {
+                                         exportSet(oid, obj, name);
+                                    }
+                                    else if (t == typeof(BtreeFieldIndex<,>))
+                                    {
+                                         exportFieldIndex(oid, obj, name);
+                                    }
+                                    else if (t == typeof(BtreeMultiFieldIndex<>))
+                                    {
+                                        exportMultiFieldIndex(oid, obj, name);
+                                    }
                                 }
-                                else if (desc.cls == typeof(BitIndexImpl))
+#else
+                                if (desc.cls == typeof(Btree) || desc.cls == typeof(BitIndexImpl)) 
                                 {
-                                    exportIndex(oid, obj, "Perst.Impl.BitIndexImpl");
+                                    exportIndex(oid, obj, name);
                                 }
                                 else if (desc.cls == typeof(PersistentSet))
                                 {
-                                    exportSet(oid, obj);
+                                    exportSet(oid, obj, name);
                                 }
                                 else if (desc.cls == typeof(BtreeFieldIndex))
                                 {
-                                    exportFieldIndex(oid, obj);
+                                    exportFieldIndex(oid, obj, name);
                                 }
                                 else if (desc.cls == typeof(BtreeMultiFieldIndex))
                                 {
-                                    exportMultiFieldIndex(oid, obj);
+                                    exportMultiFieldIndex(oid, obj, name);
                                 }
+#endif
                                 else
                                 {
                                     String className = exportIdentifier(desc.name);
@@ -79,48 +99,63 @@ namespace Perst.Impl
 		
         internal String exportIdentifier(String name) 
         { 
-            return name.Replace('+', '-');
+            name = name.Replace('+', '-');
+#if USE_GENERICS
+            name = name.Replace("`", ".1");
+            name = name.Replace(",", ".2");
+            name = name.Replace("[", ".3");
+            name = name.Replace("]", ".4");
+            name = name.Replace("=", ".5");
+#endif
+            return name;
         }
 
-        internal void exportSet(int oid,  byte[] data) 
-        { 
-            Btree btree = new Btree(data, ObjectHeader.Sizeof);
+        Btree createBtree(int oid, byte[] data) 
+        {
+            Btree btree = storage.createBtreeStub(data, 0);
             storage.assignOid(btree, oid);
-            writer.Write(" <Perst.Impl.PersistentSet id=\"" + oid + "\">\n");
+            return btree;
+        }
+
+        internal void exportSet(int oid, byte[] data, string name) 
+        { 
+            Btree btree = createBtree(oid, data);
+            name = exportIdentifier(name);
+            writer.Write(" <" + name + " id=\"" + oid + "\">\n");
             btree.export(this);
-            writer.Write(" </Perst.Impl.PersistentSet>\n");
+            writer.Write(" </" + name + ">\n");
         }
 
         internal void  exportIndex(int oid, byte[] data, string name)
         {
-            Btree btree = new Btree(data, ObjectHeader.Sizeof);
-            storage.assignOid(btree, oid);
-            writer.Write(" <" + name + " id=\"" + oid + "\" unique=\"" + (btree.unique ? '1' : '0') 
-                + "\" type=\"" + btree.type + "\">\n");
+            Btree btree = createBtree(oid, data);
+            name = exportIdentifier(name);
+            writer.Write(" <" + name + " id=\"" + oid + "\" unique=\"" + (btree.IsUnique ? '1' : '0') 
+                + "\" type=\"" + btree.FieldType + "\">\n");
             btree.export(this);
             writer.Write(" </" + name + ">\n");
         }
 		
-        internal void  exportFieldIndex(int oid, byte[] data)
+        internal void  exportFieldIndex(int oid, byte[] data, string name)
         {
-            Btree btree = new Btree(data, ObjectHeader.Sizeof);
-            storage.assignOid(btree, oid);
-            writer.Write(" <Perst.Impl.BtreeFieldIndex id=\"" + oid + "\" unique=\"" + (btree.unique?'1':'0') + "\" class=");
-            int offs = exportString(data, Btree.Sizeof);
+            Btree btree = createBtree(oid, data);
+            name = exportIdentifier(name);
+            writer.Write(" <" + name + " id=\"" + oid + "\" unique=\"" + (btree.IsUnique?'1':'0') + "\" class=");
+            int offs = exportString(data, btree.HeaderSize);
             writer.Write(" field=");
             offs = exportString(data, offs);
             writer.Write(" autoinc=\"" + Bytes.unpack8(data, offs) + "\">\n");
             btree.export(this);
-            writer.Write(" </Perst.Impl.BtreeFieldIndex>\n");
+            writer.Write(" </" + name + ">\n");
         }
 		
-        internal void exportMultiFieldIndex(int oid,  byte[] data) 
+        internal void exportMultiFieldIndex(int oid, byte[] data, string name) 
         { 
-            Btree btree = new Btree(data, ObjectHeader.Sizeof);
-            storage.assignOid(btree, oid);
-            writer.Write(" <Perst.Impl.BtreeMultiFieldIndex id=\"" + oid + "\" unique=\"" + (btree.unique ? '1' : '0') 
+            Btree btree = createBtree(oid, data);
+            name = exportIdentifier(name);
+            writer.Write(" <" + name + " id=\"" + oid + "\" unique=\"" + (btree.IsUnique ? '1' : '0') 
                 + "\" class=");
-            int offs = exportString(data, Btree.Sizeof);
+            int offs = exportString(data, btree.HeaderSize);
             int nFields = Bytes.unpack4(data, offs);
             offs += 4;
             for (int i = 0; i < nFields; i++) 
@@ -139,7 +174,7 @@ namespace Perst.Impl
             }
             btree.export(this); 
             compoundKeyTypes = null;
-            writer.Write(" </Perst.Impl.BtreeMultiFieldIndex>\n");
+            writer.Write(" </" + name + ">\n");
         }
 
         int exportKey(byte[] body, int offs, int size, ClassDescriptor.FieldType type) 

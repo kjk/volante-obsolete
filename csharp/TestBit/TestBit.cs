@@ -58,8 +58,13 @@ class Car : Persistent
 
 
 class Catalogue : Persistent {
+#if USE_GENERICS
+    internal FieldIndex<string,Car> modelIndex;
+    internal BitIndex<Car>          optionIndex;
+#else
     internal FieldIndex modelIndex;
     internal BitIndex   optionIndex;
+#endif
 };
     
 
@@ -77,11 +82,20 @@ public class TestBit
         if (root == null) 
         { 
             root = new Catalogue();
+#if USE_GENERICS
+            root.optionIndex = db.CreateBitIndex<Car>();
+            root.modelIndex = db.CreateFieldIndex<string,Car>("model", true);
+#else
             root.optionIndex = db.CreateBitIndex();
             root.modelIndex = db.CreateFieldIndex(typeof(Car), "model", true);
+#endif
             db.Root = root;
         }
+#if USE_GENERICS
+        BitIndex<Car> index = root.optionIndex;
+#else
         BitIndex index = root.optionIndex;
+#endif
         DateTime start = DateTime.Now;
         long rnd = 1999;
         int i, n;        

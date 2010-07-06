@@ -1,17 +1,17 @@
 using Perst;
 using System;
 
-class Supplier : Persistent {
+public class Supplier : Persistent {
     public String name;
     public String location;
 }
 
-class Detail : Persistent {
+public class Detail : Persistent {
     public String id;
     public float  weight;
 }
 
-class Shipment : Persistent { 
+public class Shipment : Persistent { 
     public Supplier supplier;
     public Detail   detail;
     public int      quantity;
@@ -19,11 +19,17 @@ class Shipment : Persistent {
 }
 
 public class TestSSD : Persistent {
+#if USE_GENERICS
+    public FieldIndex<string,Supplier>    supplierName;
+    public FieldIndex<string,Detail>     detailId;
+    public FieldIndex<Supplier,Shipment> shipmentSupplier;
+    public FieldIndex<Detail,Shipment>   shipmentDetail;
+#else
     public FieldIndex supplierName;
     public FieldIndex detailId;
     public FieldIndex shipmentSupplier;
     public FieldIndex shipmentDetail;
-     
+#endif
 
     static void skip(String prompt) {
         Console.Write(prompt);
@@ -76,10 +82,17 @@ public class TestSSD : Persistent {
         TestSSD root = (TestSSD)db.Root;
         if (root == null) { 
             root = new TestSSD();
+#if USE_GENERICS
+            root.supplierName = db.CreateFieldIndex<string,Supplier>("name", true);
+            root.detailId = db.CreateFieldIndex<string,Detail>("id", true);
+            root.shipmentSupplier = db.CreateFieldIndex<Supplier,Shipment>("supplier", false);
+            root.shipmentDetail = db.CreateFieldIndex<Detail,Shipment>("detail", false);
+#else
             root.supplierName = db.CreateFieldIndex(typeof(Supplier), "name", true);
             root.detailId = db.CreateFieldIndex(typeof(Detail), "id", true);
             root.shipmentSupplier = db.CreateFieldIndex(typeof(Shipment), "supplier", false);
             root.shipmentDetail = db.CreateFieldIndex(typeof(Shipment), "detail", false);
+#endif
             db.Root = root;
         }
         while (true) { 
@@ -110,12 +123,20 @@ public class TestSSD : Persistent {
                     db.Commit();
                     continue;
                   case 3:
-                    supplier = (Supplier)root.supplierName.Get(new Key(input("Supplier name: ")));
+#if USE_GENERICS
+                    supplier = root.supplierName[input("Supplier name: ")];
+#else
+                    supplier = (Supplier)root.supplierName[input("Supplier name: ")];
+#endif
                     if (supplier == null) { 
                         Console.WriteLine("No such supplier!");
                         break;
                     }
-                    detail = (Detail)root.detailId.Get(new Key(input("Detail ID: ")));
+#if USE_GENERICS
+                    detail = root.detailId[input("Detail ID: ")];
+#else
+                    detail = (Detail)root.detailId[input("Detail ID: ")];
+#endif
                     if (detail == null) { 
                         Console.WriteLine("No such detail!");
                         break;
@@ -140,7 +161,11 @@ public class TestSSD : Persistent {
                     }
                     break;
                   case 6:
-                    detail = (Detail)root.detailId.Get(new Key(input("Detail ID: ")));
+#if USE_GENERICS
+                    detail = root.detailId[input("Detail ID: ")];
+#else
+                    detail = (Detail)root.detailId[input("Detail ID: ")];
+#endif
                     if (detail == null) { 
                         Console.WriteLine("No such detail!");
                         break;
@@ -151,12 +176,20 @@ public class TestSSD : Persistent {
                     }
                     break;
                   case 7:
-                    supplier = (Supplier)root.supplierName.Get(new Key(input("Supplier name: ")));
+#if USE_GENERICS
+                    supplier = root.supplierName[input("Supplier name: ")];
+#else
+                    supplier = (Supplier)root.supplierName[input("Supplier name: ")];
+#endif
                     if (supplier == null) { 
                         Console.WriteLine("No such supplier!");
                         break;
                     }
+#if USE_GENERICS
+                    shipments = root.shipmentSupplier.Get(supplier, supplier);
+#else
                     shipments = (Shipment[])root.shipmentSupplier.Get(new Key(supplier), new Key(supplier));
+#endif
                     for (i = 0; i < shipments.Length; i++) { 
                         Console.WriteLine("Detail ID: " + shipments[i].detail.id);
                     }

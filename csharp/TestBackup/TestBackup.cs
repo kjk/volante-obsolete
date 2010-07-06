@@ -15,9 +15,15 @@ public class TestBackup
 
     class Root:Persistent
     {
+#if USE_GENERICS
+        internal Index<string,Record> strIndex;
+        internal FieldIndex<long,Record> intIndex;
+        internal MultiFieldIndex<Record> compoundIndex;
+#else
         internal Index strIndex;
         internal FieldIndex intIndex;
         internal FieldIndex compoundIndex;
+#endif
     }
 
     internal const int nRecords = 100000;
@@ -33,14 +39,26 @@ public class TestBackup
         if (root == null)
         {
             root = new Root();
-            root.strIndex = db.CreateIndex(typeof(System.String), true);
+#if USE_GENERICS
+            root.strIndex = db.CreateIndex<string,Record>(true);
+            root.intIndex = db.CreateFieldIndex<long,Record>("intKey", true);
+            root.compoundIndex = db.CreateFieldIndex<Record>(new String[]{"strKey", "intKey"}, true);
+#else
+            root.strIndex = db.CreateIndex(typeof(string), true);
             root.intIndex = db.CreateFieldIndex(typeof(Record), "intKey", true);
             root.compoundIndex = db.CreateFieldIndex(typeof(Record), new String[]{"strKey", "intKey"}, true);
+#endif
             db.Root = root;
         }
+#if USE_GENERICS
+        FieldIndex<long,Record> intIndex = root.intIndex;
+        MultiFieldIndex<Record> compoundIndex = root.compoundIndex;
+        Index<string,Record> strIndex = root.strIndex;
+#else
         FieldIndex intIndex = root.intIndex;
         FieldIndex compoundIndex = root.compoundIndex;
         Index strIndex = root.strIndex;
+#endif        
         DateTime start = DateTime.Now;
         long key = 1999;
         for (i = 0; i < nRecords; i++)
@@ -77,9 +95,15 @@ public class TestBackup
         {
             key = (3141592621L * key + 2718281829L) % 1000000007L;
             String strKey = System.Convert.ToString(key);
-            Record rec1 = (Record) intIndex.Get(new Key(key));
-            Record rec2 = (Record) strIndex.Get(new Key(strKey));
+#if USE_GENERICS
+            Record rec1 = intIndex.Get(key);
+            Record rec2 = strIndex.Get(strKey);
+            Record rec3 = compoundIndex.Get(new Key(strKey, key));
+#else
+            Record rec1 = (Record)intIndex.Get(new Key(key));
+            Record rec2 = (Record)strIndex.Get(new Key(strKey));
             Record rec3 = (Record)compoundIndex.Get(new Key(strKey, key));
+#endif
             Debug.Assert(rec1 != null);
             Debug.Assert(rec1 == rec2);
             Debug.Assert(rec1 == rec3);

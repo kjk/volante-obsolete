@@ -1,7 +1,11 @@
 namespace Perst
 {
     using System;
+#if USE_GENERICS
+    using System.Collections.Generic;
+#else
     using System.Collections;
+#endif
     using System.Reflection;
 	
     /// <summary> Interface of indexed field. 
@@ -12,8 +16,13 @@ namespace Perst
     /// (each boundary can be specified or unspecified and can be inclusive or exclusive)
     /// Key should be of scalar, String, DateTime or peristent object type.
     /// </summary>
+#if USE_GENERICS
+    public interface FieldIndex<K,V> : GenericIndex<K,V> where V:class,IPersistent
+#else
     public interface FieldIndex : GenericIndex
+#endif
     {
+#if !USE_GENERICS
         /// <summary> 
         /// Check if index contains specified object
         /// </summary>
@@ -22,6 +31,7 @@ namespace Perst
         /// <returns><code>true</code> if object is present in the index, <code>false</code> otherwise
         /// </returns>
         bool Contains(IPersistent obj);
+#endif
 
         /// <summary> Put new object in the index. 
         /// </summary>
@@ -33,7 +43,11 @@ namespace Perst
         /// of the key in the index. 
         /// 
         /// </returns>
+#if USE_GENERICS
+        bool Put(V obj);
+#else
         bool Put(IPersistent obj);
+#endif
 
         /// <summary>
         /// Associate new object with the key specified by object field value. 
@@ -46,7 +60,11 @@ namespace Perst
         /// </param>
         /// <returns>object previously associated with this key, <code>null</code> if there was no such object
         /// </returns>
+#if USE_GENERICS
+        V Set(V obj);
+#else
         IPersistent Set(IPersistent obj);
+#endif
 
         /// <summary>
         /// Assign to the integer indexed field unique autoicremented value and 
@@ -61,17 +79,20 @@ namespace Perst
         /// </param>
         /// <exception cref="Perst.StorageError"><code>StorageError(StorageError.ErrorCode.INCOMPATIBLE_KEY_TYPE)</code> 
         /// is thrown when indexed field has type other than <code>int</code> or <code>long</code></exception>
+#if USE_GENERICS
+        void Append(V obj);
+#else
         void Append(IPersistent obj);
+#endif
 
-
+#if !USE_GENERICS
         /// <summary> Remove object from the index
         /// </summary>
         /// <param name="obj">object removed from the index. Object should contain indexed field. 
         /// </param>
-        /// <exception cref="Perst.StorageError">StorageError(StorageError.ErrorCode.KEY_NOT_FOUND) exception if there is no such key in the index
-        /// 
-        /// </exception>
-        void  Remove(IPersistent obj);
+        /// <returns><code>true</code> if member was successfully removed or <code>false</code> if member is not found</returns>
+        bool Remove(IPersistent obj);
+#endif
 
         /// <summary> Remove object with specified key from the unique index.
         /// </summary>
@@ -82,7 +103,11 @@ namespace Perst
         /// or StorageError(StorageError.ErrorCode.KEY_NOT_UNIQUE) if index is not unique.
         /// 
         /// </exception>
+#if USE_GENERICS
+        V Remove(Key key);
+#else
         IPersistent Remove(Key key);
+#endif
 
         /// <summary> Remove object with specified key from the unique index.
         /// </summary>
@@ -93,7 +118,11 @@ namespace Perst
         /// or StorageError(StorageError.ErrorCode.KEY_NOT_UNIQUE) if index is not unique.
         /// 
         /// </exception>
+#if USE_GENERICS
+        V RemoveKey(K key);
+#else
         IPersistent Remove(object key);
+#endif
 
         /// <summary>
         /// Get class obejct objects which can be inserted in this index
@@ -102,9 +131,24 @@ namespace Perst
         Type IndexedClass{get;}
 
         /// <summary>
+        /// Get key field
+        /// </summary>
+        /// <returns>field info for key field</returns>
+        MemberInfo KeyField{get;}
+    }
+
+    /// <summary> Interface of multifield index. 
+    /// </summary>
+#if USE_GENERICS
+    public interface MultiFieldIndex<V> : FieldIndex<object[],V> where V:class,IPersistent
+#else
+    public interface MultiFieldIndex : FieldIndex
+#endif
+    {
+        /// <summary>
         /// Get fields used as a key
         /// </summary>
         /// <returns>array of index key fields</returns>
         MemberInfo[] KeyFields{get;}
-   }
+    }
 }

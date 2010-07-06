@@ -28,7 +28,11 @@ namespace Perst.Impl
             file.Flush();
 #if !COMPACT_NET_FRAMEWORK 
             if (!noFlush) { 
+#if USE_GENERICS
+                FlushFileBuffers(file.SafeFileHandle.DangerousGetHandle().ToInt32());
+#else
                 FlushFileBuffers(file.Handle.ToInt32());
+#endif
             }
 #endif
         }

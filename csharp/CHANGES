@@ -369,3 +369,9 @@ in the storage, it just assigns OID and marks it as modified
 2. Add Storage.createScalableSet method for efficient (space and speed) support of set of references 
    small as well as large number of members
 3. Fix bugs in virtual proxy transparent API implementation
+
+--- Release version 2.47 28.12.2004 -------------------------------------
+1. Support C# 2.0 generics. When Perst.NET is build with USE_GENERICS defined, 
+all Perst coolections will be provided as parameterized classes implementing
+System.Collections.Generic.ICOllection<T>
+

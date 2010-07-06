@@ -15,8 +15,13 @@ public class TestEnumerator
 
     class Indices : Persistent 
     {
+#if USE_GENERICS
+        internal Index<string,Record> strIndex;
+        internal Index<long,Record> intIndex;
+#else
         internal Index strIndex;
         internal Index intIndex;
+#endif
     }
 
     static public void Main(string[] args) 
@@ -39,16 +44,27 @@ public class TestEnumerator
         if (root == null) 
         { 
             root = new Indices();
+#if USE_GENERICS
+            root.strIndex = db.CreateIndex<string,Record>(false);
+            root.intIndex = db.CreateIndex<long,Record>(false);
+#else
             root.strIndex = db.CreateIndex(typeof(string), false);
             root.intIndex = db.CreateIndex(typeof(long), false);
+#endif
             db.Root = root;
         }
+#if USE_GENERICS
+        Index<long,Record>   intIndex = root.intIndex;
+        Index<string,Record> strIndex = root.strIndex;
+        Record[] records;
+#else
         Index intIndex = root.intIndex;
         Index strIndex = root.strIndex;
+        IPersistent[] records;
+#endif
         DateTime start = DateTime.Now;
         long key = 1999;
         int i, j;
-        IPersistent[] records;
 
         for (i = 0; i < nRecords; i++) 
         { 
@@ -58,8 +74,8 @@ public class TestEnumerator
             rec.strKey = Convert.ToString(key);
             for (j = (int)(key % 10); --j >= 0;) 
             {  
-                intIndex.Put(rec.intKey, rec);                
-                strIndex.Put(rec.strKey, rec);        
+                intIndex[rec.intKey] = rec;                
+                strIndex[rec.strKey] = rec;        
             }        
         }
         db.Commit();
@@ -147,9 +163,9 @@ public class TestEnumerator
             }
             Debug.Assert(j == records.Length);
 
-            records = intIndex.Get(null, null);
+            records = intIndex.ToArray();
             j = 0;
-            foreach (Record rec in intIndex.Range(null, null, IterationOrder.AscentOrder)) 
+            foreach (Record rec in intIndex) 
             {
                 Debug.Assert(rec == records[j++]);
             }
@@ -224,9 +240,9 @@ public class TestEnumerator
             }
             Debug.Assert(j == 0);
 
-            records = intIndex.Get(null, null);
+            records = intIndex.ToArray();
             j = records.Length;
-            foreach (Record rec in intIndex.Range(null, null, IterationOrder.DescentOrder)) 
+            foreach (Record rec in intIndex.Reverse()) 
             {
                 Debug.Assert(rec == records[--j]);
             }
@@ -300,9 +316,9 @@ public class TestEnumerator
             }
             Debug.Assert(j == records.Length);
 
-            records = strIndex.Get(null, null);
+            records = strIndex.ToArray();
             j = 0;
-            foreach (Record rec in strIndex.Range(null, null, IterationOrder.AscentOrder)) 
+            foreach (Record rec in strIndex) 
             {
                 Debug.Assert(rec == records[j++]);
             }
@@ -377,9 +393,9 @@ public class TestEnumerator
             }
             Debug.Assert(j == 0);
 
-            records = strIndex.Get(null, null);
+            records = strIndex.ToArray();
             j = records.Length;
-            foreach (Record rec in strIndex.Range(null, null, IterationOrder.DescentOrder)) 
+            foreach (Record rec in strIndex.Reverse()) 
             {
                 Debug.Assert(rec == records[--j]);
             }
@@ -397,10 +413,8 @@ public class TestEnumerator
 
         Debug.Assert(!strIndex.GetEnumerator().MoveNext());
         Debug.Assert(!intIndex.GetEnumerator().MoveNext());
-        Debug.Assert(!strIndex.GetEnumerator(null, null, IterationOrder.AscentOrder).MoveNext());
-        Debug.Assert(!intIndex.GetEnumerator(null, null, IterationOrder.AscentOrder).MoveNext());
-        Debug.Assert(!strIndex.GetEnumerator(null, null, IterationOrder.DescentOrder).MoveNext());
-        Debug.Assert(!intIndex.GetEnumerator(null, null, IterationOrder.DescentOrder).MoveNext());
+        Debug.Assert(!strIndex.Reverse().GetEnumerator().MoveNext());
+        Debug.Assert(!intIndex.Reverse().GetEnumerator().MoveNext());
         db.Commit();
         db.Gc();
         db.Close();

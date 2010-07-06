@@ -30,7 +30,7 @@ public class TestList
 
         current = header;
         // Now I will insert 10 million node objects to the list tail
-        int totalnumber = 100 * 1000 * 1000;
+        int totalnumber = 10 * 1000 * 1000;
         DateTime t1 = DateTime.Now;
         for (int i = 0; i < totalnumber; i++)
         {

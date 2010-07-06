@@ -8,7 +8,12 @@ class SpatialObject : Persistent
 }
 
 public class TestRtree : Persistent { 
+#if USE_GENERICS
+    SpatialIndex<SpatialObject> index;
+#else
     SpatialIndex index;
+#endif
+
     const int nObjectsInTree = 1000;
     const int nIterations = 100000;
 
@@ -21,7 +26,11 @@ public class TestRtree : Persistent {
         TestRtree root = (TestRtree)db.Root;
         if (root == null) { 
             root = new TestRtree();
+#if USE_GENERICS
+            root.index = db.CreateSpatialIndex<SpatialObject>();
+#else
             root.index = db.CreateSpatialIndex();
+#endif
             db.Root = root;
         }
 
@@ -31,11 +40,19 @@ public class TestRtree : Persistent {
             int j = i % nObjectsInTree;
             if (i >= nObjectsInTree) { 
                 r = rectangles[j];
+#if USE_GENERICS
+                SpatialObject[] sos = root.index.Get(r);
+                SpatialObject   po = null;
+#else
                 IPersistent[] sos = root.index.Get(r);
                 IPersistent po = null;
-                int n = 0;
+#endif
                 for (int k = 0; k < sos.Length; k++) { 
+#if USE_GENERICS
+                    so = sos[k];
+#else
                     so = (SpatialObject)sos[k];
+#endif
                     if (r.Equals(so.rect)) { 
                         po = so;
                     } else { 
@@ -43,12 +60,23 @@ public class TestRtree : Persistent {
                     }
                 }    
                 Debug.Assert(po != null);
+
+                int n = 0;
                 for (int k = 0; k < nObjectsInTree; k++) { 
                     if (r.Intersects(rectangles[k])) {
                         n += 1;
                     }
                 }
                 Debug.Assert(n == sos.Length);
+
+
+                n = 0;
+                foreach (SpatialObject o in root.index.Overlaps(r)) 
+                {
+                    Debug.Assert(o == sos[n++]);
+                }
+                Debug.Assert(n == sos.Length);
+
                 root.index.Remove(r, po);
                 po.Deallocate();
             }

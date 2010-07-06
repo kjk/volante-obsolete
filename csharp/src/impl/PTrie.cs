@@ -1,13 +1,57 @@
 using System;
 using Perst;
+#if USE_GENERICS
+using System.Collections.Generic;
+#else
+using System.Collections;
+#endif
 
 namespace Perst.Impl
 {
-    class PTrie : PersistentResource, PatriciaTrie 
+#if USE_GENERICS
+    class PTrie<T> : PersistentCollection<T>, PatriciaTrie<T>  where T:class,IPersistent 
+#else
+    class PTrie : PersistentCollection, PatriciaTrie 
+#endif
     { 
         private PTrieNode rootZero;
         private PTrieNode rootOne;
         private int       count;
+
+
+#if USE_GENERICS
+        public override IEnumerator<T> GetEnumerator() 
+        {
+            List<T> list = new List<T>();
+#else
+        public override IEnumerator GetEnumerator() 
+        {
+            ArrayList list = new ArrayList();
+#endif
+            fill(list, rootZero);
+            fill(list, rootOne);
+            return list.GetEnumerator();
+        }
+
+#if USE_GENERICS
+        private static void fill(List<T> list, PTrieNode node) { 
+#else
+        private static void fill(ArrayList list, PTrieNode node) { 
+#endif
+            if (node != null) {
+                list.Add(node.obj);
+                fill(list, node.childZero);
+                fill(list, node.childOne);
+            }
+        }
+
+        public override int Count 
+        { 
+            get 
+            {
+                return count;
+            }
+        }
 
         private static int firstDigit(ulong key, int keyLength)
         {
@@ -40,7 +84,11 @@ namespace Perst.Impl
             return keyLengthA - count;
         }
 
+#if USE_GENERICS
+        public T Add(PatriciaTrieKey key, T obj) 
+#else
         public IPersistent Add(PatriciaTrieKey key, IPersistent obj) 
+#endif
         { 
             Modify();
             count += 1;
@@ -71,7 +119,11 @@ namespace Perst.Impl
             }            
         }
     
+#if USE_GENERICS
+        public T FindBestMatch(PatriciaTrieKey key) 
+#else
         public IPersistent FindBestMatch(PatriciaTrieKey key) 
+#endif
         {
             if (firstDigit(key.mask, key.length) == 1) 
             {
@@ -91,7 +143,11 @@ namespace Perst.Impl
         }
     
 
+#if USE_GENERICS
+        public T FindExactMatch(PatriciaTrieKey key) 
+#else
         public IPersistent FindExactMatch(PatriciaTrieKey key) 
+#endif
         {
             if (firstDigit(key.mask, key.length) == 1) 
             {
@@ -110,13 +166,20 @@ namespace Perst.Impl
             return null;
         }
     
+#if USE_GENERICS
+        public T Remove(PatriciaTrieKey key) 
+        { 
+             T obj;
+#else
         public IPersistent Remove(PatriciaTrieKey key) 
         { 
+            IPersistent obj;
+#endif
             if (firstDigit(key.mask, key.length) == 1) 
             {
                 if (rootOne != null) 
                 { 
-                    IPersistent obj = rootOne.remove(key.mask, key.length);
+                    obj = rootOne.remove(key.mask, key.length);
                     if (obj != null) 
                     { 
                         Modify();
@@ -134,7 +197,7 @@ namespace Perst.Impl
             { 
                 if (rootZero != null) 
                 { 
-                    IPersistent obj = rootZero.remove(key.mask, key.length);
+                    obj = rootZero.remove(key.mask, key.length);
                     if (obj != null) 
                     { 
                         Modify();
@@ -151,7 +214,11 @@ namespace Perst.Impl
             return null;
         }
 
+#if USE_GENERICS
+        public override void Clear() 
+#else
         public void Clear() 
+#endif
         {
             if (rootOne != null) 
             { 
@@ -170,11 +237,19 @@ namespace Perst.Impl
         {
             internal ulong       key;
             internal int         keyLength;
+#if USE_GENERICS
+            internal T           obj;
+#else
             internal IPersistent obj;
+#endif
             internal PTrieNode   childZero;
             internal PTrieNode   childOne;
 
+#if USE_GENERICS
+            internal PTrieNode(ulong key, int keyLength, T obj)
+#else
             internal PTrieNode(ulong key, int keyLength, IPersistent obj)
+#endif
             {
                 this.obj = obj;
                 this.key = key;
@@ -183,13 +258,20 @@ namespace Perst.Impl
 
             PTrieNode() {}
 
+#if USE_GENERICS
+            internal T add(ulong key, int keyLength, T obj) 
+            {
+                T prevObj;
+#else
             internal IPersistent add(ulong key, int keyLength, IPersistent obj) 
             {
+                IPersistent prevObj;
+#endif
                 if (key == this.key && keyLength == this.keyLength) 
                 {
                     Modify();
                     // the new is matched exactly by this node's key, so just replace the node object
-                    IPersistent prevObj = this.obj;
+                    prevObj = this.obj;
                     this.obj = obj;
                     return prevObj;
                 }
@@ -262,14 +344,18 @@ namespace Perst.Impl
                 } 
                 else 
                 { // the new key was containing within this node's original key, so just set this node as terminator
-                    IPersistent prevObj = this.obj;
+                    prevObj = this.obj;
                     this.obj = obj;
                     return prevObj;
                 }            
             }
     
         
+#if USE_GENERICS
+            internal T findBestMatch(ulong key, int keyLength) 
+#else
             internal IPersistent findBestMatch(ulong key, int keyLength) 
+#endif
             {             
                 if (keyLength > this.keyLength) 
                 { 
@@ -296,7 +382,11 @@ namespace Perst.Impl
                 return obj;
             }
 				
+#if USE_GENERICS
+            internal T findExactMatch(ulong key, int keyLength) 
+#else
             internal IPersistent findExactMatch(ulong key, int keyLength) 
+#endif
             {             
                 if (keyLength >= this.keyLength) 
                 { 
@@ -335,13 +425,20 @@ namespace Perst.Impl
                 return obj == null && childOne == null && childZero == null;
             }
 
-            internal IPersistent remove(ulong key, int keyLength) 
+#if USE_GENERICS
+            internal T remove(ulong key, int keyLength) 
             {             
+                T obj;
+#else
+            internal IPersistent remove(ulong key, int keyLength) 
+            {         
+                IPersistent obj;    
+#endif
                 if (keyLength >= this.keyLength) 
                 { 
                     if (key == this.key && keyLength == this.keyLength) 
                     { 
-                        IPersistent obj = this.obj;
+                        obj = this.obj;
                         this.obj = null;
                         return obj;
                     } 
@@ -356,7 +453,7 @@ namespace Perst.Impl
                         {
                             if (childOne != null) 
                             { 
-                                IPersistent obj = childOne.findBestMatch(keyDiff, keyLengthDiff);
+                                obj = childOne.findBestMatch(keyDiff, keyLengthDiff);
                                 if (obj != null) 
                                 { 
                                     if (childOne.isNotUsed()) 
@@ -373,7 +470,7 @@ namespace Perst.Impl
                         {
                             if (childZero != null) 
                             { 
-                                IPersistent obj = childZero.findBestMatch(keyDiff, keyLengthDiff);
+                                obj = childZero.findBestMatch(keyDiff, keyLengthDiff);
                                 if (obj != null) 
                                 { 
                                     if (childZero.isNotUsed()) 

@@ -1,15 +1,20 @@
 namespace Perst
 {
     using System;
-    using System.Collections;
 	
+    public interface GenericPArray {}
+
     /// <summary>Dynamically extended array of reference to persistent objects.
     /// It is inteded to be used in classes using virtual properties to 
     /// access components of persistent objects. You can not use standard
     /// C# array here, instead you should use PArray class.
     /// PArray is created by Storage.createArray method
     /// </summary>
-    public interface PArray : Link
+#if USE_GENERICS
+    public interface PArray<T> : GenericPArray, Link<T> where T:class,IPersistent
+#else
+    public interface PArray : GenericPArray, Link
+#endif
     {
         /// <summary> Get OID of arary element.
         /// </summary>

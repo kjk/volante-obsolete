@@ -7,6 +7,10 @@ namespace Perst.Impl
     using System.Diagnostics;
     using System.Text;
     using Perst;
+#if USE_GENERICS
+    using Link=Link<IPersistent>;
+    using PArray=PArray<IPersistent>;
+#endif
 	
     public class StorageImpl:Storage
     {
@@ -981,6 +985,8 @@ namespace Perst.Impl
                 gcDone = false;
                 allocatedDelta = 0;
 
+                resolvedTypes = new Hashtable();                
+
                 nNestedTransactions = 0;
                 nBlockedTransactions = 0;
                 nCommittedTransactions = 0;
@@ -1786,6 +1792,214 @@ namespace Perst.Impl
             }
         }   
                 
+#if USE_GENERICS
+        public override Index<K,V> CreateIndex<K,V>(bool unique)
+        {
+            lock(this)
+            {
+                if (!opened)
+                {
+                    throw new StorageError(StorageError.ErrorCode.STORAGE_NOT_OPENED);
+                }
+                Index<K,V> index = alternativeBtree 
+                    ? (Index<K,V>)new AltBtree<K,V>(unique)
+                    : (Index<K,V>)new Btree<K,V>(unique);
+                index.AssignOid(this, 0, false);
+                return index;
+            }
+        }
+
+        public override Index<K,V> CreateThickIndex<K,V>()
+        {
+            lock(this)
+            {
+                if (!opened)
+                {
+                    throw new StorageError(StorageError.ErrorCode.STORAGE_NOT_OPENED);
+                }
+                return new ThickIndex<K,V>(this);
+            }
+        }
+        
+        public override BitIndex<T> CreateBitIndex<T>()
+        {
+            lock(this)
+            {
+                if (!opened) 
+                { 
+                    throw new StorageError(StorageError.ErrorCode.STORAGE_NOT_OPENED);
+                }
+                BitIndex<T> index = new BitIndexImpl<T>();
+                index.AssignOid(this, 0, false);
+                return index;
+            }
+        }
+
+
+        public override SpatialIndex<T> CreateSpatialIndex<T>()
+        {
+            lock(this)
+            {
+                if (!opened)
+                {
+                    throw new StorageError(StorageError.ErrorCode.STORAGE_NOT_OPENED);
+                }
+                Rtree<T> index = new Rtree<T>();
+                index.AssignOid(this, 0, false);
+                return index;
+            }
+        }
+		
+        public override SpatialIndexR2<T> CreateSpatialIndexR2<T>()
+        {
+            lock(this)
+            {
+                if (!opened)
+                {
+                    throw new StorageError(StorageError.ErrorCode.STORAGE_NOT_OPENED);
+                }
+                RtreeR2<T> index = new RtreeR2<T>();
+                index.AssignOid(this, 0, false);
+                return index;
+            }
+        }
+		
+        public override SortedCollection<K,V> CreateSortedCollection<K,V>(PersistentComparator<K,V> comparator, bool unique)
+        {
+            if (!opened) 
+            { 
+                throw new StorageError(StorageError.ErrorCode.STORAGE_NOT_OPENED);
+            }        
+            return new Ttree<K,V>(comparator, unique);
+        }
+
+        public override SortedCollection<K,V> CreateSortedCollection<K,V>(bool unique)
+        {
+            if (!opened) 
+            { 
+                throw new StorageError(StorageError.ErrorCode.STORAGE_NOT_OPENED);
+            }        
+            return new Ttree<K,V>(new DefaultPersistentComparator<K,V>(), unique);
+        }
+
+        public override ISet<T> CreateSet<T>()
+        {
+            lock(this)
+            {
+                if (!opened)
+                {
+                    throw new StorageError(StorageError.ErrorCode.STORAGE_NOT_OPENED);
+                }
+                ISet<T> s = alternativeBtree 
+                    ? (ISet<T>)new AltPersistentSet<T>()
+                    : (ISet<T>)new PersistentSet<T>();
+                s.AssignOid(this, 0, false);
+                return s;
+            }
+        }
+
+        public override ISet<T> CreateScalableSet<T>()
+        {
+            return CreateScalableSet<T>(8);
+        }
+
+        public override ISet<T> CreateScalableSet<T>(int initialSize)
+        {
+            lock(this)
+            {
+                if (!opened)
+                {
+                    throw new StorageError(StorageError.ErrorCode.STORAGE_NOT_OPENED);
+                }
+                return new ScalableSet<T>(this, initialSize);
+            }
+        }
+
+        public override FieldIndex<K,V> CreateFieldIndex<K,V>(String fieldName, bool unique)
+        {
+            lock(this)
+            {
+                if (!opened)
+                {
+                    throw new StorageError(StorageError.ErrorCode.STORAGE_NOT_OPENED);
+                }
+                FieldIndex<K,V> index = alternativeBtree
+                    ? (FieldIndex<K,V>)new AltBtreeFieldIndex<K,V>(fieldName, unique)
+                    : (FieldIndex<K,V>)new BtreeFieldIndex<K,V>(fieldName, unique);
+                index.AssignOid(this, 0, false);
+                return index;
+            }
+        }
+		
+        public override MultiFieldIndex<T> CreateFieldIndex<T>(string[] fieldNames, bool unique)
+        {
+            lock(this)
+            {
+                if (!opened)
+                {
+                    throw new StorageError(StorageError.ErrorCode.STORAGE_NOT_OPENED);
+                }
+#if COMPACT_NET_FRAMEWORK
+                if (alternativeBtree) 
+                {
+                    throw new StorageError(StorageError.ErrorCode.UNSUPPORTED_INDEX_TYPE);
+                }
+                MultiFieldIndex<T> index = new BtreeMultiFieldIndex<T>(fieldNames, unique);
+#else
+                MultiFieldIndex<T> index = alternativeBtree
+                    ? (MultiFieldIndex<T>)new AltBtreeMultiFieldIndex<T>(fieldNames, unique)
+                    : (MultiFieldIndex<T>)new BtreeMultiFieldIndex<T>(fieldNames, unique);
+#endif
+                index.AssignOid(this, 0, false);
+                return index;
+            }
+        }
+
+        public override Link<T> CreateLink<T>()
+        {
+            return CreateLink<T>(8);
+        }
+		
+        public override Link<T> CreateLink<T>(int initialSize)
+        {
+            return new LinkImpl<T>(initialSize);
+        }
+		
+        internal Link<T> ConstructLink<T>(IPersistent[] arr) where T:class,IPersistent
+        {
+            return new LinkImpl<T>(arr);
+        }
+		
+        public override PArray<T> CreateArray<T>()
+        {
+            return CreateArray<T>(8);
+        }
+		
+        public override PArray<T> CreateArray<T>(int initialSize)
+        {
+            return new PArrayImpl<T>(this, initialSize);
+        }
+		
+        internal PArray<T> ConstructArray<T>(int[] arr) where T:class,IPersistent
+        {
+            return new PArrayImpl<T>(this, arr);
+        }
+		
+        public override Relation<M,O> CreateRelation<M,O>(O owner)
+        {
+            return new RelationImpl<M,O>(owner);
+        }
+
+        public override TimeSeries<T> CreateTimeSeries<T>(int blockSize, long maxBlockTimeInterval)
+        {
+            return new TimeSeriesImpl<T>(this, blockSize, maxBlockTimeInterval);
+        }
+        
+        public override PatriciaTrie<T> CreatePatriciaTrie<T>()
+        {
+            return new PTrie<T>();
+        }
+#else
         public override Index CreateIndex(System.Type keyType, bool unique)
         {
             lock(this)
@@ -1924,7 +2138,7 @@ namespace Perst.Impl
             }
         }
 		
-        public override FieldIndex CreateFieldIndex(System.Type type, String[] fieldNames, bool unique)
+        public override MultiFieldIndex CreateFieldIndex(System.Type type, String[] fieldNames, bool unique)
         {
             lock(this)
             {
@@ -1937,11 +2151,11 @@ namespace Perst.Impl
                 {
                     throw new  StorageError(StorageError.ErrorCode.UNSUPPORTED_INDEX_TYPE);
                 }
-                FieldIndex index = new BtreeMultiFieldIndex(type, fieldNames, unique);
+                MultiFieldIndex index = new BtreeMultiFieldIndex(type, fieldNames, unique);
 #else
-                FieldIndex index = alternativeBtree
-                    ? (FieldIndex)new AltBtreeMultiFieldIndex(type, fieldNames, unique)
-                    : (FieldIndex)new BtreeMultiFieldIndex(type, fieldNames, unique);
+                MultiFieldIndex index = alternativeBtree
+                    ? (MultiFieldIndex)new AltBtreeMultiFieldIndex(type, fieldNames, unique)
+                    : (MultiFieldIndex)new BtreeMultiFieldIndex(type, fieldNames, unique);
 #endif
                 index.AssignOid(this, 0, false);
                 return index;
@@ -1973,11 +2187,6 @@ namespace Perst.Impl
             return new RelationImpl(owner);
         }
 
-        public override Blob CreateBlob() 
-        {
-            return new BlobImpl(Page.pageSize - ObjectHeader.Sizeof - 16);
-        }
-
         public override TimeSeries CreateTimeSeries(Type blockClass, long maxBlockTimeInterval)
         {
             return new TimeSeriesImpl(this, blockClass, maxBlockTimeInterval);
@@ -1987,6 +2196,12 @@ namespace Perst.Impl
         {
             return new PTrie();
         }
+#endif
+        public override Blob CreateBlob() 
+        {
+            return new BlobImpl(Page.pageSize - ObjectHeader.Sizeof - 16);
+        }
+
         
         public override void  ExportXML(System.IO.StreamWriter writer)
         {
@@ -2062,6 +2277,16 @@ namespace Perst.Impl
             }
         }
 
+        internal Btree createBtreeStub(byte[] data, int offs) 
+        { 
+#if USE_GENERICS
+            return new Btree<int,IPersistent>(data, ObjectHeader.Sizeof + offs);
+#else            
+            return new Btree(data, ObjectHeader.Sizeof + offs);
+#endif
+        }
+
+
         private void mark()
         {
             // Console.WriteLine("Start GC, allocatedDelta=" + allocatedDelta + ", header[" + currIndex + "].size=" + header.root[currIndex].size + ", gcTreshold=" + gcThreshold);
@@ -2104,7 +2329,7 @@ namespace Perst.Impl
                                         ClassDescriptor desc = (ClassDescriptor)lookupObject(typeOid, typeof(ClassDescriptor));
                                         if (typeof(Btree).IsAssignableFrom(desc.cls)) 
                                         { 
-                                            Btree btree = new Btree(pg.data, ObjectHeader.Sizeof + offs);
+                                            Btree btree = createBtreeStub(pg.data, offs);
                                             btree.AssignOid(this, 0, false);
                                             btree.markTree();
                                         } 
@@ -2152,7 +2377,7 @@ namespace Perst.Impl
                             if (desc != null 
                                 && (typeof(Btree).IsAssignableFrom(desc.cls))) 
                             { 
-                                Btree btree = new Btree(pg.data, ObjectHeader.Sizeof + offs);
+                                Btree btree = createBtreeStub(pg.data, offs);
                                 pool.unfix(pg);
                                 btree.AssignOid(this, i, false);
                                 btree.Deallocate();
@@ -2287,8 +2512,7 @@ namespace Perst.Impl
 
                     if (rootOid != 0) 
                     { 
-                        MemoryUsage indexUsage = new MemoryUsage(typeof(Index));
-                        MemoryUsage fieldIndexUsage = new MemoryUsage(typeof(FieldIndex));
+                        MemoryUsage indexUsage = new MemoryUsage(typeof(GenericIndex));
                         MemoryUsage classUsage = new MemoryUsage(typeof(Type));
 
                         markOid(rootOid);
@@ -2318,21 +2542,12 @@ namespace Perst.Impl
                                                 ClassDescriptor desc = findClassDescriptor(typeOid);
                                                 if (typeof(Btree).IsAssignableFrom(desc.cls)) 
                                                 { 
-                                                    Btree btree = new Btree(pg.data, ObjectHeader.Sizeof + offs);
+                                                    Btree btree = createBtreeStub(pg.data, offs);
                                                     btree.AssignOid(this, 0, false);
                                                     int nPages = btree.markTree();
-                                                    if (typeof(FieldIndex).IsAssignableFrom(desc.cls)) 
-                                                    { 
-                                                        fieldIndexUsage.nInstances += 1;
-                                                        fieldIndexUsage.totalSize += (long)nPages*Page.pageSize + objSize;
-                                                        fieldIndexUsage.allocatedSize += (long)nPages*Page.pageSize + alignedSize;
-                                                    } 
-                                                    else 
-                                                    {
-                                                        indexUsage.nInstances += 1;
-                                                        indexUsage.totalSize += (long)nPages*Page.pageSize + objSize;
-                                                        indexUsage.allocatedSize += (long)nPages*Page.pageSize + alignedSize;
-                                                    }
+                                                    indexUsage.nInstances += 1;
+                                                    indexUsage.totalSize += (long)nPages*Page.pageSize + objSize;
+                                                    indexUsage.allocatedSize += (long)nPages*Page.pageSize + alignedSize;
                                                 } 
                                                 else 
                                                 { 
@@ -2367,11 +2582,7 @@ namespace Perst.Impl
                 
                         if (indexUsage.nInstances != 0) 
                         { 
-                            map[typeof(Index)] = indexUsage;
-                        }
-                        if (fieldIndexUsage.nInstances != 0) 
-                        { 
-                            map[typeof(FieldIndex)] = fieldIndexUsage;
+                            map[typeof(GenericIndex)] = indexUsage;
                         }
                         if (classUsage.nInstances != 0) 
                         { 
@@ -3007,6 +3218,7 @@ namespace Perst.Impl
             pool = null;
             objectCache = null;
             classDescMap = null;
+            resolvedTypes = null;
             bitmapPageAvailableSpace = null;
             dirtyPagesMap = null;
             descList = null;
@@ -4211,7 +4423,11 @@ namespace Perst.Impl
                                 arr[j] = new PersistentStub(this, elemOid);
                             }
                         }
+#if USE_GENERICS
+                        val = fd.constructor.Invoke(this, new object[]{arr});
+#else
                         val = new LinkImpl(arr);
+#endif
                     }
                     break;
                 case ClassDescriptor.FieldType.tpArrayOfOid: 
@@ -4229,7 +4445,11 @@ namespace Perst.Impl
                             arr[j] = Bytes.unpack4(body, offs);
                             offs += 4;
                         }
+#if USE_GENERICS
+                        val = fd.constructor.Invoke(this, new object[]{arr});
+#else
                         val = new PArrayImpl(this, arr);
+#endif
                     }
                     break;
             }
@@ -5001,6 +5221,8 @@ public int packField(ByteBuffer buf, int offs, object val, ClassDescriptor.Field
         internal Encoding  encoding;
 
         internal StorageListener  listener;
+
+        internal Hashtable        resolvedTypes;
 
         internal OidHashTable     objectCache;
         internal Hashtable        classDescMap;

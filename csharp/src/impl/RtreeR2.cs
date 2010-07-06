@@ -1,10 +1,17 @@
 namespace Perst.Impl
 {
     using System;
+#if USE_GENERICS
+    using System.Collections.Generic;
+#endif
     using System.Collections;
     using Perst;
 	
-    class RtreeR2:PersistentResource, SpatialIndexR2
+#if USE_GENERICS
+    class RtreeR2<T>:PersistentCollection<T>, SpatialIndexR2<T> where T:class,IPersistent
+#else
+    class RtreeR2:PersistentCollection, SpatialIndexR2
+#endif
     {
         private int         height;
         private int         n;
@@ -14,7 +21,7 @@ namespace Perst.Impl
 
         internal RtreeR2() {}
 
-        public int Count 
+        public override int Count 
         { 
             get 
             {
@@ -22,7 +29,11 @@ namespace Perst.Impl
             }
         }
 
+#if USE_GENERICS
+        public void Put(RectangleR2 r, T obj) 
+#else
         public void Put(RectangleR2 r, IPersistent obj) 
+#endif
         {
             if (root == null) 
             { 
@@ -48,7 +59,11 @@ namespace Perst.Impl
             return n;
         }
 
+#if USE_GENERICS
+        public void Remove(RectangleR2 r, T obj) 
+#else
         public void Remove(RectangleR2 r, IPersistent obj) 
+#endif
         {
             if (root == null) 
             { 
@@ -88,14 +103,22 @@ namespace Perst.Impl
             Modify();
         }
     
+#if USE_GENERICS
+        public T[] Get(RectangleR2 r) 
+#else
         public IPersistent[] Get(RectangleR2 r) 
+#endif
         {
             ArrayList result = new ArrayList();
             if (root != null) 
             { 
                 root.find(r, result, height);
             }
+#if USE_GENERICS
+            return (T[])result.ToArray(typeof(T));
+#else
             return (IPersistent[])result.ToArray(typeof(IPersistent));
+#endif
         }
 
         public RectangleR2 WrappingRectangle
@@ -108,7 +131,11 @@ namespace Perst.Impl
             }
         }
 
+#if USE_GENERICS
+        public override void Clear() 
+#else
         public void Clear() 
+#endif
         {
             if (root != null) 
             { 
@@ -127,146 +154,225 @@ namespace Perst.Impl
             base.Deallocate();
         }
 
+#if USE_GENERICS
+        public IEnumerable<T> Overlaps(RectangleR2 r) 
+#else
         public IEnumerable Overlaps(RectangleR2 r) 
+#endif
         { 
             return new RtreeIterator(this, r);
         }
 
-        class RtreeIterator : IEnumerator, IEnumerable 
-        { 
-            private RtreeR2Page[] pageStack;
-            private int[]         posStack;
-            private int           sp;
-            private RectangleR2   r;
-            private int           counter;
-            private RtreeR2       tree;
-            private bool          hasCurrent;
-            private IPersistent   curr;
+#if USE_GENERICS
+        public override IEnumerator<T> GetEnumerator() 
+#else
+        public override IEnumerator GetEnumerator() 
+#endif
+        {
+            return Overlaps(WrappingRectangle).GetEnumerator();
+        }
 
-            internal RtreeIterator(RtreeR2 tree, RectangleR2 rect) 
-            {             
-                r = rect;
+        public IDictionaryEnumerator GetDictionaryEnumerator(RectangleR2 r) 
+        { 
+            return new RtreeEntryIterator(this, r);
+        }
+
+        public IDictionaryEnumerator GetDictionaryEnumerator() 
+        { 
+            return GetDictionaryEnumerator(WrappingRectangle);
+        }
+
+#if USE_GENERICS
+        class RtreeIterator: IEnumerator<T>, IEnumerable<T>
+        {
+            internal RtreeIterator(RtreeR2<T> tree, RectangleR2 r) 
+#else
+        class RtreeIterator: IEnumerator, IEnumerable 
+        {
+            internal RtreeIterator(RtreeR2 tree, RectangleR2 r) 
+#endif
+            { 
+                counter = tree.updateCounter;
+                height = tree.height;
                 this.tree = tree;
+                if (height == 0) 
+                { 
+                    return;
+                }
+                this.r = r;            
+                pageStack = new RtreeR2Page[height];
+                posStack = new int[height];
                 Reset();
             }
 
-            public IEnumerator GetEnumerator() 
+#if USE_GENERICS
+            public IEnumerator<T> GetEnumerator()
+#else
+            public IEnumerator GetEnumerator()
+#endif
             {
                 return this;
             }
 
-            public void Reset() 
+            public void Reset()
             {
-                pageStack = new RtreeR2Page[tree.height];
-                posStack = new int[tree.height];
-                RtreeR2Page pg = tree.root;
-                hasCurrent = false;
-                counter = tree.updateCounter;
-                sp = 0;
-                if (pg != null) 
-                { 
-                push:
-                    while (true) 
-                    { 
-                        for (int i = 0; i < pg.n; i++) 
-                        { 
-                            if (r.Intersects(pg.b[i])) 
-                            { 
-                                posStack[sp] = i;
-                                pageStack[sp] = pg;
-                                if (++sp == pageStack.Length) 
-                                { 
-                                    return;
-                                }
-                                pg = (RtreeR2Page)pg.branch[i];
-                                goto push;
-                            }
-                        }
-                        popNext();
-                        return;
-                    }
-                }
+                hasNext = gotoFirstItem(0, tree.root);
             }
 
+            public void Dispose() {}
 
             public bool MoveNext() 
             {
                 if (counter != tree.updateCounter) 
                 { 
-                    throw new InvalidOperationException("B-Tree was modified");
+                    throw new InvalidOperationException("Tree was modified");
                 }
-                if (sp > 0) { 
-                    int i = posStack[sp-1];   
-                    RtreeR2Page pg = pageStack[sp-1];
-                    if (i < pg.n) 
+                if (hasNext) 
+                { 
+                    page = pageStack[height-1];
+                    pos = posStack[height-1];
+                    if (!gotoNextItem(height-1)) 
                     { 
-                        curr = pg.branch[i];
-                        hasCurrent = true;
-                        while (++i < pg.n) 
-                        { 
-                             if (r.Intersects(pg.b[i])) 
-                             { 
-                                 posStack[sp-1] = i;
-                                 return true;
-                             }
-                        }
-                        sp -= 1;
-                        popNext();
-                        return true;                      
+                        hasNext = false;
                     }
-                }
-                hasCurrent = false;
-                return false;
-            }
-        
-            public virtual object Current
-            {
-                get 
-                {
-                    if (!hasCurrent) 
-                    { 
-                        throw new InvalidOperationException();
-                    }
-                    return curr;
+                    return true;
+                } 
+                else 
+                { 
+                    page = null;
+                    return false;
                 }
             }
 
-            void popNext() 
-            { 
-                pop:
-                    while (sp != 0) 
+#if USE_GENERICS
+            public virtual T Current 
+#else
+            public virtual object Current 
+#endif
+            {
+                get 
+                {
+                    if (page == null) 
                     { 
-                        sp -= 1;
-                        int i = posStack[sp];
-                        RtreeR2Page pg = pageStack[sp];
-                        while (++i < pg.n) 
+                        throw new InvalidOperationException();
+                    }
+#if USE_GENERICS
+                    return (T)page.branch[pos];
+#else
+                    return page.branch[pos];
+#endif
+                }
+            }
+
+            private bool gotoFirstItem(int sp, RtreeR2Page pg) 
+            { 
+                for (int i = 0, n = pg.n; i < n; i++) 
+                { 
+                    if (r.Intersects(pg.b[i])) 
+                    { 
+                        if (sp+1 == height || gotoFirstItem(sp+1, (RtreeR2Page)pg.branch[i])) 
                         { 
-                            if (r.Intersects(pg.b[i])) 
-                            {
-                                posStack[sp] = i; 
-                                sp += 1;
-                            push:
-                                while (true) 
-                                { 
-                                    pg = (RtreeR2Page)pg.branch[i];
-                                    for (i = 0; i < pg.n; i++) 
-                                    { 
-                                        if (r.Intersects(pg.b[i])) 
-                                        { 
-                                            posStack[sp] = i;
-                                            pageStack[sp] = pg;
-                                            if (++sp == pageStack.Length) 
-                                            { 
-                                                return;
-                                            }
-                                            goto push;
-                                        }
-                                    }
-                                    goto pop;
-                                }
-                            }
+                            pageStack[sp] = pg;
+                            posStack[sp] = i;
+                            return true;
                         }
                     }
+                }
+                return false;
+            }
+              
+ 
+            private bool gotoNextItem(int sp) 
+            {
+                RtreeR2Page pg = pageStack[sp];
+                for (int i = posStack[sp], n = pg.n; ++i < n;) 
+                { 
+                    if (r.Intersects(pg.b[i])) 
+                    { 
+                        if (sp+1 == height || gotoFirstItem(sp+1, (RtreeR2Page)pg.branch[i])) 
+                        { 
+                            pageStack[sp] = pg;
+                            posStack[sp] = i;
+                            return true;
+                        }
+                    }
+                }
+                pageStack[sp] = null;
+                return (sp > 0) ? gotoNextItem(sp-1) : false;
+            }
+              
+ 
+            protected RtreeR2Page[] pageStack;
+            protected int[]         posStack;
+            protected int           counter;
+            protected int           height;
+            protected int           pos;
+            protected bool          hasNext;
+            protected RtreeR2Page   page;
+#if USE_GENERICS
+            protected RtreeR2<T>    tree;
+#else
+            protected RtreeR2       tree;
+#endif
+            protected RectangleR2   r;
+        }
+
+        class RtreeEntryIterator: RtreeIterator, IDictionaryEnumerator 
+        {
+#if USE_GENERICS
+            internal RtreeEntryIterator(RtreeR2<T> tree, RectangleR2 r) 
+#else
+            internal RtreeEntryIterator(RtreeR2 tree, RectangleR2 r) 
+#endif
+                : base(tree, r)
+            {}
+
+#if USE_GENERICS
+            public new virtual object Current 
+#else
+            public override object Current 
+#endif
+            {
+                get 
+                {
+                    return Entry;
+                }
+            }
+
+            public DictionaryEntry Entry 
+            {
+                get 
+                {
+                    if (page == null) 
+                    { 
+                        throw new InvalidOperationException();
+                    }
+                    return new DictionaryEntry(page.b[pos], page.branch[pos]);
+                }
+            }
+
+            public object Key 
+            {
+                get 
+                {
+                    if (page == null) 
+                    { 
+                        throw new InvalidOperationException();
+                    }
+                    return page.b[pos];
+                }
+            }
+
+            public object Value 
+            {
+                get 
+                {
+                    if (page == null) 
+                    { 
+                        throw new InvalidOperationException();
+                    }
+                    return page.branch[pos];
+                }
             }
         }
     }

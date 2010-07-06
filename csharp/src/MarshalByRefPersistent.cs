@@ -29,7 +29,7 @@ namespace Perst
 
         public virtual void Load()
         {
-            if (oid != 0)
+            if (oid != 0 && (state & ObjectState.RAW) != 0)
             {
                 storage.loadObject(this);
             }

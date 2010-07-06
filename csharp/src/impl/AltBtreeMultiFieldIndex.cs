@@ -1,16 +1,23 @@
 namespace Perst.Impl
 {
     using System;
+#if USE_GENERICS
+    using System.Collections.Generic;
+#endif
     using System.Collections;
     using System.Reflection;
     using System.Diagnostics;
     using Perst;
     
-    class AltBtreeMultiFieldIndex:AltBtree, FieldIndex
+#if USE_GENERICS
+    class AltBtreeMultiFieldIndex<T>:AltBtree<object[],T>, MultiFieldIndex<T> where T:class,IPersistent
+#else
+    class AltBtreeMultiFieldIndex:AltBtree, MultiFieldIndex
+#endif
     {
         internal String className;
         internal String[] fieldNames;
-         [NonSerialized()]
+        [NonSerialized()]
         Type cls;
         [NonSerialized()]
         MemberInfo[] mbr;
@@ -44,6 +51,14 @@ namespace Perst.Impl
             }
         }
 
+        public MemberInfo KeyField 
+        {
+            get 
+            { 
+                return mbr[0];
+            }
+        }
+
         public MemberInfo[] KeyFields 
         {
             get 
@@ -55,15 +70,27 @@ namespace Perst.Impl
         public override void OnLoad()
         {
             cls = ClassDescriptor.lookup(Storage, className);
+#if USE_GENERICS
+            if (cls != typeof(T)) 
+            {
+                throw new StorageError(StorageError.ErrorCode.INCOMPATIBLE_VALUE_TYPE, cls);
+            }
+#endif
             locateFields();
         }
         
+#if USE_GENERICS
+        internal AltBtreeMultiFieldIndex(string[] fieldNames, bool unique) 
+        {
+            this.cls = typeof(T);
+#else
         internal AltBtreeMultiFieldIndex(Type cls, string[] fieldNames, bool unique) 
         {
             this.cls = cls;
+#endif
             this.unique = unique;
             this.fieldNames = fieldNames;
-            this.className = cls.FullName;
+            this.className = ClassDescriptor.getTypeName(cls);
             locateFields();
             type = ClassDescriptor.FieldType.tpRaw;        
         }
@@ -117,32 +144,66 @@ namespace Perst.Impl
             return new Key(new CompoundKey(keys));
         }
         
+#if USE_GENERICS
+        public bool Put(T obj) 
+#else
         public bool Put(IPersistent obj) 
+#endif
         {
             return base.Put(extractKey(obj), obj);
         }
 
+#if USE_GENERICS
+        public T Set(T obj) 
+#else
         public IPersistent Set(IPersistent obj) 
+#endif
         {
             return base.Set(extractKey(obj), obj);
         }
 
-        public void Remove(IPersistent obj) 
+#if USE_GENERICS
+        public override bool Remove(T obj) 
+#else
+        public bool Remove(IPersistent obj) 
+#endif
         {
-            base.Remove(new BtreeKey(extractKey(obj), obj));
+            try 
+            { 
+                base.Remove(new BtreeKey(extractKey(obj), obj));        
+            }
+            catch (StorageError x) 
+            { 
+                if (x.Code == StorageError.ErrorCode.KEY_NOT_FOUND) 
+                { 
+                    return false;
+                }
+                throw x;
+            }
+            return true;
         }
         
+#if USE_GENERICS
+        public override T Remove(Key key) 
+#else
         public override IPersistent Remove(Key key) 
+#endif
         {
             return base.Remove(convertKey(key));
         }       
 
+#if !USE_GENERICS
         public override IPersistent Remove(object key) 
         {
             return base.Remove(convertKey(new Key(new object[]{key})));
         }       
+#endif
 
+#if USE_GENERICS
+        public override bool Contains(T obj) 
+#else
         public bool Contains(IPersistent obj) 
+#endif
         {
             Key key = extractKey(obj);
             if (unique) 
@@ -163,24 +224,42 @@ namespace Perst.Impl
             }
         }
 
+#if USE_GENERICS
+        public void Append(T obj) 
+#else
         public void Append(IPersistent obj) 
+#endif
         {
             throw new StorageError(StorageError.ErrorCode.UNSUPPORTED_INDEX_TYPE);
         }
 
+#if USE_GENERICS
+        public override T[] Get(Key from, Key till)
+#else
         public override IPersistent[] Get(Key from, Key till)
+#endif
         {
             ArrayList list = new ArrayList();
             if (root != null)
             {
                 root.find(convertKey(from), convertKey(till), height, list);
             }
+#if USE_GENERICS
+            return (T[]) list.ToArray(cls);
+#else
             return (IPersistent[]) list.ToArray(cls);
+#endif
         }
 
+#if USE_GENERICS
+        public override T[] ToArray() 
+        {
+            T[] arr = new T[nElems];
+#else
         public override IPersistent[] ToArray() 
         {
             IPersistent[] arr = (IPersistent[])Array.CreateInstance(cls, nElems);
+#endif
             if (root != null) 
             { 
                 root.traverseForward(height, arr, 0);
@@ -188,16 +267,23 @@ namespace Perst.Impl
             return arr;
         }
 
+#if USE_GENERICS
+        public override T Get(Key key) 
+#else
         public override IPersistent Get(Key key) 
+#endif
         {
             return base.Get(convertKey(key));
         }
  
+#if USE_GENERICS
+        public override IEnumerable<T> Range(Key from, Key till, IterationOrder order) 
+#else
         public override IEnumerable Range(Key from, Key till, IterationOrder order) 
+#endif
         { 
             return base.Range(convertKey(from), convertKey(till), order);
         }
-
 
         public override IDictionaryEnumerator GetDictionaryEnumerator(Key from, Key till, IterationOrder order) 
         {

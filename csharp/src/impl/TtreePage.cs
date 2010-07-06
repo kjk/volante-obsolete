@@ -1,18 +1,35 @@
+using System;
+#if USE_GENERICS
+using System.Collections.Generic;
+#else
+using System.Collections;
+#endif
+
 namespace Perst.Impl 
 {
-    using System;
-    using System.Collections;
 
-    public class TtreePage : Persistent  
+#if USE_GENERICS
+    class TtreePage<K,V> : Persistent where V:class,IPersistent  
+#else
+    class TtreePage : Persistent  
+#endif
     { 
         const int maxItems = (Page.pageSize-ObjectHeader.Sizeof-4*5)/4;
         const int minItems = maxItems - 2; // minimal number of items in internal node
 
-        TtreePage     left;
-        TtreePage     right;
-        int           balance;
-        int           nItems;
-        IPersistent[] item;
+#if USE_GENERICS
+        TtreePage<K,V> left;
+        TtreePage<K,V> right;
+        int            balance;
+        int            nItems;
+        V[]            item;
+#else
+        TtreePage      left;
+        TtreePage      right;
+        int            balance;
+        int            nItems;
+        IPersistent[]  item;
+#endif
 
         public override bool RecursiveLoading() 
         {
@@ -21,41 +38,63 @@ namespace Perst.Impl
 
         TtreePage() {}
 
+#if USE_GENERICS
+        internal TtreePage(V mbr) 
+        { 
+            nItems = 1;
+            item = new V[maxItems];
+            item[0] = mbr;
+        }
+#else
         internal TtreePage(IPersistent mbr) 
         { 
             nItems = 1;
             item = new IPersistent[maxItems];
             item[0] = mbr;
         }
+#endif
 
+#if USE_GENERICS
+        V loadItem(int i) 
+        { 
+            V mbr = item[i];
+            mbr.Load();
+            return mbr;
+        }
+#else
         IPersistent loadItem(int i) 
         { 
             IPersistent mbr = item[i];
             mbr.Load();
             return mbr;
         }
+#endif
 
-        internal bool find(PersistentComparator comparator, object minValue, int minInclusive, object maxValue, int maxInclusive, ArrayList selection)
+#if USE_GENERICS
+        internal bool find(PersistentComparator<K,V> comparator, K minValue, BoundaryKind minBoundary, K maxValue, BoundaryKind maxBoundary, List<V> selection)
+#else
+        internal bool find(PersistentComparator comparator, object minValue, BoundaryKind minBoundary, object maxValue, BoundaryKind maxBoundary, ArrayList selection)
+#endif
         { 
             int l, r, m, n;
             Load();
             n = nItems;
-            if (minValue != null) 
+            if (minBoundary != BoundaryKind.None) 
             { 
-                if (-comparator.CompareMemberWithKey(loadItem(0), minValue) >= minInclusive) 
+                if (-comparator.CompareMemberWithKey(loadItem(0), minValue) >= (int)minBoundary) 
                 {	    
-                    if (-comparator.CompareMemberWithKey(loadItem(n-1), minValue) >= minInclusive) 
+                    if (-comparator.CompareMemberWithKey(loadItem(n-1), minValue) >= (int)minBoundary) 
                     { 
                         if (right != null) 
                         { 
-                            return right.find(comparator, minValue, minInclusive, maxValue, maxInclusive, selection); 
+                            return right.find(comparator, minValue, minBoundary, maxValue, maxBoundary, selection); 
                         } 
                         return true;
                     }
                     for (l = 0, r = n; l < r;) 
                     { 
                         m = (l + r) >> 1;
-                        if (-comparator.CompareMemberWithKey(loadItem(m), minValue) >= minInclusive) 
+                        if (-comparator.CompareMemberWithKey(loadItem(m), minValue) >= (int)minBoundary) 
                         {
                             l = m+1;
                         } 
@@ -66,8 +105,8 @@ namespace Perst.Impl
                     }
                     while (r < n) 
                     { 
-                        if (maxValue != null
-                            && comparator.CompareMemberWithKey(loadItem(r), maxValue) >= maxInclusive)
+                        if (maxBoundary != BoundaryKind.None
+                            && comparator.CompareMemberWithKey(loadItem(r), maxValue) >= (int)maxBoundary)
                         { 
                             return false;
                         }
@@ -76,21 +115,22 @@ namespace Perst.Impl
                     }
                     if (right != null) 
                     { 
-                        return right.find(comparator, minValue, minInclusive, maxValue, maxInclusive, selection); 
+                        return right.find(comparator, minValue, minBoundary, maxValue, maxBoundary, selection); 
                     } 
                     return true;	
                 }
             }	
             if (left != null) 
             { 
-                if (!left.find(comparator, minValue, minInclusive, maxValue, maxInclusive, selection)) 
+                if (!left.find(comparator, minValue, minBoundary, maxValue, maxBoundary, selection)) 
                 { 
                     return false;
                 }
             }
             for (l = 0; l < n; l++) 
             { 
-                if (maxValue != null && comparator.CompareMemberWithKey(loadItem(l), maxValue) >= maxInclusive) 
+                if (maxBoundary != BoundaryKind.None 
+                    && comparator.CompareMemberWithKey(loadItem(l), maxValue) >= (int)maxBoundary) 
                 {
                     return false;
                 }
@@ -98,12 +138,16 @@ namespace Perst.Impl
             }
             if (right != null) 
             { 
-                return right.find(comparator, minValue, minInclusive, maxValue, maxInclusive, selection);
+                return right.find(comparator, minValue, minBoundary, maxValue, maxBoundary, selection);
             }         
             return true;
         }
     
+#if USE_GENERICS
+        internal bool contains(PersistentComparator<K,V> comparator, V mbr)
+#else
         internal bool contains(PersistentComparator comparator, IPersistent mbr)
+#endif
         { 
             int l, r, m, n;
             Load();
@@ -180,11 +224,19 @@ namespace Perst.Impl
         internal const int OVERFLOW   = 3;
         internal const int UNDERFLOW  = 4;
 
+#if USE_GENERICS
+        internal int insert(PersistentComparator<K,V> comparator, V mbr, bool unique, ref TtreePage<K,V> pgRef) 
+        { 
+            TtreePage<K,V> pg, lp, rp;
+            V reinsertItem;
+#else
         internal int insert(PersistentComparator comparator, IPersistent mbr, bool unique, ref TtreePage pgRef) 
         { 
+            TtreePage pg, lp, rp;
+            IPersistent reinsertItem;
+#endif
             Load();
             int n = nItems;
-            TtreePage pg;
             int diff = comparator.CompareMembers(mbr, loadItem(0));
             if (diff <= 0) 
             { 
@@ -204,7 +256,11 @@ namespace Perst.Impl
                 if (left == null) 
                 { 
                     Modify();
+#if USE_GENERICS
+                    left = new TtreePage<K,V>(mbr);
+#else
                     left = new TtreePage(mbr);
+#endif
                 } 
                 else 
                 {
@@ -232,7 +288,7 @@ namespace Perst.Impl
                 } 
                 else 
                 { 
-                    TtreePage lp = this.left;
+                    lp = this.left;
                     lp.Load();
                     lp.Modify();
                     if (lp.balance < 0) 
@@ -245,7 +301,7 @@ namespace Perst.Impl
                     } 
                     else 
                     { // double LR turn
-                        TtreePage rp = lp.right;
+                        rp = lp.right;
                         rp.Load();
                         rp.Modify();
                         lp.right = rp.left;
@@ -277,7 +333,11 @@ namespace Perst.Impl
                 if (right == null) 
                 { 
                     Modify();
+#if USE_GENERICS
+                    right = new TtreePage<K,V>(mbr);
+#else
                     right = new TtreePage(mbr);
+#endif
                 } 
                 else 
                 { 
@@ -305,7 +365,7 @@ namespace Perst.Impl
                 } 
                 else 
                 { 
-                    TtreePage rp = this.right;
+                    rp = this.right;
                     rp.Load();
                     rp.Modify();
                     if (rp.balance > 0) 
@@ -318,7 +378,7 @@ namespace Perst.Impl
                     } 
                     else 
                     { // double RL turn
-                        TtreePage lp = rp.left;
+                        lp = rp.left;
                         lp.Load();
                         lp.Modify();
                         rp.left = lp.right;
@@ -367,7 +427,6 @@ namespace Perst.Impl
             } 
             else 
             { 
-                IPersistent reinsertItem;
                 if (balance >= 0) 
                 { 
                     reinsertItem = loadItem(0);
@@ -386,8 +445,15 @@ namespace Perst.Impl
             }
         }
        
+#if USE_GENERICS
+        internal int balanceLeftBranch(ref TtreePage<K,V> pgRef) 
+        {
+            TtreePage<K,V> lp, rp;
+#else
         internal int balanceLeftBranch(ref TtreePage pgRef) 
         {
+            TtreePage lp, rp;
+#endif
             if (balance < 0) 
             { 
                 balance = 0;
@@ -400,7 +466,7 @@ namespace Perst.Impl
             } 
             else 
             { 
-                TtreePage rp = this.right;
+                rp = this.right;
                 rp.Load();
                 rp.Modify();
                 if (rp.balance >= 0) 
@@ -424,7 +490,7 @@ namespace Perst.Impl
                 } 
                 else 
                 { // double RL turn
-                    TtreePage lp = rp.left;
+                    lp = rp.left;
                     lp.Load();
                     lp.Modify();
                     rp.left = lp.right;
@@ -440,8 +506,15 @@ namespace Perst.Impl
             }
         }
 
+#if USE_GENERICS
+        internal int balanceRightBranch(ref TtreePage<K,V> pgRef) 
+        {
+            TtreePage<K,V> lp, rp;
+#else
         internal int balanceRightBranch(ref TtreePage pgRef) 
         {
+            TtreePage lp, rp;
+#endif
             if (balance > 0) 
             { 
                 balance = 0;
@@ -454,7 +527,7 @@ namespace Perst.Impl
             } 
             else 
             { 
-                TtreePage lp = this.left;
+                lp = this.left;
                 lp.Load();
                 lp.Modify();
                 if (lp.balance <= 0) 
@@ -478,7 +551,7 @@ namespace Perst.Impl
                 } 
                 else 
                 { // double LR turn
-                    TtreePage rp = lp.right;
+                    rp = lp.right;
                     rp.Load();
                     rp.Modify();
                     lp.right = rp.left;
@@ -494,10 +567,16 @@ namespace Perst.Impl
             }
         }
     
+#if USE_GENERICS
+        internal int remove(PersistentComparator<K,V> comparator, V mbr, ref TtreePage<K,V> pgRef)
+        {
+            TtreePage<K,V> pg, next, prev;
+#else
         internal int remove(PersistentComparator comparator, IPersistent mbr, ref TtreePage pgRef)
         {
+            TtreePage pg, next, prev;
+#endif
             Load();
-            TtreePage pg;
             int n = nItems;
             int diff = comparator.CompareMembers(mbr, loadItem(0));
             if (diff <= 0) 
@@ -547,7 +626,7 @@ namespace Perst.Impl
                         { 
                             if (left != null && balance <= 0) 
                             {  
-                                TtreePage prev = left;
+                                prev = left;
                                 prev.Load();
                                 while (prev.right != null) 
                                 {                                 
@@ -573,7 +652,7 @@ namespace Perst.Impl
                             } 
                             else if (right != null) 
                             { 
-                                TtreePage next = right;
+                                next = right;
                                 next.Load();
                                 while (next.left != null) 
                                 { 

@@ -1,13 +1,29 @@
 namespace Perst
 {
     using System;
+#if USE_GENERICS
+    using System.Collections.Generic;
+#else
     using System.Collections;
+#endif
 
     /// <summary>
     /// Double linked list.
     /// </summary>
-    public class L2List : L2ListElem, ICollection, IEnumerable
+#if USE_GENERICS
+    public class L2List<T> : PersistentCollection<T> where T:L2ListElem<T>
+#else
+    public class L2List : PersistentCollection
+#endif
     { 
+#if USE_GENERICS
+        T head;
+        T tail;
+#else
+        L2ListElem head;
+        L2ListElem tail;
+#endif
+        
         private int nElems;
         private int updateCounter;
 
@@ -16,14 +32,15 @@ namespace Perst
         /// </summary>
         /// <returns>list head element or null if list is empty
         /// </returns>>
+#if USE_GENERICS
+        public T Head 
+#else
         public L2ListElem Head 
+#endif
         {
             get 
             {
-                lock (this) 
-                { 
-                    return next != this ? next : null;
-                }
+                return head;
             }
         }
 
@@ -31,27 +48,50 @@ namespace Perst
         /// Get list tail element
         /// </summary>
         /// <returns>list tail element or null if list is empty
-        /// </returns>>
-        public L2ListElem Tail
+        /// </returns>
+#if USE_GENERICS
+        public T Tail 
+#else
+        public L2ListElem Tail 
+#endif
         { 
             get 
             { 
-                lock (this) 
-                { 
-                    return prev != this ? prev : null;
+                return tail;
+            }
+        }
+
+#if USE_GENERICS
+        public override bool Contains(T obj) 
+        {
+            foreach (T o in this) 
+#else
+        public bool Contains(L2ListElem obj) 
+        {
+            foreach (L2ListElem o in this) 
+#endif        
+            { 
+                if (o == obj) 
+                {
+                    return true;
                 }
             }
+            return false;
         }
 
         /// <summary>
         /// Make list empty. 
         /// </summary>
+#if USE_GENERICS
+        public override void Clear() 
+#else
         public void Clear() 
+#endif
         { 
             lock (this) 
             {
                 Modify();
-                next = prev = null;
+                head = tail = null;
                 nElems = 0;
                 updateCounter += 1;
             }
@@ -60,17 +100,28 @@ namespace Perst
         /// <summary>
         /// Insert element at the beginning of the list
         /// </summary>
+#if USE_GENERICS
+        public void Prepend(T elem) 
+#else
         public void Prepend(L2ListElem elem) 
+#endif
         { 
             lock (this) 
             { 
                 Modify();
-                next.Modify();
                 elem.Modify();
-                elem.next = next;
-                elem.prev = this;
-                next.prev = elem;
-                next = elem;
+                elem.next = head;
+                elem.prev = null;
+                if (head != null)
+                { 
+                    head.Modify();
+                    head.prev = elem;
+                } 
+                else 
+                {
+                     tail = elem;
+                } 
+                head = elem;
                 nElems += 1;
                 updateCounter += 1;
             }
@@ -79,17 +130,28 @@ namespace Perst
         /// <summary>
         /// Insert element at the end of the list
         /// </summary>
+#if USE_GENERICS
+        public void Append(T elem) 
+#else
         public void Append(L2ListElem elem) 
+#endif
         { 
             lock (this) 
             { 
                 Modify();
-                prev.Modify();
                 elem.Modify(); 
-                elem.next = this;
-                elem.prev = prev;
-                prev.next = elem;
-                prev = elem;
+                elem.next = null;
+                elem.prev = tail;
+                if (tail != null) 
+                { 
+                    tail.Modify();
+                    tail.next = elem;
+                }
+                 else 
+                {
+                    tail = elem;
+                } 
+                tail = elem;
                 nElems += 1;
                 updateCounter += 1;
             }
@@ -98,70 +160,82 @@ namespace Perst
         /// <summary>
         /// Remove element from the list
         /// </summary>
-        public void Remove(L2ListElem elem) 
+#if USE_GENERICS
+        public override bool Remove(T elem) 
+#else
+        public bool Remove(L2ListElem elem) 
+#endif
         { 
             lock (this) 
             { 
                 Modify();
-                elem.prev.Modify();
-                elem.next.Modify();
-                elem.next.prev = elem.prev;
-                elem.prev.next = elem.next;
+                if (elem.prev != null)
+                {
+                    elem.prev.Modify();
+                    elem.prev.next = elem.next;
+                    elem.prev = null;
+                } 
+                else 
+                {
+                    head = head.next;
+                } 
+                if (elem.next != null) 
+                { 
+                    elem.next.Modify();
+                    elem.next.prev = elem.prev;
+                    elem.next = null;
+                } 
+                else 
+                {
+                    tail = tail.prev;
+                } 
                 nElems -= 1;
                 updateCounter += 1;
+                return true;
             }
         }
 
         /// <summary>
         /// Add element to the list
         /// </summary>
+#if USE_GENERICS
+        public override void Add(T elem) 
+#else
         public void Add(L2ListElem elem) 
+#endif
         { 
             Append(elem);
         }
-        public int Count 
+
+        public override int Count 
         { 
             get 
             {
                 return nElems;
             }
         }
-
-        public bool IsSynchronized 
-        {
-            get 
-            {
-                return true;
-            }
-        }
-
-        public object SyncRoot 
-        {
-            get 
-            {
-                return this;
-            }
-        }
-
-        public void CopyTo(Array dst, int i) 
-        {
-            lock (this) 
-            { 
-                foreach (object o in this) 
-                { 
-                    dst.SetValue(o, i++);
-                }
-            }
-        }
-
         
+#if USE_GENERICS
+        class L2ListEnumerator : IEnumerator<T>
+        {
+            private T          curr;
+            private int        counter;
+            private L2List<T>  list;
+            private bool       head;
+#else
         class L2ListEnumerator : IEnumerator
         {
             private L2ListElem curr;
             private int        counter;
             private L2List     list;
+            private bool       head;
+#endif
 
+#if USE_GENERICS
+            internal L2ListEnumerator(L2List<T> list) 
+#else
             internal L2ListEnumerator(L2List list) 
+#endif
             { 
                 this.list = list;
                 Reset();
@@ -169,15 +243,20 @@ namespace Perst
 
             public void Reset() 
             { 
-                curr = list;
+                curr = null;
                 counter = list.updateCounter;
+                head = true;
             }
 
+#if USE_GENERICS
+            public T Current
+#else
             public object Current
+#endif
             { 
                 get 
                 { 
-                    if (curr == list || counter != list.updateCounter) 
+                    if (curr == null || counter != list.updateCounter) 
                     { 
                         throw new InvalidOperationException();
                     }
@@ -185,23 +264,33 @@ namespace Perst
                 }
             }
 
+            public void Dispose() {}
+
             public bool MoveNext() 
             { 
                 if (counter != list.updateCounter) 
                 { 
                     throw new InvalidOperationException();
                 }
-                if (curr.next == list) 
-                { 
-                    return false;
+                if (head) 
+                {
+                    curr = list.head;
+                    head = false;
+                } 
+                else if (curr != null) 
+                {
+                    curr = curr.next;
                 }
-                curr = curr.next;
-                return true;
+                return curr != null;
             }
         }
             
         
-        public IEnumerator GetEnumerator() 
+#if USE_GENERICS
+        public override IEnumerator<T> GetEnumerator() 
+#else
+        public override IEnumerator GetEnumerator() 
+#endif
         { 
             return new L2ListEnumerator(this);
         }
