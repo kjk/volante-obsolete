@@ -97,7 +97,7 @@ public class PerstTranslator implements Translator {
                 } else if (type.getName().equals("java.lang.String")) {
                     sb.append("+org.garret.perst.impl.Bytes#sizeof(");
                     sb.append(f.getName());
-                    sb.append(")");
+                    sb.append(",$3)");
                 } else { 
                     return false;
                 }
@@ -149,7 +149,7 @@ public class PerstTranslator implements Translator {
                } else { 
                     sb.append("$2=org.garret.perst.impl.Bytes#packStr($1.arr,$2,");
                     sb.append(name);
-                    sb.append(");");
+                    sb.append(",$3);");
                 }
             }
         }
@@ -184,9 +184,7 @@ public class PerstTranslator implements Translator {
                 } else if (type == CtClass.floatType) { 
                     sb.append("org.garret.perst.impl.Bytes#unpackF4($1,$2);$2+=4;");
                } else { 
-                    sb.append("org.garret.perst.impl.Bytes#unpackStr($1,$2);$2+=org.garret.perst.impl.Bytes#sizeof(");
-                    sb.append(name);
-                    sb.append(");");
+                    sb.append("org.garret.perst.impl.Bytes#unpackStr($1,$2,$3);$2+=org.garret.perst.impl.Bytes#sizeof($1,$2);");
                 }
             }
         }

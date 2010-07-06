@@ -1528,6 +1528,10 @@ public class StorageImpl extends Storage {
         return new TimeSeriesImpl<T>(this, blockClass, maxBlockTimeInterval);
     }
 
+    public <T extends IPersistent> PatriciaTrie<T> createPatriciaTrie() { 
+        return new PTrie<T>();
+    }
+
     final long getGCPos(int oid) { 
         Page pg = pool.getPage(header.root[currIndex].index 
                                + (oid >>> dbHandlesPerPageBits << Page.pageBits));
@@ -2471,7 +2475,7 @@ public class StorageImpl extends Storage {
         }
         obj.assignOid(this, oid, false);
         if (obj instanceof FastSerializable) { 
-            ((FastSerializable)obj).unpack(body, ObjectHeader.sizeof);
+            ((FastSerializable)obj).unpack(body, ObjectHeader.sizeof, encoding);
         } else { 
             try { 
                 unpackObject(obj, desc, obj.recursiveLoading(), body, ObjectHeader.sizeof);
@@ -2491,7 +2495,10 @@ public class StorageImpl extends Storage {
         
         protected Object resolveObject(Object obj) throws IOException {
             if (obj instanceof IPersistent) { 
-                return lookupObject(((IPersistent)obj).getOid(), obj.getClass());
+                int oid = ((IPersistent)obj).getOid();
+                if (oid != 0) { 
+                    return lookupObject(oid, obj.getClass());
+                }
             }
             return obj;
         }
@@ -3069,7 +3076,7 @@ public class StorageImpl extends Storage {
         buf.extend(offs);
         ClassDescriptor desc = getClassDescriptor(obj.getClass());
         if (obj instanceof FastSerializable) { 
-            offs = ((FastSerializable)obj).pack(buf, offs);
+            offs = ((FastSerializable)obj).pack(buf, offs, encoding);
         } else { 
             try {
                 offs = packObject(obj, desc, offs, buf);
