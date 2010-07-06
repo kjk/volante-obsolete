@@ -88,9 +88,24 @@ public abstract class Storage {
     abstract public Relation createRelation(IPersistent owner);
 
     /**
-     * Commit transaction (if neeeded) and close the storage
+     * Commit transaction (if needed) and close the storage
      */
     abstract public void close();
+
+    /**
+     * Set threshold for initiation of garbage collection. By default garbage collection is disable (threshold is set to
+     * Long.MAX_VALUE). If it is set to the value different from Long.MAX_VALUE, GC will be started each time when
+     * delta between total size of allocated and deallocated objects exceeds specified threashold OR
+     * after reaching end of allocation bitmap in allocator. 
+     * @param allocatedDelta delta between total size of allocated and deallocated object since last GC 
+     * or storage opening 
+     */
+    abstract public void setGcThreshold(long allocatedDelta);
+
+    /**
+     * Explicit start of garbage collector
+     */
+    abstract public void gc();
 
     // Internal methods
 

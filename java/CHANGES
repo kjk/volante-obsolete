@@ -17,3 +17,6 @@ Initial release
 2. Add IPersistent.onLoad method
 3. Fix bug in BtreeFieldIndex
 4. Add TestLink example
+
+--- Release version 1.05 04.04.2003 -------------------------------------
+1. Add optional garbage collection

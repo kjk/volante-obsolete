@@ -307,6 +307,7 @@ class BtreePage {
 		    return Btree.op_duplicate;
 		}
 		db.pool.unfix(pg);
+                pg = null;
 		pg = db.putPage(pageId);
 		return insertStrKey(db, pg, r, ins, height);
 	    } else { 
@@ -331,6 +332,7 @@ class BtreePage {
 		    return Btree.op_duplicate;
 		}
 		db.pool.unfix(pg);
+                pg = null;
 		pg = db.putPage(pageId);
 		int itemSize = ClassDescriptor.sizeof[type];
 		int max = keySpace / (4 + itemSize);
@@ -376,7 +378,9 @@ class BtreePage {
 		}
 	    }
 	} finally { 
-	    db.pool.unfix(pg);
+            if (pg != null) { 
+                db.pool.unfix(pg);
+            }
 	}
     }
 
@@ -920,6 +924,7 @@ class BtreePage {
 			if (compare(rem.key, pg, r) == 0) {
 			    if (getReference(pg, maxItems-r-1) == oid || oid == 0) {
 				db.pool.unfix(pg);
+                                pg = null;
 				pg = db.putPage(pageId);
 				memcpy(pg, r, pg, r+1, n - r - 1, itemSize);
 				memcpy(pg, maxItems-n+1, pg, maxItems-n, n - r - 1, 4);
@@ -938,6 +943,7 @@ class BtreePage {
 		    switch (remove(db, getReference(pg, maxItems-r-1), type, rem, height)) {
 		      case Btree.op_underflow: 
 			db.pool.unfix(pg);
+                        pg = null;
 			pg = db.putPage(pageId);
 			return handlePageUnderflow(db, pg, r, type, rem, height);
 		      case Btree.op_done:
@@ -959,12 +965,14 @@ class BtreePage {
 			switch (remove(db, getKeyStrOid(pg, r), type, rem, height)) {
 			  case Btree.op_underflow: 
 			    db.pool.unfix(pg);
+                            pg = null;
 			    pg = db.putPage(pageId);
 			    return handlePageUnderflow(db, pg, r, type, rem, height);
 			  case Btree.op_done:
 			    return Btree.op_done;
 			  case Btree.op_overflow:
 			    db.pool.unfix(pg);
+                            pg = null;
 			    pg = db.putPage(pageId);
 			    return insertStrKey(db, pg, r, rem, height);
 			}
@@ -974,7 +982,8 @@ class BtreePage {
 			if (compareStr(rem.key, pg, r) == 0) { 
 			    if (getKeyStrOid(pg, r) == rem.oid || rem.oid == 0) { 
 				db.pool.unfix(pg);
-				pg = db.putPage(pageId);
+                                pg = null;
+                                pg = db.putPage(pageId);
 				return removeStrKey(pg, r);
 			    }
 			} else { 
@@ -986,7 +995,9 @@ class BtreePage {
 		return Btree.op_not_found;
 	    }
 	} finally { 
-	    db.pool.unfix(pg);
+            if (pg != null) { 
+                db.pool.unfix(pg);
+            }
 	}
     }
 
@@ -1009,10 +1020,10 @@ class BtreePage {
 	db.freePage(pageId);
     }
 
-    static int traverseForward(StorageImpl db, int treeId, int type, int height, 
+    static int traverseForward(StorageImpl db, int pageId, int type, int height, 
                                IPersistent[] result, int pos)
     {
-	Page pg = db.getPage(treeId);
+	Page pg = db.getPage(pageId);
 	int oid;
 	try { 
 	    int i, n = getnItems(pg);
@@ -1040,6 +1051,37 @@ class BtreePage {
 		}
 	    }
 	    return pos;
+	} finally { 
+            db.pool.unfix(pg);
+	}
+    }
+
+    static void markPage(StorageImpl db, int pageId, int type, int height)
+    {
+        Page pg = db.getGCPage(pageId);
+	try { 
+	    int i, n = getnItems(pg);
+	    if (--height != 0) {
+		if (type == ClassDescriptor.tpString) { // page of strings
+		    for (i = 0; i <= n; i++) { 
+			markPage(db, getKeyStrOid(pg, i), type, height);
+		    }
+		} else { 
+		    for (i = 0; i <= n; i++) { 
+			markPage(db, getReference(pg, maxItems-i-1), type, height);
+		    }
+		}
+	    } else { 
+		if (type != ClassDescriptor.tpString) { // page of scalars
+                    for (i = 0; i < n; i++) { 
+                        db.markOid(getReference(pg, maxItems-1-i));
+                    }
+		} else { // page of strings
+                    for (i = 0; i < n; i++) {
+                        db.markOid(getKeyStrOid(pg, i));
+                    }
+		}
+	    }
 	} finally { 
 	    db.pool.unfix(pg);
 	}

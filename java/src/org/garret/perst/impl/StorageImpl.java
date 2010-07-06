@@ -21,11 +21,11 @@ public class StorageImpl extends Storage {
      * large enough hole, then database is extended by the value of dbDefaultExtensionQuantum 
      * This parameter should not be smaller than dbFirstUserId
      */
-    static final long dbDefaultExtensionQuantum = 4*1024*1024;
+    static final long dbDefaultExtensionQuantum = 1024*1024;
 
     static final int  dbDatabaseOffsetBits = 32;  // up to 1 gigabyte, 37 - up to 1 terabyte database
 
-    static final int  dbAllocationQuantumBits = 6;
+    static final int  dbAllocationQuantumBits = 5;
     static final int  dbAllocationQuantum = 1 << dbAllocationQuantumBits;
     static final int  dbBitmapSegmentBits = Page.pageBits + 3 + dbAllocationQuantumBits;
     static final int  dbBitmapSegmentSize = 1 << dbBitmapSegmentBits;
@@ -114,6 +114,7 @@ public class StorageImpl extends Storage {
             return;
         }
 	long pos = getPos(oid);
+        objectCache.remove(oid);
 	int offs = (int)pos & (Page.pageSize-1);
 	if ((offs & (dbFreeHandleFlag|dbPageObjectFlag)) != 0) { 
 	    throw new StorageError(StorageError.DELETED_OBJECT);
@@ -128,9 +129,9 @@ public class StorageImpl extends Storage {
 	} else { 
 	    cloneBitmap(pos, size);
 	}
-	modified = true;
         setObjectOid(obj, 0, false);
     }
+    
 
     final void freePage(int oid) {
 	long pos = getPos(oid);
@@ -299,6 +300,10 @@ public class StorageImpl extends Storage {
         setDirty();
 	size = (size + dbAllocationQuantum-1) & ~(dbAllocationQuantum-1);
 	Assert.that(size != 0);
+        allocatedDelta += size;
+        if (allocatedDelta > gcThreshold) {
+            gc();
+        }
 	int  objBitSize = size >> dbAllocationQuantumBits;
 	long pos;    
 	int  holeBitSize = 0;
@@ -589,7 +594,15 @@ public class StorageImpl extends Storage {
 		    commitLocation();
 		}
 		return pos;
-	    } 
+            } 
+            if (gcThreshold != Long.MAX_VALUE && !gcDone) {
+                allocatedDelta -= size;
+                usedSize -= size;
+                gc();
+                currRBitmapPage = currPBitmapPage = dbBitmapId;
+                currRBitmapOffs = currPBitmapOffs = 0;                
+                return allocate(size, oid);
+            }
 	    freeBitmapPage = i;
 	    holeBeforeFreePage = holeBitSize;
 	    holeBitSize = 0;
@@ -611,6 +624,7 @@ public class StorageImpl extends Storage {
 	Page pg = putPage(pageId);
 	int  bitOffs = (int)quantNo & 7;
 
+        allocatedDelta -= objBitSize << dbAllocationQuantumBits;
 	usedSize -= objBitSize << dbAllocationQuantumBits;
 
 	if ((pos & (Page.pageSize-1)) == 0 && size >= Page.pageSize) { 
@@ -702,6 +716,9 @@ public class StorageImpl extends Storage {
 	
 	currRBitmapPage = currPBitmapPage = dbBitmapId;
 	currRBitmapOffs = currPBitmapOffs = 0;
+        gcThreshold = Long.MAX_VALUE;
+        allocatedDelta = 0;
+        gcDone = false;
 	modified = false;        
         if (pagePoolSize == 0) { 
             pagePoolSize = Page.pageSize*256;
@@ -831,8 +848,8 @@ public class StorageImpl extends Storage {
             }
             committedIndexSize = currIndexSize;
 	    usedSize = header.root[curr].size;
-            reloadScheme();
 	}
+        reloadScheme();
         opened = true;
     }
 
@@ -849,6 +866,7 @@ public class StorageImpl extends Storage {
         
 
     final void reloadScheme() {
+        btreeClassOid = -1;
         classDescMap.clear();
         int descListOid = header.root[1-currIndex].classDescList;
         classDescMap.put(ClassDescriptor.class, new ClassDescriptor(ClassDescriptor.class));
@@ -857,6 +875,9 @@ public class StorageImpl extends Storage {
             descList = (ClassDescriptor)lookupObject(descListOid, ClassDescriptor.class);
             for (desc = descList; desc != null; desc = desc.next) { 
                 desc.resolve();
+                if (desc.cls.equals(Btree.class)) { 
+                    btreeClassOid = desc.getOid();
+                }                    
                 classDescMap.put(desc.cls, desc);
             }
             for (desc = descList; desc != null; desc = desc.next) { 
@@ -876,6 +897,9 @@ public class StorageImpl extends Storage {
             descList = desc;
             checkIfFinal(desc);
             storeObject(desc);
+            if (cls.equals(Btree.class)) { 
+                btreeClassOid = desc.getOid();
+            }
             header.root[1-currIndex].classDescList = desc.getOid();
             modified = true;
         }
@@ -1050,6 +1074,7 @@ public class StorageImpl extends Storage {
 		}
 	    }
             modified = false;
+            gcDone = false;
             currIndex = curr;
             committedIndexSize = currIndexSize;
 	}
@@ -1119,7 +1144,209 @@ public class StorageImpl extends Storage {
         return new RelationImpl(owner);
     }
 
-    public synchronized void close() {
+    final long getGCPos(int oid) { 
+	Page pg = pool.getPage(header.root[currIndex].index 
+			       + (oid >>> dbHandlesPerPageBits << Page.pageBits));
+	long pos = Bytes.unpack8(pg.data, (oid & (dbHandlesPerPage-1)) << 3);
+	pool.unfix(pg);
+	return pos;
+    }
+        
+    final void markOid(int oid) { 
+        if (oid != 0) {  
+            long pos = getGCPos(oid);
+            int bit = (int)(pos >>> dbAllocationQuantumBits);
+            if ((blackBitmap[bit >>> 5] & (1 << (bit & 31))) == 0) { 
+                greyBitmap[bit >>> 5] |= 1 << (bit & 31);
+            }
+        }
+    }
+
+    final Page getGCPage(int oid) {  
+	return pool.getPage(getGCPos(oid) & ~dbFlagsMask);
+    }
+
+    public void setGcThreshold(long maxAllocatedDelta) {
+        gcThreshold = maxAllocatedDelta;
+    }
+
+    public synchronized void gc() { 
+        if (gcDone) { 
+            return;
+        }
+        // System.out.println("Start GC, allocatedDelta=" + allocatedDelta + ", header[" + currIndex + "].size=" + header.root[currIndex].size + ", gcTreshold=" + gcThreshold);
+                
+        int bitmapSize = (int)(header.root[currIndex].size >>> (dbAllocationQuantumBits + 5)) + 1;
+        boolean existsNotMarkedObjects;
+        long pos;
+        int  i, j;
+
+        // mark
+        greyBitmap = new int[bitmapSize];
+        blackBitmap = new int[bitmapSize];
+        int rootOid = header.root[currIndex].rootObject;
+        if (rootOid != 0) { 
+            markOid(rootOid);
+            do { 
+                existsNotMarkedObjects = false;
+                for (i = 0; i < bitmapSize; i++) { 
+                    if (greyBitmap[i] != 0) { 
+                        existsNotMarkedObjects = true;
+                        for (j = 0; j < 32; j++) { 
+                            if ((greyBitmap[i] & (1 << j)) != 0) { 
+                                pos = (((long)i << 5) + j) << dbAllocationQuantumBits;
+                                greyBitmap[i] &= ~(1 << j);
+                                blackBitmap[i] |= 1 << j;
+                                int offs = (int)pos & (Page.pageSize-1);
+                                Page pg = pool.getPage(pos - offs);
+                                int typeOid = ObjectHeader.getType(pg.data, offs);
+                                if (typeOid != 0) { 
+                                    markOid(typeOid);
+                                    if (typeOid == btreeClassOid) { 
+                                        Btree btree = new Btree(pg.data, ObjectHeader.sizeof + offs);
+                                        setObjectOid(btree, 0, false);
+                                        btree.markTree();
+                                    } else { 
+                                        ClassDescriptor desc = (ClassDescriptor)lookupObject(typeOid, ClassDescriptor.class);
+                                        if (desc.hasReferences) { 
+                                            markObject(pool.get(pos), ObjectHeader.sizeof, desc);
+                                        }
+                                    }
+                                }
+                                pool.unfix(pg);                                
+                            }
+                        }
+                    }
+                }
+            } while (existsNotMarkedObjects);
+        }
+        
+        // sweep
+        gcDone = true;
+        for (i = dbFirstUserId, j = committedIndexSize; i < j; i++) {
+            pos = getGCPos(i);
+            if (((int)pos & (dbPageObjectFlag|dbFreeHandleFlag)) == 0) {
+                int bit = (int)(pos >>> dbAllocationQuantumBits);
+                if ((blackBitmap[bit >>> 5] & (1 << (bit & 31))) == 0) { 
+                    // object is not accessible
+                    if (getPos(i) != pos) { 
+                        throw new StorageError(StorageError.INVALID_OID);
+                    }
+                    int offs = (int)pos & (Page.pageSize-1);
+                    Page pg = pool.getPage(pos - offs);
+                    int type = ObjectHeader.getType(pg.data, offs);
+                    if (type == btreeClassOid) { 
+                        Btree btree = new Btree(pg.data, ObjectHeader.sizeof + offs);
+                        pool.unfix(pg);
+                        setObjectOid(btree, i, false);
+                        btree.deallocate();
+                    } else { 
+                        int size = ObjectHeader.getSize(pg.data, offs);
+                        pool.unfix(pg);
+                        freeId(i);
+                        objectCache.remove(i);                        
+                        cloneBitmap(pos, size);
+                    }
+                }
+            }   
+        }
+
+        greyBitmap = null;
+        blackBitmap = null;
+        allocatedDelta = 0;
+    }
+
+
+    final int markObject(byte[] obj, int offs,  ClassDescriptor desc)
+    { 
+        Field[] all = desc.allFields;
+        int[] type = desc.fieldTypes;
+
+        for (int i = 0, n = all.length; i < n; i++) { 
+            Field f = all[i];
+            switch (type[i]) { 
+                case ClassDescriptor.tpBoolean:
+                case ClassDescriptor.tpByte:
+                    offs += 1;
+                    continue;
+                case ClassDescriptor.tpChar:
+                case ClassDescriptor.tpShort:
+                    offs += 2;
+                    continue;
+                case ClassDescriptor.tpInt:
+                case ClassDescriptor.tpFloat:
+                    offs += 4;
+                    continue;
+                case ClassDescriptor.tpLong:
+                case ClassDescriptor.tpDouble:
+                case ClassDescriptor.tpDate:
+                    offs += 8;
+                    continue;
+                case ClassDescriptor.tpString:
+                    offs += 4 + Bytes.unpack4(obj, offs)*2;
+                    continue;
+                case ClassDescriptor.tpObject:
+                    markOid(Bytes.unpack4(obj, offs));
+                    offs += 4;
+                    continue;
+                case ClassDescriptor.tpValue:
+                    offs = markObject(obj, offs, getClassDescriptor(f.getType()));
+                    continue;
+                case ClassDescriptor.tpArrayOfByte:
+                case ClassDescriptor.tpArrayOfBoolean:
+                    offs += 4 + Bytes.unpack4(obj, offs);
+                    continue;
+                case ClassDescriptor.tpArrayOfShort:
+                case ClassDescriptor.tpArrayOfChar:
+                    offs += 4 + Bytes.unpack4(obj, offs)*2;
+                    continue;
+                case ClassDescriptor.tpArrayOfInt:
+                case ClassDescriptor.tpArrayOfFloat:
+                    offs += 4 + Bytes.unpack4(obj, offs)*4;
+                    continue;
+                case ClassDescriptor.tpArrayOfLong:
+                case ClassDescriptor.tpArrayOfDouble:
+                case ClassDescriptor.tpArrayOfDate:
+                    offs += 4 + Bytes.unpack4(obj, offs)*8;
+                    continue;
+                case ClassDescriptor.tpArrayOfString:
+                {
+                    int len = Bytes.unpack4(obj, offs);
+                    offs += 4;
+                    while (--len >= 0) {
+                        offs += 4 + Bytes.unpack4(obj, offs)*2;
+                    }
+                    continue;
+                }
+                case ClassDescriptor.tpArrayOfObject:
+                case ClassDescriptor.tpLink:
+                {
+                    int len = Bytes.unpack4(obj, offs);
+                    offs += 4;
+                    while (--len >= 0) {
+                        markOid(Bytes.unpack4(obj, offs));
+                        offs += 4;
+                    }
+                    continue;
+                }
+                case ClassDescriptor.tpArrayOfValue:
+                {
+                    int len = Bytes.unpack4(obj, offs);
+                    offs += 4;
+                    Class elemType = f.getType().getComponentType();
+                    ClassDescriptor valueDesc = getClassDescriptor(elemType);
+                    while (--len >= 0) {
+                        offs = markObject(obj, offs, valueDesc);
+                    }
+                    continue;
+                }
+            }
+        }
+        return offs;
+    }
+
+    public synchronized void close() 
+    {
         if (!opened) { 
             throw new StorageError(StorageError.STORAGE_NOT_OPENED);
         }
@@ -1989,6 +2216,13 @@ public class StorageImpl extends Storage {
     long      usedSize;   // total size of allocated objects since the beginning of the session
     int[]     bitmapPageAvailableSpace;
     boolean   opened;
+
+    int[]     greyBitmap; // bitmap of visited during GC but not yet marked object
+    int[]     blackBitmap;    // bitmap of objects marked during GC 
+    long      gcThreshold;
+    long      allocatedDelta;
+    boolean   gcDone;
+    int       btreeClassOid;
 
     WeakHashTable   objectCache;
     HashMap         classDescMap;

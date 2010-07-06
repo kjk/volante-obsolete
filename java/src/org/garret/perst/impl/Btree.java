@@ -19,6 +19,18 @@ class Btree extends Persistent implements Index {
         this.unique = unique;
     }
 
+    Btree(byte[] obj, int offs) {
+        root = Bytes.unpack4(obj, offs);
+        offs += 4;
+        height = Bytes.unpack4(obj, offs);
+        offs += 4;
+        type = Bytes.unpack4(obj, offs);
+        offs += 4;
+        nElems = Bytes.unpack4(obj, offs);
+        offs += 4;
+        unique = obj[offs] != 0;
+    }
+
     static final int op_done      = 0;
     static final int op_overflow  = 1;
     static final int op_underflow = 2;
@@ -170,5 +182,11 @@ class Btree extends Persistent implements Index {
         }
         super.deallocate();
     }
+
+    public void markTree() { 
+        if (root != 0) { 
+            BtreePage.markPage((StorageImpl)getStorage(), root, type, height);
+        }
+    }        
 }
 

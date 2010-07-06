@@ -13,6 +13,7 @@ public final class ClassDescriptor extends Persistent {
     transient Class   cls;
     transient boolean hasSubclasses;
     transient Constructor defaultConstructor;
+    transient boolean hasReferences;
 
     public static final int tpBoolean          = 0;
     public static final int tpByte             = 1;
@@ -154,8 +155,22 @@ public final class ClassDescriptor extends Persistent {
             int nFields = list.size();
             allFields = (Field[])list.toArray(new Field[nFields]);
             fieldTypes = new int[nFields];
-            for (int i = 0; i < nFields; i++) { 
-                fieldTypes[i] = getTypeCode(allFields[i].getType());
+            for (int i = 0; i < nFields; i++) {
+                Class cls = allFields[i].getType();
+                int type = getTypeCode(cls);
+                fieldTypes[i] = type;
+                switch (type) {
+                  case tpObject:
+                  case tpLink:
+                  case tpArrayOfObject:
+                    hasReferences = true;
+                    break;
+                  case tpValue:
+                    hasReferences |= new ClassDescriptor(cls).hasReferences;
+                    break;
+                  case tpArrayOfValue:
+                    hasReferences |= new ClassDescriptor(cls.getComponentType()).hasReferences;
+                }
             }        
             defaultConstructor = cls.getDeclaredConstructor(defaultConstructorProfile);
             defaultConstructor.setAccessible(true);

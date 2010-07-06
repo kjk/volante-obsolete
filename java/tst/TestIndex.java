@@ -10,7 +10,7 @@ class Indices extends Persistent {
     Index intIndex;
 }
 
-public class TestIndex extends Thread { 
+public class TestIndex { 
     final static int nRecords = 100000;
     final static int pagePoolSize = 32*1024*1024;
 
