@@ -74,8 +74,9 @@ public interface Index extends IPersistent, IResource {
      * @param key object key
      * @param obj object associated with this key. Object can be not yet peristent, in this case
      * its forced to become persistent by assigning OID to it.
+     * @return object previously associated with this key, <code>null</code> if there was no such object
      */
-    public void          set(Key key, IPersistent obj);
+    public IPersistent   set(Key key, IPersistent obj);
 
     /**
      * Remove object with specified key from the index
@@ -88,10 +89,11 @@ public interface Index extends IPersistent, IResource {
     /**
      * Remove key from the unique index.
      * @param key value of removed key
+     * @return removed object
      * @exception StorageError(StorageError.KEY_NOT_FOUND) exception if there is no such key in the index,
      * or StorageError(StorageError.KEY_NOT_UNIQUE) if index is not unique.
      */
-    public void          remove(Key key);
+    public IPersistent   remove(Key key);
 
 
     /**
@@ -111,8 +113,9 @@ public interface Index extends IPersistent, IResource {
      * @param key string key
      * @param obj object associated with this key. Object can be not yet peristent, in this case
      * its forced to become persistent by assigning OID to it.
+     * @return object previously associated with this key, <code>null</code> if there was no such object
      */
-    public void          set(String key, IPersistent obj);
+    public IPersistent   set(String key, IPersistent obj);
 
     /**
      * Remove object with specified string key from the index
@@ -125,10 +128,11 @@ public interface Index extends IPersistent, IResource {
     /**
      * Remove key from the unique string index.
      * @param key value of removed key
+     * @return removed object
      * @exception StorageError(StorageError.KEY_NOT_FOUND) exception if there is no such key in the index,
      * or StorageError(StorageError.KEY_NOT_UNIQUE) if index is not unique.
      */
-    public void          remove(String key);
+    public IPersistent   remove(String key);
 
     /**
      * Get number of objects in the index

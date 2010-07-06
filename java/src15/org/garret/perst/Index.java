@@ -101,8 +101,9 @@ public interface Index<T extends IPersistent> extends IPersistent, IResource, It
      * @param key object key
      * @param obj object associated with this key. Object can be not yet peristent, in this case
      * its forced to become persistent by assigning OID to it.
+     * @return object previously associated with this key, <code>null</code> if there was no such object
      */
-    public void set(Key key, T obj);
+    public T set(Key key, T obj);
 
     /**
      * Remove object with specified key from the index
@@ -115,10 +116,11 @@ public interface Index<T extends IPersistent> extends IPersistent, IResource, It
     /**
      * Remove key from the unique index.
      * @param key value of removed key
+     * @return removed object
      * @exception StorageError(StorageError.KEY_NOT_FOUND) exception if there is no such key in the index,
      * or StorageError(StorageError.KEY_NOT_UNIQUE) if index is not unique.
      */
-    public void remove(Key key);
+    public T remove(Key key);
 
     /**
      * Put new object in the string index. 
@@ -137,8 +139,9 @@ public interface Index<T extends IPersistent> extends IPersistent, IResource, It
      * @param key string key
      * @param obj object associated with this key. Object can be not yet peristent, in this case
      * its forced to become persistent by assigning OID to it.
+     * @return object previously associated with this key, <code>null</code> if there was no such object
      */
-    public void set(String key, T obj);
+    public T set(String key, T obj);
 
     /**
      * Remove object with specified string key from the index
@@ -151,10 +154,11 @@ public interface Index<T extends IPersistent> extends IPersistent, IResource, It
     /**
      * Remove key from the unique string index.
      * @param key value of removed key
+     * @return removed object
      * @exception StorageError(StorageError.KEY_NOT_FOUND) exception if there is no such key in the index,
      * or StorageError(StorageError.KEY_NOT_UNIQUE) if index is not unique.
      */
-    public void remove(String key);
+    public T remove(String key);
 
     /**
      * Get number of objects in the index

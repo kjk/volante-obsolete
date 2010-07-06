@@ -198,3 +198,7 @@ later changed by me.
 their redefinition in derived class.
 2. Make it possible to store Java primitive objects wrappers (Integer, Double...)
 and references to persistent object in raw field.
+
+--- Release version 2.24 17.05.2004 -------------------------------------
+1. Index.remove(Key), Index.set(Key,IPersistent), FieldIndex.remove(Key) and FieldIndex.set(IPersistent)
+methods now return reference to the removed/replaced object.

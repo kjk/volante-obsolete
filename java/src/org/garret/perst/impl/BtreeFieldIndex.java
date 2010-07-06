@@ -107,11 +107,11 @@ class BtreeFieldIndex extends Btree implements FieldIndex {
             
 
     public boolean put(IPersistent obj) {
-        return super.insert(extractKey(obj), obj, false);
+        return super.insert(extractKey(obj), obj, false) >= 0;
     }
 
-    public void set(IPersistent obj) {
-         super.insert(extractKey(obj), obj, true);
+    public IPersistent set(IPersistent obj) {
+        return super.set(extractKey(obj), obj);
     }
 
     public void  remove(IPersistent obj) {

@@ -144,14 +144,15 @@ class Btree extends PersistentResource implements Index {
     }
 
     public boolean put(Key key, IPersistent obj) {
-        return insert(key, obj, false);
+        return insert(key, obj, false) >= 0;
     }
 
-    public void set(Key key, IPersistent obj) {
-        insert(key, obj, true);
+    public IPersistent set(Key key, IPersistent obj) {
+        int oid = insert(key, obj, true);
+        return (oid != 0) ? ((StorageImpl)getStorage()).lookupObject(oid, null) :  null;
     }
 
-    final boolean insert(Key key, IPersistent obj, boolean overwrite) {
+    final int insert(Key key, IPersistent obj, boolean overwrite) {
         StorageImpl db = (StorageImpl)getStorage();
         if (db == null) {             
             throw new StorageError(StorageError.DELETED_OBJECT);
@@ -172,18 +173,18 @@ class Btree extends PersistentResource implements Index {
                 root = BtreePage.allocate(db, root, type, ins);
                 height += 1;
             } else if (result == op_duplicate) { 
-                return false;
+                return -1;
             } else if (result == op_overwrite) { 
-                return true;
+                return ins.oldOid;
             }
         }
         updateCounter += 1;
         nElems += 1;
         modify();
-        return true;
+        return 0;
     }
 
-    public void  remove(Key key, IPersistent obj) {
+    public void remove(Key key, IPersistent obj) {
         remove(new BtreeKey(key, obj.getOid()));
     }
 
@@ -226,11 +227,14 @@ class Btree extends PersistentResource implements Index {
         modify();
     }
         
-    public void remove(Key key) {
+    public IPersistent remove(Key key) {
         if (!unique) { 
             throw new StorageError(StorageError.KEY_NOT_UNIQUE);
         }
-        remove(new BtreeKey(key, 0));
+        BtreeKey rk = new BtreeKey(key, 0);
+        StorageImpl db = (StorageImpl)getStorage();
+        remove(rk);
+        return db.lookupObject(rk.oid, null);
     }
         
         
@@ -243,19 +247,19 @@ class Btree extends PersistentResource implements Index {
     }
 
     public boolean put(String key, IPersistent obj) {
-        return insert(new Key(key, true), obj, false);
+        return put(new Key(key, true), obj);
     }
 
-    public void set(String key, IPersistent obj) {
-        insert(new Key(key, true), obj, true);
+    public IPersistent set(String key, IPersistent obj) {
+        return set(new Key(key, true), obj);
     }
 
     public void  remove(String key, IPersistent obj) {
         remove(new Key(key, true), obj);
     }
     
-    public void remove(String key) {
-        remove(new Key(key, true));
+    public IPersistent remove(String key) {
+        return remove(new Key(key, true));
     }
 
     public int size() {

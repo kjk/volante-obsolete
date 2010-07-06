@@ -4,6 +4,7 @@ import  org.garret.perst.*;
 class BtreeKey { 
     Key key;
     int oid;
+    int oldOid;
 
     BtreeKey(Key key, int oid) { 
         this.key = key;

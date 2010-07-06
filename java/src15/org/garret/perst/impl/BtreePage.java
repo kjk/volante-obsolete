@@ -394,6 +394,7 @@ class BtreePage {
                     }                                             
                 } else if (r < n && compareStr(ins.key, pg, r) == 0) {
                     if (overwrite) { 
+                        ins.oldOid = getKeyStrOid(pg, r);
                         setKeyStrOid(pg, r, ins.oid);
                         return Btree.op_overwrite;
                     } else if (unique) { 
@@ -422,6 +423,7 @@ class BtreePage {
                     }                                             
                 } else if (r < n && tree.compareByteArrays(ins.key, pg, r) == 0) {
                     if (overwrite) { 
+                        ins.oldOid = getKeyStrOid(pg, r);
                         setKeyStrOid(pg, r, ins.oid);
                         return Btree.op_overwrite;
                     } else if (unique) { 
@@ -448,6 +450,7 @@ class BtreePage {
                     n += 1;
                 } else if (r < n && compare(ins.key, pg, r) == 0) { 
                     if (overwrite) { 
+                        ins.oldOid = getReference(pg, maxItems-r-1);
                         setReference(pg, maxItems-r-1, ins.oid);
                         return Btree.op_overwrite;
                     } else if (unique) { 
@@ -1483,8 +1486,10 @@ class BtreePage {
                     } while (++r <= n);
                 } else { 
                     while (r < n) { 
-                        if (compareStr(rem.key, pg, r) == 0) { 
-                            if (getKeyStrOid(pg, r) == rem.oid || rem.oid == 0) { 
+                        if (compareStr(rem.key, pg, r) == 0) {
+                            int oid = getKeyStrOid(pg, r);
+                            if (oid == rem.oid || rem.oid == 0) { 
+                                rem.oid = oid;
                                 db.pool.unfix(pg);
                                 pg = null;
                                 pg = db.putPage(pageId);
@@ -1525,7 +1530,9 @@ class BtreePage {
                 } else { 
                     while (r < n) { 
                         if (tree.compareByteArrays(rem.key, pg, r) == 0) { 
-                            if (getKeyStrOid(pg, r) == rem.oid || rem.oid == 0) { 
+                            int oid = getKeyStrOid(pg, r);
+                            if (oid == rem.oid || rem.oid == 0) { 
+                                rem.oid = oid;
                                 db.pool.unfix(pg);
                                 pg = null;
                                 pg = db.putPage(pageId);
@@ -1552,6 +1559,7 @@ class BtreePage {
                     while (r < n) {
                         if (compare(rem.key, pg, r) == 0) {
                             if (getReference(pg, maxItems-r-1) == oid || oid == 0) {
+                                rem.oid = getReference(pg, maxItems-r-1);
                                 db.pool.unfix(pg);
                                 pg = null;
                                 pg = db.putPage(pageId);

@@ -75,8 +75,9 @@ public interface FieldIndex extends IPersistent {
      * @param obj object to be inserted in index. Object should contain indexed field. 
      * Object can be not yet peristent, in this case
      * its forced to become persistent by assigning OID to it.
+     * @return object previously associated with this key, <code>null</code> if there was no such object
      */
-    public void          set(IPersistent obj);
+    public IPersistent   set(IPersistent obj);
 
     /**
      * Assign to the integer indexed field unique autoicremented value and 
@@ -102,10 +103,11 @@ public interface FieldIndex extends IPersistent {
     /**
      * Remove object with specified key from the unique index
      * @param key value of removed key
+     * @return removed object
      * @exception StorageError(StorageError.KEY_NOT_FOUND) exception if there is no such key in the index,
      * or StorageError(StorageError.KEY_NOT_UNIQUE) if index is not unique.
      */
-    public void          remove(Key key);
+    public IPersistent   remove(Key key);
 
     /**
      * Check if index contains specified object

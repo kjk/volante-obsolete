@@ -144,14 +144,15 @@ class Btree<T extends IPersistent> extends PersistentResource implements Index<T
     }
 
     public boolean put(Key key, T obj) {
-        return insert(key, obj, false);
+        return insert(key, obj, false) >= 0;
     }
 
-    public void set(Key key, T obj) {
-        insert(key, obj, true);
+    public T set(Key key, T obj) {
+        int oid = insert(key, obj, true);
+        return (T)((oid != 0) ? ((StorageImpl)getStorage()).lookupObject(oid, null) :  null);
     }
 
-    final boolean insert(Key key, T obj, boolean overwrite) {
+    final int insert(Key key, T obj, boolean overwrite) {
         StorageImpl db = (StorageImpl)getStorage();
         if (db == null) {             
             throw new StorageError(StorageError.DELETED_OBJECT);
@@ -172,17 +173,17 @@ class Btree<T extends IPersistent> extends PersistentResource implements Index<T
                 root = BtreePage.allocate(db, root, type, ins);
                 height += 1;
             } else if (result == op_duplicate) { 
-                return false;
+                return -1;
             } else if (result == op_overwrite) { 
-                return true;
+                return ins.oldOid;
             }
         }
         nElems += 1;
         modify();
-        return true;
+        return 0;
     }
 
-    public void  remove(Key key, T obj) {
+    public void remove(Key key, T obj) {
         remove(new BtreeKey(key, obj.getOid()));
     }
 
@@ -224,11 +225,14 @@ class Btree<T extends IPersistent> extends PersistentResource implements Index<T
         modify();
     }
         
-    public void remove(Key key) {
+    public T remove(Key key) {
         if (!unique) { 
             throw new StorageError(StorageError.KEY_NOT_UNIQUE);
         }
-        remove(new BtreeKey(key, 0));
+        BtreeKey rk = new BtreeKey(key, 0);
+        StorageImpl db = (StorageImpl)getStorage();
+        remove(rk);
+        return (T)db.lookupObject(rk.oid, null);
     }
         
         
@@ -245,19 +249,19 @@ class Btree<T extends IPersistent> extends PersistentResource implements Index<T
     }
 
     public boolean put(String key, T obj) {
-        return insert(new Key(key, true), obj, false);
+        return put(new Key(key, true), obj);
     }
 
-    public void set(String key, T obj) {
-        insert(new Key(key, true), obj, true);
+    public T set(String key, T obj) {
+        return set(new Key(key, true), obj);
     }
 
-    public void  remove(String key, T obj) {
+    public void remove(String key, T obj) {
         remove(new Key(key, true), obj);
     }
     
-    public void remove(String key) {
-        remove(new Key(key, true));
+    public T remove(String key) {
+        return remove(new Key(key, true));
     }
 
     public int size() {

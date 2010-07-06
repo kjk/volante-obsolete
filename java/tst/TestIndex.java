@@ -91,7 +91,8 @@ public class TestIndex {
         for (i = 0; i < nRecords; i++) { 
             key = (3141592621L*key + 2718281829L) % 1000000007L;
             Record rec = (Record)intIndex.get(new Key(key));
-            intIndex.remove(new Key(key));
+            Record removed = (Record)intIndex.remove(new Key(key));
+            Assert.that(removed == rec);
             strIndex.remove(new Key(Long.toString(key)), rec);
             rec.deallocate();
         }

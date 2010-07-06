@@ -34,7 +34,7 @@ class PersistentSet extends Btree implements IPersistentSet {
         if (!obj.isPersistent()) { 
             ((StorageImpl)getStorage()).storeObject(obj);
         }
-        return insert(new Key(obj), obj, false);
+        return put(new Key(obj), obj);
     }
 
     public boolean remove(Object o) { 

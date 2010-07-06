@@ -463,19 +463,19 @@ class BtreeMultiFieldIndex extends Btree implements FieldIndex {
             
 
     public boolean put(IPersistent obj) {
-        return super.insert(extractKey(obj), obj, false);
+        return super.put(extractKey(obj), obj);
     }
 
-    public void set(IPersistent obj) {
-         super.insert(extractKey(obj), obj, true);
+    public IPersistent set(IPersistent obj) {
+        return super.set(extractKey(obj), obj);
     }
 
     public void remove(IPersistent obj) {
         super.remove(new BtreeKey(extractKey(obj), obj.getOid()));
     }
 
-    public void remove(Key key) {
-        super.remove(convertKey(key));
+    public IPersistent remove(Key key) {
+        return super.remove(convertKey(key));
     }
     
     public boolean contains(IPersistent obj) {
