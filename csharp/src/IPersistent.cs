@@ -95,5 +95,14 @@ namespace Perst
         /// will cause StoraegError exception.
         /// </summary>
         void Invalidate();
+
+        /// <summary>
+        /// Method used to associate object with storage.
+        /// This method is used by Storage class and you should not use it explicitly.
+        /// </summary>
+        /// <param name="storage">storage to be assigned to</param>
+        /// <param name="oid">assigned OID</param>
+        /// <param name="raw">if object is already loaded</param>
+        void AssignOid(Storage storage, int oid, bool raw);
     }
 }

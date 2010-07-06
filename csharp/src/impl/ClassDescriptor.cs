@@ -187,7 +187,7 @@ namespace Perst.Impl
 
         internal void generateSerializer()
         {
-            if (!cls.IsPublic) 
+            if (!cls.IsPublic || !defaultConstructor.IsPublic) 
             { 
                 return;
             }
@@ -219,7 +219,7 @@ namespace Perst.Impl
         internal void  buildFieldList(StorageImpl storage, System.Type cls, ArrayList list)
         {
             System.Type superclass = cls.BaseType;
-            if (superclass != null)
+            if (superclass != null && superclass != typeof(MarshalByRefObject))
             {
                 buildFieldList(storage, superclass, list);
             }
@@ -513,7 +513,7 @@ namespace Perst.Impl
         {
             if (!resolved) 
             { 
-                StorageImpl classStorage = (StorageImpl)storage;
+                StorageImpl classStorage = (StorageImpl)Storage;
                 ClassDescriptor desc = new ClassDescriptor(classStorage, cls);
                 if (!desc.equals(this)) 
                 { 

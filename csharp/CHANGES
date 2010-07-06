@@ -161,3 +161,8 @@ array of value, array of objects, arrays of enums.
 Also it is not supported in Compact.NET version. 
 Dynamic generation is automatically used when class meets described
 above criteria.
+
+
+--- Release version 2.13 24.01.2004 -------------------------------------
+1. Fix bugs in dynamic packing/unpacking code generation algorithm
+2. Support persistency for MarshalByRef objects (add MarshalByRefPersistent class)

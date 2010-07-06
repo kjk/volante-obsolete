@@ -399,16 +399,15 @@ namespace Perst.Impl
                             il.Emit(OpCodes.Ldarg_1); // storage
                             il.Emit(OpCodes.Ldarg_3); // body
                             il.Emit(OpCodes.Ldloc_1, offs);
-                            il.Emit(OpCodes.Ldarg_S, 5); // recursiveLoading
-                            il.Emit(OpCodes.Ldloc_0, obj);
+                            il.Emit(OpCodes.Ldarg_S, 4); // recursiveLoading
                             il.Emit(OpCodes.Ldloca, val);
                             il.Emit(OpCodes.Ldnull); // fd
                             il.Emit(OpCodes.Ldc_I4, (int)fd.type);
                             il.Emit(OpCodes.Call, unpackField);
                             il.Emit(OpCodes.Stloc_1, offs); // offs
+                            il.Emit(OpCodes.Ldloc_0, obj);
                             il.Emit(OpCodes.Ldloc, val);
                             il.Emit(OpCodes.Castclass, f.FieldType);
-                            il.Emit(OpCodes.Ldloc_0, obj);
                             il.Emit(OpCodes.Stfld, f);
                             continue;
                     }

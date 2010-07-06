@@ -197,7 +197,7 @@ namespace Perst.Impl
                     {
                         cloneBitmap(pos, size);
                     }
-                    setObjectOid(obj, 0, false);
+                    obj.AssignOid(this, 0, false);
                 }
             }
         }
@@ -1031,7 +1031,7 @@ namespace Perst.Impl
  
         internal void  assignOid(IPersistent obj, int oid)
         {
-            setObjectOid(obj, oid, false);
+            obj.AssignOid(this, oid, false);
         }
 			
         internal void registerClassDescriptor(ClassDescriptor desc) 
@@ -1505,7 +1505,7 @@ namespace Perst.Impl
                     throw new StorageError(StorageError.ErrorCode.STORAGE_NOT_OPENED);
                 }
                 Btree index = new Btree(keyType, unique);
-                setObjectOid(index, 0, false);
+                index.AssignOid(this, 0, false);
                 return index;
             }
         }
@@ -1519,7 +1519,7 @@ namespace Perst.Impl
                     throw new StorageError(StorageError.ErrorCode.STORAGE_NOT_OPENED);
                 }
                 Rtree index = new Rtree();
-                setObjectOid(index, 0, false);
+                index.AssignOid(this, 0, false);
                 return index;
             }
         }
@@ -1542,7 +1542,7 @@ namespace Perst.Impl
                     throw new StorageError(StorageError.ErrorCode.STORAGE_NOT_OPENED);
                 }
                 PersistentSet s = new PersistentSet();
-                setObjectOid(s, 0, false);
+                s.AssignOid(this, 0, false);
                 return s;
             }
         }
@@ -1556,7 +1556,7 @@ namespace Perst.Impl
                     throw new StorageError(StorageError.ErrorCode.STORAGE_NOT_OPENED);
                 }
                 BtreeFieldIndex index = new BtreeFieldIndex(type, fieldName, unique);
-                setObjectOid(index, 0, false);
+                index.AssignOid(this, 0, false);
                 return index;
             }
         }
@@ -1570,7 +1570,7 @@ namespace Perst.Impl
                     throw new StorageError(StorageError.ErrorCode.STORAGE_NOT_OPENED);
                 }
                 BtreeMultiFieldIndex index = new BtreeMultiFieldIndex(type, fieldNames, unique);
-                setObjectOid(index, 0, false);
+                index.AssignOid(this, 0, false);
                 return index;
             }
         }
@@ -1709,7 +1709,7 @@ namespace Perst.Impl
                                                 if (typeof(Btree).IsAssignableFrom(desc.cls)) 
                                                 { 
                                                     Btree btree = new Btree(pg.data, ObjectHeader.Sizeof + offs);
-                                                    setObjectOid(btree, 0, false);
+                                                    btree.AssignOid(this, 0, false);
                                                     btree.markTree();
                                                 } 
                                                 else if (desc.hasReferences) 
@@ -1752,7 +1752,7 @@ namespace Perst.Impl
                                     { 
                                         Btree btree = new Btree(pg.data, ObjectHeader.Sizeof + offs);
                                         pool.unfix(pg);
-                                        setObjectOid(btree, i, false);
+                                        btree.AssignOid(this, i, false);
                                         btree.Deallocate();
                                     }
                                     else 
@@ -1831,7 +1831,7 @@ namespace Perst.Impl
                                                 if (typeof(Btree).IsAssignableFrom(desc.cls)) 
                                                 { 
                                                     Btree btree = new Btree(pg.data, ObjectHeader.Sizeof + offs);
-                                                    setObjectOid(btree, 0, false);
+                                                    btree.AssignOid(this, 0, false);
                                                     int nPages = btree.markTree();
                                                     if (typeof(FieldIndex).IsAssignableFrom(desc.cls)) 
                                                     { 
@@ -2355,7 +2355,7 @@ namespace Perst.Impl
             {
                 oid = allocateId();
                 objectCache.put(oid, obj);
-                setObjectOid(obj, oid, false);
+                obj.AssignOid(this, oid, false);
                 newObject = true;
             } 
             else if (obj.IsModified()) 
@@ -2486,7 +2486,7 @@ namespace Perst.Impl
             {
                 stub = (IPersistent)desc.newInstance();
             }
-            setObjectOid(stub, oid, true);
+            stub.AssignOid(this, oid, true);
             objectCache.put(oid, stub);
             return stub;
         }
@@ -2521,7 +2521,7 @@ namespace Perst.Impl
                 }
                 objectCache.put(oid, obj);
             }
-            setObjectOid(obj, oid, false);
+            obj.AssignOid(this, oid, false);
             if (desc.serializer != null) 
             { 
                 desc.serializer.unpack(this, obj, body, obj.RecursiveLoading());
@@ -3218,7 +3218,7 @@ namespace Perst.Impl
                                 if (stub == null)
                                 {
                                     stub = new Persistent();
-                                    setObjectOid(stub, elemOid, true);
+                                    stub.AssignOid(this, elemOid, true);
                                 }
                             }
                             arr[j] = stub;

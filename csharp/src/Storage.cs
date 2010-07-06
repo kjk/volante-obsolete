@@ -432,14 +432,6 @@ namespace Perst
 		
         abstract protected internal void  modifyObject(IPersistent obj);
 		
-        protected internal void  setObjectOid(IPersistent obj, int oid, bool raw)
-        {
-            Persistent po = (Persistent) obj;
-            po.oid = oid;
-            po.storage = this;
-            po.state = raw ? (int)Persistent.ObjectState.RAW : 0;
-        }
-
-        private ClassLoader loader;
+         private ClassLoader loader;
     }
 }

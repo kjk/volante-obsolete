@@ -2,17 +2,13 @@ namespace Perst
 {
     using System;
     using System.Runtime.InteropServices;
-#if !COMPACT_NET_FRAMEWORK
     using System.ComponentModel;
-#endif
 	
-    /// <summary> Base class for all persistent capable objects
+    /// <summary> Base class for persistent capable objects with marshal be reference semantic
     /// </summary>
-    public class Persistent : IPersistent
+    public abstract class MarshalByRefPersistent : MarshalByRefObject, IPersistent
     {
-#if !COMPACT_NET_FRAMEWORK
         [Browsable(false)]
-#endif
         public virtual int Oid
         {
             get
@@ -21,9 +17,7 @@ namespace Perst
             }	
         }
 
-#if !COMPACT_NET_FRAMEWORK
         [Browsable(false)]
-#endif
         public virtual Storage Storage
         {
             get
@@ -106,7 +100,7 @@ namespace Perst
 		
         public override bool Equals(System.Object o)
         {
-            return o is Persistent && ((Persistent) o).Oid == oid;
+            return o is Persistent && ((MarshalByRefPersistent) o).Oid == oid;
         }
 		
         public override int GetHashCode()
@@ -120,10 +114,10 @@ namespace Perst
         
         public virtual void Invalidate() 
         {
-	        state |= ObjectState.RAW;
+            state |= ObjectState.RAW;
         }
         
-        ~Persistent() 
+        ~MarshalByRefPersistent() 
         {
             if ((state & ObjectState.DIRTY) != 0 && storage != null) 
             { 
@@ -139,8 +133,7 @@ namespace Perst
             state = raw ? ObjectState.RAW : 0;
         }
 
-
-	    [NonSerialized()]
+        [NonSerialized()]
         Storage storage;
         [NonSerialized()]
         int oid;
