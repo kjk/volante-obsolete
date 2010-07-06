@@ -51,33 +51,33 @@ class PersistentSet extends Btree implements IPersistentSet {
     }
     
     public boolean containsAll(Collection c) { 
-	Iterator i = c.iterator();
-	while (i.hasNext()) { 
-	    if (!contains(i.next()))
-		return false;
+        Iterator i = c.iterator();
+        while (i.hasNext()) { 
+            if (!contains(i.next()))
+                return false;
         }
-	return true;
+        return true;
     }
 
     
     public boolean addAll(Collection c) {
-	boolean modified = false;
-	Iterator i = c.iterator();
-	while (i.hasNext()) {
-	    modified |= add(i.next());
-	}
-	return modified;
+        boolean modified = false;
+        Iterator i = c.iterator();
+        while (i.hasNext()) {
+            modified |= add(i.next());
+        }
+        return modified;
     }
 
     public boolean retainAll(Collection c) {
         ArrayList toBeRemoved = new ArrayList();
-	Iterator i = c.iterator();
-	while (i.hasNext()) {
+        Iterator i = c.iterator();
+        while (i.hasNext()) {
             Object o = i.next();
-	    if (!c.contains(o)) {
-		toBeRemoved.add(o);
-	    }
-	}
+            if (!c.contains(o)) {
+                toBeRemoved.add(o);
+            }
+        }
         int n = toBeRemoved.size();
         for (int j = 0; j < n; j++) { 
             remove(toBeRemoved.get(j));
@@ -86,34 +86,34 @@ class PersistentSet extends Btree implements IPersistentSet {
     }
 
     public boolean removeAll(Collection c) {
-	boolean modified = false;
-	Iterator i = c.iterator();
-	while (i.hasNext()) {
-	    modified |= remove(i.next());
-	}
-	return modified;
+        boolean modified = false;
+        Iterator i = c.iterator();
+        while (i.hasNext()) {
+            modified |= remove(i.next());
+        }
+        return modified;
     }
 
     public boolean equals(Object o) {
-	if (o == this) {
-	    return true;
+        if (o == this) {
+            return true;
         }
-	if (!(o instanceof Set)) {
-	    return false;
+        if (!(o instanceof Set)) {
+            return false;
         }
-	Collection c = (Collection) o;
-	if (c.size() != size()) {
-	    return false;
+        Collection c = (Collection) o;
+        if (c.size() != size()) {
+            return false;
         }
-	return containsAll(c);
+        return containsAll(c);
     }
 
     public int hashCode() {
-	int h = 0;
-	Iterator i = iterator();
-	while (i.hasNext()) {
-	    h += ((IPersistent)i.next()).getOid();
+        int h = 0;
+        Iterator i = iterator();
+        while (i.hasNext()) {
+            h += ((IPersistent)i.next()).getOid();
         }
-	return h;
+        return h;
     }
 }

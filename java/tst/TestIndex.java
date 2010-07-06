@@ -16,10 +16,10 @@ public class TestIndex {
     final static int nRecords = 100000;
     final static int pagePoolSize = 32*1024*1024;
 
-    static public void main(String[] args) {	
+    static public void main(String[] args) {    
         Storage db = StorageFactory.getInstance().createStorage();
 
-	db.open("testidx.dbs", pagePoolSize);
+        db.open("testidx.dbs", pagePoolSize);
         Indices root = (Indices)db.getRoot();
         if (root == null) { 
             root = new Indices();

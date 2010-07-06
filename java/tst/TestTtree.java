@@ -52,10 +52,10 @@ public class TestTtree {
     final static int nRecords = 100000;
     final static int pagePoolSize = 32*1024*1024;
 
-    static public void main(String[] args) {	
+    static public void main(String[] args) {    
         Storage db = StorageFactory.getInstance().createStorage();
 
-	db.open("testtree.dbs", pagePoolSize);
+        db.open("testtree.dbs", pagePoolSize);
         PersonList root = (PersonList)db.getRoot();
         if (root == null) { 
             root = new PersonList();

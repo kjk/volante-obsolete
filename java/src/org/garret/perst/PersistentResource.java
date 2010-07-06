@@ -111,10 +111,10 @@ public class PersistentResource extends Persistent implements IResource {
     }
 
     public synchronized void reset() { 
-	nReaders = 0;
-	nWriters = 0;
-	owner = null;
-	notifyAll();
+        nReaders = 0;
+        nWriters = 0;
+        owner = null;
+        notifyAll();
     }
 
     private transient Thread owner;

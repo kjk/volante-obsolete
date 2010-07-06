@@ -80,13 +80,13 @@ public class Persistent implements IPersistent {
     }
 
     public void invalidate() { 
-	state |= RAW;
+        state |= RAW;
     }
 
     protected void finalize() { 
         if ((state & DIRTY) != 0 && storage != null) { 
-	    storage.storeFinalizedObject(this);
-	    state &= ~DIRTY;
+            storage.storeFinalizedObject(this);
+            state &= ~DIRTY;
         }
     }
 

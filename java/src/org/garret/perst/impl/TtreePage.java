@@ -43,22 +43,22 @@ public class TtreePage extends Persistent  {
         int l, r, m, n;
         load();
         n = nItems;
-	if (minValue != null) { 
-	    if (comparator.compareMemberWithKey(loadItem(0), minValue) < 0) {	    
-		if (comparator.compareMemberWithKey(loadItem(n-1), maxValue) < 0) { 
-		    if (right != null) { 
-			return right.find(comparator, minValue, maxValue, selection); 
-		    } 
-		    return true;
-		}
-		for (l = 0, r = n; l < r;) { 
-		    m = (l + r) >> 1;
-		    if (comparator.compareMemberWithKey(loadItem(m), minValue) < 0) {
-			l = m+1;
-		    } else { 
-			r = m;
-		    }
-		}
+        if (minValue != null) { 
+            if (comparator.compareMemberWithKey(loadItem(0), minValue) < 0) {       
+                if (comparator.compareMemberWithKey(loadItem(n-1), maxValue) < 0) { 
+                    if (right != null) { 
+                        return right.find(comparator, minValue, maxValue, selection); 
+                    } 
+                    return true;
+                }
+                for (l = 0, r = n; l < r;) { 
+                    m = (l + r) >> 1;
+                    if (comparator.compareMemberWithKey(loadItem(m), minValue) < 0) {
+                        l = m+1;
+                    } else { 
+                        r = m;
+                    }
+                }
                 while (r < n) { 
                     if (maxValue != null
                         && comparator.compareMemberWithKey(loadItem(r), maxValue) > 0)
@@ -71,9 +71,9 @@ public class TtreePage extends Persistent  {
                 if (right != null) { 
                     return right.find(comparator, minValue, maxValue, selection); 
                 } 
-                return true;	
+                return true;    
             }
-        }	
+        }       
         if (left != null) { 
             if (!left.find(comparator, minValue, maxValue, selection)) { 
                 return false;
@@ -96,7 +96,7 @@ public class TtreePage extends Persistent  {
         int l, r, m, n;
         load();
         n = nItems;
-        if (comparator.compareMembers(loadItem(0), mbr) < 0) {	    
+        if (comparator.compareMembers(loadItem(0), mbr) < 0) {      
             if (comparator.compareMembers(loadItem(n-1), mbr) < 0) { 
                 if (right != null) { 
                     return right.contains(comparator, mbr); 
@@ -123,7 +123,7 @@ public class TtreePage extends Persistent  {
             if (right != null) { 
                 return right.contains(comparator, mbr); 
             } 
-            return false;	
+            return false;       
         }
         if (left != null) { 
             if (left.contains(comparator, mbr)) { 
@@ -419,7 +419,7 @@ public class TtreePage extends Persistent  {
             }
         }
         diff = comparator.compareMembers(mbr, loadItem(n-1));
-        if (diff <= 0) {	    
+        if (diff <= 0) {            
             for (int i = 0; i < n; i++) { 
                 if (loadItem(i) == mbr) { 
                     if (n == 1) { 

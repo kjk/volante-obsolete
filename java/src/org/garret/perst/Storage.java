@@ -101,6 +101,12 @@ public abstract class Storage {
     abstract public void rollback();
 
 
+    /**
+     * Backup current state of database
+     * @param out output stream to which backup is done
+     */
+    abstract public void backup(java.io.OutputStream out) throws java.io.IOException;
+
     public static final int EXCLUSIVE_TRANSACTION   = 0;
     public static final int COOPERATIVE_TRANSACTION = 1;
 
@@ -122,7 +128,7 @@ public abstract class Storage {
      * transactions and if it becomes zero - commit the work
      */
     public void endThreadTransaction() { 
-	endThreadTransaction(Integer.MAX_VALUE);
+        endThreadTransaction(Integer.MAX_VALUE);
     }
 
     /**
@@ -233,6 +239,25 @@ public abstract class Storage {
      */
     abstract public Blob createBlob();
 
+    /**
+     * Create new time series object. 
+     * @param blockClass class derived from TimeSeries.Block
+     * @param maxBlockTimeInterval maximal difference in milliseconds between timestamps 
+     * of the first and the last elements in a block. 
+     * If value of this parameter is too small, then most blocks will contains less elements 
+     * than preallocated. 
+     * If it is too large, then searching of block will be inefficient, because index search 
+     * will select a lot of extra blocks which do not contain any element from the 
+     * specified range.
+     * Usually the value of this parameter should be set as
+     * (number of elements in block)*(tick interval)*2. 
+     * Coefficient 2 here is used to compencate possible holes in time series.
+     * For example, if we collect stocks data, we will have data only for working hours.
+     * If number of element in block is 100, time series period is 1 day, then
+     * value of maxBlockTimeInterval can be set as 100*(24*60*60*1000)*2
+     * @return new empty time series
+     */
+    abstract public TimeSeries createTimeSeries(Class blockClass, long maxBlockTimeInterval);
 
 
     /**

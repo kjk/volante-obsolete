@@ -22,7 +22,7 @@ Initial release
 1. Add optional garbage collection
 
 --- Release version 1.06 09.04.2003 -------------------------------------
-1. Add obejct level locking
+1. Add object level locking
 
 --- Release version 1.07 18.04.2003 -------------------------------------
 1. Add Persistent.modify method, allowing to mark object as dirty. 
@@ -139,3 +139,7 @@ Attention: database format is incompatible with version 1.22!
 
 --- Release version 2.10 30.12.2003 -------------------------------------
 1. Fix bug in XML import
+
+--- Release version 2.11 07.01.2004 -------------------------------------
+1. Add Storage.backup method which can be used for online backups and database compactification
+2. Add support of time series

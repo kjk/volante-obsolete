@@ -66,7 +66,7 @@ public class TestConcur extends Thread {
     public static void main(String[] args) throws Exception { 
         Storage db = StorageFactory.getInstance().createStorage();
 
-	db.open("testconcur.dbs");
+        db.open("testconcur.dbs");
         L2List list = (L2List)db.getRoot();
         if (list == null) { 
             list = new L2List();

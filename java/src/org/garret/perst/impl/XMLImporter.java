@@ -488,7 +488,7 @@ public class XMLImporter {
         long pos = storage.allocate(size, 0);
         storage.setPos(oid, pos | StorageImpl.dbModifiedFlag);
 
-	storage.pool.put(pos & ~StorageImpl.dbFlagsMask, data, size);
+        storage.pool.put(pos & ~StorageImpl.dbFlagsMask, data, size);
     }
 
     final void createObject(XMLElement elem) throws XMLImportException
@@ -507,7 +507,7 @@ public class XMLImporter {
 
         long pos = storage.allocate(offs, 0);
         storage.setPos(oid, pos | StorageImpl.dbModifiedFlag);
-	storage.pool.put(pos, buf.arr, offs);
+        storage.pool.put(pos, buf.arr, offs);
     }
 
     final int getHexValue(char ch) throws XMLImportException

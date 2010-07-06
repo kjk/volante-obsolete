@@ -5,7 +5,7 @@ import java.io.*;
 public class TestBlob { 
     public static void main(String[] args) throws Exception { 
         Storage db = StorageFactory.getInstance().createStorage();
-	db.open("testblob.dbs");
+        db.open("testblob.dbs");
         Index root = (Index)db.getRoot();
         byte[] buf = new byte[1024];
         int rc;

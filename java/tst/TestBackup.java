@@ -2,7 +2,7 @@ import org.garret.perst.*;
 
 import java.io.*;
 
-public class TestXML { 
+public class TestBackup { 
     static class Record extends Persistent { 
         String strKey;
         long   intKey;
@@ -21,7 +21,7 @@ public class TestXML {
     static public void main(String[] args) throws Exception {   
         Storage db = StorageFactory.getInstance().createStorage();
 
-        db.open("test1.dbs", pagePoolSize);
+        db.open("testbck1.dbs", pagePoolSize);
         Indices root = (Indices)db.getRoot();
         if (root == null) { 
             root = new Indices();
@@ -51,18 +51,14 @@ public class TestXML {
                            + (System.currentTimeMillis() - start) + " milliseconds");
 
         start = System.currentTimeMillis();
-        Writer writer = new BufferedWriter(new FileWriter("test.xml"));
-        db.exportXML(writer);
-        writer.close();
-        System.out.println("Elapsed time for XML export " + (System.currentTimeMillis() - start) + " milliseconds");
-        db.close();
-        db.open("test2.dbs", pagePoolSize);
+        OutputStream out = new FileOutputStream("testbck2.dbs");
+        db.backup(out);
+        out.close();
 
-        start = System.currentTimeMillis();
-        Reader reader = new BufferedReader(new FileReader("test.xml"));
-        db.importXML(reader);
-        reader.close();
-        System.out.println("Elapsed time for XML import " + (System.currentTimeMillis() - start) + " milliseconds");
+        System.out.println("Elapsed time for backup " + (System.currentTimeMillis() - start) + " milliseconds");
+        db.close();
+        db.open("testbck2.dbs", pagePoolSize);
+
         root = (Indices)db.getRoot();
         intIndex = root.intIndex;
         strIndex = root.strIndex;

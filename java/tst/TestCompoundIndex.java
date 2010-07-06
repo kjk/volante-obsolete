@@ -11,10 +11,10 @@ public class TestCompoundIndex {
         int    intKey;
     };
 
-    static public void main(String[] args) {	
+    static public void main(String[] args) {    
         Storage db = StorageFactory.getInstance().createStorage();
 
-	db.open("testcidx.dbs", pagePoolSize);
+        db.open("testcidx.dbs", pagePoolSize);
         FieldIndex root = (FieldIndex)db.getRoot();
         if (root == null) { 
             root = db.createFieldIndex(Record.class, new String[]{"intKey", "strKey"}, true);

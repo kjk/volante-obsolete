@@ -4,13 +4,13 @@ import java.util.Iterator;
 
 public class TestMod { 
     static class Record extends Persistent { 
-	String strKey;
-	long   intKey;
+        String strKey;
+        long   intKey;
     };
     
     static class Indices extends Persistent {
-	Index strIndex;
-	Index intIndex;
+        Index strIndex;
+        Index intIndex;
     }
     
     final static int nRecords = 100000;
@@ -18,18 +18,18 @@ public class TestMod {
     final static int pagePoolSize = 32*1024*1024;
 
     static String reverseString(String s) { 
-	byte[] dummy = new byte[16*1024];
-	char[] chars = new char[s.length()];
-	for (int i = 0, n = chars.length; i < n; i++) { 
-	    chars[i] = s.charAt(n-i-1);
-	}
-	return new String(chars);
+        byte[] dummy = new byte[16*1024];
+        char[] chars = new char[s.length()];
+        for (int i = 0, n = chars.length; i < n; i++) { 
+            chars[i] = s.charAt(n-i-1);
+        }
+        return new String(chars);
     }
 
-    static public void main(String[] args) {	
+    static public void main(String[] args) {    
         Storage db = StorageFactory.getInstance().createStorage();
 
-	db.open("testmod.dbs", pagePoolSize);
+        db.open("testmod.dbs", pagePoolSize);
         Indices root = (Indices)db.getRoot();
         if (root == null) { 
             root = new Indices();
@@ -57,21 +57,21 @@ public class TestMod {
 
 
         start = System.currentTimeMillis();
-	for (int j = 0; j < nIterations; j++) { 
-	    key = 1999;
-	    for (i = 0; i < nRecords; i++) { 
-		key = (3141592621L*key + 2718281829L) % 1000000007L;
-		Record rec = (Record)intIndex.get(new Key(key));
-		rec.strKey = reverseString(rec.strKey);
-		if ((i & 255) == 0) { 
-		    rec.store();
-		} else { 
-		    rec.modify();
-		}
-	    }
-	    System.out.println("Iteration " + j);
-	    db.commit();
-	}	    
+        for (int j = 0; j < nIterations; j++) { 
+            key = 1999;
+            for (i = 0; i < nRecords; i++) { 
+                key = (3141592621L*key + 2718281829L) % 1000000007L;
+                Record rec = (Record)intIndex.get(new Key(key));
+                rec.strKey = reverseString(rec.strKey);
+                if ((i & 255) == 0) { 
+                    rec.store();
+                } else { 
+                    rec.modify();
+                }
+            }
+            System.out.println("Iteration " + j);
+            db.commit();
+        }           
         System.out.println("Elapsed time for performing " + nRecords*nIterations + " updates: " 
                            + (System.currentTimeMillis() - start) + " milliseconds");
  
