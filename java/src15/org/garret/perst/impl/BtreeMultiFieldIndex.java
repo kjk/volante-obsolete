@@ -52,6 +52,14 @@ class BtreeMultiFieldIndex<T extends IPersistent> extends Btree<T> implements Fi
         }
     }
 
+    public Class getIndexedClass() { 
+        return cls;
+    }
+
+    public Field[] getKeyFields() { 
+        return fld;
+    }
+
     public void onLoad()
     {
         cls = ClassDescriptor.loadClass(getStorage(), className);
@@ -498,7 +506,12 @@ class BtreeMultiFieldIndex<T extends IPersistent> extends Btree<T> implements Fi
     }
 
     public T[] getPrefix(String prefix) {
-        return get(new Key(prefix, true), new Key(prefix + Character.MAX_VALUE, false));
+        throw new StorageError(StorageError.INCOMPATIBLE_KEY_TYPE);
+    }
+        
+
+    public T[] prefixSearch(String key) {
+        throw new StorageError(StorageError.INCOMPATIBLE_KEY_TYPE);
     }
         
 

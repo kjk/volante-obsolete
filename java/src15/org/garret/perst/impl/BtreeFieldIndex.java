@@ -35,6 +35,14 @@ class BtreeFieldIndex<T extends IPersistent> extends Btree<T> implements FieldIn
         }
     }
 
+    public Class getIndexedClass() { 
+        return cls;
+    }
+
+    public Field[] getKeyFields() { 
+        return new Field[]{fld};
+    }
+
     public void onLoad()
     {
         cls = ClassDescriptor.loadClass(getStorage(), className);
@@ -150,6 +158,11 @@ class BtreeFieldIndex<T extends IPersistent> extends Btree<T> implements FieldIn
 
     public T[] getPrefix(String prefix) { 
         return get(new Key(prefix, true), new Key(prefix + Character.MAX_VALUE, false));
+    }
+
+    public T[] prefixSearch(String key) { 
+        ArrayList<T> list = prefixSearchList(key);
+        return (T[])list.toArray((T[])Array.newInstance(cls, list.size()));
     }
 
     public T[] get(Key from, Key till) {

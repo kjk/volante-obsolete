@@ -18,7 +18,7 @@ class Btree extends PersistentResource implements Index {
 
     static int checkType(Class c) { 
         int elemType = ClassDescriptor.getTypeCode(c);
-        if (elemType >= ClassDescriptor.tpLink && elemType != ClassDescriptor.tpArrayOfByte) { 
+        if (elemType > ClassDescriptor.tpObject && elemType != ClassDescriptor.tpArrayOfByte) { 
             throw new StorageError(StorageError.UNSUPPORTED_INDEX_TYPE, c);
         }
         return elemType;
@@ -64,6 +64,37 @@ class Btree extends PersistentResource implements Index {
     static final int op_duplicate = 4;
     static final int op_overwrite = 5;
 
+    public Class getKeyType() {
+        switch (type) { 
+        case ClassDescriptor.tpBoolean:
+            return boolean.class;
+        case ClassDescriptor.tpByte:
+            return byte.class;
+        case ClassDescriptor.tpChar:
+            return char.class;
+        case ClassDescriptor.tpShort:
+            return short.class;
+        case ClassDescriptor.tpInt:
+            return int.class;
+        case ClassDescriptor.tpLong:
+            return long.class;
+        case ClassDescriptor.tpFloat:
+            return float.class;
+        case ClassDescriptor.tpDouble:
+            return double.class;
+        case ClassDescriptor.tpString:
+            return String.class;
+        case ClassDescriptor.tpDate:
+            return Date.class;
+        case ClassDescriptor.tpObject:
+            return IPersistent.class;
+        case ClassDescriptor.tpArrayOfByte:
+            return byte[].class;
+        default:
+            return null;
+        }
+    }
+
     public IPersistent get(Key key) { 
         if (key.type != type) { 
             throw new StorageError(StorageError.INCOMPATIBLE_KEY_TYPE);
@@ -84,6 +115,20 @@ class Btree extends PersistentResource implements Index {
 
     static final IPersistent[] emptySelection = new IPersistent[0];
 
+    public IPersistent[] prefixSearch(String key) { 
+        if (ClassDescriptor.tpString != type) { 
+            throw new StorageError(StorageError.INCOMPATIBLE_KEY_TYPE);
+        }
+        if (root != 0) { 
+            ArrayList list = new ArrayList();
+            BtreePage.prefixSearch((StorageImpl)getStorage(), root, key.toCharArray(), height, list);
+            if (list.size() != 0) { 
+                return (IPersistent[])list.toArray(new IPersistent[list.size()]);
+            }
+        }
+        return emptySelection;
+    }
+
     public IPersistent[] get(Key from, Key till) {
         if ((from != null && from.type != type) || (till != null && till.type != type)) { 
             throw new StorageError(StorageError.INCOMPATIBLE_KEY_TYPE);
@@ -91,9 +136,7 @@ class Btree extends PersistentResource implements Index {
         if (root != 0) { 
             ArrayList list = new ArrayList();
             BtreePage.find((StorageImpl)getStorage(), root, from, till, this, height, list);
-            if (list.size() == 0) { 
-                return emptySelection;
-            } else { 
+            if (list.size() != 0) { 
                 return (IPersistent[])list.toArray(new IPersistent[list.size()]);
             }
         }

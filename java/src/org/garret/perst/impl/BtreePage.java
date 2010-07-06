@@ -109,6 +109,22 @@ class BtreePage {
         return alen - blen;
     }
 
+    final static int comparePrefix(char[] key, Page pg, int i) { 
+        int alen = key.length;
+        int blen = BtreePage.getKeyStrSize(pg, i);
+        int minlen = alen < blen ? alen : blen;
+        int offs = BtreePage.getKeyStrOffs(pg, i) + BtreePage.firstKeyOffs;
+        byte[] b = pg.data;
+        for (int j = 0; j < minlen; j++) { 
+            int diff = key[j] - (char)Bytes.unpack2(b, offs);
+            if (diff != 0) { 
+                return diff;
+            }
+            offs += 2;
+        }
+        return minlen - blen;
+    }
+
 
     static boolean find(StorageImpl db, int pageId, Key firstKey, Key lastKey, 
                         Btree tree, int height, ArrayList result)
@@ -263,6 +279,50 @@ class BtreePage {
                     } while (++l <= n);
                 }
             }    
+        } finally { 
+            db.pool.unfix(pg);
+        }
+        return true;
+    }    
+
+
+    static boolean prefixSearch(StorageImpl db, int pageId, char[] key,
+                                int height, ArrayList result)
+    {
+        Page pg = db.getPage(pageId);
+        int l = 0, n = getnItems(pg), r = n;
+        int oid;
+        height -= 1;
+        try { 
+            while (l < r)  {
+                int i = (l+r) >> 1;
+                if (comparePrefix(key, pg, i) > 0) {
+                    l = i + 1; 
+                } else { 
+                    r = i;
+                }
+            }
+            Assert.that(r == l); 
+            if (height == 0) { 
+                while (l < n) { 
+                    if (comparePrefix(key, pg, l) < 0) { 
+                        return false;
+                    }
+                    oid = getKeyStrOid(pg, l);
+                    result.add(db.lookupObject(oid, null));
+                    l += 1;
+                }
+            } else { 
+                do {
+                    if (!prefixSearch(db, getKeyStrOid(pg, l), key, height, result)) {
+                        return false;
+                    }
+                    if (l == n) { 
+                        return true;
+                    }
+                } while (comparePrefix(key, pg, l++) >= 0);
+                return false;
+            }
         } finally { 
             db.pool.unfix(pg);
         }

@@ -2,6 +2,7 @@ package org.garret.perst;
 
 import java.util.Iterator;
 import java.util.Map;
+import java.lang.reflect.Field;
 
 /**
  * Interface of indexed field.
@@ -50,6 +51,13 @@ public interface FieldIndex<T extends IPersistent> extends IPersistent, Iterable
      */
     public T[] get(Key from, Key till);
 
+    /**
+     * Locate all objects which key is prefix of specified word.
+     * @param word string which prefixes are located in index
+     * @return array of objects which key is prefix of specified word, ordered by key value
+     */
+    public T[] prefixSearch(String word);
+    
     /**
      * Put new object in the index. 
      * @param obj object to be inserted in index. Object should contain indexed field. 
@@ -176,5 +184,17 @@ public interface FieldIndex<T extends IPersistent> extends IPersistent, Iterable
      * @return selection iterator
      */
     public Iterator<T> prefixIterator(String prefix);
+
+    /**
+     * Get class obejct objects which can be inserted in this index
+     * @return class specified in Storage.createFielIndex method
+     */
+    public Class getIndexedClass();
+
+    /**
+     * Get fields used as a key
+     * @return array of index key fields
+     */
+    public Field[] getKeyFields();
 }
 

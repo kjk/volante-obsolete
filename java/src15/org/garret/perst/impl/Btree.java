@@ -16,7 +16,7 @@ class Btree<T extends IPersistent> extends PersistentResource implements Index<T
 
     static int checkType(Class c) { 
         int elemType = ClassDescriptor.getTypeCode(c);
-        if (elemType >= ClassDescriptor.tpLink && elemType != ClassDescriptor.tpArrayOfByte) { 
+        if (elemType > ClassDescriptor.tpObject && elemType != ClassDescriptor.tpArrayOfByte) { 
             throw new StorageError(StorageError.UNSUPPORTED_INDEX_TYPE, c);
         }
         return elemType;
@@ -62,6 +62,37 @@ class Btree<T extends IPersistent> extends PersistentResource implements Index<T
     static final int op_duplicate = 4;
     static final int op_overwrite = 5;
 
+    public Class getKeyType() {
+        switch (type) { 
+        case ClassDescriptor.tpBoolean:
+            return boolean.class;
+        case ClassDescriptor.tpByte:
+            return byte.class;
+        case ClassDescriptor.tpChar:
+            return char.class;
+        case ClassDescriptor.tpShort:
+            return short.class;
+        case ClassDescriptor.tpInt:
+            return int.class;
+        case ClassDescriptor.tpLong:
+            return long.class;
+        case ClassDescriptor.tpFloat:
+            return float.class;
+        case ClassDescriptor.tpDouble:
+            return double.class;
+        case ClassDescriptor.tpString:
+            return String.class;
+        case ClassDescriptor.tpDate:
+            return Date.class;
+        case ClassDescriptor.tpObject:
+            return IPersistent.class;
+        case ClassDescriptor.tpArrayOfByte:
+            return byte[].class;
+        default:
+            return null;
+        }
+    }
+
     public T get(Key key) { 
         if (key.type != type) { 
             throw new StorageError(StorageError.INCOMPATIBLE_KEY_TYPE);
@@ -78,6 +109,22 @@ class Btree<T extends IPersistent> extends PersistentResource implements Index<T
             }
         }
         return null;
+    }
+
+    public ArrayList<T> prefixSearchList(String key) { 
+        if (ClassDescriptor.tpString != type) { 
+            throw new StorageError(StorageError.INCOMPATIBLE_KEY_TYPE);
+        }
+        ArrayList<T> list = new ArrayList<T>();
+        if (root != 0) { 
+            BtreePage.prefixSearch((StorageImpl)getStorage(), root, key.toCharArray(), height, list);
+        }
+        return list;
+    }
+
+    public IPersistent[] prefixSearch(String key) {
+        ArrayList<T> list = prefixSearchList(key);
+        return (IPersistent[])list.toArray(new IPersistent[list.size()]);
     }
 
     public ArrayList<T> getList(Key from, Key till) {

@@ -184,4 +184,8 @@ later changed by me.
 2. Change class descriptor loading algorithm to avoid stack overflow
    in applications with large number of classes
 3. Detect bugs related with incorrect serialization of persistent object as raw or value type
-4. Fix bug in automatic scheme evalaution implementation.
+4. Fix bug in automatic scheme evaluation implementation.
+
+--- Release version 2.21 16.04.2004 -------------------------------------
+1. Add Index.getKeyType(), FieldIndex.getIndexedClass() and FieldIndex.getKeyFields() methods
+2. Add Index.prefixSearch method which can be used to locate keys which are prefixes of the specified word.

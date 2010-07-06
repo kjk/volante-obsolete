@@ -52,6 +52,14 @@ class BtreeMultiFieldIndex extends Btree implements FieldIndex {
         }
     }
 
+    public Class getIndexedClass() { 
+        return cls;
+    }
+
+    public Field[] getKeyFields() { 
+        return fld;
+    }
+
     public void onLoad()
     {
         cls = ClassDescriptor.loadClass(getStorage(), className);

@@ -45,6 +45,45 @@ public interface Index<T extends IPersistent> extends IPersistent, IResource, It
      */
     public IPersistent[] get(Key from, Key till);
 
+
+    /**
+     * Get object by string key (exact match)     
+     * @param key string key 
+     * @return object with this value of the key or <code>null</code> if key not[ found
+     * @exception StorageError(StorageError.KEY_NOT_UNIQUE) exception if there are more than 
+     * one objects in the index with specified value of the key.
+     */
+    public T get(String key);
+    
+    /**
+     * Get objects with string key prefix 
+     * @param prefix string key prefix
+     * @return array of objects which key starts with this prefix 
+     */
+    public IPersistent[] getPrefix(String prefix);
+    
+    /**
+     * Get objects with string key prefix 
+     * @param prefix string key prefix
+     * @return list of objects which key starts with this prefix 
+     */
+    public ArrayList<T> getPrefixList(String prefix);
+    
+    /**
+     * Locate all objects which key is prefix of specified word.
+     * @param word string which prefixes are located in index
+     * @return array of objects which key is prefix of specified word, ordered by key value
+     */
+    public IPersistent[] prefixSearch(String word);
+    
+    /**
+     * Locate all objects which key is prefix of specified word.
+     * @param word string which prefixes are located in index
+     * @return list of objects which key is prefix of specified word, ordered by key value
+     */
+    public ArrayList<T> prefixSearchList(String word);
+    
+
     /**
      * Put new object in the index. 
      * @param key object key
@@ -81,30 +120,6 @@ public interface Index<T extends IPersistent> extends IPersistent, IResource, It
      */
     public void remove(Key key);
 
-
-    /**
-     * Get object by string key (exact match)     
-     * @param key string key 
-     * @return object with this value of the key or <code>null</code> if key not[ found
-     * @exception StorageError(StorageError.KEY_NOT_UNIQUE) exception if there are more than 
-     * one objects in the index with specified value of the key.
-     */
-    public T get(String key);
-    
-    /**
-     * Get objects with string key prefix 
-     * @param prefix string key prefix
-     * @return array of objects which key starts with this prefix 
-     */
-    public IPersistent[] getPrefix(String prefix);
-    
-    /**
-     * Get objects with string key prefix 
-     * @param prefix string key prefix
-     * @return array of objects which key starts with this prefix 
-     */
-    public ArrayList<T> getPrefixList(String prefix);
-    
     /**
      * Put new object in the string index. 
      * @param key string key
@@ -228,6 +243,12 @@ public interface Index<T extends IPersistent> extends IPersistent, IResource, It
      * @return selection iterator
      */
     public Iterator<T> prefixIterator(String prefix);
+
+    /**
+     * Get type of index key
+     * @return type of index key
+     */
+    public Class getKeyType();
 }
 
 
