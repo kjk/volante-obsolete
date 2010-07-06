@@ -30,3 +30,7 @@ Object will be automatically saved during transaction commit.
 2. Add index iterator.
 3. Add spatial index.
 
+--- Release version 1.08 22.04.2003 -------------------------------------
+1. Implement more sophisticated iterators for index search  
+2. Fix bug in R-Tree
+ 

@@ -91,6 +91,20 @@ public interface Index extends IPersistent, IResource {
      * @return index iterator
      */
     public java.util.Iterator iterator();
+
+    static final int ASCENT_ORDER  = 0;
+    static final int DESCENT_ORDER = 1;
+    /**
+     * Get iterator for traversing objects in the index with key belonging to the specified range. 
+     * You should not update/remove or add members to the index during iteration
+     * @param from low boundary. If <code>null</code> then low boundary is not specified.
+     * Low boundary can be inclusive or exclusive. 
+     * @param till high boundary. If <code>null</code> then high boundary is not specified.
+     * High boundary can be inclusive or exclusive. 
+     * @param order <code>ASCENT_ORDER</code> or <code>DESCENT_ORDER</code>
+     * @return selection iterator
+     */
+    public java.util.Iterator iterator(Key from, Key till, int order);
 }
 
 

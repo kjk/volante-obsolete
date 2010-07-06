@@ -52,13 +52,18 @@ public class RtreePage extends Persistent {
             // not leaf page
             int i, mini = 0;
             int minIncr = Integer.MAX_VALUE;
-            int area = r.area();
+            int minArea = Integer.MAX_VALUE;
             for (i = 0; i < n; i++) { 
+                int area = b[i].area();
                 int incr = Rectangle.joinArea(b[i], r) - area;
                 if (incr < minIncr) { 
                     minIncr = incr;
+                    minArea = area;
                     mini = i;
-                }
+                } else if (incr == minIncr && area < minArea) { 
+                    minArea = area;
+                    mini = i;
+                }                    
             }
             RtreePage p = (RtreePage)b[mini].p;
             RtreePage q = p.insert(r, obj, level);
