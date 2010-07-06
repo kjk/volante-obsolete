@@ -12,17 +12,28 @@ namespace Perst
             get
             {
                 return oid;
-            }
-			
+            }	
         }
+
+        public virtual int getOid()
+        {
+            return oid;
+        }
+        
+
         public virtual Storage Storage
         {
             get
             {
                 return storage;
-            }
-			
+            }			
         }
+
+        public virtual Storage getStorage() 
+        { 
+            return storage;
+        }
+
         public virtual void  load()
         {
             if (storage != null)
@@ -109,15 +120,6 @@ namespace Perst
         {
         }
         
-
-        ~Persistent() 
-        {
-            if ((state & (int)ObjectState.DIRTY) != 0) 
-            { 
-                store();
-            }
-        }
-
         [NonSerialized()]
         internal Storage storage;
         [NonSerialized()]

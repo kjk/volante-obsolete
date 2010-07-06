@@ -2,6 +2,7 @@ namespace Perst.Impl
 {
     using System;
     using System.Collections;
+    using System.Reflection;
     using Perst;
 	
     public class XMLImporter
@@ -527,14 +528,15 @@ namespace Perst.Impl
 		
         internal int packObject(XMLElement objElem, ClassDescriptor desc, int offs, ByteBuffer buf)
         {
-            System.Reflection.FieldInfo[] flds = desc.allFields;
-            ClassDescriptor.FieldType[] types = desc.fieldTypes;
+            ClassDescriptor.FieldDescriptor[] flds = desc.allFields;
             for (int i = 0, n = flds.Length; i < n; i++)
             {
-                System.Reflection.FieldInfo f = flds[i];
-                XMLElement elem = (objElem != null)?objElem.getSibling(f.Name):null;
+                ClassDescriptor.FieldDescriptor fd = flds[i];
+                FieldInfo f = fd.field;
+                String fieldName = fd.fieldName;
+                XMLElement elem = (objElem != null)?objElem.getSibling(fieldName):null;
 				
-                switch (types[i])
+                switch (fd.type)
                 {
                     case ClassDescriptor.FieldType.tpByte: 
                     case ClassDescriptor.FieldType.tpSByte: 
@@ -551,7 +553,7 @@ namespace Perst.Impl
                             }
                             else
                             {
-                                throwException("Conversion for field " + f.Name + " is not possible");
+                                throwException("Conversion for field " + fieldName + " is not possible");
                             }
                         }
                         offs += 1;
@@ -571,7 +573,7 @@ namespace Perst.Impl
                             }
                             else
                             {
-                                throwException("Conversion for field " + f.Name + " is not possible");
+                                throwException("Conversion for field " + fieldName + " is not possible");
                             }
                         }
                         offs += 1;
@@ -593,7 +595,7 @@ namespace Perst.Impl
                             }
                             else
                             {
-                                throwException("Conversion for field " + f.Name + " is not possible");
+                                throwException("Conversion for field " + fieldName + " is not possible");
                             }
                         }
                         offs += 2;
@@ -628,7 +630,7 @@ namespace Perst.Impl
                             }
                             else
                             {
-                                throwException("Conversion for field " + f.Name + " is not possible");
+                                throwException("Conversion for field " + fieldName + " is not possible");
                             }
                         }
                         offs += 4;
@@ -650,7 +652,7 @@ namespace Perst.Impl
                             }
                             else
                             {
-                                throwException("Conversion for field " + f.Name + " is not possible");
+                                throwException("Conversion for field " + fieldName + " is not possible");
                             }
                         }
                         offs += 4;
@@ -671,7 +673,7 @@ namespace Perst.Impl
                             }
                             else
                             {
-                                throwException("Conversion for field " + f.Name + " is not possible");
+                                throwException("Conversion for field " + fieldName + " is not possible");
                             }
                         }
                         offs += 8;
@@ -691,7 +693,7 @@ namespace Perst.Impl
                             }
                             else
                             {
-                                throwException("Conversion for field " + f.Name + " is not possible");
+                                throwException("Conversion for field " + fieldName + " is not possible");
                             }
                         }
                         offs += 4;
@@ -722,7 +724,7 @@ namespace Perst.Impl
 #endif
                             else
                             {
-                                throwException("Conversion for field " + f.Name + " is not possible");
+                                throwException("Conversion for field " + fieldName + " is not possible");
                             }
                         }
                         offs += 8;
@@ -753,7 +755,7 @@ namespace Perst.Impl
                             }
                             else
                             {
-                                throwException("Conversion for field " + f.Name + " is not possible");
+                                throwException("Conversion for field " + fieldName + " is not possible");
                             }
                         }
                         offs += 8;
@@ -781,7 +783,7 @@ namespace Perst.Impl
                             }
                             else
                             {
-                                throwException("Conversion for field " + f.Name + " is not possible");
+                                throwException("Conversion for field " + fieldName + " is not possible");
                             }
                             if (val != null)
                             {
@@ -821,7 +823,7 @@ namespace Perst.Impl
                     }
 					
                     case ClassDescriptor.FieldType.tpValue: 
-                        offs = packObject(elem, storage.getClassDescriptor(f.FieldType), offs, buf);
+                        offs = packObject(elem, fd.valueDesc, offs, buf);
                         continue;
 					
 #if SUPPORT_RAW_TYPE
@@ -866,7 +868,7 @@ namespace Perst.Impl
                                 }
                                 else
                                 {
-                                    throwException("Conversion for field " + f.Name + " is not possible");
+                                    throwException("Conversion for field " + fieldName + " is not possible");
                                 }
                                 item = item.NextSibling;
                                 offs += 1;
@@ -900,7 +902,7 @@ namespace Perst.Impl
                                 }
                                 else
                                 {
-                                    throwException("Conversion for field " + f.Name + " is not possible");
+                                    throwException("Conversion for field " + fieldName + " is not possible");
                                 }
                                 item = item.NextSibling;
                                 offs += 1;
@@ -936,7 +938,7 @@ namespace Perst.Impl
                                 }
                                 else
                                 {
-                                    throwException("Conversion for field " + f.Name + " is not possible");
+                                    throwException("Conversion for field " + fieldName + " is not possible");
                                 }
                                 item = item.NextSibling;
                                 offs += 2;
@@ -986,7 +988,7 @@ namespace Perst.Impl
                                 }
                                 else
                                 {
-                                    throwException("Conversion for field " + f.Name + " is not possible");
+                                    throwException("Conversion for field " + fieldName + " is not possible");
                                 }
                                 item = item.NextSibling;
                                 offs += 4;
@@ -1022,7 +1024,7 @@ namespace Perst.Impl
                                 }
                                 else
                                 {
-                                    throwException("Conversion for field " + f.Name + " is not possible");
+                                    throwException("Conversion for field " + fieldName + " is not possible");
                                 }
                                 item = item.NextSibling;
                                 offs += 4;
@@ -1057,7 +1059,7 @@ namespace Perst.Impl
                                 }
                                 else
                                 {
-                                    throwException("Conversion for field " + f.Name + " is not possible");
+                                    throwException("Conversion for field " + fieldName + " is not possible");
                                 }
                                 item = item.NextSibling;
                                 offs += 8;
@@ -1091,7 +1093,7 @@ namespace Perst.Impl
                                 }
                                 else
                                 {
-                                    throwException("Conversion for field " + f.Name + " is not possible");
+                                    throwException("Conversion for field " + fieldName + " is not possible");
                                 }
                                 item = item.NextSibling;
                                 offs += 4;
@@ -1136,7 +1138,7 @@ namespace Perst.Impl
 #endif
                                 else
                                 {
-                                    throwException("Conversion for field " + f.Name + " is not possible");
+                                    throwException("Conversion for field " + fieldName + " is not possible");
                                 }
                                 item = item.NextSibling;
                                 offs += 8;
@@ -1172,7 +1174,7 @@ namespace Perst.Impl
                                     }
                                     catch (FormatException)
                                     {
-                                        throwException("Conversion for field " + f.Name + " is not possible");
+                                        throwException("Conversion for field " + fieldName + " is not possible");
                                     }
                                 }
                                 item = item.NextSibling;
@@ -1216,7 +1218,7 @@ namespace Perst.Impl
                                 }
                                 else
                                 {
-                                    throwException("Conversion for field " + f.Name + " is not possible");
+                                    throwException("Conversion for field " + fieldName + " is not possible");
                                 }
                                 if (val == null)
                                 {
@@ -1284,7 +1286,7 @@ namespace Perst.Impl
                             int len = (item == null)?0:item.Counter;
                             Bytes.pack4(buf.arr, offs, len);
                             offs += 4;
-                            ClassDescriptor elemDesc = storage.getClassDescriptor(f.FieldType);
+                            ClassDescriptor elemDesc = fd.valueDesc;
                             while (--len >= 0)
                             {
                                 offs = packObject(item, elemDesc, offs, buf);

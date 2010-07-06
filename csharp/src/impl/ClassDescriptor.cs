@@ -8,23 +8,39 @@ namespace Perst.Impl
 	
     public sealed class ClassDescriptor:Persistent
     {
-        internal ClassDescriptor next;
-        internal System.String name;
-        internal int nFields;
-		
+        internal ClassDescriptor   next;
+        internal String            name;
+        internal FieldDescriptor[] allFields;
+        internal bool              hasReferences;
+
+        internal class FieldDescriptor : Persistent 
+        { 
+            internal String          fieldName;
+            internal String          className;
+            internal FieldType       type;
+            internal ClassDescriptor valueDesc;
+            [NonSerialized()]
+            internal FieldInfo       field;
+
+            public bool equals(FieldDescriptor fd) 
+            { 
+                return fieldName.Equals(fd.fieldName) 
+                    && className.Equals(fd.className)
+                    && valueDesc == fd.valueDesc
+                    && type == fd.type;
+            }
+        }    
         [NonSerialized()]
-        internal System.Reflection.FieldInfo[] allFields;
-        [NonSerialized()]
-        internal FieldType[] fieldTypes;
-        [NonSerialized()]
-        internal System.Type cls;
+        internal Type cls;
         [NonSerialized()]
         internal bool hasSubclasses;
         [NonSerialized()]
-        internal bool hasReferences;
+        internal ConstructorInfo defaultConstructor;
         [NonSerialized()]
-        internal System.Reflection.ConstructorInfo defaultConstructor;
+        internal bool resolved;
 		
+        internal static bool serializeNonPersistentObjects;
+
         public enum FieldType 
         {
             tpBoolean,
@@ -66,7 +82,7 @@ namespace Perst.Impl
             tpArrayOfObject,
             tpArrayOfValue
 #if SUPPORT_RAW_TYPE
-            ,tpArrayOfRaw
+                ,tpArrayOfRaw
 #endif
         };
 		
@@ -90,6 +106,22 @@ namespace Perst.Impl
         }
 #endif
 
+        public bool equals(ClassDescriptor cd) 
+        { 
+            if (cd == null || allFields.Length != cd.allFields.Length) 
+            { 
+                return false;
+            }
+            for (int i = 0; i < allFields.Length; i++) 
+            { 
+                if (!allFields[i].equals(cd.allFields[i])) 
+                { 
+                    return false;
+                }
+            }
+            return true;
+        }
+        
         internal Object newInstance()
         {
             try
@@ -102,20 +134,42 @@ namespace Perst.Impl
             }
         }
 		
-        internal void  buildFieldList(System.Type cls, ArrayList list)
+        internal void  buildFieldList(StorageImpl storage, System.Type cls, ArrayList list)
         {
             System.Type superclass = cls.BaseType;
             if (superclass != null)
             {
-                buildFieldList(superclass, list);
+                buildFieldList(storage, superclass, list);
             }
             System.Reflection.FieldInfo[] flds = cls.GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.DeclaredOnly);
             for (int i = 0; i < flds.Length; i++)
             {
-                System.Reflection.FieldInfo f = flds[i];
+                FieldInfo f = flds[i];
                 if (!f.IsNotSerialized && !f.IsStatic)
                 {
-                    list.Add(f);
+                    FieldDescriptor fd = new FieldDescriptor();
+                    fd.field = f;
+                    fd.fieldName = f.Name;
+                    fd.className = cls.FullName;
+                    FieldType type = getTypeCode(f.FieldType);
+                    switch (type) 
+                    {
+                        case FieldType.tpObject:
+                        case FieldType.tpLink:
+                        case FieldType.tpArrayOfObject:
+                            hasReferences = true;
+                            break;
+                        case FieldType.tpValue:
+                            fd.valueDesc = storage.getClassDescriptor(f.FieldType).resolve();
+                            hasReferences |= fd.valueDesc.hasReferences;
+                            break;
+                        case FieldType.tpArrayOfValue:
+                            fd.valueDesc = storage.getClassDescriptor(f.FieldType.GetElementType()).resolve();
+                            hasReferences |= fd.valueDesc.hasReferences;
+                            break;
+                    }
+                    fd.type = type;
+                    list.Add(fd);
                 }
             }
         }
@@ -207,7 +261,14 @@ namespace Perst.Impl
             else
             {
 #if SUPPORT_RAW_TYPE
-                type = FieldType.tpRaw;
+                if (serializeNonPersistentObjects) 
+                {
+                    type = FieldType.tpRaw;
+                } 
+                else 
+                { 
+                    throw new StorageError(StorageError.ErrorCode.UNSUPPORTED_TYPE, c);
+                }
 #else
                 throw new StorageError(StorageError.ErrorCode.UNSUPPORTED_TYPE, c);
 #endif
@@ -219,12 +280,19 @@ namespace Perst.Impl
         {
         }
 		
-        internal ClassDescriptor(System.Type cls)
+        internal ClassDescriptor(StorageImpl storage, Type cls)
         {
             this.cls = cls;
             name = cls.FullName;
-            build();
-            nFields = allFields.Length;
+            ArrayList list = new ArrayList();
+            buildFieldList(storage, cls, list);
+            allFields = (FieldDescriptor[]) list.ToArray(typeof(FieldDescriptor));
+            defaultConstructor = cls.GetConstructor(BindingFlags.Instance|BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic|BindingFlags.DeclaredOnly, null, defaultConstructorProfile, null);
+            if (defaultConstructor == null && !typeof(ValueType).IsAssignableFrom(cls)) 
+            { 
+                throw new StorageError(StorageError.ErrorCode.DESCRIPTOR_FAILURE, cls);
+            }
+            resolved = true;
         }
 		
         internal static bool FindTypeByName(Type t, object name) 
@@ -280,45 +348,56 @@ namespace Perst.Impl
             return cls;
         }
 
-        public void  resolve()
+        public override void onLoad()
         {
-            if (cls == null) 
-            {
-                cls = lookup(name);
-                build();
-                if (nFields != allFields.Length)
+            cls = lookup(name);
+            Type scope = cls;
+            int n = allFields.Length;
+            for (int i = n; --i >= 0;) 
+            { 
+                FieldDescriptor fd = allFields[i];
+                if (!fd.className.Equals(scope.FullName)) 
                 {
-                    throw new StorageError(StorageError.ErrorCode.SCHEMA_CHANGED, cls);
+                    for (scope = cls; scope != null; scope = scope.BaseType) 
+                    { 
+                        if (fd.className.Equals(scope.FullName)) 
+                        {
+                            break;
+                        }
+                    }
+                }
+                if (scope != null) 
+                {
+                    fd.field = scope.GetField(fd.fieldName, BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.DeclaredOnly);
+                } 
+                else 
+                { 
+                    scope = cls;
                 }
             }
-        }
-    
-		
-        internal void  build()
-        {
-            ArrayList list = new ArrayList();
-            buildFieldList(cls, list);
-            int nFields = list.Count;
-            allFields = (System.Reflection.FieldInfo[]) list.ToArray(typeof(System.Reflection.FieldInfo));
-            fieldTypes = new FieldType[nFields];
-            for (int i = 0; i < nFields; i++)
-            {
-                Type fieldType = allFields[i].FieldType;
-                FieldType type = getTypeCode(fieldType);
-                fieldTypes[i] = type;
-                switch (type) 
-                {
-                    case FieldType.tpObject:
-                    case FieldType.tpLink:
-                    case FieldType.tpArrayOfObject:
-                        hasReferences = true;
-                        break;
-                    case FieldType.tpValue:
-                        hasReferences |= new ClassDescriptor(fieldType).hasReferences;
-                        break;
-                    case FieldType.tpArrayOfValue:
-                        hasReferences |= new ClassDescriptor(fieldType.GetElementType()).hasReferences;
-                        break;
+            for (int i = n; --i >= 0;) 
+            { 
+                FieldDescriptor fd = allFields[i];
+                if (fd.field == null) 
+                { 
+                
+                    for (scope = cls; scope != null; scope = scope.BaseType) 
+                    { 
+                        FieldInfo f = scope.GetField(fd.fieldName, BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.DeclaredOnly);
+                        if (f != null) 
+                        { 
+                            for (int j = 0; j < n; j++) 
+                            { 
+                                if (allFields[j].field == f) 
+                                { 
+                                    goto hierarchyLoop;
+                                }
+                            }
+                            fd.field = f;
+                            break;
+                        }
+                        hierarchyLoop:;
+                    }
                 }
             }
             defaultConstructor = cls.GetConstructor(BindingFlags.Instance|BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic|BindingFlags.DeclaredOnly, null, defaultConstructorProfile, null);
@@ -326,6 +405,23 @@ namespace Perst.Impl
             { 
                 throw new StorageError(StorageError.ErrorCode.DESCRIPTOR_FAILURE, cls);
             }
+            ((StorageImpl)getStorage()).classDescMap[cls] = this;
         }
+
+        internal ClassDescriptor resolve() 
+        {
+            if (!resolved) 
+            { 
+                StorageImpl classStorage = (StorageImpl)storage;
+                ClassDescriptor desc = new ClassDescriptor(classStorage, cls);
+                if (!desc.equals(this)) 
+                { 
+                    classStorage.registerClassDescriptor(desc);
+                    return desc;
+                }
+                resolved = true;
+            }
+            return this;
+        }            
     }
 }

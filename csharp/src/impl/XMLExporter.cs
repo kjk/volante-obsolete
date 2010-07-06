@@ -1,6 +1,7 @@
 namespace Perst.Impl    
 {
     using System;
+    using System.Reflection;
 	
     public class XMLExporter
     {
@@ -35,17 +36,17 @@ namespace Perst.Impl
                                 markedBitmap[i] &= ~ bit;
                                 byte[] obj = storage.get(oid);
                                 int typeOid = ObjectHeader.getType(obj, 0);
-                                if (typeOid == storage.btreeClassOid)
+                                ClassDescriptor desc = storage.findClassDescriptor(typeOid);
+                                if (desc.cls == typeof(Btree))
                                 {
                                     exportIndex(oid, obj);
                                 }
-                                else if (typeOid == storage.btree2ClassOid)
+                                else if (desc.cls == typeof(BtreeFieldIndex))
                                 {
                                     exportFieldIndex(oid, obj);
                                 }
                                 else
                                 {
-                                    ClassDescriptor desc = (ClassDescriptor) storage.lookupObject(typeOid, typeof(ClassDescriptor));
                                     String className = exportIdentifier(desc.name);
                                     writer.Write(" <" + className + " id=\"" + oid + "\">\n");
                                     exportObject(desc, obj, ObjectHeader.Sizeof, 2);
@@ -258,16 +259,16 @@ namespace Perst.Impl
     
        internal int exportObject(ClassDescriptor desc, byte[] body, int offs, int indent)
         {
-            System.Reflection.FieldInfo[] all = desc.allFields;
-            ClassDescriptor.FieldType[] type = desc.fieldTypes;
+            ClassDescriptor.FieldDescriptor[] all = desc.allFields;
 			
             for (int i = 0, n = all.Length; i < n; i++)
             {
-                System.Reflection.FieldInfo f = all[i];
+                ClassDescriptor.FieldDescriptor fd = all[i];
+                FieldInfo f = fd.field;
                 indentation(indent);
-                String fieldName = exportIdentifier(f.Name);
+                String fieldName = exportIdentifier(fd.fieldName);
                 writer.Write("<" + fieldName + ">");
-                switch (type[i])
+                switch (fd.type)
                 {
                     case ClassDescriptor.FieldType.tpBoolean: 
                         writer.Write(body[offs++] != 0?"1":"0");
@@ -368,7 +369,7 @@ namespace Perst.Impl
 					
                     case ClassDescriptor.FieldType.tpValue: 
                         writer.Write('\n');
-                        offs = exportObject(storage.getClassDescriptor(f.FieldType), body, offs, indent + 1);
+                        offs = exportObject(fd.valueDesc, body, offs, indent + 1);
                         indentation(indent);
                         break;
 					
@@ -721,7 +722,7 @@ namespace Perst.Impl
                             {
                                 indentation(indent + 1);
                                 writer.Write("<array-element>\n");
-                                offs = exportObject(storage.getClassDescriptor(f.FieldType), body, offs, indent + 2);
+                                offs = exportObject(fd.valueDesc, body, offs, indent + 2);
                                 indentation(indent + 1);
                                 writer.Write("</array-element>\n");
                             }

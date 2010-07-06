@@ -29,7 +29,6 @@ namespace Perst.Impl
                 {
                     if (e.oid == oid)
                     {
-                         e.dirty = 0;
                         e.oref.Target = null;
                         count -= 1;
                         if (prev != null)
@@ -77,29 +76,20 @@ namespace Perst.Impl
 		
         public IPersistent get(int oid)
         {
-            while (true) 
-            { 
-                lock(this)
+            lock(this)
+            {
+                Entry[] tab = table;
+                int index = (oid & 0x7FFFFFFF) % tab.Length;
+                for (Entry e = tab[index]; e != null; e = e.next)
                 {
-                    Entry[] tab = table;
-                    int index = (oid & 0x7FFFFFFF) % tab.Length;
-                    for (Entry e = tab[index]; e != null; e = e.next)
+                    if (e.oid == oid)
                     {
-                        if (e.oid == oid)
-                        {
-                            IPersistent obj = (IPersistent)e.oref.Target;
-                            if (obj == null && e.dirty > 0) 
-                            { 
-                                goto waitFinalization;
-                            }
-                            return obj;
-                        }
+                        return (IPersistent)e.oref.Target;
                     }
-                    return null;
                 }
-            waitFinalization:
-                GC.WaitForPendingFinalizers();
+                return null;
             }
+            
         }
 		
         public void clear() 
@@ -123,7 +113,7 @@ namespace Perst.Impl
             {
                 for (Entry prev = null, e = oldMap[i]; e != null; e = e.next)
                 {
-                    if (!e.oref.IsAlive && e.dirty == 0)
+                    if (!e.oref.IsAlive)
                     {
                         count -= 1;
                         if (prev == null)
@@ -166,74 +156,6 @@ namespace Perst.Impl
             }
         }
 		
-        public void flush() 
-        {
-            while (true) 
-            {
-                lock (this) 
-                { 
-                    for (int i = 0; i < table.Length; i++) 
-                    { 
-                        for (Entry e = table[i]; e != null; e = e.next) 
-                        { 
-                            IPersistent obj = (IPersistent)e.oref.Target;
-                            if (obj != null) 
-                            { 
-                                if (obj.isModified()) 
-                                { 
-                                    obj.store();
-                                }
-                            } 
-                            else if (e.dirty != 0) 
-                            { 
-                                goto waitFinalization;
-                            }
-                        }
-                    }
-                    return;
-                }
-            waitFinalization:
-                GC.WaitForPendingFinalizers();
-            }
-        }
-
-        public void setDirty(int oid) 
-        {
-            lock (this) 
-            { 
-                Entry[] tab = table;
-                int index = (oid & 0x7FFFFFFF) % tab.Length;
-                for (Entry e = tab[index] ; e != null ; e = e.next) 
-                {
-                    if (e.oid == oid) 
-                    {
-                        e.dirty += 1;
-                        return;
-                    }
-                }
-            }
-        }
-
-        public void clearDirty(int oid) 
-        {
-            lock (this) 
-            { 
-                Entry[] tab = table;
-                int index = (oid & 0x7FFFFFFF) % tab.Length;
-                for (Entry e = tab[index] ; e != null ; e = e.next) 
-                {
-                    if (e.oid == oid) 
-                    {
-                        if (e.dirty > 0) 
-                        { 
-                            e.dirty -= 1;
-                        }
-                        return;
-                    }
-                }
-            }
-        }
-
         public int size()
         {
             return count;
@@ -245,7 +167,6 @@ namespace Perst.Impl
             internal Entry next;
             internal WeakReference oref;
             internal int oid;
-            internal int dirty;
 		
             internal Entry(int oid, WeakReference oref, Entry chain)
             {

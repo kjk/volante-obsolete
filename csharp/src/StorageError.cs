@@ -43,7 +43,9 @@ namespace Perst
             ACCESS_VIOLATION,
             CLASS_NOT_FOUND,
             AMBIGUITY_CLASS,
-            INDEXED_FIELD_NOT_FOUND
+            INDEXED_FIELD_NOT_FOUND,
+            NO_SUCH_PROPERTY,
+            BAD_PROPERTY_VALUE
         };
         private static System.String[] messageText = new System.String[]{"Storage not opened", "Storage already opened", "File access error", "Key not unique", "Key not found", "Database schema was changed for", "Unsupported type", "Unsupported index type", "Incompatible key type", "Not enough space", "Database file is corrupted", "Failed to instantiate the object of", "Failed to build descriptor for", "Stub object is accessed", "Invalid object reference", "Access to the deleted object", "Object access violation", "Failed to locate", "Ambiguity definition of class", "Could not find indexed field"};
 		

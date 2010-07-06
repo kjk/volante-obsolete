@@ -129,31 +129,7 @@ namespace Perst.Impl
             }
         }
 		
-        public void flush() 
-        {
-            lock(this) 
-            {
-                for (int i = 0; i < table.Length; i++) 
-                { 
-                    for (Entry e = table[i]; e != null; e = e.next) 
-                    { 
-                        if (e.oref.isModified()) 
-                        { 
-                            e.oref.store();
-                        }
-                    }
-                }
-            }
-        }
-    
-        public void setDirty(int oid) 
-        {
-        } 
-
-        public void clearDirty(int oid) 
-        {
-        }
-        
+         
         public int size()
         {
             return count;

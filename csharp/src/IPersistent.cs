@@ -8,23 +8,35 @@ namespace Perst
     {
         /// <summary> Get object identifier (OID)
         /// </summary>
-        /// <returns>OID (0 if object is not persistent yet)
-        /// 
-        /// </returns>
         int Oid
         {
             get;
 				
         }
-        /// <summary> Get storage in which this object is stored
+
+        /// <summary> Compatibility with Java API: get object identifier (OID)
         /// </summary>
-        /// <returns>storage containing this object (null if object is not persistent yet)
+        /// <returns>OID (0 if object is not persistent yet)
         /// 
         /// </returns>
+        int getOid();
+
+
+        /// <summary> Get storage in which this object is stored
+        /// </summary>
         Storage Storage
         {
             get;				
         }
+        
+        /// <summary> Compatibility with Java API: get storage in which this object is stored
+        /// </summary>
+        /// <returns>storage containing this object (null if object is not persistent yet)
+        /// 
+        /// </returns>
+        Storage getStorage();
+
+
         /// <summary> Load object from the database (if needed)
         /// </summary>
         void  load();
