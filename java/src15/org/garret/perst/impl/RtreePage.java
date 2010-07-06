@@ -145,6 +145,7 @@ public class RtreePage extends Persistent {
     final void removeBranch(int i) {
         n -= 1;
         System.arraycopy(b, i+1, b, i, n-i);
+        b[n] = new Branch();
         modify();
     }
 
@@ -260,13 +261,16 @@ public class RtreePage extends Persistent {
                 }
             }
         }
-        pg.n = groupCard0;
-        n = groupCard1;
         for (i = 0, j = 0; i < groupCard1; j++) { 
             if (taken[j] == 2) {
                 b[i++] = b[j];
             }
         }
+        for (j = n; i < j; i++) { 
+            b[i] = new Branch();
+        }
+        pg.n = groupCard0;
+        n = groupCard1;
         return pg;
     }   
 

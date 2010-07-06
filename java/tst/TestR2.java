@@ -18,6 +18,11 @@ public class TestR2 extends Persistent {
     public static void main(String[] args) { 
         Storage db = StorageFactory.getInstance().createStorage();
         long start = System.currentTimeMillis();
+        if (args.length > 0 && "noflush".equals(args[0]))
+        { 
+            db.setProperty("perst.file.noflush", Boolean.TRUE);
+        }
+        
         db.open("testr2.dbs");
         TestR2 root = (TestR2)db.getRoot();
         if (root == null) { 

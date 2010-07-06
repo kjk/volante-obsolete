@@ -26,10 +26,12 @@ public class OSFile implements IFile {
         
     public void sync()
     { 
-        try {   
-            file.getFD().sync();
-        } catch(IOException x) { 
-            throw new StorageError(StorageError.FILE_ACCESS_ERROR, x);
+        if (!noFlush) { 
+            try {   
+                file.getFD().sync();
+            } catch(IOException x) { 
+                throw new StorageError(StorageError.FILE_ACCESS_ERROR, x);
+            }
         }
     }
     
@@ -42,7 +44,8 @@ public class OSFile implements IFile {
         }
     }
 
-    public OSFile(String filePath, boolean readOnly) { 
+    public OSFile(String filePath, boolean readOnly, boolean noFlush) { 
+        this.noFlush = noFlush;
         try { 
             file = new RandomAccessFile(filePath, readOnly ? "r" : "rw");
         } catch(IOException x) { 
@@ -51,4 +54,5 @@ public class OSFile implements IFile {
     }
 
     protected RandomAccessFile file;
+    protected boolean          noFlush;
 }

@@ -8,7 +8,6 @@ public class MultiFile implements IFile
 	RandomAccessFile f;
 	String           name;
 	long             size;
-	long             offs;
     }
 
     void seek(long pos) throws IOException {
@@ -91,12 +90,14 @@ public class MultiFile implements IFile
         
     public void sync()
     { 
-        try {   
-            for (int i = segment.length; --i >= 0;) { 
-                segment[i].f.getFD().sync();
+        if (!noFlush) { 
+            try {   
+                for (int i = segment.length; --i >= 0;) { 
+                    segment[i].f.getFD().sync();
+                }
+            } catch(IOException x) { 
+                throw new StorageError(StorageError.FILE_ACCESS_ERROR, x);
             }
-        } catch(IOException x) { 
-            throw new StorageError(StorageError.FILE_ACCESS_ERROR, x);
         }
     }
     
@@ -111,10 +112,30 @@ public class MultiFile implements IFile
         }
     }
 
-    public MultiFile(String filePath, boolean readOnly) { 
+    public MultiFile(String[] segmentPath, long[] segmentSize, boolean readOnly, boolean noFlush) { 
+        this.noFlush = noFlush;
+        segment = new MultiFileSegment[segmentPath.length];
+        String mode = readOnly ? "r" : "rw";
+        try { 
+            for (int i = 0; i < segment.length; i++) { 
+                MultiFileSegment seg = new MultiFileSegment();
+                seg.f = new RandomAccessFile(segmentPath[i], mode);
+                seg.size = segmentSize[i];
+                fixedSize += seg.size;
+                segment[i] = seg;
+            }
+            fixedSize -= segment[segment.length-1].size;
+            segment[segment.length-1].size = Long.MAX_VALUE;
+        } catch(IOException x) { 
+            throw new StorageError(StorageError.FILE_ACCESS_ERROR, x);
+        }
+    }
+
+    public MultiFile(String filePath, boolean readOnly, boolean noFlush) { 
         try { 
             StreamTokenizer in = 
                 new StreamTokenizer(new BufferedReader(new FileReader(filePath)));
+            this.noFlush = noFlush;
             String mode = readOnly ? "r" : "rw";
             segment = new MultiFileSegment[0];
             int tkn = in.nextToken();
@@ -152,4 +173,5 @@ public class MultiFile implements IFile
     long             currOffs;
     long             fixedSize;
     int              currSeg;
+    boolean          noFlush;
 }

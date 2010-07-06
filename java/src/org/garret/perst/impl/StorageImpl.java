@@ -778,8 +778,8 @@ public class StorageImpl extends Storage {
 
     public synchronized void open(String filePath, int pagePoolSize) {
         IFile file = filePath.startsWith("@") 
-            ? (IFile)new MultiFile(filePath.substring(1), readOnly)
-            : (IFile)new OSFile(filePath, readOnly);      
+            ? (IFile)new MultiFile(filePath.substring(1), readOnly, noFlush)
+            : (IFile)new OSFile(filePath, readOnly, noFlush);      
         try {
             open(file, pagePoolSize);
         } catch (StorageError ex) {
@@ -789,7 +789,7 @@ public class StorageImpl extends Storage {
     }
 
     public synchronized void open(String filePath, int pagePoolSize, String cryptKey) {
-        Rc4File file = new Rc4File(filePath, readOnly, cryptKey);      
+        Rc4File file = new Rc4File(filePath, readOnly, noFlush, cryptKey);      
         try {
             open(file, pagePoolSize);
         } catch (StorageError ex) {
@@ -2226,6 +2226,9 @@ public class StorageImpl extends Storage {
         if ((value = props.getProperty("perst.file.readonly")) != null) { 
             readOnly = getBooleanValue(value);
         }
+        if ((value = props.getProperty("perst.file.noflush")) != null) { 
+            noFlush = getBooleanValue(value);
+        }
         if ((value = props.getProperty("perst.alternative.btree")) != null) { 
             alternativeBtree = getBooleanValue(value);
         }
@@ -2250,6 +2253,8 @@ public class StorageImpl extends Storage {
             gcThreshold = getIntegerValue(value);
         } else if (name.equals("perst.file.readonly")) { 
             readOnly = getBooleanValue(value);
+        } else if (name.equals("perst.file.noflush")) { 
+            noFlush = getBooleanValue(value);
         } else if (name.equals("perst.alternative.btree")) { 
             alternativeBtree = getBooleanValue(value);
         } else if (name.equals("perst.background.gc")) {
@@ -3453,6 +3458,7 @@ public class StorageImpl extends Storage {
     private int     objectCacheInitSize = dbDefaultObjectCacheInitSize;
     private long    extensionQuantum = dbDefaultExtensionQuantum;
     private boolean readOnly = false;
+    private boolean noFlush = false;
     private boolean alternativeBtree = false;
     private boolean backgroundGc = false;
 

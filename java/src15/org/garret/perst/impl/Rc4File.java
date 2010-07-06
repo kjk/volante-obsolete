@@ -31,9 +31,9 @@ public class Rc4File extends OSFile
         return 0;
     }
 
-    public Rc4File(String filePath, boolean readOnly, String key) 
+    public Rc4File(String filePath, boolean readOnly, boolean noFlush, String key) 
     { 
-        super(filePath, readOnly);
+        super(filePath, readOnly, noFlush);
         try { 
             length = file.length() & ~(Page.pageSize-1);
         } catch(java.io.IOException x) { 
@@ -91,7 +91,7 @@ public class Rc4File extends OSFile
     private byte[] cipherBuf = new byte[Page.pageSize];
     private byte[] initState = new byte[256];
     private byte[] state = new byte[256];
-    private int x, y;
+    private int    x, y;
     private long   length;
     private byte[] zeroPage;
 }

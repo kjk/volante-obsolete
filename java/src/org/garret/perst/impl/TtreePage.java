@@ -487,6 +487,7 @@ public class TtreePage extends Persistent  {
                     //while (++i < n) { 
                     //    item[i-1] = item[i];
                     //}
+                    item[n-1] = null;
                     nItems -= 1;
                     return OK;
                 }

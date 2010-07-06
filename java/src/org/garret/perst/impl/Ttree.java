@@ -32,7 +32,7 @@ public class Ttree extends PersistentResource implements SortedCollection {
     /*
      * Get member with specified key.
      * @param key specified key. It should match with type of the index and should be inclusive.
-     * @return object with this value of the key or <code>null</code> if key nmot found
+     * @return object with this value of the key or <code>null</code> if key not found
      * @exception StorageError(StorageError.KEY_NOT_UNIQUE) exception if there are more than 
      * one objects in the collection with specified value of the key.  
      */
@@ -57,10 +57,8 @@ public class Ttree extends PersistentResource implements SortedCollection {
      * Get members which key value belongs to the specified range.
      * Either from boundary, either till boundary either both of them can be <code>null</code>.
      * In last case the method returns all objects from the collection.
-     * @param from low boundary. If <code>null</code> then low boundary is not specified.
-     * Low boundary can be inclusive or exclusive. 
-     * @param till high boundary. If <code>null</code> then high boundary is not specified.
-     * High boundary can be inclusive or exclusive. 
+     * @param from inclusive low boundary. If <code>null</code> then low boundary is not specified.
+     * @param till inclusive high boundary. If <code>null</code> then high boundary is not specified.
      * @return array of objects which keys belongs to the specified interval, ordered by key value
      */
     static final IPersistent[] emptySelection = new IPersistent[0];
@@ -236,10 +234,8 @@ public class Ttree extends PersistentResource implements SortedCollection {
     /**
      * Get iterator for traversing collection members  with key belonging to the specified range. 
      * You should not update/remove or add members to the index during iteration
-     * @param from low boundary. If <code>null</code> then low boundary is not specified.
-     * Low boundary can be inclusive or exclusive. 
-     * @param till high boundary. If <code>null</code> then high boundary is not specified.
-     * High boundary can be inclusive or exclusive. 
+     * @param from inclusive low boundary. If <code>null</code> then low boundary is not specified.
+     * @param till inclusive high boundary. If <code>null</code> then high boundary is not specified.
      * @return selection iterator
      */
     public java.util.Iterator iterator(Object from, Object till) {

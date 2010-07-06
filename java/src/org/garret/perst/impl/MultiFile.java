@@ -90,12 +90,14 @@ public class MultiFile implements IFile
         
     public void sync()
     { 
-        try {   
-            for (int i = segment.length; --i >= 0;) { 
-                segment[i].f.getFD().sync();
+        if (!noFlush) { 
+            try {   
+                for (int i = segment.length; --i >= 0;) { 
+                    segment[i].f.getFD().sync();
+                }
+            } catch(IOException x) { 
+                throw new StorageError(StorageError.FILE_ACCESS_ERROR, x);
             }
-        } catch(IOException x) { 
-            throw new StorageError(StorageError.FILE_ACCESS_ERROR, x);
         }
     }
     
@@ -110,10 +112,11 @@ public class MultiFile implements IFile
         }
     }
 
-    public MultiFile(String[] segmentPath, long[] segmentSize, boolean readOnly) { 
+    public MultiFile(String[] segmentPath, long[] segmentSize, boolean readOnly, boolean noFlush) { 
+        this.noFlush = noFlush;
+        segment = new MultiFileSegment[segmentPath.length];
+        String mode = readOnly ? "r" : "rw";
         try { 
-            segment = new MultiFileSegment[segmentPath.length];
-            String mode = readOnly ? "r" : "rw";
             for (int i = 0; i < segment.length; i++) { 
                 MultiFileSegment seg = new MultiFileSegment();
                 seg.f = new RandomAccessFile(segmentPath[i], mode);
@@ -128,10 +131,11 @@ public class MultiFile implements IFile
         }
     }
 
-    public MultiFile(String filePath, boolean readOnly) { 
+    public MultiFile(String filePath, boolean readOnly, boolean noFlush) { 
         try { 
             StreamTokenizer in = 
                 new StreamTokenizer(new BufferedReader(new FileReader(filePath)));
+            this.noFlush = noFlush;
             String mode = readOnly ? "r" : "rw";
             segment = new MultiFileSegment[0];
             int tkn = in.nextToken();
@@ -169,4 +173,5 @@ public class MultiFile implements IFile
     long             currOffs;
     long             fixedSize;
     int              currSeg;
+    boolean          noFlush;
 }
