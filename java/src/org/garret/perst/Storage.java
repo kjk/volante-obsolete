@@ -154,7 +154,7 @@ public abstract class Storage {
      * Create new peristent set
      * @return persistent object implementing set
      */
-    abstract public java.util.Set createSet();
+    abstract public IPersistentSet createSet();
 
     /**
      * Create new index

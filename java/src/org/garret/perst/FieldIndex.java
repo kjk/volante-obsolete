@@ -76,6 +76,14 @@ public interface FieldIndex extends IPersistent {
     public void          remove(IPersistent obj);
 
     /**
+     * Remove object with specified key from the unique index
+     * @param key value of removed key
+     * @exception StorageError(StorageError.KEY_NOT_FOUND) exception if there is no such key in the index,
+     * or StorageError(StorageError.KEY_NOT_UNIQUE) if index is not unique.
+     */
+    public void          remove(Key key);
+
+    /**
      * Check if index contains specified object
      * @param obj object to be searched in the index. Object should contain indexed field. 
      * @return <code>true</code> if object is present in the index, <code>false</code> otherwise

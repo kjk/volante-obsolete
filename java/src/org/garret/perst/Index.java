@@ -1,5 +1,7 @@
 package org.garret.perst;
 
+import java.util.Iterator;
+
 /**
  * Interface of object index.
  * Index is used to provide fast access to the object by key. 
@@ -107,7 +109,7 @@ public interface Index extends IPersistent, IResource {
      * You should not update/remove or add members to the index during iteration
      * @return index iterator
      */
-    public java.util.Iterator iterator();
+    public Iterator iterator();
 
     /**
      * Get iterator for traversing all entries in the index. 
@@ -117,7 +119,7 @@ public interface Index extends IPersistent, IResource {
      * You should not update/remove or add members to the index during iteration
      * @return index iterator
      */
-    public java.util.Iterator entryIterator();
+    public Iterator entryIterator();
 
     static final int ASCENT_ORDER  = 0;
     static final int DESCENT_ORDER = 1;
@@ -131,7 +133,7 @@ public interface Index extends IPersistent, IResource {
      * @param order <code>ASCENT_ORDER</code> or <code>DESCENT_ORDER</code>
      * @return selection iterator
      */
-    public java.util.Iterator iterator(Key from, Key till, int order);
+    public Iterator iterator(Key from, Key till, int order);
 
     /**
      * Get iterator for traversing index entries with key belonging to the specified range. 
@@ -144,7 +146,7 @@ public interface Index extends IPersistent, IResource {
      * @param order <code>ASCENT_ORDER</code> or <code>DESCENT_ORDER</code>
      * @return selection iterator
      */
-    public java.util.Iterator entryIterator(Key from, Key till, int order);
+    public Iterator entryIterator(Key from, Key till, int order);
 }
 
 

@@ -114,3 +114,7 @@ Attention: database format is incompatible with version 1.22!
 1. Add IPersistent.invalidate method. Transaction rollback will now invalidate all modified objects.
 2. Support per-thread transactions (Storage.beginTransaction and Storage.endTranasction methods)
 3. Yet another attempt to eliminate modification list and handle modified object using weak references.
+
+--- Release version 2.04 26.11.2003 -------------------------------------
+
+1. Introduce IPersistentSet interface which is now returned by Storage.createSet method

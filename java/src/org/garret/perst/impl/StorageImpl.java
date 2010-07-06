@@ -1142,7 +1142,7 @@ public class StorageImpl extends Storage {
         reloadScheme();
     }
 
-    public synchronized java.util.Set createSet() {
+    public synchronized IPersistentSet createSet() {
         if (!opened) { 
             throw new StorageError(StorageError.STORAGE_NOT_OPENED);
         }

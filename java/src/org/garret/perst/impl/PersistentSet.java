@@ -2,7 +2,7 @@ package org.garret.perst.impl;
 import  org.garret.perst.*;
 import  java.util.*;
 
-class PersistentSet extends Btree implements Set { 
+class PersistentSet extends Btree implements IPersistentSet { 
     PersistentSet() { 
         type = ClassDescriptor.tpObject;
         unique = true;
