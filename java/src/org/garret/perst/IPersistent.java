@@ -3,7 +3,7 @@ package org.garret.perst;
 /**
  * Interface of all persistent capable objects
  */
-public interface IPersistent {
+public interface IPersistent extends java.io.Serializable {
     /**
      * Load object from the database (if needed)
      */

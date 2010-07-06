@@ -855,6 +855,10 @@ public class StorageImpl extends Storage {
         opened = true;
     }
 
+    public boolean isOpened() { 
+        return opened;
+    }
+
     static void checkIfFinal(ClassDescriptor desc) {
         Class cls = desc.cls;
         for (ClassDescriptor next = desc.next; next != null; next = next.next) { 

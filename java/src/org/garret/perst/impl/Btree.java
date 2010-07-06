@@ -108,7 +108,7 @@ class Btree extends PersistentResource implements Index {
             }
         }
         nElems += 1;
-        store();
+        modify();
         return true;
     }
 
@@ -145,7 +145,7 @@ class Btree extends PersistentResource implements Index {
 	    root = BtreePage.allocate(db, root, type, rem);
 	    height += 1;
 	}
-        store();
+        modify();
     }
         
     public void remove(Key key) {
@@ -166,7 +166,7 @@ class Btree extends PersistentResource implements Index {
             root = 0;
             nElems = 0;
             height = 0;
-            store();
+            modify();
         }
     }
         

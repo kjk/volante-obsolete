@@ -21,6 +21,13 @@ public abstract class Storage {
     public void open(String dbFile) {
         open(dbFile, 4*1024*1024);
     }
+
+    /**
+     * Check if database is opened
+     * @return <code>true</code> if database was opened by <code>open</code> method, 
+     * <code>false</code> otherwise
+     */
+    abstract public boolean isOpened();
     
     /**
      * Explicitly make object persistent (assign to the storage).

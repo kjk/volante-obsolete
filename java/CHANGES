@@ -37,3 +37,9 @@ Object will be automatically saved during transaction commit.
 --- Release version 1.09 06.05.2003 -------------------------------------
 1. Fix bug in packing array of strings. 
 2. Fix bug with handling int keys in B-Tree
+
+--- Release version 1.10 28.05.2003 -------------------------------------
+1. Add Storage.isOpened() method
+2. Change store() with modify() in Btree implementation
+3. Derive IPersistent interface from java.io.Serializable
+
