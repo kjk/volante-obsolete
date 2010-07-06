@@ -130,7 +130,9 @@ namespace Perst
         /// <param name="obj">object associated with this key. Object can be not yet peristent, in this case
         /// its forced to become persistent by assigning OID to it.
         /// </param>
-        void Set(Key key, IPersistent obj);
+        /// <returns>object previously associated with this key, <code>null</code> if there was no such object
+        /// </returns>
+        IPersistent Set(Key key, IPersistent obj);
 
         /// <summary> Associate new value with the key. If there is already object with such key in the index, 
         /// then it will be removed from the index and new value associated with this key.
@@ -140,7 +142,9 @@ namespace Perst
         /// <param name="obj">object associated with this key. Object can be not yet peristent, in this case
         /// its forced to become persistent by assigning OID to it.
         /// </param>
-        void Set(object key, IPersistent obj);
+        /// <returns>object previously associated with this key, <code>null</code> if there was no such object
+        /// </returns>
+        IPersistent Set(object key, IPersistent obj);
 
         /// <summary> Remove object with specified key from the tree.
         /// </summary>
@@ -168,21 +172,23 @@ namespace Perst
         /// </summary>
         /// <param name="key">wrapper of removed key
         /// </param>
+        /// <returns>removed object</returns>
         /// <exception cref="Perst.StorageError">StorageError(StorageError.ErrorCode.KEY_NOT_FOUND) exception if there is no such key in the index,
         /// or StorageError(StorageError.ErrorCode.KEY_NOT_UNIQUE) if index is not unique.
         /// 
         /// </exception>
-        void  Remove(Key key);
+        IPersistent  Remove(Key key);
 
         /// <summary> Remove key from the unique index.
         /// </summary>
         /// <param name="key">value of removed key
         /// </param>
+        /// <returns>removed object</returns>
         /// <exception cref="Perst.StorageError">StorageError(StorageError.ErrorCode.KEY_NOT_FOUND) exception if there is no such key in the index,
         /// or StorageError(StorageError.ErrorCode.KEY_NOT_UNIQUE) if index is not unique.
         /// 
         /// </exception>
-        void  Remove(object key);
+        IPersistent  Remove(object key);
 
         /// <summary> Get number of objects in the index
         /// </summary>

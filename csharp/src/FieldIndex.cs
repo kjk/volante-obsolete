@@ -119,7 +119,9 @@ namespace Perst
         /// Object can be not yet peristent, in this case
         /// its forced to become persistent by assigning OID to it.
         /// </param>
-        void Set(IPersistent obj);
+        /// <returns>object previously associated with this key, <code>null</code> if there was no such object
+        /// </returns>
+        IPersistent Set(IPersistent obj);
 
         /// <summary>
         /// Assign to the integer indexed field unique autoicremented value and 
@@ -150,11 +152,23 @@ namespace Perst
         /// </summary>
         /// <param name="key">wrapper of removed key
         /// </param>
+        /// <returns>removed object</returns>
         /// <exception cref="Perst.StorageError">StorageError(StorageError.ErrorCode.KEY_NOT_FOUND) exception if there is no such key in the index,
         /// or StorageError(StorageError.ErrorCode.KEY_NOT_UNIQUE) if index is not unique.
         /// 
         /// </exception>
-        void  Remove(Key key);
+        IPersistent Remove(Key key);
+
+        /// <summary> Remove object with specified key from the unique index.
+        /// </summary>
+        /// <param name="key">value of removed key
+        /// </param>
+        /// <returns>removed object</returns>
+        /// <exception cref="Perst.StorageError">StorageError(StorageError.ErrorCode.KEY_NOT_FOUND) exception if there is no such key in the index,
+        /// or StorageError(StorageError.ErrorCode.KEY_NOT_UNIQUE) if index is not unique.
+        /// 
+        /// </exception>
+        IPersistent Remove(object key);
 
         /// <summary> Get number of objects in the index
         /// </summary>

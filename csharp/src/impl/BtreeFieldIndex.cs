@@ -147,12 +147,12 @@ namespace Perst.Impl
  
         public bool Put(IPersistent obj) 
         {
-            return base.insert(extractKey(obj), obj, false);
+            return base.Put(extractKey(obj), obj);
         }
 
-        public void Set(IPersistent obj) 
+        public IPersistent Set(IPersistent obj) 
         {
-            base.insert(extractKey(obj), obj, true);
+            return base.Set(extractKey(obj), obj);
         }
 
         public void Remove(IPersistent obj) 

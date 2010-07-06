@@ -480,12 +480,12 @@ namespace Perst.Impl
  
         public bool Put(IPersistent obj) 
         {
-            return base.insert(extractKey(obj), obj, false);
+            return base.Put(extractKey(obj), obj);
         }
 
-        public void Set(IPersistent obj) 
+        public IPersistent Set(IPersistent obj) 
         {
-            base.insert(extractKey(obj), obj, true);
+            return base.Set(extractKey(obj), obj);
         }
 
         public void Remove(IPersistent obj) 
@@ -493,9 +493,14 @@ namespace Perst.Impl
             base.remove(new BtreeKey(extractKey(obj), obj.Oid));
         }
         
-        public override void Remove(Key key) 
+        public override IPersistent Remove(Key key) 
         {
-            base.Remove(convertKey(key));
+            return base.Remove(convertKey(key));
+        }       
+
+        public override IPersistent Remove(object key) 
+        {
+            return base.Remove(convertKey(new Key(new object[]{key})));
         }       
 
         public bool Contains(IPersistent obj) 

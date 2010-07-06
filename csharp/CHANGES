@@ -217,3 +217,8 @@ of pack/unpack methods.
 1. Make StorageImpl.swizzle and StorageImpl.unswizzle method protected to be allow
 their redefinition in derived class.
 2. Fix problem with parsing ulong literals in XMLImport
+
+--- Release version 2.24 17.05.2004 -------------------------------------
+1. Index.Remove(Key), Index.Set(Key,IPersistent), FieldIndex.Remove(Key) and FieldIndex.Set(IPersistent)
+methods now return reference to the removed/replaced object.
+

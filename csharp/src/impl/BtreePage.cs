@@ -1886,8 +1886,10 @@ namespace Perst.Impl
                         {
                             if (compareStr(rem.key, pg, r) == 0)
                             {
-                                if (getKeyStrOid(pg, r) == rem.oid || rem.oid == 0)
+                                int oid = getKeyStrOid(pg, r);
+                                if (oid == rem.oid || rem.oid == 0)
                                 {
+                                    rem.oid = oid;
                                     db.pool.unfix(pg);
                                     pg = null;
                                     pg = db.putPage(pageId);
@@ -1947,8 +1949,10 @@ namespace Perst.Impl
                         {
                             if (tree.compareByteArrays(rem.key, pg, r) == 0)
                             {
-                                if (getKeyStrOid(pg, r) == rem.oid || rem.oid == 0)
+                                int oid = getKeyStrOid(pg, r);
+                                if (oid == rem.oid || rem.oid == 0)
                                 {
+                                    rem.oid = oid;
                                     db.pool.unfix(pg);
                                     pg = null;
                                     pg = db.putPage(pageId);
@@ -1987,6 +1991,7 @@ namespace Perst.Impl
                             {
                                 if (getReference(pg, maxItems - r - 1) == oid || oid == 0)
                                 {
+                                    rem.oid = getReference(pg, maxItems - r - 1);
                                     db.pool.unfix(pg);
                                     pg = null;
                                     pg = db.putPage(pageId);

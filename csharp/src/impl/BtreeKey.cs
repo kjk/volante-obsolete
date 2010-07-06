@@ -8,6 +8,7 @@ namespace Perst.Impl
     {
         internal Key key;
         internal int oid;
+        internal int oldOid;
 		
         internal BtreeKey(Key key, int oid)
         {

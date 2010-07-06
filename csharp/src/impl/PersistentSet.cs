@@ -26,7 +26,7 @@ namespace Perst.Impl
             { 
                 ((StorageImpl)Storage).storeObject(o);
             }
-            return insert(new Key(o), o, false);
+            return base.Put(new Key(o), o);
         }
 
         public bool AddAll(IEnumerator e) 

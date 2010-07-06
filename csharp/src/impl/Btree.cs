@@ -337,25 +337,26 @@ namespace Perst.Impl
         
         public virtual bool Put(Key key, IPersistent obj)
         {
-            return insert(key, obj, false);
+            return insert(key, obj, false) >= 0;
         }
 
         public virtual bool Put(object key, IPersistent obj)
         {
-            return insert(getKeyFromObject(key), obj, false);
+            return Put(getKeyFromObject(key), obj);
         }
 
-        public virtual void Set(Key key, IPersistent obj)
+        public virtual IPersistent Set(Key key, IPersistent obj)
         {
-            insert(key, obj, true);
+            int oid = insert(key, obj, true);
+            return (oid != 0) ? ((StorageImpl)Storage).lookupObject(oid, null) : null;
         }
 
-        public virtual void Set(object key, IPersistent obj)
+        public virtual IPersistent Set(object key, IPersistent obj)
         {
-            insert(getKeyFromObject(key), obj, true);
+            return Set(getKeyFromObject(key), obj);
         }
 
-        internal bool insert(Key key, IPersistent obj, bool overwrite)
+        internal int insert(Key key, IPersistent obj, bool overwrite)
         {
             StorageImpl db = (StorageImpl) Storage;
             if (db == null) 
@@ -386,17 +387,17 @@ namespace Perst.Impl
                 }
                 else if (result == op_duplicate)
                 {
-                    return false;
+                    return -1;
                 }
                 else if (result == op_overwrite)
                 {
-                    return true;
+                    return ins.oldOid;
                 }
             }
             nElems += 1;
             updateCounter += 1;
             Modify();
-            return true;
+            return 0;
         }
 		
         public virtual void  Remove(Key key, IPersistent obj)
@@ -459,18 +460,21 @@ namespace Perst.Impl
 		
                
                 
-        public virtual void Remove(Key key)
+        public virtual IPersistent Remove(Key key)
         {
             if (!unique)
             {
                 throw new StorageError(StorageError.ErrorCode.KEY_NOT_UNIQUE);
             }
-            remove(new BtreeKey(key, 0));
+            BtreeKey rk = new BtreeKey(key, 0);
+            StorageImpl db = (StorageImpl)Storage;
+            remove(rk);
+            return db.lookupObject(rk.oid, null);
         }		
             
-        public virtual void Remove(object key)
+        public virtual IPersistent Remove(object key)
         {
-            Remove(getKeyFromObject(key));
+            return Remove(getKeyFromObject(key));
         }
 
         public virtual int Size()

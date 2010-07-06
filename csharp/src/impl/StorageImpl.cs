@@ -1196,6 +1196,7 @@ namespace Perst.Impl
             if (desc == null)
             {
                 desc = new ClassDescriptor(this, cls);
+                desc.generateSerializer();
                 registerClassDescriptor(desc);
             }
             return desc;

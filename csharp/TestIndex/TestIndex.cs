@@ -99,7 +99,8 @@ public class TestIndex
         {
             key = (3141592621L * key + 2718281829L) % 1000000007L;
             Record rec = (Record) intIndex.Get(new Key(key));
-            intIndex.Remove(new Key(key));
+            Record removed = (Record)intIndex.Remove(new Key(key));
+            Debug.Assert(removed == rec);
             strIndex.Remove(new Key(System.Convert.ToString(key)), rec);
             rec.Deallocate();
         }
