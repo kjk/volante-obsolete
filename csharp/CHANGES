@@ -131,3 +131,8 @@ Attention: database format is incompatible with version 1.22!
 1. Make it possible to index properties
 2. Fix bug in packing char fields.
 3. Support of decimal and Guid types
+
+--- Release version 2.07 14.12.2003 -------------------------------------
+
+1. Fix critical bug in object index relocation algorithm
+2. Fix bug in recovery procedure

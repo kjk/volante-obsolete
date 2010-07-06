@@ -110,10 +110,6 @@ namespace Perst.Impl
         {
             lock (objectCache) 
             {
-                if (oid == 1 && (pos & dbPageObjectFlag) == 0)
-                {
-                    throw new System.ApplicationException("Something is definitly wrong");
-                }
                 dirtyPagesMap[oid >> (dbHandlesPerPageBits + 5)] |= 1 << ((oid >> dbHandlesPerPageBits) & 31);
                 Page pg = pool.putPage(header.root[1 - currIndex].index + (oid >> dbHandlesPerPageBits << Page.pageBits));
                 Bytes.pack8(pg.data, (oid & (dbHandlesPerPage - 1)) << 3, pos);
@@ -962,28 +958,25 @@ namespace Perst.Impl
                     if (header.dirty)
                     {
                         System.Console.WriteLine("Database was not normally closed: start recovery");
-                        header.root[1 - curr].size = header.root[curr].size;
-                        header.root[1 - curr].indexUsed = header.root[curr].indexUsed;
-                        header.root[1 - curr].freeList = header.root[curr].freeList;
-                        header.root[1 - curr].index = header.root[curr].shadowIndex;
-                        currIndexSize = header.root[1 - curr].indexSize = header.root[curr].shadowIndexSize;
-                        header.root[1 - curr].shadowIndex = header.root[curr].index;
-                        header.root[1 - curr].shadowIndexSize = header.root[curr].indexSize;
-                        header.root[1 - curr].bitmapEnd = header.root[curr].bitmapEnd;
-                        header.root[1 - curr].rootObject = header.root[curr].rootObject;
-                        header.root[1 - curr].classDescList = header.root[curr].classDescList;
+                        header.root[1-curr].size = header.root[curr].size;
+                        header.root[1-curr].indexUsed = header.root[curr].indexUsed;
+                        header.root[1-curr].freeList = header.root[curr].freeList;
+                        header.root[1-curr].index = header.root[curr].shadowIndex;
+                        header.root[1-curr].indexSize = header.root[curr].shadowIndexSize;
+                        header.root[1-curr].shadowIndex = header.root[curr].index;
+                        header.root[1-curr].shadowIndexSize = header.root[curr].indexSize;
+                        header.root[1-curr].bitmapEnd = header.root[curr].bitmapEnd;
+                        header.root[1-curr].rootObject = header.root[curr].rootObject;
+                        header.root[1-curr].classDescList = header.root[curr].classDescList;
 						
                         pg = pool.putPage(0);
                         header.pack(pg.data);
                         pool.unfix(pg);
 						
-                        pool.copy(header.root[1 - curr].index, header.root[curr].index, (header.root[curr].indexUsed * 8 + Page.pageSize - 1) & ~ (Page.pageSize - 1));
+                        pool.copy(header.root[1-curr].index, header.root[curr].index, (header.root[curr].indexUsed * 8 + Page.pageSize - 1) & ~ (Page.pageSize - 1));
                         System.Console.WriteLine("Recovery completed");
                     }
-                    else
-                    {
-                        currIndexSize = header.root[1 - curr].indexUsed;
-                    }
+                    currIndexSize = header.root[1-curr].indexUsed;
                     committedIndexSize = currIndexSize;
                     usedSize = header.root[curr].size;
                 }
@@ -1017,7 +1010,7 @@ namespace Perst.Impl
         internal void  reloadScheme()
         {
             classDescMap.Clear();
-            int descListOid = header.root[1 - currIndex].classDescList;
+            int descListOid = header.root[1-currIndex].classDescList;
             classDescMap[typeof(ClassDescriptor)] = new ClassDescriptor(this, typeof(ClassDescriptor));
             classDescMap[typeof(ClassDescriptor.FieldDescriptor)] = new ClassDescriptor(this, typeof(ClassDescriptor.FieldDescriptor));
             if (descListOid != 0)
@@ -1083,14 +1076,14 @@ namespace Perst.Impl
                 int i, j, n;
                 int[] map = dirtyPagesMap;
                 int oldIndexSize = header.root[curr].indexSize;
-                int newIndexSize = header.root[1 - curr].indexSize;
+                int newIndexSize = header.root[1-curr].indexSize;
                 int nPages = committedIndexSize >> dbHandlesPerPageBits;
                 Page pg;
                 if (newIndexSize > oldIndexSize)
                 {
                     long newIndex = allocate(newIndexSize * 8, 0);
-                    header.root[1 - curr].shadowIndex = newIndex;
-                    header.root[1 - curr].shadowIndexSize = newIndexSize;
+                    header.root[1-curr].shadowIndex = newIndex;
+                    header.root[1-curr].shadowIndexSize = newIndexSize;
                     cloneBitmap(header.root[curr].index, oldIndexSize * 8);
                     free(header.root[curr].index, oldIndexSize * 8);
                 }
@@ -1098,7 +1091,7 @@ namespace Perst.Impl
                 {
                     if ((map[i >> 5] & (1 << (i & 31))) != 0)
                     {
-                        Page srcIndex = pool.getPage(header.root[1 - curr].index + i * Page.pageSize);
+                        Page srcIndex = pool.getPage(header.root[1-curr].index + i * Page.pageSize);
                         Page dstIndex = pool.getPage(header.root[curr].index + i * Page.pageSize);
                         for (j = 0; j < Page.pageSize; j += 8)
                         {
@@ -1128,7 +1121,7 @@ namespace Perst.Impl
                 n = committedIndexSize & (dbHandlesPerPage - 1);
                 if (n != 0 && (map[i >> 5] & (1 << (i & 31))) != 0)
                 {
-                    Page srcIndex = pool.getPage(header.root[1 - curr].index + i * Page.pageSize);
+                    Page srcIndex = pool.getPage(header.root[1-curr].index + i * Page.pageSize);
                     Page dstIndex = pool.getPage(header.root[curr].index + i * Page.pageSize);
                     j = 0;
                     do 
@@ -1162,7 +1155,7 @@ namespace Perst.Impl
                 {
                     if ((map[i >> 5] & (1 << (i & 31))) != 0)
                     {
-                        pg = pool.putPage(header.root[1 - curr].index + i * Page.pageSize);
+                        pg = pool.putPage(header.root[1-curr].index + i * Page.pageSize);
                         for (j = 0; j < Page.pageSize; j += 8)
                         {
                             Bytes.pack8(pg.data, j, Bytes.unpack8(pg.data, j) & ~ dbModifiedFlag);
@@ -1172,8 +1165,8 @@ namespace Perst.Impl
                 }
                 if (currIndexSize > committedIndexSize)
                 {
-                    long page = (header.root[1 - curr].index + committedIndexSize * 8) & ~ (Page.pageSize - 1);
-                    long end = (header.root[1 - curr].index + Page.pageSize - 1 + currIndexSize * 8) & ~ (Page.pageSize - 1);
+                    long page = (header.root[1-curr].index + committedIndexSize * 8) & ~ (Page.pageSize - 1);
+                    long end = (header.root[1-curr].index + Page.pageSize - 1 + currIndexSize * 8) & ~ (Page.pageSize - 1);
                     while (page < end)
                     {
                         pg = pool.putPage(page);
@@ -1185,7 +1178,7 @@ namespace Perst.Impl
                         page += Page.pageSize;
                     }
                 }
-                header.root[1 - curr].usedSize = usedSize;
+                header.root[1-curr].usedSize = usedSize;
                 pg = pool.putPage(0);
                 header.pack(pg.data);
                 pool.flush();
@@ -1196,24 +1189,24 @@ namespace Perst.Impl
                 pool.unfix(pg);
                 pool.flush();
 	
-                header.root[1 - curr].size = header.root[curr].size;
-                header.root[1 - curr].indexUsed = currIndexSize;
-                header.root[1 - curr].freeList = header.root[curr].freeList;
-                header.root[1 - curr].bitmapEnd = header.root[curr].bitmapEnd;
-                header.root[1 - curr].rootObject = header.root[curr].rootObject;
-                header.root[1 - curr].classDescList = header.root[curr].classDescList;
+                header.root[1-curr].size = header.root[curr].size;
+                header.root[1-curr].indexUsed = currIndexSize;
+                header.root[1-curr].freeList = header.root[curr].freeList;
+                header.root[1-curr].bitmapEnd = header.root[curr].bitmapEnd;
+                header.root[1-curr].rootObject = header.root[curr].rootObject;
+                header.root[1-curr].classDescList = header.root[curr].classDescList;
 	
                 if (currIndexSize == 0 || newIndexSize != oldIndexSize)
                 {
                     if (currIndexSize == 0)
                     {
-                        currIndexSize = header.root[1 - curr].indexUsed;
+                        currIndexSize = header.root[1-curr].indexUsed;
                     }
-                    header.root[1 - curr].index = header.root[curr].shadowIndex;
-                    header.root[1 - curr].indexSize = header.root[curr].shadowIndexSize;
-                    header.root[1 - curr].shadowIndex = header.root[curr].index;
-                    header.root[1 - curr].shadowIndexSize = header.root[curr].indexSize;
-                    pool.copy(header.root[1 - curr].index, header.root[curr].index, currIndexSize * 8);
+                    header.root[1-curr].index = header.root[curr].shadowIndex;
+                    header.root[1-curr].indexSize = header.root[curr].shadowIndexSize;
+                    header.root[1-curr].shadowIndex = header.root[curr].index;
+                    header.root[1-curr].shadowIndexSize = header.root[curr].indexSize;
+                    pool.copy(header.root[1-curr].index, header.root[curr].index, currIndexSize * 8);
                     i = (currIndexSize + dbHandlesPerPage * 32 - 1) >> (dbHandlesPerPageBits + 5);
                     while (--i >= 0)
                     {
@@ -1227,12 +1220,12 @@ namespace Perst.Impl
                         if ((map[i >> 5] & (1 << (i & 31))) != 0)
                         {
                             map[i >> 5] -= (1 << (i & 31));
-                            pool.copy(header.root[1 - curr].index + i * Page.pageSize, header.root[curr].index + i * Page.pageSize, Page.pageSize);
+                            pool.copy(header.root[1-curr].index + i * Page.pageSize, header.root[curr].index + i * Page.pageSize, Page.pageSize);
                         }
                     }
                     if (currIndexSize > i * dbHandlesPerPage && ((map[i >> 5] & (1 << (i & 31))) != 0 || currIndexSize != committedIndexSize))
                     {
-                        pool.copy(header.root[1 - curr].index + i * Page.pageSize, header.root[curr].index + i * Page.pageSize, 8 * currIndexSize - i * Page.pageSize);
+                        pool.copy(header.root[1-curr].index + i * Page.pageSize, header.root[curr].index + i * Page.pageSize, 8 * currIndexSize - i * Page.pageSize);
                         j = i >> 5;
                         n = (currIndexSize + dbHandlesPerPage * 32 - 1) >> (dbHandlesPerPageBits + 5);
                         while (j < n)
@@ -1264,7 +1257,7 @@ namespace Perst.Impl
                 }
                 int curr = currIndex;
                 int[] map = dirtyPagesMap;
-                if (header.root[1 - curr].index != header.root[curr].shadowIndex)
+                if (header.root[1-curr].index != header.root[curr].shadowIndex)
                 {
                     pool.copy(header.root[curr].shadowIndex, header.root[curr].index, 8 * committedIndexSize);
                 }
@@ -1281,14 +1274,14 @@ namespace Perst.Impl
                 }
                 for (int j = (currIndexSize + dbHandlesPerPage * 32 - 1) >> (dbHandlesPerPageBits + 5); --j >= 0; map[j] = 0)
                     ;
-                header.root[1 - curr].index = header.root[curr].shadowIndex;
-                header.root[1 - curr].indexSize = header.root[curr].shadowIndexSize;
-                header.root[1 - curr].indexUsed = committedIndexSize;
-                header.root[1 - curr].freeList = header.root[curr].freeList;
-                header.root[1 - curr].bitmapEnd = header.root[curr].bitmapEnd;
-                header.root[1 - curr].size = header.root[curr].size;
-                header.root[1 - curr].rootObject = header.root[curr].rootObject;
-                header.root[1 - curr].classDescList = header.root[curr].classDescList;
+                header.root[1-curr].index = header.root[curr].shadowIndex;
+                header.root[1-curr].indexSize = header.root[curr].shadowIndexSize;
+                header.root[1-curr].indexUsed = committedIndexSize;
+                header.root[1-curr].freeList = header.root[curr].freeList;
+                header.root[1-curr].bitmapEnd = header.root[curr].bitmapEnd;
+                header.root[1-curr].size = header.root[curr].size;
+                header.root[1-curr].rootObject = header.root[curr].rootObject;
+                header.root[1-curr].classDescList = header.root[curr].classDescList;
                 header.dirty = true;
                 modified = false;
                 usedSize = header.root[curr].size;
@@ -1398,7 +1391,7 @@ namespace Perst.Impl
                 {
                     throw new StorageError(StorageError.ErrorCode.STORAGE_NOT_OPENED);
                 }
-                int rootOid = header.root[1 - currIndex].rootObject;
+                int rootOid = header.root[1-currIndex].rootObject;
                 if (rootOid != 0)
                 {
                     XMLExporter xmlExporter = new XMLExporter(this, writer);
