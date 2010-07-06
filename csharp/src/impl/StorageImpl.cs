@@ -961,6 +961,7 @@ namespace Perst.Impl
                 {
                     throw new StorageError(StorageError.ErrorCode.STORAGE_ALREADY_OPENED);
                 }
+                file.Lock();
                 Page pg;
                 int i;
                 int indexSize = initIndexSize;
@@ -1531,6 +1532,39 @@ namespace Perst.Impl
                 long i2 = (long)o2;
                 return i1 < i2 ? -1 : i1 == i2 ? 0 : 1;
             }
+        }
+#else
+        public override IPersistent CreateClass(Type type) 
+        {
+            lock (this) 
+            {
+                if (!opened) 
+                { 
+                    throw new StorageError(StorageError.ErrorCode.STORAGE_NOT_OPENED);
+                }
+                lock(objectCache) 
+                {
+                    Type wrapper = getWrapper(type);
+                    IPersistent obj = (IPersistent)wrapper.Assembly.CreateInstance(wrapper.Name);
+                    int oid = allocateId();
+                    obj.AssignOid(this, oid, false);
+                    setPos(oid, 0);
+                    objectCache.put(oid, obj);
+                    objectCache.setDirty(oid);
+                    return obj;
+                }
+            }
+        }
+
+        internal Type getWrapper(Type original) 
+        {
+            Type wrapper = (Type)wrapperHash[original];
+            if (wrapper == null) 
+            { 
+                wrapper = CodeGenerator.Instance.CreateWrapper(original);
+                wrapperHash[original] = wrapper;
+            }
+            return wrapper;
         }
 #endif
 
@@ -2375,6 +2409,7 @@ namespace Perst.Impl
                         continue;
                     }
                     case ClassDescriptor.FieldType.tpObject:
+                    case ClassDescriptor.FieldType.tpOid:
                         markOid(Bytes.unpack4(obj, offs));
                         offs += 4;
                         continue;
@@ -3155,14 +3190,13 @@ namespace Perst.Impl
             byte[] data = packObject(obj);
             long pos;
             int newSize = ObjectHeader.getSize(data, 0);
-            if (newObject)
+            if (newObject || (pos = getPos(oid)) == 0)
             {
                 pos = allocate(newSize, 0);
                 setPos(oid, pos | dbModifiedFlag);
             }
             else
             {
-                pos = getPos(oid);
                 int offs = (int) pos & (Page.pageSize - 1);
                 if ((offs & (dbFreeHandleFlag | dbPageObjectFlag)) != 0)
                 {
@@ -3361,6 +3395,7 @@ namespace Perst.Impl
                 case ClassDescriptor.FieldType.tpUInt:
                 case ClassDescriptor.FieldType.tpFloat:
                 case ClassDescriptor.FieldType.tpObject:
+                case ClassDescriptor.FieldType.tpOid:
                     return offs + 4;
                 case ClassDescriptor.FieldType.tpLong:
                 case ClassDescriptor.FieldType.tpULong:
@@ -3532,6 +3567,7 @@ namespace Perst.Impl
                         offs += 2;
                         break;                            
                     case ClassDescriptor.FieldType.tpInt:
+                    case ClassDescriptor.FieldType.tpOid:
                         val = Bytes.unpack4(body, offs);
                         offs += 4;
                         break;                            
@@ -3621,6 +3657,7 @@ namespace Perst.Impl
                     break;
 
                 case ClassDescriptor.FieldType.tpInt: 
+                case ClassDescriptor.FieldType.tpOid: 
                     val = Bytes.unpack4(body, offs);
                     offs += 4;
                     break;
@@ -4296,6 +4333,7 @@ public int packField(ByteBuffer buf, int offs, object val, ClassDescriptor.Field
                     return buf.packI2(offs, (char)val);
                 case ClassDescriptor.FieldType.tpEnum: 
                 case ClassDescriptor.FieldType.tpInt: 
+                case ClassDescriptor.FieldType.tpOid: 
                     return buf.packI4(offs, (int)val);
                 case ClassDescriptor.FieldType.tpUInt: 
                     return buf.packI4(offs, (int)(uint)val);
@@ -4817,6 +4855,7 @@ public int packField(ByteBuffer buf, int offs, object val, ClassDescriptor.Field
 #else
         internal Thread codeGenerationThread;        
         object    transactionMonitor;
+        Hashtable wrapperHash = new Hashtable();
 #endif
         int       nNestedTransactions;
         int       nBlockedTransactions;

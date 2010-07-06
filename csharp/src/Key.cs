@@ -161,10 +161,17 @@ namespace Perst
         {
         }
 		
-        public Key(FieldType type, bool inclusive)
+        internal Key(FieldType type, bool inclusive)
         {
             this.type = type;
             this.inclusion = inclusive?1:0;
+        }
+		
+        internal Key(FieldType type, int oid)
+        {
+            this.type = type;
+            ival = oid;
+            this.inclusion = 1;
         }
 		
         /// <summary> Constructor of boolean key

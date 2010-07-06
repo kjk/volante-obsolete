@@ -38,6 +38,11 @@ namespace Perst.Impl
             file.Close();
         }
 		
+        public virtual void Lock() 
+        {
+            file.Lock(0, long.MaxValue);
+        }
+
         internal OSFile(String filePath, bool readOnly, bool noFlush)
         {
             this.noFlush = noFlush;

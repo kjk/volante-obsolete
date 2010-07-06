@@ -4,6 +4,8 @@ rd /s/q Guess\obj
 rd /s/q Guess\bin
 rd /s/q TransparentGuess\obj
 rd /s/q TransparentGuess\bin
+rd /s/q PropGuess\obj
+rd /s/q PropGuess\bin
 rd /s/q TestIndex\obj
 rd /s/q TestIndex\bin
 rd /s/q TestIndex2\obj

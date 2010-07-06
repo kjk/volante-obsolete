@@ -73,6 +73,7 @@ namespace Perst.Impl
                 case ClassDescriptor.FieldType.tpEnum: 
                 case ClassDescriptor.FieldType.tpUInt: 
                 case ClassDescriptor.FieldType.tpObject: 
+                case ClassDescriptor.FieldType.tpOid: 
                     key = new Key((uint)Bytes.unpack4(data, offs));
                     break;
 				
@@ -128,6 +129,7 @@ namespace Perst.Impl
                 case ClassDescriptor.FieldType.tpUInt: 
                 case ClassDescriptor.FieldType.tpEnum: 
                 case ClassDescriptor.FieldType.tpObject: 
+                case ClassDescriptor.FieldType.tpOid: 
                     Bytes.pack4(dst, BtreePage.firstKeyOffs + i * 4, key.ival);
                     break;
 				

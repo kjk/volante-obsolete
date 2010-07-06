@@ -46,7 +46,7 @@ namespace Perst.Impl
             return true;
         }
 		
-        public virtual void MakePersistent(Storage storage)
+        public virtual int MakePersistent(Storage storage)
         {
             throw new StorageError(StorageError.ErrorCode.ACCESS_TO_STUB);
         }

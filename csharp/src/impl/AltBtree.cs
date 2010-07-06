@@ -32,6 +32,7 @@ namespace Perst.Impl
                         return typeof(ushort);
                     
                     case ClassDescriptor.FieldType.tpInt: 
+                    case ClassDescriptor.FieldType.tpOid: 
                         return typeof(int);
                     
                     case ClassDescriptor.FieldType.tpUInt: 
@@ -1379,7 +1380,7 @@ namespace Perst.Impl
         internal static ClassDescriptor.FieldType checkType(Type c)
         {
             ClassDescriptor.FieldType elemType = ClassDescriptor.getTypeCode(c);
-            if ((int)elemType > (int)ClassDescriptor.FieldType.tpObject
+            if ((int)elemType > (int)ClassDescriptor.FieldType.tpOid
                 && elemType != ClassDescriptor.FieldType.tpDecimal
                 && elemType != ClassDescriptor.FieldType.tpRaw
                 && elemType != ClassDescriptor.FieldType.tpGuid) 
@@ -1463,7 +1464,9 @@ namespace Perst.Impl
                 {
                     throw new StorageError(StorageError.ErrorCode.INCOMPATIBLE_KEY_TYPE);
                 }
-                if (type == ClassDescriptor.FieldType.tpObject && key.ival == 0 && key.oval != null)
+                if ((type == ClassDescriptor.FieldType.tpObject 
+                     || type == ClassDescriptor.FieldType.tpOid) 
+                    && key.ival == 0 && key.oval != null)
                 {
                     throw new StorageError(StorageError.ErrorCode.INVALID_OID);
                 }
@@ -1590,6 +1593,7 @@ namespace Perst.Impl
                     break;
                 
                 case ClassDescriptor.FieldType.tpInt: 
+                case ClassDescriptor.FieldType.tpOid: 
                     newRoot = new BtreePageOfInt(s);
                     break;
                 

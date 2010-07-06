@@ -58,10 +58,10 @@ namespace Perst
         /// implicitlely using "persistency on reachability apporach", but this
         /// method allows to do it explicitly 
         /// </summary>
-        /// <param name="storage">storage in which object should be stored
-        /// 
+        /// <param name="storage">storage in which object should be stored 
         /// </param>
-        void  MakePersistent(Storage storage);
+        /// <returns>OID assigned to the object</returns>
+       int MakePersistent(Storage storage);
 
         /// <summary> Save object in the database
         /// </summary>

@@ -114,6 +114,9 @@ namespace Perst.Impl
                 case ClassDescriptor.FieldType.tpUInt:
                     key = new Key((uint)val);
                     break;            
+                case ClassDescriptor.FieldType.tpOid:
+                    key = new Key(ClassDescriptor.FieldType.tpOid, (int)val);
+                    break;
                 case ClassDescriptor.FieldType.tpObject:
                     key = new Key((IPersistent)val);
                     break;

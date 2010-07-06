@@ -20,6 +20,10 @@ namespace Perst.Impl
             return (GeneratedSerializer)module.Assembly.CreateInstance(newCls.Name);
         }
 
+        public Type CreateWrapper(Type type)            
+        {
+            return EmitClassWrapper(EmitAssemblyModule(), type);
+        }
 
         private ModuleBuilder EmitAssemblyModule()
         {
@@ -455,6 +459,125 @@ namespace Perst.Impl
             return serializerType;
         }
 
+        private Type EmitClassWrapper(ModuleBuilder module, Type type)
+        {
+            String generatedClassName = type.Name + "Wrapper";
+            TypeBuilder wrapperType;
+            
+            if (type.IsInterface) 
+            {
+                wrapperType = module.DefineType(generatedClassName, TypeAttributes.Public, 
+                    type.IsSubclassOf(typeof(IResource)) ? typeof(PersistentResource) : typeof(Persistent));
+                wrapperType.AddInterfaceImplementation(type);
+            } 
+            else 
+            {
+                wrapperType = module.DefineType(generatedClassName, TypeAttributes.Public, type);
+            }
+            wrapperType.AddInterfaceImplementation(typeof(PersistentWrapper));
+
+            //Add a constructor
+            ConstructorBuilder constructor =
+                wrapperType.DefineDefaultConstructor(MethodAttributes.Public);
+
+            PropertyInfo[] properties = type.GetProperties(BindingFlags.Public|BindingFlags.NonPublic|BindingFlags.Instance);
+            for (int i = 0; i < properties.Length; i++) 
+            { 
+                PropertyInfo prop = properties[i];
+                MethodInfo getter = prop.GetGetMethod(true);
+                MethodInfo setter = prop.GetSetMethod(true);
+                if (getter != null && setter != null && getter.IsVirtual && setter.IsVirtual) 
+                { 
+                    Type returnType = getter.ReturnType;
+                    String fieldName = prop.Name;
+                    if (Char.IsUpper(fieldName[0])) 
+                    {
+                        fieldName = Char.ToLower(fieldName[0]) + fieldName.Substring(1);
+                    } 
+                    else 
+                    {
+                        fieldName = "_" + fieldName;
+                    }
+
+                    Type fieldType = returnType;
+                    if (fieldType.IsSubclassOf(typeof(IPersistent))) 
+                    {
+                        fieldType = typeof(int);
+                    }
+                    if (fieldType.IsArray && fieldType.GetElementType().IsSubclassOf(typeof(IPersistent))) 
+                    {
+                        throw new StorageError(StorageError.ErrorCode.UNSUPPORTED_TYPE);
+                    }
+
+                    FieldBuilder fb = wrapperType.DefineField(fieldName, fieldType, FieldAttributes.Private);
+                                
+                    MethodBuilder getterImpl = wrapperType.DefineMethod(getter.Name,
+                        MethodAttributes.Public|MethodAttributes.Virtual|MethodAttributes.NewSlot,    
+                        returnType,
+                        new Type[] { });
+
+                    ILGenerator il = getterImpl.GetILGenerator();
+
+                    if (fieldType != returnType) 
+                    {
+                        il.Emit(OpCodes.Ldarg_0);
+                        il.Emit(OpCodes.Callvirt, getStorage);
+                        il.Emit(OpCodes.Ldarg_0);
+                        il.Emit(OpCodes.Ldfld, fb);
+                        il.Emit(OpCodes.Callvirt, getByOid);
+                        il.Emit(OpCodes.Castclass, returnType);
+                    } 
+                    else 
+                    {
+                        il.Emit(OpCodes.Ldarg_0);
+                        il.Emit(OpCodes.Ldfld, fb);
+                    }
+                    il.Emit(OpCodes.Ret);
+
+                    wrapperType.DefineMethodOverride(getterImpl, getter);
+
+                    MethodBuilder setterImpl = wrapperType.DefineMethod(setter.Name,
+                        MethodAttributes.Public|MethodAttributes.Virtual|MethodAttributes.NewSlot,    
+                        null,
+                        new Type[] { returnType });
+
+                    il = setterImpl.GetILGenerator();
+
+                    il.Emit(OpCodes.Ldarg_0);
+                    il.Emit(OpCodes.Ldarg_1);
+                    if (fieldType != returnType) 
+                    {
+                        il.Emit(OpCodes.Ldarg_0);
+                        il.Emit(OpCodes.Callvirt, getStorage);
+                        il.Emit(OpCodes.Callvirt, makePersistent);
+                    }
+                    il.Emit(OpCodes.Stfld, fb);
+                    il.Emit(OpCodes.Ldarg_0);
+                    il.Emit(OpCodes.Callvirt, modify);
+                    il.Emit(OpCodes.Ret);
+
+                    wrapperType.DefineMethodOverride(setterImpl, setter);
+                }
+            }
+            wrapperType.CreateType();
+            return wrapperType;
+        }
+
+        public static CodeGenerator Instance 
+        {                                
+            get 
+            {
+                if (instance == null) 
+                { 
+                    instance = new CodeGenerator();
+                }
+                return instance;
+            }
+        }
+
+        private static CodeGenerator instance;
+
+
         private LocalBuilder obj;
         private LocalBuilder offs;
 
@@ -482,6 +605,13 @@ namespace Perst.Impl
         private MethodInfo unpackString = typeof(Bytes).GetMethod("unpackString");
         private MethodInfo unpackField = typeof(StorageImpl).GetMethod("unpackField");
         private MethodInfo skipField = typeof(StorageImpl).GetMethod("skipField");
+
+        private MethodInfo modify = typeof(IPersistent).GetMethod("Modify");
+        private MethodInfo getStorage = typeof(IPersistent).GetProperty("Storage").GetGetMethod();
+        private MethodInfo getByOid = typeof(Storage).GetMethod("GetObjectByOID");
+        private MethodInfo makePersistent = typeof(IPersistent).GetMethod("MakePersistent");
+
+        private int[] arrayOfInt = new int[0];
 
         private ModuleBuilder dynamicModule;
         private int           counter;

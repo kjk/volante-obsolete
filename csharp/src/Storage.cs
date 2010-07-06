@@ -458,7 +458,17 @@ namespace Perst
         /// Other assemblies has to explicitely registered by programmer.
         /// </summary>
         /// <param name="assembly">registered assembly</param>
-        abstract public void RegisterAssembly(System.Reflection.Assembly assembly);
+        abstract public void RegisterAssembly(Reflection.Assembly assembly);
+#else
+        /// <summary>
+        /// Create persistent class wrapper. This wrapper will implement virtual properties
+        /// defined in specified class or interface, performing transparent loading and storing of persistent object
+        /// </summary>
+        /// <param name="type">Class or interface type of instantiated object</param>
+        /// <returns>Wrapper for the specified class, implementing all virtual properties defined
+        /// in it
+        /// </returns>
+        abstract public IPersistent CreateClass(Type type);
 #endif
 
         /// <summary>

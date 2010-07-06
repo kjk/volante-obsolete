@@ -61,12 +61,13 @@ namespace Perst
             return oid != 0;
         }
 		
-        public virtual void MakePersistent(Storage storage)
+        public virtual int MakePersistent(Storage storage)
         {
             if (oid == 0)
             {
                 storage.storeObject(this);
             }
+            return oid;
         }
 		
         public virtual void Store()

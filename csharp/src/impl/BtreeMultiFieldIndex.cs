@@ -120,6 +120,7 @@ namespace Perst.Impl
                     case ClassDescriptor.FieldType.tpUInt:
                     case ClassDescriptor.FieldType.tpEnum:
                     case ClassDescriptor.FieldType.tpObject:
+                    case ClassDescriptor.FieldType.tpOid:
                     {
                         uint u1 = (uint)Bytes.unpack4(a1, o1);
                         uint u2 = (uint)Bytes.unpack4(a2, o2);
@@ -291,6 +292,7 @@ namespace Perst.Impl
                         offs += 4;
                         break;
  
+                    case ClassDescriptor.FieldType.tpOid:
                     case ClassDescriptor.FieldType.tpObject: 
                     {
                         int oid = Bytes.unpack4(data, offs);
@@ -424,6 +426,7 @@ namespace Perst.Impl
                     dst = buf.packI2(dst, (char)val);
                     break;
                 case ClassDescriptor.FieldType.tpInt:
+                case ClassDescriptor.FieldType.tpOid:
                 case ClassDescriptor.FieldType.tpEnum:
                     dst = buf.packI4(dst, (int)val);
                     break;            

@@ -180,6 +180,7 @@ namespace Perst.Impl
 				
                 case ClassDescriptor.FieldType.tpUInt: 
                 case ClassDescriptor.FieldType.tpObject:  
+                case ClassDescriptor.FieldType.tpOid:  
                 case ClassDescriptor.FieldType.tpEnum:
                     writer.Write(System.Convert.ToString((uint)Bytes.unpack4(body, offs)));
                     offs += 4;
@@ -516,6 +517,7 @@ namespace Perst.Impl
                     }
 					
                     case ClassDescriptor.FieldType.tpObject: 
+                    case ClassDescriptor.FieldType.tpOid: 
                         exportRef(Bytes.unpack4(body, offs));
                         offs += 4;
                         break;

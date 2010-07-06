@@ -19,6 +19,8 @@ namespace Perst
 
          public void Sync() {}
 
+        public void Lock() {}
+
          public void Close() {}
     }
 }

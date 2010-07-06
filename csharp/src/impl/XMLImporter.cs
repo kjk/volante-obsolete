@@ -341,6 +341,7 @@ namespace Perst.Impl
                         break;
 
                     case ClassDescriptor.FieldType.tpObject:
+                    case ClassDescriptor.FieldType.tpOid:
                         dst = buf.packI4(dst, mapId((int)UInt32.Parse(val)));
                         break;
 
@@ -422,8 +423,10 @@ namespace Perst.Impl
                 case ClassDescriptor.FieldType.tpEnum:
                     return new Key(UInt32.Parse(val));
 					
+                case ClassDescriptor.FieldType.tpOid: 
+                    return new Key(ClassDescriptor.FieldType.tpOid, mapId((int)UInt32.Parse(val)));
                 case ClassDescriptor.FieldType.tpObject: 
-                    return new Key(new PersistentStub(storage,  mapId((int)UInt32.Parse(val))));
+                    return new Key(new PersistentStub(storage, mapId((int)UInt32.Parse(val))));
 					
                 case ClassDescriptor.FieldType.tpLong: 
                     return new Key(Int64.Parse(val));
@@ -1054,6 +1057,7 @@ namespace Perst.Impl
                         offs += 4;
                         continue;
 					
+                    case ClassDescriptor.FieldType.tpOid: 
                     case ClassDescriptor.FieldType.tpObject: 
                     {
                         int oid = 0;

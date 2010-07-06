@@ -62,6 +62,7 @@ namespace Perst.Impl
             tpString,
             tpDate,
             tpObject,
+            tpOid,
             tpValue,
             tpRaw,
             tpGuid,
@@ -83,6 +84,7 @@ namespace Perst.Impl
             tpArrayOfString,
             tpArrayOfDate,
             tpArrayOfObject,
+            tpArrayOfOid, // not used
             tpArrayOfValue,
             tpArrayOfRaw,
             tpArrayOfGuid,
@@ -108,6 +110,7 @@ namespace Perst.Impl
             0, // tpString,
             8, // tpDate,
             4, // tpObject,
+            4, // tpOid,
             0, // tpValue,
             0, // tpRaw,
             16,// tpGuid,
@@ -129,10 +132,11 @@ namespace Perst.Impl
             0, // tpArrayOfString,
             0, // tpArrayOfDate,
             0, // tpArrayOfObject,
+            0, // tpArrayOfOid,
             0, // tpArrayOfValue,
             0, // tpArrayOfRaw,
             0, // tpArrayOfGuid,
-            4 // tpArrayOfDecimal,
+            0  // tpArrayOfDecimal,
         };
 		
         internal static System.Type[] defaultConstructorProfile = new System.Type[0];
@@ -184,7 +188,7 @@ namespace Perst.Impl
 #if COMPACT_NET_FRAMEWORK
         internal void generateSerializer() {}
 #else
-        private static CodeGenerator serializerGenerator = new CodeGenerator();
+        private static CodeGenerator serializerGenerator = CodeGenerator.Instance;
 
         internal void generateSerializer()
         {
@@ -217,6 +221,21 @@ namespace Perst.Impl
         }
 #endif
         
+        static private bool isObjectProperty(Type cls, FieldInfo f)
+        {
+            string name = f.Name;
+            if (name[0] == '_') 
+            {
+                name = name.Substring(1);
+            } 
+            else 
+            {
+                name = Char.ToUpper(name[0]) + name.Substring(1);
+            }
+            PropertyInfo pi = cls.GetProperty(name, BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic);
+            return pi != null && pi.PropertyType.IsSubclassOf(typeof(IPersistent));
+        }
+
         internal void  buildFieldList(StorageImpl storage, System.Type cls, ArrayList list)
         {
             System.Type superclass = cls.BaseType;
@@ -225,6 +244,7 @@ namespace Perst.Impl
                 buildFieldList(storage, superclass, list);
             }
             System.Reflection.FieldInfo[] flds = cls.GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.DeclaredOnly);
+            bool isWrapper = cls.IsSubclassOf(typeof(PersistentWrapper));
             for (int i = 0; i < flds.Length; i++)
             {
                 FieldInfo f = flds[i];
@@ -237,9 +257,16 @@ namespace Perst.Impl
                     FieldType type = getTypeCode(f.FieldType);
                     switch (type) 
                     {
+                        case FieldType.tpInt:
+                            if (isWrapper && isObjectProperty(cls, f)) 
+                            {
+                                hasReferences = true;
+                                type = FieldType.tpOid;
+                            } 
+                            break;
+                        case FieldType.tpArrayOfObject:
                         case FieldType.tpObject:
                         case FieldType.tpLink:
-                        case FieldType.tpArrayOfObject:
                             hasReferences = true;
                             break;
                         case FieldType.tpValue:
@@ -449,6 +476,14 @@ namespace Perst.Impl
                             cls = t;
                         }
                     }
+                }
+            }
+            if (cls == null && name.EndsWith("Wrapper")) 
+            {
+                Type originalType = lookup(storage, name.Substring(0, name.Length-7));
+                lock (storage) 
+                {
+                    return ((StorageImpl)storage).getWrapper(originalType);
                 }
             }
 #endif

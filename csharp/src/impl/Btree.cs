@@ -50,7 +50,7 @@ namespace Perst.Impl
         static protected ClassDescriptor.FieldType checkType(Type c) 
         { 
             ClassDescriptor.FieldType elemType = ClassDescriptor.getTypeCode(c);
-            if ((int)elemType > (int)ClassDescriptor.FieldType.tpObject
+            if ((int)elemType > (int)ClassDescriptor.FieldType.tpOid
                 && elemType != ClassDescriptor.FieldType.tpArrayOfByte
                 && elemType != ClassDescriptor.FieldType.tpDecimal
                 && elemType != ClassDescriptor.FieldType.tpGuid) 
@@ -147,6 +147,7 @@ namespace Perst.Impl
                         return typeof(string);
                     case ClassDescriptor.FieldType.tpDate:
                         return typeof(DateTime);
+                    case ClassDescriptor.FieldType.tpOid:
                     case ClassDescriptor.FieldType.tpObject:
                         return typeof(IPersistent);
                     case ClassDescriptor.FieldType.tpArrayOfByte:
@@ -594,6 +595,7 @@ namespace Perst.Impl
                 case ClassDescriptor.FieldType.tpUInt:
                     return (uint)Bytes.unpack4(data, offs);
  
+                case ClassDescriptor.FieldType.tpOid: 
                 case ClassDescriptor.FieldType.tpObject: 
                     return db.lookupObject(Bytes.unpack4(data, offs), null);
  				

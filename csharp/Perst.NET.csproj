@@ -408,6 +408,11 @@
                     BuildAction = "Compile"
                 />
                 <File
+                    RelPath = "src\impl\PersistentWrapper.cs"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
                     RelPath = "src\impl\PerstSink.cs"
                     SubType = "Code"
                     BuildAction = "Compile"

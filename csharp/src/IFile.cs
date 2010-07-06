@@ -30,6 +30,11 @@ namespace Perst
         /// </summary>
         void Sync();
     
+        /// <summary>
+        /// Prevent other processes from modifying the file
+        /// </summary>
+        void Lock();
+
         /// <summary> Close file
         /// </summary>
         void Close();

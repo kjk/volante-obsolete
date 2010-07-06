@@ -104,6 +104,7 @@ namespace Perst.Impl
 				
                 case ClassDescriptor.FieldType.tpObject: 
                 case ClassDescriptor.FieldType.tpUInt: 
+                case ClassDescriptor.FieldType.tpOid: 
                 case ClassDescriptor.FieldType.tpEnum: 
                     u4 = (uint)Bytes.unpack4(pg.data, BtreePage.firstKeyOffs + i * 4);
                     return (uint)key.ival < u4 ? -1 : (uint)key.ival == u4 ? 0 : 1;

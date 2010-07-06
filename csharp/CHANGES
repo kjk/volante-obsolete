@@ -341,3 +341,15 @@ stored in OS file buffers and sooner or later them will be written to the disk)
 
 --- Release version 2.43 10.12.2004 -------------------------------------
 1. Add BitIndex collection (allowing to select object by bit vector of boolean properties)
+
+--- Release version 2.44 14.12.2004 -------------------------------------
+1. Implement yet another transparent API to the database based on virtual properties.
+Now it is possible to transparently load and modify persistent objects
+by accessing persistent object components through virtual properties. 
+It is not needed any more to explicitly invoke IPersistent.Modify method
+or redefine IPersistent.RecursiveLoading method. You only need to replace 
+components of your objects with definition of abstract properties. 
+Perst will automatically generate class which will provide implementations
+of these properties. You only have to use IStorage.CreateClass method to construct objects
+instead of direct invocation of constructors. See "PropGuess" sample.
+2. Add file locking to prevent modification of database file by more than one application

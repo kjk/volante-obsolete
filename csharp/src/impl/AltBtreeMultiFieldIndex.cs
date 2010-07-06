@@ -5,7 +5,7 @@ namespace Perst.Impl
     using System.Reflection;
     using System.Diagnostics;
     using Perst;
-	
+    
     class AltBtreeMultiFieldIndex:AltBtree, FieldIndex
     {
         internal String className;
@@ -57,7 +57,7 @@ namespace Perst.Impl
             cls = ClassDescriptor.lookup(Storage, className);
             locateFields();
         }
-		
+        
         internal AltBtreeMultiFieldIndex(Type cls, string[] fieldNames, bool unique) 
         {
             this.cls = cls;
@@ -67,46 +67,46 @@ namespace Perst.Impl
             locateFields();
             type = ClassDescriptor.FieldType.tpRaw;        
         }
-		
+        
         [Serializable]
         internal class CompoundKey : IComparable
-		{
-			internal object[] keys;
-			
-			public int CompareTo(object o)
-			{
-				CompoundKey c = (CompoundKey) o;
-				int n = keys.Length < c.keys.Length?keys.Length:c.keys.Length;
-				for (int i = 0; i < n; i++)
-				{
-					int diff = ((IComparable) keys[i]).CompareTo(c.keys[i]);
-					if (diff != 0)
-					{
-						return diff;
-					}
-				}
-				return keys.Length - c.keys.Length;
-			}
-			
-			internal CompoundKey(object[] keys)
-			{
-				this.keys = keys;
-			}
-		}
-		
-		private Key convertKey(Key key)
-		{
-			if (key == null)
-			{
-				return null;
-			}
-			if (key.type != ClassDescriptor.FieldType.tpArrayOfObject)
-			{
-				throw new StorageError(StorageError.ErrorCode.INCOMPATIBLE_KEY_TYPE);
-			}
-			return new Key(new CompoundKey((System.Object[]) key.oval), key.inclusion != 0);
-		}
-		
+        {
+            internal object[] keys;
+            
+            public int CompareTo(object o)
+            {
+                CompoundKey c = (CompoundKey) o;
+                int n = keys.Length < c.keys.Length?keys.Length:c.keys.Length;
+                for (int i = 0; i < n; i++)
+                {
+                    int diff = ((IComparable) keys[i]).CompareTo(c.keys[i]);
+                    if (diff != 0)
+                    {
+                        return diff;
+                    }
+                }
+                return keys.Length - c.keys.Length;
+            }
+            
+            internal CompoundKey(object[] keys)
+            {
+                this.keys = keys;
+            }
+        }
+        
+        private Key convertKey(Key key)
+        {
+            if (key == null)
+            {
+                return null;
+            }
+            if (key.type != ClassDescriptor.FieldType.tpArrayOfObject)
+            {
+                throw new StorageError(StorageError.ErrorCode.INCOMPATIBLE_KEY_TYPE);
+            }
+            return new Key(new CompoundKey((System.Object[]) key.oval), key.inclusion != 0);
+        }
+        
         private Key extractKey(IPersistent obj)
         {
             object[] keys = new object[mbr.Length];
@@ -116,7 +116,7 @@ namespace Perst.Impl
             }
             return new Key(new CompoundKey(keys));
         }
-		
+        
         public bool Put(IPersistent obj) 
         {
             return base.Put(extractKey(obj), obj);
@@ -203,5 +203,5 @@ namespace Perst.Impl
         {
             return base.GetDictionaryEnumerator(convertKey(from), convertKey(till), order);
         }
- 	}
+    }
 }
