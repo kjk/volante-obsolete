@@ -88,7 +88,7 @@ namespace Perst
         /// </param>
         /// <returns>persistent object implementing index
         /// </returns>
-        /// <exception cref="StorageError">StorageError(StorageError.ErrorCode.UNSUPPORTED_INDEX_TYPE) exception if 
+        /// <exception cref="Perst.StorageError">StorageError(StorageError.ErrorCode.UNSUPPORTED_INDEX_TYPE) exception if 
         /// specified key type is not supported by implementation.
         /// 
         /// </exception>
@@ -105,7 +105,7 @@ namespace Perst
         /// </param>
         /// <returns>persistent object implementing field index
         /// </returns>
-        /// <exception cref="StorageError">StorageError(StorageError.INDEXED_FIELD_NOT_FOUND) if there is no such field in specified class,
+        /// <exception cref="Perst.StorageError">StorageError(StorageError.INDEXED_FIELD_NOT_FOUND) if there is no such field in specified class,
         /// StorageError(StorageError.UNSUPPORTED_INDEX_TYPE) exception if type of specified field is not supported by implementation
         /// </exception>
         abstract public FieldIndex createFieldIndex(System.Type type, String fieldName, bool unique);
@@ -170,7 +170,18 @@ namespace Perst
         /// </param>
         abstract public void  importXML(System.IO.StreamReader reader);
 		
-		
+        		
+        /// <summary> 
+        /// Retrieve object by OID. This method should be used with care because
+        /// if object is deallocated, its OID can be reused. In this case
+        /// getObjectByOID will return reference to the new object with may be
+        /// different type.
+        /// </summary>
+        /// <param name="oid">object oid</param>
+        /// <returns>reference to the object with specified OID</returns>
+        abstract public IPersistent getObjectByOID(int oid);
+
+
         // Internal methods
 		
         abstract protected internal void  deallocateObject(IPersistent obj);

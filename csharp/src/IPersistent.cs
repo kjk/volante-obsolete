@@ -79,7 +79,7 @@ namespace Perst
         /// To avoid main memory overflow you should stop recursive loading of all objects
         /// from the database to main memory by redefining this method in some classes and returing
         /// <code>false</code> in it. In this case object has to be loaded explicitely 
-        /// using Peristent.load method.
+        /// using Persistent.load method.
         /// </summary>
         /// <returns><code>true</code> if object is automatically loaded
         /// 

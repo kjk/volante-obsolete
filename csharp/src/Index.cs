@@ -25,7 +25,7 @@ namespace Perst
         /// </param>
         /// <returns>object with this value of the key or <code>null</code> if key nmot found
         /// </returns>
-        /// <exception cref="StorageError">StorageError(StorageError.ErrorCode.KEY_NOT_UNIQUE) exception if there are more than 
+        /// <exception cref="Perst.StorageError">StorageError(StorageError.ErrorCode.KEY_NOT_UNIQUE) exception if there are more than 
         /// one objects in the index with specified value of the key.
         /// 
         /// </exception>
@@ -72,7 +72,7 @@ namespace Perst
         /// </param>
         /// <param name="obj">object removed from the index
         /// </param>
-        /// <exception cref="StorageError">StorageError(StorageError.ErrorCode.KEY_NOT_FOUND) exception if there is no such key in the index
+        /// <exception cref="Perst.StorageError">StorageError(StorageError.ErrorCode.KEY_NOT_FOUND) exception if there is no such key in the index
         /// 
         /// </exception>
         void  remove(Key key, IPersistent obj);
@@ -80,7 +80,7 @@ namespace Perst
         /// </summary>
         /// <param name="key">value of removed key
         /// </param>
-        /// <exception cref="StorageError">StorageError(StorageError.ErrorCode.KEY_NOT_FOUND) exception if there is no such key in the index,
+        /// <exception cref="Perst.StorageError">StorageError(StorageError.ErrorCode.KEY_NOT_FOUND) exception if there is no such key in the index,
         /// or StorageError(StorageError.ErrorCode.KEY_NOT_UNIQUE) if index is not unique.
         /// 
         /// </exception>

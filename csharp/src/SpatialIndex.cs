@@ -35,7 +35,7 @@ namespace Perst
         /// </param>
         /// <param name="obj">object removed from the index
         /// </param>
-        /// <exception  cref="StorageError">StorageError(StorageError.KEY_NOT_FOUND) exception if there is no such key in the index
+        /// <exception  cref="Perst.StorageError">StorageError(StorageError.KEY_NOT_FOUND) exception if there is no such key in the index
         /// </exception>
         void remove(Rectangle r, IPersistent obj);
 

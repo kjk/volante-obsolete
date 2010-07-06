@@ -9,6 +9,7 @@ namespace Perst.Impl
     {
         internal String className;
         internal String fieldName;
+        internal long   autoincCount;
         [NonSerialized()]
         Type cls;
         [NonSerialized()]
@@ -106,11 +107,37 @@ namespace Perst.Impl
             return base.insert(extractKey(obj), obj, false);
         }
 
-        public void  remove(IPersistent obj) 
+        public void set(IPersistent obj) 
+        {
+            base.insert(extractKey(obj), obj, true);
+        }
+
+        public void remove(IPersistent obj) 
         {
             base.remove(new BtreeKey(extractKey(obj), obj.Oid));
         }
         
+        public void append(IPersistent obj) {
+            lock(this) { 
+                Key key;
+                switch (type) {
+                  case ClassDescriptor.FieldType.tpInt:
+                     key = new Key((int)autoincCount);
+                     fld.SetValue(obj, (int)autoincCount);
+                     break;            
+                   case ClassDescriptor.FieldType.tpLong:
+                     key = new Key(autoincCount);
+                     fld.SetValue(obj, autoincCount);
+                     break;            
+                   default:
+                     throw new StorageError(StorageError.ErrorCode.UNSUPPORTED_INDEX_TYPE, fld.FieldType);
+                }
+                autoincCount += 1;
+                obj.modify();
+                base.insert(key, obj, false);
+            }
+        }
+
         public virtual IPersistent[] get(Key from, Key till)
         {
             if ((from != null && from.type != type) || (till != null && till.type != type))

@@ -778,7 +778,13 @@ namespace Perst.Impl
 		
         public override void  open(System.String filePath, int pagePoolSize)
         {
-            open(new OSFile(filePath), pagePoolSize);
+            OSFile file = new OSFile(filePath);      
+            try {
+                open(file, pagePoolSize);
+            } catch (StorageError ex) {
+                file.close();            
+                throw ex;
+            }
         }
 
         public override void  open(IFile file, int pagePoolSize)
@@ -1697,6 +1703,11 @@ namespace Perst.Impl
             }
         }
 		
+        public override IPersistent getObjectByOID(int oid)
+        {
+            return oid == 0 ? null : lookupObject(oid, null);
+        }
+
         protected internal override void modifyObject(IPersistent obj) 
         {
             lock(this)

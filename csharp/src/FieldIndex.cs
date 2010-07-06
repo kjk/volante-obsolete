@@ -19,11 +19,12 @@ namespace Perst
         /// </param>
         /// <returns>object with this value of the key or <code>null</code> if key nmot found
         /// </returns>
-        /// <exception cref="StorageError">StorageError(StorageError.ErrorCode.KEY_NOT_UNIQUE) exception if there are more than 
+        /// <exception cref="Perst.StorageError">StorageError(StorageError.ErrorCode.KEY_NOT_UNIQUE) exception if there are more than 
         /// one objects in the index with specified value of the key.
         /// 
         /// </exception>
         IPersistent get(Key key);
+
         /// <summary> Get objects which key value belongs to the specified range.
         /// Either from boundary, either till boundary either both of them can be <code>null</code>.
         /// In last case the method returns all objects from the index.
@@ -38,6 +39,7 @@ namespace Perst
         /// 
         /// </returns>
         IPersistent[] get(Key from, Key till);
+
         /// <summary> Put new object in the index. 
         /// </summary>
         /// <param name="obj">object to be inserted in index. Object should contain indexed field. 
@@ -49,23 +51,54 @@ namespace Perst
         /// 
         /// </returns>
         bool put(IPersistent obj);
+
+        /// <summary>
+        /// Associate new object with the key specified by object field value. 
+        /// If there is already object with such key in the index, 
+        /// then it will be removed from the index and new value associated with this key.
+        /// </summary>
+        /// <param name="obj">object to be inserted in index. Object should contain indexed field. 
+        /// Object can be not yet peristent, in this case
+        /// its forced to become persistent by assigning OID to it.
+        /// </param>
+        void set(IPersistent obj);
+
+        /// <summary>
+        /// Assign to the integer indexed field unique autoicremented value and 
+        /// insert object in the index. 
+        /// </summary>
+        /// <param name="obj">object to be inserted in index. Object should contain indexed field
+        /// of integer (<code>int</code> or <code>long</code>) type.
+        /// This field is assigned unique value (which will not be reused while 
+        /// this index exists) and object is marked as modified.
+        /// Object can be not yet peristent, in this case
+        /// its forced to become persistent by assigning OID to it.
+        /// </param>
+        /// <exception cref="Perst.StorageError"><code>StorageError(StorageError.ErrorCode.INCOMPATIBLE_KEY_TYPE)</code> 
+        /// is thrown when indexed field has type other than <code>int</code> or <code>long</code></exception>
+        void append(IPersistent obj);
+
+
         /// <summary> Remove object from the index
         /// </summary>
         /// <param name="obj">object removed from the index. Object should contain indexed field. 
         /// </param>
-        /// <exception cref="StorageError">StorageError(StorageError.ErrorCode.KEY_NOT_FOUND) exception if there is no such key in the index
+        /// <exception cref="Perst.StorageError">StorageError(StorageError.ErrorCode.KEY_NOT_FOUND) exception if there is no such key in the index
         /// 
         /// </exception>
         void  remove(IPersistent obj);
+
         /// <summary> Get number of objects in the index
         /// </summary>
         /// <returns>number of objects in the index
         /// 
         /// </returns>
         int size();
+
         /// <summary> Remove all objects from the index
         /// </summary>
         void  clear();
+
         /// <summary> Get all objects in the index as array orderd by index key
         /// </summary>
         /// <returns>array of specified type contaning objects in the index ordered by key value
