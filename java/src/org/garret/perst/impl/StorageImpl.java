@@ -884,6 +884,7 @@ public class StorageImpl extends Storage {
     static void checkIfFinal(ClassDescriptor desc) {
         Class cls = desc.cls;
         for (ClassDescriptor next = desc.next; next != null; next = next.next) { 
+            next.load();
             if (cls.isAssignableFrom(next.cls)) { 
                 desc.hasSubclasses = true;
             } else if (next.cls.isAssignableFrom(cls)) { 
@@ -905,7 +906,12 @@ public class StorageImpl extends Storage {
             ClassDescriptor desc;
             descList = findClassDescriptor(descListOid);
             for (desc = descList; desc != null; desc = desc.next) { 
-                desc.resolve();
+                desc.load();
+            }
+            for (desc = descList; desc != null; desc = desc.next) { 
+                if (classDescMap.get(desc.cls) == desc) { 
+                    desc.resolve();
+                }
                 checkIfFinal(desc);
             }
         } else { 
@@ -2659,7 +2665,9 @@ public class StorageImpl extends Storage {
                     Object value = f.get(obj);
                     if (value == null) { 
                         throw new StorageError(StorageError.NULL_VALUE);
-                    }
+                    } else if (value instanceof IPersistent) { 
+                        throw new StorageError(StorageError.SERIALIZE_PERSISTENT);
+                    }                        
                     offs = packObject(value, fd.valueDesc, offs, buf);
                     continue;
                 }
@@ -2670,7 +2678,9 @@ public class StorageImpl extends Storage {
                         buf.extend(offs + 4);
                         Bytes.pack4(buf.arr, offs, -1);
                         offs += 4;
-                    } else { 
+                    } else if (value instanceof IPersistent) { 
+                        throw new StorageError(StorageError.SERIALIZE_PERSISTENT);
+                    } else {
                         ByteArrayOutputStream bout = new ByteArrayOutputStream();
                         ObjectOutputStream out = new ObjectOutputStream(bout);
                         out.writeObject(value);

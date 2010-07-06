@@ -47,7 +47,7 @@ targets: makejar - compile & scramble & jar
 
 
 	<target name="makejar" depends="compile">
-		<jar jarfile="lib/consus.jar"  basedir="classes" includes="**" />
+		<jar jarfile="lib/perst.jar"  basedir="classes" includes="**" />
 	</target>
 	
 

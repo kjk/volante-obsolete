@@ -178,3 +178,10 @@ later changed by me.
 
 --- Release version 2.19 18.03.2004 -------------------------------------
 1. Fix bug in file encyption
+
+--- Release version 2.20 04.04.2004 -------------------------------------
+1. Add Link.Pin and Link.Unpin methods. Do not implicitely pin accessed Link elements.
+2. Change class descriptor loading algorithm to avoid stack overflow
+   in applications with large number of classes
+3. Detect bugs related with incorrect serialization of persistent object as raw or value type
+4. Fix bug in automatic scheme evalaution implementation.

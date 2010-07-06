@@ -74,6 +74,14 @@ public class RelationImpl extends Relation {
     public Iterator iterator() {
         return link.iterator();
     }
+
+    public void pin() { 
+        link.pin();
+    }
+    
+    public void unpin() { 
+        link.unpin();
+    }
     
     RelationImpl() {}
 

@@ -22,6 +22,24 @@ public class LinkImpl implements Link {
         return arr[i];
     }
 
+    public void pin() { 
+        for (int i = 0, n = used; i < n; i++) { 
+            arr[i] = loadElem(i);
+        }
+    }
+
+    public void unpin() { 
+        for (int i = 0, n = used; i < n; i++) { 
+            IPersistent elem = arr[i];
+            if (elem != null && !elem.isRaw() && elem.isPersistent()) { 
+                IPersistent stub = new Persistent();
+                stub.assignOid(elem.getStorage(), elem.getOid(), true);
+                arr[i] = stub;
+            }
+        }
+    }
+                
+
     public void set(int i, IPersistent obj) {
         if (i < 0 || i >= used) { 
             throw new IndexOutOfBoundsException();
@@ -150,7 +168,8 @@ public class LinkImpl implements Link {
     {
         IPersistent elem = arr[i];
         if (elem.isRaw()) { 
-            arr[i] = elem = ((StorageImpl)elem.getStorage()).lookupObject(elem.getOid(), null);
+            // arr[i] = elem = ((StorageImpl)elem.getStorage()).lookupObject(elem.getOid(), null);
+            elem = ((StorageImpl)elem.getStorage()).lookupObject(elem.getOid(), null);
         }
         return elem;
     }
