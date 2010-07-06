@@ -947,6 +947,11 @@ namespace Perst.Impl
                 opened = true;
             }
         }
+
+        public override bool isOpened() 
+        { 
+            return opened;
+        }
 		
         internal static void  checkIfFinal(ClassDescriptor desc)
         {
@@ -2730,7 +2735,7 @@ namespace Perst.Impl
                                 else
                                 {
                                     int strlen = str.Length;
-                                    buf.extend(offs + strlen * 2);
+                                    buf.extend(offs + 4 + strlen * 2);
                                     Bytes.pack4(buf.arr, offs, strlen);
                                     offs += 4;
                                     for (int k = 0; k < strlen; k++)

@@ -6,7 +6,12 @@ namespace Perst
     /// </summary>
     public abstract class Storage
     {
-        abstract public IPersistent Root{get;set;}
+        /// <summary> Get/set storage root. Storage can have exactly one root object. 
+        /// If you need to have several root object and access them by name (as is is possible 
+        /// in many other OODBMSes), you should create index and use it as root object.
+        /// Previous reference to the root object is rewritten but old root is not automatically deallocated.
+        abstract public IPersistent Root {get; set;}
+
         /// <summary> Open the storage
         /// </summary>
         /// <param name="dbFile">path to the database file
@@ -29,16 +34,14 @@ namespace Perst
             open(dbFile, 4 * 1024 * 1024);
         }
 		
-        /// <summary> Get storage root. Storage can have exactly one root object. 
-        /// If you need to have several root object and access them by name (as is is possible 
-        /// in many other OODBMSes), you should create index and use it as root object.
+        /// <summary>Check if database is opened
         /// </summary>
-        /// <returns>root object or <code>null</code> if root is not specified (storage is not yet initialized)
-        /// 
-        /// </returns>
+        /// <returns><code>true</code> if database was opened by <code>open</code> method, 
+        /// <code>false</code> otherwise
+        /// </returns>        
+        abstract public bool isOpened();
 		
         /// <summary> Set new storage root object.
-        /// Previous reference to the root object is rewritten but old root is not automatically deallocated.
         /// </summary>
         /// <param name="root">object to become new storage root. If it is not persistent yet, it is made
         /// persistent and stored in the storage

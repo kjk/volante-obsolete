@@ -141,7 +141,7 @@ namespace Perst.Impl
                 }
             }
             nElems += 1;
-            store();
+            modify();
             return true;
         }
 		
@@ -185,7 +185,7 @@ namespace Perst.Impl
                 root = BtreePage.allocate(db, root, type, rem);
                 height += 1;
             }
-            store();
+            modify();
         }
 		
         public virtual void  remove(Key key)
@@ -211,7 +211,7 @@ namespace Perst.Impl
                 root = 0;
                 nElems = 0;
                 height = 0;
-                store();
+                modify();
             }
         }
 		
