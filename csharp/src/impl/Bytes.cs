@@ -120,7 +120,7 @@ namespace Perst.Impl
 
         public static void packGuid(byte[] arr, int offs, Guid val)
         {
-            Array.Copy(arr, offs, val.ToByteArray(), 0, 16);
+            Array.Copy(val.ToByteArray(), 0, arr, offs, 16);
         }
 
         public static void packDate(byte[] arr, int offs, DateTime val)

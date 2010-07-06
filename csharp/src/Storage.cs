@@ -283,8 +283,8 @@ namespace Perst
         /// <TR><TD><code>perst.serialize.transient.objects</code></TD><TD>bool</TD><TD>false</TD>
         /// <TD>Serialize any class not derived from IPersistent or IValue using standard Java serialization
         /// mechanism. Packed object closure is stored in database as byte array. Latter the same mechanism is used
-        /// to unpack the objects. To be able to use this mechanism object and all objects referenced from it
-        /// should implement <code>java.io.Serializable</code> interface and should not contain references
+        /// to unpack the objects. To be able to use this mechanism, object and all objects referenced from it
+        /// should be marked with Serializable attribute and should not contain references
         /// to persistent objects. If such object is referenced from N persistent object, N instances of this object
         /// will be stored in the database and after loading there will be N instances in memory.
         /// </TD></TR>

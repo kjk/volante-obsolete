@@ -45,7 +45,7 @@ namespace Perst.Impl
                     }
                     if (!value.IsPersistent())
                     {
-                        storeObject(value);
+                        storeObject0(value);
                     }
                     header.root[1 - currIndex].rootObject = value.Oid;
                     modified = true;
@@ -1040,7 +1040,7 @@ namespace Perst.Impl
             desc.next = descList;
             descList = desc;
             checkIfFinal(desc);
-            storeObject(desc);
+            storeObject0(desc);
             header.root[1-currIndex].classDescList = desc.Oid;
             modified = true;
         }      
@@ -2436,7 +2436,7 @@ namespace Perst.Impl
             {
                 if (!obj.IsPersistent())
                 {
-                    storeObject(obj);
+                    storeObject0(obj);
                 }
                 oid = obj.Oid;
             }

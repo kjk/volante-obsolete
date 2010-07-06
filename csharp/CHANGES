@@ -166,3 +166,9 @@ above criteria.
 --- Release version 2.13 24.01.2004 -------------------------------------
 1. Fix bugs in dynamic packing/unpacking code generation algorithm
 2. Support persistency for MarshalByRef objects (add MarshalByRefPersistent class)
+
+--- Release version 2.14 30.01.2004 -------------------------------------
+1. Fix bug in Guid pack method
+2. Fix bug in object modification mechanism which can cause deadlock.
+3. Make it possible to specify part of compound key in query
+

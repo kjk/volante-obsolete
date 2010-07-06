@@ -64,7 +64,7 @@ namespace Perst.Impl
             int o2 = offs;
             byte[] a1 = key;
             byte[] a2 = item;
-            for (int i = 0; i < types.Length; i++) 
+            for (int i = 0; i < types.Length && o1 < key.Length; i++) 
             {
                 int diff = 0;
                 switch (types[i]) 
