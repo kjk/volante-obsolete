@@ -18,13 +18,13 @@ public class TestGC {
     const int nIterations = 100000;
 
     static public void Main(String[] args) {	
-        Storage db = StorageFactory.Instance.createStorage();
+        Storage db = StorageFactory.Instance.CreateStorage();
 
-	    db.open("testgc.dbs");
-        db.setGcThreshold(1000000);
+	db.Open("testgc.dbs");
+        db.SetGcThreshold(1000000);
         StorageRoot root = new StorageRoot();
-        root.strIndex = db.createIndex(typeof(String), true);
-        root.intIndex = db.createIndex(typeof(long), true);
+        root.strIndex = db.CreateIndex(typeof(String), true);
+        root.intIndex = db.CreateIndex(typeof(long), true);
         db.Root = root;
         Index intIndex = root.intIndex;
         Index strIndex = root.strIndex;
@@ -34,26 +34,26 @@ public class TestGC {
         for (i = 0; i < nIterations; i++) { 
             if (i > nObjectsInTree) { 
                 remKey = (3141592621L*remKey + 2718281829L) % 1000000007L;
-                intIndex.remove(new Key(remKey));                
-                strIndex.remove(new Key(remKey.ToString()));
+                intIndex.Remove(new Key(remKey));                
+                strIndex.Remove(new Key(remKey.ToString()));
             }
             PObject obj = new PObject();
             insKey = (3141592621L*insKey + 2718281829L) % 1000000007L;
             obj.intKey = insKey;
             obj.strKey = insKey.ToString();
             obj.next = new PObject();
-            intIndex.put(new Key(obj.intKey), obj);                
-            strIndex.put(new Key(obj.strKey), obj);
+            intIndex.Put(new Key(obj.intKey), obj);                
+            strIndex.Put(new Key(obj.strKey), obj);
             if (i > 0) { 
-                Assert.that(root.list.intKey == i-1);
+                Assert.That(root.list.intKey == i-1);
             }
             root.list = new PObject();
             root.list.intKey = i;
-            root.store();
+            root.Store();
             if (i % 1000 == 0) { 
-                db.commit();
+                db.Commit();
             }            
         }
-        db.close();
+        db.Close();
     }
 }

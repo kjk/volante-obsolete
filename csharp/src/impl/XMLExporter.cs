@@ -221,7 +221,7 @@ namespace Perst.Impl
                     break;
                 }
                 default:
-                    Assert.that(false);
+                    Assert.That(false);
                     break;
             }              
             return offs;                                            
@@ -229,7 +229,7 @@ namespace Perst.Impl
                                                                     
         void exportCompoundKey(byte[] body, int offs, int size, ClassDescriptor.FieldType type) 
         { 
-            Assert.that(type == ClassDescriptor.FieldType.tpArrayOfByte);
+            Assert.That(type == ClassDescriptor.FieldType.tpArrayOfByte);
             int end = offs + size;
             for (int i = 0; i < compoundKeyTypes.Length; i++) 
             { 
@@ -243,7 +243,7 @@ namespace Perst.Impl
                 offs = exportKey(body, offs, size, type); 
                 writer.Write("\"");
             }
-            Assert.that(offs == end);
+            Assert.That(offs == end);
         }
 
         internal void  exportAssoc(int oid, byte[] body, int offs, int size, ClassDescriptor.FieldType type)

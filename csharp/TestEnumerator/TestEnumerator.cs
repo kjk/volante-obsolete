@@ -20,16 +20,16 @@ public class TestEnumerator
 
     static public void Main(string[] args) 
     {	
-        Storage db = StorageFactory.getInstance().createStorage();
+        Storage db = StorageFactory.Instance.CreateStorage();
 
-        db.open("testidx2.dbs", pagePoolSize);
-        Indices root = (Indices)db.getRoot();
+        db.Open("testidx2.dbs", pagePoolSize);
+        Indices root = (Indices)db.Root;
         if (root == null) 
         { 
             root = new Indices();
-            root.strIndex = db.createIndex(typeof(string), false);
-            root.intIndex = db.createIndex(typeof(long), false);
-            db.setRoot(root);
+            root.strIndex = db.CreateIndex(typeof(string), false);
+            root.intIndex = db.CreateIndex(typeof(long), false);
+            db.Root = root;
         }
         Index intIndex = root.intIndex;
         Index strIndex = root.strIndex;
@@ -46,11 +46,11 @@ public class TestEnumerator
             rec.strKey = Convert.ToString(key);
             for (j = (int)(key % 10); --j >= 0;) 
             {  
-                intIndex.put(rec.intKey, rec);                
-                strIndex.put(rec.strKey, rec);        
+                intIndex.Put(rec.intKey, rec);                
+                strIndex.Put(rec.strKey, rec);        
             }        
         }
-        db.commit();
+        db.Commit();
         Console.WriteLine("Elapsed time for inserting " + nRecords + " records: " + (DateTime.Now - start));
         
         start = DateTime.Now;
@@ -69,309 +69,309 @@ public class TestEnumerator
             Key tillExclusiveStr = new Key(Convert.ToString(key), false);
             
             // int key ascent order
-            records = intIndex.get(fromInclusive, tillInclusive);
+            records = intIndex.Get(fromInclusive, tillInclusive);
             j = 0;
-            foreach (Record rec in intIndex.range(fromInclusive, tillInclusive, IterationOrder.AscentOrder)) 
+            foreach (Record rec in intIndex.Range(fromInclusive, tillInclusive, IterationOrder.AscentOrder)) 
             {
-                Assert.that(rec == records[j++]);
+                Assert.That(rec == records[j++]);
             }
-            Assert.that(j == records.Length);
+            Assert.That(j == records.Length);
 
-            records = intIndex.get(fromInclusive, tillExclusive);
+            records = intIndex.Get(fromInclusive, tillExclusive);
             j = 0;
-            foreach (Record rec in intIndex.range(fromInclusive, tillExclusive, IterationOrder.AscentOrder)) 
+            foreach (Record rec in intIndex.Range(fromInclusive, tillExclusive, IterationOrder.AscentOrder)) 
             {
-                Assert.that(rec == records[j++]);
+                Assert.That(rec == records[j++]);
             }
-            Assert.that(j == records.Length);
+            Assert.That(j == records.Length);
 
-            records = intIndex.get(fromExclusive, tillInclusive);
+            records = intIndex.Get(fromExclusive, tillInclusive);
             j = 0;
-            foreach (Record rec in intIndex.range(fromExclusive, tillInclusive, IterationOrder.AscentOrder)) 
+            foreach (Record rec in intIndex.Range(fromExclusive, tillInclusive, IterationOrder.AscentOrder)) 
             {
-                Assert.that(rec == records[j++]);
+                Assert.That(rec == records[j++]);
             }
-            Assert.that(j == records.Length);
+            Assert.That(j == records.Length);
 
-            records = intIndex.get(fromExclusive, tillExclusive);
+            records = intIndex.Get(fromExclusive, tillExclusive);
             j = 0;
-            foreach (Record rec in intIndex.range(fromExclusive, tillExclusive, IterationOrder.AscentOrder)) 
+            foreach (Record rec in intIndex.Range(fromExclusive, tillExclusive, IterationOrder.AscentOrder)) 
             {
-                Assert.that(rec == records[j++]);
+                Assert.That(rec == records[j++]);
             }
-            Assert.that(j == records.Length);
+            Assert.That(j == records.Length);
 
 
 
-            records = intIndex.get(fromInclusive, null);
+            records = intIndex.Get(fromInclusive, null);
             j = 0;
-            foreach (Record rec in intIndex.range(fromInclusive, null, IterationOrder.AscentOrder)) 
+            foreach (Record rec in intIndex.Range(fromInclusive, null, IterationOrder.AscentOrder)) 
             {
-                Assert.that(rec == records[j++]);
+                Assert.That(rec == records[j++]);
             }
-            Assert.that(j == records.Length);
+            Assert.That(j == records.Length);
 
-            records = intIndex.get(fromExclusive, null);
+            records = intIndex.Get(fromExclusive, null);
             j = 0;
-            foreach (Record rec in intIndex.range(fromExclusive, null, IterationOrder.AscentOrder)) 
+            foreach (Record rec in intIndex.Range(fromExclusive, null, IterationOrder.AscentOrder)) 
             {
-                Assert.that(rec == records[j++]);
+                Assert.That(rec == records[j++]);
             }
-            Assert.that(j == records.Length);
+            Assert.That(j == records.Length);
 
-            records = intIndex.get(null, tillInclusive);
+            records = intIndex.Get(null, tillInclusive);
             j = 0;
-            foreach (Record rec in intIndex.range(null, tillInclusive, IterationOrder.AscentOrder)) 
+            foreach (Record rec in intIndex.Range(null, tillInclusive, IterationOrder.AscentOrder)) 
             {
-                Assert.that(rec == records[j++]);
+                Assert.That(rec == records[j++]);
             }
-            Assert.that(j == records.Length);
+            Assert.That(j == records.Length);
 
-            records = intIndex.get(null, tillExclusive);
+            records = intIndex.Get(null, tillExclusive);
             j = 0;
-            foreach (Record rec in intIndex.range(null, tillExclusive, IterationOrder.AscentOrder)) 
+            foreach (Record rec in intIndex.Range(null, tillExclusive, IterationOrder.AscentOrder)) 
             {
-                Assert.that(rec == records[j++]);
+                Assert.That(rec == records[j++]);
             }
-            Assert.that(j == records.Length);
+            Assert.That(j == records.Length);
 
-            records = intIndex.get(null, null);
+            records = intIndex.Get(null, null);
             j = 0;
-            foreach (Record rec in intIndex.range(null, null, IterationOrder.AscentOrder)) 
+            foreach (Record rec in intIndex.Range(null, null, IterationOrder.AscentOrder)) 
             {
-                Assert.that(rec == records[j++]);
+                Assert.That(rec == records[j++]);
             }
-            Assert.that(j == records.Length);
+            Assert.That(j == records.Length);
 
 
 
             // int key descent order
-            records = intIndex.get(fromInclusive, tillInclusive);
+            records = intIndex.Get(fromInclusive, tillInclusive);
             j = records.Length;
-            foreach (Record rec in intIndex.range(fromInclusive, tillInclusive, IterationOrder.DescentOrder)) 
+            foreach (Record rec in intIndex.Range(fromInclusive, tillInclusive, IterationOrder.DescentOrder)) 
             {
-                Assert.that(rec == records[--j]);
+                Assert.That(rec == records[--j]);
             }
-            Assert.that(j == 0);
+            Assert.That(j == 0);
 
-            records = intIndex.get(fromInclusive, tillExclusive);
+            records = intIndex.Get(fromInclusive, tillExclusive);
             j = records.Length;
-            foreach (Record rec in intIndex.range(fromInclusive, tillExclusive, IterationOrder.DescentOrder)) 
+            foreach (Record rec in intIndex.Range(fromInclusive, tillExclusive, IterationOrder.DescentOrder)) 
             {
-                Assert.that(rec == records[--j]);
+                Assert.That(rec == records[--j]);
             }
-            Assert.that(j == 0);
+            Assert.That(j == 0);
 
-            records = intIndex.get(fromExclusive, tillInclusive);
+            records = intIndex.Get(fromExclusive, tillInclusive);
             j = records.Length;
-            foreach (Record rec in intIndex.range(fromExclusive, tillInclusive, IterationOrder.DescentOrder)) 
+            foreach (Record rec in intIndex.Range(fromExclusive, tillInclusive, IterationOrder.DescentOrder)) 
             {
-                Assert.that(rec == records[--j]);
+                Assert.That(rec == records[--j]);
             }
-            Assert.that(j == 0);
+            Assert.That(j == 0);
 
-            records = intIndex.get(fromExclusive, tillExclusive);
+            records = intIndex.Get(fromExclusive, tillExclusive);
             j = records.Length;
-            foreach (Record rec in intIndex.range(fromExclusive, tillExclusive, IterationOrder.DescentOrder)) 
+            foreach (Record rec in intIndex.Range(fromExclusive, tillExclusive, IterationOrder.DescentOrder)) 
             {
-                Assert.that(rec == records[--j]);
+                Assert.That(rec == records[--j]);
             }
-            Assert.that(j == 0);
+            Assert.That(j == 0);
 
 
 
-            records = intIndex.get(fromInclusive, null);
+            records = intIndex.Get(fromInclusive, null);
             j = records.Length;
-            foreach (Record rec in intIndex.range(fromInclusive, null, IterationOrder.DescentOrder)) 
+            foreach (Record rec in intIndex.Range(fromInclusive, null, IterationOrder.DescentOrder)) 
             {
-                Assert.that(rec == records[--j]);
+                Assert.That(rec == records[--j]);
             }
-            Assert.that(j == 0);
+            Assert.That(j == 0);
 
-            records = intIndex.get(fromExclusive, null);
+            records = intIndex.Get(fromExclusive, null);
             j = records.Length;
-            foreach (Record rec in intIndex.range(fromExclusive, null, IterationOrder.DescentOrder)) 
+            foreach (Record rec in intIndex.Range(fromExclusive, null, IterationOrder.DescentOrder)) 
             {
-                Assert.that(rec == records[--j]);
+                Assert.That(rec == records[--j]);
             }
-            Assert.that(j == 0);
+            Assert.That(j == 0);
 
-            records = intIndex.get(null, tillInclusive);
+            records = intIndex.Get(null, tillInclusive);
             j = records.Length;
-            foreach (Record rec in intIndex.range(null, tillInclusive, IterationOrder.DescentOrder)) 
+            foreach (Record rec in intIndex.Range(null, tillInclusive, IterationOrder.DescentOrder)) 
             {
-                Assert.that(rec == records[--j]);
+                Assert.That(rec == records[--j]);
             }
-            Assert.that(j == 0);
+            Assert.That(j == 0);
 
-            records = intIndex.get(null, tillExclusive);
+            records = intIndex.Get(null, tillExclusive);
             j = records.Length;
-            foreach (Record rec in intIndex.range(null, tillExclusive, IterationOrder.DescentOrder)) 
+            foreach (Record rec in intIndex.Range(null, tillExclusive, IterationOrder.DescentOrder)) 
             {
-                Assert.that(rec == records[--j]);
+                Assert.That(rec == records[--j]);
             }
-            Assert.that(j == 0);
+            Assert.That(j == 0);
 
-            records = intIndex.get(null, null);
+            records = intIndex.Get(null, null);
             j = records.Length;
-            foreach (Record rec in intIndex.range(null, null, IterationOrder.DescentOrder)) 
+            foreach (Record rec in intIndex.Range(null, null, IterationOrder.DescentOrder)) 
             {
-                Assert.that(rec == records[--j]);
+                Assert.That(rec == records[--j]);
             }
-            Assert.that(j == 0);
+            Assert.That(j == 0);
 
 
             // str key ascent order
-            records = strIndex.get(fromInclusiveStr, tillInclusiveStr);
+            records = strIndex.Get(fromInclusiveStr, tillInclusiveStr);
             j = 0;
-            foreach (Record rec in strIndex.range(fromInclusiveStr, tillInclusiveStr, IterationOrder.AscentOrder)) 
+            foreach (Record rec in strIndex.Range(fromInclusiveStr, tillInclusiveStr, IterationOrder.AscentOrder)) 
             {
-                Assert.that(rec == records[j++]);
+                Assert.That(rec == records[j++]);
             }
-            Assert.that(j == records.Length);
+            Assert.That(j == records.Length);
 
-            records = strIndex.get(fromInclusiveStr, tillExclusiveStr);
+            records = strIndex.Get(fromInclusiveStr, tillExclusiveStr);
             j = 0;
-            foreach (Record rec in strIndex.range(fromInclusiveStr, tillExclusiveStr, IterationOrder.AscentOrder)) 
+            foreach (Record rec in strIndex.Range(fromInclusiveStr, tillExclusiveStr, IterationOrder.AscentOrder)) 
             {
-                Assert.that(rec == records[j++]);
+                Assert.That(rec == records[j++]);
             }
-            Assert.that(j == records.Length);
+            Assert.That(j == records.Length);
 
-            records = strIndex.get(fromExclusiveStr, tillInclusiveStr);
+            records = strIndex.Get(fromExclusiveStr, tillInclusiveStr);
             j = 0;
-            foreach (Record rec in strIndex.range(fromExclusiveStr, tillInclusiveStr, IterationOrder.AscentOrder)) 
+            foreach (Record rec in strIndex.Range(fromExclusiveStr, tillInclusiveStr, IterationOrder.AscentOrder)) 
             {
-                Assert.that(rec == records[j++]);
+                Assert.That(rec == records[j++]);
             }
-            Assert.that(j == records.Length);
+            Assert.That(j == records.Length);
 
-            records = strIndex.get(fromExclusiveStr, tillExclusiveStr);
+            records = strIndex.Get(fromExclusiveStr, tillExclusiveStr);
             j = 0;
-            foreach (Record rec in strIndex.range(fromExclusiveStr, tillExclusiveStr, IterationOrder.AscentOrder)) 
+            foreach (Record rec in strIndex.Range(fromExclusiveStr, tillExclusiveStr, IterationOrder.AscentOrder)) 
             {
-                Assert.that(rec == records[j++]);
+                Assert.That(rec == records[j++]);
             }
-            Assert.that(j == records.Length);
+            Assert.That(j == records.Length);
 
 
 
-            records = strIndex.get(fromInclusiveStr, null);
+            records = strIndex.Get(fromInclusiveStr, null);
             j = 0;
-            foreach (Record rec in strIndex.range(fromInclusiveStr, null, IterationOrder.AscentOrder)) 
+            foreach (Record rec in strIndex.Range(fromInclusiveStr, null, IterationOrder.AscentOrder)) 
             {
-                Assert.that(rec == records[j++]);
+                Assert.That(rec == records[j++]);
             }
-            Assert.that(j == records.Length);
+            Assert.That(j == records.Length);
 
-            records = strIndex.get(fromExclusiveStr, null);
+            records = strIndex.Get(fromExclusiveStr, null);
             j = 0;
-            foreach (Record rec in strIndex.range(fromExclusiveStr, null, IterationOrder.AscentOrder)) 
+            foreach (Record rec in strIndex.Range(fromExclusiveStr, null, IterationOrder.AscentOrder)) 
             {
-                Assert.that(rec == records[j++]);
+                Assert.That(rec == records[j++]);
             }
-            Assert.that(j == records.Length);
+            Assert.That(j == records.Length);
 
-            records = strIndex.get(null, tillInclusiveStr);
+            records = strIndex.Get(null, tillInclusiveStr);
             j = 0;
-            foreach (Record rec in strIndex.range(null, tillInclusiveStr, IterationOrder.AscentOrder)) 
+            foreach (Record rec in strIndex.Range(null, tillInclusiveStr, IterationOrder.AscentOrder)) 
             {
-                Assert.that(rec == records[j++]);
+                Assert.That(rec == records[j++]);
             }
-            Assert.that(j == records.Length);
+            Assert.That(j == records.Length);
 
-            records = strIndex.get(null, tillExclusiveStr);
+            records = strIndex.Get(null, tillExclusiveStr);
             j = 0;
-            foreach (Record rec in strIndex.range(null, tillExclusiveStr, IterationOrder.AscentOrder)) 
+            foreach (Record rec in strIndex.Range(null, tillExclusiveStr, IterationOrder.AscentOrder)) 
             {
-                Assert.that(rec == records[j++]);
+                Assert.That(rec == records[j++]);
             }
-            Assert.that(j == records.Length);
+            Assert.That(j == records.Length);
 
-            records = strIndex.get(null, null);
+            records = strIndex.Get(null, null);
             j = 0;
-            foreach (Record rec in strIndex.range(null, null, IterationOrder.AscentOrder)) 
+            foreach (Record rec in strIndex.Range(null, null, IterationOrder.AscentOrder)) 
             {
-                Assert.that(rec == records[j++]);
+                Assert.That(rec == records[j++]);
             }
-            Assert.that(j == records.Length);
+            Assert.That(j == records.Length);
 
 
 
             // str key descent order
-            records = strIndex.get(fromInclusiveStr, tillInclusiveStr);
+            records = strIndex.Get(fromInclusiveStr, tillInclusiveStr);
             j = records.Length;
-            foreach (Record rec in strIndex.range(fromInclusiveStr, tillInclusiveStr, IterationOrder.DescentOrder)) 
+            foreach (Record rec in strIndex.Range(fromInclusiveStr, tillInclusiveStr, IterationOrder.DescentOrder)) 
             {
-                Assert.that(rec == records[--j]);
+                Assert.That(rec == records[--j]);
             }
-            Assert.that(j == 0);
+            Assert.That(j == 0);
 
-            records = strIndex.get(fromInclusiveStr, tillExclusiveStr);
+            records = strIndex.Get(fromInclusiveStr, tillExclusiveStr);
             j = records.Length;
-            foreach (Record rec in strIndex.range(fromInclusiveStr, tillExclusiveStr, IterationOrder.DescentOrder)) 
+            foreach (Record rec in strIndex.Range(fromInclusiveStr, tillExclusiveStr, IterationOrder.DescentOrder)) 
             {
-                Assert.that(rec == records[--j]);
+                Assert.That(rec == records[--j]);
             }
-            Assert.that(j == 0);
+            Assert.That(j == 0);
 
-            records = strIndex.get(fromExclusiveStr, tillInclusiveStr);
+            records = strIndex.Get(fromExclusiveStr, tillInclusiveStr);
             j = records.Length;
-            foreach (Record rec in strIndex.range(fromExclusiveStr, tillInclusiveStr, IterationOrder.DescentOrder)) 
+            foreach (Record rec in strIndex.Range(fromExclusiveStr, tillInclusiveStr, IterationOrder.DescentOrder)) 
             {
-                Assert.that(rec == records[--j]);
+                Assert.That(rec == records[--j]);
             }
-            Assert.that(j == 0);
+            Assert.That(j == 0);
 
-            records = strIndex.get(fromExclusiveStr, tillExclusiveStr);
+            records = strIndex.Get(fromExclusiveStr, tillExclusiveStr);
             j = records.Length;
-            foreach (Record rec in strIndex.range(fromExclusiveStr, tillExclusiveStr, IterationOrder.DescentOrder)) 
+            foreach (Record rec in strIndex.Range(fromExclusiveStr, tillExclusiveStr, IterationOrder.DescentOrder)) 
             {
-                Assert.that(rec == records[--j]);
+                Assert.That(rec == records[--j]);
             }
-            Assert.that(j == 0);
+            Assert.That(j == 0);
 
 
 
-            records = strIndex.get(fromInclusiveStr, null);
+            records = strIndex.Get(fromInclusiveStr, null);
             j = records.Length;
-            foreach (Record rec in strIndex.range(fromInclusiveStr, null, IterationOrder.DescentOrder)) 
+            foreach (Record rec in strIndex.Range(fromInclusiveStr, null, IterationOrder.DescentOrder)) 
             {
-                Assert.that(rec == records[--j]);
+                Assert.That(rec == records[--j]);
             }
-            Assert.that(j == 0);
+            Assert.That(j == 0);
 
-            records = strIndex.get(fromExclusiveStr, null);
+            records = strIndex.Get(fromExclusiveStr, null);
             j = records.Length;
-            foreach (Record rec in strIndex.range(fromExclusiveStr, null, IterationOrder.DescentOrder)) 
+            foreach (Record rec in strIndex.Range(fromExclusiveStr, null, IterationOrder.DescentOrder)) 
             {
-                Assert.that(rec == records[--j]);
+                Assert.That(rec == records[--j]);
             }
-            Assert.that(j == 0);
+            Assert.That(j == 0);
 
-            records = strIndex.get(null, tillInclusiveStr);
+            records = strIndex.Get(null, tillInclusiveStr);
             j = records.Length;
-            foreach (Record rec in strIndex.range(null, tillInclusiveStr, IterationOrder.DescentOrder)) 
+            foreach (Record rec in strIndex.Range(null, tillInclusiveStr, IterationOrder.DescentOrder)) 
             {
-                Assert.that(rec == records[--j]);
+                Assert.That(rec == records[--j]);
             }
-            Assert.that(j == 0);
+            Assert.That(j == 0);
 
-            records = strIndex.get(null, tillExclusiveStr);
+            records = strIndex.Get(null, tillExclusiveStr);
             j = records.Length;
-            foreach (Record rec in strIndex.range(null, tillExclusiveStr, IterationOrder.DescentOrder)) 
+            foreach (Record rec in strIndex.Range(null, tillExclusiveStr, IterationOrder.DescentOrder)) 
             {
-                Assert.that(rec == records[--j]);
+                Assert.That(rec == records[--j]);
             }
-            Assert.that(j == 0);
+            Assert.That(j == 0);
 
-            records = strIndex.get(null, null);
+            records = strIndex.Get(null, null);
             j = records.Length;
-            foreach (Record rec in strIndex.range(null, null, IterationOrder.DescentOrder)) 
+            foreach (Record rec in strIndex.Range(null, null, IterationOrder.DescentOrder)) 
             {
-                Assert.that(rec == records[--j]);
+                Assert.That(rec == records[--j]);
             }
-            Assert.that(j == 0);
+            Assert.That(j == 0);
 
            if (i % 100 == 0) { 
                 Console.Write("Iteration " + i + "\n");
@@ -380,18 +380,18 @@ public class TestEnumerator
         Console.WriteLine("\nElapsed time for performing " + nRecords*36 + " index range searches: " 
                            + (DateTime.Now - start));
         
-        strIndex.clear();
-        intIndex.clear();
+        strIndex.Clear();
+        intIndex.Clear();
 
-        Assert.that(!strIndex.GetEnumerator().MoveNext());
-        Assert.that(!intIndex.GetEnumerator().MoveNext());
-        Assert.that(!strIndex.GetEnumerator(null, null, IterationOrder.AscentOrder).MoveNext());
-        Assert.that(!intIndex.GetEnumerator(null, null, IterationOrder.AscentOrder).MoveNext());
-        Assert.that(!strIndex.GetEnumerator(null, null, IterationOrder.DescentOrder).MoveNext());
-        Assert.that(!intIndex.GetEnumerator(null, null, IterationOrder.DescentOrder).MoveNext());
-        db.commit();
-        db.gc();
-        db.close();
+        Assert.That(!strIndex.GetEnumerator().MoveNext());
+        Assert.That(!intIndex.GetEnumerator().MoveNext());
+        Assert.That(!strIndex.GetEnumerator(null, null, IterationOrder.AscentOrder).MoveNext());
+        Assert.That(!intIndex.GetEnumerator(null, null, IterationOrder.AscentOrder).MoveNext());
+        Assert.That(!strIndex.GetEnumerator(null, null, IterationOrder.DescentOrder).MoveNext());
+        Assert.That(!intIndex.GetEnumerator(null, null, IterationOrder.DescentOrder).MoveNext());
+        db.Commit();
+        db.Gc();
+        db.Close();
     }
 }
 

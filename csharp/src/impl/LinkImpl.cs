@@ -6,7 +6,7 @@ namespace Perst.Impl
 	
     public class LinkImpl : Link
     {
-        public virtual int size()
+        public virtual int Size()
         {
             return used;
         }
@@ -23,16 +23,16 @@ namespace Perst.Impl
         {
              get
              {
-                 return get(i);
+                 return Get(i);
              }
            
              set 
              { 
-                 set(i, value);
+                 Set(i, value);
              }
         }    
    
-        public virtual IPersistent get(int i)
+        public virtual IPersistent Get(int i)
         {
             if (i < 0 || i >= used)
             {
@@ -41,7 +41,7 @@ namespace Perst.Impl
             return loadElem(i);
         }
 		
-        public virtual IPersistent getRaw(int i)
+        public virtual IPersistent GetRaw(int i)
         {
             if (i < 0 || i >= used)
             {
@@ -50,7 +50,7 @@ namespace Perst.Impl
             return arr[i];
         }
 		
-        public virtual void  set(int i, IPersistent obj)
+        public virtual void Set(int i, IPersistent obj)
         {
             if (i < 0 || i >= used)
             {
@@ -59,7 +59,7 @@ namespace Perst.Impl
             arr[i] = obj;
         }
 		
-        public virtual void  remove(int i)
+        public virtual void Remove(int i)
         {
             if (i < 0 || i >= used)
             {
@@ -80,7 +80,7 @@ namespace Perst.Impl
             }
         }
 		
-        public virtual void  insert(int i, IPersistent obj)
+        public virtual void Insert(int i, IPersistent obj)
         {
             if (i < 0 || i > used)
             {
@@ -92,31 +92,31 @@ namespace Perst.Impl
             used += 1;
         }
 		
-        public virtual void  add(IPersistent obj)
+        public virtual void Add(IPersistent obj)
         {
             reserveSpace(1);
             arr[used++] = obj;
         }
 		
-        public virtual void  addAll(IPersistent[] a)
+        public virtual void AddAll(IPersistent[] a)
         {
-            addAll(a, 0, a.Length);
+            AddAll(a, 0, a.Length);
         }
 		
-        public virtual void  addAll(IPersistent[] a, int from, int length)
+        public virtual void AddAll(IPersistent[] a, int from, int length)
         {
             reserveSpace(length);
             Array.Copy(a, from, arr, used, length);
             used += length;
         }
 		
-        public virtual void  addAll(Link link)
+        public virtual void AddAll(Link link)
         {
-            int n = link.size();
+            int n = link.Length;
             reserveSpace(n);
             for (int i = 0, j = used; i < n; i++, j++)
             {
-                arr[j] = link.getRaw(i);
+                arr[j] = link.GetRaw(i);
             }
             used += n;
         }
@@ -141,12 +141,12 @@ namespace Perst.Impl
             return a;
         }
 		
-        public virtual bool contains(IPersistent obj)
+        public virtual bool Contains(IPersistent obj)
         {
-            return indexOf(obj) >= 0;
+            return IndexOf(obj) >= 0;
         }
 		
-        public virtual int indexOf(IPersistent obj)
+        public virtual int IndexOf(IPersistent obj)
         {
             for (int i = used; --i >= 0; )
             {
@@ -158,7 +158,7 @@ namespace Perst.Impl
             return - 1;
         }
 		
-        public virtual void  clear()
+        public virtual void Clear()
         {
             for (int i = used; --i >= 0; )
             {
@@ -170,7 +170,7 @@ namespace Perst.Impl
         class LinkEnumerator : IEnumerator { 
             public bool MoveNext() 
             {
-                if (i+1 < link.size()) { 
+                if (i+1 < link.Length) { 
                     i += 1;
                     return true;
                 }
@@ -207,7 +207,7 @@ namespace Perst.Impl
         private IPersistent loadElem(int i)
         {
             IPersistent elem = arr[i];
-            if (elem.isRaw())
+            if (elem.IsRaw())
             {
                 arr[i] = elem = ((StorageImpl) elem.Storage).lookupObject(elem.Oid, null);
             }

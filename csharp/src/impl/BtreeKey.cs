@@ -95,7 +95,7 @@ namespace Perst.Impl
                     break;
 				
                 default: 
-                    Assert.failed("Invalid type");
+                    Assert.Failed("Invalid type");
                     break;
 				
             }
@@ -144,7 +144,7 @@ namespace Perst.Impl
                     break;
 				
                 default: 
-                    Assert.failed("Invalid type");
+                    Assert.Failed("Invalid type");
                     break;
 				
             }

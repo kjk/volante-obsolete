@@ -37,7 +37,7 @@ namespace Perst
         /// one objects in the index with specified value of the key.
         /// 
         /// </exception>
-        IPersistent get(Key key);
+        IPersistent Get(Key key);
 
         /// <summary> Get object by key (exact match)     
         /// </summary>
@@ -49,7 +49,7 @@ namespace Perst
         /// one objects in the index with specified value of the key.
         /// 
         /// </exception>
-        IPersistent get(object key);
+        IPersistent Get(object key);
 
         /// <summary> Get objects which key value belongs to the specified range.
         /// Either from boundary, either till boundary either both of them can be <code>null</code>.
@@ -64,7 +64,7 @@ namespace Perst
         /// <returns>array of objects which keys belongs to the specified interval, ordered by key value
         /// 
         /// </returns>
-        IPersistent[] get(Key from, Key till);
+        IPersistent[] Get(Key from, Key till);
 
         /// <summary> Get objects which key value belongs to the specified inclusive range.
         /// Either from boundary, either till boundary either both of them can be <code>null</code>.
@@ -77,7 +77,7 @@ namespace Perst
         /// <returns>array of objects which keys belongs to the specified interval, ordered by key value
         /// 
         /// </returns>
-        IPersistent[] get(object from, object till);
+        IPersistent[] Get(object from, object till);
 
         /// <summary> Put new object in the index. 
         /// </summary>
@@ -91,7 +91,7 @@ namespace Perst
         /// of the key in the index. 
         /// 
         /// </returns>
-        bool put(Key key, IPersistent obj);
+        bool Put(Key key, IPersistent obj);
 
         /// <summary> Put new object in the index. 
         /// </summary>
@@ -105,7 +105,7 @@ namespace Perst
         /// of the key in the index. 
         /// 
         /// </returns>
-        bool put(object key, IPersistent obj);
+        bool Put(object key, IPersistent obj);
 
         /// <summary> Associate new value with the key. If there is already object with such key in the index, 
         /// then it will be removed from the index and new value associated with this key.
@@ -115,7 +115,7 @@ namespace Perst
         /// <param name="obj">object associated with this key. Object can be not yet peristent, in this case
         /// its forced to become persistent by assigning OID to it.
         /// </param>
-        void set(Key key, IPersistent obj);
+        void Set(Key key, IPersistent obj);
 
         /// <summary> Associate new value with the key. If there is already object with such key in the index, 
         /// then it will be removed from the index and new value associated with this key.
@@ -125,7 +125,7 @@ namespace Perst
         /// <param name="obj">object associated with this key. Object can be not yet peristent, in this case
         /// its forced to become persistent by assigning OID to it.
         /// </param>
-        void set(object key, IPersistent obj);
+        void Set(object key, IPersistent obj);
 
         /// <summary> Remove object with specified key from the tree.
         /// </summary>
@@ -136,7 +136,7 @@ namespace Perst
         /// <exception cref="Perst.StorageError">StorageError(StorageError.ErrorCode.KEY_NOT_FOUND) exception if there is no such key in the index
         /// 
         /// </exception>
-        void  remove(Key key, IPersistent obj);
+        void  Remove(Key key, IPersistent obj);
 
         /// <summary> Remove object with specified key from the tree.
         /// </summary>
@@ -147,7 +147,7 @@ namespace Perst
         /// <exception cref="Perst.StorageError">StorageError(StorageError.ErrorCode.KEY_NOT_FOUND) exception if there is no such key in the index
         /// 
         /// </exception>
-        void  remove(object key, IPersistent obj);
+        void  Remove(object key, IPersistent obj);
 
         /// <summary> Remove key from the unique index.
         /// </summary>
@@ -157,7 +157,7 @@ namespace Perst
         /// or StorageError(StorageError.ErrorCode.KEY_NOT_UNIQUE) if index is not unique.
         /// 
         /// </exception>
-        void  remove(Key key);
+        void  Remove(Key key);
 
         /// <summary> Remove key from the unique index.
         /// </summary>
@@ -167,18 +167,18 @@ namespace Perst
         /// or StorageError(StorageError.ErrorCode.KEY_NOT_UNIQUE) if index is not unique.
         /// 
         /// </exception>
-        void  remove(object key);
+        void  Remove(object key);
 
         /// <summary> Get number of objects in the index
         /// </summary>
         /// <returns>number of objects in the index
         /// 
         /// </returns>
-        int size();
+        int Size();
 
         /// <summary> Remove all objects from the index
         /// </summary>
-        void  clear();
+        void  Clear();
 
         /// <summary> Get all objects in the index as array orderd by index key
         /// </summary>
@@ -217,7 +217,7 @@ namespace Perst
         /// <param name="order"><code>IterationOrder.AscentOrder</code> or <code>IterationOrder.DescentOrder</code></param>
         /// <returns>enumerable collection</returns>
         ///
-        IEnumerable range(Key from, Key till, IterationOrder order);
+        IEnumerable Range(Key from, Key till, IterationOrder order);
 
         /// <summary>
         /// Get enumerable collection of objects in the index with key belonging to the specified range. 
@@ -228,7 +228,7 @@ namespace Perst
         /// <param name="order"><code>IterationOrder.AscentOrder</code> or <code>IterationOrder.DescentOrder</code></param>
         /// <returns>enumerable collection</returns>
         ///
-        IEnumerable range(object from, object till, IterationOrder order);
+        IEnumerable Range(object from, object till, IterationOrder order);
 
         /// <summary>
         /// Get enumerable ascent ordered collection of objects in the index with key belonging to the specified range. 
@@ -238,7 +238,7 @@ namespace Perst
         /// <param name="till">Inclusive high boundary. If <code>null</code> then high boundary is not specified.</param>
         /// <returns>enumerable collection</returns>
         ///
-        IEnumerable range(object from, object till);
+        IEnumerable Range(object from, object till);
 
         /// <summary>
         /// Get iterator for traversing all entries in the index 

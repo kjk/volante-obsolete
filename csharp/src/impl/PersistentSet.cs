@@ -22,7 +22,7 @@ namespace Perst.Impl
     
         public bool Add(IPersistent o) 
         { 
-            if (!o.isPersistent()) 
+            if (!o.IsPersistent()) 
             { 
                 ((StorageImpl)Storage).storeObject(o);
             }
@@ -49,7 +49,7 @@ namespace Perst.Impl
         { 
             try 
             { 
-                remove(new Key(o), o);
+                Remove(new Key(o), o);
             } 
             catch (StorageError x) 
             { 

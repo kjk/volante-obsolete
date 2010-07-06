@@ -25,7 +25,7 @@ namespace Perst
         /// </param>
         /// <returns>array of objects which enveloping rectangle intersects with specified rectangle
         /// </returns>             
-        IPersistent[] get(Rectangle r);
+        IPersistent[] Get(Rectangle r);
     
         /// <summary>
         /// Put new object in the index. 
@@ -35,7 +35,7 @@ namespace Perst
         /// <param name="obj"> object associated with this rectangle. Object can be not yet persistent, in this case
         /// its forced to become persistent by assigning OID to it.
         /// </param>
-        void put(Rectangle r, IPersistent obj);
+        void Put(Rectangle r, IPersistent obj);
 
         /// <summary>
         /// Remove object with specified enveloping rectangle from the tree.
@@ -46,18 +46,18 @@ namespace Perst
         /// </param>
         /// <exception  cref="Perst.StorageError">StorageError(StorageError.KEY_NOT_FOUND) exception if there is no such key in the index
         /// </exception>
-        void remove(Rectangle r, IPersistent obj);
+        void Remove(Rectangle r, IPersistent obj);
 
         /// <summary>
         /// Get number of objects in the index
         /// </summary>
         /// <returns>number of objects in the index
         /// </returns>
-        int  size();
+        int  Size();
     
         /// <summary>
         /// Remove all objects from the index
         /// </summary>
-        void clear();
+        void Clear();
     }
 }

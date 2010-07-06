@@ -13,6 +13,14 @@ namespace Perst.Impl
     
         private Ttree() {} 
 
+        public int Length 
+        { 
+            get 
+            {
+                return nMembers;
+            }
+        }
+
         public int Count 
         { 
             get 
@@ -20,6 +28,7 @@ namespace Perst.Impl
                 return nMembers;
             }
         }
+
         public bool IsSynchronized 
         {
             get 
@@ -48,7 +57,7 @@ namespace Perst.Impl
         {
             get 
             {
-                return get(key);
+                return Get(key);
             }
         } 
        
@@ -56,7 +65,7 @@ namespace Perst.Impl
         {
             get
             {
-                return get(low, high);
+                return Get(low, high);
             }
         }       
 
@@ -67,17 +76,17 @@ namespace Perst.Impl
             this.unique = unique;
         }
 
-        public PersistentComparator getComparator() 
+        public PersistentComparator GetComparator() 
         { 
             return comparator;
         }
 
-        public override bool recursiveLoading() 
+        public override bool RecursiveLoading() 
         {
             return false;
         }
 
-        public IPersistent get(Object key) 
+        public IPersistent Get(Object key) 
         { 
             if (root != null) 
             { 
@@ -101,7 +110,7 @@ namespace Perst.Impl
 
             
 
-        public IPersistent[] get(Object from, Object till) 
+        public IPersistent[] Get(Object from, Object till) 
         { 
             ArrayList list = new ArrayList();
             if (root != null) 
@@ -113,7 +122,7 @@ namespace Perst.Impl
         }
 
 
-        public bool add(IPersistent obj) 
+        public bool Add(IPersistent obj) 
         { 
             TtreePage newRoot;
             if (root == null) 
@@ -129,19 +138,19 @@ namespace Perst.Impl
                 }
                 newRoot = pgRef.pg;
             }
-            modify();
+            Modify();
             root = newRoot;
             nMembers += 1;
             return true;
         }
                 
                 
-        public bool contains(IPersistent member) 
+        public bool Contains(IPersistent member) 
         {
             return (root != null) ? root.contains(comparator, member) : false;
         }        
 
-        public void remove(IPersistent obj) 
+        public void Remove(IPersistent obj) 
         {
             if (root == null) 
             {
@@ -152,22 +161,22 @@ namespace Perst.Impl
             {             
                 throw new StorageError(StorageError.ErrorCode.KEY_NOT_FOUND);
             }
-            modify();
+            Modify();
             root = pgRef.pg;
             nMembers -= 1;        
         }
 
-        public int size() 
+        public int Size() 
         {
             return nMembers;
         }
     
-        public void clear() 
+        public void Clear() 
         {
             if (root != null) 
             { 
                 root.prune();
-                modify();
+                Modify();
                 root = null;
                 nMembers = 0;
             }

@@ -112,15 +112,15 @@ namespace Perst.Impl
         {
             get 
             {
-                return get(key);
+                return Get(key);
             }
             set 
             {
-                set(key, (IPersistent)value);
+                Set(key, (IPersistent)value);
             }
         } 
       
-        public virtual IPersistent get(Key key)
+        public virtual IPersistent Get(Key key)
         {
             if (key.type != type)
             {
@@ -228,14 +228,14 @@ namespace Perst.Impl
         }
 
 
-        public virtual IPersistent get(object key) 
+        public virtual IPersistent Get(object key) 
         {
-            return get(getKeyFromObject(key));
+            return Get(getKeyFromObject(key));
         }
 
         internal static IPersistent[] emptySelection = new IPersistent[0];
 		
-        public virtual IPersistent[] get(Key from, Key till)
+        public virtual IPersistent[] Get(Key from, Key till)
         {
             if ((from != null && from.type != type) || (till != null && till.type != type))
             {
@@ -257,28 +257,28 @@ namespace Perst.Impl
             return emptySelection;
         }
 		
-        public virtual IPersistent[] get(object from, object till)
+        public virtual IPersistent[] Get(object from, object till)
         {
-            return get(getKeyFromObject(from), getKeyFromObject(till));
+            return Get(getKeyFromObject(from), getKeyFromObject(till));
         }
             
             
-        public virtual bool put(Key key, IPersistent obj)
+        public virtual bool Put(Key key, IPersistent obj)
         {
             return insert(key, obj, false);
         }
 
-        public virtual bool put(object key, IPersistent obj)
+        public virtual bool Put(object key, IPersistent obj)
         {
             return insert(getKeyFromObject(key), obj, false);
         }
 
-        public virtual void set(Key key, IPersistent obj)
+        public virtual void Set(Key key, IPersistent obj)
         {
             insert(key, obj, true);
         }
 
-        public virtual void set(object key, IPersistent obj)
+        public virtual void Set(object key, IPersistent obj)
         {
             insert(getKeyFromObject(key), obj, true);
         }
@@ -290,7 +290,7 @@ namespace Perst.Impl
             {
                 throw new StorageError(StorageError.ErrorCode.INCOMPATIBLE_KEY_TYPE);
             }
-            if (!obj.isPersistent())
+            if (!obj.IsPersistent())
             {
                 db.storeObject(obj);
             }
@@ -318,21 +318,21 @@ namespace Perst.Impl
                 }
             }
             nElems += 1;
-            modify();
+            Modify();
             return true;
         }
 		
-        public virtual void  remove(Key key, IPersistent obj)
+        public virtual void  Remove(Key key, IPersistent obj)
         {
             remove(new BtreeKey(key, obj.Oid));
         }
 		
-        public virtual void  remove(object key, IPersistent obj)
+        public virtual void  Remove(object key, IPersistent obj)
         {
             remove(new BtreeKey(getKeyFromObject(key), obj.Oid));    
         }
  		
-        internal virtual void  remove(BtreeKey rem)
+        internal virtual void remove(BtreeKey rem)
         {
             StorageImpl db = (StorageImpl) Storage;
             if (rem.key.type != type)
@@ -372,12 +372,12 @@ namespace Perst.Impl
                 root = BtreePage.allocate(db, root, type, rem);
                 height += 1;
             }
-            modify();
+            Modify();
         }
 		
                
                 
-        public virtual void  remove(Key key)
+        public virtual void Remove(Key key)
         {
             if (!unique)
             {
@@ -386,17 +386,17 @@ namespace Perst.Impl
             remove(new BtreeKey(key, 0));
         }		
             
-        public virtual void  remove(object key)
+        public virtual void Remove(object key)
         {
-            remove(getKeyFromObject(key));
+            Remove(getKeyFromObject(key));
         }
 
-        public virtual int size()
+        public virtual int Size()
         {
             return nElems;
         }
 		
-        public virtual void  clear()
+        public virtual void Clear()
         {
             if (root != 0)
             {
@@ -404,7 +404,7 @@ namespace Perst.Impl
                 root = 0;
                 nElems = 0;
                 height = 0;
-                modify();
+                Modify();
             }
         }
 		
@@ -428,16 +428,16 @@ namespace Perst.Impl
             return arr;
         }
 		
-        public override void  deallocate()
+        public override void Deallocate()
         {
             if (root != 0)
             {
                 BtreePage.purge((StorageImpl) Storage, root, type, height);
             }
-            base.deallocate();
+            base.Deallocate();
         }
 
-        public virtual void  export(XMLExporter exporter)
+        internal virtual void export(XMLExporter exporter)
         {
             if (root != 0)
             {
@@ -445,7 +445,7 @@ namespace Perst.Impl
             }
         }		
 
-        public void markTree() 
+        internal void markTree() 
         { 
             if (root != 0) 
             { 
@@ -532,7 +532,7 @@ namespace Perst.Impl
                     return unpackByteArrayKey(pg, pos);
                 }
                 default: 
-                    Assert.failed("Invalid type");
+                    Assert.Failed("Invalid type");
                     return null;
             }
         }
@@ -842,7 +842,7 @@ namespace Perst.Impl
                                         r = i;
                                     }
                                 }
-                                Assert.that(r == l); 
+                                Assert.That(r == l); 
                                 posStack[sp] = r;
                                 pageId = BtreePage.getKeyStrOid(pg, r);
                                 db.pool.unfix(pg);
@@ -864,7 +864,7 @@ namespace Perst.Impl
                                     r = i;
                                 }
                             }
-                            Assert.that(r == l); 
+                            Assert.That(r == l); 
                             if (r == end) 
                             {
                                 sp += 1;
@@ -924,7 +924,7 @@ namespace Perst.Impl
                                         r = i;
                                     }
                                 }
-                                Assert.that(r == l); 
+                                Assert.That(r == l); 
                                 posStack[sp] = r;
                                 pageId = BtreePage.getKeyStrOid(pg, r);
                                 db.pool.unfix(pg);
@@ -946,7 +946,7 @@ namespace Perst.Impl
                                     r = i;
                                 }
                             }
-                            Assert.that(r == l); 
+                            Assert.That(r == l); 
                             if (r == 0) 
                             {
                                 sp += 1;
@@ -1006,7 +1006,7 @@ namespace Perst.Impl
                                         r = i;
                                     }
                                 }
-                                Assert.that(r == l); 
+                                Assert.That(r == l); 
                                 posStack[sp] = r;
                                 pageId = BtreePage.getKeyStrOid(pg, r);
                                 db.pool.unfix(pg);
@@ -1028,7 +1028,7 @@ namespace Perst.Impl
                                     r = i;
                                 }
                             }
-                            Assert.that(r == l); 
+                            Assert.That(r == l); 
                             if (r == end) 
                             {
                                 sp += 1;
@@ -1088,7 +1088,7 @@ namespace Perst.Impl
                                         r = i;
                                     }
                                 }
-                                Assert.that(r == l); 
+                                Assert.That(r == l); 
                                 posStack[sp] = r;
                                 pageId = BtreePage.getKeyStrOid(pg, r);
                                 db.pool.unfix(pg);
@@ -1110,7 +1110,7 @@ namespace Perst.Impl
                                     r = i;
                                 }
                             }
-                            Assert.that(r == l); 
+                            Assert.That(r == l); 
                             if (r == 0) 
                             {
                                 sp += 1;
@@ -1170,7 +1170,7 @@ namespace Perst.Impl
                                         r = i;
                                     }
                                 }
-                                Assert.that(r == l); 
+                                Assert.That(r == l); 
                                 posStack[sp] = r;
                                 pageId = BtreePage.getReference(pg, BtreePage.maxItems-1-r);
                                 db.pool.unfix(pg);
@@ -1192,7 +1192,7 @@ namespace Perst.Impl
                                     r = i;
                                 }
                             }
-                            Assert.that(r == l); 
+                            Assert.That(r == l); 
                             if (r == end) 
                             {
                                 sp += 1;
@@ -1252,7 +1252,7 @@ namespace Perst.Impl
                                         r = i;
                                     }
                                 }
-                                Assert.that(r == l); 
+                                Assert.That(r == l); 
                                 posStack[sp] = r;
                                 pageId = BtreePage.getReference(pg, BtreePage.maxItems-1-r);
                                 db.pool.unfix(pg);
@@ -1274,7 +1274,7 @@ namespace Perst.Impl
                                     r = i;
                                 }
                             }
-                            Assert.that(r == l);  
+                            Assert.That(r == l);  
                             if (r == 0) 
                             { 
                                 sp += 1;
@@ -1629,10 +1629,10 @@ namespace Perst.Impl
   
         public IEnumerator GetEnumerator(Key from, Key till, IterationOrder order) 
         {
-            return range(from, till, order).GetEnumerator();
+            return Range(from, till, order).GetEnumerator();
         }
 
-        public virtual IEnumerable range(Key from, Key till, IterationOrder order) 
+        public virtual IEnumerable Range(Key from, Key till, IterationOrder order) 
         { 
             if ((from != null && from.type != type) || (till != null && till.type != type)) 
             { 
@@ -1641,14 +1641,14 @@ namespace Perst.Impl
             return new BtreeSelectionIterator(this, from, till, order);
         }
 
-        public IEnumerable range(object from, object till, IterationOrder order) 
+        public IEnumerable Range(object from, object till, IterationOrder order) 
         { 
-            return range(getKeyFromObject(from), getKeyFromObject(till), order);
+            return Range(getKeyFromObject(from), getKeyFromObject(till), order);
         }
 
-        public IEnumerable range(object from, object till) 
+        public IEnumerable Range(object from, object till) 
         { 
-            return range(getKeyFromObject(from), getKeyFromObject(till), IterationOrder.AscentOrder);
+            return Range(getKeyFromObject(from), getKeyFromObject(till), IterationOrder.AscentOrder);
         }
  
         public virtual IDictionaryEnumerator GetDictionaryEnumerator(Key from, Key till, IterationOrder order) 

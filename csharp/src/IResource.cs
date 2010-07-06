@@ -25,7 +25,7 @@ namespace Perst
         /// saving some other persistent object referencing this object, either explicitly by 
         /// <code>Storage.makeObjectPersistent</code> method.
         /// </summary>
-        void sharedLock();
+        void SharedLock();
   
 
         /// <summary>
@@ -45,7 +45,7 @@ namespace Perst
         /// saving some other persistent object referencing this object, either explicitly by 
         /// <code>Storage.makeObjectPersistent</code> method.   
         /// </summary>
-        void exclusiveLock();
+        void ExclusiveLock();
 
 
 #if !COMPACT_NET_FRAMEWORK
@@ -79,7 +79,7 @@ namespace Perst
         /// <DT><code>false</code> if lock can not be granted within specified time</DT> 
         /// </DL>
         /// </returns>
-        bool sharedLock(long timeout);
+        bool SharedLock(long timeout);
 
         /// <summary>
         /// Lock persistent object in exclusive mode. Only one thread can lock object in exclusive mode at each
@@ -108,13 +108,19 @@ namespace Perst
         /// <DT><code>false</code> if lock can not be granted within specified time</DT>
         /// </DL>
         /// </returns>
-        bool exclusiveLock(long timeout);
+        bool ExclusiveLock(long timeout);
 #endif
 
         /// <summary>
         /// Remove granted lock. If lock was requested several times by one thread, then correspondent number
         /// of unlocks is needed to release the lock.
         /// </summary>
-        void unlock();
+        void Unlock();
+
+        /// <summary>
+        /// Reset resource to original state.
+        /// Wakrup all threads waiting for this resource.
+        /// </summary>
+        void Reset();
     }
 }

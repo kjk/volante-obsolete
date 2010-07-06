@@ -11,14 +11,14 @@ namespace Perst
     /// </summary>
     public class NullFile : IFile 
     {
-         public void write(long pos, byte[] buf) {}
+         public void Write(long pos, byte[] buf) {}
 
-         public int read(long pos, byte[] buf) {
+         public int Read(long pos, byte[] buf) {
              return 0;
          }
 
-         public void sync() {}
+         public void Sync() {}
 
-         public void close() {}
+         public void Close() {}
     }
 }

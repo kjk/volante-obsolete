@@ -32,7 +32,7 @@ namespace Perst.Impl
             }
         }
 
-        public override void onLoad()
+        public override void OnLoad()
         {
             cls = ClassDescriptor.lookup(className);
             locateFields();
@@ -185,7 +185,7 @@ namespace Perst.Impl
                         break;
                     }
                     default:
-                        Assert.failed("Invalid type");
+                        Assert.Failed("Invalid type");
                         break;
                 }
                 if (diff != 0) 
@@ -252,7 +252,7 @@ namespace Perst.Impl
                     case ClassDescriptor.FieldType.tpObject: 
                     {
                         int oid = Bytes.unpack4(data, offs);
-                        v = oid == 0 ? null : ((StorageImpl)getStorage()).lookupObject(oid, null);
+                        v = oid == 0 ? null : ((StorageImpl)Storage).lookupObject(oid, null);
                         offs += 4;
                         break;
                     }
@@ -310,7 +310,7 @@ namespace Perst.Impl
                         break;
                     }
                     default: 
-                        Assert.failed("Invalid type");
+                        Assert.Failed("Invalid type");
                         break;
                 }
                 values[i] = v;
@@ -481,37 +481,37 @@ namespace Perst.Impl
                     break;
 
                 default:
-                    Assert.failed("Invalid type");
+                    Assert.Failed("Invalid type");
                     break;
             }
             return dst;
         }
  
-        public bool put(IPersistent obj) 
+        public bool Put(IPersistent obj) 
         {
             return base.insert(extractKey(obj), obj, false);
         }
 
-        public void set(IPersistent obj) 
+        public void Set(IPersistent obj) 
         {
             base.insert(extractKey(obj), obj, true);
         }
 
-        public void remove(IPersistent obj) 
+        public void Remove(IPersistent obj) 
         {
             base.remove(new BtreeKey(extractKey(obj), obj.Oid));
         }
         
-        public bool contains(IPersistent obj) 
+        public bool Contains(IPersistent obj) 
         {
             Key key = extractKey(obj);
             if (unique) 
             { 
-                return base.get(key) != null;
+                return base.Get(key) != null;
             } 
             else 
             { 
-                IPersistent[] mbrs = get(key, key);
+                IPersistent[] mbrs = Get(key, key);
                 for (int i = 0; i < mbrs.Length; i++) 
                 { 
                     if (mbrs[i] == obj) 
@@ -523,12 +523,12 @@ namespace Perst.Impl
             }
         }
 
-        public void append(IPersistent obj) 
+        public void Append(IPersistent obj) 
         {
             throw new StorageError(StorageError.ErrorCode.UNSUPPORTED_INDEX_TYPE);
         }
 
-        public override IPersistent[] get(Key from, Key till)
+        public override IPersistent[] Get(Key from, Key till)
         {
             ArrayList list = new ArrayList();
             if (root != 0)
@@ -548,14 +548,14 @@ namespace Perst.Impl
             return arr;
         }
 
-        public override IPersistent get(Key key) 
+        public override IPersistent Get(Key key) 
         {
-            return base.get(convertKey(key));
+            return base.Get(convertKey(key));
         }
  
-        public override IEnumerable range(Key from, Key till, IterationOrder order) 
+        public override IEnumerable Range(Key from, Key till, IterationOrder order) 
         { 
-            return base.range(convertKey(from), convertKey(till), order);
+            return base.Range(convertKey(from), convertKey(till), order);
         }
 
 

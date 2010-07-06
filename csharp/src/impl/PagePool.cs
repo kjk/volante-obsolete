@@ -30,7 +30,7 @@ namespace Perst.Impl
 		
         internal Page find(long addr, int state)
         {
-            Assert.that((addr & (Page.pageSize - 1)) == 0);
+            Assert.That((addr & (Page.pageSize - 1)) == 0);
             Page pg;
             int pageNo = (int)((ulong)addr >> Page.pageBits);
             int hashCode =  pageNo % poolSize;
@@ -69,7 +69,7 @@ namespace Perst.Impl
                     }
                     else
                     {
-                        Assert.that("unfixed page available", lru.prev != lru);
+                        Assert.That("unfixed page available", lru.prev != lru);
                         pg = (Page) lru.prev;
                         pg.unlink();
                         lock(pg)
@@ -77,7 +77,7 @@ namespace Perst.Impl
                             if ((pg.state & Page.psDirty) != 0)
                             {
                                 pg.state = 0;
-                                file.write(pg.offs, pg.data);
+                                file.Write(pg.offs, pg.data);
                                 if (!flushing)
                                 {
                                     dirtyPages[pg.writeQueueIndex] = dirtyPages[--nDirtyPages];
@@ -109,7 +109,7 @@ namespace Perst.Impl
                 }
                 if ((pg.state & Page.psDirty) == 0 && (state & Page.psDirty) != 0)
                 {
-                    Assert.that(!flushing);
+                    Assert.That(!flushing);
                     if (nDirtyPages >= dirtyPages.Length) {                     
                         Page[] newDirtyPages = new Page[nDirtyPages*2];
                         Array.Copy(dirtyPages, 0, newDirtyPages, 0, dirtyPages.Length);
@@ -124,7 +124,7 @@ namespace Perst.Impl
             {
                 if ((pg.state & Page.psRaw) != 0)
                 {
-                    if (file.read(pg.offs, pg.data) < Page.pageSize)
+                    if (file.Read(pg.offs, pg.data) < Page.pageSize)
                     {
                         for (int i = 0; i < Page.pageSize; i++)
                         {
@@ -183,8 +183,8 @@ namespace Perst.Impl
 		
         internal void write(long dstPos, byte[] src) 
         {
-            Assert.that((dstPos & (Page.pageSize-1)) == 0);
-            Assert.that((src.Length & (Page.pageSize-1)) == 0);
+            Assert.That((dstPos & (Page.pageSize-1)) == 0);
+            Assert.That((src.Length & (Page.pageSize-1)) == 0);
             for (int i = 0; i < src.Length;) 
             { 
                 Page pg = find(dstPos, Page.psDirty);
@@ -221,7 +221,7 @@ namespace Perst.Impl
         {
             lock(this)
             {
-                file.close();
+                file.Close();
                 hashTable = null;
                 dirtyPages = null;
                 lru = null;
@@ -233,7 +233,7 @@ namespace Perst.Impl
         {
             lock(this)
             {
-                Assert.that(pg.accessCount > 0);
+                Assert.That(pg.accessCount > 0);
                 if (--pg.accessCount == 0)
                 {
                     lru.link(pg);
@@ -245,10 +245,10 @@ namespace Perst.Impl
         {
             lock(this)
             {
-                Assert.that(pg.accessCount > 0);
+                Assert.That(pg.accessCount > 0);
                 if ((pg.state & Page.psDirty) == 0)
                 {
-                    Assert.that(!flushing);
+                    Assert.That(!flushing);
                     pg.state |= Page.psDirty;
                     if (nDirtyPages >= dirtyPages.Length) {                     
                         Page[] newDirtyPages = new Page[nDirtyPages*2];
@@ -273,11 +273,11 @@ namespace Perst.Impl
 		
         internal byte[] get(long pos)
         {
-            Assert.that(pos != 0);
+            Assert.That(pos != 0);
             int offs = (int) pos & (Page.pageSize - 1);
             Page pg = find(pos - offs, 0);
             int size = ObjectHeader.getSize(pg.data, offs);
-            Assert.that(size >= ObjectHeader.Sizeof);
+            Assert.That(size >= ObjectHeader.Sizeof);
             byte[] obj = new byte[size];
             int dst = 0;
             while (size > Page.pageSize - offs)
@@ -350,12 +350,12 @@ namespace Perst.Impl
                 {
                     if ((pg.state & Page.psDirty) != 0)
                     {
-                        file.write(pg.offs, pg.data);
+                        file.Write(pg.offs, pg.data);
                         pg.state &= ~ Page.psDirty;
                     }
                 }
             }
-            file.sync();
+            file.Sync();
             nDirtyPages = 0;
             flushing = false;
         }

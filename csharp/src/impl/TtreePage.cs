@@ -21,7 +21,7 @@ namespace Perst.Impl
             internal PageReference(TtreePage p) { pg = p; }
         }
 
-        public override bool recursiveLoading() 
+        public override bool RecursiveLoading() 
         {
             return false;
         }
@@ -38,20 +38,20 @@ namespace Perst.Impl
         IPersistent loadItem(int i) 
         { 
             IPersistent mbr = item[i];
-            mbr.load();
+            mbr.Load();
             return mbr;
         }
 
         internal bool find(PersistentComparator comparator, Object minValue, Object maxValue, ArrayList selection)
         { 
             int l, r, m, n;
-            load();
+            Load();
             n = nItems;
             if (minValue != null) 
             { 
-                if (comparator.compareMemberWithKey(loadItem(0), minValue) < 0) 
+                if (comparator.CompareMemberWithKey(loadItem(0), minValue) < 0) 
                 {	    
-                    if (comparator.compareMemberWithKey(loadItem(n-1), maxValue) < 0) 
+                    if (comparator.CompareMemberWithKey(loadItem(n-1), maxValue) < 0) 
                     { 
                         if (right != null) 
                         { 
@@ -62,7 +62,7 @@ namespace Perst.Impl
                     for (l = 0, r = n; l < r;) 
                     { 
                         m = (l + r) >> 1;
-                        if (comparator.compareMemberWithKey(loadItem(m), minValue) < 0) 
+                        if (comparator.CompareMemberWithKey(loadItem(m), minValue) < 0) 
                         {
                             l = m+1;
                         } 
@@ -74,7 +74,7 @@ namespace Perst.Impl
                     while (r < n) 
                     { 
                         if (maxValue != null
-                            && comparator.compareMemberWithKey(loadItem(r), maxValue) > 0)
+                            && comparator.CompareMemberWithKey(loadItem(r), maxValue) > 0)
                         { 
                             return false;
                         }
@@ -97,7 +97,7 @@ namespace Perst.Impl
             }
             for (l = 0; l < n; l++) 
             { 
-                if (maxValue != null && comparator.compareMemberWithKey(loadItem(l), maxValue) > 0) 
+                if (maxValue != null && comparator.CompareMemberWithKey(loadItem(l), maxValue) > 0) 
                 {
                     return false;
                 }
@@ -113,11 +113,11 @@ namespace Perst.Impl
         internal bool contains(PersistentComparator comparator, IPersistent mbr)
         { 
             int l, r, m, n;
-            load();
+            Load();
             n = nItems;
-            if (comparator.compareMembers(loadItem(0), mbr) < 0) 
+            if (comparator.CompareMembers(loadItem(0), mbr) < 0) 
             {	    
-                if (comparator.compareMembers(loadItem(n-1), mbr) < 0) 
+                if (comparator.CompareMembers(loadItem(n-1), mbr) < 0) 
                 { 
                     if (right != null) 
                     { 
@@ -128,7 +128,7 @@ namespace Perst.Impl
                 for (l = 0, r = n; l < r;) 
                 { 
                     m = (l + r) >> 1;
-                    if (comparator.compareMembers(loadItem(m), mbr) < 0) 
+                    if (comparator.CompareMembers(loadItem(m), mbr) < 0) 
                     {
                         l = m+1;
                     } 
@@ -143,7 +143,7 @@ namespace Perst.Impl
                     { 
                         return true;
                     }
-                    if (comparator.compareMembers(item[r], mbr) > 0) 
+                    if (comparator.CompareMembers(item[r], mbr) > 0) 
                     { 
                         return false;
                     }
@@ -168,7 +168,7 @@ namespace Perst.Impl
                 { 
                     return true;
                 }
-                if (comparator.compareMembers(item[l], mbr) > 0) 
+                if (comparator.CompareMembers(item[l], mbr) > 0) 
                 {
                     return false;
                 }
@@ -189,10 +189,10 @@ namespace Perst.Impl
 
         internal int insert(PersistentComparator comparator, IPersistent mbr, bool unique, PageReference pgRef) 
         { 
-            load();
+            Load();
             int n = nItems;
             TtreePage pg;
-            int diff = comparator.compareMembers(mbr, loadItem(0));
+            int diff = comparator.CompareMembers(mbr, loadItem(0));
             if (diff <= 0) 
             { 
                 if (unique && diff == 0) 
@@ -201,7 +201,7 @@ namespace Perst.Impl
                 }
                 if ((left == null || diff == 0) && n != maxItems) 
                 { 
-                    modify();
+                    Modify();
                     for (int i = n; i > 0; i--) item[i] = item[i-1];
                     item[0] = mbr;
                     nItems += 1;
@@ -209,7 +209,7 @@ namespace Perst.Impl
                 } 
                 if (left == null) 
                 { 
-                    modify();
+                    Modify();
                     left = new TtreePage(mbr);
                 } 
                 else 
@@ -221,7 +221,7 @@ namespace Perst.Impl
                     { 
                         return NOT_UNIQUE;
                     }
-                    modify();
+                    Modify();
                     left = pgRef.pg;
                     pgRef.pg = pg;
                     if (result == OK) return OK;
@@ -239,8 +239,8 @@ namespace Perst.Impl
                 else 
                 { 
                     TtreePage lp = this.left;
-                    lp.load();
-                    lp.modify();
+                    lp.Load();
+                    lp.Modify();
                     if (lp.balance < 0) 
                     { // single LL turn
                         this.left = lp.right;
@@ -252,8 +252,8 @@ namespace Perst.Impl
                     else 
                     { // double LR turn
                         TtreePage rp = lp.right;
-                        rp.load();
-                        rp.modify();
+                        rp.Load();
+                        rp.Modify();
                         lp.right = rp.left;
                         rp.left = lp;
                         this.left = rp.right;
@@ -266,7 +266,7 @@ namespace Perst.Impl
                     return OK;
                 }
             } 
-            diff = comparator.compareMembers(mbr, loadItem(n-1));
+            diff = comparator.CompareMembers(mbr, loadItem(n-1));
             if (diff >= 0) 
             { 
                 if (unique && diff == 0) 
@@ -275,14 +275,14 @@ namespace Perst.Impl
                 }
                 if ((right == null || diff == 0) && n != maxItems) 
                 { 
-                    modify();
+                    Modify();
                     item[n] = mbr;
                     nItems += 1;
                     return OK;
                 }
                 if (right == null) 
                 { 
-                    modify();
+                    Modify();
                     right = new TtreePage(mbr);
                 } 
                 else 
@@ -294,7 +294,7 @@ namespace Perst.Impl
                     { 
                         return NOT_UNIQUE;
                     }
-                    modify();
+                    Modify();
                     right = pgRef.pg;
                     pgRef.pg = pg;
                     if (result == OK) return OK;
@@ -312,8 +312,8 @@ namespace Perst.Impl
                 else 
                 { 
                     TtreePage rp = this.right;
-                    rp.load();
-                    rp.modify();
+                    rp.Load();
+                    rp.Modify();
                     if (rp.balance > 0) 
                     { // single RR turn
                         this.right = rp.left;
@@ -325,8 +325,8 @@ namespace Perst.Impl
                     else 
                     { // double RL turn
                         TtreePage lp = rp.left;
-                        lp.load();
-                        lp.modify();
+                        lp.Load();
+                        lp.Modify();
                         rp.left = lp.right;
                         lp.right = rp;
                         this.right = lp.left;
@@ -343,7 +343,7 @@ namespace Perst.Impl
             while (l < r)  
             {
                 int i = (l+r) >> 1;
-                diff = comparator.compareMembers(mbr, loadItem(i));
+                diff = comparator.CompareMembers(mbr, loadItem(i));
                 if (diff > 0) 
                 { 
                     l = i + 1;
@@ -362,7 +362,7 @@ namespace Perst.Impl
                 }
             }
             // Insert before item[r]
-            modify();
+            Modify();
             if (n != maxItems) 
             {
                 for (int i = n; i > r; i--) item[i] = item[i-1]; 
@@ -404,8 +404,8 @@ namespace Perst.Impl
             else 
             { 
                 TtreePage rp = this.right;
-                rp.load();
-                rp.modify();
+                rp.Load();
+                rp.Modify();
                 if (rp.balance >= 0) 
                 { // single RR turn
                     this.right = rp.left;
@@ -428,8 +428,8 @@ namespace Perst.Impl
                 else 
                 { // double RL turn
                     TtreePage lp = rp.left;
-                    lp.load();
-                    lp.modify();
+                    lp.Load();
+                    lp.Modify();
                     rp.left = lp.right;
                     lp.right = rp;
                     this.right = lp.left;
@@ -458,8 +458,8 @@ namespace Perst.Impl
             else 
             { 
                 TtreePage lp = this.left;
-                lp.load();
-                lp.modify();
+                lp.Load();
+                lp.Modify();
                 if (lp.balance <= 0) 
                 { // single LL turn
                     this.left = lp.right;
@@ -482,8 +482,8 @@ namespace Perst.Impl
                 else 
                 { // double LR turn
                     TtreePage rp = lp.right;
-                    rp.load();
-                    rp.modify();
+                    rp.Load();
+                    rp.Modify();
                     lp.right = rp.left;
                     rp.left = lp;
                     this.left = rp.right;
@@ -499,15 +499,15 @@ namespace Perst.Impl
     
         internal int remove(PersistentComparator comparator, IPersistent mbr, PageReference pgRef)
         {
-            load();
+            Load();
             TtreePage pg;
             int n = nItems;
-            int diff = comparator.compareMembers(mbr, loadItem(0));
+            int diff = comparator.CompareMembers(mbr, loadItem(0));
             if (diff <= 0) 
             { 
                 if (left != null) 
                 { 
-                    modify();
+                    Modify();
                     pg = pgRef.pg;
                     pgRef.pg = left;
                     int h = left.remove(comparator, mbr, pgRef);
@@ -523,7 +523,7 @@ namespace Perst.Impl
                     }
                 }
             }
-            diff = comparator.compareMembers(mbr, loadItem(n-1));
+            diff = comparator.CompareMembers(mbr, loadItem(n-1));
             if (diff <= 0) 
             {	    
                 for (int i = 0; i < n; i++) 
@@ -534,28 +534,28 @@ namespace Perst.Impl
                         { 
                             if (right == null) 
                             { 
-                                deallocate();
+                                Deallocate();
                                 pgRef.pg = left;
                                 return UNDERFLOW;
                             } 
                             else if (left == null) 
                             { 
-                                deallocate();
+                                Deallocate();
                                 pgRef.pg = right;
                                 return UNDERFLOW;
                             } 
                         }
-                        modify();
+                        Modify();
                         if (n <= minItems) 
                         { 
                             if (left != null && balance <= 0) 
                             {  
                                 TtreePage prev = left;
-                                prev.load();
+                                prev.Load();
                                 while (prev.right != null) 
                                 {                                 
                                     prev = prev.right;
-                                    prev.load();
+                                    prev.Load();
                                 }
                                 while (--i >= 0) 
                                 { 
@@ -576,11 +576,11 @@ namespace Perst.Impl
                             else if (right != null) 
                             { 
                                 TtreePage next = right;
-                                next.load();
+                                next.Load();
                                 while (next.left != null) 
                                 { 
                                     next = next.left;
-                                    next.load();
+                                    next.Load();
                                 }
                                 while (++i < n) 
                                 { 
@@ -610,7 +610,7 @@ namespace Perst.Impl
             }
             if (right != null) 
             { 
-                modify();
+                Modify();
                 pg = pgRef.pg;
                 pgRef.pg = right;
                 int h = right.remove(comparator, mbr, pgRef);
@@ -631,7 +631,7 @@ namespace Perst.Impl
 
         internal int toArray(IPersistent[] arr, int index) 
         { 
-            load();
+            Load();
             if (left != null) 
             { 
                 index = left.toArray(arr, index);
@@ -649,7 +649,7 @@ namespace Perst.Impl
 
         internal void prune() 
         { 
-            load();
+            Load();
             if (left != null) 
             { 
                 left.prune();
@@ -658,7 +658,7 @@ namespace Perst.Impl
             { 
                 right.prune();
             }
-            deallocate();
+            Deallocate();
         }
 
     }

@@ -18,7 +18,7 @@ namespace Perst
         /// <returns>the number of related objects
         /// 
         /// </returns>
-        int size();
+        int Size();
 
         /// <summary> Get number of the linked objects 
         /// </summary>
@@ -40,7 +40,7 @@ namespace Perst
         /// <returns>referenced object
         /// 
         /// </returns>
-        IPersistent get(int i);
+        IPersistent Get(int i);
 
         /// <summary> Get related object by index without loading it.
         /// Returned object can be used only to get it OID or to compare with other objects using
@@ -51,7 +51,7 @@ namespace Perst
         /// <returns>stub representing referenced object
         /// 
         /// </returns>
-        IPersistent getRaw(int i);
+        IPersistent GetRaw(int i);
 
         /// <summary> Replace i-th element of the relation
         /// </summary>
@@ -60,14 +60,14 @@ namespace Perst
         /// <param name="obj">object to be included in the relation     
         /// 
         /// </param>
-        void  set(int i, IPersistent obj);
+        void  Set(int i, IPersistent obj);
 
         /// <summary> Remove object with specified index from the relation
         /// </summary>
         /// <param name="i">index in the relartion
         /// 
         /// </param>
-        void  remove(int i);
+        void  Remove(int i);
 
         /// <summary> Insert new object in the relation
         /// </summary>
@@ -76,21 +76,21 @@ namespace Perst
         /// <param name="obj">object inserted in the relation
         /// 
         /// </param>
-        void  insert(int i, IPersistent obj);
+        void  Insert(int i, IPersistent obj);
 
         /// <summary> Add new object to the relation
         /// </summary>
         /// <param name="obj">object inserted in the relation
         /// 
         /// </param>
-        void  add(IPersistent obj);
+        void  Add(IPersistent obj);
 
         /// <summary> Add all elements of the array to the relation
         /// </summary>
         /// <param name="arr">array of obects which should be added to the relation
         /// 
         /// </param>
-        void  addAll(IPersistent[] arr);
+        void  AddAll(IPersistent[] arr);
 
         /// <summary> Add specified elements of the array to the relation
         /// </summary>
@@ -101,14 +101,14 @@ namespace Perst
         /// <param name="length">number of elements in the array to be added in the relation
         /// 
         /// </param>
-        void  addAll(IPersistent[] arr, int from, int length);
+        void  AddAll(IPersistent[] arr, int from, int length);
 
         /// <summary> Add all object members of the other relation to this relation
         /// </summary>
         /// <param name="link">another relation
         /// 
         /// </param>
-        void  addAll(Link link);
+        void  AddAll(Link link);
 
         /// <summary> Get relation members as array of objects
         /// </summary>
@@ -126,7 +126,7 @@ namespace Perst
         /// <param name="obj">specified object
         /// 
         /// </param>
-        bool contains(IPersistent obj);
+        bool Contains(IPersistent obj);
 
         /// <summary> Get index of the specified object in the relation
         /// </summary>
@@ -135,10 +135,10 @@ namespace Perst
         /// <returns>zero based index of the object or -1 if object is not in the relation
         /// 
         /// </returns>
-        int indexOf(IPersistent obj);
+        int IndexOf(IPersistent obj);
 
         /// <summary> Remove all members from the relation
         /// </summary>
-        void  clear();
+        void  Clear();
     }
 }

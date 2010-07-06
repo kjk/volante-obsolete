@@ -19,7 +19,7 @@ namespace Perst.Impl
         {
         }
 
-        public override void onLoad()
+        public override void OnLoad()
         {
             cls = ClassDescriptor.lookup(className);
             fld = cls.GetField(fieldName, BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);            
@@ -102,34 +102,34 @@ namespace Perst.Impl
                 key = new Key((Enum)val);
                 break;
              default:
-                Assert.failed("Invalid type");
+                Assert.Failed("Invalid type");
                 break;
             }
             return key;
         }
  
-        public bool put(IPersistent obj) 
+        public bool Put(IPersistent obj) 
         {
             return base.insert(extractKey(obj), obj, false);
         }
 
-        public void set(IPersistent obj) 
+        public void Set(IPersistent obj) 
         {
             base.insert(extractKey(obj), obj, true);
         }
 
-        public void remove(IPersistent obj) 
+        public void Remove(IPersistent obj) 
         {
             base.remove(new BtreeKey(extractKey(obj), obj.Oid));
         }
         
-        public bool contains(IPersistent obj) 
+        public bool Contains(IPersistent obj) 
         {
             Key key = extractKey(obj);
             if (unique) { 
-                return base.get(key) != null;
+                return base.Get(key) != null;
             } else { 
-                IPersistent[] mbrs = get(key, key);
+                IPersistent[] mbrs = Get(key, key);
                 for (int i = 0; i < mbrs.Length; i++) { 
                     if (mbrs[i] == obj) { 
                         return true;
@@ -139,7 +139,7 @@ namespace Perst.Impl
             }
         }
 
-        public void append(IPersistent obj) {
+        public void Append(IPersistent obj) {
             lock(this) { 
                 Key key;
                 switch (type) {
@@ -155,12 +155,12 @@ namespace Perst.Impl
                      throw new StorageError(StorageError.ErrorCode.UNSUPPORTED_INDEX_TYPE, fld.FieldType);
                 }
                 autoincCount += 1;
-                obj.modify();
+                obj.Modify();
                 base.insert(key, obj, false);
             }
         }
 
-        public override IPersistent[] get(Key from, Key till)
+        public override IPersistent[] Get(Key from, Key till)
         {
             if ((from != null && from.type != type) || (till != null && till.type != type))
             {

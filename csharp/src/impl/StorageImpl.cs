@@ -3,6 +3,7 @@ namespace Perst.Impl
     using System;
     using System.Collections;
     using System.Reflection;
+    using System.Threading;
     using Perst;
 	
     public class StorageImpl:Storage
@@ -42,7 +43,7 @@ namespace Perst.Impl
                     {
                         throw new StorageError(StorageError.ErrorCode.STORAGE_NOT_OPENED);
                     }
-                    if (!value.isPersistent())
+                    if (!value.IsPersistent())
                     {
                         storeObject(value);
                     }
@@ -52,16 +53,7 @@ namespace Perst.Impl
             }
 			
         }
-        public override  IPersistent getRoot() 
-        {
-            return this.Root;
-        }
-
-        public override  void setRoot(IPersistent root) 
-        {
-            this.Root = root;
-        }
-
+ 
         /// <summary> Initialial database index size - increasing it reduce number of inde reallocation but increase
         /// initial database size. Should be set before openning connection.
         /// </summary>
@@ -101,26 +93,32 @@ namespace Perst.Impl
 		
         internal long getPos(int oid)
         {
-            if (oid == 0 && oid >= currIndexSize)
+            lock (objectCache) 
             {
-                throw new StorageError(StorageError.ErrorCode.INVALID_OID);
+                if (oid == 0 && oid >= currIndexSize)
+                {
+                    throw new StorageError(StorageError.ErrorCode.INVALID_OID);
+                }
+                Page pg = pool.getPage(header.root[1 - currIndex].index + (oid >> dbHandlesPerPageBits << Page.pageBits));
+                long pos = Bytes.unpack8(pg.data, (oid & (dbHandlesPerPage - 1)) << 3);
+                pool.unfix(pg);
+                return pos;
             }
-            Page pg = pool.getPage(header.root[1 - currIndex].index + (oid >> dbHandlesPerPageBits << Page.pageBits));
-            long pos = Bytes.unpack8(pg.data, (oid & (dbHandlesPerPage - 1)) << 3);
-            pool.unfix(pg);
-            return pos;
         }
 		
         internal void  setPos(int oid, long pos)
         {
-            if (oid == 1 && (pos & dbPageObjectFlag) == 0)
+            lock (objectCache) 
             {
-                throw new System.ApplicationException("Something is definitly wrong");
+                if (oid == 1 && (pos & dbPageObjectFlag) == 0)
+                {
+                    throw new System.ApplicationException("Something is definitly wrong");
+                }
+                dirtyPagesMap[oid >> (dbHandlesPerPageBits + 5)] |= 1 << ((oid >> dbHandlesPerPageBits) & 31);
+                Page pg = pool.putPage(header.root[1 - currIndex].index + (oid >> dbHandlesPerPageBits << Page.pageBits));
+                Bytes.pack8(pg.data, (oid & (dbHandlesPerPage - 1)) << 3, pos);
+                pool.unfix(pg);
             }
-            dirtyPagesMap[oid >> (dbHandlesPerPageBits + 5)] |= 1 << ((oid >> dbHandlesPerPageBits) & 31);
-            Page pg = pool.putPage(header.root[1 - currIndex].index + (oid >> dbHandlesPerPageBits << Page.pageBits));
-            Bytes.pack8(pg.data, (oid & (dbHandlesPerPage - 1)) << 3, pos);
-            pool.unfix(pg);
         }
 		
         internal byte[] get(int oid)
@@ -145,20 +143,23 @@ namespace Perst.Impl
 		
         internal Page putPage(int oid)
         {
-            long pos = getPos(oid);
-            if ((pos & (dbFreeHandleFlag | dbPageObjectFlag)) != dbPageObjectFlag)
+            lock (objectCache) 
             {
-                throw new StorageError(StorageError.ErrorCode.DELETED_OBJECT);
+                long pos = getPos(oid);
+                if ((pos & (dbFreeHandleFlag | dbPageObjectFlag)) != dbPageObjectFlag)
+                {
+                    throw new StorageError(StorageError.ErrorCode.DELETED_OBJECT);
+                }
+                if ((pos & dbModifiedFlag) == 0)
+                {
+                    dirtyPagesMap[oid >> (dbHandlesPerPageBits + 5)] |= 1 << ((oid >> dbHandlesPerPageBits) & 31);
+                    allocate(Page.pageSize, oid);
+                    cloneBitmap(pos & ~ dbFlagsMask, Page.pageSize);
+                    pos = getPos(oid);
+                }
+                modified = true;
+                return pool.putPage(pos & ~ dbFlagsMask);
             }
-            if ((pos & dbModifiedFlag) == 0)
-            {
-                dirtyPagesMap[oid >> (dbHandlesPerPageBits + 5)] |= 1 << ((oid >> dbHandlesPerPageBits) & 31);
-                allocate(Page.pageSize, oid);
-                cloneBitmap(pos & ~ dbFlagsMask, Page.pageSize);
-                pos = getPos(oid);
-            }
-            modified = true;
-            return pool.putPage(pos & ~ dbFlagsMask);
         }
 		
 		
@@ -171,41 +172,44 @@ namespace Perst.Impl
 		
         protected internal override void  deallocateObject(IPersistent obj)
         {
-            int oid = obj.Oid;
-            if (oid == 0) 
-            { 
-                return;
-            }       
             lock(this)
             {
-                long pos = getPos(oid);
-                objectCache.remove(oid);
-                int offs = (int) pos & (Page.pageSize - 1);
-                if ((offs & (dbFreeHandleFlag | dbPageObjectFlag)) != 0)
-                {
-                    throw new StorageError(StorageError.ErrorCode.DELETED_OBJECT);
+                lock (objectCache) 
+                { 
+                    int oid = obj.Oid;
+                    if (oid == 0) 
+                    { 
+                        return;
+                    }       
+                    long pos = getPos(oid);
+                    objectCache.remove(oid);
+                    int offs = (int) pos & (Page.pageSize - 1);
+                    if ((offs & (dbFreeHandleFlag | dbPageObjectFlag)) != 0)
+                    {
+                        throw new StorageError(StorageError.ErrorCode.DELETED_OBJECT);
+                    }
+                    Page pg = pool.getPage(pos - offs);
+                    offs &= ~ dbFlagsMask;
+                    int size = ObjectHeader.getSize(pg.data, offs);
+                    pool.unfix(pg);
+                    freeId(oid);
+                    if ((pos & dbModifiedFlag) != 0) 
+                    {
+                        free(pos & ~ dbFlagsMask, size);
+                    }
+                    else
+                    {
+                        cloneBitmap(pos, size);
+                    }
+                    setObjectOid(obj, 0, false);
                 }
-                Page pg = pool.getPage(pos - offs);
-                offs &= ~ dbFlagsMask;
-                int size = ObjectHeader.getSize(pg.data, offs);
-                pool.unfix(pg);
-                freeId(oid);
-                if ((pos & dbModifiedFlag) != 0) 
-                {
-                    free(pos & ~ dbFlagsMask, size);
-                }
-                else
-                {
-                    cloneBitmap(pos, size);
-                }
-                setObjectOid(obj, 0, false);
             }
         }
-		
+    		
         internal void  freePage(int oid)
         {
             long pos = getPos(oid);
-            Assert.that((pos & (dbFreeHandleFlag | dbPageObjectFlag)) == dbPageObjectFlag);
+            Assert.That((pos & (dbFreeHandleFlag | dbPageObjectFlag)) == dbPageObjectFlag);
             if ((pos & dbModifiedFlag) != 0)
             {
                 free(pos & ~ dbFlagsMask, Page.pageSize);
@@ -217,20 +221,7 @@ namespace Perst.Impl
             freeId(oid);
         }
 		
-        internal void  updatePage(int oid, byte[] pageBody)
-        {
-            long pos = getPos(oid);
-            if ((pos & dbModifiedFlag) == 0)
-            {
-                cloneBitmap(pos & ~ dbFlagsMask, pageBody.Length);
-                pos = allocate(pageBody.Length, 0);
-                setPos(oid, pos | dbModifiedFlag);
-            }
-            modified = true;
-            pool.put(pos & ~ dbFlagsMask, pageBody);
-        }
-		
-		
+ 	
         internal void setDirty() 
         {
             modified = true;
@@ -246,41 +237,47 @@ namespace Perst.Impl
 
         internal int allocateId()
         {
-            int oid;
-            int curr = 1 - currIndex;
-            setDirty();
-            if ((oid = header.root[curr].freeList) != 0)
+            lock (objectCache) 
             {
-                header.root[curr].freeList = (int) (getPos(oid) >> dbFlagsBits);
-                dirtyPagesMap[oid >> (dbHandlesPerPageBits + 5)] 
-                    |= 1 << ((oid >> dbHandlesPerPageBits) & 31);
+                int oid;
+                int curr = 1 - currIndex;
+                setDirty();
+                if ((oid = header.root[curr].freeList) != 0)
+                {
+                    header.root[curr].freeList = (int) (getPos(oid) >> dbFlagsBits);
+                    dirtyPagesMap[oid >> (dbHandlesPerPageBits + 5)] 
+                        |= 1 << ((oid >> dbHandlesPerPageBits) & 31);
+                    return oid;
+                }
+			
+                if (currIndexSize + 1 > header.root[curr].indexSize)
+                {
+                    int oldIndexSize = header.root[curr].indexSize;
+                    int newIndexSize = oldIndexSize * 2;
+                    while (newIndexSize < oldIndexSize + 1)
+                    {
+                        newIndexSize = newIndexSize * 2;
+                    }
+                    long newIndex = allocate(newIndexSize * 8, 0);
+                    pool.copy(newIndex, header.root[curr].index, currIndexSize * 8);
+                    free(header.root[curr].index, oldIndexSize * 8);
+                    header.root[curr].index = newIndex;
+                    header.root[curr].indexSize = newIndexSize;
+                }
+                oid = currIndexSize;
+                header.root[curr].indexUsed = ++currIndexSize;
+                modified = true;
                 return oid;
             }
-			
-            if (currIndexSize + 1 > header.root[curr].indexSize)
-            {
-                int oldIndexSize = header.root[curr].indexSize;
-                int newIndexSize = oldIndexSize * 2;
-                while (newIndexSize < oldIndexSize + 1)
-                {
-                    newIndexSize = newIndexSize * 2;
-                }
-                long newIndex = allocate(newIndexSize * 8, 0);
-                pool.copy(newIndex, header.root[curr].index, currIndexSize * 8);
-                free(header.root[curr].index, oldIndexSize * 8);
-                header.root[curr].index = newIndex;
-                header.root[curr].indexSize = newIndexSize;
-            }
-            oid = currIndexSize;
-            header.root[curr].indexUsed = ++currIndexSize;
-            modified = true;
-            return oid;
         }
 		
         internal void  freeId(int oid)
         {
-            setPos(oid, ((long) (header.root[1 - currIndex].freeList) << dbFlagsBits) | dbFreeHandleFlag);
-            header.root[1 - currIndex].freeList = oid;
+            lock (objectCache) 
+            {
+                setPos(oid, ((long) (header.root[1 - currIndex].freeList) << dbFlagsBits) | dbFreeHandleFlag);
+                header.root[1 - currIndex].freeList = oid;
+            }
         }
 		
         internal static byte[] firstHoleSize = new byte[]{8, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 6, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 7, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 6, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0};
@@ -345,358 +342,360 @@ namespace Perst.Impl
 		
         internal long allocate(int size, int oid)
         {
-
-            setDirty();
-            size = (size + dbAllocationQuantum - 1) & ~ (dbAllocationQuantum - 1);
-            Assert.that(size != 0);
-            allocatedDelta += size;
-            if (allocatedDelta > gcThreshold) 
+            lock (objectCache) 
             {
-                gc();
-            }
-            int objBitSize = size >> dbAllocationQuantumBits;
-            long pos;
-            int holeBitSize = 0;
-            int alignment = size & (Page.pageSize - 1);
-            int offs, firstPage, lastPage, i;
-            int holeBeforeFreePage = 0;
-            int freeBitmapPage = 0;
-            Page pg;
+                setDirty();
+                size = (size + dbAllocationQuantum - 1) & ~ (dbAllocationQuantum - 1);
+                Assert.That(size != 0);
+                allocatedDelta += size;
+                if (allocatedDelta > gcThreshold) 
+                {
+                    Gc();
+                }
+                int objBitSize = size >> dbAllocationQuantumBits;
+                long pos;
+                int holeBitSize = 0;
+                int alignment = size & (Page.pageSize - 1);
+                int offs, firstPage, lastPage, i;
+                int holeBeforeFreePage = 0;
+                int freeBitmapPage = 0;
+                Page pg;
 			
-            lastPage = header.root[1 - currIndex].bitmapEnd;
-            usedSize += size;
+                lastPage = header.root[1 - currIndex].bitmapEnd;
+                usedSize += size;
 			
-            if (alignment == 0)
-            {
-                firstPage = currPBitmapPage;
-                offs = (currPBitmapOffs + inc - 1) & ~ (inc - 1);
-            }
-            else
-            {
-                firstPage = currRBitmapPage;
-                offs = currRBitmapOffs;
-            }
-			
-            while (true)
-            {
                 if (alignment == 0)
                 {
-                    // allocate page object 
-                    for (i = firstPage; i < lastPage; i++)
-                    {
-                        int spaceNeeded = objBitSize - holeBitSize < pageBits?objBitSize - holeBitSize:pageBits;
-                        if (bitmapPageAvailableSpace[i] <= spaceNeeded)
-                        {
-                            holeBitSize = 0;
-                            offs = 0;
-                            continue;
-                        }
-                        pg = getPage(i);
-                        int startOffs = offs;
-                        while (offs < Page.pageSize)
-                        {
-                            if (pg.data[offs++] != 0)
-                            {
-                                offs = (offs + inc - 1) & ~ (inc - 1);
-                                holeBitSize = 0;
-                            }
-                            else if ((holeBitSize += 8) == objBitSize)
-                            {
-                                pos = (((long) (i - dbBitmapId) * Page.pageSize + offs) * 8 - holeBitSize) << dbAllocationQuantumBits;
-                                if (wasReserved(pos, size))
-                                {
-                                    offs += objBitSize >> 3;
-                                    startOffs = offs = (offs + inc - 1) & ~ (inc - 1);
-                                    holeBitSize = 0;
-                                    continue;
-                                }
-                                reserveLocation(pos, size);
-                                currPBitmapPage = i;
-                                currPBitmapOffs = offs;
-                                extend(pos + size);
-                                if (oid != 0)
-                                {
-                                    long prev = getPos(oid);
-                                    uint marker = (uint) prev & dbFlagsMask;
-                                    pool.copy(pos, prev - marker, size);
-                                    setPos(oid, pos | marker | dbModifiedFlag);
-                                }
-                                pool.unfix(pg);
-                                pg = putPage(i);
-                                int holeBytes = holeBitSize >> 3;
-                                if (holeBytes > offs)
-                                {
-                                    memset(pg, 0, 0xFF, offs);
-                                    holeBytes -= offs;
-                                    pool.unfix(pg);
-                                    pg = putPage(--i);
-                                    offs = Page.pageSize;
-                                }
-                                while (holeBytes > Page.pageSize)
-                                {
-                                    memset(pg, 0, 0xFF, Page.pageSize);
-                                    holeBytes -= Page.pageSize;
-                                    bitmapPageAvailableSpace[i] = 0;
-                                    pool.unfix(pg);
-                                    pg = putPage(--i);
-                                }
-                                memset(pg, offs - holeBytes, 0xFF, holeBytes);
-                                commitLocation();
-                                pool.unfix(pg);
-                                return pos;
-                            }
-                        }
-                        if (startOffs == 0 && holeBitSize == 0 && spaceNeeded < bitmapPageAvailableSpace[i])
-                        {
-                            bitmapPageAvailableSpace[i] = spaceNeeded;
-                        }
-                        offs = 0;
-                        pool.unfix(pg);
-                    }
+                    firstPage = currPBitmapPage;
+                    offs = (currPBitmapOffs + inc - 1) & ~ (inc - 1);
                 }
                 else
                 {
-                    for (i = firstPage; i < lastPage; i++)
+                    firstPage = currRBitmapPage;
+                    offs = currRBitmapOffs;
+                }
+			
+                while (true)
+                {
+                    if (alignment == 0)
                     {
-                        int spaceNeeded = objBitSize - holeBitSize < pageBits?objBitSize - holeBitSize:pageBits;
-                        if (bitmapPageAvailableSpace[i] <= spaceNeeded)
+                        // allocate page object 
+                        for (i = firstPage; i < lastPage; i++)
                         {
-                            holeBitSize = 0;
-                            offs = 0;
-                            continue;
-                        }
-                        pg = getPage(i);
-                        int startOffs = offs;
-                        while (offs < Page.pageSize)
-                        {
-                            int mask = pg.data[offs] & 0xFF;
-                            if (holeBitSize + firstHoleSize[mask] >= objBitSize)
+                            int spaceNeeded = objBitSize - holeBitSize < pageBits?objBitSize - holeBitSize:pageBits;
+                            if (bitmapPageAvailableSpace[i] <= spaceNeeded)
                             {
-                                pos = (((long) (i - dbBitmapId) * Page.pageSize + offs) * 8 - holeBitSize) << dbAllocationQuantumBits;
-                                if (wasReserved(pos, size))
+                                holeBitSize = 0;
+                                offs = 0;
+                                continue;
+                            }
+                            pg = getPage(i);
+                            int startOffs = offs;
+                            while (offs < Page.pageSize)
+                            {
+                                if (pg.data[offs++] != 0)
                                 {
-                                    startOffs = offs += (objBitSize + 7) >> 3;
+                                    offs = (offs + inc - 1) & ~ (inc - 1);
                                     holeBitSize = 0;
-                                    continue;
                                 }
-                                reserveLocation(pos, size);
-                                currRBitmapPage = i;
-                                currRBitmapOffs = offs;
-                                extend(pos + size);
-                                if (oid != 0)
+                                else if ((holeBitSize += 8) == objBitSize)
                                 {
-                                    long prev = getPos(oid);
-                                    uint marker = (uint) prev & dbFlagsMask;
-                                    pool.copy(pos, prev - marker, size);
-                                    setPos(oid, pos | marker | dbModifiedFlag);
-                                }
-                                pool.unfix(pg);
-                                pg = putPage(i);
-                                pg.data[offs] |= (byte) ((1 << (objBitSize - holeBitSize)) - 1);
-                                if (holeBitSize != 0)
-                                {
-                                    if (holeBitSize > offs * 8)
+                                    pos = (((long) (i - dbBitmapId) * Page.pageSize + offs) * 8 - holeBitSize) << dbAllocationQuantumBits;
+                                    if (wasReserved(pos, size))
+                                    {
+                                        offs += objBitSize >> 3;
+                                        startOffs = offs = (offs + inc - 1) & ~ (inc - 1);
+                                        holeBitSize = 0;
+                                        continue;
+                                    }
+                                    reserveLocation(pos, size);
+                                    currPBitmapPage = i;
+                                    currPBitmapOffs = offs;
+                                    extend(pos + size);
+                                    if (oid != 0)
+                                    {
+                                        long prev = getPos(oid);
+                                        uint marker = (uint) prev & dbFlagsMask;
+                                        pool.copy(pos, prev - marker, size);
+                                        setPos(oid, pos | marker | dbModifiedFlag);
+                                    }
+                                    pool.unfix(pg);
+                                    pg = putPage(i);
+                                    int holeBytes = holeBitSize >> 3;
+                                    if (holeBytes > offs)
                                     {
                                         memset(pg, 0, 0xFF, offs);
-                                        holeBitSize -= offs * 8;
+                                        holeBytes -= offs;
                                         pool.unfix(pg);
                                         pg = putPage(--i);
                                         offs = Page.pageSize;
                                     }
-                                    while (holeBitSize > pageBits)
+                                    while (holeBytes > Page.pageSize)
                                     {
                                         memset(pg, 0, 0xFF, Page.pageSize);
-                                        holeBitSize -= pageBits;
+                                        holeBytes -= Page.pageSize;
                                         bitmapPageAvailableSpace[i] = 0;
                                         pool.unfix(pg);
                                         pg = putPage(--i);
                                     }
-                                    while ((holeBitSize -= 8) > 0)
-                                    {
-                                        pg.data[--offs] = (byte) 0xFF;
-                                    }
-                                    pg.data[offs - 1] |= (byte) (~ ((1 << - holeBitSize) - 1));
+                                    memset(pg, offs - holeBytes, 0xFF, holeBytes);
+                                    commitLocation();
+                                    pool.unfix(pg);
+                                    return pos;
                                 }
-                                pool.unfix(pg);
-                                commitLocation();
-                                return pos;
                             }
-                            else if (maxHoleSize[mask] >= objBitSize)
+                            if (startOffs == 0 && holeBitSize == 0 && spaceNeeded < bitmapPageAvailableSpace[i])
                             {
-                                int holeBitOffset = maxHoleOffset[mask];
-                                pos = (((long) (i - dbBitmapId) * Page.pageSize + offs) * 8 + holeBitOffset) << dbAllocationQuantumBits;
-                                if (wasReserved(pos, size))
-                                {
-                                    startOffs = offs += (objBitSize + 7) >> 3;
-                                    holeBitSize = 0;
-                                    continue;
-                                }
-                                reserveLocation(pos, size);
-                                currRBitmapPage = i;
-                                currRBitmapOffs = offs;
-                                extend(pos + size);
-                                if (oid != 0)
-                                {
-                                    long prev = getPos(oid);
-                                    uint marker = (uint) prev & dbFlagsMask;
-                                    pool.copy(pos, prev - marker, size);
-                                    setPos(oid, pos | marker | dbModifiedFlag);
-                                }
-                                pool.unfix(pg);
-                                pg = putPage(i);
-                                pg.data[offs] |= (byte) (((1 << objBitSize) - 1) << holeBitOffset);
-                                pool.unfix(pg);
-                                commitLocation();
-                                return pos;
+                                bitmapPageAvailableSpace[i] = spaceNeeded;
                             }
-                            offs += 1;
-                            if (lastHoleSize[mask] == 8)
-                            {
-                                holeBitSize += 8;
-                            }
-                            else
-                            {
-                                holeBitSize = lastHoleSize[mask];
-                            }
-                        }
-                        if (startOffs == 0 && holeBitSize == 0 && spaceNeeded < bitmapPageAvailableSpace[i])
-                        {
-                            bitmapPageAvailableSpace[i] = spaceNeeded;
-                        }
-                        offs = 0;
-                        pool.unfix(pg);
-                    }
-                }
-                if (firstPage == dbBitmapId)
-                {
-                    if (freeBitmapPage > i)
-                    {
-                        i = freeBitmapPage;
-                        holeBitSize = holeBeforeFreePage;
-                    }
-                    if (i == dbBitmapId + dbBitmapPages)
-                    {
-                        throw new StorageError(StorageError.ErrorCode.NOT_ENOUGH_SPACE);
-                    }
-                    long extension = (size > extensionQuantum) ? size : extensionQuantum;
-                    int morePages = (int) ((extension + Page.pageSize * (dbAllocationQuantum * 8 - 1) - 1) / (Page.pageSize * (dbAllocationQuantum * 8 - 1)));
-					
-                    if (i + morePages > dbBitmapId + dbBitmapPages)
-                    {
-                        morePages = (int) ((size + Page.pageSize * (dbAllocationQuantum * 8 - 1) - 1) / (Page.pageSize * (dbAllocationQuantum * 8 - 1)));
-                        if (i + morePages > dbBitmapId + dbBitmapPages)
-                        {
-                            throw new StorageError(StorageError.ErrorCode.NOT_ENOUGH_SPACE);
-                        }
-                    }
-                    objBitSize -= holeBitSize;
-                    int skip = (objBitSize + Page.pageSize / dbAllocationQuantum - 1) & ~ (Page.pageSize / dbAllocationQuantum - 1);
-                    pos = ((long) (i - dbBitmapId) << (Page.pageBits + dbAllocationQuantumBits + 3)) + (skip << dbAllocationQuantumBits);
-                    extend(pos + morePages * Page.pageSize);
-                    int len = objBitSize >> 3;
-                    long adr = pos;
-                    while (len >= Page.pageSize)
-                    {
-                        pg = pool.putPage(adr);
-                        memset(pg, 0, 0xFF, Page.pageSize);
-                        pool.unfix(pg);
-                        adr += Page.pageSize;
-                        len -= Page.pageSize;
-                    }
-                    pg = pool.putPage(adr);
-                    memset(pg, 0, 0xFF, len);
-                    pg.data[len] = (byte) ((1 << (objBitSize & 7)) - 1);
-                    pool.unfix(pg);
-                    adr = pos + (skip >> 3);
-                    len = morePages * (Page.pageSize / dbAllocationQuantum / 8);
-                    while (true)
-                    {
-                        int off = (int) adr & (Page.pageSize - 1);
-                        pg = pool.putPage(adr - off);
-                        if (Page.pageSize - off >= len)
-                        {
-                            memset(pg, off, 0xFF, len);
+                            offs = 0;
                             pool.unfix(pg);
-                            break;
                         }
-                        else
-                        {
-                            memset(pg, off, 0xFF, Page.pageSize - off);
-                            pool.unfix(pg);
-                            adr += Page.pageSize - off;
-                            len -= Page.pageSize - off;
-                        }
-                    }
-                    int j = i;
-                    while (--morePages >= 0)
-                    {
-                        setPos(j++, pos | dbPageObjectFlag | dbModifiedFlag);
-                        pos += Page.pageSize;
-                    }
-                    freeBitmapPage = header.root[1 - currIndex].bitmapEnd = j;
-                    j = i + objBitSize / pageBits;
-                    if (alignment != 0)
-                    {
-                        currRBitmapPage = j;
-                        currRBitmapOffs = 0;
                     }
                     else
                     {
-                        currPBitmapPage = j;
-                        currPBitmapOffs = 0;
-                    }
-                    while (j > i)
-                    {
-                        bitmapPageAvailableSpace[--j] = 0;
-                    }
-					
-                    pos = ((long) (i - dbBitmapId) * Page.pageSize * 8 - holeBitSize) << dbAllocationQuantumBits;
-                    if (oid != 0)
-                    {
-                        long prev = getPos(oid);
-                        uint marker = (uint) prev & dbFlagsMask;
-                        pool.copy(pos, prev - marker, size);
-                        setPos(oid, pos | marker | dbModifiedFlag);
-                    }
-					
-                    if (holeBitSize != 0)
-                    {
-                        reserveLocation(pos, size);
-                        while (holeBitSize > pageBits)
+                        for (i = firstPage; i < lastPage; i++)
                         {
-                            holeBitSize -= pageBits;
-                            pg = putPage(--i);
-                            memset(pg, 0, 0xFF, Page.pageSize);
-                            bitmapPageAvailableSpace[i] = 0;
+                            int spaceNeeded = objBitSize - holeBitSize < pageBits?objBitSize - holeBitSize:pageBits;
+                            if (bitmapPageAvailableSpace[i] <= spaceNeeded)
+                            {
+                                holeBitSize = 0;
+                                offs = 0;
+                                continue;
+                            }
+                            pg = getPage(i);
+                            int startOffs = offs;
+                            while (offs < Page.pageSize)
+                            {
+                                int mask = pg.data[offs] & 0xFF;
+                                if (holeBitSize + firstHoleSize[mask] >= objBitSize)
+                                {
+                                    pos = (((long) (i - dbBitmapId) * Page.pageSize + offs) * 8 - holeBitSize) << dbAllocationQuantumBits;
+                                    if (wasReserved(pos, size))
+                                    {
+                                        startOffs = offs += (objBitSize + 7) >> 3;
+                                        holeBitSize = 0;
+                                        continue;
+                                    }
+                                    reserveLocation(pos, size);
+                                    currRBitmapPage = i;
+                                    currRBitmapOffs = offs;
+                                    extend(pos + size);
+                                    if (oid != 0)
+                                    {
+                                        long prev = getPos(oid);
+                                        uint marker = (uint) prev & dbFlagsMask;
+                                        pool.copy(pos, prev - marker, size);
+                                        setPos(oid, pos | marker | dbModifiedFlag);
+                                    }
+                                    pool.unfix(pg);
+                                    pg = putPage(i);
+                                    pg.data[offs] |= (byte) ((1 << (objBitSize - holeBitSize)) - 1);
+                                    if (holeBitSize != 0)
+                                    {
+                                        if (holeBitSize > offs * 8)
+                                        {
+                                            memset(pg, 0, 0xFF, offs);
+                                            holeBitSize -= offs * 8;
+                                            pool.unfix(pg);
+                                            pg = putPage(--i);
+                                            offs = Page.pageSize;
+                                        }
+                                        while (holeBitSize > pageBits)
+                                        {
+                                            memset(pg, 0, 0xFF, Page.pageSize);
+                                            holeBitSize -= pageBits;
+                                            bitmapPageAvailableSpace[i] = 0;
+                                            pool.unfix(pg);
+                                            pg = putPage(--i);
+                                        }
+                                        while ((holeBitSize -= 8) > 0)
+                                        {
+                                            pg.data[--offs] = (byte) 0xFF;
+                                        }
+                                        pg.data[offs - 1] |= (byte) (~ ((1 << - holeBitSize) - 1));
+                                    }
+                                    pool.unfix(pg);
+                                    commitLocation();
+                                    return pos;
+                                }
+                                else if (maxHoleSize[mask] >= objBitSize)
+                                {
+                                    int holeBitOffset = maxHoleOffset[mask];
+                                    pos = (((long) (i - dbBitmapId) * Page.pageSize + offs) * 8 + holeBitOffset) << dbAllocationQuantumBits;
+                                    if (wasReserved(pos, size))
+                                    {
+                                        startOffs = offs += (objBitSize + 7) >> 3;
+                                        holeBitSize = 0;
+                                        continue;
+                                    }
+                                    reserveLocation(pos, size);
+                                    currRBitmapPage = i;
+                                    currRBitmapOffs = offs;
+                                    extend(pos + size);
+                                    if (oid != 0)
+                                    {
+                                        long prev = getPos(oid);
+                                        uint marker = (uint) prev & dbFlagsMask;
+                                        pool.copy(pos, prev - marker, size);
+                                        setPos(oid, pos | marker | dbModifiedFlag);
+                                    }
+                                    pool.unfix(pg);
+                                    pg = putPage(i);
+                                    pg.data[offs] |= (byte) (((1 << objBitSize) - 1) << holeBitOffset);
+                                    pool.unfix(pg);
+                                    commitLocation();
+                                    return pos;
+                                }
+                                offs += 1;
+                                if (lastHoleSize[mask] == 8)
+                                {
+                                    holeBitSize += 8;
+                                }
+                                else
+                                {
+                                    holeBitSize = lastHoleSize[mask];
+                                }
+                            }
+                            if (startOffs == 0 && holeBitSize == 0 && spaceNeeded < bitmapPageAvailableSpace[i])
+                            {
+                                bitmapPageAvailableSpace[i] = spaceNeeded;
+                            }
+                            offs = 0;
                             pool.unfix(pg);
                         }
-                        pg = putPage(--i);
-                        offs = Page.pageSize;
-                        while ((holeBitSize -= 8) > 0)
-                        {
-                            pg.data[--offs] = (byte) 0xFF;
-                        }
-                        pg.data[offs - 1] |= (byte) (~ ((1 << - holeBitSize) - 1));
-                        pool.unfix(pg);
-                        commitLocation();
                     }
-                    return pos;
+                    if (firstPage == dbBitmapId)
+                    {
+                        if (freeBitmapPage > i)
+                        {
+                            i = freeBitmapPage;
+                            holeBitSize = holeBeforeFreePage;
+                        }
+                        if (i == dbBitmapId + dbBitmapPages)
+                        {
+                            throw new StorageError(StorageError.ErrorCode.NOT_ENOUGH_SPACE);
+                        }
+                        long extension = (size > extensionQuantum) ? size : extensionQuantum;
+                        int morePages = (int) ((extension + Page.pageSize * (dbAllocationQuantum * 8 - 1) - 1) / (Page.pageSize * (dbAllocationQuantum * 8 - 1)));
+					
+                        if (i + morePages > dbBitmapId + dbBitmapPages)
+                        {
+                            morePages = (int) ((size + Page.pageSize * (dbAllocationQuantum * 8 - 1) - 1) / (Page.pageSize * (dbAllocationQuantum * 8 - 1)));
+                            if (i + morePages > dbBitmapId + dbBitmapPages)
+                            {
+                                throw new StorageError(StorageError.ErrorCode.NOT_ENOUGH_SPACE);
+                            }
+                        }
+                        objBitSize -= holeBitSize;
+                        int skip = (objBitSize + Page.pageSize / dbAllocationQuantum - 1) & ~ (Page.pageSize / dbAllocationQuantum - 1);
+                        pos = ((long) (i - dbBitmapId) << (Page.pageBits + dbAllocationQuantumBits + 3)) + (skip << dbAllocationQuantumBits);
+                        extend(pos + morePages * Page.pageSize);
+                        int len = objBitSize >> 3;
+                        long adr = pos;
+                        while (len >= Page.pageSize)
+                        {
+                            pg = pool.putPage(adr);
+                            memset(pg, 0, 0xFF, Page.pageSize);
+                            pool.unfix(pg);
+                            adr += Page.pageSize;
+                            len -= Page.pageSize;
+                        }
+                        pg = pool.putPage(adr);
+                        memset(pg, 0, 0xFF, len);
+                        pg.data[len] = (byte) ((1 << (objBitSize & 7)) - 1);
+                        pool.unfix(pg);
+                        adr = pos + (skip >> 3);
+                        len = morePages * (Page.pageSize / dbAllocationQuantum / 8);
+                        while (true)
+                        {
+                            int off = (int) adr & (Page.pageSize - 1);
+                            pg = pool.putPage(adr - off);
+                            if (Page.pageSize - off >= len)
+                            {
+                                memset(pg, off, 0xFF, len);
+                                pool.unfix(pg);
+                                break;
+                            }
+                            else
+                            {
+                                memset(pg, off, 0xFF, Page.pageSize - off);
+                                pool.unfix(pg);
+                                adr += Page.pageSize - off;
+                                len -= Page.pageSize - off;
+                            }
+                        }
+                        int j = i;
+                        while (--morePages >= 0)
+                        {
+                            setPos(j++, pos | dbPageObjectFlag | dbModifiedFlag);
+                            pos += Page.pageSize;
+                        }
+                        freeBitmapPage = header.root[1 - currIndex].bitmapEnd = j;
+                        j = i + objBitSize / pageBits;
+                        if (alignment != 0)
+                        {
+                            currRBitmapPage = j;
+                            currRBitmapOffs = 0;
+                        }
+                        else
+                        {
+                            currPBitmapPage = j;
+                            currPBitmapOffs = 0;
+                        }
+                        while (j > i)
+                        {
+                            bitmapPageAvailableSpace[--j] = 0;
+                        }
+					
+                        pos = ((long) (i - dbBitmapId) * Page.pageSize * 8 - holeBitSize) << dbAllocationQuantumBits;
+                        if (oid != 0)
+                        {
+                            long prev = getPos(oid);
+                            uint marker = (uint) prev & dbFlagsMask;
+                            pool.copy(pos, prev - marker, size);
+                            setPos(oid, pos | marker | dbModifiedFlag);
+                        }
+					
+                        if (holeBitSize != 0)
+                        {
+                            reserveLocation(pos, size);
+                            while (holeBitSize > pageBits)
+                            {
+                                holeBitSize -= pageBits;
+                                pg = putPage(--i);
+                                memset(pg, 0, 0xFF, Page.pageSize);
+                                bitmapPageAvailableSpace[i] = 0;
+                                pool.unfix(pg);
+                            }
+                            pg = putPage(--i);
+                            offs = Page.pageSize;
+                            while ((holeBitSize -= 8) > 0)
+                            {
+                                pg.data[--offs] = (byte) 0xFF;
+                            }
+                            pg.data[offs - 1] |= (byte) (~ ((1 << - holeBitSize) - 1));
+                            pool.unfix(pg);
+                            commitLocation();
+                        }
+                        return pos;
+                    }
+                    if (gcThreshold != Int64.MaxValue && !gcDone) 
+                    {
+                        allocatedDelta -= size;
+                        usedSize -= size;
+                        Gc();
+                        currRBitmapPage = currPBitmapPage = dbBitmapId;
+                        currRBitmapOffs = currPBitmapOffs = 0;                
+                        return allocate(size, oid);
+                    }
+                    freeBitmapPage = i;
+                    holeBeforeFreePage = holeBitSize;
+                    holeBitSize = 0;
+                    lastPage = firstPage + 1;
+                    firstPage = dbBitmapId;
+                    offs = 0;
                 }
-                if (gcThreshold != Int64.MaxValue && !gcDone) 
-                {
-                    allocatedDelta -= size;
-                    usedSize -= size;
-                    gc();
-                    currRBitmapPage = currPBitmapPage = dbBitmapId;
-                    currRBitmapOffs = currPBitmapOffs = 0;                
-                    return allocate(size, oid);
-                }
-                freeBitmapPage = i;
-                holeBeforeFreePage = holeBitSize;
-                holeBitSize = 0;
-                lastPage = firstPage + 1;
-                firstPage = dbBitmapId;
-                offs = 0;
             }
         }
 		
@@ -704,113 +703,119 @@ namespace Perst.Impl
 		
         internal void  free(long pos, int size)
         {
-            Assert.that(pos != 0 && (pos & (dbAllocationQuantum - 1)) == 0);
-            long quantNo = pos >> dbAllocationQuantumBits;
-            int objBitSize = (size + dbAllocationQuantum - 1) >> dbAllocationQuantumBits;
-            int pageId = dbBitmapId + (int) (quantNo >> (Page.pageBits + 3));
-            int offs = (int) (quantNo & (Page.pageSize * 8 - 1)) >> 3;
-            Page pg = putPage(pageId);
-            int bitOffs = (int) quantNo & 7;
-			
-            allocatedDelta -= objBitSize << dbAllocationQuantumBits;
-            usedSize -= objBitSize << dbAllocationQuantumBits;
-			
-            if ((pos & (Page.pageSize - 1)) == 0 && size >= Page.pageSize)
+            lock (objectCache) 
             {
-                if (pageId == currPBitmapPage && offs < currPBitmapOffs)
+                Assert.That(pos != 0 && (pos & (dbAllocationQuantum - 1)) == 0);
+                long quantNo = pos >> dbAllocationQuantumBits;
+                int objBitSize = (size + dbAllocationQuantum - 1) >> dbAllocationQuantumBits;
+                int pageId = dbBitmapId + (int) (quantNo >> (Page.pageBits + 3));
+                int offs = (int) (quantNo & (Page.pageSize * 8 - 1)) >> 3;
+                Page pg = putPage(pageId);
+                int bitOffs = (int) quantNo & 7;
+			
+                allocatedDelta -= objBitSize << dbAllocationQuantumBits;
+                usedSize -= objBitSize << dbAllocationQuantumBits;
+			
+                if ((pos & (Page.pageSize - 1)) == 0 && size >= Page.pageSize)
                 {
-                    currPBitmapOffs = offs;
+                    if (pageId == currPBitmapPage && offs < currPBitmapOffs)
+                    {
+                        currPBitmapOffs = offs;
+                    }
                 }
-            }
-            else
-            {
+                else
+                {
+                    if (pageId == currRBitmapPage && offs < currRBitmapOffs)
+                    {
+                        currRBitmapOffs = offs;
+                    }
+                }
                 if (pageId == currRBitmapPage && offs < currRBitmapOffs)
                 {
                     currRBitmapOffs = offs;
                 }
-            }
-            if (pageId == currRBitmapPage && offs < currRBitmapOffs)
-            {
-                currRBitmapOffs = offs;
-            }
-            bitmapPageAvailableSpace[pageId] = System.Int32.MaxValue;
+                bitmapPageAvailableSpace[pageId] = System.Int32.MaxValue;
 			
-            if (objBitSize > 8 - bitOffs)
-            {
-                objBitSize -= 8 - bitOffs;
-                pg.data[offs++] &= (byte)((1 << bitOffs) - 1);
-                while (objBitSize + offs * 8 > Page.pageSize * 8)
+                if (objBitSize > 8 - bitOffs)
                 {
-                    memset(pg, offs, 0, Page.pageSize - offs);
-                    pool.unfix(pg);
-                    pg = putPage(++pageId);
-                    bitmapPageAvailableSpace[pageId] = System.Int32.MaxValue;
-                    objBitSize -= (Page.pageSize - offs) * 8;
-                    offs = 0;
+                    objBitSize -= 8 - bitOffs;
+                    pg.data[offs++] &= (byte)((1 << bitOffs) - 1);
+                    while (objBitSize + offs * 8 > Page.pageSize * 8)
+                    {
+                        memset(pg, offs, 0, Page.pageSize - offs);
+                        pool.unfix(pg);
+                        pg = putPage(++pageId);
+                        bitmapPageAvailableSpace[pageId] = System.Int32.MaxValue;
+                        objBitSize -= (Page.pageSize - offs) * 8;
+                        offs = 0;
+                    }
+                    while ((objBitSize -= 8) > 0)
+                    {
+                        pg.data[offs++] = (byte) 0;
+                    }
+                    pg.data[offs] &= (byte) (~ ((1 << (objBitSize + 8)) - 1));
                 }
-                while ((objBitSize -= 8) > 0)
+                else
                 {
-                    pg.data[offs++] = (byte) 0;
+                    pg.data[offs] &= (byte) (~ (((1 << objBitSize) - 1) << bitOffs));
                 }
-                pg.data[offs] &= (byte) (~ ((1 << (objBitSize + 8)) - 1));
+                pool.unfix(pg);
             }
-            else
-            {
-                pg.data[offs] &= (byte) (~ (((1 << objBitSize) - 1) << bitOffs));
-            }
-            pool.unfix(pg);
         }
 		
         internal void  cloneBitmap(long pos, int size)
         {
-            long quantNo = pos >> dbAllocationQuantumBits;
-            long objBitSize = (size + dbAllocationQuantum - 1) >> dbAllocationQuantumBits;
-            int pageId = dbBitmapId + (int) (quantNo >> (Page.pageBits + 3));
-            int offs = (int) (quantNo & (Page.pageSize * 8 - 1)) >> 3;
-            int bitOffs = (int) quantNo & 7;
-            int oid = pageId;
-            pos = getPos(oid);
-            if ((pos & dbModifiedFlag) == 0)
+            lock (objectCache) 
             {
-                dirtyPagesMap[oid >> (dbHandlesPerPageBits + 5)] 
-                    |= 1 << ((oid >> dbHandlesPerPageBits) & 31);
-                allocate(Page.pageSize, oid);
-                cloneBitmap(pos & ~ dbFlagsMask, Page.pageSize);
-            }
-			
-            if (objBitSize > 8 - bitOffs)
-            {
-                objBitSize -= 8 - bitOffs;
-                offs += 1;
-                while (objBitSize + offs * 8 > Page.pageSize * 8)
+                long quantNo = pos >> dbAllocationQuantumBits;
+                long objBitSize = (size + dbAllocationQuantum - 1) >> dbAllocationQuantumBits;
+                int pageId = dbBitmapId + (int) (quantNo >> (Page.pageBits + 3));
+                int offs = (int) (quantNo & (Page.pageSize * 8 - 1)) >> 3;
+                int bitOffs = (int) quantNo & 7;
+                int oid = pageId;
+                pos = getPos(oid);
+                if ((pos & dbModifiedFlag) == 0)
                 {
-                    oid = ++pageId;
-                    pos = getPos(oid);
-                    if ((pos & dbModifiedFlag) == 0)
+                    dirtyPagesMap[oid >> (dbHandlesPerPageBits + 5)] 
+                        |= 1 << ((oid >> dbHandlesPerPageBits) & 31);
+                    allocate(Page.pageSize, oid);
+                    cloneBitmap(pos & ~ dbFlagsMask, Page.pageSize);
+                }
+			
+                if (objBitSize > 8 - bitOffs)
+                {
+                    objBitSize -= 8 - bitOffs;
+                    offs += 1;
+                    while (objBitSize + offs * 8 > Page.pageSize * 8)
                     {
-                        dirtyPagesMap[oid >> (dbHandlesPerPageBits + 5)] 
-                            |= 1 << ((oid >> dbHandlesPerPageBits) & 31);
-                        allocate(Page.pageSize, oid);
-                        cloneBitmap(pos & ~ dbFlagsMask, Page.pageSize);
+                        oid = ++pageId;
+                        pos = getPos(oid);
+                        if ((pos & dbModifiedFlag) == 0)
+                        {
+                            dirtyPagesMap[oid >> (dbHandlesPerPageBits + 5)] 
+                                |= 1 << ((oid >> dbHandlesPerPageBits) & 31);
+                            allocate(Page.pageSize, oid);
+                            cloneBitmap(pos & ~ dbFlagsMask, Page.pageSize);
+                        }
+                        objBitSize -= (Page.pageSize - offs) * 8;
+                        offs = 0;
                     }
-                    objBitSize -= (Page.pageSize - offs) * 8;
-                    offs = 0;
                 }
             }
         }
 		
-        public override void  open(System.String filePath, int pagePoolSize)
+        public override void Open(System.String filePath, int pagePoolSize)
         {
             OSFile file = new OSFile(filePath);      
             try {
-                open(file, pagePoolSize);
+                Open(file, pagePoolSize);
             } catch (StorageError ex) {
-                file.close();            
+                file.Close();            
                 throw ex;
             }
         }
 
-        public override void  open(IFile file, int pagePoolSize)
+        public override void Open(IFile file, int pagePoolSize)
         {
             lock(this)
             {
@@ -837,6 +842,14 @@ namespace Perst.Impl
                 currRBitmapPage = currPBitmapPage = dbBitmapId;
                 currRBitmapOffs = currPBitmapOffs = 0;
                 gcThreshold = Int64.MaxValue;
+#if !COMPACT_NET_FRAME_WORK
+                nNestedTransactions = 0;
+                nBlockedTransactions = 0;
+                nCommittedTransactions = 0;
+                scheduledCommitTime = Int64.MaxValue;
+                transactionMonitor = new Object();
+                transactionLock = new PersistentResource();
+#endif
                 allocatedDelta = 0;
                 gcDone = false;
                 modified = false;
@@ -846,7 +859,6 @@ namespace Perst.Impl
                     ? (OidHashTable)new StrongHashTable(objectCacheInitSize) 
                     : (OidHashTable)new WeakHashTable(objectCacheInitSize);
                 classDescMap = new Hashtable();
-                modificationList = new ModificationList(modificationListLimit);
                 descList = null;
 				
 #if SUPPORT_RAW_TYPE
@@ -854,7 +866,7 @@ namespace Perst.Impl
 #endif                
                 header = new Header();
                 byte[] buf = new byte[Header.Sizeof];
-                int rc = file.read(0, buf);
+                int rc = file.Read(0, buf);
                 if (rc > 0 && rc < Header.Sizeof)
                 {
                     throw new StorageError(StorageError.ErrorCode.DATABASE_CORRUPTED);
@@ -977,7 +989,7 @@ namespace Perst.Impl
             }
         }
 
-        public override bool isOpened() 
+        public override bool IsOpened() 
         { 
             return opened;
         }
@@ -1050,7 +1062,7 @@ namespace Perst.Impl
         }
 		    
 
-        public override void  commit()
+        public override void Commit()
         {
             lock(this)
             {
@@ -1058,7 +1070,7 @@ namespace Perst.Impl
                 {
                     throw new StorageError(StorageError.ErrorCode.STORAGE_NOT_OPENED);
                 }
-                modificationList.flush();
+                objectCache.flush();
            
                 if (!modified)
                 {
@@ -1233,7 +1245,7 @@ namespace Perst.Impl
             }
         }
 		
-        public override void  rollback()
+        public override void Rollback()
         {
             lock(this)
             {
@@ -1241,14 +1253,12 @@ namespace Perst.Impl
                 {
                     throw new StorageError(StorageError.ErrorCode.STORAGE_NOT_OPENED);
                 }
-                modificationList.clear();
+                objectCache.invalidate();
         
                 if (!modified) 
                 { 
                     return;
                 }
-                objectCache.clear();
-
                 int curr = currIndex;
                 int[] map = dirtyPagesMap;
                 if (header.root[1 - curr].index != header.root[curr].shadowIndex)
@@ -1288,7 +1298,7 @@ namespace Perst.Impl
             }
         }
 		
-        public override Index createIndex(System.Type keyType, bool unique)
+        public override Index CreateIndex(System.Type keyType, bool unique)
         {
             lock(this)
             {
@@ -1302,7 +1312,7 @@ namespace Perst.Impl
             }
         }
         
-        public override SpatialIndex createSpatialIndex() 
+        public override SpatialIndex CreateSpatialIndex() 
         {
             lock(this)
             {
@@ -1316,7 +1326,7 @@ namespace Perst.Impl
             }
         }
 		
-        public override SortedCollection createSortedCollection(PersistentComparator comparator, bool unique) 
+        public override SortedCollection CreateSortedCollection(PersistentComparator comparator, bool unique) 
         {
             if (!opened) 
             { 
@@ -1325,7 +1335,7 @@ namespace Perst.Impl
             return new Ttree(comparator, unique);
         }
 
-        public override ISet createSet() 
+        public override ISet CreateSet() 
         {
             lock(this)
             {
@@ -1339,7 +1349,7 @@ namespace Perst.Impl
             }
         }
 		
-        public override FieldIndex createFieldIndex(System.Type type, String fieldName, bool unique)
+        public override FieldIndex CreateFieldIndex(System.Type type, String fieldName, bool unique)
         {
             lock(this)
             {
@@ -1353,7 +1363,7 @@ namespace Perst.Impl
             }
         }
 		
-        public override FieldIndex createFieldIndex(System.Type type, String[] fieldNames, bool unique)
+        public override FieldIndex CreateFieldIndex(System.Type type, String[] fieldNames, bool unique)
         {
             lock(this)
             {
@@ -1367,17 +1377,17 @@ namespace Perst.Impl
             }
         }
 
-        public override Link createLink()
+        public override Link CreateLink()
         {
             return new LinkImpl(8);
         }
 		
-        public override Relation createRelation(IPersistent owner)
+        public override Relation CreateRelation(IPersistent owner)
         {
             return new RelationImpl(owner);
         }
 
-        public override void  exportXML(System.IO.StreamWriter writer)
+        public override void  ExportXML(System.IO.StreamWriter writer)
         {
             lock(this)
             {
@@ -1394,7 +1404,7 @@ namespace Perst.Impl
             }
         }
 		
-        public override void  importXML(System.IO.StreamReader reader)
+        public override void  ImportXML(System.IO.StreamReader reader)
         {
             lock(this)
             {
@@ -1434,118 +1444,121 @@ namespace Perst.Impl
             return pool.getPage(getGCPos(oid) & ~dbFlagsMask);
         }
 
-        public override void setGcThreshold(long maxAllocatedDelta) 
+        public override void SetGcThreshold(long maxAllocatedDelta) 
         {
             gcThreshold = maxAllocatedDelta;
         }
 
-        public override void gc() 
+        public override void Gc() 
         { 
             lock (this) 
             { 
-                if (gcDone) 
-                { 
-                    return;
-                }
-                // Console.WriteLine("Start GC, allocatedDelta=" + allocatedDelta + ", header[" + currIndex + "].size=" + header.root[currIndex].size + ", gcTreshold=" + gcThreshold);
-                int bitmapSize = (int)((ulong)header.root[currIndex].size >> (dbAllocationQuantumBits + 5)) + 1;
-                bool existsNotMarkedObjects;
-                long pos;
-                int  i, j;
-
-                // mark
-                greyBitmap = new int[bitmapSize];
-                blackBitmap = new int[bitmapSize];
-                int rootOid = header.root[currIndex].rootObject;
-                if (rootOid != 0) 
-                { 
-                    markOid(rootOid);
-                    do 
+                lock (objectCache) 
+                {
+                    if (gcDone) 
                     { 
-                        existsNotMarkedObjects = false;
-                        for (i = 0; i < bitmapSize; i++) 
+                        return;
+                    }
+                    // Console.WriteLine("Start GC, allocatedDelta=" + allocatedDelta + ", header[" + currIndex + "].size=" + header.root[currIndex].size + ", gcTreshold=" + gcThreshold);
+                    int bitmapSize = (int)((ulong)header.root[currIndex].size >> (dbAllocationQuantumBits + 5)) + 1;
+                    bool existsNotMarkedObjects;
+                    long pos;
+                    int  i, j;
+
+                    // mark
+                    greyBitmap = new int[bitmapSize];
+                    blackBitmap = new int[bitmapSize];
+                    int rootOid = header.root[currIndex].rootObject;
+                    if (rootOid != 0) 
+                    { 
+                        markOid(rootOid);
+                        do 
                         { 
-                            if (greyBitmap[i] != 0) 
+                            existsNotMarkedObjects = false;
+                            for (i = 0; i < bitmapSize; i++) 
                             { 
-                                existsNotMarkedObjects = true;
-                                for (j = 0; j < 32; j++) 
+                                if (greyBitmap[i] != 0) 
                                 { 
-                                    if ((greyBitmap[i] & (1 << j)) != 0) 
+                                    existsNotMarkedObjects = true;
+                                    for (j = 0; j < 32; j++) 
                                     { 
-                                        pos = (((long)i << 5) + j) << dbAllocationQuantumBits;
-                                        greyBitmap[i] &= ~(1 << j);
-                                        blackBitmap[i] |= 1 << j;
-                                        int offs = (int)pos & (Page.pageSize-1);
-                                        Page pg = pool.getPage(pos - offs);
-                                        int typeOid = ObjectHeader.getType(pg.data, offs);
-                                        if (typeOid != 0) 
+                                        if ((greyBitmap[i] & (1 << j)) != 0) 
                                         { 
-                                            ClassDescriptor desc = (ClassDescriptor)lookupObject(typeOid, typeof(ClassDescriptor));
-                                            if (typeof(Btree).IsAssignableFrom(desc.cls)) 
+                                            pos = (((long)i << 5) + j) << dbAllocationQuantumBits;
+                                            greyBitmap[i] &= ~(1 << j);
+                                            blackBitmap[i] |= 1 << j;
+                                            int offs = (int)pos & (Page.pageSize-1);
+                                            Page pg = pool.getPage(pos - offs);
+                                            int typeOid = ObjectHeader.getType(pg.data, offs);
+                                            if (typeOid != 0) 
                                             { 
-                                                Btree btree = new Btree(pg.data, ObjectHeader.Sizeof + offs);
-                                                setObjectOid(btree, 0, false);
-                                                btree.markTree();
-                                            } 
-                                            else if (desc.hasReferences) 
-                                            { 
-                                                markObject(pool.get(pos), ObjectHeader.Sizeof, desc);
+                                                ClassDescriptor desc = (ClassDescriptor)lookupObject(typeOid, typeof(ClassDescriptor));
+                                                if (typeof(Btree).IsAssignableFrom(desc.cls)) 
+                                                { 
+                                                    Btree btree = new Btree(pg.data, ObjectHeader.Sizeof + offs);
+                                                    setObjectOid(btree, 0, false);
+                                                    btree.markTree();
+                                                } 
+                                                else if (desc.hasReferences) 
+                                                { 
+                                                    markObject(pool.get(pos), ObjectHeader.Sizeof, desc);
                                                 
+                                                }
                                             }
+                                            pool.unfix(pg);                                
                                         }
-                                        pool.unfix(pg);                                
                                     }
                                 }
                             }
-                        }
-                    } while (existsNotMarkedObjects);
-                }
+                        } while (existsNotMarkedObjects);
+                    }
         
-                // sweep
-                gcDone = true;
-                for (i = dbFirstUserId, j = committedIndexSize; i < j; i++) 
-                {
-                    pos = getGCPos(i);
-                    if (((int)pos & (dbPageObjectFlag|dbFreeHandleFlag)) == 0) 
+                    // sweep
+                    gcDone = true;
+                    for (i = dbFirstUserId, j = committedIndexSize; i < j; i++) 
                     {
-                        int bit = (int)((ulong)pos >> dbAllocationQuantumBits);
-                        if ((blackBitmap[(uint)bit >> 5] & (1 << (bit & 31))) == 0) 
-                        { 
-                            // object is not accessible
-                            if (getPos(i) != pos) 
+                        pos = getGCPos(i);
+                        if (((int)pos & (dbPageObjectFlag|dbFreeHandleFlag)) == 0) 
+                        {
+                            int bit = (int)((ulong)pos >> dbAllocationQuantumBits);
+                            if ((blackBitmap[(uint)bit >> 5] & (1 << (bit & 31))) == 0) 
                             { 
-                                throw new StorageError(StorageError.ErrorCode.INVALID_OID);
-                            }
-                            int offs = (int)pos & (Page.pageSize-1);
-                            Page pg = pool.getPage(pos - offs);
-                            int typeOid = ObjectHeader.getType(pg.data, offs);
-                            if (typeOid != 0) 
-                            { 
-                                ClassDescriptor desc = findClassDescriptor(typeOid);
-                                if (desc != null 
-                                    && (typeof(Btree).IsAssignableFrom(desc.cls))) 
+                                // object is not accessible
+                                if (getPos(i) != pos) 
                                 { 
-                                    Btree btree = new Btree(pg.data, ObjectHeader.Sizeof + offs);
-                                    pool.unfix(pg);
-                                    setObjectOid(btree, i, false);
-                                    btree.deallocate();
+                                    throw new StorageError(StorageError.ErrorCode.INVALID_OID);
                                 }
-                                else 
+                                int offs = (int)pos & (Page.pageSize-1);
+                                Page pg = pool.getPage(pos - offs);
+                                int typeOid = ObjectHeader.getType(pg.data, offs);
+                                if (typeOid != 0) 
                                 { 
-                                    int size = ObjectHeader.getSize(pg.data, offs);
-                                    pool.unfix(pg);
-                                    freeId(i);
-                                    objectCache.remove(i);                        
-                                    cloneBitmap(pos, size);
+                                    ClassDescriptor desc = findClassDescriptor(typeOid);
+                                    if (desc != null 
+                                        && (typeof(Btree).IsAssignableFrom(desc.cls))) 
+                                    { 
+                                        Btree btree = new Btree(pg.data, ObjectHeader.Sizeof + offs);
+                                        pool.unfix(pg);
+                                        setObjectOid(btree, i, false);
+                                        btree.Deallocate();
+                                    }
+                                    else 
+                                    { 
+                                        int size = ObjectHeader.getSize(pg.data, offs);
+                                        pool.unfix(pg);
+                                        freeId(i);
+                                        objectCache.remove(i);                        
+                                        cloneBitmap(pos, size);
+                                    }
                                 }
                             }
-                        }
-                    }   
-                }
+                        }   
+                    }
 
-                greyBitmap = null;
-                blackBitmap = null;
-                allocatedDelta = 0;
+                    greyBitmap = null;
+                    blackBitmap = null;
+                    allocatedDelta = 0;
+                }
             }
         }
 
@@ -1712,35 +1725,119 @@ namespace Perst.Impl
         }
 
 #if COMPACT_NET_FRAMEWORK
-        public override void registerAssembly(System.Reflection.Assembly assembly) 
+        public override void RegisterAssembly(System.Reflection.Assembly assembly) 
         {
             assemblies.Add(assembly);
         }
+#else
+        public override void BeginThreadTransaction(TransactionMode mode)
+        {
+            lock (transactionMonitor) 
+            {
+                if (scheduledCommitTime != Int64.MaxValue) 
+                { 
+                    nBlockedTransactions += 1;
+                    while (DateTime.Now.Ticks >= scheduledCommitTime) 
+                    { 
+                        Monitor.Wait(transactionMonitor);
+                    }
+                    nBlockedTransactions -= 1;
+                }
+                nNestedTransactions += 1;
+            }	    
+            if (mode == TransactionMode.Exclusive) 
+            { 
+                transactionLock.ExclusiveLock();
+            } 
+            else 
+            { 
+                transactionLock.SharedLock();
+            }
+        }
+
+        public override void EndThreadTransaction(int maxDelay)
+        {
+            lock (transactionMonitor) 
+            { 
+                transactionLock.Unlock();
+                if (nNestedTransactions != 0) 
+                { // may be everything is already aborted
+                    if (--nNestedTransactions == 0) 
+                    { 
+                        nCommittedTransactions += 1;
+                        Commit();
+                        scheduledCommitTime = Int64.MaxValue;
+                        if (nBlockedTransactions != 0) 
+                        { 
+                            Monitor.PulseAll(transactionMonitor);
+                        }
+                    } 
+                    else 
+                    {
+                        if (maxDelay != Int32.MaxValue) 
+                        { 
+                            long nextCommit = DateTime.Now.Ticks + maxDelay;
+                            if (nextCommit < scheduledCommitTime) 
+                            { 
+                                scheduledCommitTime = nextCommit;
+                            }
+                            if (maxDelay == 0) 
+                            { 
+                                int n = nCommittedTransactions;
+                                nBlockedTransactions += 1;
+                                do 
+                                { 
+                                    Monitor.Wait(transactionMonitor);
+                                } while (nCommittedTransactions == n);
+                                nBlockedTransactions -= 1;
+                            }				    
+                        }
+                    }
+                }
+            }
+        }
+
+
+        public override void RollbackThreadTransaction()
+        {
+            lock (transactionMonitor) 
+            { 
+                transactionLock.Reset();
+                nNestedTransactions = 0;
+                if (nBlockedTransactions != 0) 
+                { 
+                    Monitor.PulseAll(transactionMonitor);
+                }
+                Rollback();
+            }
+        }
+	    
+
 #endif
 
-        public override void  close()
+        public override void Close()
         {
-            commit();
-                opened = false;
-                if (header.dirty)
-                {
-                    Page pg = pool.putPage(0);
-                    header.pack(pg.data);
-                    pool.flush();
-                    pool.modify(pg);
-                    header.dirty = false;
-                    header.pack(pg.data);
-                    pool.unfix(pg);
-                    pool.flush();
-                }
-                pool.close();
-                // make GC easier
-                pool = null;
-                objectCache = null;
-                classDescMap = null;
-                bitmapPageAvailableSpace = null;
-                dirtyPagesMap = null;
-                descList = null;
+            Commit();
+            opened = false;
+            if (header.dirty)
+            {
+                Page pg = pool.putPage(0);
+                header.pack(pg.data);
+                pool.flush();
+                pool.modify(pg);
+                header.dirty = false;
+                header.pack(pg.data);
+                pool.unfix(pg);
+                pool.flush();
+            }
+            pool.close();
+            // make GC easier
+            pool = null;
+            objectCache = null;
+            classDescMap = null;
+            bitmapPageAvailableSpace = null;
+            dirtyPagesMap = null;
+            descList = null;
         }
 		
         private bool getBooleanValue(Object val) 
@@ -1777,7 +1874,7 @@ namespace Perst.Impl
         }
 
      
-        public override void setProperties(System.Collections.Specialized.NameValueCollection props) 
+        public override void SetProperties(System.Collections.Specialized.NameValueCollection props) 
         {
             string val;
             if ((val = props["perst.serialize.transient.objects"]) != null) 
@@ -1796,17 +1893,13 @@ namespace Perst.Impl
             { 
                 extensionQuantum = getIntegerValue(val);
             } 
-            if ((val = props["perst.modification.list.limit"]) != null) 
-            { 
-                modificationListLimit = (int)getIntegerValue(val);
-            }
-            if ((val = props["perst.gc.threshold"]) != null) 
+           if ((val = props["perst.gc.threshold"]) != null) 
             { 
                  gcThreshold = getIntegerValue(val);
             }
         }
 
-        public override void setProperty(String name, Object val)
+        public override void SetProperty(String name, Object val)
         {
             if (name.Equals("perst.serialize.transient.objects")) 
             { 
@@ -1824,10 +1917,6 @@ namespace Perst.Impl
             { 
                 extensionQuantum = getIntegerValue(val);
             } 
-            else if (name.Equals("perst.modification.list.limit")) 
-            { 
-                modificationListLimit = (int)getIntegerValue(val);
-            } 
             else if (name.Equals("perst.gc.threshold")) 
             { 
                 gcThreshold = getIntegerValue(val);
@@ -1839,7 +1928,7 @@ namespace Perst.Impl
         }
 
     
-        public override IPersistent getObjectByOID(int oid)
+        public override IPersistent GetObjectByOID(int oid)
         {
             lock (this) 
             { 
@@ -1847,67 +1936,17 @@ namespace Perst.Impl
             }
         }
 
-        internal class ModificationList 
-        { 
-            ArrayList list;
-            int       curr;
-            int       used;
-            int       limit;
-        
-            const int initListSize = 256;
-
-            public ModificationList(int limit) 
-            { 
-                this.limit = limit;
-                list = new ArrayList(limit > initListSize ? initListSize : limit);
-            }
-
-            public void add(IPersistent obj) 
-            { 
-                if (used == limit) 
-                { 
-                    if (limit == 0) 
-                    { 
-                        obj.store();
-                    } 
-                    else 
-                    { 
-                        IPersistent victim = (IPersistent)list[curr];
-                        list[curr] = obj;
-                        victim.store();
-                        curr = (curr + 1) % limit;
-                    }
-                } 
-                else 
-                { 
-                    used += 1;
-                    list.Add(obj);
-                }
-            }
-
-            public void flush() 
-            { 
-                for (int i = 0, n = used; i < n; i++) 
-                { 
-                    ((IPersistent)list[i]).store();
-                }
-                clear();
-            }
-
-            public void clear() 
-            { 
-                list.Clear();
-                used = 0;
-            }
-        }
         
         protected internal override void modifyObject(IPersistent obj) 
         {
             lock (this) 
             {                 
-                if (!obj.isModified()) 
+                lock (objectCache) 
                 { 
-                    modificationList.add(obj);
+                    if (!obj.IsModified()) 
+                    { 
+                        objectCache.setDirty(obj.Oid);
+                    }
                 }
             }
         }
@@ -1915,68 +1954,95 @@ namespace Perst.Impl
         protected internal override void storeObject(IPersistent obj) 
         {
             lock (this) 
-            {                 
-                int oid = obj.Oid;
-                bool newObject = false;
-                if (oid == 0)
+            {
+                if (!opened) 
+                { 
+                    throw new StorageError(StorageError.ErrorCode.STORAGE_NOT_OPENED);
+                }
+                lock(objectCache) 
+                { 
+                    storeObject0(obj);
+                }
+            }
+        }
+
+        protected internal override void storeFinalizedObject(IPersistent obj) 
+        {
+            if (opened) 
+            { 
+                lock (objectCache) 
+                { 
+                    if (obj.Oid != 0) { 
+                        storeObject0(obj);
+                    }
+                }
+            }
+        }
+
+        void storeObject0(IPersistent obj) 
+        {
+            int oid = obj.Oid;
+            bool newObject = false;
+            if (oid == 0)
+            {
+                oid = allocateId();
+                objectCache.put(oid, obj);
+                setObjectOid(obj, oid, false);
+                newObject = true;
+            } else if (obj.IsModified()) {
+                objectCache.clearDirty(oid);
+            } 
+            byte[] data = packObject(obj);
+            long pos;
+            int newSize = ObjectHeader.getSize(data, 0);
+            if (newObject)
+            {
+                pos = allocate(newSize, 0);
+                setPos(oid, pos | dbModifiedFlag);
+            }
+            else
+            {
+                pos = getPos(oid);
+                int offs = (int) pos & (Page.pageSize - 1);
+                if ((offs & (dbFreeHandleFlag | dbPageObjectFlag)) != 0)
                 {
-                    oid = allocateId();
-                    objectCache.put(oid, obj);
-                    setObjectOid(obj, oid, false);
-                    newObject = true;
-                } 
-                byte[] data= packObject(obj);
-                long pos;
-                int newSize = ObjectHeader.getSize(data, 0);
-                if (newObject)
+                    throw new StorageError(StorageError.ErrorCode.DELETED_OBJECT);
+                }
+                Page pg = pool.getPage(pos - offs);
+                offs &= ~ dbFlagsMask;
+                int size = ObjectHeader.getSize(pg.data, offs);
+                pool.unfix(pg);
+                if ((pos & dbModifiedFlag) == 0)
                 {
+                    cloneBitmap(pos & ~ dbFlagsMask, size);
                     pos = allocate(newSize, 0);
                     setPos(oid, pos | dbModifiedFlag);
                 }
                 else
                 {
-                    pos = getPos(oid);
-                    int offs = (int) pos & (Page.pageSize - 1);
-                    if ((offs & (dbFreeHandleFlag | dbPageObjectFlag)) != 0)
+                    if (((newSize + dbAllocationQuantum - 1) & ~ (dbAllocationQuantum - 1)) > ((size + dbAllocationQuantum - 1) & ~ (dbAllocationQuantum - 1)))
                     {
-                        throw new StorageError(StorageError.ErrorCode.DELETED_OBJECT);
-                    }
-                    Page pg = pool.getPage(pos - offs);
-                    offs &= ~ dbFlagsMask;
-                    int size = ObjectHeader.getSize(pg.data, offs);
-                    pool.unfix(pg);
-                    if ((pos & dbModifiedFlag) == 0)
-                    {
+                        long newPos = allocate(newSize, 0);
                         cloneBitmap(pos & ~ dbFlagsMask, size);
-                        pos = allocate(newSize, 0);
+                        free(pos & ~ dbFlagsMask, size);
+                        pos = newPos;
                         setPos(oid, pos | dbModifiedFlag);
                     }
-                    else
+                    else if (newSize < size)
                     {
-                        if (((newSize + dbAllocationQuantum - 1) & ~ (dbAllocationQuantum - 1)) > ((size + dbAllocationQuantum - 1) & ~ (dbAllocationQuantum - 1)))
-                        {
-                            long newPos = allocate(newSize, 0);
-                            cloneBitmap(pos & ~ dbFlagsMask, size);
-                            free(pos & ~ dbFlagsMask, size);
-                            pos = newPos;
-                            setPos(oid, pos | dbModifiedFlag);
-                        }
-                        else if (newSize < size)
-                        {
-                            ObjectHeader.setSize(data, 0, size);
-                        }
+                        ObjectHeader.setSize(data, 0, size);
                     }
                 }
-                modified = true;
-                pool.put(pos & ~ dbFlagsMask, data, newSize);
             }
+            modified = true;
+            pool.put(pos & ~dbFlagsMask, data, newSize);
         }
 		
-        protected internal override void  loadObject(IPersistent obj)
+        protected internal override void loadObject(IPersistent obj)
         {
             lock(this)
             {
-                if (obj.isRaw()) 
+                if (obj.IsRaw()) 
                 { 
                     loadStub(obj.Oid, obj, obj.GetType());
                 }
@@ -1986,7 +2052,7 @@ namespace Perst.Impl
         internal IPersistent lookupObject(int oid, System.Type cls)
         {
             IPersistent obj = objectCache.get(oid);
-            if (obj == null || obj.isRaw())
+            if (obj == null || obj.IsRaw())
             {
                 obj = loadStub(oid, obj, cls);
             }
@@ -1998,7 +2064,7 @@ namespace Perst.Impl
             int oid = 0;
             if (obj != null)
             {
-                if (!obj.isPersistent())
+                if (!obj.IsPersistent())
                 {
                     storeObject(obj);
                 }
@@ -2072,8 +2138,8 @@ namespace Perst.Impl
                 objectCache.put(oid, obj);
             }
             setObjectOid(obj, oid, false);
-            unpackObject(obj, desc, obj.recursiveLoading(), body, ObjectHeader.Sizeof);
-            obj.onLoad();
+            unpackObject(obj, desc, obj.RecursiveLoading(), body, ObjectHeader.Sizeof);
+            obj.OnLoad();
             return obj;
        }
 
@@ -3363,13 +3429,13 @@ namespace Perst.Impl
                         }
                         else
                         {
-                            int len = link.size();
+                            int len = link.Length;
                             buf.extend(offs + 4 + len * 4);
                             Bytes.pack4(buf.arr, offs, len);
                             offs += 4;
                             for (int j = 0; j < len; j++)
                             {
-                                Bytes.pack4(buf.arr, offs, swizzle(link.getRaw(j)));
+                                Bytes.pack4(buf.arr, offs, swizzle(link.GetRaw(j)));
                                 offs += 4;
                             }
                         }
@@ -3386,7 +3452,6 @@ namespace Perst.Impl
         private int  initIndexSize        = dbDefaultInitIndexSize;
         private int  objectCacheInitSize  = dbDefaultObjectCacheInitSize;
         private long extensionQuantum     = dbDefaultExtensionQuantum;
-        private int  modificationListLimit = int.MaxValue;
 
         internal PagePool pool;
         internal Header   header; // base address of database file mapping
@@ -3406,6 +3471,13 @@ namespace Perst.Impl
         
 #if COMPACT_NET_FRAMEWORK
         internal static ArrayList assemblies;
+#else
+        int       nNestedTransactions;
+        int       nBlockedTransactions;
+        int       nCommittedTransactions;
+        long      scheduledCommitTime;
+        object    transactionMonitor;
+        PersistentResource transactionLock;
 #endif
 
 #if SUPPORT_RAW_TYPE
@@ -3426,7 +3498,6 @@ namespace Perst.Impl
         internal OidHashTable     objectCache;
         internal Hashtable        classDescMap;
         internal ClassDescriptor  descList;
-        internal ModificationList modificationList;
     }
 	
     class RootPage

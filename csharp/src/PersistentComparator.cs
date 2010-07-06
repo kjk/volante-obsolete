@@ -12,7 +12,7 @@ namespace Perst
         /// <param name="m1"> first members</param>
         /// <param name="m2"> second members</param>
         /// <returns>negative number if m1 &lt; m2, zero if m1 == m2 and positive number if m1 &gt; m2</returns>
-        public abstract int compareMembers(IPersistent m1, IPersistent m2);
+        public abstract int CompareMembers(IPersistent m1, IPersistent m2);
 
         /// <summary>
         /// Compare member with specified search key
@@ -20,6 +20,6 @@ namespace Perst
         /// <param name="mbr"> collection member</param>
         /// <param name="key"> search key</param>
         /// <returns>negative number if mbr &lt; key, zero if mbr == key and positive number if mbr &gt; key</returns>
-        public abstract int compareMemberWithKey(IPersistent mbr, Object key);
+        public abstract int CompareMemberWithKey(IPersistent mbr, Object key);
     }
 }

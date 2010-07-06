@@ -14,7 +14,7 @@ namespace Perst
         /// <param name="buf"> array with data to be writter (size is always equal to database page size)
         /// </param>
         /// 
-        void write(long pos, byte[] buf);
+        void Write(long pos, byte[] buf);
 
         /// <summary> Reade data from the file
         /// </summary>
@@ -24,14 +24,14 @@ namespace Perst
         /// </param>
         /// <returns> param number of bytes actually readen
         /// </returns>
-        int read(long pos, byte[] buf);
+        int Read(long pos, byte[] buf);
 
         /// <summary> Flush all fiels changes to the disk
         /// </summary>
-        void sync();
+        void Sync();
     
         /// <summary> Close file
         /// </summary>
-        void close();
+        void Close();
     }
 }

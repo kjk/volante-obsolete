@@ -64,7 +64,7 @@ namespace Perst
             }
         }
 
-        public void sharedLock()    
+        public void SharedLock()    
         {
             Monitor.Enter(this);
             Thread currThread = Thread.CurrentThread;
@@ -85,7 +85,7 @@ namespace Perst
         }
                     
                     
-        public void exclusiveLock() 
+        public void ExclusiveLock() 
         {
             Thread currThread = Thread.CurrentThread;
             Monitor.Enter(this);
@@ -135,7 +135,7 @@ namespace Perst
         }
 
         
-        public void unlock() 
+        public void Unlock() 
         {
             lock (this) 
             { 
@@ -147,7 +147,7 @@ namespace Perst
                         notify();
                     }
                 } 
-                else 
+                else if (nReaders != 0)
                 { 
                     if (--nReaders == 0) 
                     { 
@@ -157,8 +157,18 @@ namespace Perst
             }
         }
 
+        public void Reset() 
+        { 
+            lock (this) 
+            { 
+                nReaders = 0;
+                nWriters = 0;
+                owner = null;
+                notify();
+            }
+        }
 #else
-        public void sharedLock()    
+        public void SharedLock()    
         {
             lock (this) 
             { 
@@ -183,7 +193,7 @@ namespace Perst
             }
         }
                     
-        public bool sharedLock(long timeout) 
+        public bool SharedLock(long timeout) 
         {
             Thread currThread = Thread.CurrentThread;
             DateTime startTime = DateTime.Now;
@@ -216,7 +226,7 @@ namespace Perst
         }
     
                     
-        public void exclusiveLock() 
+        public void ExclusiveLock() 
         {
             Thread currThread = Thread.CurrentThread;
             lock (this)
@@ -242,7 +252,7 @@ namespace Perst
             } 
         }
                     
-        public bool exclusiveLock(long timeout) 
+        public bool ExclusiveLock(long timeout) 
         {
             Thread currThread = Thread.CurrentThread;
             TimeSpan ts = TimeSpan.FromMilliseconds(timeout);
@@ -274,7 +284,7 @@ namespace Perst
                 }
             } 
         }
-        public void unlock() 
+        public void Unlock() 
         {
             lock (this) 
             { 
@@ -286,7 +296,7 @@ namespace Perst
                         Monitor.PulseAll(this);
                     }
                 } 
-                else 
+                else if (nReaders != 0)
                 { 
                     if (--nReaders == 0) 
                     { 
@@ -295,6 +305,18 @@ namespace Perst
                 }
             }
         }
+
+        public void Reset() 
+        { 
+            lock (this) 
+            { 
+                nReaders = 0;
+                nWriters = 0;
+                owner = null;
+                Monitor.PulseAll(this);
+            }
+        }
+
 #endif
         [NonSerialized()]
         private Thread owner;

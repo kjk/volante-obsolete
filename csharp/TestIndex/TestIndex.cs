@@ -22,15 +22,15 @@ public class TestIndex
     static public void  Main(System.String[] args)
     {
         int i;
-        Storage db = StorageFactory.Instance.createStorage();
+        Storage db = StorageFactory.Instance.CreateStorage();
 		
-        db.open("testidx.dbs", pagePoolSize);
+        db.Open("testidx.dbs", pagePoolSize);
         Root root = (Root) db.Root;
         if (root == null)
         {
             root = new Root();
-            root.strIndex = db.createIndex(typeof(String), true);
-            root.intIndex = db.createIndex(typeof(long), true);
+            root.strIndex = db.CreateIndex(typeof(String), true);
+            root.intIndex = db.CreateIndex(typeof(long), true);
             db.Root = root;
         }
         Index intIndex = root.intIndex;
@@ -43,10 +43,10 @@ public class TestIndex
             key = (3141592621L * key + 2718281829L) % 1000000007L;
             rec.intKey = key;
             rec.strKey = System.Convert.ToString(key);
-            intIndex.put(new Key(rec.intKey), rec);
-            strIndex.put(new Key(rec.strKey), rec);
+            intIndex.Put(new Key(rec.intKey), rec);
+            strIndex.Put(new Key(rec.strKey), rec);
         }
-        db.commit();
+        db.Commit();
         System.Console.WriteLine("Elapsed time for inserting " + nRecords + " records: " + (DateTime.Now - start));
 		
         start = System.DateTime.Now;
@@ -54,9 +54,9 @@ public class TestIndex
         for (i = 0; i < nRecords; i++)
         {
             key = (3141592621L * key + 2718281829L) % 1000000007L;
-            Record rec1 = (Record) intIndex.get(new Key(key));
-            Record rec2 = (Record) strIndex.get(new Key(Convert.ToString(key)));
-            Assert.that(rec1 != null && rec1 == rec2);
+            Record rec1 = (Record) intIndex.Get(new Key(key));
+            Record rec2 = (Record) strIndex.Get(new Key(Convert.ToString(key)));
+            Assert.That(rec1 != null && rec1 == rec2);
         }
         System.Console.WriteLine("Elapsed time for performing " + nRecords * 2 + " index searches: " + (DateTime.Now - start));
 
@@ -65,20 +65,20 @@ public class TestIndex
         i = 0;
         foreach (Record rec in intIndex) 
         {
-            Assert.that(rec.intKey >= key);
+            Assert.That(rec.intKey >= key);
             key = rec.intKey;
             i += 1;
         }
-        Assert.that(i == nRecords);
+        Assert.That(i == nRecords);
         i = 0;
         String strKey = "";
         foreach (Record rec in strIndex) 
         {
-            Assert.that(rec.strKey.CompareTo(strKey) >= 0);
+            Assert.That(rec.strKey.CompareTo(strKey) >= 0);
             strKey = rec.strKey;
             i += 1;
         }
-        Assert.that(i == nRecords);
+        Assert.That(i == nRecords);
         System.Console.WriteLine("Elapsed time for iteration through " + (nRecords * 2) + " records: " + (DateTime.Now - start));
 
         start = System.DateTime.Now;
@@ -86,12 +86,12 @@ public class TestIndex
         for (i = 0; i < nRecords; i++)
         {
             key = (3141592621L * key + 2718281829L) % 1000000007L;
-            Record rec = (Record) intIndex.get(new Key(key));
-            intIndex.remove(new Key(key));
-            strIndex.remove(new Key(System.Convert.ToString(key)), rec);
-            rec.deallocate();
+            Record rec = (Record) intIndex.Get(new Key(key));
+            intIndex.Remove(new Key(key));
+            strIndex.Remove(new Key(System.Convert.ToString(key)), rec);
+            rec.Deallocate();
         }
         System.Console.WriteLine("Elapsed time for deleting " + nRecords + " records: " + (DateTime.Now - start));
-        db.close();
+        db.Close();
     }
 }

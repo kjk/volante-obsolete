@@ -33,7 +33,7 @@ class PersonList : Persistent
 
 class NameComparator : PersistentComparator 
 { 
-    public override int compareMembers(IPersistent m1, IPersistent m2) 
+    public override int CompareMembers(IPersistent m1, IPersistent m2) 
     { 
         Person p1 = (Person)m1;
         Person p2 = (Person)m2;
@@ -45,7 +45,7 @@ class NameComparator : PersistentComparator
         return p1.lastName.CompareTo(p2.lastName);
     }
 
-    public override int compareMemberWithKey(IPersistent mbr, Object key) 
+    public override int CompareMemberWithKey(IPersistent mbr, Object key) 
     { 
         Person p = (Person)mbr;
         Name name = (Name)key;
@@ -65,14 +65,14 @@ public class TestTtree
 
     static public void Main(String[] args) 
     {	
-        Storage db = StorageFactory.Instance.createStorage();
+        Storage db = StorageFactory.Instance.CreateStorage();
 
-        db.open("testtree.dbs", pagePoolSize);
+        db.Open("testtree.dbs", pagePoolSize);
         PersonList root = (PersonList)db.Root;
         if (root == null) 
         { 
             root = new PersonList();
-            root.list = db.createSortedCollection(new NameComparator(), true);
+            root.list = db.CreateSortedCollection(new NameComparator(), true);
             db.Root = root;
         }
         SortedCollection list = root.list;
@@ -88,9 +88,9 @@ public class TestTtree
             String lastName = str.Substring(m);
             int age = (int)key % 100;
             Person p = new Person(firstName, lastName, age);
-            list.add(p);
+            list.Add(p);
         }
-        db.commit();
+        db.Commit();
         Console.WriteLine("Elapsed time for inserting " + nRecords + " records: " 
             + (DateTime.Now - start) + " milliseconds");
         
@@ -107,9 +107,9 @@ public class TestTtree
             name.last = str.Substring(m);
             
             Person p = (Person)list[name];
-            Assert.that(p != null);
-            Assert.that(list.contains(p));
-            Assert.that(p.age == age);
+            Assert.That(p != null);
+            Assert.That(list.Contains(p));
+            Assert.That(p.age == age);
         }
         Console.WriteLine("Elapsed time for performing " + nRecords + " index searches: " 
             + (DateTime.Now - start) + " milliseconds");
@@ -117,20 +117,20 @@ public class TestTtree
         start = DateTime.Now;
         Name nm = new Name();
         nm.first = nm.last = "";
-        PersistentComparator comparator = list.getComparator();
+        PersistentComparator comparator = list.GetComparator();
         i = 0; 
         foreach (Person p in list) 
         { 
-            Assert.that(comparator.compareMemberWithKey(p, nm) > 0);
+            Assert.That(comparator.CompareMemberWithKey(p, nm) > 0);
             nm.first = p.firstName;
             nm.last = p.lastName;
-            list.remove(p);
+            list.Remove(p);
             i += 1;
         }
-        Assert.that(i == nRecords);
+        Assert.That(i == nRecords);
         Console.WriteLine("Elapsed time for removing " + nRecords + " records: " 
             + (DateTime.Now - start) + " milliseconds");
-        Assert.that(list.size() == 0);
-        db.close();
+        Assert.That(list.Length == 0);
+        db.Close();
     }
 }

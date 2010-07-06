@@ -350,7 +350,7 @@ namespace Perst.Impl
             return cls;
         }
 
-        public override void onLoad()
+        public override void OnLoad()
         {
             cls = lookup(name);
             Type scope = cls;
@@ -407,7 +407,7 @@ namespace Perst.Impl
             { 
                 throw new StorageError(StorageError.ErrorCode.DESCRIPTOR_FAILURE, cls);
             }
-            ((StorageImpl)getStorage()).classDescMap[cls] = this;
+            ((StorageImpl)Storage).classDescMap[cls] = this;
         }
 
         internal ClassDescriptor resolve() 

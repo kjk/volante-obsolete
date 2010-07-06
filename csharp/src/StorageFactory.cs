@@ -20,24 +20,12 @@ namespace Perst
 			
         }
 
-        /// <summary> Get instance of storage factory.
-        /// So new storages should be create in application in the following way:
-        /// <code>StorageFactory.getInstance().createStorage()</code>
-        /// </summary>
-        /// <returns>instance of the storage factory
-        /// 
-        /// </returns>
-        public static StorageFactory getInstance() 
-        {
-            return instance;
-        }
-
         /// <summary> Create new instance of the storage
         /// </summary>
         /// <param name="new">instance of the storage (unopened,you should explicitely invoke open method)
         /// 
         /// </param>
-        public virtual Storage createStorage()
+        public virtual Storage CreateStorage()
         {
 #if COMPACT_NET_FRAMEWORK
             return new StorageImpl(System.Reflection.Assembly.GetCallingAssembly());

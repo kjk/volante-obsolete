@@ -91,17 +91,40 @@ namespace Perst.Impl
             }
         }
 		
-        public void clear() 
-        { 
-            lock(this)
+        public void flush() 
+        {
+            lock(this) 
             {
                 for (int i = 0; i < table.Length; i++) 
                 { 
-                    table[i] = null;
+                    for (Entry e = table[i]; e != null; e = e.next) 
+                    { 
+                        if (e.oref.IsModified()) 
+                        { 
+                            e.oref.Store();
+                        }
+                    }
                 }
-                count = 0;
             }
         }
+    
+        public void invalidate() 
+        {
+            lock(this) 
+            {
+                for (int i = 0; i < table.Length; i++) 
+                { 
+                    for (Entry e = table[i]; e != null; e = e.next) 
+                    { 
+                        if (e.oref.IsModified()) 
+                        { 
+                            e.oref.Invalidate();
+                        }
+                    }
+                }
+            }
+        }
+    
 
         internal void  rehash()
         {
@@ -136,6 +159,14 @@ namespace Perst.Impl
         }
 
         	
+        public void setDirty(int oid) 
+        {
+        } 
+
+        public void clearDirty(int oid) 
+        {
+        }
+
         internal class Entry
         {
             internal Entry next;

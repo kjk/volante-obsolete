@@ -37,7 +37,7 @@ namespace Perst
         /// one objects in the collection with specified value of the key.  
         /// </exception>
         ///
-        IPersistent get(Object key);
+        IPersistent Get(object key);
 
         /// <summary>
         /// Get members which key value belongs to the specified range.
@@ -50,7 +50,7 @@ namespace Perst
         /// High boundary can be inclusive or exclusive. </param>
         /// <returns> array of objects which keys belongs to the specified interval, ordered by key value</returns>
         ///
-        IPersistent[] get(Object from, Object till);
+        IPersistent[] Get(object from, object till);
 
         /// <summary>
         /// Add new member to collection
@@ -60,14 +60,14 @@ namespace Perst
         /// <code>false</code> if collection was declared as unique and there is already member with such value
         /// of the key in the collection. </returns>
         ///
-        bool       add(IPersistent obj);
+        bool       Add(IPersistent obj);
 
         /// <summary>
         /// Check if collections contains specified member
         /// </summary>
         /// <returns> <code>true</code> if specified member belongs to the collection</returns>
         ///
-        bool       contains(IPersistent member);
+        bool       Contains(IPersistent member);
 
         /// <summary>
         /// Remove member from collection
@@ -75,20 +75,28 @@ namespace Perst
         /// <param name="obj"> member to be removed</param>
         /// <exception cref="Perst.StorageError">StorageError(StorageError.KEY_NOT_FOUND) exception if there is no such key in the collection</exception>
         ///
-        void       remove(IPersistent obj);
+        void       Remove(IPersistent obj);
 
         /// <summary>
         /// Get number of objects in the collection
         /// </summary>
         /// <returns> number of objects in the collection</returns>
         ///
-        int        size();
+        int        Size();
     
+        /// <summary>
+        /// Number of objects in the collection
+        /// </summary>
+        int Length 
+        {
+            get;
+        }
+
         /// <summary>
         /// Remove all objects from the collection
         /// </summary>
         ///
-        void       clear();
+        void       Clear();
         /// <summary>
         /// Get all objects in the index as array ordered by index key.
         /// </summary>
@@ -119,6 +127,6 @@ namespace Perst
         /// </summary>
         /// <returns> collection comparator</returns>
         ///
-        PersistentComparator getComparator();
+        PersistentComparator GetComparator();
     }
 }

@@ -31,7 +31,7 @@ namespace Perst
         /// one objects in the index with specified value of the key.
         /// 
         /// </exception>
-        IPersistent get(Key key);
+        IPersistent Get(Key key);
 
         /// <summary> Get object by key (exact match)     
         /// </summary>
@@ -43,7 +43,7 @@ namespace Perst
         /// one objects in the index with specified value of the key.
         /// 
         /// </exception>
-        IPersistent get(object key);
+        IPersistent Get(object key);
 
         /// <summary> Get objects which key value belongs to the specified range.
         /// Either from boundary, either till boundary either both of them can be <code>null</code>.
@@ -58,7 +58,7 @@ namespace Perst
         /// <returns>array of objects which keys belongs to the specified interval, ordered by key value
         /// 
         /// </returns>
-        IPersistent[] get(Key from, Key till);
+        IPersistent[] Get(Key from, Key till);
 
         /// <summary> Get objects which key value belongs to the specified inclusive range.
         /// Either from boundary, either till boundary either both of them can be <code>null</code>.
@@ -71,7 +71,7 @@ namespace Perst
         /// <returns>array of objects which keys belongs to the specified interval, ordered by key value
         /// 
         /// </returns>
-        IPersistent[] get(object from, object till);
+        IPersistent[] Get(object from, object till);
 
         /// <summary> 
         /// Check if index contains specified object
@@ -80,7 +80,7 @@ namespace Perst
         /// </param>
         /// <returns><code>true</code> if object is present in the index, <code>false</code> otherwise
         /// </returns>
-        bool contains(IPersistent obj);
+        bool Contains(IPersistent obj);
 
         /// <summary> Put new object in the index. 
         /// </summary>
@@ -92,7 +92,7 @@ namespace Perst
         /// of the key in the index. 
         /// 
         /// </returns>
-        bool put(IPersistent obj);
+        bool Put(IPersistent obj);
 
         /// <summary>
         /// Associate new object with the key specified by object field value. 
@@ -103,7 +103,7 @@ namespace Perst
         /// Object can be not yet peristent, in this case
         /// its forced to become persistent by assigning OID to it.
         /// </param>
-        void set(IPersistent obj);
+        void Set(IPersistent obj);
 
         /// <summary>
         /// Assign to the integer indexed field unique autoicremented value and 
@@ -118,7 +118,7 @@ namespace Perst
         /// </param>
         /// <exception cref="Perst.StorageError"><code>StorageError(StorageError.ErrorCode.INCOMPATIBLE_KEY_TYPE)</code> 
         /// is thrown when indexed field has type other than <code>int</code> or <code>long</code></exception>
-        void append(IPersistent obj);
+        void Append(IPersistent obj);
 
 
         /// <summary> Remove object from the index
@@ -128,18 +128,18 @@ namespace Perst
         /// <exception cref="Perst.StorageError">StorageError(StorageError.ErrorCode.KEY_NOT_FOUND) exception if there is no such key in the index
         /// 
         /// </exception>
-        void  remove(IPersistent obj);
+        void  Remove(IPersistent obj);
 
         /// <summary> Get number of objects in the index
         /// </summary>
         /// <returns>number of objects in the index
         /// 
         /// </returns>
-        int size();
+        int Size();
 
         /// <summary> Remove all objects from the index
         /// </summary>
-        void  clear();
+        void  Clear();
 
         /// <summary> Get all objects in the index as array orderd by index key
         /// </summary>
@@ -179,7 +179,7 @@ namespace Perst
         /// <param name="order"><code>IterationOrder.AscentOrder</code> or <code>IterationOrder.DescentOrder</code></param>
         /// <returns>enumerable collection</returns>
         ///
-        IEnumerable range(Key from, Key till, IterationOrder order);
+        IEnumerable Range(Key from, Key till, IterationOrder order);
 
         /// <summary>
         /// Get enumerable collection of objects in the index with key belonging to the specified range. 
@@ -190,7 +190,7 @@ namespace Perst
         /// <param name="order"><code>IterationOrder.AscentOrder</code> or <code>IterationOrder.DescentOrder</code></param>
         /// <returns>enumerable collection</returns>
         ///
-        IEnumerable range(object from, object till, IterationOrder order);
+        IEnumerable Range(object from, object till, IterationOrder order);
 
         /// <summary>
         /// Get enumerable ascent ordered collection of objects in the index with key belonging to the specified range. 
@@ -200,7 +200,7 @@ namespace Perst
         /// <param name="till">Inclusive high boundary. If <code>null</code> then high boundary is not specified.</param>
         /// <returns>enumerable collection</returns>
         ///
-        IEnumerable range(object from, object till);
+        IEnumerable Range(object from, object till);
 
         /// <summary>
         /// Get iterator for traversing all entries in the index 

@@ -2,7 +2,14 @@ namespace Perst
 {
     using System;
 	
-    /// <summary> Object storage
+    public enum TransactionMode
+    { 
+        Exclusive,
+        Cooperative
+    };
+	
+	
+	/// <summary> Object storage
     /// </summary>
     public abstract class Storage
     {
@@ -13,9 +20,6 @@ namespace Perst
         /// </summary>
         abstract public IPersistent Root {get; set;}
       
-        abstract public IPersistent getRoot();
-        abstract public void setRoot(IPersistent root);
-
         /// <summary> 
         /// Constant specifying that page pool should be dynamically extended 
         /// to conatins all database file pages
@@ -37,16 +41,16 @@ namespace Perst
         /// in memory and cause swapping).
         /// 
         /// </param>
-        abstract public void  open(String filePath, int pagePoolSize);
+        abstract public void  Open(String filePath, int pagePoolSize);
 		
         /// <summary> Open the storage with default page pool size
         /// </summary>
         /// <param name="filePath">path to the database file
         /// 
         /// </param>
-        public virtual void  open(String filePath)
+        public virtual void  Open(String filePath)
         {
-            open(filePath, DEFAULT_PAGE_POOL_SIZE);
+            Open(filePath, DEFAULT_PAGE_POOL_SIZE);
         }
 		
         /// <summary> Open the storage
@@ -59,15 +63,15 @@ namespace Perst
         /// in memory and cause swapping).
         /// 
         /// </param>
-        abstract public void  open(IFile file, int pagePoolSize);
+        abstract public void  Open(IFile file, int pagePoolSize);
 		
         /// <summary> Open the storage with default page pool size
         /// </summary>
         /// <param name="file">user specific implementation of IFile interface
         /// </param>
-        public virtual void  open(IFile file)
+        public virtual void  Open(IFile file)
         {
-            open(file, DEFAULT_PAGE_POOL_SIZE);
+            Open(file, DEFAULT_PAGE_POOL_SIZE);
         }
 		
         /// <summary>Check if database is opened
@@ -75,7 +79,7 @@ namespace Perst
         /// <returns><code>true</code> if database was opened by <code>open</code> method, 
         /// <code>false</code> otherwise
         /// </returns>        
-        abstract public bool isOpened();
+        abstract public bool IsOpened();
 		
         /// <summary> Set new storage root object.
         /// </summary>
@@ -87,11 +91,11 @@ namespace Perst
         /// <summary> Commit changes done by the lat transaction. Transaction is started implcitlely with forst update
         /// opertation.
         /// </summary>
-        abstract public void  commit();
+        abstract public void  Commit();
 		
         /// <summary> Rollback changes made by the last transaction
         /// </summary>
-        abstract public void  rollback();
+        abstract public void  Rollback();
 		
         /// <summary> Create new index
         /// </summary>
@@ -106,7 +110,7 @@ namespace Perst
         /// specified key type is not supported by implementation.
         /// 
         /// </exception>
-        abstract public Index createIndex(Type type, bool unique);
+        abstract public Index CreateIndex(Type type, bool unique);
 		
         /// <summary> 
         /// Create new field index
@@ -122,7 +126,7 @@ namespace Perst
         /// <exception cref="Perst.StorageError">StorageError(StorageError.INDEXED_FIELD_NOT_FOUND) if there is no such field in specified class,
         /// StorageError(StorageError.UNSUPPORTED_INDEX_TYPE) exception if type of specified field is not supported by implementation
         /// </exception>
-        abstract public FieldIndex createFieldIndex(Type type, string fieldName, bool unique);
+        abstract public FieldIndex CreateFieldIndex(Type type, string fieldName, bool unique);
 		
         /// <summary> 
         /// Create new multi-field index
@@ -138,7 +142,7 @@ namespace Perst
         /// <exception cref="Perst.StorageError">StorageError(StorageError.INDEXED_FIELD_NOT_FOUND) if there is no such field in specified class,
         /// StorageError(StorageError.UNSUPPORTED_INDEX_TYPE) exception if type of specified field is not supported by implementation
         /// </exception>
-        abstract public FieldIndex createFieldIndex(Type type, string[] fieldNames, bool unique);
+        abstract public FieldIndex CreateFieldIndex(Type type, string[] fieldNames, bool unique);
 		
         /// <summary>
         /// Create new spatial index
@@ -146,7 +150,7 @@ namespace Perst
         /// <returns>
         /// persistent object implementing spatial index
         /// </returns>
-        abstract public SpatialIndex createSpatialIndex();
+        abstract public SpatialIndex CreateSpatialIndex();
 
         /// <summary>
         /// Create new sorted collection
@@ -154,7 +158,7 @@ namespace Perst
         /// <param name="comparator">comparator class specifying order in the collection</param>
         /// <param name="unique"> whether collection is unique (members with the same key value are not allowed)</param>
         /// <returns> persistent object implementing sorted collection</returns>
-        abstract public SortedCollection createSortedCollection(PersistentComparator comparator, bool unique);
+        abstract public SortedCollection CreateSortedCollection(PersistentComparator comparator, bool unique);
 
         /// <summary>
         /// Create new object set
@@ -162,14 +166,14 @@ namespace Perst
         /// <returns>
         /// empty set of persistent objects
         /// </returns>
-        abstract public ISet createSet();
+        abstract public ISet CreateSet();
 
         /// <summary> Create one-to-many link.
         /// </summary>
         /// <returns>new empty link, new members can be added to the link later.
         /// 
         /// </returns>
-        abstract public Link createLink();
+        abstract public Link CreateLink();
 		
         /// <summary> Create relation object. Unlike link which represent embedded relation and stored
         /// inside owner object, this Relation object is standalone persisitent object
@@ -181,11 +185,11 @@ namespace Perst
         /// new members can be added to the link later.
         /// 
         /// </returns>
-        abstract public Relation createRelation(IPersistent owner);
+        abstract public Relation CreateRelation(IPersistent owner);
 		
         /// <summary> Commit transaction (if needed) and close the storage
         /// </summary>
-        abstract public void  close();
+        abstract public void  Close();
 
         /// <summary> Set threshold for initiation of garbage collection. By default garbage collection is disable (threshold is set to
         /// Int64.MaxValue). If it is set to the value different fro Long.MAX_VALUE, GC will be started each time when
@@ -195,26 +199,26 @@ namespace Perst
         /// <param name="allocatedDelta"> delta between total size of allocated and deallocated object since last GC or storage opening
         /// </param>
         ///
-        abstract public void setGcThreshold(long allocatedDelta);
+        abstract public void SetGcThreshold(long allocatedDelta);
 
         /// <summary>Explicit start of garbage collector
         /// </summary>
         /// 
-        abstract public void gc();
+        abstract public void Gc();
 
         /// <summary> Export database in XML format 
         /// </summary>
         /// <param name="writer">writer for generated XML document
         /// 
         /// </param>
-        abstract public void  exportXML(System.IO.StreamWriter writer);
+        abstract public void  ExportXML(System.IO.StreamWriter writer);
 		
         /// <summary> Import data from XML file
         /// </summary>
         /// <param name="reader">XML document reader
         /// 
         /// </param>
-        abstract public void  importXML(System.IO.StreamReader reader);
+        abstract public void  ImportXML(System.IO.StreamReader reader);
 		
         		
         /// <summary> 
@@ -225,7 +229,7 @@ namespace Perst
         /// </summary>
         /// <param name="oid">object oid</param>
         /// <returns>reference to the object with specified OID</returns>
-        abstract public IPersistent getObjectByOID(int oid);
+        abstract public IPersistent GetObjectByOID(int oid);
 
          ///
          /// <summary>
@@ -254,14 +258,6 @@ namespace Perst
          /// large enough hole, then database is extended by the value of dbDefaultExtensionQuantum. 
          /// This parameter should not be smaller than 64Kb.
          /// </TD></TR>
-         /// <TR><TD><code>perst.modification.list.limit</code></TD><TD>int</TD><TD>int.MaxValue</TD>
-         /// <TD>Maximal size of modified object list. When this limit is reached, PERST will 
-         /// store and remove objects from the head of the list. Setting this parameter will help to 
-         /// prevent memory exhaustion if a lot of persistent objects are modified during transaction. 
-         /// When list is not limited, all modified objects are pinned in memory. 
-         /// To prevent loose of modifications in case of limited modification list, you should
-         /// invoke <code>Persistent.modify</code> method <b>after</b> object has been updated.
-         /// </TD></TR>
          /// <TR><TD><code>perst.gc.threshold</code></TD><TD>long</TD><TD>long.MaxValue</TD>
          /// <TD>Threshold for initiation of garbage collection. 
          /// If it is set to the value different from long.MaxValue, GC will be started each time 
@@ -273,16 +269,16 @@ namespace Perst
          /// <param name="name">name of the property</param>
          /// <param name="val">value of the property</param>
          ///
-        abstract public void setProperty(String name, Object val);
+        abstract public void SetProperty(String name, Object val);
 
         ///
         /// <summary>Set database properties. This method should be invoked before opening database. 
-        /// For list of supported properties please see <see cref="setProperty">setProperty</see>. 
+        /// For list of supported properties please see <see cref="SetProperty">setProperty</see>. 
         /// All not recognized properties are ignored.
         /// </summary>
         /// <param name="props">collections with storage properties</param>
         ///
-        abstract public void setProperties(System.Collections.Specialized.NameValueCollection props);
+        abstract public void SetProperties(System.Collections.Specialized.NameValueCollection props);
 
 #if COMPACT_NET_FRAMEWORK
         /// <summary>
@@ -293,7 +289,57 @@ namespace Perst
         /// Other assemblies has to explicitely registered by programmer.
         /// </summary>
         /// <param name="assembly">registered assembly</param>
-        abstract public void registerAssembly(System.Reflection.Assembly assembly);
+        abstract public void RegisterAssembly(System.Reflection.Assembly assembly);
+#else
+
+        /// <summary>
+        /// Begin per-thread transaction. Two types op per-thread transactions are supported: 
+        /// exclusive and coopertative. In case of exclusive trasnaction, only one thread
+        /// can update the database. In cooperative mode, multiple transaction can work 
+        /// concurrently and commit() method wil be invoked only when transactions of all threads
+        /// are terminated.
+        /// </summary>
+        /// <param name="mode"><code>TransactionMode.Exclusive</code> or <code>TransactionMode.Cooperative</code>
+        /// </param>
+        abstract public void BeginThreadTransaction(TransactionMode mode);
+    
+        /// <summary>
+        /// End per-thread transaction started by beginThreadTransaction method.
+        /// If transaction is <i>exclusive</i>, this method commits the transaction and
+        /// allows other thread to proceed.
+        /// If transaction is <i>cooperative</i>, this method decrement counter of cooperative
+        /// transactions and if it becomes zero - commit the work
+        /// </summary>
+        public void EndThreadTransaction() 
+        { 
+            EndThreadTransaction(Int32.MaxValue);
+        }
+
+        /// <summary>
+        /// End per-thread cooperative transaction with specified maximal delay of transaction
+        /// commit. When cooperative transaction is ended, data is not immediately committed to the
+        /// disk (because other cooperative transaction can be active at this moment of time).
+        /// Instead of it cooperative transaction counter is decremented. Commit is performed
+        /// only when this counter reaches zero value. But in case of heavy load there can be a lot of
+        /// requests and so a lot of active cooperative transactions. So transaction counter never reaches zero value.
+        /// If system crash happens a large amount of work will be lost in this case. 
+        /// To prevent such scenario, it is possible to specify maximal delay of pending transaction commit.
+        /// In this case when such timeout is expired, new cooperative transaction will be blocked until
+        /// transaction is committed.
+        /// </summary>
+        /// <param name="maxDelay">maximal delay in milliseconds of committing transaction.  Please notice, that Perst could 
+        /// not force other threads to commit their cooperative transactions when this timeout is expired. It will only
+        /// block new cooperative transactions to make it possible to current transaction to complete their work.
+        /// If <code>maxDelay</code> is 0, current thread will be blocked until all other cooperative trasnaction are also finished
+        /// and changhes will be committed to the database.
+        /// </param>
+        abstract public void EndThreadTransaction(int maxDelay);
+   
+        /// <summary>
+        /// Rollback per-thread transaction. It is safe to use this method only for exclusive transactions.
+        /// In case of cooperative transactions, this method rollback results of all transactions.
+        /// </summary>
+        abstract public void RollbackThreadTransaction();
 #endif
 
         // Internal methods
@@ -301,6 +347,8 @@ namespace Perst
         abstract protected internal void  deallocateObject(IPersistent obj);
 		
         abstract protected internal void  storeObject(IPersistent obj);
+		
+        abstract protected internal void  storeFinalizedObject(IPersistent obj);
 		
         abstract protected internal void  loadObject(IPersistent obj);
 		

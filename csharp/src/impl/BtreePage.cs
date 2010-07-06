@@ -133,7 +133,7 @@ namespace Perst.Impl
                     return key.dval < r8 ? -1 : key.dval == r8 ? 0 : 1;
 				
             }
-            Assert.failed("Invalid type");
+            Assert.Failed("Invalid type");
             return 0;
         }
 		
@@ -183,7 +183,7 @@ namespace Perst.Impl
                                 r = i;
                             }
                         }
-                        Assert.that(r == l);
+                        Assert.That(r == l);
                     }
                     if (lastKey != null)
                     {
@@ -257,7 +257,7 @@ namespace Perst.Impl
                                 r = i;
                             }
                         }
-                        Assert.that(r == l);
+                        Assert.That(r == l);
                     }
                     if (lastKey != null)
                     {
@@ -331,7 +331,7 @@ namespace Perst.Impl
                                 r = i;
                             }
                         }
-                        Assert.that(r == l);
+                        Assert.That(r == l);
                     }
                     if (lastKey != null)
                     {
@@ -459,11 +459,11 @@ namespace Perst.Impl
                             r = i;
                         }
                     }
-                    Assert.that(l == r);
+                    Assert.That(l == r);
                     if (--height != 0)
                     {
                         result = insert(db, getKeyStrOid(pg, r), tree, ins, height, unique, overwrite);
-                        Assert.that(result != Btree.op_not_found);
+                        Assert.That(result != Btree.op_not_found);
                         if (result != Btree.op_overflow)
                         {
                             return result;
@@ -497,11 +497,11 @@ namespace Perst.Impl
                             r = i;
                         }
                     }
-                    Assert.that(l == r);
+                    Assert.That(l == r);
                     if (--height != 0)
                     {
                         result = insert(db, getKeyStrOid(pg, r), tree, ins, height, unique, overwrite);
-                        Assert.that(result != Btree.op_not_found);
+                        Assert.That(result != Btree.op_not_found);
                         if (result != Btree.op_overflow)
                         {
                             return result;
@@ -531,12 +531,12 @@ namespace Perst.Impl
                         else
                             r = i;
                     }
-                    Assert.that(l == r);
+                    Assert.That(l == r);
                     /* insert before e[r] */
                     if (--height != 0)
                     {
                         result = insert(db, getReference(pg, maxItems - r - 1), tree, ins, height, unique, overwrite);
-                        Assert.that(result != Btree.op_not_found);
+                        Assert.That(result != Btree.op_not_found);
                         if (result != Btree.op_overflow)
                         {
                             return result;
@@ -570,7 +570,7 @@ namespace Perst.Impl
                         /* page is full then divide page */
                         pageId = db.allocatePage();
                         Page b = db.putPage(pageId);
-                        Assert.that(n == max);
+                        Assert.That(n == max);
                         int m = max / 2;
                         if (r < m)
                         {
@@ -690,7 +690,7 @@ namespace Perst.Impl
                         }
                         else
                         {
-                            Assert.that("String fits in the B-Tree page", moved + (bn + 1) * strKeySize <= keySpace);
+                            Assert.That("String fits in the B-Tree page", moved + (bn + 1) * strKeySize <= keySpace);
                             if (bn != r)
                             {
                                 ins.getStr(pg, i);
@@ -709,7 +709,7 @@ namespace Perst.Impl
                             memcpy(pg, r - i + 1, pg, r - i, n - r, strKeySize);
                             size += len * 2;
                             nItems += 1;
-                            Assert.that("String fits in the B-Tree page", size + (n - i + 1) * strKeySize <= keySpace);
+                            Assert.That("String fits in the B-Tree page", size + (n - i + 1) * strKeySize <= keySpace);
                             setKeyStrOffs(pg, r - i, keySpace - size);
                             setKeyStrSize(pg, r - i, len);
                             setKeyStrOid(pg, r - i, ins.oid);
@@ -725,7 +725,7 @@ namespace Perst.Impl
                     }
                     moved += keyLen * 2;
                     prevDelta = delta;
-                    Assert.that("String fits in the B-Tree page", moved + (bn + 1) * strKeySize <= keySpace);
+                    Assert.That("String fits in the B-Tree page", moved + (bn + 1) * strKeySize <= keySpace);
                     setKeyStrSize(b, bn, keyLen);
                     setKeyStrOffs(b, bn, keySpace - moved);
                     if (bn == r)
@@ -819,7 +819,7 @@ namespace Perst.Impl
                         }
                         else
                         {
-                            Assert.that("String fits in the B-Tree page", moved + (bn + 1) * strKeySize <= keySpace);
+                            Assert.That("String fits in the B-Tree page", moved + (bn + 1) * strKeySize <= keySpace);
                             if (bn != r)
                             {
                                 ins.getByteArray(pg, i);
@@ -838,7 +838,7 @@ namespace Perst.Impl
                             memcpy(pg, r - i + 1, pg, r - i, n - r, strKeySize);
                             size += len;
                             nItems += 1;
-                            Assert.that("String fits in the B-Tree page", size + (n - i + 1) * strKeySize <= keySpace);
+                            Assert.That("String fits in the B-Tree page", size + (n - i + 1) * strKeySize <= keySpace);
                             setKeyStrOffs(pg, r - i, keySpace - size);
                             setKeyStrSize(pg, r - i, len);
                             setKeyStrOid(pg, r - i, ins.oid);
@@ -854,7 +854,7 @@ namespace Perst.Impl
                     }
                     moved += keyLen;
                     prevDelta = delta;
-                    Assert.that("String fits in the B-Tree page", moved + (bn + 1) * strKeySize <= keySpace);
+                    Assert.That("String fits in the B-Tree page", moved + (bn + 1) * strKeySize <= keySpace);
                     setKeyStrSize(b, bn, keyLen);
                     setKeyStrOffs(b, bn, keySpace - moved);
                     if (bn == r)
@@ -1313,7 +1313,7 @@ namespace Perst.Impl
                         if (i > 0)
                         {
                             k = i;
-                            Assert.that(i < bn);
+                            Assert.That(i < bn);
                             if (height != 1)
                             {
                                 setSize(b, getSize(b) - getKeyStrSize(b, bn - k) * 2);
@@ -1568,7 +1568,7 @@ namespace Perst.Impl
                         if (i > 0)
                         {
                             k = i;
-                            Assert.that(i < bn);
+                            Assert.That(i < bn);
                             if (height != 1)
                             {
                                 setSize(b, getSize(b) - getKeyStrSize(b, bn - k));
@@ -1650,7 +1650,7 @@ namespace Perst.Impl
                     // exists greater page
                     Page b = db.getPage(getReference(pg, maxItems - r - 2));
                     int bn = getnItems(b);
-                    Assert.that(bn >= an);
+                    Assert.That(bn >= an);
                     if (height != 1)
                     {
                         memcpy(a, an, pg, r, 1, itemSize);
@@ -1695,7 +1695,7 @@ namespace Perst.Impl
                     // page b is before a
                     Page b = db.getPage(getReference(pg, maxItems - r));
                     int bn = getnItems(b);
-                    Assert.that(bn >= an);
+                    Assert.That(bn >= an);
                     if (height != 1)
                     {
                         an += 1;
