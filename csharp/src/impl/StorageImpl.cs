@@ -53,11 +53,11 @@ namespace Perst.Impl
         /// large enough hole, then database is extended by the value of dbDefaultExtensionQuantum 
         /// This parameter should not be smaller than dbFirstUserId
         /// </summary>
-        internal static long dbDefaultExtensionQuantum = 4 * 1024 * 1024;
+        internal static long dbDefaultExtensionQuantum = 1024 * 1024;
 		
         internal const int dbDatabaseOffsetBits = 32; // up to 1 gigabyte, 37 - up to 1 terabyte database
 		
-        internal const int dbAllocationQuantumBits = 6;
+        internal const int dbAllocationQuantumBits = 5;
         internal const int dbAllocationQuantum = 1 << dbAllocationQuantumBits;
         internal const int dbBitmapSegmentBits = Page.pageBits + 3 + dbAllocationQuantumBits;
         internal const int dbBitmapSegmentSize = 1 << dbBitmapSegmentBits;
@@ -157,6 +157,7 @@ namespace Perst.Impl
             lock(this)
             {
                 long pos = getPos(oid);
+                objectCache.remove(oid);
                 int offs = (int) pos & (Page.pageSize - 1);
                 if ((offs & (dbFreeHandleFlag | dbPageObjectFlag)) != 0)
                 {
@@ -167,7 +168,7 @@ namespace Perst.Impl
                 int size = ObjectHeader.getSize(pg.data, offs);
                 pool.unfix(pg);
                 freeId(oid);
-                if ((pos & dbModifiedFlag) != 0)
+                if ((pos & dbModifiedFlag) != 0) 
                 {
                     free(pos & ~ dbFlagsMask, size);
                 }
@@ -175,7 +176,6 @@ namespace Perst.Impl
                 {
                     cloneBitmap(pos, size);
                 }
-                modified = true;
                 setObjectOid(obj, 0, false);
             }
         }
@@ -322,9 +322,15 @@ namespace Perst.Impl
 		
         internal long allocate(int size, int oid)
         {
+
             setDirty();
             size = (size + dbAllocationQuantum - 1) & ~ (dbAllocationQuantum - 1);
             Assert.that(size != 0);
+            allocatedDelta += size;
+            if (allocatedDelta > gcThreshold) 
+            {
+                gc();
+            }
             int objBitSize = size >> dbAllocationQuantumBits;
             long pos;
             int holeBitSize = 0;
@@ -653,6 +659,15 @@ namespace Perst.Impl
                     }
                     return pos;
                 }
+                if (gcThreshold != Int64.MaxValue && !gcDone) 
+                {
+                    allocatedDelta -= size;
+                    usedSize -= size;
+                    gc();
+                    currRBitmapPage = currPBitmapPage = dbBitmapId;
+                    currRBitmapOffs = currPBitmapOffs = 0;                
+                    return allocate(size, oid);
+                }
                 freeBitmapPage = i;
                 holeBeforeFreePage = holeBitSize;
                 holeBitSize = 0;
@@ -674,6 +689,7 @@ namespace Perst.Impl
             Page pg = putPage(pageId);
             int bitOffs = (int) quantNo & 7;
 			
+            allocatedDelta -= objBitSize << dbAllocationQuantumBits;
             usedSize -= objBitSize << dbAllocationQuantumBits;
 			
             if ((pos & (Page.pageSize - 1)) == 0 && size >= Page.pageSize)
@@ -786,6 +802,9 @@ namespace Perst.Impl
 				
                 currRBitmapPage = currPBitmapPage = dbBitmapId;
                 currRBitmapOffs = currPBitmapOffs = 0;
+                gcThreshold = Int64.MaxValue;
+                allocatedDelta = 0;
+                gcDone = false;
                 modified = false;
                 if (pagePoolSize == 0)
                 {
@@ -922,8 +941,8 @@ namespace Perst.Impl
                     }
                     committedIndexSize = currIndexSize;
                     usedSize = header.root[curr].size;
-                    reloadScheme();
                 }
+                reloadScheme();
                 opened = true;
             }
         }
@@ -947,6 +966,7 @@ namespace Perst.Impl
 		
         internal void  reloadScheme()
         {
+            btreeClassOid = -1;
             classDescMap.Clear();
             int descListOid = header.root[1 - currIndex].classDescList;
             classDescMap[typeof(ClassDescriptor)] = new ClassDescriptor(typeof(ClassDescriptor));
@@ -957,6 +977,9 @@ namespace Perst.Impl
                 for (desc = descList; desc != null; desc = desc.next)
                 {
                     desc.resolve();
+                    if (desc.cls.Equals(typeof(Btree))) { 
+                        btreeClassOid = desc.Oid;
+                    }                    
                     classDescMap[desc.cls] = desc;
                 }
                 for (desc = descList; desc != null; desc = desc.next)
@@ -981,6 +1004,9 @@ namespace Perst.Impl
                 descList = desc;
                 checkIfFinal(desc);
                 storeObject(desc);
+                if (cls.Equals(typeof(Btree))) { 
+                    btreeClassOid = desc.Oid;
+                }
                 header.root[1 - currIndex].classDescList = desc.Oid;
                 modified = true;
             }
@@ -1161,6 +1187,7 @@ namespace Perst.Impl
                         }
                     }
                     modified = false;
+                    gcDone = false;
                     currIndex = curr;
                     committedIndexSize = currIndexSize;
                 }
@@ -1248,6 +1275,250 @@ namespace Perst.Impl
             return new RelationImpl(owner);
         }
 		
+        internal long getGCPos(int oid) 
+        { 
+            Page pg = pool.getPage(header.root[currIndex].index 
+                + ((uint)oid >> dbHandlesPerPageBits << Page.pageBits));
+            long pos = Bytes.unpack8(pg.data, (oid & (dbHandlesPerPage-1)) << 3);
+            pool.unfix(pg);
+            return pos;
+        }
+        
+        internal void markOid(int oid) 
+        { 
+            if (oid != 0) 
+            {  
+                long pos = getGCPos(oid);
+                int bit = (int)((ulong)pos >> dbAllocationQuantumBits);
+                if ((blackBitmap[(uint)bit >> 5] & (1 << (bit & 31))) == 0) 
+                { 
+                    greyBitmap[(uint)bit >> 5] |= 1 << (bit & 31);
+                }
+            }
+        }
+
+        internal Page getGCPage(int oid) 
+        {  
+            return pool.getPage(getGCPos(oid) & ~dbFlagsMask);
+        }
+
+        public override void setGcThreshold(long maxAllocatedDelta) 
+        {
+            gcThreshold = maxAllocatedDelta;
+        }
+
+        public override void gc() 
+        { 
+            lock (this) 
+            { 
+                if (gcDone) 
+                { 
+                    return;
+                }
+                // Console.WriteLine("Start GC, allocatedDelta=" + allocatedDelta + ", header[" + currIndex + "].size=" + header.root[currIndex].size + ", gcTreshold=" + gcThreshold);
+                int bitmapSize = (int)((ulong)header.root[currIndex].size >> (dbAllocationQuantumBits + 5)) + 1;
+                bool existsNotMarkedObjects;
+                long pos;
+                int  i, j;
+
+                // mark
+                greyBitmap = new int[bitmapSize];
+                blackBitmap = new int[bitmapSize];
+                int rootOid = header.root[currIndex].rootObject;
+                if (rootOid != 0) 
+                { 
+                    markOid(rootOid);
+                    do 
+                    { 
+                        existsNotMarkedObjects = false;
+                        for (i = 0; i < bitmapSize; i++) 
+                        { 
+                            if (greyBitmap[i] != 0) 
+                            { 
+                                existsNotMarkedObjects = true;
+                                for (j = 0; j < 32; j++) 
+                                { 
+                                    if ((greyBitmap[i] & (1 << j)) != 0) 
+                                    { 
+                                        pos = (((long)i << 5) + j) << dbAllocationQuantumBits;
+                                        greyBitmap[i] &= ~(1 << j);
+                                        blackBitmap[i] |= 1 << j;
+                                        int offs = (int)pos & (Page.pageSize-1);
+                                        Page pg = pool.getPage(pos - offs);
+                                        int typeOid = ObjectHeader.getType(pg.data, offs);
+                                        if (typeOid != 0) 
+                                        { 
+                                            markOid(typeOid);
+                                            if (typeOid == btreeClassOid) 
+                                            { 
+                                                Btree btree = new Btree(pg.data, ObjectHeader.Sizeof + offs);
+                                                setObjectOid(btree, 0, false);
+                                                btree.markTree();
+                                            } 
+                                            else 
+                                            { 
+                                                ClassDescriptor desc = (ClassDescriptor)lookupObject(typeOid, typeof(ClassDescriptor));
+                                                if (desc.hasReferences) 
+                                                { 
+                                                    markObject(pool.get(pos), ObjectHeader.Sizeof, desc);
+                                                }
+                                            }
+                                        }
+                                        pool.unfix(pg);                                
+                                    }
+                                }
+                            }
+                        }
+                    } while (existsNotMarkedObjects);
+                }
+        
+                // sweep
+                gcDone = true;
+                for (i = dbFirstUserId, j = committedIndexSize; i < j; i++) 
+                {
+                    pos = getGCPos(i);
+                    if (((int)pos & (dbPageObjectFlag|dbFreeHandleFlag)) == 0) 
+                    {
+                        int bit = (int)((ulong)pos >> dbAllocationQuantumBits);
+                        if ((blackBitmap[(uint)bit >> 5] & (1 << (bit & 31))) == 0) 
+                        { 
+                            // object is not accessible
+                            if (getPos(i) != pos) 
+                            { 
+                                throw new StorageError(StorageError.ErrorCode.INVALID_OID);
+                            }
+                            int offs = (int)pos & (Page.pageSize-1);
+                            Page pg = pool.getPage(pos - offs);
+                            int type = ObjectHeader.getType(pg.data, offs);
+                            if (type == btreeClassOid) 
+                            { 
+                                Btree btree = new Btree(pg.data, ObjectHeader.Sizeof + offs);
+                                pool.unfix(pg);
+                                setObjectOid(btree, i, false);
+                                btree.deallocate();
+                            } 
+                            else 
+                            { 
+                                int size = ObjectHeader.getSize(pg.data, offs);
+                                pool.unfix(pg);
+                                freeId(i);
+                                objectCache.remove(i);                        
+                                cloneBitmap(pos, size);
+                            }
+                        }
+                    }   
+                }
+
+                greyBitmap = null;
+                blackBitmap = null;
+                allocatedDelta = 0;
+            }
+        }
+
+
+        internal int markObject(byte[] obj, int offs,  ClassDescriptor desc)
+        { 
+            FieldInfo[] all = desc.allFields;
+            ClassDescriptor.FieldType[] type = desc.fieldTypes;
+
+            for (int i = 0, n = all.Length; i < n; i++) 
+            { 
+                FieldInfo f = all[i];
+                switch (type[i]) 
+                { 
+                    case ClassDescriptor.FieldType.tpBoolean:
+                    case ClassDescriptor.FieldType.tpByte:
+                    case ClassDescriptor.FieldType.tpSByte:
+                        offs += 1;
+                        continue;
+                    case ClassDescriptor.FieldType.tpChar:
+                    case ClassDescriptor.FieldType.tpShort:
+                    case ClassDescriptor.FieldType.tpUShort:
+                        offs += 2;
+                        continue;
+                    case ClassDescriptor.FieldType.tpInt:
+                    case ClassDescriptor.FieldType.tpUInt:
+                    case ClassDescriptor.FieldType.tpEnum:
+                    case ClassDescriptor.FieldType.tpFloat:
+                        offs += 4;
+                        continue;
+                    case ClassDescriptor.FieldType.tpLong:
+                    case ClassDescriptor.FieldType.tpULong:
+                    case ClassDescriptor.FieldType.tpDouble:
+                    case ClassDescriptor.FieldType.tpDate:
+                        offs += 8;
+                        continue;
+                    case ClassDescriptor.FieldType.tpString:
+                        offs += 4 + Bytes.unpack4(obj, offs)*2;
+                        continue;
+                    case ClassDescriptor.FieldType.tpObject:
+                        markOid(Bytes.unpack4(obj, offs));
+                        offs += 4;
+                        continue;
+                    case ClassDescriptor.FieldType.tpValue:
+                        offs = markObject(obj, offs, getClassDescriptor(f.FieldType));
+                        continue;
+                    case ClassDescriptor.FieldType.tpArrayOfByte:
+                    case ClassDescriptor.FieldType.tpArrayOfSByte:
+                    case ClassDescriptor.FieldType.tpArrayOfBoolean:
+                        offs += 4 + Bytes.unpack4(obj, offs);
+                        continue;
+                    case ClassDescriptor.FieldType.tpArrayOfShort:
+                    case ClassDescriptor.FieldType.tpArrayOfUShort:
+                    case ClassDescriptor.FieldType.tpArrayOfChar:
+                        offs += 4 + Bytes.unpack4(obj, offs)*2;
+                        continue;
+                    case ClassDescriptor.FieldType.tpArrayOfInt:
+                    case ClassDescriptor.FieldType.tpArrayOfUInt:
+                    case ClassDescriptor.FieldType.tpArrayOfEnum:
+                    case ClassDescriptor.FieldType.tpArrayOfFloat:
+                        offs += 4 + Bytes.unpack4(obj, offs)*4;
+                        continue;
+                    case ClassDescriptor.FieldType.tpArrayOfLong:
+                    case ClassDescriptor.FieldType.tpArrayOfULong:
+                    case ClassDescriptor.FieldType.tpArrayOfDouble:
+                    case ClassDescriptor.FieldType.tpArrayOfDate:
+                        offs += 4 + Bytes.unpack4(obj, offs)*8;
+                        continue;
+                    case ClassDescriptor.FieldType.tpArrayOfString:
+                    {
+                        int len = Bytes.unpack4(obj, offs);
+                        offs += 4;
+                        while (--len >= 0) 
+                        {
+                            offs += 4 + Bytes.unpack4(obj, offs)*2;
+                        }
+                        continue;
+                    }
+                    case ClassDescriptor.FieldType.tpArrayOfObject:
+                    case ClassDescriptor.FieldType.tpLink:
+                    {
+                        int len = Bytes.unpack4(obj, offs);
+                        offs += 4;
+                        while (--len >= 0) 
+                        {
+                            markOid(Bytes.unpack4(obj, offs));
+                            offs += 4;
+                        }
+                        continue;
+                    }
+                    case ClassDescriptor.FieldType.tpArrayOfValue:
+                    {
+                        int len = Bytes.unpack4(obj, offs);
+                        offs += 4;
+                        Type elemType = f.FieldType.GetElementType();
+                        ClassDescriptor valueDesc = getClassDescriptor(elemType);
+                        while (--len >= 0) 
+                        {
+                            offs = markObject(obj, offs, valueDesc);
+                        }
+                        continue;
+                    }
+                }
+            }
+            return offs;
+        }
+
         public override void  close()
         {
             lock(this)
@@ -2534,6 +2805,13 @@ namespace Perst.Impl
         internal int[] bitmapPageAvailableSpace;
         internal bool opened;
 		
+        internal int[]     greyBitmap; // bitmap of visited during GC but not yet marked object
+        internal int[]     blackBitmap;    // bitmap of objects marked during GC 
+        internal long      gcThreshold;
+        internal long      allocatedDelta;
+        internal bool      gcDone;
+        internal int       btreeClassOid;
+
         internal WeakHashTable objectCache;
         internal Hashtable classDescMap;
         internal ClassDescriptor descList;

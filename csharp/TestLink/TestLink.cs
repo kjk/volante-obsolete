@@ -92,7 +92,7 @@ public class TestLink
             int cmd;
             try { 
                 cmd = Int32.Parse(str);
-            } catch (Exception x) { 
+            } catch (Exception) { 
                 Console.WriteLine("Invalid command");
                 continue;
             } 

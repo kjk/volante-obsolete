@@ -103,9 +103,25 @@ namespace Perst
         /// </returns>
         abstract public Relation createRelation(IPersistent owner);
 		
-        /// <summary> Commit transaction (if neeeded) and close the storage
+        /// <summary> Commit transaction (if needed) and close the storage
         /// </summary>
         abstract public void  close();
+
+        /// <summary> Set threshold for initiation of garbage collection. By default garbage collection is disable (threshold is set to
+        /// Int64.MaxValue). If it is set to the value different fro Long.MAX_VALUE, GC will be started each time when
+        /// delta between total size of allocated and deallocated objects exceeds specified threashold OR
+        /// after reaching end of allocation bitmap in allocator. 
+        /// </summary>
+        /// <param name="allocatedDelta"> delta between total size of allocated and deallocated object since last GC or storage opening
+        /// </param>
+        ///
+        abstract public void setGcThreshold(long allocatedDelta);
+
+        /// <summary>Explicit start of garbage collector
+        /// </summary>
+        /// 
+        abstract public void gc();
+
 		
         // Internal methods
 		

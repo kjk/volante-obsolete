@@ -21,6 +21,8 @@ namespace Perst.Impl
         [NonSerialized()]
         internal bool hasSubclasses;
         [NonSerialized()]
+        internal bool hasReferences;
+        [NonSerialized()]
         internal System.Reflection.ConstructorInfo defaultConstructor;
 		
         public enum FieldType 
@@ -255,7 +257,23 @@ namespace Perst.Impl
             fieldTypes = new FieldType[nFields];
             for (int i = 0; i < nFields; i++)
             {
-                fieldTypes[i] = getTypeCode(allFields[i].FieldType);
+                Type fieldType = allFields[i].FieldType;
+                FieldType type = getTypeCode(fieldType);
+                fieldTypes[i] = type;
+                switch (type) 
+                {
+                    case FieldType.tpObject:
+                    case FieldType.tpLink:
+                    case FieldType.tpArrayOfObject:
+                        hasReferences = true;
+                        break;
+                    case FieldType.tpValue:
+                        hasReferences |= new ClassDescriptor(fieldType).hasReferences;
+                        break;
+                    case FieldType.tpArrayOfValue:
+                        hasReferences |= new ClassDescriptor(fieldType.GetElementType()).hasReferences;
+                        break;
+                }
             }
             defaultConstructor = cls.GetConstructor(BindingFlags.Instance|BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic|BindingFlags.DeclaredOnly, null, defaultConstructorProfile, null);
             if (defaultConstructor == null) 

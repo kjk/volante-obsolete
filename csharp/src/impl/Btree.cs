@@ -16,6 +16,18 @@ namespace Perst.Impl
         {
         }
 		
+        internal Btree(byte[] obj, int offs) {
+            root = Bytes.unpack4(obj, offs);
+            offs += 4;
+            height = Bytes.unpack4(obj, offs);
+            offs += 4;
+            type = (ClassDescriptor.FieldType)Bytes.unpack4(obj, offs);
+            offs += 4;
+            nElems = Bytes.unpack4(obj, offs);
+            offs += 4;
+            unique = obj[offs] != 0;
+        }
+
         internal Btree(System.Type cls, bool unique)
         {
             type = ClassDescriptor.getTypeCode(cls);
@@ -220,5 +232,13 @@ namespace Perst.Impl
             }
             base.deallocate();
         }
+
+        public void markTree() 
+        { 
+            if (root != 0) 
+            { 
+                BtreePage.markPage((StorageImpl)Storage, root, type, height);
+            }
+        }        
     }
 }

@@ -416,6 +416,7 @@ namespace Perst.Impl
                         return Btree.op_duplicate;
                     }
                     db.pool.unfix(pg);
+                    pg = null;
                     pg = db.putPage(pageId);
                     return insertStrKey(db, pg, r, ins, height);
                 }
@@ -451,6 +452,7 @@ namespace Perst.Impl
                         return Btree.op_duplicate;
                     }
                     db.pool.unfix(pg);
+                    pg = null;
                     pg = db.putPage(pageId);
                     int itemSize = ClassDescriptor.Sizeof[(int)type];
                     int max = keySpace / (4 + itemSize);
@@ -508,7 +510,10 @@ namespace Perst.Impl
             }
             finally
             {
-                db.pool.unfix(pg);
+                if (pg != null) 
+                { 
+                    db.pool.unfix(pg);
+                }
             }
         }
 		
@@ -1163,6 +1168,7 @@ namespace Perst.Impl
                                 if (getReference(pg, maxItems - r - 1) == oid || oid == 0)
                                 {
                                     db.pool.unfix(pg);
+                                    pg = null;
                                     pg = db.putPage(pageId);
                                     memcpy(pg, r, pg, r + 1, n - r - 1, itemSize);
                                     memcpy(pg, maxItems - n + 1, pg, maxItems - n, n - r - 1, 4);
@@ -1217,6 +1223,7 @@ namespace Perst.Impl
                             {
                                 case Btree.op_underflow: 
                                     db.pool.unfix(pg);
+                                    pg = null;
                                     pg = db.putPage(pageId);
                                     return handlePageUnderflow(db, pg, r, type, rem, height);
 								
@@ -1225,6 +1232,7 @@ namespace Perst.Impl
 								
                                 case Btree.op_overflow: 
                                     db.pool.unfix(pg);
+                                    pg = null;
                                     pg = db.putPage(pageId);
                                     return insertStrKey(db, pg, r, rem, height);
 								
@@ -1241,6 +1249,7 @@ namespace Perst.Impl
                                 if (getKeyStrOid(pg, r) == rem.oid || rem.oid == 0)
                                 {
                                     db.pool.unfix(pg);
+                                    pg = null;
                                     pg = db.putPage(pageId);
                                     return removeStrKey(pg, r);
                                 }
@@ -1257,7 +1266,11 @@ namespace Perst.Impl
             }
             finally
             {
-                db.pool.unfix(pg);
+                if (pg != null) 
+                {
+                    db.pool.unfix(pg);
+
+                }
             }
         }
 		
@@ -1287,9 +1300,9 @@ namespace Perst.Impl
             db.freePage(pageId);
         }
 		
-        internal static int traverseForward(StorageImpl db, int treeId, ClassDescriptor.FieldType type, int height, IPersistent[] result, int pos)
+        internal static int traverseForward(StorageImpl db, int pageId, ClassDescriptor.FieldType type, int height, IPersistent[] result, int pos)
         {
-            Page pg = db.getPage(treeId);
+            Page pg = db.getPage(pageId);
             int oid;
             try
             {
@@ -1337,6 +1350,53 @@ namespace Perst.Impl
             }
             finally
             {
+                db.pool.unfix(pg);
+            }
+        }
+
+        internal static void markPage(StorageImpl db, int pageId, ClassDescriptor.FieldType type, int height)
+        {
+            Page pg = db.getGCPage(pageId);
+            try 
+            { 
+                int i, n = getnItems(pg);
+                if (--height != 0) 
+                {
+                    if (type == ClassDescriptor.FieldType.tpString) 
+                    { // page of strings
+                        for (i = 0; i <= n; i++) 
+                        { 
+                            markPage(db, getKeyStrOid(pg, i), type, height);
+                        }
+                    } 
+                    else 
+                    { 
+                        for (i = 0; i <= n; i++) 
+                        { 
+                            markPage(db, getReference(pg, maxItems-i-1), type, height);
+                        }
+                    }
+                } 
+                else 
+                { 
+                    if (type != ClassDescriptor.FieldType.tpString) 
+                    { // page of scalars
+                        for (i = 0; i < n; i++) 
+                        { 
+                            db.markOid(getReference(pg, maxItems-1-i));
+                        }
+                    } 
+                    else 
+                    { // page of strings
+                        for (i = 0; i < n; i++) 
+                        {
+                            db.markOid(getKeyStrOid(pg, i));
+                        }
+                    }
+                }
+            } 
+            finally 
+            { 
                 db.pool.unfix(pg);
             }
         }

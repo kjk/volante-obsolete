@@ -6,6 +6,8 @@ rd /s/q TestIndex\obj
 rd /s/q TestIndex\bin
 rd /s/q TestLink\obj
 rd /s/q TestLink\bin
+rd /s/q TestGC\obj
+rd /s/q TestGC\bin
 cd ..
 del /q perstnet.zip
 zip -r perstnet.zip Perst.NET
