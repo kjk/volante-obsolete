@@ -332,6 +332,16 @@ public class TimeSeriesImpl extends PersistentResource implements TimeSeries {
         blockClass = ClassDescriptor.loadClass(getStorage(), blockClassName);
     }
 
+    public void deallocate() {
+        Iterator blockIterator = index.iterator();
+        while (blockIterator.hasNext()) {
+            TimeSeriesBlock block = (TimeSeriesBlock)blockIterator.next();
+            block.deallocate();
+        }
+        index.deallocate();
+        super.deallocate();
+    }
+
     private Index index;
     private long  maxBlockTimeInterval;
     private String blockClassName;

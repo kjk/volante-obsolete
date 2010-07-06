@@ -50,10 +50,15 @@ class BtreeFieldIndex<T extends IPersistent> extends Btree<T> implements FieldIn
     }
 
     BtreeFieldIndex(Class cls, String fieldName, boolean unique) {
+        this(cls, fieldName, unique, 0);
+    }
+
+    BtreeFieldIndex(Class cls, String fieldName, boolean unique, long autoincCount) {
         this.cls = cls;
         this.unique = unique;
         this.fieldName = fieldName;
         this.className = cls.getName();
+        this.autoincCount = autoincCount;
         locateField();
         type = checkType(fld.getType());
     }

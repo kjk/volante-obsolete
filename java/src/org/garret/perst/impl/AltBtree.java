@@ -314,7 +314,7 @@ class AltBtree extends PersistentResource implements Index {
                     ((BtreePage)items.get(n)).purge(height);
                 } while (--n >= 0);
             }
-            deallocate();
+            super.deallocate();
         }
 
         int traverseForward(int height, IPersistent[] result, int pos)

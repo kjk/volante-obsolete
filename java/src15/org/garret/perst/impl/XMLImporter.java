@@ -49,6 +49,7 @@ public class XMLImporter {
             }
             String elemName = scanner.getIdentifier();
             if (elemName.equals("org.garret.perst.impl.Btree") 
+                || elemName.equals("org.garret.perst.impl.PersistentSet") 
                 || elemName.equals("org.garret.perst.impl.BtreeFieldIndex") 
                 || elemName.equals("org.garret.perst.impl.BtreeMultiFieldIndex")) 
             { 
@@ -93,14 +94,16 @@ public class XMLImporter {
             if (siblings == null) { 
                 siblings = new HashMap();
             }
-            XMLElement prev = (XMLElement)siblings.put(elem.name, elem);
+            XMLElement prev = (XMLElement)siblings.get(elem.name);
             if (prev != null) { 
-                elem.next = prev.next;
-                elem.prev = prev;
-                prev.next = elem;
-                elem.counter = prev.counter + 1;
+                elem.next = null;
+                elem.prev = prev.prev;
+                elem.prev.next = elem;
+                prev.prev = elem;
+                prev.counter += 1;
             } else { 
-                elem.next = elem.prev = elem;
+                siblings.put(elem.name, elem);
+                elem.prev = elem;
                 elem.counter = 1;
             }
         }
@@ -114,10 +117,7 @@ public class XMLImporter {
 
         final XMLElement getSibling(String name) { 
             if (siblings != null) { 
-                XMLElement sibling = (XMLElement)siblings.get(name);
-                if (sibling != null) {
-                    return sibling.next;
-                }
+                return (XMLElement)siblings.get(name);
             }
             return null;
         }
@@ -390,6 +390,7 @@ public class XMLImporter {
         String className = null;
         String fieldName = null;
         String[] fieldNames = null;
+        long autoinc = 0;
         String type = null;
         while ((tkn = scanner.scan()) == XMLScanner.XML_IDENT) { 
             String attrName = scanner.getIdentifier();
@@ -405,6 +406,8 @@ public class XMLImporter {
                 className = attrValue;
             } else if (attrName.equals("type")) { 
                 type = attrValue;
+            } else if (attrName.equals("autoinc")) { 
+                autoinc = parseInt(attrValue);
             } else if (attrName.startsWith("field")) {
                 int len = attrName.length();
                 if (len == 5) {
@@ -435,7 +438,7 @@ public class XMLImporter {
         if (className != null) { 
             Class cls = ClassDescriptor.loadClass(storage, className); 
             if (fieldName != null) { 
-                btree = new BtreeFieldIndex(cls, fieldName, unique);
+                btree = new BtreeFieldIndex(cls, fieldName, unique, autoinc);
             } else if (fieldNames != null) { 
                 btree = new BtreeMultiFieldIndex(cls, fieldNames, unique);
             } else { 
@@ -443,9 +446,14 @@ public class XMLImporter {
             }
         } else { 
             if (type == null) { 
-                throwException("Key type is not specified for index");
-            }               
-            btree = new Btree(mapType(type), unique);
+                if (indexType.equals("org.garret.perst.impl.PersistentSet")) { 
+                    btree = new PersistentSet();
+                } else { 
+                    throwException("Key type is not specified for index");
+                }
+            } else { 
+                btree = new Btree(mapType(type), unique);
+            }
         }
         storage.assignOid(btree, oid);
 
@@ -552,7 +560,7 @@ public class XMLImporter {
                 Bytes.pack4(buf.arr, offs, mapId(getIntAttribute(ref, "id")));
                 offs += 4;
             } else { 
-                XMLElement item = elem.getSibling("array-element");
+                XMLElement item = elem.getSibling("element");
                 int len = (item == null) ? 0 : item.getCounter(); 
                 buf.extend(offs + 4 + len);
                 Bytes.pack4(buf.arr, offs, len);
@@ -758,7 +766,7 @@ public class XMLImporter {
                         Bytes.pack4(buf.arr, offs, -1);
                         offs += 4;
                     } else {
-                        XMLElement item = elem.getSibling("array-element");
+                        XMLElement item = elem.getSibling("element");
                         int len = (item == null) ? 0 : item.getCounter(); 
                         buf.extend(offs + 4 + len);
                         Bytes.pack4(buf.arr, offs, len);
@@ -783,7 +791,7 @@ public class XMLImporter {
                         Bytes.pack4(buf.arr, offs, -1);
                         offs += 4;
                     } else {
-                        XMLElement item = elem.getSibling("array-element");
+                        XMLElement item = elem.getSibling("element");
                         int len = (item == null) ? 0 : item.getCounter(); 
                         buf.extend(offs + 4 + len*2);
                         Bytes.pack4(buf.arr, offs, len);
@@ -807,7 +815,7 @@ public class XMLImporter {
                         Bytes.pack4(buf.arr, offs, -1);
                         offs += 4;
                     } else {
-                        XMLElement item = elem.getSibling("array-element");
+                        XMLElement item = elem.getSibling("element");
                         int len = (item == null) ? 0 : item.getCounter(); 
                         buf.extend(offs + 4 + len*4);
                         Bytes.pack4(buf.arr, offs, len);
@@ -831,7 +839,7 @@ public class XMLImporter {
                         Bytes.pack4(buf.arr, offs, -1);
                         offs += 4;
                     } else {
-                        XMLElement item = elem.getSibling("array-element");
+                        XMLElement item = elem.getSibling("element");
                         int len = (item == null) ? 0 : item.getCounter(); 
                         buf.extend(offs + 4 + len*4);
                         Bytes.pack4(buf.arr, offs, len);
@@ -858,7 +866,7 @@ public class XMLImporter {
                         Bytes.pack4(buf.arr, offs, -1);
                         offs += 4;
                     } else {
-                        XMLElement item = elem.getSibling("array-element");
+                        XMLElement item = elem.getSibling("element");
                         int len = (item == null) ? 0 : item.getCounter(); 
                         buf.extend(offs + 4 + len*8);
                         Bytes.pack4(buf.arr, offs, len);
@@ -882,7 +890,7 @@ public class XMLImporter {
                         Bytes.pack4(buf.arr, offs, -1);
                         offs += 4;
                     } else {
-                        XMLElement item = elem.getSibling("array-element");
+                        XMLElement item = elem.getSibling("element");
                         int len = (item == null) ? 0 : item.getCounter(); 
                         buf.extend(offs + 4 + len*4);
                         Bytes.pack4(buf.arr, offs, len);
@@ -906,7 +914,7 @@ public class XMLImporter {
                         Bytes.pack4(buf.arr, offs, -1);
                         offs += 4;
                     } else {
-                        XMLElement item = elem.getSibling("array-element");
+                        XMLElement item = elem.getSibling("element");
                         int len = (item == null) ? 0 : item.getCounter(); 
                         buf.extend(offs + 4 + len*8);
                         Bytes.pack4(buf.arr, offs, len);
@@ -930,7 +938,7 @@ public class XMLImporter {
                         Bytes.pack4(buf.arr, offs, -1);
                         offs += 4;
                     } else {
-                        XMLElement item = elem.getSibling("array-element");
+                        XMLElement item = elem.getSibling("element");
                         int len = (item == null) ? 0 : item.getCounter(); 
                         buf.extend(offs + 4 + len*8);
                         Bytes.pack4(buf.arr, offs, len);
@@ -958,9 +966,9 @@ public class XMLImporter {
                         Bytes.pack4(buf.arr, offs, -1);
                         offs += 4;
                     } else {
-                        XMLElement item = elem.getSibling("array-element");
+                        XMLElement item = elem.getSibling("element");
                         int len = (item == null) ? 0 : item.getCounter(); 
-                        buf.extend(offs + 4 + len*4);
+                        buf.extend(offs + 4);
                         Bytes.pack4(buf.arr, offs, len);
                         offs += 4;
                         while (--len >= 0) { 
@@ -988,7 +996,7 @@ public class XMLImporter {
                         Bytes.pack4(buf.arr, offs, -1);
                         offs += 4;
                     } else {
-                        XMLElement item = elem.getSibling("array-element");
+                        XMLElement item = elem.getSibling("element");
                         int len = (item == null) ? 0 : item.getCounter(); 
                         buf.extend(offs + 4 + len*4);
                         Bytes.pack4(buf.arr, offs, len);
@@ -1011,7 +1019,7 @@ public class XMLImporter {
                         Bytes.pack4(buf.arr, offs, -1);
                         offs += 4;
                     } else {
-                        XMLElement item = elem.getSibling("array-element");
+                        XMLElement item = elem.getSibling("element");
                         int len = (item == null) ? 0 : item.getCounter(); 
                         Bytes.pack4(buf.arr, offs, len);
                         offs += 4;
@@ -1028,7 +1036,7 @@ public class XMLImporter {
                         Bytes.pack4(buf.arr, offs, -1);
                         offs += 4;
                     } else {
-                        XMLElement item = elem.getSibling("array-element");
+                        XMLElement item = elem.getSibling("element");
                         int len = (item == null) ? 0 : item.getCounter(); 
                         Bytes.pack4(buf.arr, offs, len);
                         offs += 4;

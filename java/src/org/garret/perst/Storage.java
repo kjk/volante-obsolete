@@ -130,7 +130,7 @@ public abstract class Storage {
      * are terminated. Serializable transactions can also work concurrently. But unlike
      * cooperative transaction, the threads are isolated from each other. Each thread
      * has its own associated set of modified objects and committing the transaction will cause
-     * saving only of these objects to the database.To synchronize access to the objects
+     * saving only of these objects to the database. To synchronize access to the objects
      * in case of serializable transaction programmer should use lock methods
      * of IResource interface. Shared lock should be set before read access to any object, 
      * and exclusive lock - before write access. Locks will be automatically released when

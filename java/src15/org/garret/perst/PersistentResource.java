@@ -129,6 +129,12 @@ public class PersistentResource extends Persistent implements IResource {
         notifyAll();
     }
 
+    public PersistentResource() {}
+    
+    public PersistentResource(Storage storage) { 
+        super(storage);
+    }
+
     private transient Thread owner;
     private transient int    nReaders;
     private transient int    nWriters;

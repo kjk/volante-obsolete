@@ -332,6 +332,17 @@ public class TimeSeriesImpl<T extends TimeSeries.Tick> extends PersistentResourc
         blockClass = ClassDescriptor.loadClass(getStorage(), blockClassName);
     }
 
+
+    public void deallocate() {
+        Iterator blockIterator = index.iterator();
+        while (blockIterator.hasNext()) {
+            Block block = (Block)blockIterator.next();
+            block.deallocate();
+        }
+        index.deallocate();
+        super.deallocate();
+    }
+
     private Index index;
     private long  maxBlockTimeInterval;
     private String blockClassName;

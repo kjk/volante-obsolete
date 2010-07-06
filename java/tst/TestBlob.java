@@ -18,7 +18,7 @@ public class TestBlob {
                 if (files[i].endsWith(".java")) {
                     FileInputStream in = new FileInputStream(files[i]);
                     Blob blob = db.createBlob();                    
-                    OutputStream out = blob.getOutputStream();
+                    OutputStream out = blob.getOutputStream(false);
                     while ((rc = in.read(buf)) > 0) { 
                         out.write(buf, 0, rc);
                     }

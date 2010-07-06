@@ -12,7 +12,7 @@ import java.lang.reflect.Field;
  * (each boundary can be specified or unspecified and can be inclusive or exclusive)
  * Key should be of scalar, String, java.util.Date or peristent object type.
  */
-public interface FieldIndex extends IPersistent { 
+public interface FieldIndex extends IPersistent, IResource { 
     /**
      * Get object by key (exact match)     
      * @param key specified key. It should match with type of the index and should be inclusive.

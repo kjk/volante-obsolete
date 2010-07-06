@@ -55,7 +55,7 @@ public class StorageImpl extends Storage {
 
     final long getPos(int oid) { 
         synchronized (objectCache) {
-            if (oid == 0 && oid >= currIndexSize) { 
+            if (oid == 0 || oid >= currIndexSize) { 
                 throw new StorageError(StorageError.INVALID_OID);
             }
             Page pg = pool.getPage(header.root[1-currIndex].index 
@@ -1325,8 +1325,8 @@ public class StorageImpl extends Storage {
             newHeader.root[1].shadowIndexSize = newHeader.root[1].indexSize = nIndexPages*dbHandlesPerPage;
         newHeader.root[0].indexUsed = newHeader.root[1].indexUsed = nObjects;
         newHeader.root[0].freeList = newHeader.root[1].freeList = header.root[curr].freeList;
-        newHeader.root[0].bitmapEnd = newHeader.root[1].bitmapEnd = dbBitmapId + 
-            (int)((newFileSize + dbAllocationQuantum*Page.pageSize*8 - 1) / (dbAllocationQuantum*Page.pageSize*8));
+        newHeader.root[0].bitmapEnd = newHeader.root[1].bitmapEnd = header.root[curr].bitmapEnd;
+
         newHeader.root[0].rootObject = newHeader.root[1].rootObject = header.root[curr].rootObject;
         newHeader.root[0].classDescList = newHeader.root[1].classDescList = header.root[curr].classDescList;
         newHeader.root[0].bitmapExtent = newHeader.root[1].bitmapExtent = header.root[curr].bitmapExtent;
@@ -1521,7 +1521,7 @@ public class StorageImpl extends Storage {
     }
 
     public Blob createBlob() { 
-        return new BlobImpl(Page.pageSize - ObjectHeader.sizeof - 3*4);
+        return new BlobImpl(this, Page.pageSize - ObjectHeader.sizeof - 3*4);
     }
 
     public <T extends TimeSeries.Tick> TimeSeries<T> createTimeSeries(Class blockClass, long maxBlockTimeInterval) {

@@ -34,6 +34,8 @@ public class XMLExporter {
                             ClassDescriptor desc = storage.findClassDescriptor(typeOid);
                             if (desc.cls == Btree.class) { 
                                 exportIndex(oid, obj);
+                            } else if (desc.cls == PersistentSet.class) { 
+                                exportSet(oid, obj);
                             } else if (desc.cls == BtreeFieldIndex.class) { 
                                 exportFieldIndex(oid, obj);
                             } else if (desc.cls == BtreeMultiFieldIndex.class) { 
@@ -58,6 +60,15 @@ public class XMLExporter {
         return name.replace('$', '-');
     }
 
+    final void exportSet(int oid,  byte[] data) throws IOException 
+    { 
+        Btree btree = new Btree(data, ObjectHeader.sizeof);
+        storage.assignOid(btree, oid);
+        writer.write(" <org.garret.perst.impl.PersistentSet id=\"" + oid + "\">\n");
+        btree.export(this);
+        writer.write(" </org.garret.perst.impl.PersistentSet>\n");
+    }
+
     final void exportIndex(int oid,  byte[] data) throws IOException 
     { 
         Btree btree = new Btree(data, ObjectHeader.sizeof);
@@ -76,8 +87,8 @@ public class XMLExporter {
                      + "\" class=");
         int offs = exportString(data, Btree.sizeof);
         writer.write(" field=");
-        exportString(data, offs);
-        writer.write(">\n");
+        offs = exportString(data, offs);
+        writer.write(" autoinc=\"" + Bytes.unpack8(data, offs) + "\">\n");
         btree.export(this);
         writer.write(" </org.garret.perst.impl.BtreeFieldIndex>\n");
     }
@@ -377,7 +388,7 @@ public class XMLExporter {
                         writer.write('\n');
                         while (--len >= 0) { 
                             indentation(indent+1);
-                            writer.write("<array-element>" + (body[offs++] != 0 ? "1" : "0") + "</array-element>\n");
+                            writer.write("<element>" + (body[offs++] != 0 ? "1" : "0") + "</element>\n");
                         }
                         indentation(indent);
                     }
@@ -393,7 +404,7 @@ public class XMLExporter {
                         writer.write('\n');
                         while (--len >= 0) { 
                             indentation(indent+1);
-                            writer.write("<array-element>" + (Bytes.unpack2(body, offs) & 0xFFFF) + "</array-element>\n");
+                            writer.write("<element>" + (Bytes.unpack2(body, offs) & 0xFFFF) + "</element>\n");
                             offs += 2;
                         }
                         indentation(indent);
@@ -410,7 +421,7 @@ public class XMLExporter {
                         writer.write('\n');
                         while (--len >= 0) { 
                             indentation(indent+1);
-                            writer.write("<array-element>" + Bytes.unpack2(body, offs) + "</array-element>\n");
+                            writer.write("<element>" + Bytes.unpack2(body, offs) + "</element>\n");
                             offs += 2;
                         }
                         indentation(indent);
@@ -427,7 +438,7 @@ public class XMLExporter {
                         writer.write('\n');
                         while (--len >= 0) { 
                             indentation(indent+1);
-                            writer.write("<array-element>" + Bytes.unpack4(body, offs) + "</array-element>\n");
+                            writer.write("<element>" + Bytes.unpack4(body, offs) + "</element>\n");
                             offs += 4;
                         }
                         indentation(indent);
@@ -444,7 +455,7 @@ public class XMLExporter {
                         writer.write('\n');
                         while (--len >= 0) { 
                             indentation(indent+1);
-                            writer.write("<array-element>" + Bytes.unpack8(body, offs) + "</array-element>\n");
+                            writer.write("<element>" + Bytes.unpack8(body, offs) + "</element>\n");
                             offs += 8;
                         }
                         indentation(indent);
@@ -461,9 +472,9 @@ public class XMLExporter {
                         writer.write('\n');
                         while (--len >= 0) { 
                             indentation(indent+1);
-                            writer.write("<array-element>" 
+                            writer.write("<element>" 
                                          + Float.intBitsToFloat(Bytes.unpack4(body, offs)) 
-                                         + "</array-element>\n");
+                                         + "</element>\n");
                             offs += 4;
                         }
                         indentation(indent);
@@ -480,9 +491,9 @@ public class XMLExporter {
                         writer.write('\n');
                         while (--len >= 0) { 
                             indentation(indent+1);
-                            writer.write("<array-element>" 
+                            writer.write("<element>" 
                                          + Double.longBitsToDouble(Bytes.unpack8(body, offs)) 
-                                         + "</array-element>\n");
+                                         + "</element>\n");
                             offs += 8;
                         }
                         indentation(indent);
@@ -502,11 +513,11 @@ public class XMLExporter {
                             long msec = Bytes.unpack8(body, offs);
                             offs += 8;
                             if (msec >= 0) { 
-                                writer.write("<array-element>\"");
+                                writer.write("<element>\"");
                                 writer.write(XMLImporter.httpFormatter.format(new Date(msec)));
-                                writer.write("\"</array-element>\n");
+                                writer.write("\"</element>\n");
                             } else { 
-                                writer.write("<array-element>null</array-element>\n");
+                                writer.write("<element>null</element>\n");
                             }
                         }
                     }
@@ -522,9 +533,9 @@ public class XMLExporter {
                         writer.write('\n');
                         while (--len >= 0) { 
                             indentation(indent+1);
-                            writer.write("<array-element>");
+                            writer.write("<element>");
                             offs = exportString(body, offs);
-                            writer.write("</array-element>\n");
+                            writer.write("</element>\n");
                         }
                         indentation(indent);
                     }
@@ -545,7 +556,7 @@ public class XMLExporter {
                             if (oid != 0 && (exportedBitmap[oid >> 5] & (1 << (oid & 31))) == 0) { 
                                 markedBitmap[oid >> 5] |= 1 << (oid & 31);
                             }
-                            writer.write("<array-element><ref id=\"" + oid + "\"/></array-element>\n");
+                            writer.write("<element><ref id=\"" + oid + "\"/></element>\n");
                             offs += 4;
                         }
                         indentation(indent);
@@ -562,10 +573,10 @@ public class XMLExporter {
                         writer.write('\n');
                         while (--len >= 0) { 
                             indentation(indent+1);
-                            writer.write("<array-element>\n");
+                            writer.write("<element>\n");
                             offs = exportObject(fd.valueDesc, body, offs, indent+2);
                             indentation(indent+1);
-                            writer.write("</array-element>\n");
+                            writer.write("</element>\n");
                         }
                         indentation(indent);
                     }
@@ -581,9 +592,9 @@ public class XMLExporter {
                         writer.write('\n');
                         while (--len >= 0) { 
                             indentation(indent+1);
-                            writer.write("<array-element>");
+                            writer.write("<element>");
                             offs = exportBinary(body, offs);
-                            writer.write("</array-element>\n");
+                            writer.write("</element>\n");
                         }
                         indentation(indent);
                     }

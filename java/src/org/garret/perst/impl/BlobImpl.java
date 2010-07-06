@@ -23,8 +23,11 @@ public class BlobImpl extends PersistentResource implements Blob {
             int beg = off;
             while (len > 0) { 
                 if (pos == curr.body.length) { 
+                    BlobImpl prev = curr;
                     curr = curr.next;
                     curr.load();
+                    prev.invalidate();
+                    prev.next = null;
                     pos = 0;
                 }
                 int n = len > curr.body.length - pos ? curr.body.length - pos : len; 
@@ -44,8 +47,11 @@ public class BlobImpl extends PersistentResource implements Blob {
             int len = (int)offs;
             while (len > 0) { 
                 if (pos == curr.body.length) { 
+                    BlobImpl prev = curr;
                     curr = curr.next;
                     curr.load();
+                    prev.invalidate();
+                    prev.next = null;
                     pos = 0;
                 }
                 int n = len > curr.body.length - pos ? curr.body.length - pos : len; 
@@ -77,6 +83,7 @@ public class BlobImpl extends PersistentResource implements Blob {
         protected BlobImpl first;
         protected BlobImpl curr;
         protected int      pos;
+        protected boolean  multisession;
 
         public void write(int b) { 
             byte[] buf = new byte[1];
@@ -86,10 +93,15 @@ public class BlobImpl extends PersistentResource implements Blob {
 
         public void write(byte b[], int off, int len) { 
             while (len > 0) { 
-                curr.modify();
                 if (pos == curr.body.length) { 
-                    BlobImpl next = new BlobImpl(curr.body.length);
-                    curr = curr.next = next; 
+                    BlobImpl next = new BlobImpl(curr.getStorage(), curr.body.length);
+                    BlobImpl prev = curr;
+                    curr = prev.next = next;
+                    if (prev != first) {
+                        prev.store();
+                        prev.invalidate();
+                        prev.next = null; 
+                    }
                     pos = 0;
                 }
                 int n = len > curr.body.length - pos ? curr.body.length - pos : len;  
@@ -97,23 +109,37 @@ public class BlobImpl extends PersistentResource implements Blob {
                 off += n;
                 pos += n;
                 len -= n;
-                first.modify();
                 first.size += n;
             }
         }
 
         public void close() {
+            if (!multisession && pos < curr.body.length) { 
+                byte[] tmp = new byte[pos];
+                System.arraycopy(curr.body, 0, tmp, 0, pos);
+                curr.body = tmp;
+            }
+            curr.store();
+            if (curr != first) {
+                first.store();
+            }
             first = curr = null;
         }
 
-        BlobOutputStream(BlobImpl first) { 
+        BlobOutputStream(BlobImpl first, boolean multisession) { 
             first.load();
             this.first = first;
+            this.multisession = multisession;
             int size = first.size;
             while (first.next != null) { 
                 size -= first.body.length;
+                BlobImpl prev = first;
                 first = first.next;                
                 first.load();
+                prev.invalidate();
+                prev.next = null;
+                pos = 0;
+                
             }
             curr = first;
             pos = size;
@@ -137,7 +163,17 @@ public class BlobImpl extends PersistentResource implements Blob {
      * @return output srteam 
      */
     public java.io.OutputStream getOutputStream() { 
-        return new BlobOutputStream(this);
+        return new BlobOutputStream(this, true);
+    }
+
+   /**
+     * Get output stream to append data to the BLOB.
+     * @param multisession whether BLOB allows further appends of data or closing 
+     * this output streat means that BLOB will not be changed any more. 
+     * @return output srteam 
+     */
+    public java.io.OutputStream getOutputStream(boolean multisession) { 
+        return new BlobOutputStream(this, multisession);
     }
 
     public void deallocate() { 
@@ -154,7 +190,8 @@ public class BlobImpl extends PersistentResource implements Blob {
         super.deallocate();
     }
 
-    BlobImpl(int size) { 
+    BlobImpl(Storage storage, int size) { 
+        super(storage);
         body = new byte[size];
     }
 

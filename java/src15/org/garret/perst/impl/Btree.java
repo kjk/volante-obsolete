@@ -559,6 +559,7 @@ class Btree<T extends IPersistent> extends PersistentResource implements Index<T
             int i, l, r;
             
             sp = 0;
+            counter = updateCounter;
             if (height == 0) { 
                 return;
             }
@@ -567,7 +568,6 @@ class Btree<T extends IPersistent> extends PersistentResource implements Index<T
             if (db == null) {             
                 throw new StorageError(StorageError.DELETED_OBJECT);
             }
-            counter = updateCounter;
             int h = height;
             this.from = from;
             this.till = till;
