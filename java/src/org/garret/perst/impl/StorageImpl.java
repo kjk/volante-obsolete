@@ -62,9 +62,6 @@ public class StorageImpl extends Storage {
     
     final void setPos(int oid, long pos) { 
         synchronized (objectCache) {
-	    if (oid == 1 && (pos &  dbPageObjectFlag) == 0) {
-		throw new Error("Something is definitly wrong");
-	    }
 	    dirtyPagesMap[oid >>> (dbHandlesPerPageBits+5)] 
 		|= 1 << ((oid >>> dbHandlesPerPageBits) & 31);
 	    Page pg = pool.putPage(header.root[1-currIndex].index 
@@ -173,10 +170,11 @@ public class StorageImpl extends Storage {
 		    newIndexSize = newIndexSize*2;
 		}
 		long newIndex = allocate(newIndexSize * 8, 0);
-		pool.copy(newIndex, header.root[curr].index, currIndexSize*8);
-		free(header.root[curr].index, oldIndexSize*8);
+                long oldIndex = header.root[curr].index;
+		pool.copy(newIndex, oldIndex, currIndexSize*8);
 		header.root[curr].index = newIndex;
 		header.root[curr].indexSize = newIndexSize;
+		free(oldIndex, oldIndexSize*8);
 	    }
 	    oid = currIndexSize;
 	    header.root[curr].indexUsed = ++currIndexSize;
@@ -844,11 +842,9 @@ public class StorageImpl extends Storage {
 		header.root[1-curr].indexUsed = header.root[curr].indexUsed; 
 		header.root[1-curr].freeList = header.root[curr].freeList; 
 		header.root[1-curr].index = header.root[curr].shadowIndex;
-		currIndexSize = header.root[1-curr].indexSize = 
-		    header.root[curr].shadowIndexSize;
+		header.root[1-curr].indexSize = header.root[curr].shadowIndexSize;
 		header.root[1-curr].shadowIndex = header.root[curr].index;
-		header.root[1-curr].shadowIndexSize = 
-		    header.root[curr].indexSize;
+		header.root[1-curr].shadowIndexSize = header.root[curr].indexSize;
 		header.root[1-curr].bitmapEnd = header.root[curr].bitmapEnd;
 		header.root[1-curr].rootObject = header.root[curr].rootObject;
 		header.root[1-curr].classDescList = header.root[curr].classDescList;
@@ -860,9 +856,8 @@ public class StorageImpl extends Storage {
 		pool.copy(header.root[1-curr].index, header.root[curr].index, 
 			  (header.root[curr].indexUsed*8 + Page.pageSize - 1) & ~(Page.pageSize-1));
 		System.err.println("Recovery completed");
-	    }  else { 
-                currIndexSize = header.root[1-curr].indexUsed;
-            }
+	    } 
+            currIndexSize = header.root[1-curr].indexUsed;
             committedIndexSize = currIndexSize;
 	    usedSize = header.root[curr].size;
 	}

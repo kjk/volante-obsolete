@@ -122,3 +122,10 @@ Attention: database format is incompatible with version 1.22!
 --- Release version 2.05 28.11.2003 -------------------------------------
 
 1. Make it possible to profile storage memory using Storage.getMemoryDump() method 
+
+--- Release version 2.07 14.12.2003 -------------------------------------
+
+1. Fix critical bug in object index relocation algorithm
+2. Fix bug in recovery procedure
+
+
