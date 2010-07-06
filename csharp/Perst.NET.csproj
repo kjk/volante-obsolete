@@ -161,6 +161,11 @@
                     BuildAction = "Compile"
                 />
                 <File
+                    RelPath = "src\XMLImportException.cs"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
                     RelPath = "src\impl\Btree.cs"
                     SubType = "Code"
                     BuildAction = "Compile"
@@ -247,6 +252,16 @@
                 />
                 <File
                     RelPath = "src\impl\WeakHashTable.cs"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "src\impl\XMLExporter.cs"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "src\impl\XMLImporter.cs"
                     SubType = "Code"
                     BuildAction = "Compile"
                 />

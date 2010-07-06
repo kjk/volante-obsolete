@@ -973,6 +973,7 @@ namespace Perst.Impl
         internal void  reloadScheme()
         {
             btreeClassOid = -1;
+            btree2ClassOid = -1;
             classDescMap.Clear();
             int descListOid = header.root[1 - currIndex].classDescList;
             classDescMap[typeof(ClassDescriptor)] = new ClassDescriptor(typeof(ClassDescriptor));
@@ -983,9 +984,14 @@ namespace Perst.Impl
                 for (desc = descList; desc != null; desc = desc.next)
                 {
                     desc.resolve();
-                    if (desc.cls.Equals(typeof(Btree))) { 
+                    if (desc.cls.Equals(typeof(Btree))) 
+                    { 
                         btreeClassOid = desc.Oid;
-                    }                    
+                    } 
+                    else if (desc.cls.Equals(typeof(BtreeFieldIndex))) 
+                    { 
+                        btree2ClassOid = desc.Oid;
+                    }                                        
                     classDescMap[desc.cls] = desc;
                 }
                 for (desc = descList; desc != null; desc = desc.next)
@@ -998,7 +1004,12 @@ namespace Perst.Impl
                 descList = null;
             }
         }
-		
+ 
+        internal void  assignOid(IPersistent obj, int oid)
+        {
+            setObjectOid(obj, oid, false);
+        }
+			
         internal ClassDescriptor getClassDescriptor(System.Type cls)
         {
             ClassDescriptor desc = (ClassDescriptor) classDescMap[cls];
@@ -1010,9 +1021,15 @@ namespace Perst.Impl
                 descList = desc;
                 checkIfFinal(desc);
                 storeObject(desc);
-                if (cls.Equals(typeof(Btree))) { 
+                if (cls.Equals(typeof(Btree))) 
+                { 
                     btreeClassOid = desc.Oid;
+                } 
+                else if (cls.Equals(typeof(BtreeFieldIndex))) 
+                { 
+                    btree2ClassOid = desc.Oid;
                 }
+
                 header.root[1 - currIndex].classDescList = desc.Oid;
                 modified = true;
             }
@@ -1308,7 +1325,37 @@ namespace Perst.Impl
         {
             return new RelationImpl(owner);
         }
+
+        public override void  exportXML(System.IO.StreamWriter writer)
+        {
+            lock(this)
+            {
+                if (!opened)
+                {
+                    throw new StorageError(StorageError.ErrorCode.STORAGE_NOT_OPENED);
+                }
+                int rootOid = header.root[1 - currIndex].rootObject;
+                if (rootOid != 0)
+                {
+                    XMLExporter xmlExporter = new XMLExporter(this, writer);
+                    xmlExporter.exportDatabase(rootOid);
+                }
+            }
+        }
 		
+        public override void  importXML(System.IO.StreamReader reader)
+        {
+            lock(this)
+            {
+                if (!opened)
+                {
+                    throw new StorageError(StorageError.ErrorCode.STORAGE_NOT_OPENED);
+                }
+                XMLImporter xmlImporter = new XMLImporter(this, reader);
+                xmlImporter.importDatabase();
+            }
+        }
+
         internal long getGCPos(int oid) 
         { 
             Page pg = pool.getPage(header.root[currIndex].index 
@@ -1383,7 +1430,7 @@ namespace Perst.Impl
                                         if (typeOid != 0) 
                                         { 
                                             markOid(typeOid);
-                                            if (typeOid == btreeClassOid) 
+                                            if (typeOid == btreeClassOid || typeOid == btree2ClassOid) 
                                             { 
                                                 Btree btree = new Btree(pg.data, ObjectHeader.Sizeof + offs);
                                                 setObjectOid(btree, 0, false);
@@ -1424,7 +1471,7 @@ namespace Perst.Impl
                             int offs = (int)pos & (Page.pageSize-1);
                             Page pg = pool.getPage(pos - offs);
                             int type = ObjectHeader.getType(pg.data, offs);
-                            if (type == btreeClassOid) 
+                            if (type == btreeClassOid || type == btree2ClassOid) 
                             { 
                                 Btree btree = new Btree(pg.data, ObjectHeader.Sizeof + offs);
                                 pool.unfix(pg);
@@ -2856,6 +2903,7 @@ namespace Perst.Impl
         internal long      allocatedDelta;
         internal bool      gcDone;
         internal int       btreeClassOid;
+        internal int       btree2ClassOid;
 
         internal ArrayList modifiedList;
         internal WeakHashTable objectCache;

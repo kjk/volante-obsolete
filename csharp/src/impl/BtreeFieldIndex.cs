@@ -43,55 +43,58 @@ namespace Perst.Impl
         }
 
         private Key extractKey(IPersistent obj) { 
-            Object value = fld.GetValue(obj);
+            Object val = fld.GetValue(obj);
             Key key = null;
             switch (type) {
               case ClassDescriptor.FieldType.tpBoolean:
-                key = new Key((bool)value);
+                key = new Key((bool)val);
                 break;
               case ClassDescriptor.FieldType.tpByte:
-                key = new Key((byte)value);
+                key = new Key((byte)val);
                 break;
               case ClassDescriptor.FieldType.tpSByte:
-                key = new Key((sbyte)value);
+                key = new Key((sbyte)val);
                 break;
               case ClassDescriptor.FieldType.tpShort:
-                key = new Key((short)value);
+                key = new Key((short)val);
                 break;
               case ClassDescriptor.FieldType.tpUShort:
-                key = new Key((ushort)value);
+                key = new Key((ushort)val);
                 break;
               case ClassDescriptor.FieldType.tpChar:
-                key = new Key((char)value);
+                key = new Key((char)val);
                 break;
               case ClassDescriptor.FieldType.tpInt:
-                key = new Key((int)value);
+                key = new Key((int)val);
                 break;            
               case ClassDescriptor.FieldType.tpUInt:
-                key = new Key((uint)value);
+                key = new Key((uint)val);
                 break;            
               case ClassDescriptor.FieldType.tpObject:
-                key = new Key((IPersistent)value);
+                key = new Key((IPersistent)val);
                 break;
               case ClassDescriptor.FieldType.tpLong:
-                key = new Key((long)value);
+                key = new Key((long)val);
                 break;            
               case ClassDescriptor.FieldType.tpULong:
-                key = new Key((ulong)value);
+                key = new Key((ulong)val);
                 break;            
               case ClassDescriptor.FieldType.tpDate:
-                key = new Key((DateTime)value);
+                key = new Key((DateTime)val);
                 break;
               case ClassDescriptor.FieldType.tpFloat:
-                key = new Key((float)value);
+                key = new Key((float)val);
                 break;
               case ClassDescriptor.FieldType.tpDouble:
-                key = new Key((double)value);
+                key = new Key((double)val);
                 break;
               case ClassDescriptor.FieldType.tpString:
-                key = new Key((String)value);
+                key = new Key((String)val);
                 break;
-              default:
+             case ClassDescriptor.FieldType.tpEnum:
+                key = new Key((Enum)val);
+                break;
+             default:
                 Assert.failed("Invalid type");
                 break;
             }

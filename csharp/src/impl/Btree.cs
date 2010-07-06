@@ -12,6 +12,8 @@ namespace Perst.Impl
         internal int nElems;
         internal bool unique;
 		
+        internal static int Sizeof = ObjectHeader.Sizeof + 4 * 4 + 1;
+
         internal Btree()
         {
         }
@@ -36,6 +38,12 @@ namespace Perst.Impl
             {
                 throw new StorageError(StorageError.ErrorCode.UNSUPPORTED_INDEX_TYPE, cls);
             }
+            this.unique = unique;
+        }
+
+        internal Btree(ClassDescriptor.FieldType type, bool unique)
+        {
+            this.type = type;
             this.unique = unique;
         }
 		
@@ -233,6 +241,14 @@ namespace Perst.Impl
             }
             base.deallocate();
         }
+
+        public virtual void  export(XMLExporter exporter)
+        {
+            if (root != 0)
+            {
+                BtreePage.exportPage((StorageImpl) Storage, exporter, root, type, height);
+            }
+        }		
 
         public void markTree() 
         { 

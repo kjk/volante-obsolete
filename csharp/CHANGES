@@ -40,3 +40,5 @@ Object will be automatically saved during transaction commit.
 1. Add Storage.isOpened() method
 2. Change store() with modify() in Btree implementation
 
+--- Release version 1.11 09.06.2003 -------------------------------------
+1. Add methods for database import/export in XML format. 

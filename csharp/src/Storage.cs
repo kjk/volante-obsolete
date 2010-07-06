@@ -10,6 +10,7 @@ namespace Perst
         /// If you need to have several root object and access them by name (as is is possible 
         /// in many other OODBMSes), you should create index and use it as root object.
         /// Previous reference to the root object is rewritten but old root is not automatically deallocated.
+        /// </summary>
         abstract public IPersistent Root {get; set;}
 
         /// <summary> Open the storage
@@ -134,6 +135,20 @@ namespace Perst
         /// 
         abstract public void gc();
 
+        /// <summary> Export database in XML format 
+        /// </summary>
+        /// <param name="writer">writer for generated XML document
+        /// 
+        /// </param>
+        abstract public void  exportXML(System.IO.StreamWriter writer);
+		
+        /// <summary> Import data from XML file
+        /// </summary>
+        /// <param name="reader">XML document reader
+        /// 
+        /// </param>
+        abstract public void  importXML(System.IO.StreamReader reader);
+		
 		
         // Internal methods
 		
