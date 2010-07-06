@@ -8,8 +8,8 @@ class Record extends Persistent {
 };
 
 class Indices extends Persistent {
-    Index strIndex;
-    Index intIndex;
+    Index<Record> strIndex;
+    Index<Record> intIndex;
 }
 
 public class TestIndex { 
@@ -23,12 +23,12 @@ public class TestIndex {
         Indices root = (Indices)db.getRoot();
         if (root == null) { 
             root = new Indices();
-            root.strIndex = db.createIndex(String.class, true);
-            root.intIndex = db.createIndex(long.class, true);
+            root.strIndex = db.<Record>createIndex(String.class, true);
+            root.intIndex = db.<Record>createIndex(long.class, true);
             db.setRoot(root);
         }
-        Index intIndex = root.intIndex;
-        Index strIndex = root.strIndex;
+        Index<Record> intIndex = root.intIndex;
+        Index<Record> strIndex = root.strIndex;
         long start = System.currentTimeMillis();
         long key = 1999;
         int i;        
@@ -56,31 +56,28 @@ public class TestIndex {
                            + (System.currentTimeMillis() - start) + " milliseconds");
  
         start = System.currentTimeMillis();
-        Iterator iterator = intIndex.iterator();
         key = Long.MIN_VALUE;
-        for (i = 0; iterator.hasNext(); i++) { 
-            Record rec = (Record)iterator.next();
+        i = 0;
+        for (Record rec : intIndex) { 
             Assert.that(rec.intKey >= key);
             key = rec.intKey;
+            i += 1;
         }
         Assert.that(i == nRecords);
-        iterator = strIndex.iterator();
         String strKey = "";
-        for (i = 0; iterator.hasNext(); i++) { 
-            Record rec = (Record)iterator.next();
+        i = 0;
+        for (Record rec : strIndex) { 
             Assert.that(rec.strKey.compareTo(strKey) >= 0);
             strKey = rec.strKey;
+            i += 1;
         }
         Assert.that(i == nRecords);
         System.out.println("Elapsed time for iterating through " + (nRecords*2) + " records: " 
                            + (System.currentTimeMillis() - start) + " milliseconds");
 
-        HashMap map = db.getMemoryDump();
-        iterator = map.values().iterator();
         System.out.println("Memory usage");
         start = System.currentTimeMillis();
-        while (iterator.hasNext()) { 
-            MemoryUsage usage = (MemoryUsage)iterator.next();
+        for (MemoryUsage usage : db.getMemoryDump().values()) { 
             System.out.println(" " + usage.cls.getName() + ": instances=" + usage.nInstances + ", total size=" + usage.totalSize + ", allocated size=" + usage.allocatedSize);
         }
         System.out.println("Elapsed time for memory dump: " + (System.currentTimeMillis() - start) + " milliseconds");

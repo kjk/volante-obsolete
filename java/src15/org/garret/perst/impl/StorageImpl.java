@@ -1301,74 +1301,74 @@ public class StorageImpl extends Storage {
         }        
     }
 
-    public synchronized IPersistentSet createSet() {
+    public synchronized <T extends IPersistent> IPersistentSet<T> createSet() {
         if (!opened) { 
             throw new StorageError(StorageError.STORAGE_NOT_OPENED);
         }
-        PersistentSet set = new PersistentSet();
+        PersistentSet<T> set = new PersistentSet<T>();
         set.assignOid(this, 0, false);
         return set;
     }
         
-    public synchronized Index createIndex(Class keyType, boolean unique) {
+    public synchronized <T extends IPersistent> Index<T> createIndex(Class keyType, boolean unique) {
         if (!opened) { 
             throw new StorageError(StorageError.STORAGE_NOT_OPENED);
         }
-        Btree index = new Btree(keyType, unique);
+        Btree<T> index = new Btree<T>(keyType, unique);
         index.assignOid(this, 0, false);
         return index;
     }
 
-    public synchronized SpatialIndex createSpatialIndex() {
+    public synchronized <T extends IPersistent> SpatialIndex<T> createSpatialIndex() {
         if (!opened) { 
             throw new StorageError(StorageError.STORAGE_NOT_OPENED);
         }
-        return new Rtree();
+        return new Rtree<T>();
     }
 
-    public synchronized FieldIndex createFieldIndex(Class type, String fieldName, boolean unique) {
+    public synchronized <T extends IPersistent> FieldIndex<T> createFieldIndex(Class type, String fieldName, boolean unique) {
         if (!opened) { 
             throw new StorageError(StorageError.STORAGE_NOT_OPENED);
         }        
-        FieldIndex index = new BtreeFieldIndex(type, fieldName, unique);
+        FieldIndex<T> index = new BtreeFieldIndex<T>(type, fieldName, unique);
         index.assignOid(this, 0, false);
         return index;
     }
 
-    public synchronized FieldIndex createFieldIndex(Class type, String[] fieldNames, boolean unique) {
+    public synchronized <T extends IPersistent> FieldIndex<T> createFieldIndex(Class type, String[] fieldNames, boolean unique) {
         if (!opened) { 
             throw new StorageError(StorageError.STORAGE_NOT_OPENED);
         }        
-        FieldIndex index = new BtreeMultiFieldIndex(type, fieldNames, unique);
+        FieldIndex<T> index = new BtreeMultiFieldIndex<T>(type, fieldNames, unique);
         index.assignOid(this, 0, false);
         return index;
     }
 
-    public SortedCollection createSortedCollection(PersistentComparator comparator, boolean unique) {
+    public  <T extends IPersistent> SortedCollection<T> createSortedCollection(PersistentComparator<T> comparator, boolean unique) {
         if (!opened) { 
             throw new StorageError(StorageError.STORAGE_NOT_OPENED);
         }        
-        return new Ttree(comparator, unique);
+        return new Ttree<T>(comparator, unique);
     }
         
-    public Link createLink() {
+    public <T extends IPersistent> Link<T> createLink() {
         return createLink(8);
     }
 
-    public Link createLink(int initialSize) {
-        return new LinkImpl(initialSize);
+    public <T extends IPersistent> Link<T> createLink(int initialSize) {
+        return new LinkImpl<T>(initialSize);
     }
 
-    public Relation createRelation(IPersistent owner) {
-        return new RelationImpl(owner);
+    public <M extends IPersistent, O extends IPersistent> Relation<M,O> createRelation(O owner) {
+        return new RelationImpl<M,O>(owner);
     }
 
     public Blob createBlob() { 
         return new BlobImpl(Page.pageSize - ObjectHeader.sizeof - 3*4);
     }
 
-    public TimeSeries createTimeSeries(Class blockClass, long maxBlockTimeInterval) {
-        return new TimeSeriesImpl(this, blockClass, maxBlockTimeInterval);
+    public <T extends TimeSeries.Tick> TimeSeries<T> createTimeSeries(Class blockClass, long maxBlockTimeInterval) {
+        return new TimeSeriesImpl<T>(this, blockClass, maxBlockTimeInterval);
     }
 
     final long getGCPos(int oid) { 
@@ -1489,7 +1489,7 @@ public class StorageImpl extends Storage {
     }
 
 
-    public synchronized HashMap getMemoryDump() { 
+    public synchronized HashMap<Class,MemoryUsage> getMemoryDump() { 
         synchronized (objectCache) { 
             if (!opened) {
                 throw new StorageError(StorageError.STORAGE_NOT_OPENED);
@@ -1503,7 +1503,7 @@ public class StorageImpl extends Storage {
             greyBitmap = new int[bitmapSize];
             blackBitmap = new int[bitmapSize];
             int rootOid = header.root[currIndex].rootObject;
-            HashMap map = new HashMap();
+            HashMap<Class,MemoryUsage> map = new HashMap<Class,MemoryUsage>();
 
             if (rootOid != 0) { 
                 MemoryUsage indexUsage = new MemoryUsage(Index.class);
@@ -1543,7 +1543,7 @@ public class StorageImpl extends Storage {
                                                 indexUsage.allocatedSize += nPages*Page.pageSize + alignedSize;
                                             }
                                         } else { 
-                                            MemoryUsage usage = (MemoryUsage)map.get(desc.cls);
+                                            MemoryUsage usage = map.get(desc.cls);
                                             if (usage == null) { 
                                                 usage = new MemoryUsage(desc.cls);
                                                 map.put(desc.cls, usage);

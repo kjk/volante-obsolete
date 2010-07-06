@@ -159,3 +159,7 @@ later changed by me.
 
 --- Release version 2.15 06.02.2004 -------------------------------------
 1. Yet another implementation of transparent iterface to Perst using JAssist
+
+--- Release version 2.16 10.02.2004 -------------------------------------
+1. Version of Perst interface for JDK 1.5 (generic container classes)
+2. Fix bug in Persistent.invalidate method

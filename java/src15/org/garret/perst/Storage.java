@@ -160,7 +160,7 @@ public abstract class Storage {
      * Create new peristent set
      * @return persistent object implementing set
      */
-    abstract public IPersistentSet createSet();
+    abstract public <T extends IPersistent> IPersistentSet<T> createSet();
 
     /**
      * Create new index
@@ -171,7 +171,7 @@ public abstract class Storage {
      * @exception StorageError(StorageError.UNSUPPORTED_INDEX_TYPE) exception if 
      * specified key type is not supported by implementation.
      */
-    abstract public Index createIndex(Class type, boolean unique);
+    abstract public <T extends IPersistent> Index<T> createIndex(Class type, boolean unique);
 
     /**
      * Create new field index
@@ -182,8 +182,7 @@ public abstract class Storage {
      * @exception StorageError(StorageError.INDEXED_FIELD_NOT_FOUND) if there is no such field in specified class,<BR> 
      * StorageError(StorageError.UNSUPPORTED_INDEX_TYPE) exception if type of specified field is not supported by implementation
      */
-    abstract public FieldIndex createFieldIndex(Class type, String fieldName, boolean unique);
-
+    abstract public <T extends IPersistent> FieldIndex<T> createFieldIndex(Class type, String fieldName, boolean unique);
     /**
      * Create new mutlifield index
      * @param type objects of which type (or derived from which type) will be included in the index
@@ -193,13 +192,13 @@ public abstract class Storage {
      * @exception StorageError(StorageError.INDEXED_FIELD_NOT_FOUND) if there is no such field in specified class,<BR> 
      * StorageError(StorageError.UNSUPPORTED_INDEX_TYPE) exception if type of specified field is not supported by implementation
      */
-    abstract public FieldIndex createFieldIndex(Class type, String[] fieldNames, boolean unique);
+    abstract public <T extends IPersistent> FieldIndex<T> createFieldIndex(Class type, String[] fieldNames, boolean unique);
 
     /**
      * Create new spatial index
      * @return persistent object implementing spatial index
      */
-    abstract public SpatialIndex createSpatialIndex();
+    abstract public <T extends IPersistent> SpatialIndex<T> createSpatialIndex();
 
     /**
      * Create new sorted collection
@@ -207,20 +206,20 @@ public abstract class Storage {
      * @param unique whether index is collection (members with the same key value are not allowed)
      * @return persistent object implementing sorted collection
      */
-    abstract public SortedCollection createSortedCollection(PersistentComparator comparator, boolean unique);
+    abstract public <T extends IPersistent> SortedCollection<T> createSortedCollection(PersistentComparator<T> comparator, boolean unique);
 
     /**
      * Create one-to-many link.
      * @return new empty link, new members can be added to the link later.
      */
-    abstract public Link createLink();
+    abstract public <T extends IPersistent> Link<T> createLink();
     
     /**
      * Create one-to-many link with specified initial size.
      * @param initialSize initial size of array
      * @return new empty link, new members can be added to the link later.
      */
-    abstract public Link createLink(int initialSize);
+    abstract public <T extends IPersistent> Link<T> createLink(int initialSize);
     
     /**
      * Create relation object. Unlike link which represent embedded relation and stored
@@ -230,7 +229,7 @@ public abstract class Storage {
      * @return object representing empty relation (relation with specified owner and no members), 
      * new members can be added to the link later.
      */
-    abstract public Relation createRelation(IPersistent owner);
+    abstract public <M extends IPersistent, O extends IPersistent> Relation<M,O> createRelation(O owner);
 
 
     /**
@@ -257,9 +256,8 @@ public abstract class Storage {
      * value of maxBlockTimeInterval can be set as 100*(24*60*60*1000)*2
      * @return new empty time series
      */
-    abstract public TimeSeries createTimeSeries(Class blockClass, long maxBlockTimeInterval);
-
-
+    abstract public <T extends TimeSeries.Tick> TimeSeries<T> createTimeSeries(Class blockClass, long maxBlockTimeInterval);
+   
     /**
      * Commit transaction (if needed) and close the storage
      */
@@ -371,7 +369,7 @@ public abstract class Storage {
      * by this method, it means that there is garbage in the database. You can explicitly invoke
      * garbage collector in this case.</p> 
      */
-    abstract public java.util.HashMap getMemoryDump();
+    abstract public java.util.HashMap<Class,MemoryUsage> getMemoryDump();
     
 
     /**
@@ -402,15 +400,15 @@ public abstract class Storage {
 
     // Internal methods
 
-    abstract public/*protected*/  void deallocateObject(IPersistent obj);
+    abstract protected void deallocateObject(IPersistent obj);
 
-    abstract public/*protected*/ void storeObject(IPersistent obj);
+    abstract protected void storeObject(IPersistent obj);
 
-    abstract public/*protected*/ void storeFinalizedObject(IPersistent obj);
+    abstract protected void storeFinalizedObject(IPersistent obj);
 
-    abstract public/*protected*/ void modifyObject(IPersistent obj);
+    abstract protected void modifyObject(IPersistent obj);
 
-    abstract public/*protected*/ void loadObject(IPersistent obj);
+    abstract protected void loadObject(IPersistent obj);
 
     private ClassLoader loader;
 }

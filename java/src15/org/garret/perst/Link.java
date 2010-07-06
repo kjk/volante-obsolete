@@ -1,5 +1,8 @@
 package org.garret.perst;
 
+import java.util.Iterator;
+import java.util.Collection;
+
 /**
  * Interface for one-to-many relation. There are two types of relations:
  * embedded (when references to the relarted obejcts are stored in relation
@@ -9,7 +12,7 @@ package org.garret.perst;
  * and standalone relation is represented by Relation persistent class created by
  * Storage.createRelation method.
  */
-public interface Link {
+public interface Link<T extends IPersistent> extends Collection<T> {
     /**
      * Get number of the linked objects 
      * @return the number of related objects
@@ -17,11 +20,18 @@ public interface Link {
     public int size();
     
     /**
+     * Returns <tt>true</tt> if there are no related object
+     *
+     * @return <tt>true</tt> if there are no related object
+     */
+    boolean isEmpty();
+
+    /**
      * Get related object by index
      * @param i index of the object in the relation
      * @return referenced object
      */
-    public IPersistent get(int i);
+    public T get(int i);
 
     /**
      * Get related object by index without loading it.
@@ -30,14 +40,14 @@ public interface Link {
      * @param i index of the object in the relation
      * @return stub representing referenced object
      */
-    public IPersistent getRaw(int i);
+    public T getRaw(int i);
 
     /**
      * Replace i-th element of the relation
      * @param i index in the relartion
      * @param obj object to be included in the relation     
      */
-    public void set(int i, IPersistent obj);
+    public void set(int i, T obj);
 
     /**
      * Remove object with specified index from the relation
@@ -46,23 +56,30 @@ public interface Link {
     public void remove(int i);
 
     /**
+     * Remove object from the relation
+     * @param o removed object
+     * @return <code>true</code> if relation is changed as the result of this operation
+     */
+    public boolean remove(Object o);
+
+    /**
      * Insert new object in the relation
      * @param i insert poistion, should be in [0,size()]
      * @param obj object inserted in the relation
      */
-    public void insert(int i, IPersistent obj);
+    public void insert(int i, T obj);
 
     /**
      * Add new object to the relation
      * @param obj object inserted in the relation
      */
-    public void add(IPersistent obj);
+    public boolean add(T obj);
 
     /**
      * Add all elements of the array to the relation
      * @param arr array of obects which should be added to the relation
      */
-    public void addAll(IPersistent[] arr);
+    public void addAll(T[] arr);
     
     /**
      * Add specified elements of the array to the relation
@@ -70,19 +87,19 @@ public interface Link {
      * @param from index of the first element in the array to be added to the relation
      * @param length number of elements in the array to be added in the relation
      */
-    public void addAll(IPersistent[] arr, int from, int length);
+    public void addAll(T[] arr, int from, int length);
 
     /**
      * Add all object members of the other relation to this relation
      * @param link another relation
      */
-    public void addAll(Link link);
+    public boolean addAll(Link<T> link);
 
     /**
      * Get relation members as array of object
      * @return array of object with relation members
      */
-    public IPersistent[] toArray();
+    public IPersistent[] toPersistentArray();
     
     /**
      * Get all relation members as array.
@@ -99,20 +116,20 @@ public interface Link {
      * not contain any <tt>null</tt> elements.)<p>
      * @return array of object with relation members
      */
-    public IPersistent[] toArray(IPersistent[] arr);
+    public <T> T[] toArray(T[] arr);
 
     /**
      * Checks if relation contains specified object
      * @param obj specified object
      */
-    public boolean contains(IPersistent obj);
+    public boolean contains(Object obj);
 
     /**
      * Get index of the specified object in the relation
      * @param obj specified object
      * @return zero based index of the object or -1 if object is not in the relation
      */
-    public int indexOf(IPersistent obj);
+    public int indexOf(Object obj);
 
     /**
      * Remove all members from the relation
@@ -122,7 +139,7 @@ public interface Link {
     /**
      * Get iterator through link members
      */
-    public java.util.Iterator iterator();
+    public Iterator<T> iterator();
 }
 
 

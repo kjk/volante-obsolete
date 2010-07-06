@@ -2,6 +2,10 @@ del src\org\garret\perst\*.class
 del src\org\garret\perst\impl\*.class
 del src\org\garret\perst\aspectj\*.class
 del src\org\garret\perst\jassist\*.class
+del src15\org\garret\perst\*.class
+del src15\org\garret\perst\impl\*.class
+del src15\tst\*.class
+del src15\tst\*.dbs
 del tst\OO7\*.class
 del tst\OO7\*.dbs
 del tst\*.class

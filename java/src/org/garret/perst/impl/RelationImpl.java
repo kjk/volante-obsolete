@@ -47,6 +47,10 @@ public class RelationImpl extends Relation {
         return link.toArray();
     }
 
+    public IPersistent[] toArray(IPersistent[] arr) {
+        return link.toArray(arr);
+    }
+
     public boolean contains(IPersistent obj) {
         return link.contains(obj);
     }
