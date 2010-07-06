@@ -11,13 +11,13 @@ public interface IPersistent extends java.io.Serializable {
 
     /** 
      * Check if object is stub and has to be loaded from the database
-     * @param return <code>true</code> if object has to be loaded from the database
+     * @return <code>true</code> if object has to be loaded from the database
      */
     public boolean isRaw();
 
     /** 
      * Check if object was modified within current transaction
-     * @param return <code>true</code> if object is persistent and was modified within current transaction
+     * @return <code>true</code> if object is persistent and was modified within current transaction
      */
     public boolean isModified();
 
@@ -63,7 +63,7 @@ public interface IPersistent extends java.io.Serializable {
      * To avoid main memory overflow you should stop recursive loading of all objects
      * from the database to main memory by redefining this method in some classes and returing
      * <code>false</code> in it. In this case object has to be loaded explicitely 
-     * using Peristent.load method.
+     * using Persistent.load method.
      * @return <code>true</code> if object is automatically loaded
      */
     public boolean recursiveLoading();
@@ -80,5 +80,12 @@ public interface IPersistent extends java.io.Serializable {
      * Default implementation of this method do nothing
      */
     public void onLoad();
+
+    /**
+     * Invalidate object. Invalidated object has to be explicitly
+     * reloaded using load() method. Attempt to store invalidated object
+     * will cause StoraegError exception.
+     */
+    public void invalidate();
 }
 

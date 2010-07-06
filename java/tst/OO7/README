@@ -1,0 +1,22 @@
+What does the example do?
+-------------------------
+
+This example implements the OO7 benchmark. OO7 is a simple yet OODBMS
+benchmark. Implementation was taken from Ozone database (with minor bug fixes and changes).
+
+
+How to build it?
+----------------
+Use compile.bat
+
+How to run it?
+--------------
+Run OO7.bat
+
+Reference results (Amd Athlon 1.333Gh WinXP)
+------------------------------------------
+command                Perst         Ozone
+                     
+create small           1 041       112 732
+query traversal        1 352        13 680
+query match            0 431         0 591

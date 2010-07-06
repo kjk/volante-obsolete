@@ -8,38 +8,46 @@ import java.util.ArrayList;
 class BtreeFieldIndex extends Btree implements FieldIndex { 
     String className;
     String fieldName;
+    long   autoincCount;
     transient Class cls;
     transient Field fld;
 
     BtreeFieldIndex() {}
     
+    private final void locateField() 
+    {
+        Class scope = cls;
+        try { 
+            do { 
+                try { 
+                    fld = scope.getDeclaredField(fieldName);                
+                    fld.setAccessible(true);
+                    break;
+                } catch (NoSuchFieldException x) { 
+                    scope = scope.getSuperclass();
+                }
+            } while (scope != null);
+        } catch (Exception x) {
+            throw new StorageError(StorageError.ACCESS_VIOLATION, className + "." + fieldName, x);
+        }
+        if (fld == null) { 
+           throw new StorageError(StorageError.INDEXED_FIELD_NOT_FOUND, className + "." + fieldName);
+        }
+    }
+
     public void onLoad()
     {
-        try { 
-            cls = Class.forName(className);
-            fld = cls.getDeclaredField(fieldName);            
-            fld.setAccessible(true);
-        } catch (Exception x) { 
-            System.out.println("Field " + className + "." + fieldName + "  not found");
-            throw new StorageError(StorageError.INDEXED_FIELD_NOT_FOUND, className + "." + fieldName, x);
-        }                   
+        cls = ClassDescriptor.loadClass(getStorage(), className);
+        locateField();
     }
 
     BtreeFieldIndex(Class cls, String fieldName, boolean unique) {
-        try { 
-            fld = cls.getDeclaredField(fieldName);            
-            fld.setAccessible(true);
-        } catch (Exception x) { 
-            throw new StorageError(StorageError.INDEXED_FIELD_NOT_FOUND, className + "." + fieldName, x);
-        }        
-        type = ClassDescriptor.getTypeCode(fld.getType());
-        if (type >= ClassDescriptor.tpLink) { 
-            throw new StorageError(StorageError.UNSUPPORTED_INDEX_TYPE, fld.getType());
-        }
         this.cls = cls;
         this.unique = unique;
         this.fieldName = fieldName;
         this.className = cls.getName();
+        locateField();
+        type = checkType(fld.getType());
     }
 
     private Key extractKey(IPersistent obj) { 
@@ -94,22 +102,64 @@ class BtreeFieldIndex extends Btree implements FieldIndex {
         return super.insert(extractKey(obj), obj, false);
     }
 
+    public void set(IPersistent obj) {
+         super.insert(extractKey(obj), obj, true);
+    }
+
     public void  remove(IPersistent obj) {
         super.remove(new BtreeKey(extractKey(obj), obj.getOid()));
     }
-        
+
+    public boolean contains(IPersistent obj) {
+        Key key = extractKey(obj);
+        if (unique) { 
+            return super.get(key) != null;
+        } else { 
+            IPersistent[] mbrs = get(key, key);
+            for (int i = 0; i < mbrs.length; i++) { 
+                if (mbrs[i] == obj) { 
+                    return true;
+                }
+            }
+            return false;
+        }
+    }
+
+    public synchronized void append(IPersistent obj) {
+        Key key;
+        try { 
+            switch (type) {
+              case ClassDescriptor.tpInt:
+                key = new Key((int)autoincCount);
+                fld.setInt(obj, (int)autoincCount);
+                break;            
+              case ClassDescriptor.tpLong:
+                key = new Key(autoincCount);
+                fld.setLong(obj, autoincCount);
+                break;            
+              default:
+                throw new StorageError(StorageError.UNSUPPORTED_INDEX_TYPE, fld.getType());
+            }
+        } catch (Exception x) { 
+            throw new StorageError(StorageError.ACCESS_VIOLATION, x);
+        }
+        autoincCount += 1;
+        obj.modify();
+        super.insert(key, obj, false);
+    }
+
     public IPersistent[] get(Key from, Key till) {
         if ((from != null && from.type != type) || (till != null && till.type != type)) { 
             throw new StorageError(StorageError.INCOMPATIBLE_KEY_TYPE);
         }
         ArrayList list = new ArrayList();
         if (root != 0) { 
-            BtreePage.find((StorageImpl)getStorage(), root, from, till, type, height, list);
+            BtreePage.find((StorageImpl)getStorage(), root, from, till, this, height, list);
         }
         return (IPersistent[])list.toArray((Object[])Array.newInstance(cls, list.size()));
     }
 
-    public IPersistent[] toArray() {
+    public IPersistent[] toPersistentArray() {
         IPersistent[] arr = (IPersistent[])Array.newInstance(cls, nElems);
         if (root != 0) { 
             BtreePage.traverseForward((StorageImpl)getStorage(), root, type, height, arr, 0);

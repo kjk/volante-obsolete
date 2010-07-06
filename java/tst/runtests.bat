@@ -1,0 +1,15 @@
+del *.dbs
+call TestIndex
+call TestCompoundIndex
+call TestMod
+call TestIndexIterator
+call TestRtree
+call TestTtree
+call TestRaw
+call TestGC
+call TestConcur
+call TestXML
+call TestBackup
+call TestBlob
+call TestBlob
+call TestTimeSeries

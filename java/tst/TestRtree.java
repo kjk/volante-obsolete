@@ -16,7 +16,7 @@ public class TestRtree extends Persistent {
     public static void main(String[] args) { 
         Storage db = StorageFactory.getInstance().createStorage();
         long start = System.currentTimeMillis();
-	db.open("testrtree.dbs");
+        db.open("testrtree.dbs");
         TestRtree root = (TestRtree)db.getRoot();
         if (root == null) { 
             root = new TestRtree();
@@ -49,6 +49,7 @@ public class TestRtree extends Persistent {
                 }
                 Assert.that(n == sos.length);
                 root.index.remove(r, po);
+                po.deallocate();
             }
             key = (3141592621L*key + 2718281829L) % 1000000007L;
             int top = (int)(key % 1000);

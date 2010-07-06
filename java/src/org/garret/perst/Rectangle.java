@@ -59,17 +59,17 @@ public class Rectangle implements IValue, Cloneable {
      * Clone rectangle 
      */
     public Object clone() { 
-	try { 
+        try { 
             Rectangle r = (Rectangle)super.clone();
             r.top = this.top;
             r.left = this.left;
             r.bottom = this.bottom;
             r.right = this.right;
             return r;
-	} catch (CloneNotSupportedException e) { 
-	    // this shouldn't happen, since we are Cloneable
-	    throw new InternalError();
-	}
+        } catch (CloneNotSupportedException e) { 
+            // this shouldn't happen, since we are Cloneable
+            throw new InternalError();
+        }
     }
 
     /**

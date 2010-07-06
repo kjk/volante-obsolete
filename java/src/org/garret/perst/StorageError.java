@@ -25,6 +25,8 @@ public class StorageError extends Error {
     public static final int NULL_VALUE             = 19;
     public static final int INDEXED_FIELD_NOT_FOUND= 20;
     public static final int LOCK_FAILED            = 21;
+    public static final int NO_SUCH_PROPERTY       = 22;
+    public static final int BAD_PROPERTY_VALUE     = 23;
 
     private static final String[] messageText = {
         "",
@@ -48,7 +50,8 @@ public class StorageError extends Error {
         "Failed to locate",
         "Null value", 
         "Could not find indexed field",
-        "Lock could not be granted"
+        "Lock could not be granted",
+        "No such database property"
     };
 
     /**
