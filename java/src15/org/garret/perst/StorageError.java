@@ -27,6 +27,8 @@ public class StorageError extends Error {
     public static final int LOCK_FAILED            = 21;
     public static final int NO_SUCH_PROPERTY       = 22;
     public static final int BAD_PROPERTY_VALUE     = 23;
+    public static final int SERIALIZE_PERSISTENT   = 24;
+    public static final int EMPTY_VALUE            = 25;
 
     private static final String[] messageText = {
         "",
@@ -51,7 +53,9 @@ public class StorageError extends Error {
         "Null value", 
         "Could not find indexed field",
         "Lock could not be granted",
-        "No such database property"
+        "No such database property",
+        "Attempt to store persistent object as raw object",
+        "Attempt to store java.lang.Object as value",
     };
 
     /**

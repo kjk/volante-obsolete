@@ -25,10 +25,9 @@ public final class ClassDescriptor extends Persistent {
     }    
 
     transient Class       cls;
-    transient Constructor defaultConstructor;
-    transient Constructor perstConstructor;
+    transient Constructor loadConstructor;
     transient LoadFactory factory;
-    transient Object[]    perstConstructorParams;
+    transient Object[]    constructorParams;
     transient boolean     hasSubclasses;
     transient boolean     resolved;
 
@@ -133,11 +132,7 @@ public final class ClassDescriptor extends Persistent {
             return factory.create(this);
         } else { 
             try { 
-                if (perstConstructor != null) {
-                    return perstConstructor.newInstance(perstConstructorParams);
-                } else {                 
-                    return defaultConstructor.newInstance(null);
-                }
+                return loadConstructor.newInstance(constructorParams);
             } catch (Exception x) { 
                 throw new StorageError(StorageError.CONSTRUCTOR_FAILURE, cls, x);
             }
@@ -237,17 +232,17 @@ public final class ClassDescriptor extends Persistent {
             factory = (LoadFactory)c.newInstance();
         } catch (Exception x1) { 
             try {             
-                perstConstructor = cls.getDeclaredConstructor(perstConstructorProfile);
-                perstConstructorParams = new Object[]{this};
-                perstConstructor.setAccessible(true);
+                loadConstructor = cls.getDeclaredConstructor(perstConstructorProfile);
+                constructorParams = new Object[]{this};
             } catch (NoSuchMethodException x2) {
                 try { 
-                    defaultConstructor = cls.getDeclaredConstructor(defaultConstructorProfile);
-                    defaultConstructor.setAccessible(true);
+                    loadConstructor = cls.getDeclaredConstructor(defaultConstructorProfile);
+                    constructorParams = null;
                 } catch (NoSuchMethodException x3) {
                     throw new StorageError(StorageError.DESCRIPTOR_FAILURE, cls, x3);
                 }
             }
+            loadConstructor.setAccessible(true);
         }
     }
 

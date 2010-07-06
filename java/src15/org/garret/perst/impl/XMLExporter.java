@@ -50,7 +50,8 @@ public class XMLExporter {
                 }
             }                            
         } while (nExportedObjects != 0);
-        writer.write("</database>\n");        
+        writer.write("</database>\n");   
+        writer.flush(); // writer should be closed by calling code
     }
 
     final String exportIdentifier(String name) { 

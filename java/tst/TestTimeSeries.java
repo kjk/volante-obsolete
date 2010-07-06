@@ -80,8 +80,10 @@ public class TestTimeSeries {
         for (i = 0; iterator.hasNext(); i++) { 
             Quote quote = (Quote)iterator.next();
             Assert.that(quote.timestamp == time + i);
-            Assert.that(quote.open == (float)rand.nextInt(10000)/100);
-            Assert.that(quote.close == (float)rand.nextInt(10000)/100);
+            float open = (float)rand.nextInt(10000)/100;
+            Assert.that(quote.open == open);
+            float close = (float)rand.nextInt(10000)/100;
+            Assert.that(quote.close == close);
             Assert.that(quote.high == Math.max(quote.open, quote.close));
             Assert.that(quote.low == Math.min(quote.open, quote.close));
             Assert.that(quote.volume == rand.nextInt(1000));

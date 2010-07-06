@@ -285,6 +285,7 @@ class BtreePage {
         return true;
     }    
 
+
     static boolean prefixSearch(StorageImpl db, int pageId, char[] key,
                                 int height, ArrayList result)
     {
@@ -327,6 +328,7 @@ class BtreePage {
         }
         return true;
     }    
+
 
     static int allocate(StorageImpl db, int root, int type, BtreeKey ins) 
     {
@@ -422,7 +424,7 @@ class BtreePage {
                     if (overwrite) { 
                         setKeyStrOid(pg, r, ins.oid);
                         return Btree.op_overwrite;
-                    } else if (unique) {
+                    } else if (unique) { 
                         return Btree.op_duplicate;
                     }
                 }

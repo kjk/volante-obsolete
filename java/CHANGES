@@ -189,3 +189,6 @@ later changed by me.
 --- Release version 2.21 16.04.2004 -------------------------------------
 1. Add Index.getKeyType(), FieldIndex.getIndexedClass() and FieldIndex.getKeyFields() methods
 2. Add Index.prefixSearch method which can be used to locate keys which are prefixes of the specified word.
+
+--- Release version 2.22 30.04.2004 -------------------------------------
+1. Implement reallocatable bitmap (now database size is not limited by dbDatabaseOffsetBits constant)
