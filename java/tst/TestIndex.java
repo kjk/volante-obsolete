@@ -41,6 +41,7 @@ public class TestIndex {
             strIndex.put(new Key(rec.strKey), rec);                
         }
         db.commit();
+        db.gc();
         System.out.println("Elapsed time for inserting " + nRecords + " records: " 
                            + (System.currentTimeMillis() - start) + " milliseconds");
 

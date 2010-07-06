@@ -192,3 +192,9 @@ later changed by me.
 
 --- Release version 2.22 30.04.2004 -------------------------------------
 1. Implement reallocatable bitmap (now database size is not limited by dbDatabaseOffsetBits constant)
+
+--- Release version 2.23 09.05.2004 -------------------------------------
+1. Make StorageImpl.swizzle and StorageImpl.unswizzle method protected to be allow
+their redefinition in derived class.
+2. Make it possible to store Java primitive objects wrappers (Integer, Double...)
+and references to persistent object in raw field.

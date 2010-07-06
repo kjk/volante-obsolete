@@ -1409,7 +1409,7 @@ public class StorageImpl extends Storage {
         }        
     }
 
-   public synchronized <T extends IPersistent> IPersistentSet<T> createSet() {
+    public synchronized <T extends IPersistent> IPersistentSet<T> createSet() {
         if (!opened) { 
             throw new StorageError(StorageError.STORAGE_NOT_OPENED);
         }
@@ -1700,8 +1700,8 @@ public class StorageImpl extends Storage {
 
                 if (header.root[currIndex].bitmapExtent != 0) { 
                     system.allocatedSize = getBitmapUsedSpace(dbBitmapId, dbBitmapId+dbBitmapPages)
-                       + getBitmapUsedSpace(header.root[currIndex].bitmapExtent, 
-                                            header.root[currIndex].bitmapExtent + header.root[currIndex].bitmapEnd-dbBitmapId);
+                        + getBitmapUsedSpace(header.root[currIndex].bitmapExtent, 
+                                             header.root[currIndex].bitmapExtent + header.root[currIndex].bitmapEnd-dbBitmapId);
                 } else { 
                     system.allocatedSize = getBitmapUsedSpace(dbBitmapId, header.root[currIndex].bitmapEnd);
                 }
@@ -1779,6 +1779,8 @@ public class StorageImpl extends Storage {
                     offs += 4;
                     if (len > 0) { 
                         offs += len;
+                    } else if (len < -1) { 
+                        offs += ClassDescriptor.sizeof[-2-len];
                     }
                     continue;
                 }
@@ -1856,6 +1858,8 @@ public class StorageImpl extends Storage {
                         offs += 4;
                         if (rawlen >= 0) { 
                             offs += rawlen;
+                        } else if (rawlen < -1) { 
+                            offs += ClassDescriptor.sizeof[-2-rawlen];
                         }
                         continue;
                     }
@@ -2154,7 +2158,7 @@ public class StorageImpl extends Storage {
         return obj;
     }
  
-    final int swizzle(IPersistent obj) { 
+    protected int swizzle(IPersistent obj) { 
         int oid = 0;
         if (obj != null) { 
             if (!obj.isPersistent()) { 
@@ -2169,7 +2173,7 @@ public class StorageImpl extends Storage {
         return (ClassDescriptor)lookupObject(oid, ClassDescriptor.class);
     }
 
-    final IPersistent unswizzle(int oid, Class cls, boolean recursiveLoading) { 
+    protected IPersistent unswizzle(int oid, Class cls, boolean recursiveLoading) { 
         if (oid == 0) { 
             return null;
         } 
@@ -2280,6 +2284,8 @@ public class StorageImpl extends Storage {
                     offs += 4;
                     if (len > 0) { 
                         offs += len;
+                    } else if (len < -1) { 
+                        offs += ClassDescriptor.sizeof[-2-len];
                     }
                     continue;
                 case ClassDescriptor.tpArrayOfShort:
@@ -2317,7 +2323,7 @@ public class StorageImpl extends Storage {
                             int strlen = Bytes.unpack4(body, offs);
                             offs += 4;
                             if (strlen > 0) {
-                                len += strlen*2;
+                                offs += strlen*2;
                             }
                         }
                     }
@@ -2340,7 +2346,9 @@ public class StorageImpl extends Storage {
                             int rawlen = Bytes.unpack4(body, offs);
                             offs += 4;
                             if (rawlen > 0) {
-                                len += rawlen;
+                                offs += rawlen;
+                            } else if (rawlen < -1) { 
+                                offs += ClassDescriptor.sizeof[-2-rawlen];
                             }
                         }
                     }
@@ -2421,14 +2429,54 @@ public class StorageImpl extends Storage {
                 case ClassDescriptor.tpRaw:
                     len = Bytes.unpack4(body, offs);
                     offs += 4;
-                    if (len < 0) { 
-                        f.set(obj, null);
-                    } else { 
+                    if (len >= 0) { 
                         ByteArrayInputStream bin = new ByteArrayInputStream(body, offs, len);
                         ObjectInputStream in = new ObjectInputStream(bin);
                         f.set(obj, in.readObject());
                         in.close();
                         offs += len;
+                    } else if (len < 0) { 
+                        Object val = null;
+                        switch (-2-len) { 
+                        case ClassDescriptor.tpBoolean:
+                            val = new Boolean(body[offs++] != 0);
+                            break;
+                        case ClassDescriptor.tpByte:
+                            val = new Byte(body[offs++]);
+                            break;                            
+                        case ClassDescriptor.tpChar:
+                            val = new Character((char)Bytes.unpack2(body, offs));
+                            offs += 2;
+                            break;                            
+                        case ClassDescriptor.tpShort:
+                            val = new Short(Bytes.unpack2(body, offs));
+                            offs += 2;
+                            break;                            
+                        case ClassDescriptor.tpInt:
+                            val = new Integer(Bytes.unpack4(body, offs));
+                            offs += 4;
+                            break;                            
+                        case ClassDescriptor.tpLong:
+                            val = new Long(Bytes.unpack8(body, offs));
+                            offs += 8;
+                            break;                            
+                        case ClassDescriptor.tpFloat:
+                            val = new Float(Float.intBitsToFloat(Bytes.unpack4(body, offs)));
+                            offs += 4;
+                            break;                            
+                        case ClassDescriptor.tpDouble:
+                            val = new Double(Double.longBitsToDouble(Bytes.unpack8(body, offs)));
+                            offs += 8;
+                            break;                            
+                        case ClassDescriptor.tpDate:
+                            val = new Date(Bytes.unpack8(body, offs));
+                            offs += 8;
+                            break;                                                       
+                        case ClassDescriptor.tpObject:
+                            val = unswizzle(Bytes.unpack4(body, offs), Persistent.class, recursiveLoading);
+                            offs += 4;
+                        }
+                        f.set(obj, val);
                     }
                     continue;
                 case ClassDescriptor.tpArrayOfByte:
@@ -2628,6 +2676,48 @@ public class StorageImpl extends Storage {
                                 arr[j] = in.readObject();
                                 in.close();
                                 offs += rawlen;
+                            } else {
+                                Object val = null;
+                                switch (-2-rawlen) { 
+                                case ClassDescriptor.tpBoolean:
+                                    val = new Boolean(body[offs++] != 0);
+                                    break;
+                                case ClassDescriptor.tpByte:
+                                    val = new Byte(body[offs++]);
+                                    break;                            
+                                case ClassDescriptor.tpChar:
+                                    val = new Character((char)Bytes.unpack2(body, offs));
+                                    offs += 2;
+                                    break;                            
+                                case ClassDescriptor.tpShort:
+                                    val = new Short(Bytes.unpack2(body, offs));
+                                    offs += 2;
+                                    break;                            
+                                case ClassDescriptor.tpInt:
+                                    val = new Integer(Bytes.unpack4(body, offs));
+                                    offs += 4;
+                                    break;                            
+                                case ClassDescriptor.tpLong:
+                                    val = new Long(Bytes.unpack8(body, offs));
+                                    offs += 8;
+                                    break;                            
+                                case ClassDescriptor.tpFloat:
+                                    val = new Float(Float.intBitsToFloat(Bytes.unpack4(body, offs)));
+                                    offs += 4;
+                                    break;                            
+                                case ClassDescriptor.tpDouble:
+                                    val = new Double(Double.longBitsToDouble(Bytes.unpack8(body, offs)));
+                                    offs += 8;
+                                    break;                            
+                                case ClassDescriptor.tpDate:
+                                    val = new Date(Bytes.unpack8(body, offs));
+                                    offs += 8;
+                                    break;                                                       
+                                case ClassDescriptor.tpObject:
+                                    val = unswizzle(Bytes.unpack4(body, offs), Persistent.class, recursiveLoading);
+                                    offs += 4;
+                                }
+                                arr[j] = val;
                             }
                         }
                         f.set(obj, arr);
@@ -2680,6 +2770,80 @@ public class StorageImpl extends Storage {
         ObjectHeader.setType(buf.arr, 0, desc.getOid());
         return buf.arr;        
     }
+
+    final int packValue(Object value, int offs, ByteBuffer buf) throws Exception {
+        if (value == null) { 
+            buf.extend(offs + 4);
+            Bytes.pack4(buf.arr, offs, -1);
+            offs += 4;
+        } else if (value instanceof IPersistent) { 
+            buf.extend(offs + 8);
+            Bytes.pack4(buf.arr, offs, -2-ClassDescriptor.tpObject);
+            Bytes.pack4(buf.arr, offs+4, swizzle((IPersistent)value));
+            offs += 8;                        
+        } else { 
+            Class c = value.getClass();
+            if (c == Boolean.class) { 
+                buf.extend(offs + 5);
+                Bytes.pack4(buf.arr, offs, -2-ClassDescriptor.tpBoolean);
+                buf.arr[offs+4] = (byte)(((Boolean)value).booleanValue() ? 1 : 0);
+                offs += 5;                        
+            } else if (c == Character.class) { 
+                buf.extend(offs + 6);
+                Bytes.pack4(buf.arr, offs, -2-ClassDescriptor.tpChar);
+                Bytes.pack2(buf.arr, offs+4, (short)((Character)value).charValue());
+                offs += 6;                                                   
+            } else if (c == Byte.class) { 
+                buf.extend(offs + 5);
+                Bytes.pack4(buf.arr, offs, -2-ClassDescriptor.tpByte);
+                buf.arr[offs+4] = ((Byte)value).byteValue();
+                offs += 5;                        
+            } else if (c == Short.class) { 
+                buf.extend(offs + 6);
+                Bytes.pack4(buf.arr, offs, -2-ClassDescriptor.tpShort);
+                Bytes.pack2(buf.arr, offs+4, ((Short)value).shortValue());
+                offs += 6;                                                   
+            } else if (c == Integer.class) { 
+                buf.extend(offs + 8);
+                Bytes.pack4(buf.arr, offs, -2-ClassDescriptor.tpInt);
+                Bytes.pack4(buf.arr, offs+4, ((Integer)value).intValue());
+                offs += 8;                                                   
+            } else if (c == Long.class) { 
+                buf.extend(offs + 12);
+                Bytes.pack4(buf.arr, offs, -2-ClassDescriptor.tpLong);
+                Bytes.pack8(buf.arr, offs+4, ((Long)value).longValue());
+                offs += 12;                                                   
+            } else if (c == Float.class) { 
+                Bytes.pack4(buf.arr, offs, -2-ClassDescriptor.tpFloat);
+                Bytes.pack4(buf.arr, offs+4, Float.floatToIntBits(((Float)value).floatValue()));
+                offs += 8;                                                   
+            } else if (c == Double.class) { 
+                buf.extend(offs + 12);
+                Bytes.pack4(buf.arr, offs, -2-ClassDescriptor.tpDouble);
+                Bytes.pack8(buf.arr, offs+4, Double.doubleToLongBits(((Double)value).doubleValue()));
+                offs += 12;                                                   
+            } else if (c == Date.class) { 
+                buf.extend(offs + 12);
+                Bytes.pack4(buf.arr, offs, -2-ClassDescriptor.tpDate);
+                Bytes.pack8(buf.arr, offs+4, ((Date)value).getTime());
+                offs += 12;                                                   
+            } else {
+                ByteArrayOutputStream bout = new ByteArrayOutputStream();
+                ObjectOutputStream out = new ObjectOutputStream(bout);
+                out.writeObject(value);
+                out.close();
+                byte[] arr = bout.toByteArray();
+                int len = arr.length;                        
+                buf.extend(offs + 4 + len);
+                Bytes.pack4(buf.arr, offs, len);
+                offs += 4;
+                System.arraycopy(arr, 0, buf.arr, offs, len);
+                offs += len;
+            }
+        }
+        return offs;
+    }
+
 
     final int packObject(Object obj, ClassDescriptor desc, int offs, ByteBuffer buf) throws Exception 
     { 
@@ -2773,29 +2937,8 @@ public class StorageImpl extends Storage {
                     continue;
                 }
                 case ClassDescriptor.tpRaw:
-                {
-                    Object value = f.get(obj);
-                    if (value == null) { 
-                        buf.extend(offs + 4);
-                        Bytes.pack4(buf.arr, offs, -1);
-                        offs += 4;
-                    } else if (value instanceof IPersistent) { 
-                        throw new StorageError(StorageError.SERIALIZE_PERSISTENT);
-                    } else {
-                        ByteArrayOutputStream bout = new ByteArrayOutputStream();
-                        ObjectOutputStream out = new ObjectOutputStream(bout);
-                        out.writeObject(value);
-                        out.close();
-                        byte[] arr = bout.toByteArray();
-                        int len = arr.length;                        
-                        buf.extend(offs + 4 + len);
-                        Bytes.pack4(buf.arr, offs, len);
-                        offs += 4;
-                        System.arraycopy(arr, 0, buf.arr, offs, len);
-                        offs += len;
-                    }
+                    offs = packValue(f.get(obj), offs, buf);
                     continue;
-                }
                 case ClassDescriptor.tpArrayOfByte:
                 {
                     byte[] arr = (byte[])f.get(obj);
@@ -3052,24 +3195,7 @@ public class StorageImpl extends Storage {
                         Bytes.pack4(buf.arr, offs, len);
                         offs += 4;
                         for (int j = 0; j < len; j++) {
-                            Object value = arr[j];
-                            if (value == null) { 
-                                buf.extend(offs + 4);
-                                Bytes.pack4(buf.arr, offs, -1);
-                                offs += 4;
-                            } else { 
-                                ByteArrayOutputStream bout = new ByteArrayOutputStream();
-                                ObjectOutputStream out = new ObjectOutputStream(bout);
-                                out.writeObject(value);
-                                out.close();
-                                byte[] raw = bout.toByteArray();
-                                int rawlen = raw.length;                        
-                                buf.extend(offs + 4 + rawlen);
-                                Bytes.pack4(buf.arr, offs, rawlen);
-                                offs += 4;
-                                System.arraycopy(raw, 0, buf.arr, offs, rawlen);
-                                offs += rawlen;
-                            }
+                            offs = packValue(arr[j], offs, buf);
                         }
                     }
                     continue;
