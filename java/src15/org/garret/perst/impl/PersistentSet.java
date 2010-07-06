@@ -31,7 +31,7 @@ class PersistentSet<T extends IPersistent> extends Btree<T> implements IPersiste
 
     public boolean add(T obj) { 
         if (!obj.isPersistent()) { 
-            ((StorageImpl)getStorage()).storeObject(obj);
+            ((StorageImpl)getStorage()).makePersistent(obj);
         }
         return put(new Key(obj), obj);
     }
@@ -47,50 +47,6 @@ class PersistentSet<T extends IPersistent> extends Btree<T> implements IPersiste
             throw x;
         }
         return true;
-    }
-    
-    public boolean containsAll(Collection<?> c) { 
-        Iterator i = c.iterator();
-        while (i.hasNext()) { 
-            if (!contains(i.next()))
-                return false;
-        }
-        return true;
-    }
-
-    
-    public boolean addAll(Collection<? extends T> c) {
-        boolean modified = false;
-        Iterator i = c.iterator();
-        while (i.hasNext()) {
-            modified |= add((T)i.next());
-        }
-        return modified;
-    }
-
-    public boolean retainAll(Collection<?> c) {
-        ArrayList toBeRemoved = new ArrayList();
-        Iterator i = c.iterator();
-        while (i.hasNext()) {
-            Object o = i.next();
-            if (!c.contains(o)) {
-                toBeRemoved.add(o);
-            }
-        }
-        int n = toBeRemoved.size();
-        for (int j = 0; j < n; j++) { 
-            remove(toBeRemoved.get(j));
-        }
-        return n != 0;         
-    }
-
-    public boolean removeAll(Collection<?> c) {
-        boolean modified = false;
-        Iterator i = c.iterator();
-        while (i.hasNext()) {
-            modified |= remove(i.next());
-        }
-        return modified;
     }
 
     public boolean equals(Object o) {

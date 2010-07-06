@@ -192,6 +192,27 @@ public abstract class Storage {
     abstract public IPersistentSet createSet();
 
     /**
+     * Create new scalable set references to persistent objects.
+     * This container can effciently store small number of references as well as very large
+     * number references. When number of memers is small, Link class is used to store 
+     * set members. When number of members exceed some threshold, PersistentSet (based on B-Tree)
+     * is used instead.
+     * @return scalable set implementation
+     */
+    abstract public IPersistentSet createScalableSet();
+
+    /**
+     * Create new scalable set references to persistent objects.
+     * This container can effciently store small number of references as well as very large
+     * number references. When number of memers is small, Link class is used to store 
+     * set members. When number of members exceed some threshold, PersistentSet (based on B-Tree)
+     * is used instead.
+     * @param initialSize initial size of the set
+     * @return scalable set implementation
+     */
+    abstract public IPersistentSet createScalableSet(int initialSize);
+
+    /**
      * Create new index
      * @param type type of the index key (you should path here <code>String.class</code>, 
      * <code>int.class</code>, ...)
@@ -201,6 +222,16 @@ public abstract class Storage {
      * specified key type is not supported by implementation.
      */
     abstract public Index createIndex(Class type, boolean unique);
+
+    /**
+     * Create new thick index (index with large number of duplicated keys)
+     * @param type type of the index key (you should path here <code>String.class</code>, 
+     * <code>int.class</code>, ...)
+     * @return persistent object implementing index
+     * @exception StorageError(StorageError.UNSUPPORTED_INDEX_TYPE) exception if 
+     * specified key type is not supported by implementation.
+     */
+    abstract public Index createThickIndex(Class type);
 
     /**
      * Create new bit index. Bit index is used to select object 
@@ -367,6 +398,17 @@ public abstract class Storage {
      */
     abstract public IPersistent getObjectByOID(int oid);
 
+    /**
+     * Explicitely make object peristent. Usually objects are made persistent
+     * implicitlely using "persistency on reachability apporach", but this
+     * method allows to do it explicitly. If object is already persistent, execution of
+     * this method has no effect.
+     * @param obj object to be made persistent
+     * @return OID assigned to the object  
+     */
+    abstract public int makePersistent(IPersistent obj);
+
+ 
     /**
      * Set database property. This method should be invoked before opening database. 
      * Currently the following boolean properties are supported:

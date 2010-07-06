@@ -32,7 +32,7 @@ class PersistentSet extends Btree implements IPersistentSet {
     public boolean add(Object o) { 
         IPersistent obj = (IPersistent)o;
         if (!obj.isPersistent()) { 
-            ((StorageImpl)getStorage()).storeObject(obj);
+            ((StorageImpl)getStorage()).makePersistent(obj);
         }
         return put(new Key(obj), obj);
     }
@@ -71,7 +71,7 @@ class PersistentSet extends Btree implements IPersistentSet {
 
     public boolean retainAll(Collection c) {
         ArrayList toBeRemoved = new ArrayList();
-        Iterator i = c.iterator();
+        Iterator i = iterator();
         while (i.hasNext()) {
             Object o = i.next();
             if (!c.contains(o)) {

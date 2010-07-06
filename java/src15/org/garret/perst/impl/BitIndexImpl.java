@@ -34,7 +34,7 @@ class BitIndexImpl<T extends IPersistent> extends Btree<T> implements BitIndex<T
             throw new StorageError(StorageError.DELETED_OBJECT);
         }
         if (!obj.isPersistent()) { 
-            db.storeObject(obj);
+            db.makePersistent(obj);
         }
         Key ins = new Key(mask, obj.getOid());
         if (root == 0) { 

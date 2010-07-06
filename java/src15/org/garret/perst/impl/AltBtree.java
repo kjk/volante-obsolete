@@ -878,10 +878,17 @@ class AltBtree<T extends IPersistent> extends PersistentCollection<T> implements
         return list;
     }
 
+    public ArrayList<T> getList(Object from, Object till) {
+        return getList(Btree.getKeyFromObject(from), Btree.getKeyFromObject(till));
+    }
 
     public IPersistent[] get(Key from, Key till) {
         ArrayList<T> list = getList(from, till);
         return (IPersistent[])list.toArray(new IPersistent[list.size()]);
+    }
+
+    public IPersistent[] get(Object from, Object till) {
+        return get(Btree.getKeyFromObject(from), Btree.getKeyFromObject(till));
     }
 
     public boolean put(Key key, T obj) {
@@ -995,8 +1002,8 @@ class AltBtree<T extends IPersistent> extends PersistentCollection<T> implements
     }
         
         
-    public T get(String key) { 
-        return get(new Key(key, true));
+    public T get(Object key) { 
+        return get(Btree.getKeyFromObject(key));
     }
 
     public ArrayList<T> getPrefixList(String prefix) { 
@@ -1007,20 +1014,24 @@ class AltBtree<T extends IPersistent> extends PersistentCollection<T> implements
         return get(new Key(prefix, true), new Key(prefix + Character.MAX_VALUE, false));
     }
 
-    public boolean put(String key, T obj) {
-        return put(new Key(key, true), obj);
+    public boolean put(Object key, T obj) {
+        return put(Btree.getKeyFromObject(key), obj);
     }
 
-    public T set(String key, T obj) {
-        return set(new Key(key, true), obj);
+    public T set(Object key, T obj) {
+        return set(Btree.getKeyFromObject(key), obj);
     }
 
-    public void  remove(String key, T obj) {
-        remove(new Key(key, true), obj);
+    public void remove(Object key, T obj) {
+        remove(Btree.getKeyFromObject(key), obj);
     }
     
     public T remove(String key) {
-        return remove(new Key(key, true));
+        return remove(new Key(key));
+    }
+
+    public T removeKey(Object key) {
+        return removeKey(Btree.getKeyFromObject(key));
     }
 
     public int size() {
@@ -1104,7 +1115,7 @@ class AltBtree<T extends IPersistent> extends PersistentCollection<T> implements
     }
 
 
-    class BtreeIterator<E> implements Iterator<E> { 
+    class BtreeIterator<E> extends IterableIterator<E> { 
         BtreeIterator() { 
             BtreePage page = root;
             int h = height;
@@ -1187,12 +1198,12 @@ class AltBtree<T extends IPersistent> extends PersistentCollection<T> implements
         return new BtreeIterator<T>();
     }
 
-    public Iterator<Map.Entry<Object,T>> entryIterator() { 
+    public IterableIterator<Map.Entry<Object,T>> entryIterator() { 
         return new BtreeEntryIterator();
     }
 
 
-    class BtreeSelectionIterator<E> implements Iterator<E> { 
+    class BtreeSelectionIterator<E> extends IterableIterator<E> { 
         BtreeSelectionIterator(Key from, Key till, int order) { 
             int i, l, r;
             
@@ -1416,17 +1427,27 @@ class AltBtree<T extends IPersistent> extends PersistentCollection<T> implements
         }
     }
 
-    public Iterator<T> iterator(Key from, Key till, int order) { 
+    public IterableIterator<T> iterator(Key from, Key till, int order) { 
         return new BtreeSelectionIterator<T>(checkKey(from), checkKey(till), order);
     }
 
-    public Iterator<T> prefixIterator(String prefix) {
+    public IterableIterator<T> iterator(Object from, Object till, int order) { 
+        return new BtreeSelectionIterator<T>(checkKey(Btree.getKeyFromObject(from)), 
+                                             checkKey(Btree.getKeyFromObject(till)), order);
+    }
+
+    public IterableIterator<T> prefixIterator(String prefix) {
         return iterator(new Key(prefix), new Key(prefix + Character.MAX_VALUE, false), ASCENT_ORDER);
     }
 
 
-    public Iterator<Map.Entry<Object,T>> entryIterator(Key from, Key till, int order) { 
+    public IterableIterator<Map.Entry<Object,T>> entryIterator(Key from, Key till, int order) { 
         return new BtreeSelectionEntryIterator(checkKey(from), checkKey(till), order);
+    }
+
+    public IterableIterator<Map.Entry<Object,T>> entryIterator(Object from, Object till, int order) { 
+        return new BtreeSelectionEntryIterator(checkKey(Btree.getKeyFromObject(from)), 
+                                               checkKey(Btree.getKeyFromObject(till)), order);
     }
 }
 

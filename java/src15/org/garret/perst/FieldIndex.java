@@ -68,6 +68,15 @@ public interface FieldIndex<T extends IPersistent> extends GenericIndex<T>
     public T remove(Key key);
 
     /**
+     * Remove object with specified key from the unique index
+     * @param key value of removed key
+     * @return removed object
+     * @exception StorageError(StorageError.KEY_NOT_FOUND) exception if there is no such key in the index,
+     * or StorageError(StorageError.KEY_NOT_UNIQUE) if index is not unique.
+     */
+    public T removeKey(Object key);
+
+     /**
      * Check if index contains specified object
      * @param obj object to be searched in the index. Object should contain indexed field. 
      * @return <code>true</code> if object is present in the index, <code>false</code> otherwise

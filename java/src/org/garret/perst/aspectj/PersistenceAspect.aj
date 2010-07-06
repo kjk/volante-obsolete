@@ -126,7 +126,7 @@ privileged public aspect PersistenceAspect {
     
     public void AutoPersist.makePersistent(Storage storage) { 
         if (oid == 0) { 
-            storage.storeObject(this);
+            storage.makePersistent(this);
         }
     }
 

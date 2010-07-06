@@ -44,13 +44,33 @@ public interface GenericIndex<T extends IPersistent> extends IPersistent, IResou
 
     /**
      * Get object by string key (exact match)     
-     * @param key string key 
+     * @param key packed key 
      * @return object with this value of the key or <code>null</code> if key not[ found
      * @exception StorageError(StorageError.KEY_NOT_UNIQUE) exception if there are more than 
      * one objects in the index with specified value of the key.
      */
-    public T get(String key);
+    public T get(Object key);
     
+    /**
+     * Get objects which key value belongs to the specified range.
+     * Either from boundary, either till boundary either both of them can be <code>null</code>.
+     * In last case the method returns all objects from the index.
+     * @param from inclusive low boundary. If <code>null</code> then low boundary is not specified.
+     * @param till inclusive high boundary. If <code>null</code> then high boundary is not specified.
+     * @return array of objects which keys belongs to the specified interval, ordered by key value
+     */
+    public IPersistent[] get(Object from, Object till);
+
+    /**
+     * Get objects which key value belongs to the specified range.
+     * Either from boundary, either till boundary either both of them can be <code>null</code>.
+     * In last case the method returns all objects from the index.
+     * @param from inclusive low boundary. If <code>null</code> then low boundary is not specified.
+     * @param till inclusive high boundary. If <code>null</code> then high boundary is not specified.
+     * @return array of objects which keys belongs to the specified interval, ordered by key value
+     */
+    public ArrayList<T> getList(Object from, Object till);
+
     /**
      * Get objects with objects with key started with specified prefix,
      * i.e. getPrefix("abc") will return "abc", "abcd", "abcdef", ... but not "ab".     
@@ -104,7 +124,7 @@ public interface GenericIndex<T extends IPersistent> extends IPersistent, IResou
      * You should not update/remove or add members to the index during iteration
      * @return index iterator
      */
-    public Iterator<Map.Entry<Object,T>> entryIterator();
+    public IterableIterator<Map.Entry<Object,T>> entryIterator();
 
     static final int ASCENT_ORDER  = 0;
     static final int DESCENT_ORDER = 1;
@@ -118,7 +138,18 @@ public interface GenericIndex<T extends IPersistent> extends IPersistent, IResou
      * @param order <code>ASCENT_ORDER</code> or <code>DESCENT_ORDER</code>
      * @return selection iterator
      */
-    public Iterator<T> iterator(Key from, Key till, int order);
+    public IterableIterator<T> iterator(Key from, Key till, int order);
+
+    /**
+     * Get iterator for traversing objects in the index with key belonging to the specified range. 
+     * You should not update/remove or add members to the index during iteration
+     * @param from inclusive low boundary. If <code>null</code> then low boundary is not specified.
+     * Low boundary can be inclusive or exclusive. 
+     * @param till inclusive high boundary. If <code>null</code> then high boundary is not specified.
+     * @param order <code>ASCENT_ORDER</code> or <code>DESCENT_ORDER</code>
+     * @return selection iterator
+     */
+    public IterableIterator<T> iterator(Object from, Object till, int order);
 
     /**
      * Get iterator for traversing index entries with key belonging to the specified range. 
@@ -131,7 +162,18 @@ public interface GenericIndex<T extends IPersistent> extends IPersistent, IResou
      * @param order <code>ASCENT_ORDER</code> or <code>DESCENT_ORDER</code>
      * @return selection iterator
      */
-    public Iterator<Map.Entry<Object,T>> entryIterator(Key from, Key till, int order);
+    public IterableIterator<Map.Entry<Object,T>> entryIterator(Key from, Key till, int order);
+
+    /**
+     * Get iterator for traversing index entries with key belonging to the specified range. 
+     * Iterator next() method returns object implementing <code>Map.Entry</code> interface
+     * You should not update/remove or add members to the index during iteration
+     * @param from inclusive low boundary. If <code>null</code> then low boundary is not specified.
+     * @param till inclusive high boundary. If <code>null</code> then high boundary is not specified.
+     * @param order <code>ASCENT_ORDER</code> or <code>DESCENT_ORDER</code>
+     * @return selection iterator
+     */
+    public IterableIterator<Map.Entry<Object,T>> entryIterator(Object from, Object till, int order);
 
     /**
      * Get iterator for records which keys started with specified prefix
@@ -140,7 +182,7 @@ public interface GenericIndex<T extends IPersistent> extends IPersistent, IResou
      * @param prefix key prefix
      * @return selection iterator
      */
-    public Iterator<T> prefixIterator(String prefix);
+    public IterableIterator<T> prefixIterator(String prefix);
 
 
     /**

@@ -1121,7 +1121,7 @@ public class StorageImpl extends Storage {
                         if ((pos & dbFreeHandleFlag) == 0) {
                             if ((pos & dbPageObjectFlag) != 0) {  
                                 free(pos & ~dbFlagsMask, Page.pageSize);
-                            } else { 
+                            } else if (pos != 0) { 
                                 int offs = (int)pos & (Page.pageSize-1);
                                 pg = pool.getPage(pos-offs);
                                 free(pos, ObjectHeader.getSize(pg.data, offs));
@@ -1145,7 +1145,7 @@ public class StorageImpl extends Storage {
                     if ((pos & dbFreeHandleFlag) == 0) {
                         if ((pos & dbPageObjectFlag) != 0) { 
                             free(pos & ~dbFlagsMask, Page.pageSize);
-                        } else { 
+                        } else if (pos != 0) { 
                             int offs = (int)pos & (Page.pageSize-1);
                             pg = pool.getPage(pos - offs);
                             free(pos, ObjectHeader.getSize(pg.data, offs));
@@ -1314,7 +1314,7 @@ public class StorageImpl extends Storage {
                 if ((pos & dbFreeHandleFlag) == 0) { 
                     if ((pos & dbPageObjectFlag) != 0) {
                         nPagedObjects += 1;
-                    } else { 
+                    } else if (pos != 0) { 
                         int offs = (int)pos & (Page.pageSize-1);
                         Page op = pool.getPage(pos - offs);
                         int size = ObjectHeader.getSize(op.data, offs & ~dbFlagsMask);
@@ -1379,7 +1379,7 @@ public class StorageImpl extends Storage {
                 if ((pos & dbPageObjectFlag) != 0) {
                     Bytes.pack8(newIndex, oid*8, pageOffs | dbPageObjectFlag);
                     pageOffs += Page.pageSize;
-                } else { 
+                } else if (pos != 0) { 
                     Bytes.pack8(newIndex, oid*8, recOffs);
                     int offs = (int)pos & (Page.pageSize-1);
                     Page op = pool.getPage(pos - offs);
@@ -1424,7 +1424,7 @@ public class StorageImpl extends Storage {
         }
         for (i = 0; i < nObjects; i++) {
             long pos = index[i];
-            if (((int)pos & (dbFreeHandleFlag|dbPageObjectFlag)) == 0) { 
+            if (pos != 0 && ((int)pos & (dbFreeHandleFlag|dbPageObjectFlag)) == 0) { 
                 pos &= ~dbFlagsMask;
                 int offs = (int)pos & (Page.pageSize-1);
                 Page pg = pool.getPage(pos - offs);
@@ -1464,7 +1464,18 @@ public class StorageImpl extends Storage {
         set.assignOid(this, 0, false);
         return set;
     }
-        
+
+    public synchronized IPersistentSet createScalableSet() {
+        return createScalableSet(8);
+    }
+
+    public synchronized IPersistentSet createScalableSet(int initialSize) {
+        if (!opened) { 
+            throw new StorageError(StorageError.STORAGE_NOT_OPENED);
+        }
+        return new ScalableSet(this, initialSize);
+    }
+
     public synchronized Index createIndex(Class keyType, boolean unique) {
         if (!opened) { 
             throw new StorageError(StorageError.STORAGE_NOT_OPENED);
@@ -1475,6 +1486,13 @@ public class StorageImpl extends Storage {
         index.assignOid(this, 0, false);
         return index;
     }
+
+    public synchronized Index createThickIndex(Class keyType) {
+        if (!opened) { 
+            throw new StorageError(StorageError.STORAGE_NOT_OPENED);
+        }
+        return new ThickIndex(keyType, this);
+    }      
 
     public synchronized BitIndex createBitIndex() {
         if (!opened) { 
@@ -1643,7 +1661,7 @@ public class StorageImpl extends Storage {
         gcDone = true;
         for (int i = dbFirstUserId, j = committedIndexSize; i < j; i++) {
             pos = getGCPos(i);
-            if (((int)pos & (dbPageObjectFlag|dbFreeHandleFlag)) == 0) {
+            if (pos != 0 && ((int)pos & (dbPageObjectFlag|dbFreeHandleFlag)) == 0) {
                 int bit = (int)(pos >>> dbAllocationQuantumBits);
                 if ((blackBitmap[bit >>> 5] & (1 << (bit & 31))) == 0) { 
                     // object is not accessible
@@ -2383,6 +2401,28 @@ public class StorageImpl extends Storage {
         }
     }
 
+    public synchronized int makePersistent(IPersistent obj) 
+    {
+        if (!opened) { 
+            throw new StorageError(StorageError.STORAGE_NOT_OPENED);
+        }
+        if (obj == null) {
+            return 0;
+        }
+        int oid = obj.getOid();
+        if (oid != 0) {
+            return oid;
+        }
+        synchronized (objectCache) {
+            oid = allocateId();
+            obj.assignOid(this, oid, false);
+            setPos(oid, 0);
+            objectCache.put(oid, obj);
+            obj.modify();
+            return oid;
+        }
+    }
+
     private final void storeObject0(IPersistent obj) 
     {
         obj.onStore();
@@ -2401,11 +2441,10 @@ public class StorageImpl extends Storage {
         byte[] data = packObject(obj);
         long pos;
         int newSize = ObjectHeader.getSize(data, 0);
-        if (newObject) { 
+        if (newObject || (pos = getPos(oid)) == 0) { 
             pos = allocate(newSize, 0);
             setPos(oid, pos | dbModifiedFlag);
         } else {
-            pos = getPos(oid);
             int offs = (int)pos & (Page.pageSize-1);
             if ((offs & (dbFreeHandleFlag|dbPageObjectFlag)) != 0) { 
                 throw new StorageError(StorageError.DELETED_OBJECT);

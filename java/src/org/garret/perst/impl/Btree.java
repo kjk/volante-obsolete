@@ -166,7 +166,7 @@ class Btree extends PersistentResource implements Index {
         }
         key = checkKey(key);
         if (!obj.isPersistent()) { 
-            db.storeObject(obj);
+            db.makePersistent(obj);
         }
         BtreeKey ins = new BtreeKey(key, obj.getOid());
         if (root == 0) { 

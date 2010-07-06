@@ -152,9 +152,21 @@ class Btree<T extends IPersistent> extends PersistentCollection<T> implements In
         return list;
     }
 
+    public ArrayList<T> getList(Object from, Object till) {
+        return getList(getKeyFromObject(from), getKeyFromObject(till));
+    }
+
+    public T get(Object key) { 
+        return get(getKeyFromObject(key));
+    }
+
     public IPersistent[] get(Key from, Key till) {
         ArrayList<T> list = getList(from, till);
         return (IPersistent[])list.toArray(new IPersistent[list.size()]);
+    }
+
+    public IPersistent[] get(Object from, Object till) {
+        return get(getKeyFromObject(from), getKeyFromObject(till));
     }
 
     public boolean put(Key key, T obj) {
@@ -173,7 +185,7 @@ class Btree<T extends IPersistent> extends PersistentCollection<T> implements In
         }
         key = checkKey(key);
         if (!obj.isPersistent()) { 
-            db.storeObject(obj);
+            db.makePersistent(obj);
         }
         BtreeKey ins = new BtreeKey(key, obj.getOid());
         if (root == 0) { 
@@ -246,10 +258,43 @@ class Btree<T extends IPersistent> extends PersistentCollection<T> implements In
         return (T)db.lookupObject(rk.oldOid, null);
     }
         
-        
-    public T get(String key) { 
-        return get(new Key(key.toCharArray(), true));
+    static Key getKeyFromObject(Object o) {
+        if (o == null) { 
+            return null;
+        } else if (o instanceof Byte) { 
+            return new Key(((Byte)o).byteValue());
+        } else if (o instanceof Short) {
+            return new Key(((Short)o).shortValue());
+        } else if (o instanceof Integer) {
+            return new Key(((Integer)o).intValue());
+        } else if (o instanceof Long) {
+            return new Key(((Long)o).longValue());
+        } else if (o instanceof Float) {
+            return new Key(((Float)o).floatValue());
+        } else if (o instanceof Double) {
+            return new Key(((Double)o).doubleValue());
+        } else if (o instanceof Boolean) {
+            return new Key(((Boolean)o).booleanValue());
+        } else if (o instanceof Character) {
+            return new Key(((Character)o).charValue());
+        } else if (o instanceof String) {
+            return new Key((String)o);
+        } else if (o instanceof java.util.Date) {
+            return new Key((java.util.Date)o);
+        } else if (o instanceof byte[]) {
+            return new Key((byte[])o);
+        } else if (o instanceof Object[]) {
+            return new Key((Object[])o);
+        } else if (o instanceof Enum) {
+            return new Key((Enum)o);
+        } else if (o instanceof IPersistent) {
+            return new Key((IPersistent)o);
+        } else if (o instanceof Comparable) {
+            return new Key((Comparable)o);
+        }
+        throw new StorageError(StorageError.UNSUPPORTED_TYPE);
     }
+        
 
     public ArrayList<T> getPrefixList(String prefix) { 
         return getList(new Key(prefix.toCharArray(), true), 
@@ -261,20 +306,24 @@ class Btree<T extends IPersistent> extends PersistentCollection<T> implements In
                    new Key((prefix + Character.MAX_VALUE).toCharArray(), false));
     }
 
-    public boolean put(String key, T obj) {
-        return put(new Key(key.toCharArray(), true), obj);
+    public boolean put(Object key, T obj) {
+        return put(getKeyFromObject(key), obj);
     }
 
-    public T set(String key, T obj) {
-        return set(new Key(key.toCharArray(), true), obj);
+    public T set(Object key, T obj) {
+        return set(getKeyFromObject(key), obj);
     }
 
-    public void remove(String key, T obj) {
-        remove(new Key(key.toCharArray(), true), obj);
+    public void remove(Object key, T obj) {
+        remove(getKeyFromObject(key), obj);
     }
     
+    public T removeKey(Object key) {
+        return remove(getKeyFromObject(key));
+    }
+
     public T remove(String key) {
-        return remove(new Key(key.toCharArray(), true));
+        return remove(new Key(key));
     }
 
     public int size() {
@@ -438,7 +487,7 @@ class Btree<T extends IPersistent> extends PersistentCollection<T> implements In
     }
             
               
-    class BtreeIterator<E> implements Iterator<E> { 
+    class BtreeIterator<E> extends IterableIterator<E> { 
         BtreeIterator() { 
             StorageImpl db = (StorageImpl)getStorage();
             if (db == null) {             
@@ -545,7 +594,7 @@ class Btree<T extends IPersistent> extends PersistentCollection<T> implements In
         return new BtreeIterator<T>();
     }
 
-    public Iterator<Map.Entry<Object,T>> entryIterator() { 
+    public IterableIterator<Map.Entry<Object,T>> entryIterator() { 
         return new BtreeEntryIterator();
     }
 
@@ -558,7 +607,7 @@ class Btree<T extends IPersistent> extends PersistentCollection<T> implements In
     }
 
 
-    class BtreeSelectionIterator<E> implements Iterator<E> { 
+    class BtreeSelectionIterator<E> extends IterableIterator<E> { 
         BtreeSelectionIterator(Key from, Key till, int order) { 
             int i, l, r;
             
@@ -1175,18 +1224,29 @@ class Btree<T extends IPersistent> extends PersistentCollection<T> implements In
         }
     }
 
-    public Iterator<T> iterator(Key from, Key till, int order) { 
+    public IterableIterator<T> iterator(Key from, Key till, int order) { 
         return new BtreeSelectionIterator<T>(checkKey(from), checkKey(till), order);
     }
 
-    public Iterator<T> prefixIterator(String prefix) {
+    public IterableIterator<T> prefixIterator(String prefix) {
         return iterator(new Key(prefix.toCharArray()), 
                         new Key((prefix + Character.MAX_VALUE).toCharArray(), false), ASCENT_ORDER);
     }
 
 
-    public Iterator<Map.Entry<Object,T>> entryIterator(Key from, Key till, int order) { 
+    public IterableIterator<Map.Entry<Object,T>> entryIterator(Key from, Key till, int order) { 
         return new BtreeSelectionEntryIterator(checkKey(from), checkKey(till), order);
+    }
+
+
+    public IterableIterator<T> iterator(Object from, Object till, int order) { 
+        return new BtreeSelectionIterator<T>(checkKey(getKeyFromObject(from)), 
+                                             checkKey(getKeyFromObject(till)), order);
+    }
+
+    public IterableIterator<Map.Entry<Object,T>> entryIterator(Object from, Object till, int order) { 
+        return new BtreeSelectionEntryIterator(checkKey(getKeyFromObject(from)), 
+                                               checkKey(getKeyFromObject(till)), order);
     }
 }
 

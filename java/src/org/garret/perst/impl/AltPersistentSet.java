@@ -68,7 +68,7 @@ class AltPersistentSet extends AltBtree implements IPersistentSet {
 
     public boolean retainAll(Collection c) {
         ArrayList toBeRemoved = new ArrayList();
-        Iterator i = c.iterator();
+        Iterator i = iterator();
         while (i.hasNext()) {
             Object o = i.next();
             if (!c.contains(o)) {

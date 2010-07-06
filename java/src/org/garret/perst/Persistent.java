@@ -33,7 +33,7 @@ public class Persistent implements IPersistent {
     
     public void makePersistent(Storage storage) { 
         if (oid == 0) { 
-            storage.storeObject(this);
+            storage.makePersistent(this);
         }
     }
 

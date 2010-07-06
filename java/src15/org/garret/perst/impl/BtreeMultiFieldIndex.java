@@ -546,11 +546,11 @@ class BtreeMultiFieldIndex<T extends IPersistent> extends Btree<T> implements Fi
         return super.get(convertKey(key));
     }
 
-    public Iterator<T> iterator(Key from, Key till, int order) {
+    public IterableIterator<T> iterator(Key from, Key till, int order) {
         return super.iterator(convertKey(from), convertKey(till), order);
     }
 
-    public Iterator<Map.Entry<Object,T>> entryIterator(Key from, Key till, int order) {
+    public IterableIterator<Map.Entry<Object,T>> entryIterator(Key from, Key till, int order) {
         return super.entryIterator(convertKey(from), convertKey(till), order);
     }
 }

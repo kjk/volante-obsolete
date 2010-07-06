@@ -333,3 +333,14 @@ stored in OS file buffers and sooner or later them will be written to the disk)
 --- Release version 2.45 16.12.2004 -------------------------------------
 1. Derive Index and FieldIndex interface from common base GenericIndex
 2. Index, FieldIndex and SortedCollections are now implemting Collection interface in JDK 1.5
+
+--- Release version 2.46 19.12.2004 -------------------------------------
+1. Add Storage.makePersistent method and change implementation of Persistent.makePersistent.
+   Now makePersistent method only assigns OID to the object but doesn't store it in the database
+2. Add Storage.createThickIndex method for efficient support of indices with a lot of duplicate 
+   values of of the key
+3. Add Storage.createScalableSet method for efficient (space and speed) support of set of references 
+   small as well as large number of members
+4. Introduce IterableIterator class tp JDK 1.5 API which makes it possible to use collection 
+   interators in "for" construction
+5. Make it possible to pass key values in Index and FieldIndex methods without creating Key wrapper in JDK 1.5 API

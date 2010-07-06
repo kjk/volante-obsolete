@@ -33,4 +33,6 @@ call TestBlob
 call TestBlob
 call TestTimeSeries
 call TestBit
+call TestThickIndex
+call TestSet
 

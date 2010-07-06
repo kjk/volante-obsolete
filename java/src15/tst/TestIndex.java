@@ -46,8 +46,8 @@ public class TestIndex {
             rec.intKey = key;
             rec.strKey = Long.toString(key);
             rec.c = Color.GREEN;
-            intIndex.put(new Key(rec.intKey), rec);                
-            strIndex.put(new Key(rec.strKey), rec);                
+            intIndex.put(rec.intKey, rec);                
+            strIndex.put(rec.strKey, rec);                
         }
         db.commit();
         System.out.println("Elapsed time for inserting " + nRecords + " records: " 
@@ -57,8 +57,8 @@ public class TestIndex {
         key = 1999;
         for (i = 0; i < nRecords; i++) { 
             key = (3141592621L*key + 2718281829L) % 1000000007L;
-            Record rec1 = (Record)intIndex.get(new Key(key));
-            Record rec2 = (Record)strIndex.get(new Key(Long.toString(key)));
+            Record rec1 = (Record)intIndex.get(key);
+            Record rec2 = (Record)strIndex.get(Long.toString(key));
             Assert.that(rec1 != null && rec1 == rec2);
             assert(rec1.c == Color.GREEN);
         }
@@ -96,9 +96,9 @@ public class TestIndex {
         key = 1999;
         for (i = 0; i < nRecords; i++) { 
             key = (3141592621L*key + 2718281829L) % 1000000007L;
-            Record rec = (Record)intIndex.get(new Key(key));
-            intIndex.remove(new Key(key));
-            strIndex.remove(new Key(Long.toString(key)), rec);
+            Record rec = (Record)intIndex.get(key);
+            intIndex.remove(key, rec);
+            strIndex.remove(Long.toString(key));
             rec.deallocate();
         }
         Assert.that(!intIndex.iterator().hasNext());

@@ -23,27 +23,28 @@ public abstract class PersistentCollection<T extends IPersistent> extends Persis
     }
 
     public boolean removeAll(Collection<?> c) {
-	boolean modified = false;
-	Iterator<?> e = iterator();
-	while (e.hasNext()) {
-	    if (c.contains(e.next())) {
-		e.remove();
-		modified = true;
-	    }
-	}
-	return modified;
+        boolean modified = false;
+        Iterator<?> i = c.iterator();
+        while (i.hasNext()) {
+            modified |= remove(i.next());
+        }
+        return modified;
     }
 
     public boolean retainAll(Collection<?> c) {
-	boolean modified = false;
-	Iterator<T> e = iterator();
-	while (e.hasNext()) {
-	    if (!c.contains(e.next())) {
-		e.remove();
-		modified = true;
-	    }
-	}
-	return modified;
+        ArrayList<T> toBeRemoved = new ArrayList<T>();
+        Iterator<T> i = iterator();
+        while (i.hasNext()) {
+            T o = i.next();
+            if (!c.contains(o)) {
+                toBeRemoved.add(o);
+            }
+        }
+        int n = toBeRemoved.size();
+        for (int j = 0; j < n; j++) { 
+            remove(toBeRemoved.get(j));
+        }
+        return n != 0;         
     }
 
     public boolean contains(Object o) {
@@ -86,5 +87,11 @@ public abstract class PersistentCollection<T extends IPersistent> extends Persis
 
     public boolean isEmpty() {
 	return size() == 0;
+    }
+
+    public PersistentCollection() {}
+
+    public PersistentCollection(Storage storage) { 
+        super(storage);
     }
 }    
