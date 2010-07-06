@@ -76,6 +76,10 @@ Project("{20D4826A-C6FA-45DB-90F4-C717570B9F32}") = "IpCountry", "IpCountry\IpCo
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
+Project("{20D4826A-C6FA-45DB-90F4-C717570B9F32}") = "TestBit", "TestBit\TestBit.csdproj", "{49CBC761-0ECE-4B4F-AF6C-17B736B70E98}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfiguration) = preSolution
 		Debug = Debug
@@ -196,6 +200,12 @@ Global
 		{EEB7CD7C-A4AB-4C2C-A5CF-92EE6BD089D2}.Release.ActiveCfg = Release|Windows CE
 		{EEB7CD7C-A4AB-4C2C-A5CF-92EE6BD089D2}.Release.Build.0 = Release|Windows CE
 		{EEB7CD7C-A4AB-4C2C-A5CF-92EE6BD089D2}.Release.Deploy.0 = Release|Windows CE
+		{49CBC761-0ECE-4B4F-AF6C-17B736B70E98}.Debug.ActiveCfg = Debug|Windows CE
+		{49CBC761-0ECE-4B4F-AF6C-17B736B70E98}.Debug.Build.0 = Debug|Windows CE
+		{49CBC761-0ECE-4B4F-AF6C-17B736B70E98}.Debug.Deploy.0 = Debug|Windows CE
+		{49CBC761-0ECE-4B4F-AF6C-17B736B70E98}.Release.ActiveCfg = Release|Windows CE
+		{49CBC761-0ECE-4B4F-AF6C-17B736B70E98}.Release.Build.0 = Release|Windows CE
+		{49CBC761-0ECE-4B4F-AF6C-17B736B70E98}.Release.Deploy.0 = Release|Windows CE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 	EndGlobalSection

@@ -338,3 +338,6 @@ stored in OS file buffers and sooner or later them will be written to the disk)
 --- Release version 2.42 06.12.2004 -------------------------------------
 1. Fix bug in range search implementation in T-Tree (SortedCollection)
 2. Make it possible to specify different range types (inclusive/exclusive) in SortedCollection search methods
+
+--- Release version 2.43 10.12.2004 -------------------------------------
+1. Add BitIndex collection (allowing to select object by bit vector of boolean properties)

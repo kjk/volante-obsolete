@@ -25,3 +25,4 @@ TestBackup\bin\debug\TestBackup
 TestBlob\bin\debug\TestBlob
 TestBlob\bin\debug\TestBlob
 TestTimeSeries\bin\debug\TestTimeSeries
+TestBit\bin\debug\TestBit

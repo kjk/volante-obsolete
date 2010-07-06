@@ -2,8 +2,12 @@ rd /s/q obj
 rd /s/q bin
 rd /s/q Guess\obj
 rd /s/q Guess\bin
+rd /s/q TransparentGuess\obj
+rd /s/q TransparentGuess\bin
 rd /s/q TestIndex\obj
 rd /s/q TestIndex\bin
+rd /s/q TestIndex2\obj
+rd /s/q TestIndex2\bin
 rd /s/q TestLink\obj
 rd /s/q TestLink\bin
 rd /s/q TestGC\obj
@@ -32,6 +36,8 @@ rd /s/q TestCompoundIndex\obj
 rd /s/q TestCompoundIndex\bin
 rd /s/q TestBlob\obj
 rd /s/q TestBlob\bin
+rd /s/q TestBit\obj
+rd /s/q TestBit\bin
 del /q *.dbs
 rd /s/q TestTimeSeries\obj
 rd /s/q TestTimeSeries\bin
@@ -40,6 +46,7 @@ rd /s/q IpCountry\obj
 rd /s/q IpCountry\bin
 del /q IpCountry\*.dbs
 del /q *.suo
+del /q *.ncb
 cd ..
 del /q perstnet.zip
 zip -r perstnet.zip Perst.NET

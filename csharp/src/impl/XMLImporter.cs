@@ -45,7 +45,11 @@ namespace Perst.Impl
                     throwException("Element name expected");
                 }
                 System.String elemName = scanner.Identifier;
-                if (elemName.Equals("Perst.Impl.Btree") || elemName.Equals("Perst.Impl.BtreeFieldIndex") || elemName.Equals("Perst.Impl.BtreeMultiFieldIndex"))
+                if (elemName.Equals("Perst.Impl.Btree") 
+                    || elemName.Equals("Perst.Impl.BitIndexImpl")
+                    || elemName.Equals("Perst.Impl.PersistentSet") 
+                    || elemName.Equals("Perst.Impl.BtreeFieldIndex") 
+                    || elemName.Equals("Perst.Impl.BtreeMultiFieldIndex"))
                 {
                     createIndex(elemName);
                 }
@@ -569,9 +573,26 @@ namespace Perst.Impl
             {
                 if (type == null)
                 {
-                    throwException("Key type is not specified for index");
+                    if (indexType.Equals("Perst.Impl.PersistentSet")) 
+                    { 
+                        btree = new PersistentSet();
+                    } 
+                    else 
+                    {
+                        throwException("Key type is not specified for index");
+                    }
+                } 
+                else 
+                {
+                    if (indexType.Equals("org.garret.perst.impl.BitIndexImpl")) 
+                    { 
+                        btree = new BitIndexImpl();
+                    } 
+                    else 
+                    { 
+                        btree = new Btree(mapType(type), unique);
+                    }
                 }
-                btree = new Btree(mapType(type), unique);
             }
             storage.assignOid(btree, oid);
 			

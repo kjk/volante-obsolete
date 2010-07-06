@@ -1741,6 +1741,21 @@ namespace Perst.Impl
             }
         }
         
+        public override BitIndex CreateBitIndex() 
+        {
+            lock(this)
+            {
+                if (!opened) 
+                { 
+                    throw new StorageError(StorageError.ErrorCode.STORAGE_NOT_OPENED);
+                }
+                BitIndex index = new BitIndexImpl();
+                index.AssignOid(this, 0, false);
+                return index;
+            }
+        }
+
+
         public override SpatialIndex CreateSpatialIndex() 
         {
             lock(this)

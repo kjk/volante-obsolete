@@ -849,14 +849,14 @@ namespace Perst.Impl
             }
         }
     
-        public IDictionaryEnumerator GetDictionaryEnumerator() 
+        public virtual IDictionaryEnumerator GetDictionaryEnumerator() 
         { 
             return type == ClassDescriptor.FieldType.tpString || type == ClassDescriptor.FieldType.tpArrayOfByte
                 ? new BtreeDictionaryStrEnumerator(this)
                 : new BtreeDictionaryEnumerator(this);
         }
 
-        public IEnumerator GetEnumerator() 
+        public virtual IEnumerator GetEnumerator() 
         { 
             return type == ClassDescriptor.FieldType.tpString || type == ClassDescriptor.FieldType.tpArrayOfByte
                 ? new BtreeStrEnumerator(this)

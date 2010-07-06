@@ -56,9 +56,9 @@ namespace Perst
         /// In last case the method returns all objects from the collection.
         /// </summary>
         /// <param name="from"> low boundary. If <code>null</code> then low boundary is not specified.</param>
-        /// <param name="fromInclusive"> whether low boundary is inclusive or exclusive
+        /// <param name="fromInclusive"> whether low boundary is inclusive or exclusive</param>
         /// <param name="till"> high boundary. If <code>null</code> then high boundary is not specified.</param>
-        /// <param name="tillInclusive"> whether till boundary is inclusive or exclusive
+        /// <param name="tillInclusive"> whether till boundary is inclusive or exclusive</param>
         /// <returns> array of objects which keys belongs to the specified interval, ordered by key value</returns>
         ///
         IPersistent[] Get(object from, bool fromInclusive, object till, bool tillInclusive);
@@ -119,7 +119,6 @@ namespace Perst
         /// Get iterator for traversing collection members  with key belonging to the specified range. 
         /// </summary>
         /// <param name="from"> inclusive low boundary. If <code>null</code> then low boundary is not specified.</param>
-        /// <param name="fromInclusive"> whether low boundary is inclusive or exclusive
         /// <param name="till"> inclusive high boundary. If <code>null</code> then high boundary is not specified.</param>
         /// <returns> selection iterator</returns>
         ///
@@ -129,9 +128,9 @@ namespace Perst
         /// Get iterator for traversing collection members  with key belonging to the specified range. 
         /// </summary>
         /// <param name="from"> low boundary. If <code>null</code> then low boundary is not specified.</param>
-        /// <param name="fromInclusive"> whether low boundary is inclusive or exclusive
+        /// <param name="fromInclusive"> whether low boundary is inclusive or exclusive</param>
         /// <param name="till"> high boundary. If <code>null</code> then high boundary is not specified.</param>
-        /// <param name="tillInclusive"> whether till boundary is inclusive or exclusive
+        /// <param name="tillInclusive"> whether till boundary is inclusive or exclusive</param>
         /// <returns> selection iterator</returns>
         ///
         IEnumerator GetEnumerator(object from, bool fromInclusive, object till, bool tillInclusive);

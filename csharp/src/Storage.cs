@@ -165,6 +165,13 @@ namespace Perst
         abstract public FieldIndex CreateFieldIndex(Type type, string[] fieldNames, bool unique);
 		
         /// <summary>
+        /// Create new bit index. Bit index is used to select object 
+        /// with specified set of (boolean) properties.
+        /// </summary>
+        /// <returns>persistent object implementing bit index</returns>
+        abstract public BitIndex CreateBitIndex();
+
+        /// <summary>
         /// Create new spatial index with integer coordinates
         /// </summary>
         /// <returns>

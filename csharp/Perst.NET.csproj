@@ -88,6 +88,11 @@
                     BuildAction = "Compile"
                 />
                 <File
+                    RelPath = "src\BitIndex.cs"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
                     RelPath = "src\Blob.cs"
                     SubType = "Code"
                     BuildAction = "Compile"
@@ -284,6 +289,11 @@
                 />
                 <File
                     RelPath = "src\impl\AltPersistentSet.cs"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "src\impl\BitIndexImpl.cs"
                     SubType = "Code"
                     BuildAction = "Compile"
                 />

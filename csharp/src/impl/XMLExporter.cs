@@ -42,7 +42,11 @@ namespace Perst.Impl
                                 ClassDescriptor desc = storage.findClassDescriptor(typeOid);
                                 if (desc.cls == typeof(Btree))
                                 {
-                                    exportIndex(oid, obj);
+                                    exportIndex(oid, obj, "Perst.Impl.Btree");
+                                }
+                                else if (desc.cls == typeof(BitIndexImpl))
+                                {
+                                    exportIndex(oid, obj, "Perst.Impl.BitIndexImpl");
                                 }
                                 else if (desc.cls == typeof(PersistentSet))
                                 {
@@ -87,13 +91,14 @@ namespace Perst.Impl
             writer.Write(" </Perst.Impl.PersistentSet>\n");
         }
 
-        internal void  exportIndex(int oid, byte[] data)
+        internal void  exportIndex(int oid, byte[] data, string name)
         {
             Btree btree = new Btree(data, ObjectHeader.Sizeof);
             storage.assignOid(btree, oid);
-            writer.Write(" <Perst.Impl.Btree id=\"" + oid + "\" unique=\"" + (btree.unique?'1':'0') + "\" type=\"" + btree.type + "\">\n");
+            writer.Write(" <" + name + " id=\"" + oid + "\" unique=\"" + (btree.unique ? '1' : '0') 
+                + "\" type=\"" + btree.type + "\">\n");
             btree.export(this);
-            writer.Write(" </Perst.Impl.Btree>\n");
+            writer.Write(" </" + name + ">\n");
         }
 		
         internal void  exportFieldIndex(int oid, byte[] data)
