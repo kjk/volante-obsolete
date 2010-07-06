@@ -62,3 +62,8 @@ For example it can be used to work with flash card or encrypted files.
 --- Release version 1.16 23.07.2003 -------------------------------------
 
 1. Fix bug in index iterator (iterating through empty index)
+
+--- Release version 1.17 01.08.2003 -------------------------------------
+
+1. Store weak references in modified object list to make it possible to GC to reclaim these objects
+2. Support sets of persistent objects (Storage.createSet method)

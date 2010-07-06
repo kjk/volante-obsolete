@@ -116,6 +116,11 @@
                     BuildAction = "Compile"
                 />
                 <File
+                    RelPath = "src\ISet.cs"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
                     RelPath = "src\Key.cs"
                     SubType = "Code"
                     BuildAction = "Compile"
@@ -232,6 +237,11 @@
                 />
                 <File
                     RelPath = "src\impl\PagePool.cs"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "src\impl\PersistentSet.cs"
                     SubType = "Code"
                     BuildAction = "Compile"
                 />

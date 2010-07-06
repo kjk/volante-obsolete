@@ -79,7 +79,86 @@ namespace Perst.Impl
             }
             return null;
         }
-		
+
+        internal Key getKeyFromObject(object o) 
+        {
+            if (o == null) 
+            { 
+                return null;
+            }
+            else if (o is byte) 
+            { 
+                return new Key((byte)o);
+            }
+            else if (o is sbyte) 
+            {
+                return new Key((sbyte)o);
+            }
+            else if (o is short) 
+            {
+                return new Key((short)o);
+            }
+            else if (o is ushort) 
+            {
+                return new Key((ushort)o);
+            }
+            else if (o is int) 
+            {
+                return new Key((int)o);
+            }
+            else if (o is uint) 
+            {
+                return new Key((uint)o);
+            }
+            else if (o is long) 
+            {
+                return new Key((long)o);
+            }
+            else if (o is ulong) 
+            {
+                return new Key((ulong)o);
+            }
+            else if (o is float) 
+            {
+                return new Key((float)o);
+            }
+            else if (o is double) 
+            {
+                return new Key((double)o);
+            }
+            else if (o is bool) 
+            {
+                return new Key((bool)o);
+            }
+            else if (o is char) 
+            {
+                return new Key((char)o);
+            }
+            else if (o is String) 
+            {
+                return new Key((String)o);
+            }
+            else if (o is DateTime) 
+            {
+                return new Key((DateTime)o);
+            }
+            else if (o is Enum) 
+            {
+                return new Key((Enum)o);
+            }
+            else if (o is IPersistent) 
+            {
+                return new Key((IPersistent)o);
+            }
+            throw new StorageError(StorageError.ErrorCode.UNSUPPORTED_TYPE);
+        }
+
+
+        public virtual IPersistent get(object key) 
+        {
+            return get(getKeyFromObject(key));
+        }
+
         internal static IPersistent[] emptySelection = new IPersistent[0];
 		
         public virtual IPersistent[] get(Key from, Key till)
@@ -104,14 +183,30 @@ namespace Perst.Impl
             return emptySelection;
         }
 		
+        public virtual IPersistent[] get(object from, object till)
+        {
+            return get(getKeyFromObject(from), getKeyFromObject(till));
+        }
+            
+            
         public virtual bool put(Key key, IPersistent obj)
         {
             return insert(key, obj, false);
         }
 
+        public virtual bool put(object key, IPersistent obj)
+        {
+            return insert(getKeyFromObject(key), obj, false);
+        }
+
         public virtual void set(Key key, IPersistent obj)
         {
             insert(key, obj, true);
+        }
+
+        public virtual void set(object key, IPersistent obj)
+        {
+            insert(getKeyFromObject(key), obj, true);
         }
 
         internal bool insert(Key key, IPersistent obj, bool overwrite)
@@ -158,7 +253,11 @@ namespace Perst.Impl
             remove(new BtreeKey(key, obj.Oid));
         }
 		
-		
+        public virtual void  remove(object key, IPersistent obj)
+        {
+            remove(new BtreeKey(getKeyFromObject(key), obj.Oid));    
+        }
+ 		
         internal virtual void  remove(BtreeKey rem)
         {
             StorageImpl db = (StorageImpl) Storage;
@@ -182,10 +281,11 @@ namespace Perst.Impl
                 if (BtreePage.getnItems(pg) == 0)
                 {
                     int newRoot = 0;
-                    if (height != 1)                                   
+                    if (height != 1)  
+                    {         
                         newRoot = (type == ClassDescriptor.FieldType.tpString)
-                                ? BtreePage.getKeyStrOid(pg, 0)
-                                : BtreePage.getReference(pg, BtreePage.maxItems - 1);
+                            ? BtreePage.getKeyStrOid(pg, 0)
+                            : BtreePage.getReference(pg, BtreePage.maxItems - 1);
                     }
                     db.freePage(root);
                     root = newRoot;
@@ -201,6 +301,8 @@ namespace Perst.Impl
             modify();
         }
 		
+               
+                
         public virtual void  remove(Key key)
         {
             if (!unique)
@@ -208,9 +310,13 @@ namespace Perst.Impl
                 throw new StorageError(StorageError.ErrorCode.KEY_NOT_UNIQUE);
             }
             remove(new BtreeKey(key, 0));
+        }		
+            
+        public virtual void  remove(object key)
+        {
+            remove(getKeyFromObject(key));
         }
-		
-		
+
         public virtual int size()
         {
             return nElems;
@@ -228,12 +334,22 @@ namespace Perst.Impl
             }
         }
 		
-        public virtual IPersistent[] toArray()
+        public virtual IPersistent[] ToArray()
         {
             IPersistent[] arr = new IPersistent[nElems];
             if (root != 0)
             {
                 BtreePage.traverseForward((StorageImpl) Storage, root, type, height, arr, 0);
+            }
+            return arr;
+        }
+		
+        public virtual Array ToArray(Type elemType)
+        {
+            Array arr = Array.CreateInstance(elemType, nElems);
+            if (root != 0)
+            {
+                BtreePage.traverseForward((StorageImpl) Storage, root, type, height, (IPersistent[])arr, 0);
             }
             return arr;
         }
@@ -549,7 +665,7 @@ namespace Perst.Impl
                 : new BtreeEnumerator((StorageImpl)Storage, root, height);
         }
 
-        class BtreeSelectionIterator : IEnumerator 
+        class BtreeSelectionIterator : IEnumerator, IEnumerable 
         { 
             internal BtreeSelectionIterator(StorageImpl db, int pageId, int height, ClassDescriptor.FieldType type, Key from, Key till, IterationOrder order) 
             { 
@@ -562,6 +678,11 @@ namespace Perst.Impl
                 pageStack = new int[height];
                 posStack =  new int[height];
                 Reset();
+            }
+
+            public IEnumerator GetEnumerator() 
+            {
+                return this;
             }
 
             public void Reset() 
@@ -1166,6 +1287,11 @@ namespace Perst.Impl
 
   
         public IEnumerator GetEnumerator(Key from, Key till, IterationOrder order) 
+        {
+            return range(from, till, order).GetEnumerator();
+        }
+
+        public IEnumerable range(Key from, Key till, IterationOrder order) 
         { 
             if ((from != null && from.type != type) || (till != null && till.type != type)) 
             { 
@@ -1174,6 +1300,16 @@ namespace Perst.Impl
             return new BtreeSelectionIterator((StorageImpl)Storage, root, height, type, from, till, order);
         }
 
+        public IEnumerable range(object from, object till, IterationOrder order) 
+        { 
+            return range(getKeyFromObject(from), getKeyFromObject(till), order);
+        }
+
+        public IEnumerable range(object from, object till) 
+        { 
+            return range(getKeyFromObject(from), getKeyFromObject(till), IterationOrder.AscentOrder);
+        }
+ 
         public IDictionaryEnumerator GetDictionaryEnumerator(Key from, Key till, IterationOrder order) 
         { 
             if ((from != null && from.type != type) || (till != null && till.type != type)) 

@@ -75,7 +75,6 @@ namespace Perst
                 { 
                     throw new StorageError(StorageError.ErrorCode.ACCESS_TO_STUB);
                 }
-                storage.modifyObject(this);
                 state |= (int)ObjectState.DIRTY;
             }
         }
@@ -107,6 +106,15 @@ namespace Perst
 		
         public virtual void onLoad() 
         {
+        }
+        
+        
+        ~Persistent() 
+        { 
+            if ((state & (int)ObjectState.DIRTY) != 0) 
+            { 
+                store();
+            }
         }
 
         [NonSerialized()]

@@ -48,6 +48,7 @@ public class TestRtree : Persistent {
                 }
                 Assert.that(n == sos.Length);
                 root.index.remove(r, po);
+                po.deallocate();
             }
             key = (3141592621L*key + 2718281829L) % 1000000007L;
             int top = (int)(key % 1000);

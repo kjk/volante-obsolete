@@ -825,7 +825,6 @@ namespace Perst.Impl
 				
                 objectCache = new WeakHashTable(dbObjectCacheInitSize);
                 classDescMap = new Hashtable();
-                modifiedList = new ArrayList();
                 descList = null;
 				
                 objectFormatter = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
@@ -1057,10 +1056,7 @@ namespace Perst.Impl
                 {
                     throw new StorageError(StorageError.ErrorCode.STORAGE_NOT_OPENED);
                 }
-                foreach (IPersistent p in modifiedList) {
-                    p.store();
-                }
-                modifiedList.Clear();
+                objectCache.flush();
                 
                 if (modified)
                 {
@@ -1242,7 +1238,7 @@ namespace Perst.Impl
                 {
                     throw new StorageError(StorageError.ErrorCode.STORAGE_NOT_OPENED);
                 }
-                modifiedList.Clear();
+                objectCache.clear();
                 if (!modified) 
                 { 
                     return;
@@ -1311,6 +1307,20 @@ namespace Perst.Impl
                 Rtree index = new Rtree();
                 setObjectOid(index, 0, false);
                 return index;
+            }
+        }
+		
+        public override ISet createSet() 
+        {
+            lock(this)
+            {
+                if (!opened)
+                {
+                    throw new StorageError(StorageError.ErrorCode.STORAGE_NOT_OPENED);
+                }
+                PersistentSet s = new PersistentSet();
+                setObjectOid(s, 0, false);
+                return s;
             }
         }
 		
@@ -1708,15 +1718,6 @@ namespace Perst.Impl
             return oid == 0 ? null : lookupObject(oid, null);
         }
 
-        protected internal override void modifyObject(IPersistent obj) 
-        {
-            lock(this)
-            {
-                Assert.that(!obj.isModified());
-                modifiedList.Add(obj);
-            }
-        }
-		
         protected internal override void storeObject(IPersistent obj)
         {
             lock(this)
@@ -3093,7 +3094,6 @@ namespace Perst.Impl
         internal int       btreeClassOid;
         internal int       btree2ClassOid;
 
-        internal ArrayList modifiedList;
         internal WeakHashTable objectCache;
         internal Hashtable classDescMap;
         internal ClassDescriptor descList;

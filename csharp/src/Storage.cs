@@ -118,6 +118,14 @@ namespace Perst
         /// </returns>
         abstract public SpatialIndex createSpatialIndex();
 
+        /// <summary>
+        /// Create new object set
+        /// </summary>
+        /// <returns>
+        /// empty set of persistent objects
+        /// </returns>
+        abstract public ISet createSet();
+
         /// <summary> Create one-to-many link.
         /// </summary>
         /// <returns>new empty link, new members can be added to the link later.
@@ -189,8 +197,6 @@ namespace Perst
         abstract protected internal void  storeObject(IPersistent obj);
 		
         abstract protected internal void  loadObject(IPersistent obj);
-		
-        abstract protected internal void  modifyObject(IPersistent obj);
 		
         protected internal void  setObjectOid(IPersistent obj, int oid, bool raw)
         {
