@@ -41,6 +41,12 @@ namespace Perst
         /// </returns>
         bool IsPersistent();
 
+        /// <summary>  Check if object is deleted by GC from process memory
+        /// </summary>
+        /// <returns> <code>true</code> if object is deleted by GC
+        /// </returns>
+        bool IsDeleted();
+
         /// <summary> Check if object was modified within current transaction
         /// </summary>
         /// <returns><code>true</code> if object is persistent and was modified within current transaction

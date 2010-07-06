@@ -122,7 +122,7 @@ namespace Perst.Impl
             {
                 for (int i = 0; i < n; i++) 
                 { 
-                    if (branch.GetRaw(i) == obj) 
+                    if (branch.ContainsElement(i, obj))
                     { 
                         removeBranch(i);
                         return 0;

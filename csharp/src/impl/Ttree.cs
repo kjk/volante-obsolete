@@ -172,6 +172,16 @@ namespace Perst.Impl
             }
         }
  
+        public override void Deallocate() 
+        {
+            if (root != null) 
+            { 
+                root.prune();
+            }
+            base.Deallocate();
+        }
+
+
         public IPersistent[] ToArray() 
         {
             IPersistent[] arr = new IPersistent[nMembers];

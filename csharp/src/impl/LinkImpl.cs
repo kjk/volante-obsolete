@@ -169,7 +169,8 @@ namespace Perst.Impl
         {
             for (int i = used; --i >= 0; )
             {
-                if (arr[i].Equals(obj))
+                IPersistent elem = arr[i];
+                if (elem == obj || (elem != null && elem.Oid == obj.Oid))
                 {
                     return i;
                 }
@@ -177,6 +178,12 @@ namespace Perst.Impl
             return - 1;
         }
 		
+        public virtual bool ContainsElement(int i, IPersistent obj) 
+        {
+            IPersistent elem = arr[i];
+            return elem == obj || (elem != null && elem.Oid == obj.Oid);
+        }
+
         public virtual void Clear()
         {
             for (int i = used; --i >= 0; )
@@ -238,9 +245,7 @@ namespace Perst.Impl
                 IPersistent elem = arr[i];
                 if (elem != null && !elem.IsRaw() && elem.IsPersistent()) 
                 { 
-                    IPersistent stub = new Persistent();
-                    stub.AssignOid(elem.Storage, elem.Oid, true);
-                    arr[i] = stub;
+                    arr[i] = new PersistentStub(elem.Storage, elem.Oid);
                 }
             }
         }
@@ -248,7 +253,7 @@ namespace Perst.Impl
         private IPersistent loadElem(int i)
         {
             IPersistent elem = arr[i];
-            if (elem.IsRaw())
+            if (elem != null && elem.IsRaw())
             {
                 // arr[i] = elem = ((StorageImpl) elem.Storage).lookupObject(elem.Oid, null);
                 elem = ((StorageImpl) elem.Storage).lookupObject(elem.Oid, null);

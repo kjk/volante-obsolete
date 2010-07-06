@@ -306,7 +306,7 @@ stored in OS file buffers and sooner or later them will be written to the disk)
 1. Add PATRICIA Trie container
 2. Fix problem with generated pack/unpack functions introduced in 2.36 version
 
---- Release version 2.38 ??.10.2004 -------------------------------------
+--- Release version 2.38 29.10.2004 -------------------------------------
 1. Fix bugs in XML import/export
 2. Fix check for invalid OID in Storage.getPos method 
 3. Change BLOB implementation to support work with very large BLOBs 
@@ -314,3 +314,11 @@ stored in OS file buffers and sooner or later them will be written to the disk)
 4. Fix bug with restoring autoincrement counter in XML import
 5. Add TimeSeries.Deallocate wethod
 6. Fix bug in backup with compactification (incorrect setting of bitmap end)
+
+--- Release version 2.39 ??.11.2004 -------------------------------------
+1. Fix problems with handling weak references and finalization
+2. Replace elements of Link with stubs after storing Link in the database
+   to avoid memory overflow caused by pinning objects in memory.
+3. Stop pack/unpack code generation thread in Storage.Close method
+4. Add Ttree.Deallocate method
+5. Support per-thread transactions for Compact.Net framework

@@ -44,7 +44,7 @@ namespace Perst.Impl
                                 {
                                     exportIndex(oid, obj);
                                 }
-                                if (desc.cls == typeof(PersistentSet))
+                                else if (desc.cls == typeof(PersistentSet))
                                 {
                                     exportSet(oid, obj);
                                 }

@@ -5,7 +5,7 @@ namespace Perst.Impl
     using System.Reflection;
     using System.Diagnostics;
     using Perst;
-	
+    
     class AltBtreeFieldIndex:AltBtree, FieldIndex
     {
         internal String className;
@@ -63,7 +63,7 @@ namespace Perst.Impl
             cls = ClassDescriptor.lookup(Storage, className);
             lookupField(fieldName);
         }
-		
+        
         internal AltBtreeFieldIndex(Type cls, String fieldName, bool unique) 
         {
             this.cls = cls;
@@ -73,7 +73,7 @@ namespace Perst.Impl
             lookupField(fieldName);
             type = checkType(mbrType);
         }
-		
+        
         private Key extractKey(IPersistent obj) 
         { 
             Object val = mbr is FieldInfo ? ((FieldInfo)mbr).GetValue(obj) : ((PropertyInfo)mbr).GetValue(obj, null);
@@ -140,8 +140,8 @@ namespace Perst.Impl
             }
             return key;
         }
- 		
-		
+        
+        
         public bool Put(IPersistent obj) 
         {
             return base.Put(extractKey(obj), obj);
@@ -230,5 +230,5 @@ namespace Perst.Impl
             }
             return arr;
         }
-	}
+    }
 }

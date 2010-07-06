@@ -42,6 +42,11 @@ namespace Perst
             return (state & ObjectState.RAW) != 0;
         } 
     
+        public bool IsDeleted() 
+        { 
+            return (state & ObjectState.DELETED) != 0;
+        } 
+
         public bool IsModified() 
         { 
             return (state & ObjectState.DIRTY) != 0;
@@ -105,7 +110,7 @@ namespace Perst
 		
         public override bool Equals(System.Object o)
         {
-            return o is Persistent && ((MarshalByRefPersistent) o).Oid == oid;
+            return o is IPersistent && ((IPersistent) o).Oid == oid;
         }
 		
         public override int GetHashCode()
@@ -138,15 +143,18 @@ namespace Perst
             if ((state & ObjectState.DIRTY) != 0 && oid != 0) 
             { 
                 storage.storeFinalizedObject(this);
-                state &= ~ObjectState.DIRTY;
             }
+            state = ObjectState.DELETED|ObjectState.RAW;
         }
 
         public void AssignOid(Storage storage, int oid, bool raw)
         {
             this.oid = oid;
             this.storage = storage;
-            state = raw ? ObjectState.RAW : 0;
+            if (raw) 
+            {
+                state |= ObjectState.RAW;
+            }
         }
 
         [NonSerialized()]
@@ -160,7 +168,8 @@ namespace Perst
             enum ObjectState 
         {
             RAW=1,
-            DIRTY=2
+            DIRTY=2,
+            DELETED=4
         }
     }
 }

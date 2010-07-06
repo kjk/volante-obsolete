@@ -108,6 +108,11 @@ namespace Perst.Impl
             return link.Contains(obj);
         }
 		
+        public override bool ContainsElement(int i, IPersistent obj)
+        {
+            return link.ContainsElement(i, obj);
+        }
+
         public override int IndexOf(IPersistent obj)
         {
             return link.IndexOf(obj);

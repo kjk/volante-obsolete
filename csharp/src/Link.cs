@@ -138,6 +138,13 @@ namespace Perst
         /// </param>
         bool Contains(IPersistent obj);
 
+        /// <summary>Check if i-th element of Link is the same as specified obj
+        /// </summary>
+        /// <param name="i"> element index</param>
+        /// <param name="obj">specified object</param>
+        /// <returns><code>true</code> if i-th element of Link reference the same object as "obj"</returns>
+        bool ContainsElement(int i, IPersistent obj);
+
         /// <summary> Get index of the specified object in the relation
         /// </summary>
         /// <param name="obj">specified object

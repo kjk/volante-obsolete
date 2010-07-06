@@ -965,14 +965,17 @@ namespace Perst.Impl
                 gcDone = false;
                 allocatedDelta = 0;
 
-#if !COMPACT_NET_FRAMEWORK
                 nNestedTransactions = 0;
                 nBlockedTransactions = 0;
                 nCommittedTransactions = 0;
                 scheduledCommitTime = Int64.MaxValue;
-                transactionMonitor = new Object();
-                transactionLock = new PersistentResource();
+#if COMPACT_NET_FRAMEWORK
+                transactionMonitor = new CNetMonitor();
+#else
+                transactionMonitor = new object();
 #endif
+                transactionLock = new PersistentResource();
+
                 modified = false;
                 pool = new PagePool(pagePoolSize / Page.pageSize);
 				
@@ -1179,10 +1182,10 @@ namespace Perst.Impl
 #if !COMPACT_NET_FRAMEWORK
             if (enableCodeGeneration) 
             { 
-                Thread thread = new Thread(new ThreadStart(generateSerializers));
-                thread.Priority = ThreadPriority.BelowNormal;
-                thread.IsBackground = true;
-                thread.Start();
+                codeGenerationThread = new Thread(new ThreadStart(generateSerializers));
+                codeGenerationThread.Priority = ThreadPriority.BelowNormal;
+                codeGenerationThread.IsBackground = true;
+                codeGenerationThread.Start();
             }
 #endif
         }
@@ -2511,6 +2514,164 @@ namespace Perst.Impl
         {
             assemblies.Add(assembly);
         }
+
+        public override void BeginThreadTransaction(TransactionMode mode)
+        {
+            if (mode == TransactionMode.Serializable) 
+            { 
+                useSerializableTransactions = true;
+                TransactionContext.nested += 1;;
+            } 
+            else 
+            { 
+                transactionMonitor.Enter(); 
+                try {
+                    if (scheduledCommitTime != Int64.MaxValue) 
+                    { 
+                        nBlockedTransactions += 1;
+                        while (DateTime.Now.Ticks >= scheduledCommitTime) 
+                        { 
+                            transactionMonitor.Wait();
+                        }
+                        nBlockedTransactions -= 1;
+                    }
+                    nNestedTransactions += 1;
+                } finally { 
+                    transactionMonitor.Exit(); 
+                }
+                if (mode == TransactionMode.Exclusive) 
+                { 
+                    transactionLock.ExclusiveLock();
+                } 
+                else 
+                { 
+                    transactionLock.SharedLock();
+                }
+            }
+        }
+        
+
+        public override void EndThreadTransaction(int maxDelay)
+        {
+            ThreadTransactionContext ctx = TransactionContext;
+            if (ctx.nested != 0) 
+            { // serializable transaction
+                if (--ctx.nested == 0) 
+                { 
+                    int i = ctx.modified.Count;
+                    if (i != 0) 
+                    { 
+                        do 
+                        { 
+                            ((IPersistent)ctx.modified[--i]).Store();
+                        } while (i != 0);
+
+                        lock (backgroundGcMonitor) 
+                        { 
+                            lock(this) 
+                            { 
+                                commit0();
+                            }
+                        }
+                    }
+                    for (i = ctx.locked.Count; --i >= 0;) 
+                    { 
+                        ((IResource)ctx.locked[i]).Reset();
+                    }
+                    ctx.modified.Clear();
+                    ctx.locked.Clear();
+                } 
+            } 
+            else 
+            { // exclusive or cooperative transaction        
+                transactionMonitor.Enter(); 
+                try { 
+                    transactionLock.Unlock();
+                    if (nNestedTransactions != 0) 
+                    { // may be everything is already aborted
+                        if (--nNestedTransactions == 0) 
+                        { 
+                            nCommittedTransactions += 1;
+                            Commit();
+                            scheduledCommitTime = Int64.MaxValue;
+                            if (nBlockedTransactions != 0) 
+                            { 
+                                transactionMonitor.PulseAll();
+                            }
+                        } 
+                        else 
+                        {
+                            if (maxDelay != Int32.MaxValue) 
+                            { 
+                                long nextCommit = DateTime.Now.Ticks + maxDelay;
+                                if (nextCommit < scheduledCommitTime) 
+                                { 
+                                    scheduledCommitTime = nextCommit;
+                                }
+                                if (maxDelay == 0) 
+                                { 
+                                    int n = nCommittedTransactions;
+                                    nBlockedTransactions += 1;
+                                    do 
+                                    { 
+                                        transactionMonitor.Wait();
+                                    } while (nCommittedTransactions == n);
+                                    nBlockedTransactions -= 1;
+                                }				    
+                            }
+                        }
+                    }
+                } finally { 
+                    transactionMonitor.Exit();
+                }
+            }
+        }
+
+
+        public override void RollbackThreadTransaction()
+        {
+            ThreadTransactionContext ctx = TransactionContext;
+            if (ctx.nested != 0) 
+            { // serializable transaction
+                ctx.nested = 0; 
+                int i = ctx.modified.Count;
+                if (i != 0) 
+                { 
+                    do 
+                    { 
+                        ((IPersistent)ctx.modified[--i]).Invalidate();
+                    } while (i != 0);
+                
+                    lock(this) 
+                    { 
+                        rollback0();
+                    }
+                }
+                for (i = ctx.locked.Count; --i >= 0;) 
+                { 
+                    ((IResource)ctx.locked[i]).Reset();
+                } 
+                ctx.modified.Clear();
+                ctx.locked.Clear();
+            } 
+            else 
+            { 
+                try { 
+                    transactionMonitor.Enter(); 
+                    transactionLock.Reset();
+                    nNestedTransactions = 0;
+                    if (nBlockedTransactions != 0) 
+                    { 
+                        transactionMonitor.PulseAll();
+                    }
+                    Rollback();
+                } finally { 
+                   transactionMonitor.Exit();
+                }
+            }
+        }
+	    
+
 #else
         public override void BeginThreadTransaction(TransactionMode mode)
         {
@@ -2578,7 +2739,7 @@ namespace Perst.Impl
                 } 
             } 
             else 
-            { // exclusive or aooperative transaction        
+            { // exclusive or cooperative transaction        
                 lock (transactionMonitor) 
                 { 
                     transactionLock.Unlock();
@@ -2670,6 +2831,12 @@ namespace Perst.Impl
             Commit();
             opened = false;
 #if !COMPACT_NET_FRAMEWORK
+            if (codeGenerationThread != null)
+            {   
+                codeGenerationThread.Abort();
+                codeGenerationThread.Join();
+                codeGenerationThread = null;
+            }               
             if (gcThread != null) 
             {             
                 activateGc();
@@ -2920,7 +3087,10 @@ namespace Perst.Impl
             if (oid == 0)
             {
                 oid = allocateId();
-                objectCache.put(oid, obj);
+                if (!obj.IsDeleted()) 
+                {
+                    objectCache.put(oid, obj);
+                }
                 obj.AssignOid(this, oid, false);
                 newObject = true;
             } 
@@ -3868,17 +4038,10 @@ namespace Perst.Impl
                         {
                             int elemOid = Bytes.unpack4(body, offs);
                             offs += 4;
-                            IPersistent stub = null;
                             if (elemOid != 0)
                             {
-                                stub = objectCache.get(elemOid);
-                                if (stub == null)
-                                {
-                                    stub = new Persistent();
-                                    stub.AssignOid(this, elemOid, true);
-                                }
+                                arr[j] = new PersistentStub(this, elemOid);
                             }
-                            arr[j] = stub;
                         }
                         val = new LinkImpl(arr);
                     }
@@ -4560,6 +4723,7 @@ public int packField(ByteBuffer buf, int offs, object val, ClassDescriptor.Field
                             Bytes.pack4(buf.arr, offs, swizzle(link.GetRaw(j)));
                             offs += 4;
                         }
+                        link.Unpin();
                     }
                     break;
             }
@@ -4594,14 +4758,16 @@ public int packField(ByteBuffer buf, int offs, object val, ClassDescriptor.Field
 
 #if COMPACT_NET_FRAMEWORK
         internal static ArrayList assemblies;
+        CNetMonitor transactionMonitor;
 #else
+        internal Thread codeGenerationThread;        
+        object    transactionMonitor;
+#endif
         int       nNestedTransactions;
         int       nBlockedTransactions;
         int       nCommittedTransactions;
         long      scheduledCommitTime;
-        object    transactionMonitor;
         PersistentResource transactionLock;
-#endif
 
 #if SUPPORT_RAW_TYPE
         internal System.Runtime.Serialization.Formatters.Binary.BinaryFormatter objectFormatter;

@@ -49,12 +49,10 @@ public class TestIndex
         }
         db.Open("testidx.dbs", pagePoolSize);
 
-#if !COMPACT_NET_FRAMEWORK
         if (serializableTransaction) 
         { 
             db.BeginThreadTransaction(TransactionMode.Serializable);
         }
-#endif
 
         Root root = (Root) db.Root;
         if (root == null)
@@ -78,7 +76,6 @@ public class TestIndex
             strIndex.Put(new Key(rec.strKey), rec);
         }
 
-#if !COMPACT_NET_FRAMEWORK
         if (serializableTransaction) 
         { 
             db.EndThreadTransaction();
@@ -88,9 +85,6 @@ public class TestIndex
         {
             db.Commit();
         }
-#else 
-        db.Commit();
-#endif
         System.Console.WriteLine("Elapsed time for inserting " + nRecords + " records: " + (DateTime.Now - start));
 		
         start = System.DateTime.Now;

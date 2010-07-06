@@ -47,6 +47,8 @@ namespace Perst
 
         public abstract bool  Contains(IPersistent obj);
 		
+        public abstract bool  ContainsElement(int i, IPersistent obj);
+
         public abstract int   IndexOf(IPersistent obj);
 		
         public abstract void  Clear();

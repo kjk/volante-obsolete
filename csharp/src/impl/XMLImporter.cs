@@ -391,8 +391,6 @@ namespace Perst.Impl
 
         Key createKey(ClassDescriptor.FieldType type, String val)
         {
-            IPersistent obj;
-
             switch (type)
             {
                 case ClassDescriptor.FieldType.tpBoolean: 
@@ -421,9 +419,7 @@ namespace Perst.Impl
                     return new Key(UInt32.Parse(val));
 					
                 case ClassDescriptor.FieldType.tpObject: 
-                    obj = new Persistent();
-                    storage.assignOid(obj, mapId((int)UInt32.Parse(val)));
-                    return new Key(obj);
+                    return new Key(new PersistentStub(storage,  mapId((int)UInt32.Parse(val))));
 					
                 case ClassDescriptor.FieldType.tpLong: 
                     return new Key(Int64.Parse(val));
@@ -601,9 +597,7 @@ namespace Perst.Impl
                 { 
                     key = createKey(btree.type, getAttribute(refElem, "key"));
                 }
-                IPersistent obj = new Persistent();
-                int entryOid = mapId(getIntAttribute(refElem, "id"));
-                storage.assignOid(obj, entryOid);
+                IPersistent obj = new PersistentStub(storage, mapId(getIntAttribute(refElem, "id")));
                 btree.insert(key, obj, false);
             }
             if (tkn != XMLScanner.Token.LTS 

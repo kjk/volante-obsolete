@@ -445,7 +445,7 @@ namespace Perst
         /// </summary>
         /// <param name="assembly">registered assembly</param>
         abstract public void RegisterAssembly(System.Reflection.Assembly assembly);
-#else
+#endif
 
         /// <summary>
         /// Begin per-thread transaction. Three types of per-thread transactions are supported: 
@@ -512,7 +512,6 @@ namespace Perst
         /// In case of cooperative transactions, this method rollback results of all transactions.
         /// </summary>
         abstract public void RollbackThreadTransaction();
-#endif
 
         /// <summary>
         /// Get database memory dump. This function returns hashmap which key is classes

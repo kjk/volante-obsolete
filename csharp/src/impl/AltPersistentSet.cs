@@ -3,7 +3,7 @@ namespace Perst.Impl
     using System;
     using System.Collections;
     using Perst;
-	
+    
     class AltPersistentSet : AltBtree, ISet
     {
         public AltPersistentSet() 

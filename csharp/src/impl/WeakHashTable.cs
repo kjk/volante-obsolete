@@ -83,14 +83,31 @@ namespace Perst.Impl
                 {
                     Entry[] tab = table;
                     int index = (oid & 0x7FFFFFFF) % tab.Length;
-                    for (Entry e = tab[index]; e != null; e = e.next)
+                    for (Entry e = tab[index], prev = null; e != null; prev = e, e = e.next)
                     {
                         if (e.oid == oid)
                         {
                             IPersistent obj = (IPersistent)e.oref.Target;
-                            if (obj == null && e.dirty > 0) 
-                            { 
-                                goto waitFinalization;
+                            if (obj == null) 
+                            {
+                                if (e.dirty > 0) 
+                                {
+                                    goto waitFinalization;
+                                }
+                            } 
+                            else if (obj.IsDeleted()) 
+                            {
+                                e.oref.Target = null;
+                                count -= 1;
+                                if (prev != null)
+                                {
+                                    prev.next = e.next;
+                                }
+                                else
+                                {
+                                    tab[index] = e.next;
+                                }
+                                return null;
                             }
                             return obj;
                         }
