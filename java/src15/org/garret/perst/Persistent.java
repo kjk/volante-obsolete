@@ -81,6 +81,9 @@ public class Persistent implements IPersistent {
     }
     
     public boolean equals(Object o) { 
+        if (oid == 0) { 
+            return super.equals(o);
+        }
         return o instanceof Persistent && ((Persistent)o).getOid() == oid;
     }
 
@@ -126,7 +129,7 @@ public class Persistent implements IPersistent {
 
     public void writeExternal(java.io.ObjectOutput s) throws java.io.IOException
     {
-	s.writeInt(oid);
+        s.writeInt(oid);
     }
 }
 

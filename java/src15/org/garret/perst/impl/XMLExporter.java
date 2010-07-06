@@ -241,6 +241,18 @@ public class XMLExporter {
                 offs += 2;
             }
             writer.write("\"");                    
+        } else if (len < -1) { 
+            writer.write("\"");   
+            String s;
+            if (storage.encoding != null) { 
+                s = new String(body, offs, -len-2, storage.encoding);
+            } else { 
+                s = new String(body, offs, -len-2);
+            }
+            offs -= len+2;
+            for (int i = 0, n = s.length(); i < n; i++) { 
+                exportChar(s.charAt(i));
+            }
         } else { 
             writer.write("null");
         }       

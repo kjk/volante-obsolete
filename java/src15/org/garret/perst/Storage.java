@@ -383,6 +383,14 @@ public abstract class Storage {
      * <TR><TD><code>perst.background.gc</code></TD><TD>Boolean</TD><TD>false</TD>
      * <TD>Perform garbage collection in separate thread without blocking the main application.
      * </TD></TR>
+     * <TR><TD><code>perst.string.encoding</code></TD><TD>String</TD><TD>null</TD>
+     * <TD>Specifies encoding of storing strings in the database. By default Perst stores 
+     * strings as sequence of chars (two bytes per char). If all strings in application are in 
+     * the same language, then using encoding  can signifficantly reduce space needed
+     * to store string (about two times). But please notice, that this option has influence
+     * on all strings  stored in database. So if you already have some data in the storage
+     * and then change encoding, then it will cause database crash.
+     * </TD></TR>
      * </TABLE>
      * @param name name of the property
      * @param value value of the property (for boolean properties pass <code>java.lang.Boolean.TRUE</code>
@@ -396,6 +404,13 @@ public abstract class Storage {
      * All not recognized properties are ignored.
      */
     abstract public void setProperties(java.util.Properties props);
+
+    /**
+     * Set storage listener.
+     * @param listener new storage listener (may be null)
+     * @return previous storage listener
+     */
+    abstract public StorageListener setListener(StorageListener listener);
 
     /**
      * Get database memory dump. This function returns hashmap which key is classes

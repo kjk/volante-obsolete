@@ -29,6 +29,7 @@ public class StorageError extends Error {
     public static final int BAD_PROPERTY_VALUE     = 23;
     public static final int SERIALIZE_PERSISTENT   = 24;
     public static final int EMPTY_VALUE            = 25;
+    public static final int UNSUPPORTED_ENCODING   = 26;
 
     private static final String[] messageText = {
         "",

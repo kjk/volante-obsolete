@@ -924,6 +924,9 @@ public class StorageImpl extends Storage {
             }           
             pool.open(file);
             if (header.dirty) { 
+                if (listener != null) {
+                    listener.databaseCorrupted();
+                }
                 System.err.println("Database was not normally closed: start recovery");
                 header.root[1-curr].size = header.root[curr].size;
                 header.root[1-curr].indexUsed = header.root[curr].indexUsed; 
@@ -943,6 +946,9 @@ public class StorageImpl extends Storage {
 
                 pool.copy(header.root[1-curr].index, header.root[curr].index, 
                           (header.root[curr].indexUsed*8L + Page.pageSize - 1) & ~(Page.pageSize-1));
+                if (listener != null) {
+                    listener.recoveryCompleted();
+                }
                 System.err.println("Recovery completed");
             } 
             currIndexSize = header.root[1-curr].indexUsed;
@@ -1559,7 +1565,10 @@ public class StorageImpl extends Storage {
         long pos;
         int  i, j;
         
-        // mark
+        if (listener != null) { 
+            listener.gcStarted();
+        }           
+
         greyBitmap = new int[bitmapSize];
         blackBitmap = new int[bitmapSize];
         int rootOid = header.root[currIndex].rootObject;
@@ -1628,6 +1637,9 @@ public class StorageImpl extends Storage {
                             objectCache.remove(i);                        
                             cloneBitmap(pos, size);
                         }
+                        if (listener != null) { 
+                            listener.deallocateObject(desc.cls, i);
+                        }
                     }
                 }
             }   
@@ -1637,6 +1649,10 @@ public class StorageImpl extends Storage {
         blackBitmap = null;
         allocatedDelta = 0;
         gcActive = false;
+
+        if (listener != null) {
+            listener.gcCompleted(nDeallocated);
+        }
         return nDeallocated;
     }   
      
@@ -1698,7 +1714,7 @@ public class StorageImpl extends Storage {
                 }
                 gcThread.activate();
                 return 0;
-           }
+            }
             // System.out.println("Start GC, allocatedDelta=" + allocatedDelta + ", header[" + currIndex + "].size=" + header.root[currIndex].size + ", gcTreshold=" + gcThreshold);
                         
             mark();
@@ -1864,6 +1880,8 @@ public class StorageImpl extends Storage {
                     offs += 4;
                     if (strlen > 0) { 
                         offs += strlen*2;
+                    } else if (strlen < -1) {
+                        offs -= strlen+2;
                     }
                     continue;
                 }
@@ -1938,6 +1956,8 @@ public class StorageImpl extends Storage {
                         offs += 4;
                         if (strlen > 0) { 
                             offs += strlen*2;
+                        } else if (strlen < -1) {
+                            offs -= strlen+2;
                         }
                     }
                     continue;
@@ -2235,6 +2255,9 @@ public class StorageImpl extends Storage {
         if ((value = props.getProperty("perst.background.gc")) != null) { 
             backgroundGc = getBooleanValue(value);
         }
+        if ((value = props.getProperty("perst.string.encoding")) != null) { 
+            encoding = value;
+        }
     }
 
     public void setProperty(String name, Object value)
@@ -2259,12 +2282,19 @@ public class StorageImpl extends Storage {
             alternativeBtree = getBooleanValue(value);
         } else if (name.equals("perst.background.gc")) {
             backgroundGc = getBooleanValue(value);
+        } else if (name.equals("perst.string.encoding")) { 
+            encoding = (value == null) ? null : value.toString();
         } else { 
             throw new StorageError(StorageError.NO_SUCH_PROPERTY);
         }
     }
 
-    
+    public StorageListener setListener(StorageListener listener)
+    {
+        StorageListener prevListener = this.listener;
+        this.listener = listener;
+        return prevListener;
+    }
 
     public synchronized IPersistent getObjectByOID(int oid)
     {
@@ -2500,6 +2530,8 @@ public class StorageImpl extends Storage {
                     offs += 4;
                     if (len > 0) { 
                         offs += len*2;
+                    } else if (len < -1) {
+                        offs -= len+2;
                     } 
                     continue;
                 case ClassDescriptor.tpValue:
@@ -2552,6 +2584,8 @@ public class StorageImpl extends Storage {
                             offs += 4;
                             if (strlen > 0) {
                                 offs += strlen*2;
+                            } else if (strlen < -1) {
+                                offs -= strlen+2;
                             }
                         }
                     }
@@ -2626,6 +2660,13 @@ public class StorageImpl extends Storage {
                             offs += 2;
                         }
                         str = new String(chars);
+                    } else if (len < -1) {
+                        if (encoding != null) { 
+                            str = new String(body, offs, -2-len, encoding);
+                        } else { 
+                            str = new String(body, offs, -2-len);
+                        }
+                        offs -= 2+len;
                     } 
                     provider.set(f, obj, str);
                     continue;
@@ -2850,6 +2891,13 @@ public class StorageImpl extends Storage {
                                     offs += 2;
                                 }
                                 arr[j] = new String(chars);
+                            } else if (strlen < -1) {
+                                if (encoding != null) { 
+                                    arr[j] = new String(body, offs, -2-strlen, encoding);
+                                } else {
+                                    arr[j] = new String(body, offs, -2-strlen);
+                                }
+                                offs -= 2+strlen;
                             }
                         }
                         provider.set(f, obj, arr);
@@ -3129,24 +3177,8 @@ public class StorageImpl extends Storage {
                     continue;
                 }
                 case ClassDescriptor.tpString:
-                {
-                    String s = (String)f.get(obj);
-                    if (s == null) {
-                        buf.extend(offs + 4);
-                        Bytes.pack4(buf.arr, offs, -1);
-                        offs += 4;
-                    } else {
-                        int len = s.length();
-                        buf.extend(offs + 4 + len*2);
-                        Bytes.pack4(buf.arr, offs, len);
-                        offs += 4;
-                        for (int j = 0; j < len; j++) { 
-                            Bytes.pack2(buf.arr, offs, (short)s.charAt(j));
-                            offs += 2;
-                        }
-                    }
+                    offs = buf.packString(offs, (String)f.get(obj), encoding);
                     continue;
-                }
                 case ClassDescriptor.tpObject:
                 {
                     buf.extend(offs + 4);
@@ -3158,7 +3190,7 @@ public class StorageImpl extends Storage {
                 {
                     Object value = f.get(obj);
                     if (value == null) { 
-                        throw new StorageError(StorageError.NULL_VALUE);
+                        throw new StorageError(StorageError.NULL_VALUE, fd.fieldName);
                     } else if (value instanceof IPersistent) { 
                         throw new StorageError(StorageError.SERIALIZE_PERSISTENT);
                     }                        
@@ -3351,21 +3383,7 @@ public class StorageImpl extends Storage {
                         Bytes.pack4(buf.arr, offs, len);
                         offs += 4;
                         for (int j = 0; j < len; j++) {
-                            String str = (String)arr[j];
-                            if (str == null) { 
-                                buf.extend(offs + 4);
-                                Bytes.pack4(buf.arr, offs, -1);
-                                offs += 4;
-                            } else { 
-                                int strlen = str.length();
-                                buf.extend(offs + 4 + strlen*2);
-                                Bytes.pack4(buf.arr, offs, strlen);
-                                offs += 4;
-                                for (int k = 0; k < strlen; k++) { 
-                                    Bytes.pack2(buf.arr, offs, (short)str.charAt(k));
-                                    offs += 2;
-                                }
-                            }
+                            offs = buf.packString(offs, (String)arr[j], encoding);
                         }
                     }
                     continue;
@@ -3405,7 +3423,7 @@ public class StorageImpl extends Storage {
                         for (int j = 0; j < len; j++) {
                             Object value = arr[j];
                             if (value == null) { 
-                                throw new StorageError(StorageError.NULL_VALUE);
+                                throw new StorageError(StorageError.NULL_VALUE, fd.fieldName);
                             }
                             offs = packObject(value, elemDesc, offs, buf);
                         }
@@ -3461,6 +3479,8 @@ public class StorageImpl extends Storage {
     private boolean noFlush = false;
     private boolean alternativeBtree = false;
     private boolean backgroundGc = false;
+    
+    String    encoding = null; 
 
     PagePool  pool;
     Header    header;           // base address of database file mapping
@@ -3492,6 +3512,8 @@ public class StorageImpl extends Storage {
     boolean   gcActive;
     Object    backgroundGcMonitor;
     GcThread  gcThread;
+
+    StorageListener listener;
 
     int       nNestedTransactions;
     int       nBlockedTransactions;
