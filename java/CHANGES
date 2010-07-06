@@ -118,3 +118,7 @@ Attention: database format is incompatible with version 1.22!
 --- Release version 2.04 26.11.2003 -------------------------------------
 
 1. Introduce IPersistentSet interface which is now returned by Storage.createSet method
+
+--- Release version 2.05 28.11.2003 -------------------------------------
+
+1. Make it possible to profile storage memory using Storage.getMemoryDump() method 

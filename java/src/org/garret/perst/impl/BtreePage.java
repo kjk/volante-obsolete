@@ -1580,19 +1580,20 @@ class BtreePage {
         }
     }
 
-    static void markPage(StorageImpl db, int pageId, int type, int height)
+    static int markPage(StorageImpl db, int pageId, int type, int height)
     {
+        int nPages = 1;
         Page pg = db.getGCPage(pageId);
         try { 
             int i, n = getnItems(pg);
             if (--height != 0) {
                 if (type == ClassDescriptor.tpString || type == ClassDescriptor.tpArrayOfByte) { // page of strings
                     for (i = 0; i <= n; i++) { 
-                        markPage(db, getKeyStrOid(pg, i), type, height);
+                        nPages += markPage(db, getKeyStrOid(pg, i), type, height);
                     }
                 } else { 
                     for (i = 0; i <= n; i++) { 
-                        markPage(db, getReference(pg, maxItems-i-1), type, height);
+                        nPages += markPage(db, getReference(pg, maxItems-i-1), type, height);
                     }
                 }
             } else { 
@@ -1609,6 +1610,7 @@ class BtreePage {
         } finally { 
             db.pool.unfix(pg);
         }
+        return nPages;
     }
 
     static void exportPage(StorageImpl db, XMLExporter exporter, int pageId, int type, int height)

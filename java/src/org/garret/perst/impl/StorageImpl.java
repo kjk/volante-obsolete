@@ -1318,6 +1318,122 @@ public class StorageImpl extends Storage {
     }
 
 
+    public synchronized HashMap getMemoryDump() { 
+	synchronized (objectCache) { 
+	    if (!opened) {
+		throw new StorageError(StorageError.STORAGE_NOT_OPENED);
+	    }
+	    int bitmapSize = (int)(header.root[currIndex].size >>> (dbAllocationQuantumBits + 5)) + 1;
+	    boolean existsNotMarkedObjects;
+	    long pos;
+	    int  i, j, n;
+
+	    // mark
+	    greyBitmap = new int[bitmapSize];
+	    blackBitmap = new int[bitmapSize];
+	    int rootOid = header.root[currIndex].rootObject;
+            HashMap map = new HashMap();
+
+	    if (rootOid != 0) { 
+                MemoryUsage indexUsage = new MemoryUsage(Index.class);
+                MemoryUsage fieldIndexUsage = new MemoryUsage(FieldIndex.class);
+                MemoryUsage classUsage = new MemoryUsage(Class.class);
+
+		markOid(rootOid);
+		do { 
+		    existsNotMarkedObjects = false;
+		    for (i = 0; i < bitmapSize; i++) { 
+			if (greyBitmap[i] != 0) { 
+			    existsNotMarkedObjects = true;
+			    for (j = 0; j < 32; j++) { 
+				if ((greyBitmap[i] & (1 << j)) != 0) { 
+				    pos = (((long)i << 5) + j) << dbAllocationQuantumBits;
+				    greyBitmap[i] &= ~(1 << j);
+				    blackBitmap[i] |= 1 << j;
+				    int offs = (int)pos & (Page.pageSize-1);
+				    Page pg = pool.getPage(pos - offs);
+				    int typeOid = ObjectHeader.getType(pg.data, offs);
+                                    int objSize = ObjectHeader.getSize(pg.data, offs);
+                                    int alignedSize = (objSize + dbAllocationQuantum - 1) & ~(dbAllocationQuantum-1);                                    
+				    if (typeOid != 0) { 
+                                        markOid(typeOid);
+					ClassDescriptor desc = findClassDescriptor(typeOid);
+					if (Btree.class.isAssignableFrom(desc.cls)) { 
+					    Btree btree = new Btree(pg.data, ObjectHeader.sizeof + offs);
+					    setObjectOid(btree, 0, false);
+					    int nPages = btree.markTree();
+                                            if (FieldIndex.class.isAssignableFrom(desc.cls)) { 
+                                                fieldIndexUsage.nInstances += 1;
+                                                fieldIndexUsage.totalSize += nPages*Page.pageSize + objSize;
+                                                fieldIndexUsage.allocatedSize += nPages*Page.pageSize + alignedSize;
+                                            } else {
+                                                indexUsage.nInstances += 1;
+                                                indexUsage.totalSize += nPages*Page.pageSize + objSize;
+                                                indexUsage.allocatedSize += nPages*Page.pageSize + alignedSize;
+                                            }
+					} else { 
+                                            MemoryUsage usage = (MemoryUsage)map.get(desc.cls);
+                                            if (usage == null) { 
+                                                usage = new MemoryUsage(desc.cls);
+                                                map.put(desc.cls, usage);
+                                            }
+                                            usage.nInstances += 1;
+                                            usage.totalSize += objSize;
+                                            usage.allocatedSize += alignedSize;
+                                                      
+                                            if (desc.hasReferences) { 
+                                                markObject(pool.get(pos), ObjectHeader.sizeof, desc);
+                                            }
+                                        }
+				    } else { 
+                                        classUsage.nInstances += 1;
+                                        classUsage.totalSize += objSize;
+                                        classUsage.allocatedSize += alignedSize;
+                                    }
+				    pool.unfix(pg);                                
+				}
+			    }
+			}
+		    }
+		} while (existsNotMarkedObjects);
+                
+                if (indexUsage.nInstances != 0) { 
+                    map.put(Index.class, indexUsage);
+                }
+                if (fieldIndexUsage.nInstances != 0) { 
+                    map.put(FieldIndex.class, fieldIndexUsage);
+                }
+                if (classUsage.nInstances != 0) { 
+                    map.put(Class.class, classUsage);
+                }
+                MemoryUsage system = new MemoryUsage(Storage.class);
+                system.totalSize += header.root[0].indexSize*8;
+                system.totalSize += header.root[1].indexSize*8;
+                system.totalSize += (header.root[currIndex].bitmapEnd - dbBitmapId + 1)*Page.pageSize;
+                system.totalSize += Page.pageSize; // root page
+
+                long allocated = 0;
+                for (i = dbBitmapId, n  = header.root[currIndex].bitmapEnd; i < n; i++) {
+                    Page pg = getGCPage(i);
+                    for (j = 0; j < Page.pageSize; j++) {
+                        int mask = pg.data[j] & 0xFF;
+                        while (mask != 0) { 
+                            if ((mask & 1) != 0) { 
+                                allocated += dbAllocationQuantum;
+                            }
+                            mask >>= 1;
+                        }
+                    }
+                    pool.unfix(pg);
+                }
+                system.allocatedSize = allocated;
+                system.nInstances = header.root[currIndex].indexSize;
+                map.put(Storage.class, system);
+	    } 
+            return map;
+        }
+    }
+        
     final int markObject(byte[] obj, int offs,  ClassDescriptor desc)
     { 
         ClassDescriptor.FieldDescriptor[] all = desc.allFields;

@@ -1,6 +1,6 @@
 import org.garret.perst.*;
 
-import java.util.Iterator;
+import java.util.*;
 
 class Record extends Persistent { 
     String strKey;
@@ -74,6 +74,17 @@ public class TestIndex {
         Assert.that(i == nRecords);
         System.out.println("Elapsed time for iterating through " + (nRecords*2) + " records: " 
                            + (System.currentTimeMillis() - start) + " milliseconds");
+
+        HashMap map = db.getMemoryDump();
+        iterator = map.values().iterator();
+        System.out.println("Memory usage");
+        start = System.currentTimeMillis();
+        while (iterator.hasNext()) { 
+            MemoryUsage usage = (MemoryUsage)iterator.next();
+            System.out.println(" " + usage.cls.getName() + ": instances=" + usage.nInstances + ", total size=" + usage.totalSize + ", allocated size=" + usage.allocatedSize);
+        }
+        System.out.println("Elapsed time for memory dump: " + (System.currentTimeMillis() - start) + " milliseconds");
+        
         start = System.currentTimeMillis();
         key = 1999;
         for (i = 0; i < nRecords; i++) { 

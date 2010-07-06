@@ -223,11 +223,12 @@ class Btree extends PersistentResource implements Index {
         super.deallocate();
     }
 
-    public void markTree() 
+    public int markTree() 
     { 
         if (root != 0) { 
-            BtreePage.markPage((StorageImpl)getStorage(), root, type, height);
+            return BtreePage.markPage((StorageImpl)getStorage(), root, type, height);
         }
+        return 0;
     }        
 
     public void export(XMLExporter exporter) throws java.io.IOException 
