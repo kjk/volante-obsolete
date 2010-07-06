@@ -1053,13 +1053,14 @@ class AltBtree extends PersistentResource implements Index {
     }
 
     static class BtreeEntry implements Map.Entry {
-        public Object getKey() { 
-            return key;
+        public Object getKey() {
+            return pg.getKeyValue(pos);
         }
 
-        public Object getValue() { 
-            return obj;
+        public Object getValue() {
+            return pg.items.get(pos);
         }
+
 
         public Object setValue(Object value) { 
             throw new UnsupportedOperationException();
@@ -1076,13 +1077,13 @@ class AltBtree extends PersistentResource implements Index {
                     ? getValue()==null : getValue().equals(e.getValue()));
         }
 
-        BtreeEntry(Object key, IPersistent obj) {
-            this.key = key;
-            this.obj = obj;
+        BtreeEntry(BtreePage pg, int pos) {
+            this.pg = pg;
+            this.pos = pos;
         }
 
-        private Object      key;
-        private IPersistent obj;
+        private BtreePage pg;
+        private int pos;
     }
 
 
@@ -1160,7 +1161,7 @@ class AltBtree extends PersistentResource implements Index {
 
     class BtreeEntryIterator extends BtreeIterator { 
         Object getCurrent(BtreePage pg, int pos) { 
-            return new BtreeEntry(pg.getKeyValue(pos), pg.items.get(pos));
+            return new BtreeEntry(pg, pos);
         }
     }
 
@@ -1394,7 +1395,7 @@ class AltBtree extends PersistentResource implements Index {
         }
             
         protected Object getCurrent(BtreePage pg, int pos) { 
-            return new BtreeEntry(pg.getKeyValue(pos), pg.items.get(pos));
+            return new BtreeEntry(pg, pos);
         }
     }
 

@@ -313,3 +313,8 @@ stored in OS file buffers and sooner or later them will be written to the disk)
 3. Fix bug in Persistent.assignOid method introduced in version 2.39
 4. Fix bug in Link.indexOf method introduced in version 2.39
 5. Fix synchronization problem (deadlock) in background GC activation
+
+--- Release version 2.41 28.11.2004 -------------------------------------
+1. Change entry interator for AltBtree to resolve references in lazy way (only when requested)
+2. Fix bug in comparison of int keys in multifield index
+3. Fix problems with supporting more than 2^28 objects

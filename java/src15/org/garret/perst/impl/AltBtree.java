@@ -1067,12 +1067,12 @@ class AltBtree<T extends IPersistent> extends PersistentResource implements Inde
     }
 
     static class BtreeEntry<T> implements Map.Entry<Object,T> {
-        public Object getKey() { 
-            return key;
+        public Object getKey() {
+            return pg.getKeyValue(pos);
         }
 
-        public T getValue() { 
-            return (T)obj;
+        public T getValue() {
+            return (T)pg.items.get(pos);
         }
 
         public T setValue(T value) { 
@@ -1090,13 +1090,13 @@ class AltBtree<T extends IPersistent> extends PersistentResource implements Inde
                     ? getValue()==null : getValue().equals(e.getValue()));
         }
 
-        BtreeEntry(Object key, IPersistent obj) {
-            this.key = key;
-            this.obj = obj;
+        BtreeEntry(BtreePage pg, int pos) {
+            this.pg = pg;
+            this.pos = pos;
         }
 
-        private Object      key;
-        private IPersistent obj;
+        private BtreePage pg;
+        private int pos;
     }
 
 
@@ -1174,7 +1174,7 @@ class AltBtree<T extends IPersistent> extends PersistentResource implements Inde
 
     class BtreeEntryIterator extends BtreeIterator<Map.Entry<Object,T>> { 
         Object getCurrent(BtreePage pg, int pos) { 
-            return new BtreeEntry(pg.getKeyValue(pos), pg.items.get(pos));
+            return new BtreeEntry(pg, pos);
         }
     }
 
@@ -1408,7 +1408,7 @@ class AltBtree<T extends IPersistent> extends PersistentResource implements Inde
         }
             
         protected Object getCurrent(BtreePage pg, int pos) { 
-            return new BtreeEntry(pg.getKeyValue(pos), pg.items.get(pos));
+            return new BtreeEntry(pg, pos);
         }
     }
 

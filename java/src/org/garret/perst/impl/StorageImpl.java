@@ -35,7 +35,7 @@ public class StorageImpl extends Storage {
     private static final int  dbLargeBitmapPages = 1 << (dbLargeDatabaseOffsetBits-dbBitmapSegmentBits);
     private static final int  dbHandlesPerPageBits = Page.pageBits - 3;
     private static final int  dbHandlesPerPage = 1 << dbHandlesPerPageBits;
-    private static final int  dbDirtyPageBitmapSize = 1 << (32-Page.pageBits-3);
+    private static final int  dbDirtyPageBitmapSize = 1 << (32-dbHandlesPerPageBits-3);
 
     private static final int  dbInvalidId   = 0;
     private static final int  dbBitmapId    = 1;
@@ -58,7 +58,7 @@ public class StorageImpl extends Storage {
                 throw new StorageError(StorageError.INVALID_OID);
             }
             Page pg = pool.getPage(header.root[1-currIndex].index 
-                                   + (oid >>> dbHandlesPerPageBits << Page.pageBits));
+                                   + ((long)(oid >>> dbHandlesPerPageBits) << Page.pageBits));
             long pos = Bytes.unpack8(pg.data, (oid & (dbHandlesPerPage-1)) << 3);
             pool.unfix(pg);
             return pos;
@@ -70,7 +70,7 @@ public class StorageImpl extends Storage {
             dirtyPagesMap[oid >>> (dbHandlesPerPageBits+5)] 
                 |= 1 << ((oid >>> dbHandlesPerPageBits) & 31);
             Page pg = pool.putPage(header.root[1-currIndex].index 
-                                   + (oid >>> dbHandlesPerPageBits << Page.pageBits));
+                                   + ((long)(oid >>> dbHandlesPerPageBits) << Page.pageBits));
             Bytes.pack8(pg.data, (oid & (dbHandlesPerPage-1)) << 3, pos);
             pool.unfix(pg);
         }
@@ -534,7 +534,7 @@ public class StorageImpl extends Storage {
                     int skip = (objBitSize + Page.pageSize/dbAllocationQuantum - 1) 
                         & ~(Page.pageSize/dbAllocationQuantum - 1);
                     // page aligned position after allocated object
-                    pos = ((long)i << dbBitmapSegmentBits) + (skip << dbAllocationQuantumBits);
+                    pos = ((long)i << dbBitmapSegmentBits) + ((long)skip << dbAllocationQuantumBits);
 
                     long extension = (size > extensionQuantum) ? size : extensionQuantum;
                     int oldIndexSize = 0;
@@ -566,9 +566,9 @@ public class StorageImpl extends Storage {
                                 morePages = (int)((extension + Page.pageSize*(dbAllocationQuantum*8-1) - 1)
                                                   / (Page.pageSize*(dbAllocationQuantum*8-1)));
                             }
-                            extend(pos + morePages*Page.pageSize + newIndexSize*8L);
-                            long newIndex = pos + morePages*Page.pageSize;                        
-                            fillBitmap(pos + (skip>>3) + morePages * (Page.pageSize/dbAllocationQuantum/8),
+                            extend(pos + (long)morePages*Page.pageSize + newIndexSize*8L);
+                            long newIndex = pos + (long)morePages*Page.pageSize;                        
+                            fillBitmap(pos + (skip>>3) + (long)morePages * (Page.pageSize/dbAllocationQuantum/8),
                                        newIndexSize >>> dbAllocationQuantumBits);
                             pool.copy(newIndex, oldIndex, oldIndexSize*8L);
                             header.root[curr].index = newIndex;
@@ -588,7 +588,7 @@ public class StorageImpl extends Storage {
                         header.root[curr].bitmapExtent = currIndexSize;
                         header.root[curr].indexUsed = currIndexSize += dbLargeBitmapPages - dbBitmapPages;
                     }
-                    extend(pos + morePages*Page.pageSize);
+                    extend(pos + (long)morePages*Page.pageSize);
                     long adr = pos;
                     int len = objBitSize >> 3;
                     // fill bitmap pages used for allocation of object space with 0xFF 
@@ -704,8 +704,8 @@ public class StorageImpl extends Storage {
             Page pg = putBitmapPage(pageId);
             int  bitOffs = (int)quantNo & 7;
 
-            allocatedDelta -= objBitSize << dbAllocationQuantumBits;
-            usedSize -= objBitSize << dbAllocationQuantumBits;
+            allocatedDelta -= (long)objBitSize << dbAllocationQuantumBits;
+            usedSize -= (long)objBitSize << dbAllocationQuantumBits;
 
             if ((pos & (Page.pageSize-1)) == 0 && size >= Page.pageSize) { 
                 if (pageId == currPBitmapPage && offs < currPBitmapOffs) { 
@@ -866,12 +866,12 @@ public class StorageImpl extends Storage {
             header.root[0].indexSize = indexSize;
             header.root[0].indexUsed = dbFirstUserId;
             header.root[0].freeList = 0;
-            used += indexSize*8;
+            used += indexSize*8L;
             header.root[1].index = used;
             header.root[1].indexSize = indexSize;
             header.root[1].indexUsed = dbFirstUserId;
             header.root[1].freeList = 0;
-            used += indexSize*8;
+            used += indexSize*8L;
         
             header.root[0].shadowIndex = header.root[1].index;
             header.root[1].shadowIndex = header.root[0].index;
@@ -881,13 +881,13 @@ public class StorageImpl extends Storage {
             int bitmapPages = 
                 (int)((used + Page.pageSize*(dbAllocationQuantum*8-1) - 1)
                       / (Page.pageSize*(dbAllocationQuantum*8-1)));
-            int bitmapSize = bitmapPages*Page.pageSize;
+            long bitmapSize = (long)bitmapPages*Page.pageSize;
             int usedBitmapSize = (int)((used + bitmapSize) >>> (dbAllocationQuantumBits + 3));
 
             pool.open(file);
 
             for (i = 0; i < bitmapPages; i++) { 
-                pg = pool.putPage(used + i*Page.pageSize);
+                pg = pool.putPage(used + (long)i*Page.pageSize);
                 byte[] bitmap = pg.data;
                 int n = usedBitmapSize > Page.pageSize ? Page.pageSize : usedBitmapSize;
                 for (int j = 0; j < n; j++) { 
@@ -1108,8 +1108,8 @@ public class StorageImpl extends Storage {
         }
         for (i = 0; i < nPages; i++) { 
             if ((map[i >> 5] & (1 << (i & 31))) != 0) { 
-                Page srcIndex = pool.getPage(header.root[1-curr].index+i*Page.pageSize);
-                Page dstIndex = pool.getPage(header.root[curr].index+i*Page.pageSize);
+                Page srcIndex = pool.getPage(header.root[1-curr].index + (long)i*Page.pageSize);
+                Page dstIndex = pool.getPage(header.root[curr].index + (long)i*Page.pageSize);
                 for (j = 0; j < Page.pageSize; j += 8) {
                     long pos = Bytes.unpack8(dstIndex.data, j);
                     if (Bytes.unpack8(srcIndex.data, j) != pos) { 
@@ -1131,8 +1131,8 @@ public class StorageImpl extends Storage {
         }
         n = committedIndexSize & (dbHandlesPerPage-1);
         if (n != 0 && (map[i >> 5] & (1 << (i & 31))) != 0) { 
-            Page srcIndex = pool.getPage(header.root[1-curr].index+i*Page.pageSize);
-            Page dstIndex = pool.getPage(header.root[curr].index+i*Page.pageSize);
+            Page srcIndex = pool.getPage(header.root[1-curr].index + (long)i*Page.pageSize);
+            Page dstIndex = pool.getPage(header.root[curr].index + (long)i*Page.pageSize);
             j = 0;
             do { 
                 long pos = Bytes.unpack8(dstIndex.data, j);
@@ -1155,7 +1155,7 @@ public class StorageImpl extends Storage {
         }
         for (i = 0; i <= nPages; i++) { 
             if ((map[i >> 5] & (1 << (i & 31))) != 0) { 
-                pg = pool.putPage(header.root[1-curr].index+i*Page.pageSize);
+                pg = pool.putPage(header.root[1-curr].index + (long)i*Page.pageSize);
                 for (j = 0; j < Page.pageSize; j += 8) {
                     Bytes.pack8(pg.data, j, Bytes.unpack8(pg.data, j) & ~dbModifiedFlag);
                 }
@@ -1208,8 +1208,8 @@ public class StorageImpl extends Storage {
             for (i = 0; i < nPages; i++) { 
                 if ((map[i >> 5] & (1 << (i & 31))) != 0) { 
                     map[i >> 5] -= (1 << (i & 31));
-                    pool.copy(header.root[1-curr].index + i*Page.pageSize,
-                              header.root[curr].index + i*Page.pageSize,
+                    pool.copy(header.root[1-curr].index + (long)i*Page.pageSize,
+                              header.root[curr].index + (long)i*Page.pageSize,
                               Page.pageSize);
                 }
             }
@@ -1217,9 +1217,9 @@ public class StorageImpl extends Storage {
                 ((map[i >> 5] & (1 << (i & 31))) != 0
                  || currIndexSize != committedIndexSize))
             {
-                pool.copy(header.root[1-curr].index + i*Page.pageSize,
-                          header.root[curr].index + i*Page.pageSize,
-                          8*currIndexSize - i*Page.pageSize);
+                pool.copy(header.root[1-curr].index + (long)i*Page.pageSize,
+                          header.root[curr].index + (long)i*Page.pageSize,
+                          8L*currIndexSize - (long)i*Page.pageSize);
                 j = i>>>5;
                 n = (currIndexSize + dbHandlesPerPage*32 - 1) >>> (dbHandlesPerPageBits+5); 
                 while (j < n) { 
@@ -1248,13 +1248,13 @@ public class StorageImpl extends Storage {
         int curr = currIndex;
         int[] map = dirtyPagesMap;
         if (header.root[1-curr].index != header.root[curr].shadowIndex) { 
-            pool.copy(header.root[curr].shadowIndex, header.root[curr].index, 8*committedIndexSize);
+            pool.copy(header.root[curr].shadowIndex, header.root[curr].index, 8L*committedIndexSize);
         } else { 
             int nPages = (committedIndexSize + dbHandlesPerPage - 1) >>> dbHandlesPerPageBits;
             for (int i = 0; i < nPages; i++) { 
                 if ((map[i >> 5] & (1 << (i & 31))) != 0) { 
-                    pool.copy(header.root[curr].shadowIndex + i*Page.pageSize,
-                              header.root[curr].index + i*Page.pageSize,
+                    pool.copy(header.root[curr].shadowIndex + (long)i*Page.pageSize,
+                              header.root[curr].index + (long)i*Page.pageSize,
                               Page.pageSize);
                 }
             }
@@ -1301,7 +1301,7 @@ public class StorageImpl extends Storage {
             bitmapExtent = Integer.MAX_VALUE;
         }
         for (i = 0, j = 0; i < nUsedIndexPages; i++) {
-            Page pg = pool.getPage(indexOffs + i*Page.pageSize);
+            Page pg = pool.getPage(indexOffs + (long)i*Page.pageSize);
             for (k = 0; k < dbHandlesPerPage && j < nObjects; k++, j++) { 
                 long pos = Bytes.unpack8(pg.data, k*8);
                 index[j] = pos;
@@ -1326,14 +1326,14 @@ public class StorageImpl extends Storage {
         newHeader.curr = 0;
         newHeader.dirty = false;
         newHeader.initialized = true;
-        long newFileSize = (nPagedObjects + nIndexPages*2 + 1)*Page.pageSize + totalRecordsSize;
+        long newFileSize = (long)(nPagedObjects + nIndexPages*2 + 1)*Page.pageSize + totalRecordsSize;
         newFileSize = (newFileSize + Page.pageSize-1) & ~(Page.pageSize-1);     
         newHeader.root = new RootPage[2];
         newHeader.root[0] = new RootPage();
         newHeader.root[1] = new RootPage();
         newHeader.root[0].size = newHeader.root[1].size = newFileSize;
         newHeader.root[0].index = newHeader.root[1].shadowIndex = Page.pageSize;
-        newHeader.root[0].shadowIndex = newHeader.root[1].index = Page.pageSize + nIndexPages*Page.pageSize;
+        newHeader.root[0].shadowIndex = newHeader.root[1].index = Page.pageSize + (long)nIndexPages*Page.pageSize;
         newHeader.root[0].shadowIndexSize = newHeader.root[0].indexSize = 
             newHeader.root[1].shadowIndexSize = newHeader.root[1].indexSize = nIndexPages*dbHandlesPerPage;
         newHeader.root[0].indexUsed = newHeader.root[1].indexUsed = nObjects;
@@ -1347,8 +1347,8 @@ public class StorageImpl extends Storage {
         newHeader.pack(page);
         out.write(page);
         
-        long pageOffs = (nIndexPages*2 + 1)*Page.pageSize;
-        long recOffs = (nPagedObjects + nIndexPages*2 + 1)*Page.pageSize;
+        long pageOffs = (long)(nIndexPages*2 + 1)*Page.pageSize;
+        long recOffs = (long)(nPagedObjects + nIndexPages*2 + 1)*Page.pageSize;
         GenericSort.sort(new GenericSortArray() { 
                 public int size() { 
                     return nObjects;
@@ -1549,7 +1549,7 @@ public class StorageImpl extends Storage {
 
     final long getGCPos(int oid) { 
         Page pg = pool.getPage(header.root[currIndex].index 
-                               + (oid >>> dbHandlesPerPageBits << Page.pageBits));
+                               + ((long)(oid >>> dbHandlesPerPageBits) << Page.pageBits));
         long pos = Bytes.unpack8(pg.data, (oid & (dbHandlesPerPage-1)) << 3);
         pool.unfix(pg);
         return pos;
@@ -1790,12 +1790,12 @@ public class StorageImpl extends Storage {
                                             int nPages = btree.markTree();
                                             if (FieldIndex.class.isAssignableFrom(desc.cls)) { 
                                                 fieldIndexUsage.nInstances += 1;
-                                                fieldIndexUsage.totalSize += nPages*Page.pageSize + objSize;
-                                                fieldIndexUsage.allocatedSize += nPages*Page.pageSize + alignedSize;
+                                                fieldIndexUsage.totalSize += (long)nPages*Page.pageSize + objSize;
+                                                fieldIndexUsage.allocatedSize += (long)nPages*Page.pageSize + alignedSize;
                                             } else {
                                                 indexUsage.nInstances += 1;
-                                                indexUsage.totalSize += nPages*Page.pageSize + objSize;
-                                                indexUsage.allocatedSize += nPages*Page.pageSize + alignedSize;
+                                                indexUsage.totalSize += (long)nPages*Page.pageSize + objSize;
+                                                indexUsage.allocatedSize += (long)nPages*Page.pageSize + alignedSize;
                                             }
                                         } else { 
                                             MemoryUsage usage = (MemoryUsage)map.get(desc.cls);
@@ -1835,7 +1835,7 @@ public class StorageImpl extends Storage {
                 MemoryUsage system = new MemoryUsage(Storage.class);
                 system.totalSize += header.root[0].indexSize*8L;
                 system.totalSize += header.root[1].indexSize*8L;
-                system.totalSize += (header.root[currIndex].bitmapEnd-dbBitmapId)*Page.pageSize;
+                system.totalSize += (long)(header.root[currIndex].bitmapEnd-dbBitmapId)*Page.pageSize;
                 system.totalSize += Page.pageSize; // root page
 
                 if (header.root[currIndex].bitmapExtent != 0) { 

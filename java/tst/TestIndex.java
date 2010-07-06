@@ -58,10 +58,12 @@ public class TestIndex {
             rec.strKey = Long.toString(key);
             intIndex.put(new Key(rec.intKey), rec);                
             strIndex.put(new Key(rec.strKey), rec);                
+            /*
             if (i % 100000 == 0) { 
                 System.out.print("Insert " + i + " records\r");
                 db.commit();
             }
+            */
         }
         
         if (serializableTransaction) { 
@@ -70,7 +72,7 @@ public class TestIndex {
         } else { 
             db.commit();
         }
-        db.gc();
+        //db.gc();
         System.out.println("Elapsed time for inserting " + nRecords + " records: " 
                            + (System.currentTimeMillis() - start) + " milliseconds");
 
