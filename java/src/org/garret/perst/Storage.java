@@ -54,6 +54,17 @@ public abstract class Storage {
     }
 
     /**
+     * Open the encrypted storage
+     * @param filePath path to the database file
+     * @param pagePoolSize size of page pool (in bytes). Page pool should contain
+     * at least ten 4kb pages, so minimal page pool size should be at least 40Kb.
+     * But larger page pool ussually leads to better performance (unless it could not fit
+     * in memory and cause swapping).
+     * @param cipherKey cipher key
+     */
+    abstract public void open(String filePath, int pagePoolSize, String cipherKey);
+
+    /**
      * Check if database is opened
      * @return <code>true</code> if database was opened by <code>open</code> method, 
      * <code>false</code> otherwise
@@ -202,12 +213,21 @@ public abstract class Storage {
     abstract public SpatialIndex createSpatialIndex();
 
     /**
-     * Create new sorted collection
+     * Create new sorted collection with specified comparator
      * @param comparator comparator class specifying order in the collection
      * @param unique whether index is collection (members with the same key value are not allowed)
      * @return persistent object implementing sorted collection
      */
     abstract public SortedCollection createSortedCollection(PersistentComparator comparator, boolean unique);
+
+    /**
+     * Create new sorted collection. Members of this collections should implement 
+     * <code>java.lang.Comparable</code> interface and make it possible to compare collection members
+     * with each other as well as with serch key.
+     * @param unique whether index is collection (members with the same key value are not allowed)
+     * @return persistent object implementing sorted collection
+     */
+    abstract public SortedCollection createSortedCollection(boolean unique);
 
     /**
      * Create one-to-many link.

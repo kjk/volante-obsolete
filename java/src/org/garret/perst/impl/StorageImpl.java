@@ -25,7 +25,7 @@ public class StorageImpl extends Storage {
      */
     static final long dbDefaultExtensionQuantum = 1024*1024;
 
-    static final int  dbDatabaseOffsetBits = 32;  // up to 1 gigabyte, 40 - up to 1 terabyte database
+    static final int  dbDatabaseOffsetBits = 32;  // up to 4 gigabyte, 40 - up to 1 terabyte database
 
     static final int  dbAllocationQuantumBits = 5;
     static final int  dbAllocationQuantum = 1 << dbAllocationQuantumBits;
@@ -711,6 +711,18 @@ public class StorageImpl extends Storage {
         }
     }
 
+    public synchronized void open(String filePath, int pagePoolSize, String cryptKey) {
+        Rc4File file = new Rc4File(filePath, readOnly, cryptKey);      
+        try {
+            open(file, pagePoolSize);
+        } catch (StorageError ex) {
+            file.close();            
+            throw ex;
+        }
+    }
+
+        
+
     public synchronized void open(IFile file, int pagePoolSize) {
         if (opened) {
             throw new StorageError(StorageError.STORAGE_ALREADY_OPENED);
@@ -1349,6 +1361,13 @@ public class StorageImpl extends Storage {
             throw new StorageError(StorageError.STORAGE_NOT_OPENED);
         }        
         return new Ttree(comparator, unique);
+    }
+        
+    public SortedCollection createSortedCollection(boolean unique) {
+        if (!opened) { 
+            throw new StorageError(StorageError.STORAGE_NOT_OPENED);
+        }        
+        return new Ttree(new DefaultPersistentComparator(), unique);
     }
         
     public Link createLink() {

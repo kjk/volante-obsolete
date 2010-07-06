@@ -332,12 +332,13 @@ class BtreePage {
                     if (result != Btree.op_overflow) {
                         return result;                              
                     }                                             
-                } else if (unique && r < n && compareStr(ins.key, pg, r) == 0) {
+                } else if (r < n && compareStr(ins.key, pg, r) == 0) {
                     if (overwrite) { 
                         setKeyStrOid(pg, r, ins.oid);
                         return Btree.op_overwrite;
+                    } else if (unique) { 
+                        return Btree.op_duplicate;
                     }
-                    return Btree.op_duplicate;
                 }
                 db.pool.unfix(pg);
                 pg = null;
@@ -359,12 +360,13 @@ class BtreePage {
                     if (result != Btree.op_overflow) {
                         return result;                              
                     }                                             
-                } else if (unique && r < n && tree.compareByteArrays(ins.key, pg, r) == 0) {
+                } else if (r < n && tree.compareByteArrays(ins.key, pg, r) == 0) {
                     if (overwrite) { 
                         setKeyStrOid(pg, r, ins.oid);
                         return Btree.op_overwrite;
+                    } else if (unique) {
+                        return Btree.op_duplicate;
                     }
-                    return Btree.op_duplicate;
                 }
                 db.pool.unfix(pg);
                 pg = null;
@@ -384,12 +386,13 @@ class BtreePage {
                         return result;
                     }
                     n += 1;
-                } else if (unique && r < n && compare(ins.key, pg, r) == 0) { 
+                } else if (r < n && compare(ins.key, pg, r) == 0) { 
                     if (overwrite) { 
                         setReference(pg, maxItems-r-1, ins.oid);
                         return Btree.op_overwrite;
+                    } else if (unique) { 
+                        return Btree.op_duplicate;
                     }
-                    return Btree.op_duplicate;
                 }
                 db.pool.unfix(pg);
                 pg = null;

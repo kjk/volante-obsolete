@@ -711,6 +711,16 @@ public class StorageImpl extends Storage {
         }
     }
 
+    public synchronized void open(String filePath, int pagePoolSize, String cryptKey) {
+        Rc4File file = new Rc4File(filePath, readOnly, cryptKey);      
+        try {
+            open(file, pagePoolSize);
+        } catch (StorageError ex) {
+            file.close();            
+            throw ex;
+        }
+    }
+
     public synchronized void open(IFile file, int pagePoolSize) {
         if (opened) {
             throw new StorageError(StorageError.STORAGE_ALREADY_OPENED);

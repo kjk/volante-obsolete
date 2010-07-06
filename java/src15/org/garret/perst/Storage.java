@@ -54,6 +54,17 @@ public abstract class Storage {
     }
 
     /**
+     * Open the encrypted storage
+     * @param filePath path to the database file
+     * @param pagePoolSize size of page pool (in bytes). Page pool should contain
+     * at least ten 4kb pages, so minimal page pool size should be at least 40Kb.
+     * But larger page pool ussually leads to better performance (unless it could not fit
+     * in memory and cause swapping).
+     * @param cipherKey cipher key
+     */
+    abstract public void open(String filePath, int pagePoolSize, String cipherKey);
+
+    /**
      * Check if database is opened
      * @return <code>true</code> if database was opened by <code>open</code> method, 
      * <code>false</code> otherwise

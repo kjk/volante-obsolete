@@ -169,3 +169,9 @@ later changed by me.
 2. Add Projection class
 3. Add Index.getPrefix, Index.prefixIterator, FieldIndex.getPrefix and FieldIndex.prefixIterator methods
 4. Fix bugs in RelationImpl class
+
+--- Release version 2.18 07.03.2004 -------------------------------------
+1. Add default comparer for SortedCollection class (expecting that members of collection implements
+Comparable interface)
+2. Fix bug in Index.set method for non-unique indices
+3. Support of database file encryption 
