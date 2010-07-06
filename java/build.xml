@@ -1,0 +1,57 @@
+<!-- 
+************************************************************
+targets: makejar - compile & scramble & jar
+	 compiletests - compile test
+
+************************************************************ 
+-->
+
+
+<project name="Perst" default="all" basedir=".">
+	<target name="makedocs">
+		<javadoc
+			sourcepath="src"
+			destdir="doc"
+			nodeprecated="true"
+			nodeprecatedlist="true"
+			public="true"
+			packagenames="org.garret.perst"
+		/>
+	</target>
+
+
+	<target name="init" depends="clear" >
+		<mkdir dir="classes"/>
+		<mkdir dir="lib" />
+	</target>
+	
+
+	<target name="clear">
+		<delete dir="classes" />
+	</target>
+
+	<target name="compile" depends="init">
+		<javac srcdir="src" excludes="org/garret/perst/aspectj/**,org/garret/perst/jassist/**" destdir="classes" deprecation="off"  debug="on" optimize="on"> 
+		</javac>
+	</target>
+
+
+	<target name="compiletests" depends="compile" >
+		<delete dir="classes/tst" />
+		<mkdir dir="classes/tst" />
+
+		<javac srcdir="tst"  excludes="aspectj/**,jassist/**" destdir="classes/tst" deprecation="off"  debug="on" optimize="on"> 
+			<classpath location="lib/perst.jar" />
+		</javac>
+	</target>
+
+
+	<target name="makejar" depends="compile">
+		<jar jarfile="lib/consus.jar"  basedir="classes" includes="**" />
+	</target>
+	
+
+	<target name="all" depends="makejar,makedocs,compiletests">
+	</target>
+</project>
+

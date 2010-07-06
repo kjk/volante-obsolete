@@ -31,6 +31,13 @@ public interface FieldIndex extends IPersistent {
     public IPersistent   get(String key);
     
     /**
+     * Get objects with string key prefix 
+     * @param prefix string key prefix
+     * @return array of objects which key starts with this prefix 
+     */
+    public IPersistent[] getPrefix(String prefix);
+
+    /**
      * Get objects which key value belongs to the specified range.
      * Either from boundary, either till boundary either both of them can be <code>null</code>.
      * In last case the method returns all objects from the index.
@@ -159,5 +166,14 @@ public interface FieldIndex extends IPersistent {
      * @return selection iterator
      */
     public Iterator entryIterator(Key from, Key till, int order);
+
+    /**
+     * Get iterator for records which keys started with specified prefix
+     * Objects are iterated in the ascent key order. 
+     * You should not update/remove or add members to the index during iteration
+     * @param prefix key prefix
+     * @return selection iterator
+     */
+    public Iterator prefixIterator(String prefix);
 }
 

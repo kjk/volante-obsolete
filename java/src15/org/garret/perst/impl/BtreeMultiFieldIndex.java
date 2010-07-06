@@ -497,6 +497,11 @@ class BtreeMultiFieldIndex<T extends IPersistent> extends Btree<T> implements Fi
         return (T[])list.toArray((T[])Array.newInstance(cls, list.size()));
     }
 
+    public T[] getPrefix(String prefix) {
+        return get(new Key(prefix, true), new Key(prefix + Character.MAX_VALUE, false));
+    }
+        
+
     public T[] toPersistentArray() {
         T[] arr = (T[])Array.newInstance(cls, nElems);
         if (root != 0) { 

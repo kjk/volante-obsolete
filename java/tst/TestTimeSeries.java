@@ -3,7 +3,7 @@ import org.garret.perst.*;
 import java.util.*;
 
 public class TestTimeSeries { 
-    public static class Quote implements TimeSeries.Tick { 
+    public static class Quote implements TimeSeriesTick { 
         int   timestamp;
         float low;
         float high;
@@ -16,12 +16,12 @@ public class TestTimeSeries {
         }
     }
     
-    public static class QuoteBlock extends TimeSeries.Block {
+    public static class QuoteBlock extends TimeSeriesBlock {
         private Quote[] quotes;
         
         static final int N_ELEMS_PER_BLOCK = 100;
 
-        public TimeSeries.Tick[] getTicks() { 
+        public TimeSeriesTick[] getTicks() { 
             if (quotes == null) { 
                 quotes = new Quote[N_ELEMS_PER_BLOCK];
                 for (int i = 0; i < N_ELEMS_PER_BLOCK; i++) { 

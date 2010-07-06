@@ -164,9 +164,11 @@ public class LinkImpl<T extends IPersistent> implements Link<T> {
         
     public boolean containsAll(Collection<?> c) {
 	Iterator<?> e = c.iterator();
-	while (e.hasNext())
-	    if(!contains(e.next()))
+	while (e.hasNext()) {
+	    if(!contains(e.next())) {
 		return false;
+            }
+        }
 	return true;
     }
 
@@ -174,8 +176,9 @@ public class LinkImpl<T extends IPersistent> implements Link<T> {
 	boolean modified = false;
 	Iterator<? extends T> e = c.iterator();
 	while (e.hasNext()) {
-	    if (add(e.next()))
+	    if (add(e.next())) { 
 		modified = true;
+            }
 	}
 	return modified;
     }

@@ -30,6 +30,8 @@ public abstract class Relation<M extends IPersistent, O extends IPersistent> ext
         this.owner = owner;
     }
     
+    protected Relation() {}
+
     private O owner;
 }
 

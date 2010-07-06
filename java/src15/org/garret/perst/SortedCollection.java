@@ -1,5 +1,8 @@
 package org.garret.perst;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+
 /**
  * Interface of sorted collection.
  * Sorted collections keeps in members in order specified by comparator.
@@ -30,6 +33,18 @@ public interface SortedCollection<T extends IPersistent> extends IPersistent, IR
      * @return array of objects which keys belongs to the specified interval, ordered by key value
      */
     public IPersistent[] get(Key from, Key till);
+
+    /**
+     * Get members which key value belongs to the specified range.
+     * Either from boundary, either till boundary either both of them can be <code>null</code>.
+     * In last case the method returns all objects from the collection.
+     * @param from low boundary. If <code>null</code> then low boundary is not specified.
+     * Low boundary can be inclusive or exclusive. 
+     * @param till high boundary. If <code>null</code> then high boundary is not specified.
+     * High boundary can be inclusive or exclusive. 
+     * @return array of objects which keys belongs to the specified interval, ordered by key value
+     */
+    public ArrayList<T> getList(Key from, Key till);
 
     /**
      * Add new member to collection
@@ -90,7 +105,7 @@ public interface SortedCollection<T extends IPersistent> extends IPersistent, IR
      * Get iterator for traversing all collection members.
      * @return collection iterator
      */
-    public java.util.Iterator<T> iterator();
+    public Iterator<T> iterator();
     /**
      * Get iterator for traversing collection members  with key belonging to the specified range. 
      * @param from low boundary. If <code>null</code> then low boundary is not specified.
@@ -99,7 +114,7 @@ public interface SortedCollection<T extends IPersistent> extends IPersistent, IR
      * High boundary can be inclusive or exclusive. 
      * @return selection iterator
      */
-    public java.util.Iterator<T> iterator(Key from, Key till);
+    public Iterator<T> iterator(Key from, Key till);
 
     /**
      * Get comparator used in this collection

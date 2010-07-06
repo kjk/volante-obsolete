@@ -3,11 +3,11 @@ import  org.garret.perst.*;
 import java.util.*;
 
 public class TimeSeriesImpl extends PersistentResource implements TimeSeries { 
-    public void add(Tick tick) { 
+    public void add(TimeSeriesTick tick) { 
         long time = tick.getTime();
         IPersistent[] blocks = index.get(new Key(time - maxBlockTimeInterval), new Key(time));
         if (blocks.length != 0) { 
-            insertInBlock((Block)blocks[blocks.length-1], tick);
+            insertInBlock((TimeSeriesBlock)blocks[blocks.length-1], tick);
         } else { 
             addNewBlock(tick);
         }
@@ -19,9 +19,9 @@ public class TimeSeriesImpl extends PersistentResource implements TimeSeries {
             this.till = till;
             blockIterator = index.iterator(new Key(from - maxBlockTimeInterval), new Key(till), Index.ASCENT_ORDER);
             while (blockIterator.hasNext()) { 
-                Block block = (Block)blockIterator.next();
+                TimeSeriesBlock block = (TimeSeriesBlock)blockIterator.next();
                 int n = block.used;
-                Tick[] e = block.getTicks();
+                TimeSeriesTick[] e = block.getTicks();
                 int l = 0, r = n;
                 while (l < r)  {
                     int i = (l+r) >> 1;
@@ -50,10 +50,10 @@ public class TimeSeriesImpl extends PersistentResource implements TimeSeries {
             if (pos < 0) { 
                  throw new NoSuchElementException();
             }
-            Tick tick = currBlock.getTicks()[pos];
+            TimeSeriesTick tick = currBlock.getTicks()[pos];
             if (++pos == currBlock.used) { 
                 if (blockIterator.hasNext()) { 
-                    currBlock = (Block)blockIterator.next();
+                    currBlock = (TimeSeriesBlock)blockIterator.next();
                     pos = 0;
                 } else { 
                     pos = -1;
@@ -71,7 +71,7 @@ public class TimeSeriesImpl extends PersistentResource implements TimeSeries {
         }
 
         private Iterator blockIterator;
-        private Block    currBlock;
+        private TimeSeriesBlock currBlock;
         private int      pos;
         private long     till;
     }
@@ -83,9 +83,9 @@ public class TimeSeriesImpl extends PersistentResource implements TimeSeries {
             this.from = from;
             blockIterator = index.iterator(new Key(from - maxBlockTimeInterval), new Key(till), Index.DESCENT_ORDER);
             while (blockIterator.hasNext()) { 
-                Block block = (Block)blockIterator.next();
+                TimeSeriesBlock block = (TimeSeriesBlock)blockIterator.next();
                 int n = block.used;
-                Tick[] e =  block.getTicks();
+                TimeSeriesTick[] e =  block.getTicks();
                 int l = 0, r = n;
                 while (l < r)  {
                     int i = (l+r) >> 1;
@@ -114,10 +114,10 @@ public class TimeSeriesImpl extends PersistentResource implements TimeSeries {
             if (pos < 0) { 
                  throw new NoSuchElementException();
             }
-            Tick tick = currBlock.getTicks()[pos];
+            TimeSeriesTick tick = currBlock.getTicks()[pos];
             if (--pos < 0) { 
                 if (blockIterator.hasNext()) { 
-                    currBlock = (Block)blockIterator.next();
+                    currBlock = (TimeSeriesBlock)blockIterator.next();
                     pos = currBlock.used-1;
                 } else { 
                     pos = -1;
@@ -135,7 +135,7 @@ public class TimeSeriesImpl extends PersistentResource implements TimeSeries {
         }
 
         private Iterator blockIterator;
-        private Block    currBlock;
+        private TimeSeriesBlock currBlock;
         private int      pos;
         private long     from;
     }
@@ -163,7 +163,7 @@ public class TimeSeriesImpl extends PersistentResource implements TimeSeries {
     public Date getFirstTime() {
         Iterator blockIterator = index.iterator();
         if (blockIterator.hasNext()) { 
-            Block block = (Block)blockIterator.next();            
+            TimeSeriesBlock block = (TimeSeriesBlock)blockIterator.next();            
             return new Date(block.timestamp);
         } 
         return null;
@@ -172,7 +172,7 @@ public class TimeSeriesImpl extends PersistentResource implements TimeSeries {
     public Date getLastTime() {
         Iterator blockIterator = index.iterator(null, null, Index.DESCENT_ORDER);
         if (blockIterator.hasNext()) { 
-            Block block = (Block)blockIterator.next();            
+            TimeSeriesBlock block = (TimeSeriesBlock)blockIterator.next();            
             return new Date(block.getTicks()[block.used-1].getTime());
         } 
         return null;
@@ -182,19 +182,19 @@ public class TimeSeriesImpl extends PersistentResource implements TimeSeries {
         long n = 0;
         Iterator blockIterator = index.iterator();
         while (blockIterator.hasNext()) { 
-            Block block = (Block)blockIterator.next();            
+            TimeSeriesBlock block = (TimeSeriesBlock)blockIterator.next();            
             n += block.used;
         }
         return n;
     }
        
-    public Tick getTick(Date timestamp) {
+    public TimeSeriesTick getTick(Date timestamp) {
         long time = timestamp.getTime();
         Iterator blockIterator = index.iterator(new Key(time - maxBlockTimeInterval), new Key(time), Index.ASCENT_ORDER);
         while (blockIterator.hasNext()) { 
-            Block block = (Block)blockIterator.next();
+            TimeSeriesBlock block = (TimeSeriesBlock)blockIterator.next();
             int n = block.used;
-            Tick[] e = block.getTicks();
+            TimeSeriesTick[] e = block.getTicks();
             int l = 0, r = n;
             while (l < r)  {
                 int i = (l+r) >> 1;
@@ -224,9 +224,9 @@ public class TimeSeriesImpl extends PersistentResource implements TimeSeries {
         Key  tillKey =  new Key(high);
         Iterator blockIterator = index.iterator(fromKey, tillKey, Index.ASCENT_ORDER);
         while (blockIterator.hasNext()) { 
-            Block block = (Block)blockIterator.next();
+            TimeSeriesBlock block = (TimeSeriesBlock)blockIterator.next();
             int n = block.used;
-            Tick[] e = block.getTicks();
+            TimeSeriesTick[] e = block.getTicks();
             int l = 0, r = n;
             while (l < r)  {
                 int i = (l+r) >> 1;
@@ -262,11 +262,11 @@ public class TimeSeriesImpl extends PersistentResource implements TimeSeries {
         return nRemoved;
     }
 
-    private void addNewBlock(Tick t)
+    private void addNewBlock(TimeSeriesTick t)
     {
-        Block block;
+        TimeSeriesBlock block;
         try { 
-            block = (Block)blockClass.newInstance();             
+            block = (TimeSeriesBlock)blockClass.newInstance();             
         } catch (Exception x) { 
             throw new StorageError(StorageError.CONSTRUCTOR_FAILURE, blockClass, x);
         }
@@ -276,12 +276,12 @@ public class TimeSeriesImpl extends PersistentResource implements TimeSeries {
         index.put(new Key(block.timestamp), block);
     }
 
-    void insertInBlock(Block block, Tick tick)
+    void insertInBlock(TimeSeriesBlock block, TimeSeriesTick tick)
     {
         long t = tick.getTime();
         int i, n = block.used;
         
-        Tick[] e =  block.getTicks();
+        TimeSeriesTick[] e =  block.getTicks();
         int l = 0, r = n;
         while (l < r)  {
             i = (l+r) >> 1;

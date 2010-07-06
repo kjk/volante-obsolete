@@ -148,6 +148,10 @@ class BtreeFieldIndex<T extends IPersistent> extends Btree<T> implements FieldIn
         super.insert(key, obj, false);
     }
 
+    public T[] getPrefix(String prefix) { 
+        return get(new Key(prefix, true), new Key(prefix + Character.MAX_VALUE, false));
+    }
+
     public T[] get(Key from, Key till) {
         if ((from != null && from.type != type) || (till != null && till.type != type)) { 
             throw new StorageError(StorageError.INCOMPATIBLE_KEY_TYPE);

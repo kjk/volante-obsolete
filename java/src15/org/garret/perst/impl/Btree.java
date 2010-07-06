@@ -80,22 +80,20 @@ class Btree<T extends IPersistent> extends PersistentResource implements Index<T
         return null;
     }
 
-    static final IPersistent[] emptySelection = new IPersistent[0];
-
-    public IPersistent[] get(Key from, Key till) {
+    public ArrayList<T> getList(Key from, Key till) {
         if ((from != null && from.type != type) || (till != null && till.type != type)) { 
             throw new StorageError(StorageError.INCOMPATIBLE_KEY_TYPE);
         }
+        ArrayList<T> list = new ArrayList<T>();
         if (root != 0) { 
-            ArrayList list = new ArrayList();
             BtreePage.find((StorageImpl)getStorage(), root, from, till, this, height, list);
-            if (list.size() == 0) { 
-                return emptySelection;
-            } else { 
-                return (IPersistent[])list.toArray(new IPersistent[list.size()]);
-            }
         }
-        return emptySelection;
+        return list;
+    }
+
+    public IPersistent[] get(Key from, Key till) {
+        ArrayList<T> list = getList(from, till);
+        return (IPersistent[])list.toArray(new IPersistent[list.size()]);
     }
 
     public boolean put(Key key, T obj) {
@@ -189,6 +187,14 @@ class Btree<T extends IPersistent> extends PersistentResource implements Index<T
         
     public T get(String key) { 
         return get(new Key(key, true));
+    }
+
+    public ArrayList<T> getPrefixList(String prefix) { 
+        return getList(new Key(prefix, true), new Key(prefix + Character.MAX_VALUE, false));
+    }
+
+    public IPersistent[] getPrefix(String prefix) { 
+        return get(new Key(prefix, true), new Key(prefix + Character.MAX_VALUE, false));
     }
 
     public boolean put(String key, T obj) {
@@ -1087,6 +1093,11 @@ class Btree<T extends IPersistent> extends PersistentResource implements Index<T
         }
         return new BtreeSelectionIterator<T>(from, till, order);
     }
+
+    public Iterator<T> prefixIterator(String prefix) {
+        return iterator(new Key(prefix), new Key(prefix + Character.MAX_VALUE, false), ASCENT_ORDER);
+    }
+
 
     public Iterator<Map.Entry<Object,T>> entryIterator(Key from, Key till, int order) { 
         if ((from != null && from.type != type) || (till != null && till.type != type)) { 

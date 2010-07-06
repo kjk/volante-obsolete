@@ -1,7 +1,6 @@
 package org.garret.perst;
 
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Interface of object index.
@@ -23,6 +22,18 @@ public interface Index<T extends IPersistent> extends IPersistent, IResource, It
     public T get(Key key);
     
     /**
+     * Get objects which key value belongs to the specified range.
+     * Either from boundary, either till boundary either both of them can be <code>null</code>.
+     * In last case the method returns all objects from the index.
+     * @param from low boundary. If <code>null</code> then low boundary is not specified.
+     * Low boundary can be inclusive or exclusive. 
+     * @param till high boundary. If <code>null</code> then high boundary is not specified.
+     * High boundary can be inclusive or exclusive. 
+     * @return array of objects which keys belongs to the specified interval, ordered by key value
+     */
+    public ArrayList<T> getList(Key from, Key till);
+
+     /**
      * Get objects which key value belongs to the specified range.
      * Either from boundary, either till boundary either both of them can be <code>null</code>.
      * In last case the method returns all objects from the index.
@@ -79,6 +90,20 @@ public interface Index<T extends IPersistent> extends IPersistent, IResource, It
      * one objects in the index with specified value of the key.
      */
     public T get(String key);
+    
+    /**
+     * Get objects with string key prefix 
+     * @param prefix string key prefix
+     * @return array of objects which key starts with this prefix 
+     */
+    public IPersistent[] getPrefix(String prefix);
+    
+    /**
+     * Get objects with string key prefix 
+     * @param prefix string key prefix
+     * @return array of objects which key starts with this prefix 
+     */
+    public ArrayList<T> getPrefixList(String prefix);
     
     /**
      * Put new object in the string index. 
@@ -194,6 +219,15 @@ public interface Index<T extends IPersistent> extends IPersistent, IResource, It
      * @return selection iterator
      */
     public Iterator<Map.Entry<Object,T>> entryIterator(Key from, Key till, int order);
+
+    /**
+     * Get iterator for records which keys started with specified prefix
+     * Objects are iterated in the ascent key order. 
+     * You should not update/remove or add members to the index during iteration
+     * @param prefix key prefix
+     * @return selection iterator
+     */
+    public Iterator<T> prefixIterator(String prefix);
 }
 
 

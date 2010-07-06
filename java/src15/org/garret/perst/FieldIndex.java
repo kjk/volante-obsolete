@@ -32,6 +32,13 @@ public interface FieldIndex<T extends IPersistent> extends IPersistent, Iterable
     public T get(String key);
     
     /**
+     * Get objects with string key prefix 
+     * @param prefix string key prefix
+     * @return array of objects which key starts with this prefix 
+     */
+    public T[] getPrefix(String prefix);
+    
+    /**
      * Get objects which key value belongs to the specified range.
      * Either from boundary, either till boundary either both of them can be <code>null</code>.
      * In last case the method returns all objects from the index.
@@ -160,5 +167,14 @@ public interface FieldIndex<T extends IPersistent> extends IPersistent, Iterable
      * @return selection iterator
      */
     public Iterator<Map.Entry<Object,T>> entryIterator(Key from, Key till, int order);
+
+    /**
+     * Get iterator for records which keys started with specified prefix
+     * Objects are iterated in the ascent key order. 
+     * You should not update/remove or add members to the index during iteration
+     * @param prefix key prefix
+     * @return selection iterator
+     */
+    public Iterator<T> prefixIterator(String prefix);
 }
 

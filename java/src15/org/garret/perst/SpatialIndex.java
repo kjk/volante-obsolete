@@ -1,5 +1,7 @@
 package org.garret.perst;
 
+import java.util.ArrayList;
+
 /**
  * Interface of object spatial index.
  * Spatial index is used to allow fast selection of spatial objects belonging to the specified rectangle.
@@ -9,16 +11,16 @@ public interface SpatialIndex<T extends IPersistent> extends IPersistent, IResou
     /**
      * Find all objects located in the selected rectangle
      * @param r selected rectangle
-     * @return array of objects which enveloping rectangle intersects with specified rectangle
+     * @return array list of objects which enveloping rectangle intersects with specified rectangle
      */
     public IPersistent[] get(Rectangle r);
-    
+
     /**
      * Find all objects located in the selected rectangle
      * @param r selected rectangle
      * @return array list of objects which enveloping rectangle intersects with specified rectangle
      */
-    public java.util.ArrayList<T> find(Rectangle r);
+    public ArrayList<T> getList(Rectangle r);
     
     /**
      * Put new object in the index. 

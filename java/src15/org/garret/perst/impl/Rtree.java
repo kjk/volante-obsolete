@@ -62,11 +62,11 @@ public class Rtree<T extends IPersistent> extends PersistentResource implements 
     }
     
     public IPersistent[] get(Rectangle r) {
-        ArrayList<T> result = find(r);
+        ArrayList<T> result = getList(r);
         return (IPersistent[])result.toArray(new IPersistent[result.size()]);
     }
 
-    public ArrayList<T> find(Rectangle r) { 
+    public ArrayList<T> getList(Rectangle r) { 
         ArrayList<T> result = new ArrayList<T>();
         if (root != null) { 
             root.find(r, result, height);

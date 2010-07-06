@@ -10,6 +10,8 @@ class Btree extends PersistentResource implements Index {
     int       nElems;
     boolean   unique;
 
+    transient int updateCounter;
+
     static final int sizeof = ObjectHeader.sizeof + 4*4 + 1;
 
     Btree() {}
@@ -132,6 +134,7 @@ class Btree extends PersistentResource implements Index {
                 return true;
             }
         }
+        updateCounter += 1;
         nElems += 1;
         modify();
         return true;
@@ -176,6 +179,7 @@ class Btree extends PersistentResource implements Index {
             root = BtreePage.allocate(db, root, type, rem);
             height += 1;
         }
+        updateCounter += 1;
         modify();
     }
         
@@ -189,6 +193,10 @@ class Btree extends PersistentResource implements Index {
         
     public IPersistent get(String key) { 
         return get(new Key(key, true));
+    }
+
+    public IPersistent[] getPrefix(String prefix) { 
+        return get(new Key(prefix, true), new Key(prefix + Character.MAX_VALUE, false));
     }
 
     public boolean put(String key, IPersistent obj) {
@@ -217,6 +225,7 @@ class Btree extends PersistentResource implements Index {
             root = 0;
             nElems = 0;
             height = 0;
+            updateCounter += 1;
             modify();
         }
     }
@@ -362,6 +371,7 @@ class Btree extends PersistentResource implements Index {
             }
             int pageId = root;
             int h = height;
+            counter = updateCounter;
             pageStack = new int[h];
             posStack =  new int[h];
             sp = 0;
@@ -386,7 +396,7 @@ class Btree extends PersistentResource implements Index {
             return sp > 0 && posStack[sp-1] < end;
         }
 
-        protected Object getCurrent(Page pg, int pos) {
+        protected Object getCurrent(Page pg, int pos) {            
             StorageImpl db = (StorageImpl)getStorage();
             return db.lookupObject(getReference(pg, pos), null);
         }
@@ -395,6 +405,9 @@ class Btree extends PersistentResource implements Index {
             StorageImpl db = (StorageImpl)getStorage();
             if (sp == 0 || posStack[sp-1] >= end) { 
                 throw new NoSuchElementException();
+            }
+            if (counter != updateCounter) { 
+                throw new ConcurrentModificationException();
             }
             int pos = posStack[sp-1];   
             Page pg = db.getPage(pageStack[sp-1]);
@@ -432,6 +445,7 @@ class Btree extends PersistentResource implements Index {
         int[]       posStack;
         int         sp;
         int         end;
+        int         counter;
     }
 
     class BtreeEntryIterator extends BtreeIterator { 
@@ -482,6 +496,7 @@ class Btree extends PersistentResource implements Index {
             if (db == null) {             
                 throw new StorageError(StorageError.DELETED_OBJECT);
             }
+            counter = updateCounter;
             int h = height;
             this.from = from;
             this.till = till;
@@ -871,6 +886,9 @@ class Btree extends PersistentResource implements Index {
             if (sp == 0) { 
                 throw new NoSuchElementException();
             }
+            if (counter != updateCounter) { 
+                throw new ConcurrentModificationException();
+            }
             StorageImpl db = (StorageImpl)getStorage();
             int pos = posStack[sp-1];   
             Page pg = db.getPage(pageStack[sp-1]);
@@ -881,9 +899,9 @@ class Btree extends PersistentResource implements Index {
 
         protected Object getCurrent(Page pg, int pos) { 
             StorageImpl db = (StorageImpl)getStorage();
-           return db.lookupObject((type == ClassDescriptor.tpString || type == ClassDescriptor.tpArrayOfByte)
-                                    ? BtreePage.getKeyStrOid(pg, pos)
-                                    : BtreePage.getReference(pg, BtreePage.maxItems-1-pos), 
+            return db.lookupObject((type == ClassDescriptor.tpString || type == ClassDescriptor.tpArrayOfByte)
+                                   ? BtreePage.getKeyStrOid(pg, pos)
+                                   : BtreePage.getReference(pg, BtreePage.maxItems-1-pos), 
                                    null);
         }
 
@@ -1061,6 +1079,7 @@ class Btree extends PersistentResource implements Index {
         Key         from;
         Key         till;
         int         order;
+        int         counter;
     }
 
     class BtreeSelectionEntryIterator extends BtreeSelectionIterator { 
@@ -1087,6 +1106,11 @@ class Btree extends PersistentResource implements Index {
         }
         return new BtreeSelectionIterator(from, till, order);
     }
+
+    public Iterator prefixIterator(String prefix) {
+        return iterator(new Key(prefix), new Key(prefix + Character.MAX_VALUE, false), ASCENT_ORDER);
+    }
+
 
     public Iterator entryIterator(Key from, Key till, int order) { 
         if ((from != null && from.type != type) || (till != null && till.type != type)) { 

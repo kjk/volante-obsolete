@@ -80,6 +80,13 @@ public interface Index extends IPersistent, IResource {
     public IPersistent   get(String key);
     
     /**
+     * Get objects with string key prefix 
+     * @param prefix string key prefix
+     * @return array of objects which key starts with this prefix 
+     */
+    public IPersistent[] getPrefix(String prefix);
+    
+    /**
      * Put new object in the string index. 
      * @param key string key
      * @param obj object associated with this key. Object can be not yet peristent, in this case
@@ -193,6 +200,15 @@ public interface Index extends IPersistent, IResource {
      * @return selection iterator
      */
     public Iterator entryIterator(Key from, Key till, int order);
+
+    /**
+     * Get iterator for records which keys started with specified prefix
+     * Objects are iterated in the ascent key order. 
+     * You should not update/remove or add members to the index during iteration
+     * @param prefix key prefix
+     * @return selection iterator
+     */
+    public Iterator prefixIterator(String prefix);
 }
 
 

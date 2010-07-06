@@ -30,6 +30,8 @@ public abstract class Relation extends Persistent implements Link {
         this.owner = owner;
     }
     
+    protected Relation() {}
+
     private IPersistent owner;
 }
 

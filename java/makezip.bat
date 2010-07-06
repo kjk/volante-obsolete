@@ -16,6 +16,7 @@ del tst\aspectj\*.class
 del tst\jassist\*.dbs
 del tst\jassist\*.class
 del lib\perst_aspectj.jar
+rd /s/q classes
 cd ..
 del perst.zip
 zip -r perst.zip perst

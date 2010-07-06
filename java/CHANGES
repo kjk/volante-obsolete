@@ -163,3 +163,9 @@ later changed by me.
 --- Release version 2.16 10.02.2004 -------------------------------------
 1. Version of Perst interface for JDK 1.5 (generic container classes)
 2. Fix bug in Persistent.invalidate method
+
+--- Release version 2.17 26.02.2004 -------------------------------------
+1. Add check for concurrent modifications in B-Tree iterator
+2. Add Projection class
+3. Add Index.getPrefix, Index.prefixIterator, FieldIndex.getPrefix and FieldIndex.prefixIterator methods
+4. Fix bugs in RelationImpl class
