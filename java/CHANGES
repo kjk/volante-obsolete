@@ -272,3 +272,10 @@ OS or power failure (but abnormal termination of application itself should not c
 the problem, because all data which were written to the file, but is not yet saved to the disk is 
 stored in OS file buffers and sooner or later them will be written to the disk)
 2. Fix possible problems with GC memory consistency verification for T-Tree and R-Tree classes
+
+--- Release version 2.35 02.11.2004 -------------------------------------
+1. Fix problem with supporting compound keys in alternative implementation of B-Tree
+2. Fix bug (cuase inefficient execution) in TimeSeries.Contains method.
+3. Support new version of JAssist 
+
+

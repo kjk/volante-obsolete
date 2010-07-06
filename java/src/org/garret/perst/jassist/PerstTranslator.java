@@ -241,6 +241,12 @@ public class PerstTranslator implements Translator {
     }
 
 
+    public void onLoad(ClassPool pool, String className)
+        throws NotFoundException, CannotCompileException
+    {
+        onWrite(pool, className);
+    }
+
     public void onWrite(ClassPool pool, String className)
         throws NotFoundException, CannotCompileException 
     {

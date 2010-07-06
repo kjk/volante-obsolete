@@ -14,6 +14,11 @@ public class TestCompoundIndex {
     static public void main(String[] args) {    
         Storage db = StorageFactory.getInstance().createStorage();
 
+        for (int i = 0; i < args.length; i++) { 
+            if ("altbtree".equals(args[i])) { 
+                db.setProperty("perst.alternative.btree", Boolean.TRUE);
+            }
+        }
         db.open("testcidx.dbs", pagePoolSize);
         FieldIndex root = (FieldIndex)db.getRoot();
         if (root == null) { 

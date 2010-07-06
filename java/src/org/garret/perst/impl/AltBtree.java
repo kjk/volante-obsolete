@@ -727,7 +727,7 @@ class AltBtree extends PersistentResource implements Index {
         }
 
         Key getKey(int i) { 
-            return new Key(((Comparable[])data)[i]);
+            return new Key((Comparable)((Object[])data)[i]);
         }
 
         Object getKeyValue(int i) { 

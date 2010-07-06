@@ -3,7 +3,7 @@ import  org.garret.perst.*;
 
 import java.lang.reflect.*;
 import java.util.*;
-import java.util.ArrayList;
+import java.io.Serializable;
 
 class AltBtreeMultiFieldIndex extends AltBtree implements FieldIndex { 
     String   className;
@@ -61,7 +61,7 @@ class AltBtreeMultiFieldIndex extends AltBtree implements FieldIndex {
         locateFields();
     }
 
-    static class CompoundKey implements Comparable {
+    static class CompoundKey implements Comparable, Serializable {
         Object[] keys;
 
         public int compareTo(Object o) { 

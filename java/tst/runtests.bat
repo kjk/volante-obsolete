@@ -9,6 +9,8 @@ call TestIndex inmemory
 del *.dbs
 call TestIndex2
 call TestCompoundIndex
+del *.dbs
+call TestCompoundIndex altbtree
 call TestMod
 call TestIndexIterator
 del *.dbs
