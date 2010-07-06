@@ -112,17 +112,6 @@ public class WeakHashTable {
 	}
     }
 
-    public void flush() {
-        for (int i = 0; i < table.length; i++) { 
-            for (Entry e = table[i]; e != null; e = e.next) { 
-                IPersistent obj = (IPersistent)e.ref.get();
-                if (obj != null && obj.isModified()) { 
-                    obj.store();
-                }
-            }
-        }
-    }
-
     public int size() { 
 	return count;
     }

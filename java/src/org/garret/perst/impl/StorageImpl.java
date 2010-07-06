@@ -698,6 +698,23 @@ public class StorageImpl extends Storage {
 	}
     }
 
+    class ModifiedListSupervisor { 
+        protected void finalize() { 
+            truncateModifiedList = true;
+            new ModifiedListSupervisor();
+        }
+    }
+
+    final void storeModifiedObjects() { 
+        int i = modifiedList.size();
+        if (i != 0) { 
+            while (--i >= 0) { 
+                ((IPersistent)modifiedList.get(i)).store();
+            }
+            modifiedList.clear();
+        }
+    }
+        
     public synchronized void open(String filePath, int pagePoolSize) {
         OSFile file = new OSFile(filePath);      
         try {
@@ -739,8 +756,9 @@ public class StorageImpl extends Storage {
 
         objectCache = new WeakHashTable(dbObjectCacheInitSize);
         classDescMap = new HashMap();
+        modifiedList = new ArrayList();
         descList = null;
-
+        
 	header = new Header();
 	byte[] buf = new byte[Header.sizeof];
 	int rc = file.read(0, buf);
@@ -862,6 +880,7 @@ public class StorageImpl extends Storage {
 	}
         reloadScheme();
         opened = true;
+        new ModifiedListSupervisor();
     }
 
     public boolean isOpened() { 
@@ -957,7 +976,7 @@ public class StorageImpl extends Storage {
         if (!opened) {
             throw new StorageError(StorageError.STORAGE_NOT_OPENED);
         }
-        objectCache.flush();
+        storeModifiedObjects();
 	if (modified) { 
 	    int curr = currIndex;
 	    int[] map = dirtyPagesMap;
@@ -1109,6 +1128,7 @@ public class StorageImpl extends Storage {
         if (!opened) {
             throw new StorageError(StorageError.STORAGE_NOT_OPENED);
         }
+        modifiedList.clear();
         objectCache.clear();
         if (!modified) { 
             return;
@@ -1509,6 +1529,16 @@ public class StorageImpl extends Storage {
         return oid == 0 ? null : lookupObject(oid, null);
     }
 
+
+    protected synchronized void modifyObject(IPersistent obj) {
+        if (truncateModifiedList) { 
+            storeModifiedObjects();
+            truncateModifiedList = false;
+        }
+        if (!obj.isModified()) {
+            modifiedList.add(obj);            
+        }
+    }
 
     protected synchronized void storeObject(IPersistent obj) {
         int oid = obj.getOid();
@@ -2457,6 +2487,8 @@ public class StorageImpl extends Storage {
     boolean   gcDone;
     int       btreeClassOid;
     int       btree2ClassOid;
+    ArrayList modifiedList;
+    boolean   truncateModifiedList;
 
     WeakHashTable   objectCache;
     HashMap         classDescMap;

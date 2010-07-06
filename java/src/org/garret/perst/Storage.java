@@ -212,6 +212,8 @@ public abstract class Storage {
 
     abstract protected void storeObject(IPersistent obj);
 
+    abstract protected void modifyObject(IPersistent obj);
+
     abstract protected void loadObject(IPersistent obj);
 
     final protected void setObjectOid(IPersistent obj, int oid, boolean raw) { 

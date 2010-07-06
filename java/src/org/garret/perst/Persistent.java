@@ -43,6 +43,7 @@ public class Persistent implements IPersistent {
             if ((state & RAW) != 0) { 
                 throw new StorageError(StorageError.ACCESS_TO_STUB);
             }
+            storage.modifyObject(this);
             state |= DIRTY;
         }
     }
@@ -77,12 +78,6 @@ public class Persistent implements IPersistent {
     }
 
     public void onLoad() {
-    }
-
-    protected void finilize() { 
-        if ((state & DIRTY) != 0) { 
-            store();
-        }
     }
 
     transient Storage storage;
