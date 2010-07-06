@@ -232,7 +232,7 @@ class Btree<T extends IPersistent> extends PersistentResource implements Index<T
         BtreeKey rk = new BtreeKey(key, 0);
         StorageImpl db = (StorageImpl)getStorage();
         remove(rk);
-        return (T)db.lookupObject(rk.oid, null);
+        return (T)db.lookupObject(rk.oldOid, null);
     }
         
         

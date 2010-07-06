@@ -234,7 +234,7 @@ class Btree extends PersistentResource implements Index {
         BtreeKey rk = new BtreeKey(key, 0);
         StorageImpl db = (StorageImpl)getStorage();
         remove(rk);
-        return db.lookupObject(rk.oid, null);
+        return db.lookupObject(rk.oldOid, null);
     }
         
         

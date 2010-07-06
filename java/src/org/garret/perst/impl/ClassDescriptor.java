@@ -1,7 +1,8 @@
 package org.garret.perst.impl;
 import  org.garret.perst.*;
 import  java.lang.reflect.*;
-import  java.util.ArrayList;
+import  java.util.*;
+import sun.reflect.ReflectionFactory;
 
 public final class ClassDescriptor extends Persistent { 
     ClassDescriptor   next;
@@ -226,6 +227,29 @@ public final class ClassDescriptor extends Persistent {
 
     ClassDescriptor() {}
 
+    private static HashMap constructorHash = new HashMap();
+
+    private Constructor generateDefaultConstructor(Class type) { 
+        try { 
+            Class reflectionFactoryClass = Class.forName("sun.reflect.ReflectionFactory");
+            Method getReflectionFactory = reflectionFactoryClass.getMethod("getReflectionFactory", new Class[0]);
+
+            Constructor javaLangObjectConstructor = 
+                Object.class.getDeclaredConstructor(new Class[0]);
+            Object reflectionFactory = getReflectionFactory.invoke(null, new Object[0]);
+            Method newConstructorForSerialization = 
+                reflectionFactoryClass.getMethod("newConstructorForSerialization", 
+                                                 new Class[]{Class.class, Constructor.class});
+            Constructor customConstructor = 
+                (Constructor)newConstructorForSerialization.invoke(reflectionFactory, 
+                                                                   new Object[]{type, javaLangObjectConstructor});
+            constructorHash.put(type, customConstructor);
+            return customConstructor;
+        } catch (Exception x) { 
+            throw new StorageError(StorageError.DESCRIPTOR_FAILURE, type, x);
+        }
+    }
+
     private void locateConstructor() { 
         try { 
             Class c = Class.forName(cls.getName() + "LoadFactory");
@@ -239,7 +263,11 @@ public final class ClassDescriptor extends Persistent {
                     loadConstructor = cls.getDeclaredConstructor(defaultConstructorProfile);
                     constructorParams = null;
                 } catch (NoSuchMethodException x3) {
-                    throw new StorageError(StorageError.DESCRIPTOR_FAILURE, cls, x3);
+                    loadConstructor = (Constructor)constructorHash.get(cls);
+                    if (loadConstructor == null) { 
+                        loadConstructor = generateDefaultConstructor(cls);
+                    }
+                    constructorParams = null;
                 }
             }
             loadConstructor.setAccessible(true);

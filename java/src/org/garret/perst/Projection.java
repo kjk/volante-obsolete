@@ -61,7 +61,7 @@ public class Projection {
 
     /**
      * Project specified selection
-     * @param selection iterator specifying selceted objects
+     * @param selection iterator specifying seleceted objects
      */
     public void project(Iterator selection) { 
         while (selection.hasNext()) { 

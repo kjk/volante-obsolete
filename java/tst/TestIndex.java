@@ -15,6 +15,7 @@ class Indices extends Persistent {
 public class TestIndex { 
     final static int nRecords = 100000;
     final static int pagePoolSize = 32*1024*1024;
+    //final static int pagePoolSize = Storage.INFINITE_PAGE_POOL;
 
     static public void main(String[] args) {    
         Storage db = StorageFactory.getInstance().createStorage();
@@ -93,7 +94,8 @@ public class TestIndex {
             Record rec = (Record)intIndex.get(new Key(key));
             Record removed = (Record)intIndex.remove(new Key(key));
             Assert.that(removed == rec);
-            strIndex.remove(new Key(Long.toString(key)), rec);
+            //strIndex.remove(new Key(Long.toString(key)), rec);
+            strIndex.remove(new Key(Long.toString(key)));
             rec.deallocate();
         }
         Assert.that(!intIndex.iterator().hasNext());
