@@ -11,13 +11,20 @@ class Btree extends PersistentResource implements Index {
     int       nElems;
     boolean   unique;
 
+    static final int sizeof = ObjectHeader.sizeof + 4*4 + 1;
+
     Btree() {}
 
     Btree(Class cls, boolean unique) {
+        this.unique = unique;
         type = ClassDescriptor.getTypeCode(cls);
         if (type >= ClassDescriptor.tpLink) { 
             throw new StorageError(StorageError.UNSUPPORTED_INDEX_TYPE, cls);
         }
+    }
+
+    Btree(int type, boolean unique) { 
+        this.type = type;
         this.unique = unique;
     }
 
@@ -185,9 +192,17 @@ class Btree extends PersistentResource implements Index {
         super.deallocate();
     }
 
-    public void markTree() { 
+    public void markTree() 
+    { 
         if (root != 0) { 
             BtreePage.markPage((StorageImpl)getStorage(), root, type, height);
+        }
+    }        
+
+    public void export(XMLExporter exporter) throws java.io.IOException 
+    { 
+        if (root != 0) { 
+            BtreePage.exportPage((StorageImpl)getStorage(), exporter, root, type, height);
         }
     }        
 

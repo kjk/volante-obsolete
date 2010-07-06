@@ -43,3 +43,5 @@ Object will be automatically saved during transaction commit.
 2. Change store() with modify() in Btree implementation
 3. Derive IPersistent interface from java.io.Serializable
 
+--- Release version 1.11 09.06.2003 -------------------------------------
+1. Add methods for database import/export in XML format. 

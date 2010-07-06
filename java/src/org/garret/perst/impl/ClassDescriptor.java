@@ -41,6 +41,35 @@ public final class ClassDescriptor extends Persistent {
     public static final int tpArrayOfObject    = 30;
     public static final int tpArrayOfValue     = 31;
 
+    static final String signature[] = {
+        "boolean", 
+        "byte",
+        "char",
+        "short",
+        "int",
+        "long",
+        "float",
+        "double",
+        "String",
+        "Date",
+        "Object",
+        "Value",
+        "Link",
+        "ArrayOfBoolean",
+        "ArrayOfByte",
+        "ArrayOfChar",
+        "ArrayOfShort",
+        "ArrayOfInt",
+        "ArrayOfLong",
+        "ArrayOfFloat",
+        "ArrayOfDouble",
+        "ArrayOfString",
+        "ArrayOfDate",
+        "ArrayOfObject",
+        "ArrayOfValue"
+    };
+        
+
     static final int sizeof[] = {
         1, // tpBoolean
         1, // tpByte

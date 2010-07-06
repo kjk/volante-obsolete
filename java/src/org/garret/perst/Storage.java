@@ -133,6 +133,18 @@ public abstract class Storage {
      */
     abstract public void gc();
 
+    /**
+     * Export database in XML format 
+     * @param writer writer for generated XML document
+     */
+    abstract public void exportXML(java.io.Writer writer) throws java.io.IOException;
+
+    /**
+     * Import data from XML file
+     * @param reader XML document reader
+     */
+    abstract public void importXML(java.io.Reader reader) throws XMLImportException;
+
     // Internal methods
 
     abstract protected void deallocateObject(IPersistent obj);

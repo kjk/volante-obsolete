@@ -1,4 +1,5 @@
 package org.garret.perst.impl;
+
 import  org.garret.perst.*;
 import  java.lang.reflect.*;
 import  java.util.HashMap;
@@ -873,6 +874,7 @@ public class StorageImpl extends Storage {
 
     final void reloadScheme() {
         btreeClassOid = -1;
+        btree2ClassOid = -1;
         classDescMap.clear();
         int descListOid = header.root[1-currIndex].classDescList;
         classDescMap.put(ClassDescriptor.class, new ClassDescriptor(ClassDescriptor.class));
@@ -883,6 +885,8 @@ public class StorageImpl extends Storage {
                 desc.resolve();
                 if (desc.cls.equals(Btree.class)) { 
                     btreeClassOid = desc.getOid();
+                } else if (desc.cls.equals(BtreeFieldIndex.class)) { 
+                    btree2ClassOid = desc.getOid();
                 }                    
                 classDescMap.put(desc.cls, desc);
             }
@@ -892,6 +896,10 @@ public class StorageImpl extends Storage {
         } else { 
             descList = null;
         }
+    }
+
+    final void assignOid(IPersistent obj, int oid) { 
+        setObjectOid(obj, oid, false);
     }
 
     final ClassDescriptor getClassDescriptor(Class cls) { 
@@ -905,6 +913,8 @@ public class StorageImpl extends Storage {
             storeObject(desc);
             if (cls.equals(Btree.class)) { 
                 btreeClassOid = desc.getOid();
+            } else if (cls.equals(BtreeFieldIndex.class)) { 
+                btree2ClassOid = desc.getOid();
             }
             header.root[1-currIndex].classDescList = desc.getOid();
             modified = true;
@@ -1227,7 +1237,7 @@ public class StorageImpl extends Storage {
                                 int typeOid = ObjectHeader.getType(pg.data, offs);
                                 if (typeOid != 0) { 
                                     markOid(typeOid);
-                                    if (typeOid == btreeClassOid) { 
+                                    if (typeOid == btreeClassOid || typeOid == btree2ClassOid) { 
                                         Btree btree = new Btree(pg.data, ObjectHeader.sizeof + offs);
                                         setObjectOid(btree, 0, false);
                                         btree.markTree();
@@ -1260,7 +1270,7 @@ public class StorageImpl extends Storage {
                     int offs = (int)pos & (Page.pageSize-1);
                     Page pg = pool.getPage(pos - offs);
                     int type = ObjectHeader.getType(pg.data, offs);
-                    if (type == btreeClassOid) { 
+                    if (type == btreeClassOid || type == btree2ClassOid) { 
                         Btree btree = new Btree(pg.data, ObjectHeader.sizeof + offs);
                         pool.unfix(pg);
                         setObjectOid(btree, i, false);
@@ -1398,6 +1408,28 @@ public class StorageImpl extends Storage {
         dirtyPagesMap  = null;
         descList = null;
     }
+
+    public synchronized void exportXML(java.io.Writer writer) throws java.io.IOException
+    {
+        if (!opened) { 
+            throw new StorageError(StorageError.STORAGE_NOT_OPENED);
+        }
+        int rootOid = header.root[1-currIndex].rootObject;
+        if (rootOid != 0) { 
+            XMLExporter xmlExporter = new XMLExporter(this, writer);
+            xmlExporter.exportDatabase(rootOid);
+        }
+    }
+
+    public synchronized void importXML(java.io.Reader reader) throws XMLImportException
+    {
+        if (!opened) { 
+            throw new StorageError(StorageError.STORAGE_NOT_OPENED);
+        }
+        XMLImporter xmlImporter = new XMLImporter(this, reader);
+        xmlImporter.importDatabase();
+    }
+
 
     protected synchronized void modifyObject(IPersistent obj) {
         Assert.that(!obj.isModified());
@@ -2254,6 +2286,7 @@ public class StorageImpl extends Storage {
     long      allocatedDelta;
     boolean   gcDone;
     int       btreeClassOid;
+    int       btree2ClassOid;
     ArrayList modifiedList;
 
     WeakHashTable   objectCache;
