@@ -133,6 +133,16 @@
                     BuildAction = "Compile"
                 />
                 <File
+                    RelPath = "src\L2List.cs"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "src\L2ListElem.cs"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
                     RelPath = "src\Link.cs"
                     SubType = "Code"
                     BuildAction = "Compile"

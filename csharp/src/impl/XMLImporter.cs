@@ -655,6 +655,77 @@ namespace Perst.Impl
             return - 1;
         }
 		
+        internal int importBinary(XMLElement elem, int offs, ByteBuffer buf, String fieldName) 
+        { 
+            if (elem == null || elem.isNullValue()) 
+            {
+                buf.extend(offs + 4);
+                Bytes.pack4(buf.arr, offs, -1);
+                offs += 4;
+            } 
+            else if (elem.isStringValue()) 
+            {
+                String hexStr = elem.StringValue;
+                int len = hexStr.Length;
+                if (hexStr.StartsWith("#")) 
+                { 
+                    buf.extend(offs + 4 + len/2-1);
+                    Bytes.pack4(buf.arr, offs, -2-getHexValue(hexStr[1]));  
+                    offs += 4;
+                    for (int j = 2; j < len; j += 2) 
+                    { 
+                        buf.arr[offs++] = (byte)((getHexValue(hexStr[j]) << 4) | getHexValue(hexStr[j+1]));
+                    }
+                } 
+                else 
+                { 
+                    buf.extend(offs + 4 + len/2);
+                    Bytes.pack4(buf.arr, offs, len/2);
+                    offs += 4;
+                    for (int j = 0; j < len; j += 2) 
+                    { 
+                        buf.arr[offs++] = (byte)((getHexValue(hexStr[j]) << 4) | getHexValue(hexStr[j+1]));
+                    }
+                }
+            } 
+            else 
+            { 
+                XMLElement refElem = elem.getSibling("ref");
+                if (refElem != null) 
+                { 
+                    buf.extend(offs + 4);
+                    Bytes.pack4(buf.arr, offs, mapId(getIntAttribute(refElem, "id")));
+                    offs += 4;
+                } 
+                else 
+                { 
+                    XMLElement item = elem.getSibling("array-element");
+                    int len = (item == null) ? 0 : item.Counter; 
+                    buf.extend(offs + 4 + len);
+                    Bytes.pack4(buf.arr, offs, len);
+                    offs += 4;
+                    while (--len >= 0) 
+                    { 
+                        if (item.isIntValue()) 
+                        { 
+                            buf.arr[offs] = (byte)item.IntValue;
+                        } 
+                        else if (item.isRealValue()) 
+                        { 
+                            buf.arr[offs] = (byte)item.RealValue;
+                        } 
+                        else 
+                        {
+                            throwException("Conversion for field " + fieldName + " is not possible");
+                        }
+                        item = item.NextSibling;
+                        offs += 1;
+                    }
+                }
+            }
+            return offs;
+        }
+
         internal int packObject(XMLElement objElem, ClassDescriptor desc, int offs, ByteBuffer buf)
         {
             ClassDescriptor.FieldDescriptor[] flds = desc.allFields;
@@ -1001,49 +1072,7 @@ namespace Perst.Impl
 #endif
                     case ClassDescriptor.FieldType.tpArrayOfByte: 
                     case ClassDescriptor.FieldType.tpArrayOfSByte: 
-                        if (elem == null || elem.isNullValue())
-                        {
-                            buf.extend(offs + 4);
-                            Bytes.pack4(buf.arr, offs, - 1);
-                            offs += 4;
-                        }
-                        else if (elem.isStringValue())
-                        {
-                            System.String hexStr = elem.StringValue;
-                            int len = hexStr.Length;
-                            buf.extend(offs + 4 + len / 2);
-                            Bytes.pack4(buf.arr, offs, len / 2);
-                            offs += 4;
-                            for (int j = 0; j < len; j += 2)
-                            {
-                                buf.arr[offs++] = (byte) ((getHexValue(hexStr[j]) << 4) | getHexValue(hexStr[j + 1]));
-                            }
-                        }
-                        else
-                        {
-                            XMLElement item = elem.getSibling("array-element");
-                            int len = (item == null)?0:item.Counter;
-                            buf.extend(offs + 4 + len);
-                            Bytes.pack4(buf.arr, offs, len);
-                            offs += 4;
-                            while (--len >= 0)
-                            {
-                                if (item.isIntValue())
-                                {
-                                    buf.arr[offs] = (byte) item.IntValue;
-                                }
-                                else if (item.isRealValue())
-                                {
-                                    buf.arr[offs] = (byte) item.RealValue;
-                                }
-                                else
-                                {
-                                    throwException("Conversion for field " + fieldName + " is not possible");
-                                }
-                                item = item.NextSibling;
-                                offs += 1;
-                            }
-                        }
+                        offs = importBinary(elem, offs, buf, fieldName);
                         continue;
 					
                     case ClassDescriptor.FieldType.tpArrayOfBoolean: 
@@ -1536,28 +1565,7 @@ namespace Perst.Impl
                             offs += 4;
                             while (--len >= 0)
                             {
-                                if (item.isNullValue()) 
-                                {
-                                    buf.extend(offs + 4);
-                                    Bytes.pack4(buf.arr, offs, -1);
-                                    offs += 4;
-                                } 
-                                else if (item.isStringValue()) 
-                                {
-                                    String hexStr = item.StringValue;
-                                    int strlen = hexStr.Length;
-                                    buf.extend(offs + 4 + strlen/2);
-                                    Bytes.pack4(buf.arr, offs, strlen/2);
-                                    offs += 4;
-                                    for (int j = 0; j < strlen; j += 2) 
-                                    { 
-                                        buf.arr[offs++] = (byte)((getHexValue(hexStr[j]) << 4) | getHexValue(hexStr[j+1]));
-                                    }
-                                } 
-                                else 
-                                { 
-                                    throwException("String with hexadecimal dump expected");
-                                }
+                                offs = importBinary(item, offs, buf, fieldName);
                                 item = item.NextSibling;
                             }
                         }

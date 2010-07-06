@@ -322,18 +322,48 @@ namespace Perst.Impl
 		
         internal static char[] hexDigit = new char[]{'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
 		
+        internal void exportRef(int oid) 
+        { 
+            writer.Write("<ref id=\"" + oid + "\"/>");
+            if (oid != 0 && (exportedBitmap[oid >> 5] & (1 << (oid & 31))) == 0) 
+            { 
+                markedBitmap[oid >> 5] |= 1 << (oid & 31);
+            }
+        }
+
         internal int exportBinary(byte[] body, int offs)
         {
             int len = Bytes.unpack4(body, offs);
             offs += 4;
-            if (len < 0)
-            {
-                writer.Write("null");
-            }
-            else
+            if (len < 0) 
+            { 
+                if (len == -2-(int)ClassDescriptor.FieldType.tpObject) 
+                { 
+                    exportRef(Bytes.unpack4(body, offs));
+                    offs += 4;
+                } 
+                else if (len < -1) 
+                { 
+                    writer.Write("\"#");
+                    writer.Write(hexDigit[-2-len]);
+                    len = ClassDescriptor.Sizeof[-2-len];
+                    while (--len >= 0) 
+                    {
+                        byte b = body[offs++];
+                        writer.Write(hexDigit[(b >> 4) & 0xF]);
+                        writer.Write(hexDigit[b & 0xF]);
+                    }
+                    writer.Write('\"');
+                } 
+                else 
+                { 
+                    writer.Write("null");
+                }
+            } 
+            else 
             {
                 writer.Write('\"');
-                while (--len >= 0)
+                while (--len >= 0) 
                 {
                     byte b = body[offs++];
                     writer.Write(hexDigit[(b >> 4) & 0xF]);
@@ -344,7 +374,7 @@ namespace Perst.Impl
             return offs;
         }
     
-       internal int exportObject(ClassDescriptor desc, byte[] body, int offs, int indent)
+        internal int exportObject(ClassDescriptor desc, byte[] body, int offs, int indent)
         {
             ClassDescriptor.FieldDescriptor[] all = desc.allFields;
 			
@@ -449,17 +479,10 @@ namespace Perst.Impl
                     }
 					
                     case ClassDescriptor.FieldType.tpObject: 
-                    {
-                        int oid = Bytes.unpack4(body, offs);
-                        writer.Write("<ref id=\"" + oid + "\"/>");
-                        if (oid != 0 && (exportedBitmap[oid >> 5] & (1 << (oid & 31))) == 0)
-                        {
-                            markedBitmap[oid >> 5] |= 1 << (oid & 31);
-                        }
+                        exportRef(Bytes.unpack4(body, offs));
                         offs += 4;
                         break;
-                    }
-					
+
                     case ClassDescriptor.FieldType.tpValue: 
                         writer.Write('\n');
                         offs = exportObject(fd.valueDesc, body, offs, indent + 1);

@@ -177,14 +177,6 @@ namespace Perst
         /// </returns>
         int Size();
 
-        /// <summary>
-        /// Number of objects in the collection
-        /// </summary>
-        int Count 
-        {
-            get;
-        }
-
         /// <summary> Remove all objects from the index
         /// </summary>
         void  Clear();

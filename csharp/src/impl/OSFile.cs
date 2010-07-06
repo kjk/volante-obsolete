@@ -26,7 +26,9 @@ namespace Perst.Impl
         public virtual void  Sync()
         {
             file.Flush();
+#if !COMPACT_NET_FRAMEWORK 
             FlushFileBuffers(file.Handle.ToInt32());
+#endif
         }
 		
         public virtual void  Close()

@@ -256,3 +256,7 @@ SpatialIndexR2 class provides iterator to accessed overlaped object one-by-one.
 1. Invoke Win32 FlushFileBuffers in addition to System.FileStream.Flush to 
 really flush changes to the disk. 
 2. Port to Mono compiler
+
+--- Release version 2.31 06.08.2004 -------------------------------------
+1. Add L2List and L2ListElem classes
+2. Fix bug in importing/exporting of raw fields introduced in version 2.23

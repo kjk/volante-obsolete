@@ -85,18 +85,11 @@ namespace Perst
         int        Size();
     
         /// <summary>
-        /// Number of objects in the collection
-        /// </summary>
-        int Count 
-        {
-            get;
-        }
-
-        /// <summary>
         /// Remove all objects from the collection
         /// </summary>
         ///
         void       Clear();
+ 
         /// <summary>
         /// Get all objects in the index as array ordered by index key.
         /// </summary>
