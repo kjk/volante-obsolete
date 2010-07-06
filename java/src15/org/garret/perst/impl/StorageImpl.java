@@ -2587,7 +2587,7 @@ public class StorageImpl implements Storage {
             ((FastSerializable)obj).unpack(body, ObjectHeader.sizeof, encoding);
         } else { 
             try { 
-                unpackObject(obj, desc, obj.recursiveLoading(), body, ObjectHeader.sizeof);
+                unpackObject(obj, desc, obj.recursiveLoading(), body, ObjectHeader.sizeof, obj);
             } catch (Exception x) { 
                 throw new StorageError(StorageError.ACCESS_VIOLATION, x);
             }
@@ -2613,7 +2613,7 @@ public class StorageImpl implements Storage {
         }
     }
 
-    final int unpackObject(Object obj, ClassDescriptor desc, boolean recursiveLoading, byte[] body, int offs) 
+    final int unpackObject(Object obj, ClassDescriptor desc, boolean recursiveLoading, byte[] body, int offs, IPersistent po) 
       throws Exception
     {
         ClassDescriptor.FieldDescriptor[] all = desc.allFields;
@@ -2655,7 +2655,7 @@ public class StorageImpl implements Storage {
                     } 
                     continue;
                 case ClassDescriptor.tpValue:
-                    offs = unpackObject(null, fd.valueDesc, recursiveLoading, body, offs);
+                    offs = unpackObject(null, fd.valueDesc, recursiveLoading, body, offs, po);
                     continue;
                 case ClassDescriptor.tpRaw:
                 case ClassDescriptor.tpArrayOfByte:
@@ -2717,7 +2717,7 @@ public class StorageImpl implements Storage {
                     if (len > 0) { 
                         ClassDescriptor valueDesc = fd.valueDesc;
                         for (int j = 0; j < len; j++) { 
-                            offs = unpackObject(null, valueDesc, recursiveLoading, body, offs);
+                            offs = unpackObject(null, valueDesc, recursiveLoading, body, offs, po);
                         }
                     }
                     continue;
@@ -2823,7 +2823,7 @@ public class StorageImpl implements Storage {
                 case ClassDescriptor.tpValue:
                 {
                     Object value = fd.valueDesc.newInstance();
-                    offs = unpackObject(value, fd.valueDesc, recursiveLoading, body, offs);
+                    offs = unpackObject(value, fd.valueDesc, recursiveLoading, body, offs ,po);
                     provider.set(f, obj, value);
                     continue;
                 }
@@ -3080,7 +3080,7 @@ public class StorageImpl implements Storage {
                         ClassDescriptor valueDesc = fd.valueDesc;
                         for (int j = 0; j < len; j++) { 
                             Object value = valueDesc.newInstance();
-                            offs = unpackObject(value, valueDesc, recursiveLoading, body, offs);
+                            offs = unpackObject(value, valueDesc, recursiveLoading, body, offs, po);
                             arr[j] = value;
                         }
                         provider.set(f, obj, arr);
@@ -3164,7 +3164,7 @@ public class StorageImpl implements Storage {
                                 arr[j] = new PersistentStub(this, elemOid);
                             }
                         }
-                        provider.set(f, obj, new LinkImpl(arr));
+                        provider.set(f, obj, new LinkImpl(arr, po));
                     }
                 }
             }
@@ -3173,7 +3173,7 @@ public class StorageImpl implements Storage {
     }
 
 
-    final byte[] packObject(Object obj) { 
+    final byte[] packObject(IPersistent obj) { 
         ByteBuffer buf = new ByteBuffer();
         int offs = ObjectHeader.sizeof;
         buf.extend(offs);
@@ -3182,7 +3182,7 @@ public class StorageImpl implements Storage {
             offs = ((FastSerializable)obj).pack(buf, offs, encoding);
         } else { 
             try {
-                offs = packObject(obj, desc, offs, buf);
+                offs = packObject(obj, desc, offs, buf, obj);
             } catch (Exception x) { 
                 throw new StorageError(StorageError.ACCESS_VIOLATION, x);
             }        
@@ -3267,7 +3267,7 @@ public class StorageImpl implements Storage {
     }
 
 
-    final int packObject(Object obj, ClassDescriptor desc, int offs, ByteBuffer buf) throws Exception 
+    final int packObject(Object obj, ClassDescriptor desc, int offs, ByteBuffer buf, IPersistent po) throws Exception 
     { 
         ClassDescriptor.FieldDescriptor[] flds = desc.allFields;
         for (int i = 0, n = flds.length; i < n; i++) {
@@ -3351,7 +3351,7 @@ public class StorageImpl implements Storage {
                     } else if (value instanceof IPersistent) { 
                         throw new StorageError(StorageError.SERIALIZE_PERSISTENT);
                     }                        
-                    offs = packObject(value, fd.valueDesc, offs, buf);
+                    offs = packObject(value, fd.valueDesc, offs, buf, po);
                     continue;
                 }
                 case ClassDescriptor.tpRaw:
@@ -3605,7 +3605,7 @@ public class StorageImpl implements Storage {
                             if (value == null) { 
                                 throw new StorageError(StorageError.NULL_VALUE, fd.fieldName);
                             }
-                            offs = packObject(value, elemDesc, offs, buf);
+                            offs = packObject(value, elemDesc, offs, buf, po);
                         }
                     }
                     continue;
@@ -3630,12 +3630,13 @@ public class StorageImpl implements Storage {
                 }
                 case ClassDescriptor.tpLink:
                 {
-                    Link link = (Link)f.get(obj);
+                    LinkImpl link = (LinkImpl)f.get(obj);
                     if (link == null) { 
                         buf.extend(offs + 4);
                         Bytes.pack4(buf.arr, offs, -1);
                         offs += 4;
                     } else {
+                        link.owner = po;
                         int len = link.size();                        
                         buf.extend(offs + 4 + len*4);
                         Bytes.pack4(buf.arr, offs, len);

@@ -4,6 +4,12 @@ import  java.util.*;
 import  java.lang.reflect.Array;
 
 public class LinkImpl<T extends IPersistent> implements Link<T> { 
+    private final void modify() { 
+        if (owner != null) { 
+            owner.modify();
+        }
+    }
+
     public int size() {
         return used;
     }
@@ -52,6 +58,7 @@ public class LinkImpl<T extends IPersistent> implements Link<T> {
             throw new IndexOutOfBoundsException();
         }
         arr[i] = obj;
+        modify();
     }
 
     public boolean isEmpty() {
@@ -65,6 +72,7 @@ public class LinkImpl<T extends IPersistent> implements Link<T> {
         used -= 1;
         System.arraycopy(arr, i+1, arr, i, used-i);
         arr[used] = null;
+        modify();
     }
 
     void reserveSpace(int len) { 
@@ -73,6 +81,7 @@ public class LinkImpl<T extends IPersistent> implements Link<T> {
             System.arraycopy(arr, 0, newArr, 0, used);
             arr = newArr;
         }
+        modify();
     }
 
     public void insert(int i, T obj) { 
@@ -173,6 +182,7 @@ public class LinkImpl<T extends IPersistent> implements Link<T> {
             arr[i] = null;
         }
         used = 0;
+        modify();
     }
 
     static class LinkIterator<T extends IPersistent> implements Iterator<T> { 
@@ -272,11 +282,13 @@ public class LinkImpl<T extends IPersistent> implements Link<T> {
         arr = new IPersistent[initSize];
     }
 
-    LinkImpl(T[] arr) { 
+    LinkImpl(T[] arr, IPersistent owner) { 
         this.arr = arr;
+        this.owner = owner;
         used = arr.length;
     }
 
     IPersistent[] arr;
     int           used;
+    transient IPersistent owner;
 }

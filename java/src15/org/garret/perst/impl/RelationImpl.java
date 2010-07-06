@@ -17,11 +17,7 @@ public class RelationImpl<M extends IPersistent, O extends IPersistent> extends 
     }
     
     public boolean remove(Object o) {
-        if (link.remove(o)) { 
-            modify();
-            return true;
-        }
-        return false;
+        return link.remove(o);
     }
 
     public M get(int i) {
@@ -34,40 +30,30 @@ public class RelationImpl<M extends IPersistent, O extends IPersistent> extends 
 
     public void set(int i, M obj) {
         link.set(i, obj);
-        modify();
     }
 
     public void remove(int i) {
         link.remove(i);
-        modify();
     }
 
     public void insert(int i, M obj) {
         link.insert(i, obj);
-        modify();
     }
 
     public boolean add(M obj) {
-        modify();
         return link.add(obj);
     }
 
     public void addAll(M[] arr) {
         link.addAll(arr);
-        modify();
     }
 
     public void addAll(M[] arr, int from, int length) {
         link.addAll(arr, from, length);
-        modify();
     }
 
     public boolean addAll(Link<M> anotherLink) {
-        if (link.addAll(anotherLink)) { 
-            modify();
-            return true;
-        }
-        return false;
+        return link.addAll(anotherLink); 
     }
 
     public IPersistent[] toPersistentArray() {
@@ -96,7 +82,6 @@ public class RelationImpl<M extends IPersistent, O extends IPersistent> extends 
        
     public void clear() {
         link.clear();
-        modify();
     }
 
     public Iterator<M> iterator() {
@@ -113,27 +98,15 @@ public class RelationImpl<M extends IPersistent, O extends IPersistent> extends 
     }
 
     public boolean addAll(Collection<? extends M> c) {
-        if (link.addAll(c)) { 
-            modify();
-            return true;
-        }
-        return false;
+        return link.addAll(c);
     }
 
     public boolean removeAll(Collection<?> c) {
-        if (link.removeAll(c)) { 
-            modify();
-            return true;
-        }
-        return false;            
+        return link.removeAll(c);
     }
 
     public boolean retainAll(Collection<?> c) {
-        if (link.retainAll(c)) { 
-            modify();
-            return true;
-        }
-        return false;            
+        return link.retainAll(c);
     }
 
     public void pin() { 

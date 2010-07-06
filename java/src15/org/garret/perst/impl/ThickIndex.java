@@ -250,12 +250,12 @@ class ThickIndex<T extends IPersistent> extends PersistentCollection<T> implemen
             Relation<T,ThickIndex> r = getStorage().<T,ThickIndex>createRelation(null);
             r.add(obj);
             index.put(key, r);
-        } else if (s instanceof Relation<T,ThickIndex>) { 
-            Relation<T,ThickIndex> r = (Relation<T,ThickIndex>)s;
+        } else if (s instanceof Relation) { 
+            Relation r = (Relation)s;
             if (r.size() == BTREE_THRESHOLD) {
                 IPersistentSet<T> ps = getStorage().<T>createSet();
                 for (int i = 0; i < BTREE_THRESHOLD; i++) { 
-                    ps.add(r.get(i));
+                    ps.add((T)r.get(i));
                 }
                 ps.add(obj);
                 index.set(key, ps);
@@ -280,12 +280,12 @@ class ThickIndex<T extends IPersistent> extends PersistentCollection<T> implemen
             nElems += 1;
             modify();
             return null;
-        } else if (s instanceof Relation<T,ThickIndex>) { 
-            Relation<T,ThickIndex> r = (Relation<T,ThickIndex>)s;
+        } else if (s instanceof Relation) { 
+            Relation r = (Relation)s;
             if (r.size() == 1) {
-                T prev = r.get(0);
+                IPersistent prev = r.get(0);
                 r.set(0, obj);
-                return prev;
+                return (T)prev;
             } 
         }
         throw new StorageError(StorageError.KEY_NOT_UNIQUE);
@@ -293,8 +293,8 @@ class ThickIndex<T extends IPersistent> extends PersistentCollection<T> implemen
 
     public void remove(Key key, T obj) { 
         IPersistent s = index.get(key);
-        if (s instanceof Relation<T,ThickIndex>) { 
-            Relation<T,ThickIndex> r = (Relation<T,ThickIndex>)s;
+        if (s instanceof Relation) { 
+            Relation r = (Relation)s;
             int i = r.indexOf(obj);
             if (i >= 0) { 
                 r.remove(i);
@@ -306,8 +306,8 @@ class ThickIndex<T extends IPersistent> extends PersistentCollection<T> implemen
                 modify();
                 return;
             }
-        } else if (s instanceof IPersistentSet<T>) { 
-            IPersistentSet<T> ps = (IPersistentSet<T>)s;
+        } else if (s instanceof IPersistentSet) { 
+            IPersistentSet ps = (IPersistentSet)s;
             if (ps.remove(obj)) { 
                 if (ps.size() == 0) { 
                     index.remove(key, ps);

@@ -4,6 +4,12 @@ import  java.util.*;
 import  java.lang.reflect.Array;
 
 public class LinkImpl implements Link { 
+    private final void modify() { 
+        if (owner != null) { 
+            owner.modify();
+        }
+    }
+
     public int size() {
         return used;
     }
@@ -43,6 +49,7 @@ public class LinkImpl implements Link {
             throw new IndexOutOfBoundsException();
         }
         arr[i] = obj;
+        modify();
     }
 
     public void remove(int i) {
@@ -52,6 +59,7 @@ public class LinkImpl implements Link {
         used -= 1;
         System.arraycopy(arr, i+1, arr, i, used-i);
         arr[used] = null;
+        modify();
     }
 
     public void setSize(int newSize) { 
@@ -61,6 +69,7 @@ public class LinkImpl implements Link {
             reserveSpace(newSize - used);            
         }
         used = newSize;
+        modify();
     }
 
     void reserveSpace(int len) { 
@@ -69,6 +78,7 @@ public class LinkImpl implements Link {
             System.arraycopy(arr, 0, newArr, 0, used);
             arr = newArr;
         }
+        modify();
     }
 
     public void insert(int i, IPersistent obj) { 
@@ -163,6 +173,7 @@ public class LinkImpl implements Link {
             arr[i] = null;
         }
         used = 0;
+        modify();
     }
 
     static class LinkIterator implements Iterator { 
@@ -209,11 +220,13 @@ public class LinkImpl implements Link {
         this.arr = new IPersistent[initSize];
     }
 
-    LinkImpl(IPersistent[] arr) { 
+    LinkImpl(IPersistent[] arr, IPersistent owner) { 
         this.arr = arr;
+        this.owner = owner;
         used = arr.length;
     }
 
     IPersistent[] arr;
     int           used;
+    transient IPersistent owner;
 }

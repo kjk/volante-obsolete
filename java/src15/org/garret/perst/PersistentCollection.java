@@ -1,4 +1,4 @@
-package org.garret.perst.impl;
+package org.garret.perst;
 import  org.garret.perst.*;
 import  java.util.*;
 

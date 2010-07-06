@@ -21,37 +21,30 @@ public class RelationImpl extends Relation {
 
     public void set(int i, IPersistent obj) {
         link.set(i, obj);
-        modify();
     }
 
     public void remove(int i) {
         link.remove(i);
-        modify();
     }
 
     public void insert(int i, IPersistent obj) {
         link.insert(i, obj);
-        modify();
     }
 
     public void add(IPersistent obj) {
         link.add(obj);
-        modify();
     }
 
     public void addAll(IPersistent[] arr) {
         link.addAll(arr);
-        modify();
     }
 
     public void addAll(IPersistent[] arr, int from, int length) {
         link.addAll(arr, from, length);
-        modify();
     }
 
     public void addAll(Link anotherLink) {
         link.addAll(anotherLink);
-        modify();
     }
 
     public IPersistent[] toArray() {
@@ -80,7 +73,6 @@ public class RelationImpl extends Relation {
 
     public void clear() {
         link.clear();
-        modify();
     }
 
     public Iterator iterator() {
