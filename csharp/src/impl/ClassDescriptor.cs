@@ -276,7 +276,7 @@ namespace Perst.Impl
                 }
             }
             defaultConstructor = cls.GetConstructor(BindingFlags.Instance|BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic|BindingFlags.DeclaredOnly, null, defaultConstructorProfile, null);
-            if (defaultConstructor == null) 
+            if (defaultConstructor == null && !typeof(ValueType).IsAssignableFrom(cls)) 
             { 
                 throw new StorageError(StorageError.ErrorCode.DESCRIPTOR_FAILURE, cls);
             }

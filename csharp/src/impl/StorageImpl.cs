@@ -814,6 +814,7 @@ namespace Perst.Impl
 				
                 objectCache = new WeakHashTable(dbObjectCacheInitSize);
                 classDescMap = new Hashtable();
+                modifiedList = new ArrayList();
                 descList = null;
 				
                 FileIO file = new FileIO(filePath);
@@ -1022,6 +1023,11 @@ namespace Perst.Impl
                 {
                     throw new StorageError(StorageError.ErrorCode.STORAGE_NOT_OPENED);
                 }
+                foreach (IPersistent p in modifiedList) {
+                    p.store();
+                }
+                modifiedList.Clear();
+                
                 if (modified)
                 {
                     int curr = currIndex;
@@ -1202,6 +1208,11 @@ namespace Perst.Impl
                 {
                     throw new StorageError(StorageError.ErrorCode.STORAGE_NOT_OPENED);
                 }
+                modifiedList.Clear();
+                if (!modified) 
+                { 
+                    return;
+                }
                 int curr = currIndex;
                 int[] map = dirtyPagesMap;
                 if (header.root[1 - curr].index != header.root[curr].shadowIndex)
@@ -1249,7 +1260,23 @@ namespace Perst.Impl
                 {
                     throw new StorageError(StorageError.ErrorCode.STORAGE_NOT_OPENED);
                 }
-                return new Btree(keyType, unique);
+                Btree index = new Btree(keyType, unique);
+                setObjectOid(index, 0, false);
+                return index;
+            }
+        }
+        
+        public override SpatialIndex createSpatialIndex() 
+        {
+            lock(this)
+            {
+                if (!opened)
+                {
+                    throw new StorageError(StorageError.ErrorCode.STORAGE_NOT_OPENED);
+                }
+                Rtree index = new Rtree();
+                setObjectOid(index, 0, false);
+                return index;
             }
         }
 		
@@ -1261,7 +1288,9 @@ namespace Perst.Impl
                 {
                     throw new StorageError(StorageError.ErrorCode.STORAGE_NOT_OPENED);
                 }
-                return new BtreeFieldIndex(type, fieldName, unique);
+                BtreeFieldIndex index = new BtreeFieldIndex(type, fieldName, unique);
+                setObjectOid(index, 0, false);
+                return index;
             }
         }
 		
@@ -1554,8 +1583,16 @@ namespace Perst.Impl
             }
         }
 		
+        protected internal override void modifyObject(IPersistent obj) 
+        {
+            lock(this)
+            {
+                Assert.that(!obj.isModified());
+                modifiedList.Add(obj);
+            }
+        }
 		
-        protected internal override void  storeObject(IPersistent obj)
+        protected internal override void storeObject(IPersistent obj)
         {
             lock(this)
             {
@@ -2815,6 +2852,7 @@ namespace Perst.Impl
         internal bool      gcDone;
         internal int       btreeClassOid;
 
+        internal ArrayList modifiedList;
         internal WeakHashTable objectCache;
         internal Hashtable classDescMap;
         internal ClassDescriptor descList;

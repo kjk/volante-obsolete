@@ -1,6 +1,7 @@
 namespace Perst
 {
     using System;
+    using System.Collections;
 	
     /// <summary> Interface of object index.
     /// Index is used to provide fast access to the object by key. 
@@ -10,7 +11,7 @@ namespace Perst
     /// (each boundary can be specified or unspecified and can be inclusive or exclusive)
     /// Key should be of scalar, String, java.util.Date or peristent object type.
     /// </summary>
-    public interface Index : IPersistent, IResource
+    public interface Index : IPersistent, IResource, IEnumerable
     {
         /// <summary> Get object by key (exact match)     
         /// </summary>
@@ -18,7 +19,7 @@ namespace Perst
         /// </param>
         /// <returns>object with this value of the key or <code>null</code> if key nmot found
         /// </returns>
-        /// <exception cref="">StorageError(StorageError.ErrorCode.KEY_NOT_UNIQUE) exception if there are more than 
+        /// <exception cref="StorageError">StorageError(StorageError.ErrorCode.KEY_NOT_UNIQUE) exception if there are more than 
         /// one objects in the index with specified value of the key.
         /// 
         /// </exception>
@@ -65,7 +66,7 @@ namespace Perst
         /// </param>
         /// <param name="obj">object removed from the index
         /// </param>
-        /// <exception cref="">StorageError(StorageError.ErrorCode.KEY_NOT_FOUND) exception if there is no such key in the index
+        /// <exception cref="StorageError">StorageError(StorageError.ErrorCode.KEY_NOT_FOUND) exception if there is no such key in the index
         /// 
         /// </exception>
         void  remove(Key key, IPersistent obj);
@@ -73,7 +74,7 @@ namespace Perst
         /// </summary>
         /// <param name="key">value of removed key
         /// </param>
-        /// <exception cref="">StorageError(StorageError.ErrorCode.KEY_NOT_FOUND) exception if there is no such key in the index,
+        /// <exception cref="StorageError">StorageError(StorageError.ErrorCode.KEY_NOT_FOUND) exception if there is no such key in the index,
         /// or StorageError(StorageError.ErrorCode.KEY_NOT_UNIQUE) if index is not unique.
         /// 
         /// </exception>

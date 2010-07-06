@@ -240,5 +240,122 @@ namespace Perst.Impl
                 BtreePage.markPage((StorageImpl)Storage, root, type, height);
             }
         }        
+
+        class BtreeEnumerator : IEnumerator { 
+            internal BtreeEnumerator(StorageImpl db, int pageId, int height) 
+            { 
+                this.db = db;
+                pageStack = new int[height];
+                posStack =  new int[height];
+                sp = 0;
+                rootId = pageId;
+                while (--height >= 0) 
+                { 
+                    posStack[sp] = 0;
+                    pageStack[sp] = pageId;
+                    Page pg = db.getPage(pageId);
+                    pageId = getReference(pg, 0);
+                    end = BtreePage.getnItems(pg);
+                    db.pool.unfix(pg);
+                    sp += 1;
+                }
+            }
+
+            protected virtual int getReference(Page pg, int pos) 
+            { 
+                return BtreePage.getReference(pg, BtreePage.maxItems-1-pos);
+            }
+
+            public bool MoveNext() {
+                return sp > 0 && posStack[sp-1] < end;
+            }
+
+            public object Current 
+            {
+                get 
+                {
+                    if (sp == 0 || posStack[sp-1] >= end) 
+                    { 
+                        throw new InvalidOperationException();
+                    }
+                    int pos = posStack[sp-1];   
+                    Page pg = db.getPage(pageStack[sp-1]);
+                    int oid = getReference(pg, pos);        
+                    Object obj = db.lookupObject(oid, null);
+                    if (++pos == end) 
+                    { 
+                        while (--sp != 0) 
+                        { 
+                            db.pool.unfix(pg);
+                            pos = posStack[sp-1];
+                            pg = db.getPage(pageStack[sp-1]);
+                            if (++pos <= BtreePage.getnItems(pg)) 
+                            {
+                                posStack[sp-1] = pos;
+                                do 
+                                { 
+                                    int pageId = getReference(pg, pos);
+                                    db.pool.unfix(pg);
+                                    pg = db.getPage(pageId);
+                                    end = BtreePage.getnItems(pg);
+                                    pageStack[sp] = pageId;
+                                    posStack[sp] = pos = 0;
+                                } while (++sp < pageStack.Length);
+                                break;
+                            }
+                        }
+                    } 
+                    else 
+                    {
+                        posStack[sp-1] = pos;
+                    }
+                    db.pool.unfix(pg);
+                    return obj;
+                }
+            }
+
+            public void Reset() 
+            {
+                sp = 0;
+                int pageId = rootId;
+                for (int height = pageStack.Length; --height >= 0;) 
+                { 
+                    posStack[sp] = 0;
+                    pageStack[sp] = pageId;
+                    Page pg = db.getPage(pageId);
+                    pageId = getReference(pg, 0);
+                    end = BtreePage.getnItems(pg);
+                    db.pool.unfix(pg);
+                    sp += 1;
+                }
+            }
+
+            StorageImpl db;
+            int         rootId;
+            int[]       pageStack;
+            int[]       posStack;
+            int         sp;
+            int         end;
+        }
+
+        class BtreeStrEnumerator : BtreeEnumerator 
+        { 
+            internal BtreeStrEnumerator(StorageImpl db, int pageId, int height) 
+              : base(db, pageId, height)
+            {
+            }
+
+            protected override int getReference(Page pg, int pos) 
+            { 
+                return BtreePage.getKeyStrOid(pg, pos);
+            }
+        }
+
+        public IEnumerator GetEnumerator() 
+        { 
+            return type == ClassDescriptor.FieldType.tpString 
+                ? new BtreeStrEnumerator((StorageImpl)Storage, root, height)
+                : new BtreeEnumerator((StorageImpl)Storage, root, height);
+        }
     }
 }

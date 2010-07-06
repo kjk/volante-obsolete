@@ -21,3 +21,9 @@ Initial release
 
 --- Release version 1.06 09.04.2003 -------------------------------------
 1. Add obejct level locking
+
+--- Release version 1.07 18.04.2003 -------------------------------------
+1. Add Persistent.modify method, allowing to mark object as dirty. 
+Object will be automatically saved during transaction commit.
+2. Add index iterator.
+3. Add spatial index.

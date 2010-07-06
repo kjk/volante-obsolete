@@ -99,12 +99,12 @@ namespace Perst
         /// lock can not be granted, the request will fail immediately. Otherwise the system will try
         /// to grant lock within specified amount of time.
         /// </param>
-        /// <returns></returns>
+        /// <returns>
         /// <DL>
         /// <DT><code>true</code> if lock is successfully granted</DT>
         /// <DT><code>false</code> if lock can not be granted within specified time</DT>
         /// </DL>
-        /// </returs>
+        /// </returns>
         bool exclusiveLock(long timeout);
 
         /// <summary>

@@ -44,6 +44,13 @@ namespace Perst
         /// </returns>
         bool isPersistent();
 
+        /// <summary> Check if object was modified within current transaction
+        /// </summary>
+        /// <returns><code>true</code> if object is persistent and was modified within current transaction
+        /// 
+        /// </returns>
+        bool isModified();
+
         /// <summary> Explicitely make object peristent. Usually objects are made persistent
         /// implicitlely using "persistency on reachability apporach", but this
         /// method allows to do it explicitly 
@@ -53,10 +60,15 @@ namespace Perst
         /// </param>
         void  makePersistent(Storage storage);
 
-        /// <summary> save object in the database
+        /// <summary> Save object in the database
         /// </summary>
         void  store();
 
+        /// <summary>
+        /// Mark object as modified. Object will be saved to the database during transaction commit.
+        /// </summary>
+        void modify();
+    
         /// <summary> Deallocate persistent object from the database
         /// </summary>
         void  deallocate();

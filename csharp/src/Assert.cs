@@ -8,9 +8,7 @@ namespace Perst
     /// by analyzing the stack trace of the thrown AssertionFailed exception.
     /// *
     /// </summary>
-    /// <seealso cref=" org.garret.perst.AssertionFailed
-    /// 
-    /// "/>
+    /// <seealso cref="Perst.AssertionFailed"/>
     public class Assert
     {
         /// <summary>Check specified condition and raise <code>AssertionFailed</code>

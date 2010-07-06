@@ -26,7 +26,7 @@
                     CheckForOverflowUnderflow = "false"
                     ConfigurationOverrideFile = ""
                     DefineConstants = ""
-                    DocumentationFile = ""
+                    DocumentationFile = "doc\perst.xml"
                     DebugSymbols = "true"
                     FileAlignment = "4096"
                     IncrementalBuild = "true"
@@ -68,7 +68,7 @@
                 />
                 <Reference
                     Name = "System.XML"
-                    AssemblyName = "System.XML"
+                    AssemblyName = "System.Xml"
                     HintPath = "..\WINNT\Microsoft.NET\Framework\v1.0.3705\System.XML.dll"
                 />
             </References>
@@ -131,7 +131,17 @@
                     BuildAction = "Compile"
                 />
                 <File
+                    RelPath = "src\Rectangle.cs"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
                     RelPath = "src\Relation.cs"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "src\SpatialIndex.cs"
                     SubType = "Code"
                     BuildAction = "Compile"
                 />
@@ -217,6 +227,16 @@
                 />
                 <File
                     RelPath = "src\impl\RelationImpl.cs"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "src\impl\Rtree.cs"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "src\impl\RtreePage.cs"
                     SubType = "Code"
                     BuildAction = "Compile"
                 />

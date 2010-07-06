@@ -21,6 +21,7 @@ public class TestIndex
 	
     static public void  Main(System.String[] args)
     {
+        int i;
         Storage db = StorageFactory.Instance.createStorage();
 		
         db.open("testidx.dbs", pagePoolSize);
@@ -36,7 +37,7 @@ public class TestIndex
         Index strIndex = root.strIndex;
         DateTime start = DateTime.Now;
         long key = 1999;
-        for (int i = 0; i < nRecords; i++)
+        for (i = 0; i < nRecords; i++)
         {
             Record rec = new Record();
             key = (3141592621L * key + 2718281829L) % 1000000007L;
@@ -50,7 +51,7 @@ public class TestIndex
 		
         start = System.DateTime.Now;
         key = 1999;
-        for (int i = 0; i < nRecords; i++)
+        for (i = 0; i < nRecords; i++)
         {
             key = (3141592621L * key + 2718281829L) % 1000000007L;
             Record rec1 = (Record) intIndex.get(new Key(key));
@@ -58,10 +59,31 @@ public class TestIndex
             Assert.that(rec1 != null && rec1 == rec2);
         }
         System.Console.Out.WriteLine("Elapsed time for performing " + nRecords * 2 + " index searches: " + (DateTime.Now - start));
-		
+
+        start = System.DateTime.Now;
+        key = Int64.MinValue;
+        i = 0;
+        foreach (Record rec in intIndex) 
+        {
+            Assert.that(rec.intKey >= key);
+            key = rec.intKey;
+            i += 1;
+        }
+        Assert.that(i == nRecords);
+        i = 0;
+        String strKey = "";
+        foreach (Record rec in strIndex) 
+        {
+            Assert.that(rec.strKey.CompareTo(strKey) >= 0);
+            strKey = rec.strKey;
+            i += 1;
+        }
+        Assert.that(i == nRecords);
+        System.Console.Out.WriteLine("Elapsed time for iteration through " + (nRecords * 2) + " records: " + (DateTime.Now - start));
+
         start = System.DateTime.Now;
         key = 1999;
-        for (int i = 0; i < nRecords; i++)
+        for (i = 0; i < nRecords; i++)
         {
             key = (3141592621L * key + 2718281829L) % 1000000007L;
             Record rec = (Record) intIndex.get(new Key(key));

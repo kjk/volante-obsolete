@@ -63,7 +63,7 @@ namespace Perst
         /// </param>
         /// <returns>persistent object implementing index
         /// </returns>
-        /// <exception cref="">StorageError(StorageError.ErrorCode.UNSUPPORTED_INDEX_TYPE) exception if 
+        /// <exception cref="StorageError">StorageError(StorageError.ErrorCode.UNSUPPORTED_INDEX_TYPE) exception if 
         /// specified key type is not supported by implementation.
         /// 
         /// </exception>
@@ -71,6 +71,7 @@ namespace Perst
 		
         /// <summary> 
         /// Create new field index
+        /// </summary>
         /// <param name="type">objects of which type (or derived from which type) will be included in the index
         /// </param>
         /// <param name="fieldName">name of the index field. Field with such name should be present in specified class <code>type</code>
@@ -79,11 +80,19 @@ namespace Perst
         /// </param>
         /// <returns>persistent object implementing field index
         /// </returns>
-        /// <exception cref="">StorageError(StorageError.INDEXED_FIELD_NOT_FOUND) if there is no such field in specified class,<BR> 
+        /// <exception cref="StorageError">StorageError(StorageError.INDEXED_FIELD_NOT_FOUND) if there is no such field in specified class,
         /// StorageError(StorageError.UNSUPPORTED_INDEX_TYPE) exception if type of specified field is not supported by implementation
         /// </exception>
         abstract public FieldIndex createFieldIndex(System.Type type, String fieldName, bool unique);
 		
+        /// <summary>
+        /// Create new spatial index
+        /// </summary>
+        /// <returns>
+        /// persistent object implementing spatial index
+        /// </returns>
+        abstract public SpatialIndex createSpatialIndex();
+
         /// <summary> Create one-to-many link.
         /// </summary>
         /// <returns>new empty link, new members can be added to the link later.
@@ -131,12 +140,14 @@ namespace Perst
 		
         abstract protected internal void  loadObject(IPersistent obj);
 		
+        abstract protected internal void  modifyObject(IPersistent obj);
+		
         protected internal void  setObjectOid(IPersistent obj, int oid, bool raw)
         {
             Persistent po = (Persistent) obj;
             po.oid = oid;
             po.storage = this;
-            po.raw = raw;
+            po.state = raw ? (int)Persistent.ObjectState.RAW : 0;
         }
     }
 }

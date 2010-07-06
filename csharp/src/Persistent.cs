@@ -31,11 +31,16 @@ namespace Perst
             }
         }
 		
-        public bool isRaw()
-        {
-            return raw;
-        }
-		
+        public bool isRaw() 
+        { 
+            return (state & (int)ObjectState.RAW) != 0;
+        } 
+    
+        public bool isModified() 
+        { 
+            return (state & (int)ObjectState.DIRTY) != 0;
+        } 
+ 
         public bool isPersistent()
         {
             return oid != 0;
@@ -51,20 +56,37 @@ namespace Perst
 		
         public virtual void  store()
         {
-            if (raw)
+            if ((state & (int)ObjectState.RAW) != 0)
             {
                 throw new StorageError(StorageError.ErrorCode.ACCESS_TO_STUB);
             }
             if (storage != null) 
             {
                 storage.storeObject(this);
+                state &= ~(int)ObjectState.DIRTY;
             }
         }
 		
-		
+        public void modify() 
+        { 
+            if ((state & (int)ObjectState.DIRTY) == 0 && storage != null) 
+            { 
+                if ((state & (int)ObjectState.RAW) != 0) 
+                { 
+                    throw new StorageError(StorageError.ErrorCode.ACCESS_TO_STUB);
+                }
+                storage.modifyObject(this);
+                state |= (int)ObjectState.DIRTY;
+            }
+        }
+
         public virtual void  deallocate()
         {
-            storage.deallocateObject(this);
+            if (storage != null) 
+            {
+                storage.deallocateObject(this);
+                storage = null;
+            }
         }
 		
         public virtual bool recursiveLoading()
@@ -92,6 +114,12 @@ namespace Perst
         [NonSerialized()]
         internal int oid;
         [NonSerialized()]
-        internal bool raw;
+        internal int state;
+
+        internal enum ObjectState 
+        {
+            RAW=1,
+            DIRTY=2
+        }
     }
 }

@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestGC", "TestGC\TestGC.csp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestConcur", "TestConcur\TestConcur.csproj", "{E26C8776-CE2C-443D-805F-70E5D1E357BB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestRtree", "TestRtree\TestRtree.csproj", "{78B5C149-7F09-4112-9C5D-A5F3D50A2709}"
+EndProject
 Global
 	GlobalSection(SolutionConfiguration) = preSolution
 		ConfigName.0 = Debug
@@ -49,6 +51,10 @@ Global
 		{E26C8776-CE2C-443D-805F-70E5D1E357BB}.Debug.Build.0 = Debug|.NET
 		{E26C8776-CE2C-443D-805F-70E5D1E357BB}.Release.ActiveCfg = Release|.NET
 		{E26C8776-CE2C-443D-805F-70E5D1E357BB}.Release.Build.0 = Release|.NET
+		{78B5C149-7F09-4112-9C5D-A5F3D50A2709}.Debug.ActiveCfg = Debug|.NET
+		{78B5C149-7F09-4112-9C5D-A5F3D50A2709}.Debug.Build.0 = Debug|.NET
+		{78B5C149-7F09-4112-9C5D-A5F3D50A2709}.Release.ActiveCfg = Release|.NET
+		{78B5C149-7F09-4112-9C5D-A5F3D50A2709}.Release.Build.0 = Release|.NET
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 	EndGlobalSection
