@@ -203,6 +203,13 @@ public abstract class Storage {
     abstract public Index createIndex(Class type, boolean unique);
 
     /**
+     * Create new bit index. Bit index is used to select object 
+     * with specified set of (boolean) properties.
+     * @return persistent object implementing bit index
+     */
+    abstract public BitIndex createBitIndex();
+
+    /**
      * Create new field index
      * @param type objects of which type (or derived from which type) will be included in the index
      * @param fieldName name of the index field. Field with such name should be present in specified class <code>type</code>

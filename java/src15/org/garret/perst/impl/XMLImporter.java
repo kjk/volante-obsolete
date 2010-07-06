@@ -449,7 +449,11 @@ public class XMLImporter {
                     throwException("Key type is not specified for index");
                 }
             } else { 
-                btree = new Btree(mapType(type), unique);
+                if (indexType.equals("org.garret.perst.impl.BitIndexImpl")) { 
+                    btree = new BitIndexImpl();
+                } else { 
+                    btree = new Btree(mapType(type), unique);
+                }
             }
         }
         storage.assignOid(btree, oid);
@@ -461,7 +465,8 @@ public class XMLImporter {
                 throwException("<ref> element expected");
             }   
             XMLElement ref = readElement("ref");
-            Key key;
+            Key key = null;
+            int mask = 0;
             if (fieldNames != null) { 
                 String[] values = new String[fieldNames.length];                
                 int[] types = ((BtreeMultiFieldIndex)btree).types;
@@ -470,10 +475,18 @@ public class XMLImporter {
                 }
                 key = createCompoundKey(types, values);
             } else { 
-                key = createKey(btree.type, getAttribute(ref, "key"));
+                if (btree instanceof BitIndex) { 
+                    mask = getIntAttribute(ref, "key");
+                } else { 
+                    key = createKey(btree.type, getAttribute(ref, "key"));
+                }
             }
             IPersistent obj = new PersistentStub(storage, mapId(getIntAttribute(ref, "id")));
-            btree.insert(key, obj, false);
+            if (btree instanceof BitIndex) { 
+                ((BitIndex)btree).put(obj, mask);
+            } else { 
+                btree.insert(key, obj, false);
+            } 
         }
         if (tkn != XMLScanner.XML_LTS 
             || scanner.scan() != XMLScanner.XML_IDENT

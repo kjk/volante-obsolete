@@ -32,3 +32,5 @@ call TestBackup
 call TestBlob
 call TestBlob
 call TestTimeSeries
+call TestBit
+

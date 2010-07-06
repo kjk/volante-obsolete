@@ -1471,6 +1471,15 @@ public class StorageImpl extends Storage {
         return index;
     }
 
+    public synchronized BitIndex createBitIndex() {
+        if (!opened) { 
+            throw new StorageError(StorageError.STORAGE_NOT_OPENED);
+        }
+        BitIndex index = new BitIndexImpl();
+        index.assignOid(this, 0, false);
+        return index;
+    }
+
     public synchronized SpatialIndex createSpatialIndex() {
         if (!opened) { 
             throw new StorageError(StorageError.STORAGE_NOT_OPENED);

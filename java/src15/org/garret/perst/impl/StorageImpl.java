@@ -1460,6 +1460,15 @@ public class StorageImpl extends Storage {
         return set;
     }
         
+    public synchronized <T extends IPersistent> BitIndex<T> createBitIndex() {
+        if (!opened) { 
+            throw new StorageError(StorageError.STORAGE_NOT_OPENED);
+        }
+        BitIndex index = new BitIndexImpl<T>();
+        index.assignOid(this, 0, false);
+        return index;
+    }
+
     public synchronized <T extends IPersistent> Index<T> createIndex(Class keyType, boolean unique) {
         if (!opened) { 
             throw new StorageError(StorageError.STORAGE_NOT_OPENED);

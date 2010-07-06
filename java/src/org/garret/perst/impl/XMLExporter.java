@@ -33,7 +33,9 @@ public class XMLExporter {
                             int typeOid = ObjectHeader.getType(obj, 0);                
                             ClassDescriptor desc = storage.findClassDescriptor(typeOid);
                             if (desc.cls == Btree.class) { 
-                                exportIndex(oid, obj);
+                                exportIndex(oid, obj, "org.garret.perst.impl.Btree");
+                            } else if (desc.cls == BitIndexImpl.class) { 
+                                exportIndex(oid, obj, "org.garret.perst.impl.BitIndexImpl");
                             } else if (desc.cls == PersistentSet.class) { 
                                 exportSet(oid, obj);
                             } else if (desc.cls == BtreeFieldIndex.class) { 
@@ -69,14 +71,14 @@ public class XMLExporter {
         writer.write(" </org.garret.perst.impl.PersistentSet>\n");
     }
 
-    final void exportIndex(int oid,  byte[] data) throws IOException 
+    final void exportIndex(int oid, byte[] data, String name) throws IOException 
     { 
         Btree btree = new Btree(data, ObjectHeader.sizeof);
         storage.assignOid(btree, oid);
-        writer.write(" <org.garret.perst.impl.Btree id=\"" + oid + "\" unique=\"" + (btree.unique ? '1' : '0') 
+        writer.write(" <" + name + " id=\"" + oid + "\" unique=\"" + (btree.unique ? '1' : '0') 
                      + "\" type=\"" + ClassDescriptor.signature[btree.type] + "\">\n");
         btree.export(this);
-        writer.write(" </org.garret.perst.impl.Btree>\n");
+        writer.write(" </" + name + ">\n");
     }
 
     final void exportFieldIndex(int oid,  byte[] data) throws IOException
