@@ -17,6 +17,8 @@ TestTtree\bin\debug\TestTtree
 TestRaw\bin\debug\TestRaw
 TestRaw\bin\debug\TestRaw
 TestGC\bin\debug\TestGC
+TestGC\bin\debug\TestGC background
+TestGC\bin\debug\TestGC background altbtree
 TestConcur\bin\debug\TestConcur
 TestXML\bin\debug\TestXML
 TestBackup\bin\debug\TestBackup

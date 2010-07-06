@@ -345,10 +345,10 @@ namespace Perst
         /// object store/fetch operations, but generation itself takes additional time at 
         /// startup 
         /// </TD></TR>
-        /// <TR><TD><code>perst.file.readonly</code></TD><TD>Boolean</TD><TD>false</TD>
+        /// <TR><TD><code>perst.file.readonly</code></TD><TD>bool</TD><TD>false</TD>
         /// <TD>Database file should be opened in read-only mode.
         /// </TD></TR>
-        /// <TR><TD><code>perst.alternative.btree</code></TD><TD>Boolean</TD><TD>false</TD>
+        /// <TR><TD><code>perst.alternative.btree</code></TD><TD>bool</TD><TD>false</TD>
         /// <TD>Use aternative implementation of B-Tree (not using direct access to database
         /// file pages). This implementation should be used in case of serialized per thread transctions.
         /// New implementation of B-Tree will be used instead of old implementation
@@ -357,6 +357,9 @@ namespace Perst
         /// Alternative B-Tree is needed to provide serializable transaction (old one could not be used).
         /// Also it provides better performance (about 3 times comaring with old implementation) because
         /// of object caching. And B-Tree supports keys of user defined types. 
+        /// </TD></TR>
+        /// <TR><TD><code>perst.background.gc</code></TD><TD>bool</TD><TD>false</TD>
+        /// <TD>Perform garbage collection in separate thread without blocking the main application.                                                                                          
         /// </TD></TR>
         /// </TABLE>
         /// </remarks>
@@ -487,6 +490,16 @@ namespace Perst
         /// garbage collector in this case.</p> 
         /// </summary>
         abstract public System.Collections.Hashtable GetMemoryDump();
+
+        /// <summary>
+        /// Get total size of all allocated objects in the database
+        /// </summary>
+        abstract public long UsedSize {get;}
+
+        /// <summary>
+        /// Get size of the database
+        ///
+        abstract public long DatabaseSize {get;}
 
 
         // Internal methods

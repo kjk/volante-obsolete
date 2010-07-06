@@ -316,6 +316,22 @@ namespace Perst.Impl
             }
         }
 		
+        public override long UsedSize
+        { 
+            get       
+            { 
+                return usedSize;
+            }
+        }
+
+        public override long DatabaseSize
+        { 
+            get 
+            { 
+                return header.root[1-currIndex].size;
+            }
+        }
+
         internal void  extend(long size)
         {
             if (size > header.root[1 - currIndex].size)
@@ -378,7 +394,7 @@ namespace Perst.Impl
                 allocatedDelta += size;
                 if (allocatedDelta > gcThreshold) 
                 {
-                    Gc();
+                    gc0();
                 }
                 int objBitSize = (int)(size >> dbAllocationQuantumBits);
                 Debug.Assert(objBitSize == (size >> dbAllocationQuantumBits));
@@ -760,7 +776,7 @@ namespace Perst.Impl
                     {
                         allocatedDelta -= size;
                         usedSize -= size;
-                        Gc();
+                        gc0();
                         currRBitmapPage = currPBitmapPage = 0;
                         currRBitmapOffs = currPBitmapOffs = 0;                
                         return allocate(size, oid);
@@ -818,13 +834,6 @@ namespace Perst.Impl
                     if (pageId == currPBitmapPage && offs < currPBitmapOffs)
                     {
                         currPBitmapOffs = offs;
-                    }
-                }
-                else
-                {
-                    if (pageId == currRBitmapPage && offs < currRBitmapOffs)
-                    {
-                        currRBitmapOffs = offs;
                     }
                 }
                 if (pageId == currRBitmapPage && offs < currRBitmapOffs)
@@ -948,6 +957,13 @@ namespace Perst.Impl
 				
                 dirtyPagesMap = new int[dbDirtyPageBitmapSize / 4 + 1];
                 gcThreshold = Int64.MaxValue;
+                backgroundGcMonitor = new object();
+                gcThread = null;
+                gcGo = false;
+                gcActive = false;
+                gcDone = false;
+                allocatedDelta = 0;
+
 #if !COMPACT_NET_FRAMEWORK
                 nNestedTransactions = 0;
                 nBlockedTransactions = 0;
@@ -956,8 +972,6 @@ namespace Perst.Impl
                 transactionMonitor = new Object();
                 transactionLock = new PersistentResource();
 #endif
-                allocatedDelta = 0;
-                gcDone = false;
                 modified = false;
                 pool = new PagePool(pagePoolSize / Page.pageSize);
 				
@@ -1205,20 +1219,23 @@ namespace Perst.Impl
 
         public override void Commit()
         {
-            lock(this)
-            {
-                if (!opened)
+            lock (backgroundGcMonitor) 
+            { 
+                lock(this)
                 {
-                    throw new StorageError(StorageError.ErrorCode.STORAGE_NOT_OPENED);
-                }
-                objectCache.flush();
+                    if (!opened)
+                    {
+                        throw new StorageError(StorageError.ErrorCode.STORAGE_NOT_OPENED);
+                    }
+                    objectCache.flush();
            
-                if (!modified)
-                {
-                    return;
+                    if (!modified)
+                    {
+                        return;
+                    }
+                    commit0();
+                    modified = false;
                 }
-                commit0();
-                modified = false;
             }
         }
 
@@ -1879,118 +1896,191 @@ namespace Perst.Impl
         { 
             lock (this) 
             { 
-                lock (objectCache) 
-                {
-                    if (gcDone) 
-                    { 
-                        return 0;
-                    }
-                    // Console.WriteLine("Start GC, allocatedDelta=" + allocatedDelta + ", header[" + currIndex + "].size=" + header.root[currIndex].size + ", gcTreshold=" + gcThreshold);
-                    int bitmapSize = (int)((ulong)header.root[currIndex].size >> (dbAllocationQuantumBits + 5)) + 1;
-                    bool existsNotMarkedObjects;
-                    long pos;
-                    int  i, j;
+                return gc0();
+            }
+        }
 
-                    // mark
-                    greyBitmap = new int[bitmapSize];
-                    blackBitmap = new int[bitmapSize];
-                    int rootOid = header.root[currIndex].rootObject;
-                    if (rootOid != 0) 
+        private void mark()
+        {
+            // Console.WriteLine("Start GC, allocatedDelta=" + allocatedDelta + ", header[" + currIndex + "].size=" + header.root[currIndex].size + ", gcTreshold=" + gcThreshold);
+            int bitmapSize = (int)((ulong)header.root[currIndex].size >> (dbAllocationQuantumBits + 5)) + 1;
+            bool existsNotMarkedObjects;
+            long pos;
+            int  i, j;
+
+            // mark
+            greyBitmap = new int[bitmapSize];
+            blackBitmap = new int[bitmapSize];
+            int rootOid = header.root[currIndex].rootObject;
+            if (rootOid != 0) 
+            { 
+                markOid(rootOid);
+                do 
+                { 
+                    existsNotMarkedObjects = false;
+                    for (i = 0; i < bitmapSize; i++) 
                     { 
-                        markOid(rootOid);
-                        do 
+                        if (greyBitmap[i] != 0) 
                         { 
-                            existsNotMarkedObjects = false;
-                            for (i = 0; i < bitmapSize; i++) 
+                            existsNotMarkedObjects = true;
+                            for (j = 0; j < 32; j++) 
                             { 
-                                if (greyBitmap[i] != 0) 
+                                if ((greyBitmap[i] & (1 << j)) != 0) 
                                 { 
-                                    existsNotMarkedObjects = true;
-                                    for (j = 0; j < 32; j++) 
+                                    pos = (((long)i << 5) + j) << dbAllocationQuantumBits;
+                                    greyBitmap[i] &= ~(1 << j);
+                                    blackBitmap[i] |= 1 << j;
+                                    int offs = (int)pos & (Page.pageSize-1);
+                                    Page pg = pool.getPage(pos - offs);
+                                    int typeOid = ObjectHeader.getType(pg.data, offs);
+                                    if (typeOid != 0) 
                                     { 
-                                        if ((greyBitmap[i] & (1 << j)) != 0) 
+                                        ClassDescriptor desc = (ClassDescriptor)lookupObject(typeOid, typeof(ClassDescriptor));
+                                        if (typeof(Btree).IsAssignableFrom(desc.cls)) 
                                         { 
-                                            pos = (((long)i << 5) + j) << dbAllocationQuantumBits;
-                                            greyBitmap[i] &= ~(1 << j);
-                                            blackBitmap[i] |= 1 << j;
-                                            int offs = (int)pos & (Page.pageSize-1);
-                                            Page pg = pool.getPage(pos - offs);
-                                            int typeOid = ObjectHeader.getType(pg.data, offs);
-                                            if (typeOid != 0) 
-                                            { 
-                                                ClassDescriptor desc = (ClassDescriptor)lookupObject(typeOid, typeof(ClassDescriptor));
-                                                if (typeof(Btree).IsAssignableFrom(desc.cls)) 
-                                                { 
-                                                    Btree btree = new Btree(pg.data, ObjectHeader.Sizeof + offs);
-                                                    btree.AssignOid(this, 0, false);
-                                                    btree.markTree();
-                                                } 
-                                                else if (desc.hasReferences) 
-                                                { 
-                                                    markObject(pool.get(pos), ObjectHeader.Sizeof, desc);
+                                            Btree btree = new Btree(pg.data, ObjectHeader.Sizeof + offs);
+                                            btree.AssignOid(this, 0, false);
+                                            btree.markTree();
+                                        } 
+                                        else if (desc.hasReferences) 
+                                        { 
+                                            markObject(pool.get(pos), ObjectHeader.Sizeof, desc);
                                                 
-                                                }
-                                            }
-                                            pool.unfix(pg);                                
                                         }
                                     }
+                                    pool.unfix(pg);                                
                                 }
                             }
-                        } while (existsNotMarkedObjects);
+                        }
                     }
-        
-                    // sweep
-                    int nDeallocated = 0;
-                    gcDone = true;
-                    for (i = dbFirstUserId, j = committedIndexSize; i < j; i++) 
-                    {
-                        pos = getGCPos(i);
-                        if (((int)pos & (dbPageObjectFlag|dbFreeHandleFlag)) == 0) 
-                        {
-                            int bit = (int)((ulong)pos >> dbAllocationQuantumBits);
-                            if ((blackBitmap[(uint)bit >> 5] & (1 << (bit & 31))) == 0) 
-                            { 
-                                // object is not accessible
-                                if (getPos(i) != pos) 
-                                { 
-                                    throw new StorageError(StorageError.ErrorCode.INVALID_OID);
-                                }
-                                int offs = (int)pos & (Page.pageSize-1);
-                                Page pg = pool.getPage(pos - offs);
-                                int typeOid = ObjectHeader.getType(pg.data, offs);
-                                if (typeOid != 0) 
-                                { 
-                                    ClassDescriptor desc = findClassDescriptor(typeOid);
-                                    nDeallocated += 1;
-                                    if (desc != null 
-                                        && (typeof(Btree).IsAssignableFrom(desc.cls))) 
-                                    { 
-                                        Btree btree = new Btree(pg.data, ObjectHeader.Sizeof + offs);
-                                        pool.unfix(pg);
-                                        btree.AssignOid(this, i, false);
-                                        btree.Deallocate();
-                                    }
-                                    else 
-                                    { 
-                                        int size = ObjectHeader.getSize(pg.data, offs);
-                                        pool.unfix(pg);
-                                        freeId(i);
-                                        objectCache.remove(i);                        
-                                        cloneBitmap(pos, size);
-                                    }
-                                }
-                            }
-                        }   
-                    }
+                } while (existsNotMarkedObjects);
+            }
+        }
 
-                    greyBitmap = null;
-                    blackBitmap = null;
-                    allocatedDelta = 0;
-                    return nDeallocated;
+
+        private int sweep() 
+        {
+            int nDeallocated = 0;
+            long pos;
+            gcDone = true;
+            for (int i = dbFirstUserId, j = committedIndexSize; i < j; i++) 
+            {
+                pos = getGCPos(i);
+                if (((int)pos & (dbPageObjectFlag|dbFreeHandleFlag)) == 0) 
+                {
+                    int bit = (int)((ulong)pos >> dbAllocationQuantumBits);
+                    if ((blackBitmap[(uint)bit >> 5] & (1 << (bit & 31))) == 0) 
+                    { 
+                        // object is not accessible
+                        if (getPos(i) != pos) 
+                        { 
+                            throw new StorageError(StorageError.ErrorCode.INVALID_OID);
+                        }
+                        int offs = (int)pos & (Page.pageSize-1);
+                        Page pg = pool.getPage(pos - offs);
+                        int typeOid = ObjectHeader.getType(pg.data, offs);
+                        if (typeOid != 0) 
+                        { 
+                            ClassDescriptor desc = findClassDescriptor(typeOid);
+                            nDeallocated += 1;
+                            if (desc != null 
+                                && (typeof(Btree).IsAssignableFrom(desc.cls))) 
+                            { 
+                                Btree btree = new Btree(pg.data, ObjectHeader.Sizeof + offs);
+                                pool.unfix(pg);
+                                btree.AssignOid(this, i, false);
+                                btree.Deallocate();
+                            }
+                            else 
+                            { 
+                                int size = ObjectHeader.getSize(pg.data, offs);
+                                pool.unfix(pg);
+                                freeId(i);
+                                objectCache.remove(i);                        
+                                cloneBitmap(pos, size);
+                            }
+                        }
+                    }
+                }   
+            }
+
+            greyBitmap = null;
+            blackBitmap = null;
+            allocatedDelta = 0;
+            gcActive = false;
+            return nDeallocated;
+        }
+    
+#if !COMPACT_NET_FRAMEWORK
+        public void backgroundGcThread() 
+        { 
+            lock (backgroundGcMonitor) 
+            { 
+                while (true) 
+                { 
+                    while (!gcGo && opened) 
+                    { 
+                        Monitor.Wait(backgroundGcMonitor);
+                    }
+                    if (!opened) 
+                    { 
+                        return;
+                    }
+                    gcGo = false;
+                    mark();
+                    lock (this) 
+                    { 
+                        lock (objectCache) 
+                        { 
+                            sweep();
+                        }
+                    }
                 }
             }
         }
 
+        private void activateGc() 
+        { 
+            lock (backgroundGcMonitor) 
+            {
+                gcGo = true;
+                Monitor.Pulse(backgroundGcMonitor);
+            }
+        }
+#endif
+
+        private int gc0()
+        {
+            lock (objectCache) 
+            { 
+                if (!opened) 
+                {
+                    throw new StorageError(StorageError.ErrorCode.STORAGE_NOT_OPENED);
+                }
+                if (gcDone || gcActive) 
+                { 
+                    return 0;
+                }
+                gcActive = true;
+#if !COMPACT_NET_FRAMEWORK
+                if (backgroundGc) 
+                { 
+                    if (gcThread == null) 
+                    { 
+                        gcThread = new Thread(new ThreadStart(backgroundGcThread));
+                        gcThread.Start();
+                    }
+                    activateGc();
+                    return 0;
+                }
+#endif
+                // System.out.println("Start GC, allocatedDelta=" + allocatedDelta + ", header[" + currIndex + "].size=" + header.root[currIndex].size + ", gcTreshold=" + gcThreshold);
+                        
+                mark();
+                return sweep();
+            }
+        }
+ 
 
         public override Hashtable GetMemoryDump() 
         { 
@@ -2428,9 +2518,12 @@ namespace Perst.Impl
                             ((IPersistent)ctx.modified[--i]).Store();
                         } while (i != 0);
 
-                        lock(this) 
+                        lock (backgroundGcMonitor) 
                         { 
-                            commit0();
+                            lock(this) 
+                            { 
+                                commit0();
+                            }
                         }
                     }
                     for (i = ctx.locked.Count; --i >= 0;) 
@@ -2533,6 +2626,13 @@ namespace Perst.Impl
         {
             Commit();
             opened = false;
+#if !COMPACT_NET_FRAMEWORK
+            if (gcThread != null) 
+            {             
+                activateGc();
+                gcThread.Join();
+            }
+#endif
             if (header.dirty)
             {
                 Page pg = pool.putPage(0);
@@ -2623,6 +2723,10 @@ namespace Perst.Impl
             { 
                 alternativeBtree = getBooleanValue(val);
             }
+            if ((val = props["perst.background.gc"]) != null) 
+            { 
+                backgroundGc = getBooleanValue(val);
+            }
         }
 
         public override void SetProperty(String name, Object val)
@@ -2658,6 +2762,11 @@ namespace Perst.Impl
             else if (name.Equals("perst.alternative.btree")) 
             { 
                 alternativeBtree = getBooleanValue(val);
+            }
+        
+            else if (name.Equals("perst.background.gc")) 
+            {
+                backgroundGc = getBooleanValue(val);
             }
             else 
             { 
@@ -4387,6 +4496,7 @@ public int packField(ByteBuffer buf, int offs, object val, ClassDescriptor.Field
         private long extensionQuantum     = dbDefaultExtensionQuantum;
         private bool readOnly = false;
         private bool alternativeBtree = false;
+        private bool backgroundGc = false;
 
         internal PagePool pool;
         internal Header   header; // base address of database file mapping
@@ -4431,6 +4541,10 @@ public int packField(ByteBuffer buf, int offs, object val, ClassDescriptor.Field
         internal long      gcThreshold;
         internal long      allocatedDelta;
         internal bool      gcDone;
+        internal bool      gcActive;
+        internal bool      gcGo;
+        internal object    backgroundGcMonitor;
+        internal Thread    gcThread;
 
         internal OidHashTable     objectCache;
         internal Hashtable        classDescMap;

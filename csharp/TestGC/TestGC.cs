@@ -21,8 +21,23 @@ public class TestGC {
 
     static public void Main(String[] args) {	
         Storage db = StorageFactory.Instance.CreateStorage();
-
-	    db.Open("testgc.dbs");
+    
+        for (int i = 0; i < args.Length; i++) 
+        { 
+            if ("altbtree" == args[i]) 
+            { 
+                db.SetProperty("perst.alternative.btree", true);
+            } 
+            else if ("background" == args[i]) 
+            { 
+                db.SetProperty("perst.background.gc", true);
+            } 
+            else 
+            { 
+                Console.WriteLine("Unrecognized option: " + args[i]);
+            }
+        }
+        db.Open("testgc.dbs");
         db.SetGcThreshold(1000000);
         StorageRoot root = new StorageRoot();
         root.strIndex = db.CreateIndex(typeof(String), true);
@@ -32,8 +47,8 @@ public class TestGC {
         Index strIndex = root.strIndex;
         long insKey = 1999;
         long remKey = 1999;
-        int i;
-        for (i = 0; i < nIterations; i++) { 
+        
+        for (int i = 0; i < nIterations; i++) { 
             if (i > nObjectsInTree) { 
                 remKey = (3141592621L*remKey + 2718281829L) % 1000000007L;
                 intIndex.Remove(new Key(remKey));                
@@ -54,6 +69,7 @@ public class TestGC {
             root.Store();
             if (i % 1000 == 0) { 
                 db.Commit();
+                Console.Write("Iteration " + i + "\r");
             }            
         }
         db.Close();
