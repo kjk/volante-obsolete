@@ -64,6 +64,10 @@ Project("{20D4826A-C6FA-45DB-90F4-C717570B9F32}") = "TestSOD", "TestSOD\TestSOD.
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
+Project("{20D4826A-C6FA-45DB-90F4-C717570B9F32}") = "TestIndex2", "TestIndex2\TestIndex2.csdproj", "{EB559C38-F7F3-45D7-AF1D-73546C5BE457}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfiguration) = preSolution
 		Debug = Debug
@@ -166,6 +170,12 @@ Global
 		{6C1DC6D6-9575-483D-8D2D-9133DC6C9350}.Release.ActiveCfg = Release|Windows CE
 		{6C1DC6D6-9575-483D-8D2D-9133DC6C9350}.Release.Build.0 = Release|Windows CE
 		{6C1DC6D6-9575-483D-8D2D-9133DC6C9350}.Release.Deploy.0 = Release|Windows CE
+		{EB559C38-F7F3-45D7-AF1D-73546C5BE457}.Debug.ActiveCfg = Debug|Windows CE
+		{EB559C38-F7F3-45D7-AF1D-73546C5BE457}.Debug.Build.0 = Debug|Windows CE
+		{EB559C38-F7F3-45D7-AF1D-73546C5BE457}.Debug.Deploy.0 = Debug|Windows CE
+		{EB559C38-F7F3-45D7-AF1D-73546C5BE457}.Release.ActiveCfg = Release|Windows CE
+		{EB559C38-F7F3-45D7-AF1D-73546C5BE457}.Release.Build.0 = Release|Windows CE
+		{EB559C38-F7F3-45D7-AF1D-73546C5BE457}.Release.Deploy.0 = Release|Windows CE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 	EndGlobalSection

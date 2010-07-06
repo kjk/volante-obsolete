@@ -8,6 +8,55 @@ namespace Perst.Impl
     //
     public class Bytes
     {
+#if USE_UNSAFE_CODE
+       public unsafe static short unpack2(byte[] arr, int offs)
+        {
+            fixed(byte* p = &arr[offs]) 
+            {
+                return *(short*)p;
+            }
+        }
+
+        public unsafe static int unpack4(byte[] arr, int offs)
+        {
+            fixed(byte* p = &arr[offs]) 
+            {
+                return *(int*)p;
+            }
+        }
+
+        public unsafe static long unpack8(byte[] arr, int offs)
+        {
+            fixed(byte* p = &arr[offs]) 
+            {
+                return *(long*)p;
+            }
+        }
+
+        public unsafe static void  pack2(byte[] arr, int offs, short val)
+        {
+            fixed(byte* p = &arr[offs]) 
+            {
+                *(short*)p = val;
+            }
+        }
+
+        public unsafe static void  pack4(byte[] arr, int offs, int val)
+        {
+            fixed(byte* p = &arr[offs]) 
+            {
+                *(int*)p = val;
+            }
+        }
+
+        public unsafe static void  pack8(byte[] arr, int offs, long val)
+        {
+            fixed(byte* p = &arr[offs]) 
+            {
+                *(long*)p = val;
+            }
+        }
+#else
         public static short unpack2(byte[] arr, int offs)
         {
             return (short) (((sbyte)arr[offs] << 8) | arr[offs + 1]);
@@ -22,6 +71,26 @@ namespace Perst.Impl
         {
             return ((long) unpack4(arr, offs) << 32) | (uint)unpack4(arr, offs + 4);
         }
+
+        public static void  pack2(byte[] arr, int offs, short val)
+        {
+            arr[offs] = (byte) (val >> 8);
+            arr[offs + 1] = (byte) val;
+        }
+        public static void  pack4(byte[] arr, int offs, int val)
+        {
+            arr[offs] = (byte) (val >> 24);
+            arr[offs + 1] = (byte) (val >> 16);
+            arr[offs + 2] = (byte) (val >> 8);
+            arr[offs + 3] = (byte) val;
+        }
+        public static void  pack8(byte[] arr, int offs, long val)
+        {
+            pack4(arr, offs, (int) (val >> 32));
+            pack4(arr, offs + 4, (int) val);
+        }
+#endif
+
 
         public static float unpackF4(byte[] arr, int offs)
         {
@@ -77,24 +146,6 @@ namespace Perst.Impl
             return new DateTime(unpack8(arr, offs));
         }
 
-        public static void  pack2(byte[] arr, int offs, short val)
-        {
-            arr[offs] = (byte) (val >> 8);
-            arr[offs + 1] = (byte) val;
-        }
-        public static void  pack4(byte[] arr, int offs, int val)
-        {
-            arr[offs] = (byte) (val >> 24);
-            arr[offs + 1] = (byte) (val >> 16);
-            arr[offs + 2] = (byte) (val >> 8);
-            arr[offs + 3] = (byte) val;
-        }
-        public static void  pack8(byte[] arr, int offs, long val)
-        {
-            pack4(arr, offs, (int) (val >> 32));
-            pack4(arr, offs + 4, (int) val);
-        }
- 
         public static void packF4(byte[] arr, int offs, float val)
         {
             pack4(arr, offs, BitConverter.ToInt32(BitConverter.GetBytes(val), 0));

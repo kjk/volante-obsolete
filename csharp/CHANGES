@@ -222,3 +222,6 @@ their redefinition in derived class.
 1. Index.Remove(Key), Index.Set(Key,IPersistent), FieldIndex.Remove(Key) and FieldIndex.Set(IPersistent)
 methods now return reference to the removed/replaced object.
 
+--- Release version 2.25 28.05.2004 -------------------------------------
+1. Optimized version of T-Tree algorithm
+

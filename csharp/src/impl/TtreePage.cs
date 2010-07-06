@@ -5,7 +5,7 @@ namespace Perst.Impl
 
     public class TtreePage : Persistent  
     { 
-        const int maxItems = (Page.pageSize-ObjectHeader.Sizeof-4*4)/4;
+        const int maxItems = (Page.pageSize-ObjectHeader.Sizeof-4*5)/4;
         const int minItems = maxItems - 2; // minimal number of items in internal node
 
         TtreePage     left;
@@ -195,7 +195,8 @@ namespace Perst.Impl
                 if ((left == null || diff == 0) && n != maxItems) 
                 { 
                     Modify();
-                    for (int i = n; i > 0; i--) item[i] = item[i-1];
+                    //for (int i = n; i > 0; i--) item[i] = item[i-1];
+                    Array.Copy(item, 0, item, 1, n);
                     item[0] = mbr;
                     nItems += 1;
                     return OK;
@@ -358,7 +359,8 @@ namespace Perst.Impl
             Modify();
             if (n != maxItems) 
             {
-                for (int i = n; i > r; i--) item[i] = item[i-1]; 
+                Array.Copy(item, r, item, r+1, n-r);
+                //for (int i = n; i > r; i--) item[i] = item[i-1]; 
                 item[r] = mbr;
                 nItems += 1;
                 return OK;
@@ -369,13 +371,15 @@ namespace Perst.Impl
                 if (balance >= 0) 
                 { 
                     reinsertItem = loadItem(0);
-                    for (int i = 1; i < r; i++) item[i-1] = item[i]; 
+                    Array.Copy(item, 1, item, 0, r-1);
+                    //for (int i = 1; i < r; i++) item[i-1] = item[i]; 
                     item[r-1] = mbr;
                 } 
                 else 
                 { 
                     reinsertItem = loadItem(n-1);
-                    for (int i = n-1; i > r; i--) item[i] = item[i-1]; 
+                    Array.Copy(item, r, item, r+1, n-r-1);
+                    //for (int i = n-1; i > r; i--) item[i] = item[i-1]; 
                     item[r] = mbr;
                 }
                 return insert(comparator, reinsertItem, unique, ref pgRef);
@@ -521,7 +525,7 @@ namespace Perst.Impl
             {	    
                 for (int i = 0; i < n; i++) 
                 { 
-                    if (loadItem(i) == mbr) 
+                    if (item[i] == mbr) 
                     { 
                         if (n == 1) 
                         { 
@@ -550,10 +554,11 @@ namespace Perst.Impl
                                     prev = prev.right;
                                     prev.Load();
                                 }
-                                while (--i >= 0) 
-                                { 
-                                    item[i+1] = item[i];
-                                }
+                                Array.Copy(item, 0, item, 1, i);
+                                //while (--i >= 0) 
+                                //{ 
+                                //    item[i+1] = item[i];
+                                //}
                                 item[0] = prev.item[prev.nItems-1];
                                 pg = pgRef;
                                 pgRef = left;
@@ -575,10 +580,11 @@ namespace Perst.Impl
                                     next = next.left;
                                     next.Load();
                                 }
-                                while (++i < n) 
-                                { 
-                                    item[i-1] = item[i];
-                                }
+                                Array.Copy(item, i+1, item, i, n-i-1);
+                                //while (++i < n) 
+                                //{ 
+                                //    item[i-1] = item[i];
+                                //}
                                 item[n-1] = next.item[0];
                                 pg = pgRef;
                                 pgRef = right;
@@ -592,10 +598,11 @@ namespace Perst.Impl
                                 return h;
                             }
                         }
-                        while (++i < n) 
-                        { 
-                            item[i-1] = item[i];
-                        }
+                        Array.Copy(item, i+1, item, i, n-i-1);
+                        //while (++i < n) 
+                        //{ 
+                        //    item[i-1] = item[i];
+                        //}
                         nItems -= 1;
                         return OK;
                     }
