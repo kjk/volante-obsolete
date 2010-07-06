@@ -210,7 +210,9 @@ namespace Perst.Impl
                                 goto waitFinalization;
                             }
                         }
+                        table[i] = null;
                     }
+                    count = 0;
                     return;
                 }
             waitFinalization:

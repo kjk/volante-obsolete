@@ -120,7 +120,8 @@ namespace Perst
         
         public virtual void Invalidate() 
         {
-	        state |= ObjectState.RAW;
+            state &= ~ObjectState.DIRTY;
+            state |= ObjectState.RAW;
         }
         
         ~Persistent() 

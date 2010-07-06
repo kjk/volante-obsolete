@@ -121,7 +121,9 @@ namespace Perst.Impl
                             e.oref.Invalidate();
                         }
                     }
+                    table[i] = null;
                 }
+                count = 0;
             }
         }
     
