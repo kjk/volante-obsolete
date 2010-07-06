@@ -1,6 +1,5 @@
 package org.garret.perst.impl;
 import  org.garret.perst.*;
-import java.io.*;
 
 class PagePool { 
     LRU  lru;

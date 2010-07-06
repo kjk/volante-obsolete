@@ -1,5 +1,4 @@
 package org.garret.perst.impl;
-import  org.garret.perst.*;
 
 class ObjectHeader { 
     static final int sizeof = 8;

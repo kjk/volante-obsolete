@@ -23,8 +23,6 @@ class BtreeKey {
 
 
     final void extract(Page pg, int offs, int type) { 
-	int    i, len;
-	char[] chars;
         byte[] data = pg.data;
 
 	switch (type) {
@@ -73,6 +71,7 @@ class BtreeKey {
 	  case ClassDescriptor.tpInt:
 	  case ClassDescriptor.tpObject:
 	    Bytes.pack4(dst, BtreePage.firstKeyOffs + i*4, key.ival);
+            break;
 	  case ClassDescriptor.tpLong:
 	  case ClassDescriptor.tpDate:
 	    Bytes.pack8(dst, BtreePage.firstKeyOffs + i*8,  key.lval);

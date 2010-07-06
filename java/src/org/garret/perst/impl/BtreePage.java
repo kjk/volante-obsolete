@@ -372,7 +372,7 @@ class BtreePage {
                     } else {
                         setnItems(pg, max - m);
                         setnItems(b, m - 1);
-                    }
+                    }                            
                     db.pool.unfix(b);
                     return Btree.op_overflow;
                 }
@@ -950,7 +950,6 @@ class BtreePage {
                         return Btree.op_done;
                     } 
                 } while (++r <= n);
-                return Btree.op_not_found;
             } else { 
                 while (l < r)  {
                     i = (l+r) >> 1;
@@ -992,8 +991,8 @@ class BtreePage {
                         r += 1;
                     }
                 }
-                return Btree.op_not_found;
             }
+            return Btree.op_not_found;
         } finally { 
             if (pg != null) { 
                 db.pool.unfix(pg);

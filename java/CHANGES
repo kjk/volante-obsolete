@@ -34,3 +34,6 @@ Object will be automatically saved during transaction commit.
 1. Implement more sophisticated iterators for index search  
 2. Fix bug in R-Tree
  
+--- Release version 1.09 06.05.2003 -------------------------------------
+1. Fix bug in packing array of strings. 
+2. Fix bug with handling int keys in B-Tree

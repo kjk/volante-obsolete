@@ -2144,7 +2144,7 @@ public class StorageImpl extends Storage {
                                 offs += 4;
                             } else { 
                                 int strlen = str.length();
-                                buf.extend(offs + strlen*2);
+                                buf.extend(offs + 4 + strlen*2);
                                 Bytes.pack4(buf.arr, offs, strlen);
                                 offs += 4;
                                 for (int k = 0; k < strlen; k++) { 

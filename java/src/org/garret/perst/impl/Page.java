@@ -1,5 +1,4 @@
 package org.garret.perst.impl;
-import  org.garret.perst.*;
 
 class Page extends LRU implements Comparable {
     Page collisionChain;
