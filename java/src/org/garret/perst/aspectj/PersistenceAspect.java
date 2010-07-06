@@ -175,6 +175,16 @@ privileged public aspect PersistenceAspect {
         }
     }
     
+    public void AutoPersist.readExternal(java.io.ObjectInput s) throws java.io.IOException, ClassNotFoundException
+    {
+        oid = s.readInt();
+    }
+
+    public void AutoPersist.writeExternal(java.io.ObjectOutput s) throws java.io.IOException
+    {
+	s.writeInt(oid);
+    }
+
     private transient Storage AutoPersist.storage;
     private transient int     AutoPersist.oid;
     private transient int     AutoPersist.state;

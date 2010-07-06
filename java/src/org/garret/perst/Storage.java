@@ -397,7 +397,7 @@ public abstract class Storage {
     /**
      * Set class loader. This class loader will be used to locate classes for 
      * loaded class descriptors. If class loader is not specified or
-     * it did find the class, then <code>Class.forName()</code> method
+     * it did find the class, then <code>Thread.getContextClassLoader().loadClass()</code> method
      * will be used to get class for the specified name.
      * @param loader class loader
      * @return previous class loader or null if not specified

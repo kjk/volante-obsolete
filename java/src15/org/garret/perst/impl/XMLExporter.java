@@ -151,7 +151,7 @@ public class XMLExporter {
             case ClassDescriptor.tpArrayOfByte:
                 for (int i = 0; i < size; i++) { 
                     byte b = body[offs++];
-                    writer.write(hexDigit[b >>> 4]);
+                    writer.write(hexDigit[(b >>> 4) & 0xF]);
                     writer.write(hexDigit[b & 0xF]);
                 }
                 break;
@@ -259,7 +259,7 @@ public class XMLExporter {
             writer.write('\"');
             while (--len >= 0) {
                 byte b = body[offs++];
-                writer.write(hexDigit[b >>> 4]);
+                writer.write(hexDigit[(b >>> 4) & 0xF]);
                 writer.write(hexDigit[b & 0xF]);
             }
             writer.write('\"');

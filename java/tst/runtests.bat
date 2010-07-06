@@ -6,6 +6,7 @@ call TestIndexIterator
 call TestRtree
 call TestTtree
 call TestRaw
+call TestRaw
 call TestGC
 call TestConcur
 call TestXML

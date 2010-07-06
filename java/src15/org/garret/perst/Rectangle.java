@@ -40,19 +40,19 @@ public class Rectangle implements IValue, Cloneable {
     /**
      * Rectangle area
      */
-    public final int area() { 
-        return (bottom-top)*(right-left);
+    public final long area() { 
+        return (long)(bottom-top)*(right-left);
     }
 
     /**
      * Area of covered rectangle for two sepcified rectangles
      */
-    public static int joinArea(Rectangle a, Rectangle b) {
+    public static long joinArea(Rectangle a, Rectangle b) {
         int left = (a.left < b.left) ? a.left : b.left;
         int right = (a.right > b.right) ? a.right : b.right;
         int top = (a.top < b.top) ? a.top : b.top;
         int bottom = (a.bottom > b.bottom) ? a.bottom : b.bottom;
-        return (bottom-top)*(right-left);
+        return (long)(bottom-top)*(right-left);
     }
 
     /**

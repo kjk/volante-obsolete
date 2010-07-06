@@ -206,6 +206,14 @@ methods now return reference to the removed/replaced object.
 --- Release version 2.25 28.05.2004 -------------------------------------
 1. Optimized version of T-Tree algorithm
 
---- Release version 2.26 05.07.2004 -------------------------------------
+--- Release version 2.26 07.06.2004 -------------------------------------
 1. Automatic generation of default constructor for persistent classes
 2. Fix bug in FieldIndex.remove(Key) introduced in version 2.24
+
+--- Release version 2.27 15.06.2004 -------------------------------------
+1. Add MultiFile class
+2. Use Thread.currentThread().getContextClassLoader().loadClass() instead of Class.forName()
+3. Use PersistentObjectInputStream class which is able to correctly resolve references to 
+persistent classes from serialized transient objects. 
+4. Fix bug in XMLExporter.exportBinary
+5. Change R-Tree and rectangle implementation to calculate rectangles area using long type

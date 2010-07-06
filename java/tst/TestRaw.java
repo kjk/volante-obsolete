@@ -5,9 +5,11 @@ import java.util.HashMap;
 class L1List implements java.io.Serializable { 
     L1List next;
     Object obj;
+    Object root;
 
-    L1List(Object value, L1List list) { 
+    L1List(Object value, Object tree, L1List list) { 
         obj = value;
+        root = tree;
         next = list;
     }
 };
@@ -27,21 +29,23 @@ public class TestRaw extends Persistent {
         TestRaw root = (TestRaw)db.getRoot();
         if (root == null) { 
             root = new TestRaw();
+            db.setRoot(root);
             L1List list = null;
             for (int i = 0; i < nListMembers; i++) { 
-                list = new L1List(new Integer(i), list);
+                list = new L1List(new Integer(i), root, list);
             }            
             root.list = list;
             root.map = new HashMap();
             for (int i = 0; i < nHashMembers; i++) { 
                 root.map.put("key-" + i, "value-" + i);
             }
-            db.setRoot(root);
+            root.store();
             System.out.println("Initialization of database completed");
         } 
         L1List list = root.list;
         for (int i = nListMembers; --i >= 0;) { 
             Assert.that(list.obj.equals(new Integer(i)));
+            Assert.that(root == list.root);
             list = list.next;
         }
         for (int i = nHashMembers; --i >= 0;) { 

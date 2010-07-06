@@ -108,6 +108,16 @@ public class Persistent implements IPersistent {
         this.storage = storage;
         state = raw ? RAW : 0;
     }
+
+    public void readExternal(java.io.ObjectInput s) throws java.io.IOException, ClassNotFoundException
+    {
+        oid = s.readInt();
+    }
+
+    public void writeExternal(java.io.ObjectOutput s) throws java.io.IOException
+    {
+	s.writeInt(oid);
+    }
 }
 
 

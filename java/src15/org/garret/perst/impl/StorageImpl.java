@@ -773,7 +773,9 @@ public class StorageImpl extends Storage {
     }
 
     public synchronized void open(String filePath, int pagePoolSize) {
-        OSFile file = new OSFile(filePath, readOnly);      
+        IFile file = filePath.startsWith("@") 
+            ? (IFile)new MultiFile(filePath.substring(1), readOnly)
+            : (IFile)new OSFile(filePath, readOnly);      
         try {
             open(file, pagePoolSize);
         } catch (StorageError ex) {
@@ -2237,6 +2239,20 @@ public class StorageImpl extends Storage {
         return obj;
     }
 
+    class PersistentObjectInputStream extends ObjectInputStream { 
+        PersistentObjectInputStream(InputStream in) throws IOException {
+            super(in);
+            enableResolveObject(true);
+        }
+        
+        protected Object resolveObject(Object obj) throws IOException {
+            if (obj instanceof IPersistent) { 
+                return lookupObject(((IPersistent)obj).getOid(), obj.getClass());
+            }
+            return obj;
+        }
+    }
+
     final int unpackObject(Object obj, ClassDescriptor desc, boolean recursiveLoading, byte[] body, int offs) 
       throws Exception
     {
@@ -2431,7 +2447,7 @@ public class StorageImpl extends Storage {
                     offs += 4;
                     if (len >= 0) { 
                         ByteArrayInputStream bin = new ByteArrayInputStream(body, offs, len);
-                        ObjectInputStream in = new ObjectInputStream(bin);
+                        ObjectInputStream in = new PersistentObjectInputStream(bin);
                         f.set(obj, in.readObject());
                         in.close();
                         offs += len;
@@ -2672,7 +2688,7 @@ public class StorageImpl extends Storage {
                             offs += 4;
                             if (rawlen >= 0) {
                                 ByteArrayInputStream bin = new ByteArrayInputStream(body, offs, rawlen);
-                                ObjectInputStream in = new ObjectInputStream(bin);
+                                ObjectInputStream in = new PersistentObjectInputStream(bin);
                                 arr[j] = in.readObject();
                                 in.close();
                                 offs += rawlen;

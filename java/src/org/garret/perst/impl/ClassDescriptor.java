@@ -2,7 +2,6 @@ package org.garret.perst.impl;
 import  org.garret.perst.*;
 import  java.lang.reflect.*;
 import  java.util.*;
-import sun.reflect.ReflectionFactory;
 
 public final class ClassDescriptor extends Persistent { 
     ClassDescriptor   next;
@@ -252,7 +251,8 @@ public final class ClassDescriptor extends Persistent {
 
     private void locateConstructor() { 
         try { 
-            Class c = Class.forName(cls.getName() + "LoadFactory");
+            //Class c = Class.forName(cls.getName() + "LoadFactory");
+            Class c = Thread.currentThread().getContextClassLoader().loadClass(cls.getName() + "LoadFactory");
             factory = (LoadFactory)c.newInstance();
         } catch (Exception x1) { 
             try {             
@@ -292,7 +292,8 @@ public final class ClassDescriptor extends Persistent {
             } catch (ClassNotFoundException x) {}
         }
         try { 
-            return Class.forName(name);
+            return Thread.currentThread().getContextClassLoader().loadClass(name);
+            // return Class.forName(name);
         } catch (ClassNotFoundException x) { 
             throw new StorageError(StorageError.CLASS_NOT_FOUND, name, x);
         }
