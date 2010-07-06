@@ -1887,7 +1887,7 @@ namespace Perst.Impl
                                 if (i == size)
                                 {
                                     char[] newBuf = new char[size *= 2];
-                                    Array.Copy(sconst, 0, newBuf, 0, slen);
+                                    Array.Copy(sconst, 0, newBuf, 0, i);
                                     sconst = newBuf;
                                 }
                                 sconst[i++] = (char) ch;
