@@ -2,6 +2,7 @@ namespace Perst.Impl
 {
     using System;
     using System.Reflection;
+    using System.Diagnostics;
     using Perst;
 	
     public class XMLExporter
@@ -218,7 +219,7 @@ namespace Perst.Impl
                     break;
 
                 default:
-                    Assert.Failed("Invalid type");
+                    Debug.Assert(false, "Invalid type");
                     break;
             }              
             return offs;                                            
@@ -226,7 +227,7 @@ namespace Perst.Impl
                                                                     
         void exportCompoundKey(byte[] body, int offs, int size, ClassDescriptor.FieldType type) 
         { 
-            Assert.That(type == ClassDescriptor.FieldType.tpArrayOfByte);
+            Debug.Assert(type == ClassDescriptor.FieldType.tpArrayOfByte);
             int end = offs + size;
             for (int i = 0; i < compoundKeyTypes.Length; i++) 
             { 
@@ -240,7 +241,7 @@ namespace Perst.Impl
                 offs = exportKey(body, offs, size, type); 
                 writer.Write("\"");
             }
-            Assert.That(offs == end);
+            Debug.Assert(offs == end);
         }
 
         internal void  exportAssoc(int oid, byte[] body, int offs, int size, ClassDescriptor.FieldType type)

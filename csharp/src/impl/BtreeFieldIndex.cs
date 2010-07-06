@@ -3,6 +3,7 @@ namespace Perst.Impl
     using System;
     using System.Collections;
     using System.Reflection;
+    using System.Diagnostics;
     using Perst;
 	
     class BtreeFieldIndex:Btree, FieldIndex
@@ -138,7 +139,7 @@ namespace Perst.Impl
                     key = new Key((Enum)val);
                     break;
                 default:
-                    Assert.Failed("Invalid type");
+                    Debug.Assert(false, "Invalid type");
                     break;
             }
             return key;

@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using Perst;
+using System.Diagnostics;
 
 public class TestBackup
 {
@@ -79,12 +80,12 @@ public class TestBackup
             Record rec1 = (Record) intIndex.Get(new Key(key));
             Record rec2 = (Record) strIndex.Get(new Key(strKey));
             Record rec3 = (Record)compoundIndex.Get(new Key(strKey, key));
-            Assert.That(rec1 != null);
-            Assert.That(rec1 == rec2);
-            Assert.That(rec1 == rec3);
-            Assert.That(rec1.intKey == key);
-            Assert.That(rec1.realKey == (double)key);
-            Assert.That(strKey.Equals(rec1.strKey));
+            Debug.Assert(rec1 != null);
+            Debug.Assert(rec1 == rec2);
+            Debug.Assert(rec1 == rec3);
+            Debug.Assert(rec1.intKey == key);
+            Debug.Assert(rec1.realKey == (double)key);
+            Debug.Assert(strKey.Equals(rec1.strKey));
         }
         System.Console.WriteLine("Elapsed time for performing " + nRecords * 2 + " index searches: " + (DateTime.Now - start));
         db.Close();

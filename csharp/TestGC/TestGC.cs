@@ -1,7 +1,9 @@
 using System;
 using Perst;
+using System.Diagnostics;
 
-class PObject:Persistent { 
+class PObject:Persistent 
+{ 
     internal long    intKey;
     internal PObject next;
     internal String  strKey;
@@ -20,7 +22,7 @@ public class TestGC {
     static public void Main(String[] args) {	
         Storage db = StorageFactory.Instance.CreateStorage();
 
-	db.Open("testgc.dbs");
+	    db.Open("testgc.dbs");
         db.SetGcThreshold(1000000);
         StorageRoot root = new StorageRoot();
         root.strIndex = db.CreateIndex(typeof(String), true);
@@ -45,7 +47,7 @@ public class TestGC {
             intIndex.Put(new Key(obj.intKey), obj);                
             strIndex.Put(new Key(obj.strKey), obj);
             if (i > 0) { 
-                Assert.That(root.list.intKey == i-1);
+                Debug.Assert(root.list.intKey == i-1);
             }
             root.list = new PObject();
             root.list.intKey = i;

@@ -1,8 +1,10 @@
 using System;
 using Perst;
+using System.Diagnostics;
 
 
-public class TestTimeSeries { 
+public class TestTimeSeries 
+{ 
     public struct Quote : TimeSeriesTick 
     { 
         public int   timestamp;
@@ -100,21 +102,21 @@ public class TestTimeSeries {
         i = 0;
         foreach (Quote quote in stock.quotes) 
         {
-            Assert.That(quote.timestamp == time + i);
+            Debug.Assert(quote.timestamp == time + i);
             float open = (float)rand.Next(10000)/100;
-            Assert.That(quote.open == open);
+            Debug.Assert(quote.open == open);
             float close = (float)rand.Next(10000)/100;
-            Assert.That(quote.close == close);
-            Assert.That(quote.high == Math.Max(quote.open, quote.close));
-            Assert.That(quote.low == Math.Min(quote.open, quote.close));
-            Assert.That(quote.volume == rand.Next(1000));
+            Debug.Assert(quote.close == close);
+            Debug.Assert(quote.high == Math.Max(quote.open, quote.close));
+            Debug.Assert(quote.low == Math.Min(quote.open, quote.close));
+            Debug.Assert(quote.volume == rand.Next(1000));
             i += 1;
         }
-        Assert.That(i == nElements);
+        Debug.Assert(i == nElements);
         Console.WriteLine("Elapsed time for extracting " + nElements + " quotes: " 
                            + (DateTime.Now - start));
                  
-        Assert.That(stock.quotes.Count == nElements);
+        Debug.Assert(stock.quotes.Count == nElements);
         
         
         long from = getTicks(time+1000);
@@ -122,19 +124,19 @@ public class TestTimeSeries {
         start = DateTime.Now;
         i = 0;
         foreach (Quote quote in stock.quotes.Range(new DateTime(from), new DateTime(from + count*TICKS_PER_SECOND), IterationOrder.DescentOrder)) {
-            Assert.That(quote.timestamp == time + 1000 + count - i);
+            Debug.Assert(quote.timestamp == time + 1000 + count - i);
             i += 1;
         }
-        Assert.That(i == count+1);
+        Debug.Assert(i == count+1);
         Console.WriteLine("Elapsed time for extracting " + i + " quotes: " + (DateTime.Now - start));
 
         start = DateTime.Now;
         long n = stock.quotes.Remove(stock.quotes.FirstTime, stock.quotes.LastTime);
-        Assert.That(n == nElements);
+        Debug.Assert(n == nElements);
         Console.WriteLine("Elapsed time for removing " + nElements + " quotes: " 
                            + (DateTime.Now - start));
 
-        Assert.That(stock.quotes.Count == 0);
+        Debug.Assert(stock.quotes.Count == 0);
         
         db.Close();
     }

@@ -3,8 +3,10 @@ namespace Perst.Impl
     using System;
     using System.Collections;
     using Perst;
+    using System.Diagnostics;
 	
-    class RtreePage:Persistent {
+    class RtreePage:Persistent 
+    {
         internal struct Branch  
         { 
             internal Rectangle   r;
@@ -290,7 +292,7 @@ namespace Perst.Impl
                         }
                     }
                 }
-                Assert.That(chosen >= 0);
+                Debug.Assert(chosen >= 0);
                 if (betterGroup == 0) 
                 { 
                     group0.Join(b[chosen].r);

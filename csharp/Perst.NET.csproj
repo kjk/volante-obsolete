@@ -88,16 +88,6 @@
                     BuildAction = "Compile"
                 />
                 <File
-                    RelPath = "src\Assert.cs"
-                    SubType = "Code"
-                    BuildAction = "Compile"
-                />
-                <File
-                    RelPath = "src\AssertionFailed.cs"
-                    SubType = "Code"
-                    BuildAction = "Compile"
-                />
-                <File
                     RelPath = "src\Blob.cs"
                     SubType = "Code"
                     BuildAction = "Compile"

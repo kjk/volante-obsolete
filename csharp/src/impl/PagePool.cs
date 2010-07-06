@@ -2,6 +2,7 @@ namespace Perst.Impl
 {
     using System;
     using Perst;
+    using System.Diagnostics;
 	
     class PagePool
     {
@@ -30,7 +31,7 @@ namespace Perst.Impl
 		
         internal Page find(long addr, int state)
         {
-            Assert.That((addr & (Page.pageSize - 1)) == 0);
+            Debug.Assert((addr & (Page.pageSize - 1)) == 0);
             Page pg;
             int pageNo = (int)((ulong)addr >> Page.pageBits);
             int hashCode =  pageNo % poolSize;
@@ -71,7 +72,7 @@ namespace Perst.Impl
                     }
                     else
                     {
-                        Assert.That("unfixed page available", lru.prev != lru);
+                        Debug.Assert(lru.prev != lru, "unfixed page available");
                         pg = (Page) lru.prev;
                         pg.unlink();
                         lock(pg)
@@ -111,7 +112,7 @@ namespace Perst.Impl
                 }
                 if ((pg.state & Page.psDirty) == 0 && (state & Page.psDirty) != 0)
                 {
-                    Assert.That(!flushing);
+                    Debug.Assert(!flushing);
                     if (nDirtyPages >= dirtyPages.Length) {                     
                         Page[] newDirtyPages = new Page[nDirtyPages*2];
                         Array.Copy(dirtyPages, 0, newDirtyPages, 0, dirtyPages.Length);
@@ -185,8 +186,8 @@ namespace Perst.Impl
 		
         internal void write(long dstPos, byte[] src) 
         {
-            Assert.That((dstPos & (Page.pageSize-1)) == 0);
-            Assert.That((src.Length & (Page.pageSize-1)) == 0);
+            Debug.Assert((dstPos & (Page.pageSize-1)) == 0);
+            Debug.Assert((src.Length & (Page.pageSize-1)) == 0);
             for (int i = 0; i < src.Length;) 
             { 
                 Page pg = find(dstPos, Page.psDirty);
@@ -235,7 +236,7 @@ namespace Perst.Impl
         {
             lock(this)
             {
-                Assert.That(pg.accessCount > 0);
+                Debug.Assert(pg.accessCount > 0);
                 if (--pg.accessCount == 0)
                 {
                     lru.link(pg);
@@ -247,10 +248,10 @@ namespace Perst.Impl
         {
             lock(this)
             {
-                Assert.That(pg.accessCount > 0);
+                Debug.Assert(pg.accessCount > 0);
                 if ((pg.state & Page.psDirty) == 0)
                 {
-                    Assert.That(!flushing);
+                    Debug.Assert(!flushing);
                     pg.state |= Page.psDirty;
                     if (nDirtyPages >= dirtyPages.Length) {                     
                         Page[] newDirtyPages = new Page[nDirtyPages*2];
@@ -275,11 +276,11 @@ namespace Perst.Impl
 		
         internal byte[] get(long pos)
         {
-            Assert.That(pos != 0);
+            Debug.Assert(pos != 0);
             int offs = (int) pos & (Page.pageSize - 1);
             Page pg = find(pos - offs, 0);
             int size = ObjectHeader.getSize(pg.data, offs);
-            Assert.That(size >= ObjectHeader.Sizeof);
+            Debug.Assert(size >= ObjectHeader.Sizeof);
             byte[] obj = new byte[size];
             int dst = 0;
             while (size > Page.pageSize - offs)

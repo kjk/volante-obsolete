@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using Perst;
+using System.Diagnostics;
 
 
 class Name 
@@ -107,9 +108,9 @@ public class TestTtree
             name.last = str.Substring(m);
             
             Person p = (Person)list[name];
-            Assert.That(p != null);
-            Assert.That(list.Contains(p));
-            Assert.That(p.age == age);
+            Debug.Assert(p != null);
+            Debug.Assert(list.Contains(p));
+            Debug.Assert(p.age == age);
         }
         Console.WriteLine("Elapsed time for performing " + nRecords + " index searches: " 
             + (DateTime.Now - start) + " milliseconds");
@@ -121,16 +122,16 @@ public class TestTtree
         i = 0; 
         foreach (Person p in list) 
         { 
-            Assert.That(comparator.CompareMemberWithKey(p, nm) > 0);
+            Debug.Assert(comparator.CompareMemberWithKey(p, nm) > 0);
             nm.first = p.firstName;
             nm.last = p.lastName;
             list.Remove(p);
             i += 1;
         }
-        Assert.That(i == nRecords);
+        Debug.Assert(i == nRecords);
         Console.WriteLine("Elapsed time for removing " + nRecords + " records: " 
             + (DateTime.Now - start) + " milliseconds");
-        Assert.That(list.Length == 0);
+        Debug.Assert(list.Length == 0);
         db.Close();
     }
 }

@@ -3,6 +3,7 @@ namespace Perst.Impl
     using System;
     using System.Collections;
     using System.Reflection;
+    using System.Diagnostics;
     using Perst;
 	
     public class TimeSeriesImpl : PersistentResource, TimeSeries 
@@ -58,7 +59,7 @@ namespace Perst.Impl
                             r = i;
                         }
                     }
-                    Assert.That(l == r && (l == n || block[l].Time >= from)); 
+                    Debug.Assert(l == r && (l == n || block[l].Time >= from)); 
                     if (l < n) 
                     {
                         pos = l;
@@ -163,7 +164,7 @@ namespace Perst.Impl
                             r = i;
                         }
                     }
-                    Assert.That(l == r && (l == n || block[l].Time > till)); 
+                    Debug.Assert(l == r && (l == n || block[l].Time > till)); 
                     if (l > 0) 
                     {
                         pos = l-1;
@@ -344,7 +345,7 @@ namespace Perst.Impl
                             r = i;
                         }
                     }
-                    Assert.That(l == r && (l == n || block[l].Time >= time)); 
+                    Debug.Assert(l == r && (l == n || block[l].Time >= time)); 
                     if (l < n && block[l].Time == time) 
                     { 
                         return block[l];
@@ -400,7 +401,7 @@ namespace Perst.Impl
                         r = i;
                     }
                 }
-                Assert.That(l == r && (l == n || block[l].Time >= from)); 
+                Debug.Assert(l == r && (l == n || block[l].Time >= from)); 
                 while (r < n && block[r].Time <= till) 
                 {
                     r += 1;
@@ -460,7 +461,7 @@ namespace Perst.Impl
                     r = i;
                 }
             }
-            Assert.That(l == r && (l == n || block[l].Time >= t));
+            Debug.Assert(l == r && (l == n || block[l].Time >= t));
             if (r == 0) 
             { 
                 if (block[n-1].Time - t > maxBlockTimeInterval || n == block.Ticks.Length) 

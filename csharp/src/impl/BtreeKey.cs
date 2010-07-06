@@ -2,6 +2,7 @@ namespace Perst.Impl
 {
     using System;
     using Perst;
+    using System.Diagnostics;
 	
     class BtreeKey
     {
@@ -99,7 +100,7 @@ namespace Perst.Impl
                     break;
 
                 default: 
-                    Assert.Failed("Invalid type");
+                    Debug.Assert(false, "Invalid type");
                     break;
 				
             }
@@ -153,7 +154,7 @@ namespace Perst.Impl
 
 
                 default: 
-                    Assert.Failed("Invalid type");
+                    Debug.Assert(false, "Invalid type");
                     break;
 				
             }

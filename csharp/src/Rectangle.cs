@@ -1,6 +1,8 @@
 namespace Perst
 {
     using System;
+    using System.Diagnostics;
+    
     /// <summary>
     /// R2 rectangle class. This class is used in spatial index.
     /// </summary>
@@ -92,7 +94,7 @@ namespace Perst
         /// </summary>
         public Rectangle(int _top, int _left, int _bottom, int _right) 
         { 
-            Assert.That(_top <= _bottom && _left <= _right);
+            Debug.Assert(_top <= _bottom && _left <= _right);
             this._top = _top;
             this._left = _left;
             this._bottom = _bottom;

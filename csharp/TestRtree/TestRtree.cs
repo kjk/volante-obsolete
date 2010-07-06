@@ -1,7 +1,9 @@
 using System;
 using Perst;
+using System.Diagnostics;
 
-class SpatialObject : Persistent { 
+class SpatialObject : Persistent 
+{ 
     public Rectangle rect;
 }
 
@@ -37,16 +39,16 @@ public class TestRtree : Persistent {
                     if (r.Equals(so.rect)) { 
                         po = so;
                     } else { 
-                        Assert.That(r.Intersects(so.rect));
+                        Debug.Assert(r.Intersects(so.rect));
                     }
                 }    
-                Assert.That(po != null);
+                Debug.Assert(po != null);
                 for (int k = 0; k < nObjectsInTree; k++) { 
                     if (r.Intersects(rectangles[k])) {
                         n += 1;
                     }
                 }
-                Assert.That(n == sos.Length);
+                Debug.Assert(n == sos.Length);
                 root.index.Remove(r, po);
                 po.Deallocate();
             }

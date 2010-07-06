@@ -3,6 +3,7 @@ namespace Perst.Impl
     using System;
     using System.Collections;
     using System.Reflection;
+    using System.Diagnostics;
     using Perst;
 	
     class BtreeMultiFieldIndex:Btree, FieldIndex
@@ -221,7 +222,7 @@ namespace Perst.Impl
                         break;
                     }
                     default:
-                        Assert.Failed("Invalid type");
+                        Debug.Assert(false, "Invalid type");
                         break;
                 }
                 if (diff != 0) 
@@ -354,7 +355,7 @@ namespace Perst.Impl
                         break;
                     }
                     default: 
-                        Assert.Failed("Invalid type");
+                        Debug.Assert(false, "Invalid type");
                         break;
                 }
                 values[i] = v;
@@ -471,7 +472,7 @@ namespace Perst.Impl
                     }
                     break;
                 default:
-                    Assert.Failed("Invalid type");
+                    Debug.Assert(false, "Invalid type");
                     break;
             }
             return dst;

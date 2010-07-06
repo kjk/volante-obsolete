@@ -1,7 +1,9 @@
 using System;
 using Perst;
+using System.Diagnostics;
 
-public class TestCompoundIndex { 
+public class TestCompoundIndex 
+{ 
     const int nRecords = 100000;
     const int pagePoolSize = 32*1024*1024;
 
@@ -41,7 +43,7 @@ public class TestCompoundIndex {
             int intKey = (int)((ulong)key >> 32);            
             String strKey = Convert.ToString((int)key);
             Record rec = (Record)root.Get(new Key(new Object[]{intKey, strKey}));
-            Assert.That(rec != null && rec.intKey == intKey && rec.strKey.Equals(strKey));
+            Debug.Assert(rec != null && rec.intKey == intKey && rec.strKey.Equals(strKey));
             if (intKey < minKey) { 
                 minKey = intKey;
             }
@@ -59,12 +61,12 @@ public class TestCompoundIndex {
                                           new Key(maxKey+1, "???"), 
                                           IterationOrder.AscentOrder)) 
         {
-            Assert.That(rec.intKey > prevInt || rec.intKey == prevInt && rec.strKey.CompareTo(prevStr) > 0);
+            Debug.Assert(rec.intKey > prevInt || rec.intKey == prevInt && rec.strKey.CompareTo(prevStr) > 0);
             prevStr = rec.strKey;
             prevInt = rec.intKey;
             n += 1;
         }
-        Assert.That(n == nRecords);
+        Debug.Assert(n == nRecords);
         
         n = 0;
         prevInt = maxKey+1;
@@ -72,12 +74,12 @@ public class TestCompoundIndex {
                                           new Key(maxKey+1, "???", false), 
                                           IterationOrder.DescentOrder))
         {
-            Assert.That(rec.intKey < prevInt || rec.intKey == prevInt && rec.strKey.CompareTo(prevStr) < 0);
+            Debug.Assert(rec.intKey < prevInt || rec.intKey == prevInt && rec.strKey.CompareTo(prevStr) < 0);
             prevStr = rec.strKey;
             prevInt = rec.intKey;
             n += 1;
         }
-        Assert.That(n == nRecords);
+        Debug.Assert(n == nRecords);
         Console.WriteLine("Elapsed time for iterating through " + (nRecords*2) + " records: " + (DateTime.Now - start));
         start = DateTime.Now;
         key = 1999;
@@ -86,14 +88,14 @@ public class TestCompoundIndex {
             int intKey = (int)((ulong)key >> 32);            
             String strKey = Convert.ToString((int)key);
             Record rec = (Record)root.Get(new Key(new Object[]{intKey, strKey}));
-            Assert.That(rec != null && rec.intKey == intKey && rec.strKey.Equals(strKey));
-            Assert.That(root.Contains(rec));
+            Debug.Assert(rec != null && rec.intKey == intKey && rec.strKey.Equals(strKey));
+            Debug.Assert(root.Contains(rec));
             root.Remove(rec);
             rec.Deallocate();
         }
-        Assert.That(!root.GetEnumerator().MoveNext());
-        Assert.That(!root.GetEnumerator(null, null, IterationOrder.DescentOrder).MoveNext());
-        Assert.That(!root.GetEnumerator(null, null, IterationOrder.AscentOrder).MoveNext());
+        Debug.Assert(!root.GetEnumerator().MoveNext());
+        Debug.Assert(!root.GetEnumerator(null, null, IterationOrder.DescentOrder).MoveNext());
+        Debug.Assert(!root.GetEnumerator(null, null, IterationOrder.AscentOrder).MoveNext());
         Console.WriteLine("Elapsed time for deleting " + nRecords + " records: " + (DateTime.Now - start));
         db.Close();
     }

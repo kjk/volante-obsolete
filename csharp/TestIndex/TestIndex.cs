@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using Perst;
+using System.Diagnostics;
 
 public class Record:Persistent
 {
@@ -57,7 +58,7 @@ public class TestIndex
             key = (3141592621L * key + 2718281829L) % 1000000007L;
             Record rec1 = (Record) intIndex.Get(new Key(key));
             Record rec2 = (Record) strIndex.Get(new Key(Convert.ToString(key)));
-            Assert.That(rec1 != null && rec1 == rec2);
+            Debug.Assert(rec1 != null && rec1 == rec2);
         }
         System.Console.WriteLine("Elapsed time for performing " + nRecords * 2 + " index searches: " + (DateTime.Now - start));
 
@@ -66,20 +67,20 @@ public class TestIndex
         i = 0;
         foreach (Record rec in intIndex) 
         {
-            Assert.That(rec.intKey >= key);
+            Debug.Assert(rec.intKey >= key);
             key = rec.intKey;
             i += 1;
         }
-        Assert.That(i == nRecords);
+        Debug.Assert(i == nRecords);
         i = 0;
         String strKey = "";
         foreach (Record rec in strIndex) 
         {
-            Assert.That(rec.strKey.CompareTo(strKey) >= 0);
+            Debug.Assert(rec.strKey.CompareTo(strKey) >= 0);
             strKey = rec.strKey;
             i += 1;
         }
-        Assert.That(i == nRecords);
+        Debug.Assert(i == nRecords);
         System.Console.WriteLine("Elapsed time for iteration through " + (nRecords * 2) + " records: " + (DateTime.Now - start));
 
 

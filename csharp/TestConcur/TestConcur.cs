@@ -1,9 +1,11 @@
 using System;
 using System.Threading;
 using Perst;
+using System.Diagnostics;
 
 
-class L2List : PersistentResource {
+class L2List : PersistentResource 
+{
     internal L2Elem head;
 }
 
@@ -55,7 +57,7 @@ public class TestConcur {
                 sum += elem.count;
                 n += 1;
             } while ((elem = elem.next) != head);
-            Assert.That(n == nElements && sum == (long)nElements*(nElements-1)/2);
+            Debug.Assert(n == nElements && sum == (long)nElements*(nElements-1)/2);
             list.Unlock();
             list.ExclusiveLock();
             L2Elem last = list.head.prev;

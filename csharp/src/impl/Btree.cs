@@ -2,6 +2,7 @@ namespace Perst.Impl
 {
     using System;
     using System.Collections;
+    using System.Diagnostics;
     using Perst;
 	
     class Btree:PersistentResource, Index
@@ -614,7 +615,7 @@ namespace Perst.Impl
                     return unpackByteArrayKey(pg, pos);
                 }
                 default: 
-                    Assert.Failed("Invalid type");
+                    Debug.Assert(false, "Invalid type");
                     return null;
             }
         }
@@ -927,7 +928,7 @@ namespace Perst.Impl
                                         r = i;
                                     }
                                 }
-                                Assert.That(r == l); 
+                                Debug.Assert(r == l); 
                                 posStack[sp] = r;
                                 pageId = BtreePage.getKeyStrOid(pg, r);
                                 db.pool.unfix(pg);
@@ -949,7 +950,7 @@ namespace Perst.Impl
                                     r = i;
                                 }
                             }
-                            Assert.That(r == l); 
+                            Debug.Assert(r == l); 
                             if (r == end) 
                             {
                                 sp += 1;
@@ -1009,7 +1010,7 @@ namespace Perst.Impl
                                         r = i;
                                     }
                                 }
-                                Assert.That(r == l); 
+                                Debug.Assert(r == l); 
                                 posStack[sp] = r;
                                 pageId = BtreePage.getKeyStrOid(pg, r);
                                 db.pool.unfix(pg);
@@ -1031,7 +1032,7 @@ namespace Perst.Impl
                                     r = i;
                                 }
                             }
-                            Assert.That(r == l); 
+                            Debug.Assert(r == l); 
                             if (r == 0) 
                             {
                                 sp += 1;
@@ -1091,7 +1092,7 @@ namespace Perst.Impl
                                         r = i;
                                     }
                                 }
-                                Assert.That(r == l); 
+                                Debug.Assert(r == l); 
                                 posStack[sp] = r;
                                 pageId = BtreePage.getKeyStrOid(pg, r);
                                 db.pool.unfix(pg);
@@ -1113,7 +1114,7 @@ namespace Perst.Impl
                                     r = i;
                                 }
                             }
-                            Assert.That(r == l); 
+                            Debug.Assert(r == l); 
                             if (r == end) 
                             {
                                 sp += 1;
@@ -1173,7 +1174,7 @@ namespace Perst.Impl
                                         r = i;
                                     }
                                 }
-                                Assert.That(r == l); 
+                                Debug.Assert(r == l); 
                                 posStack[sp] = r;
                                 pageId = BtreePage.getKeyStrOid(pg, r);
                                 db.pool.unfix(pg);
@@ -1195,7 +1196,7 @@ namespace Perst.Impl
                                     r = i;
                                 }
                             }
-                            Assert.That(r == l); 
+                            Debug.Assert(r == l); 
                             if (r == 0) 
                             {
                                 sp += 1;
@@ -1255,7 +1256,7 @@ namespace Perst.Impl
                                         r = i;
                                     }
                                 }
-                                Assert.That(r == l); 
+                                Debug.Assert(r == l); 
                                 posStack[sp] = r;
                                 pageId = BtreePage.getReference(pg, BtreePage.maxItems-1-r);
                                 db.pool.unfix(pg);
@@ -1277,7 +1278,7 @@ namespace Perst.Impl
                                     r = i;
                                 }
                             }
-                            Assert.That(r == l); 
+                            Debug.Assert(r == l); 
                             if (r == end) 
                             {
                                 sp += 1;
@@ -1337,7 +1338,7 @@ namespace Perst.Impl
                                         r = i;
                                     }
                                 }
-                                Assert.That(r == l); 
+                                Debug.Assert(r == l); 
                                 posStack[sp] = r;
                                 pageId = BtreePage.getReference(pg, BtreePage.maxItems-1-r);
                                 db.pool.unfix(pg);
@@ -1359,7 +1360,7 @@ namespace Perst.Impl
                                     r = i;
                                 }
                             }
-                            Assert.That(r == l);  
+                            Debug.Assert(r == l);  
                             if (r == 0) 
                             { 
                                 sp += 1;

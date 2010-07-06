@@ -1,6 +1,7 @@
 using System;
 using Perst;
 using System.Collections;
+using System.Diagnostics;
 
 [Serializable()]      
 class L1List 
@@ -50,12 +51,12 @@ public class TestRaw : Persistent
         L1List elem = root.list;
         for (int i = nListMembers; --i >= 0;) 
         { 
-            Assert.That(elem.obj.Equals(i));
+            Debug.Assert(elem.obj.Equals(i));
             elem = elem.next;
         }
         for (int i = nHashMembers; --i >= 0;) 
         { 
-            Assert.That(root.map["key-" + i].Equals("value-" + i));
+            Debug.Assert(root.map["key-" + i].Equals("value-" + i));
         }
         Console.WriteLine("Database is OK");
         db.Close();
