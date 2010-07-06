@@ -800,9 +800,23 @@ namespace Perst.Impl
             }
         }
 		
-        public override void Open(System.String filePath, int pagePoolSize)
+        public override void Open(String filePath, int pagePoolSize)
         {
             OSFile file = new OSFile(filePath);      
+            try 
+            {
+                Open(file, pagePoolSize);
+            } 
+            catch (StorageError ex) 
+            {
+                file.Close();            
+                throw ex;
+            }
+        }
+
+        public override void Open(String filePath, int pagePoolSize, String cipherKey)
+        {
+            Rc4File file = new Rc4File(filePath, cipherKey);      
             try 
             {
                 Open(file, pagePoolSize);
@@ -1531,6 +1545,15 @@ namespace Perst.Impl
                 throw new StorageError(StorageError.ErrorCode.STORAGE_NOT_OPENED);
             }        
             return new Ttree(comparator, unique);
+        }
+
+        public override SortedCollection CreateSortedCollection(bool unique) 
+        {
+            if (!opened) 
+            { 
+                throw new StorageError(StorageError.ErrorCode.STORAGE_NOT_OPENED);
+            }        
+            return new Ttree(new DefaultPersistentComparator(), unique);
         }
 
         public override ISet CreateSet() 

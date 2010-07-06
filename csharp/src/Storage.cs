@@ -74,6 +74,19 @@ namespace Perst
             Open(file, DEFAULT_PAGE_POOL_SIZE);
         }
 		
+        /// <summary> Open the encrypted storage
+        /// </summary>
+        /// <param name="filePath">path to the database file
+        /// </param>
+        /// <param name="pagePoolSize">size of page pool (in bytes). Page pool should contain
+        /// at least ten 4kb pages, so minimal page pool size should be at least 40Kb.
+        /// But larger page pool ussually leads to better performance (unless it could not fit
+        /// in memory and cause swapping).
+        /// </param>
+        /// <param name="cipherKey">cipher key</param>
+        abstract public void  Open(String filePath, int pagePoolSize, String cipherKey);
+
+        
         /// <summary>Check if database is opened
         /// </summary>
         /// <returns><code>true</code> if database was opened by <code>open</code> method, 
@@ -159,12 +172,21 @@ namespace Perst
         abstract public SpatialIndex CreateSpatialIndex();
 
         /// <summary>
-        /// Create new sorted collection
+        /// Create new sorted collection with specified comparator
         /// </summary>
         /// <param name="comparator">comparator class specifying order in the collection</param>
         /// <param name="unique"> whether collection is unique (members with the same key value are not allowed)</param>
         /// <returns> persistent object implementing sorted collection</returns>
         abstract public SortedCollection CreateSortedCollection(PersistentComparator comparator, bool unique);
+
+        /// <summary>
+        /// Create new sorted collection. Members of this collections should implement 
+        /// <code>System.IComparable</code> interface and make it possible to compare 
+        /// collection members with each other as well as with serch key.
+        /// </summary>
+        /// <param name="unique"> whether collection is unique (members with the same key value are not allowed)</param>
+        /// <returns> persistent object implementing sorted collection</returns>
+        abstract public SortedCollection CreateSortedCollection(bool unique);
 
         /// <summary>
         /// Create new object set

@@ -122,7 +122,7 @@ public class TestSOD : Persistent
                     "7. Details shipped by supplier\n" + 
                     "8. Orders for detail of supplier\n" + 
                     "9. Exit\n\n>>"))
-                  {
+                {
                     case 1:
                         supplier = new Supplier();
                         supplier.name = input("Supplier name: ");
@@ -199,28 +199,29 @@ public class TestSOD : Persistent
                             Console.WriteLine("Detail ID: " + detail.id);
                         }
                         break;
-                   case 8:
-                    d2o.Reset();
-                    d2o.Project(root.detailId.StartsWith(input("Detail ID prefix: ")));
-                    s2o.Reset();
-                    s2o.Project(root.supplierName.StartsWith(input("Supplier name prefix: ")));
-                    s2o.Join(d2o);
-                    orders = (Order[])s2o.ToArray(typeof(Order));
-                    Array.Sort(orders, 0, orders.Length, Order.quantityComparer);
-                    for (i = 0; i < orders.Length; i++) { 
-                        order = orders[i];
-                        supplier = (Supplier)order.supplier.Owner;
-                        detail = (Detail)order.detail.Owner;
-                        Console.WriteLine("Detail ID: " + detail.id + ", supplier name: " 
-                                           + supplier.name + ", quantity: " + order.quantity);
-                    }
-                    break;           
-                   case 9:
+                    case 8:
+                        d2o.Reset();
+                        d2o.Project(root.detailId.StartsWith(input("Detail ID prefix: ")));
+                        s2o.Reset();
+                        s2o.Project(root.supplierName.StartsWith(input("Supplier name prefix: ")));
+                        s2o.Join(d2o);
+                        orders = (Order[])s2o.ToArray(typeof(Order));
+                        Array.Sort(orders, 0, orders.Length, Order.quantityComparer);
+                        for (i = 0; i < orders.Length; i++) 
+                        { 
+                            order = orders[i];
+                            supplier = (Supplier)order.supplier.Owner;
+                            detail = (Detail)order.detail.Owner;
+                            Console.WriteLine("Detail ID: " + detail.id + ", supplier name: " 
+                                + supplier.name + ", quantity: " + order.quantity);
+                        }
+                        break;           
+                    case 9:
                         db.Close();
                         return;
                 }
                 skip("Press ENTER to continue...");
-            } 
+            }
             catch (StorageError x) 
             { 
                 Console.WriteLine("Error: " + x.Message);

@@ -278,6 +278,11 @@
                     BuildAction = "Compile"
                 />
                 <File
+                    RelPath = "src\impl\DefaultPersistentComparator.cs"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
                     RelPath = "src\impl\GeneratedSerializer.cs"
                     SubType = "Code"
                     BuildAction = "Compile"
@@ -319,6 +324,11 @@
                 />
                 <File
                     RelPath = "src\impl\PersistentSet.cs"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "src\impl\Rc4File.cs"
                     SubType = "Code"
                     BuildAction = "Compile"
                 />

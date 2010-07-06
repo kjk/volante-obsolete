@@ -6,24 +6,24 @@ namespace Perst.Impl
 	
     public class OSFile : IFile
     {
-        public void Write(long pos, byte[] buf)
+        public virtual void Write(long pos, byte[] buf)
         {
             file.Seek(pos, SeekOrigin.Begin);
             file.Write(buf, 0, buf.Length);
         }
 		
-        public int Read(long pos, byte[] buf)
+        public virtual int Read(long pos, byte[] buf)
         {
             file.Seek(pos, SeekOrigin.Begin);
             return file.Read(buf, 0, buf.Length);
         }
 		
-        public void  Sync()
+        public virtual void  Sync()
         {
             file.Flush();
         }
 		
-        public void  Close()
+        public virtual void  Close()
         {
             file.Close();
         }

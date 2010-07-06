@@ -93,7 +93,7 @@ public class Guess:Persistent
     {
         Storage db = StorageFactory.Instance.CreateStorage();
 		
-        db.Open("guess.dbs");
+        db.Open("guess.dbs", 4*1024*1024, "GUESS");
         Guess root = (Guess) db.Root;
 		
         while (askQuestion("Think of an animal. Ready (y/n) ? "))
