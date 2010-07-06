@@ -1,5 +1,7 @@
 package org.garret.perst;
 
+import java.util.*;
+
 /**
  * Interface of object spatial index.
  * Spatial index is used to allow fast selection of spatial objects belonging to the specified rectangle.
@@ -12,7 +14,38 @@ public interface SpatialIndex extends IPersistent, IResource {
      * @return array of objects which enveloping rectangle intersects with specified rectangle
      */
     public IPersistent[] get(Rectangle r);
-    
+
+    /**
+     * Get array of all members of the index
+     * @return array of index members
+     */
+    public IPersistent[] toArray();
+
+    /**
+     * Get all objects in the index.
+     * The runtime type of the returned array is that of the specified array.  
+     * If the index fits in the specified array, it is returned therein.  
+     * Otherwise, a new array is allocated with the runtime type of the 
+     * specified array and the size of this index.<p>
+     *
+     * If this index fits in the specified array with room to spare
+     * (i.e., the array has more elements than this index), the element
+     * in the array immediately following the end of the index is set to
+     * <tt>null</tt>.  This is useful in determining the length of this
+     * index <i>only</i> if the caller knows that this index does
+     * not contain any <tt>null</tt> elements.)<p>
+     * @param arr specified array
+     * @return array of all objects in the index
+     */
+    public IPersistent[] toArray(IPersistent[] arr);
+
+    /**
+     * Find all objects located in the selected rectangle
+     * @param r selected rectangle
+     * @return array list of objects which enveloping rectangle intersects with specified rectangle
+     */
+    public ArrayList getList(Rectangle r);
+
     /**
      * Put new object in the index. 
      * @param r enveloping rectangle for the object
@@ -34,16 +67,41 @@ public interface SpatialIndex extends IPersistent, IResource {
      * @return number of objects in the index
      */
     public int  size();
-
-
+    
     /**
      * Get wrapping rectangle 
-     * @return minimal rectangle containing all rectangles in the index     
+     * @return minimal rectangle containing all rectangles in the index, <code>null</code> if index is empty     
      */
     public Rectangle getWrappingRectangle();
-    
+
     /**
      * Remove all objects from the index
      */
     public void clear();
+    
+    /**
+     * Get iterator through all members of the index
+     * @return iterator through all objects in the index
+     */
+    public Iterator iterator();
+
+    /**
+     * Get entry iterator through all members of the index
+     * @return entry iterator which key specifies recrtangle and value - correspondent object
+     */
+    public Iterator entryIterator();
+
+    /**
+     * Get objects which rectangle intersects with specified rectangle
+     * @param r selected rectangle
+     * @return iterator for objects which enveloping rectangle overlaps with specified rectangle
+     */
+    public Iterator iterator(Rectangle r); 
+
+    /**
+     * Get entry iterator through objects which rectangle intersects with specified rectangle
+     * @param r selected rectangle
+     * @return entry iterator for objects which enveloping rectangle overlaps with specified rectangle
+     */
+    public Iterator entryIterator(Rectangle r);
 }

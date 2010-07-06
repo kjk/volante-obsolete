@@ -18,7 +18,7 @@ public abstract class Relation<M extends IPersistent, O extends IPersistent> ext
      */
     public void setOwner(O owner) { 
         this.owner = owner;
-        store();
+        modify();
     }
     
     /**

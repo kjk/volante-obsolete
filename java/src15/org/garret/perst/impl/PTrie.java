@@ -1,12 +1,44 @@
 package org.garret.perst.impl;
 
 import org.garret.perst.*;
+import java.util.*;
 
-class PTrie<T extends IPersistent> extends PersistentResource implements PatriciaTrie<T> 
+class PTrie<T extends IPersistent> extends PersistentCollection<T> implements PatriciaTrie<T> 
 { 
     private PTrieNode<T> rootZero;
     private PTrieNode<T> rootOne;
     private int          count;
+
+    public int size() { 
+        return count;
+    }
+
+    public ArrayList<T> elements() { 
+        ArrayList<T> list = new ArrayList<T>(count);
+        fill(list, rootZero);
+        fill(list, rootOne);
+        return list;
+    }
+
+    public Object[] toArray() { 
+        return elements().toArray();
+    }
+
+    public <E> E[] toArray(E[] arr) { 
+        return elements().toArray(arr);
+    }
+
+    public Iterator<T> iterator() { 
+        return elements().iterator();
+    }
+    
+    private static <E extends IPersistent> void fill(ArrayList<E> list, PTrieNode<E> node) { 
+        if (node != null) {
+            list.add(node.obj);
+            fill(list, node.childZero);
+            fill(list, node.childOne);
+        }
+    }
 
     private static int firstDigit(long key, int keyLength)
     {

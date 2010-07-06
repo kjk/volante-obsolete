@@ -10,6 +10,9 @@ public class RtreeR2 extends PersistentResource implements SpatialIndexR2 {
     private transient int updateCounter;
 
     RtreeR2() {}
+    RtreeR2(Storage storage) {
+        super(storage);
+    }
 
     public void put(RectangleR2 r, IPersistent obj) {
         if (root == null) { 
@@ -72,6 +75,22 @@ public class RtreeR2 extends PersistentResource implements SpatialIndexR2 {
         return (IPersistent[])result.toArray(new IPersistent[result.size()]);
     }
 
+    public ArrayList getList(RectangleR2 r) { 
+        ArrayList result = new ArrayList();
+        if (root != null) { 
+            root.find(r, result, height);
+        }
+        return result;
+    }
+
+    public IPersistent[] toArray() {
+        return get(getWrappingRectangle());
+    }
+
+    public IPersistent[] toArray(IPersistent[] arr) {
+        return (IPersistent[])getList(getWrappingRectangle()).toArray(arr);
+    }
+
     public RectangleR2 getWrappingRectangle() {
         if (root != null) { 
             return root.cover();
@@ -95,102 +114,130 @@ public class RtreeR2 extends PersistentResource implements SpatialIndexR2 {
         super.deallocate();
     }
 
-    public Iterator iterator(RectangleR2 r) { 
-        return new RtreeIterator(r);
-    }
-
-    class RtreeIterator implements Iterator { 
-        private RtreeR2Page[] pageStack;
-        private int[]         posStack;
-        private int           sp;
-        private RectangleR2   r;
-        private int           counter;
-
-        RtreeIterator(RectangleR2 rect) {             
+    class RtreeIterator implements Iterator {
+        RtreeIterator(RectangleR2 r) { 
+            counter = updateCounter;
+            if (height == 0) { 
+                return;
+            }
+            this.r = r;            
             pageStack = new RtreeR2Page[height];
             posStack = new int[height];
-            r = rect;
-            sp = 0;
-            counter = updateCounter;
-            RtreeR2Page pg = root;
-            if (pg != null) { 
-              push:
-                while (true) { 
-                    for (int i = 0; i < pg.n; i++) { 
-                        if (rect.intersects(pg.b[i])) { 
-                            posStack[sp] = i;
-                            pageStack[sp] = pg;
-                            if (++sp == pageStack.length) { 
-                                return;
-                            }
-                            pg = (RtreeR2Page)pg.branch.get(i);
-                            continue push;
-                        }
-                    }
-                    popNext();
-                    return;
-                }
+
+            if (!gotoFirstItem(0, root)) { 
+                pageStack = null;
+                posStack = null;
             }
         }
 
-        public void remove() { 
-            throw new UnsupportedOperationException();
+        public boolean hasNext() {
+            if (counter != updateCounter) { 
+                throw new ConcurrentModificationException();
+            }
+            return pageStack != null;
         }
 
-        public boolean hasNext() {
-            return sp > 0 && posStack[sp-1] < pageStack[sp-1].n;
+        protected Object current(int sp) { 
+            return pageStack[sp].branch.get(posStack[sp]);
         }
-        
+
         public Object next() {
             if (!hasNext()) { 
                 throw new NoSuchElementException();
             }
-            if (counter != updateCounter) { 
-                throw new ConcurrentModificationException();
+            Object curr = current(height-1);
+            if (!gotoNextItem(height-1)) { 
+                pageStack = null;
+                posStack = null;
             }
-            int i = posStack[sp-1];   
-            RtreeR2Page pg = pageStack[sp-1];
-            IPersistent curr = pg.branch.get(i);
-            while (++i < pg.n) { 
-                if (r.intersects(pg.b[i])) { 
-                    posStack[sp-1] = i;
-                    return curr;
-                }
-            }
-            sp -= 1;
-            popNext();
             return curr;
         }
-
-        void popNext() { 
-          pop:
-            while (sp != 0) { 
-                sp -= 1;
-                int i = posStack[sp];
-                RtreeR2Page pg = pageStack[sp];
-                while (++i < pg.n) { 
-                    if (r.intersects(pg.b[i])) {
-                        posStack[sp] = i; 
-                        sp += 1;
-                      push:
-                        while (true) { 
-                            pg = (RtreeR2Page)pg.branch.get(i);
-                            for (i = 0; i < pg.n; i++) { 
-                                if (r.intersects(pg.b[i])) { 
-                                    posStack[sp] = i;
-                                    pageStack[sp] = pg;
-                                    if (++sp == pageStack.length) { 
-                                        return;
-                                    }
-                                    continue push;
-                                }
-                            }
-                            continue pop;
-                        }
+ 
+        private boolean gotoFirstItem(int sp, RtreeR2Page pg) { 
+            for (int i = 0, n = pg.n; i < n; i++) { 
+                if (r.intersects(pg.b[i])) { 
+                    if (sp+1 == height || gotoFirstItem(sp+1, (RtreeR2Page)pg.branch.get(i))) { 
+                        pageStack[sp] = pg;
+                        posStack[sp] = i;
+                        return true;
                     }
                 }
             }
+            return false;
         }
+              
+ 
+        private boolean gotoNextItem(int sp) {
+            RtreeR2Page pg = pageStack[sp];
+            for (int i = posStack[sp], n = pg.n; ++i < n;) { 
+                if (r.intersects(pg.b[i])) { 
+                    if (sp+1 == height || gotoFirstItem(sp+1, (RtreeR2Page)pg.branch.get(i))) { 
+                        pageStack[sp] = pg;
+                        posStack[sp] = i;
+                        return true;
+                    }
+                }
+            }
+            pageStack[sp] = null;
+            return (sp > 0) ? gotoNextItem(sp-1) : false;
+        }
+              
+        public void remove() { 
+            throw new UnsupportedOperationException();
+        }
+
+        RtreeR2Page[] pageStack;
+        int[]         posStack;
+        int           counter;
+        RectangleR2   r;
+    }
+    
+    static class RtreeEntry implements Map.Entry {
+        RtreeR2Page pg;
+        int         pos;
+
+	public Object getKey() {
+	    return pg.b[pos];
+	}
+
+	public Object getValue() {
+	    return pg.branch.get(pos);
+	}
+
+  	public Object setValue(Object value) {
+            throw new UnsupportedOperationException();
+        }
+
+        RtreeEntry(RtreeR2Page pg, int pos) { 
+            this.pg = pg;
+            this.pos = pos;
+        }
+    }
+        
+    class RtreeEntryIterator extends RtreeIterator {
+        RtreeEntryIterator(RectangleR2 r) { 
+            super(r);
+        }
+        
+        protected Object current(int sp) { 
+            return new RtreeEntry(pageStack[sp], posStack[sp]);
+        }
+    }
+
+    public Iterator iterator() {
+        return iterator(getWrappingRectangle());
+    }
+
+    public Iterator entryIterator() {
+        return entryIterator(getWrappingRectangle());
+    }
+
+    public Iterator iterator(RectangleR2 r) { 
+        return new RtreeIterator(r);
+    }
+
+    public Iterator entryIterator(RectangleR2 r) { 
+        return new RtreeEntryIterator(r);
     }
 }
     

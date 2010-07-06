@@ -344,3 +344,8 @@ stored in OS file buffers and sooner or later them will be written to the disk)
 4. Introduce IterableIterator class tp JDK 1.5 API which makes it possible to use collection 
    interators in "for" construction
 5. Make it possible to pass key values in Index and FieldIndex methods without creating Key wrapper in JDK 1.5 API
+
+--- Release version 2.47 28.12.2004 -------------------------------------
+1. Revisted collections in JDK 1.5 API (now all collections implmements Collection interface)
+2. Rewrite R-Tree iterator implementation
+3. Fix bug in multified index key field lookup (if key belons to the base class)

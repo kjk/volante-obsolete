@@ -1,5 +1,6 @@
 package org.garret.perst;
 
+import java.util.*;
 
 /** 
  * PATRICIA trie (Practical Algorithm To Retrieve Information Coded In Alphanumeric).
@@ -46,4 +47,40 @@ public interface PatriciaTrie extends IPersistent, IResource {
      * Clear the trie: remove all elements from trie
      */
     void clear();
+
+    /**
+     * Get array of all members of the trie
+     * @return array of trie members
+     */
+    public IPersistent[] toArray();
+
+    /**
+     * Get all objects in the trie.
+     * The runtime type of the returned array is that of the specified array.  
+     * If the index fits in the specified array, it is returned therein.  
+     * Otherwise, a new array is allocated with the runtime type of the 
+     * specified array and the size of this index.<p>
+     *
+     * If this index fits in the specified array with room to spare
+     * (i.e., the array has more elements than this index), the element
+     * in the array immediately following the end of the index is set to
+     * <tt>null</tt>.  This is useful in determining the length of this
+     * index <i>only</i> if the caller knows that this index does
+     * not contain any <tt>null</tt> elements.)<p>
+     * @param arr specified array
+     * @return array of all objects in the index
+     */
+    public IPersistent[] toArray(IPersistent[] arr);
+
+    /**
+     * Get all objects in the trie.
+     * @return array list of all objects in the trie
+     */
+    public ArrayList elements();
+
+    /**
+     * Get iterator through all trie members
+     * @return iterator through all trie member
+     */
+    public Iterator iterator();
 }

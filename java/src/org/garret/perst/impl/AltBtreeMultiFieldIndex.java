@@ -25,9 +25,9 @@ class AltBtreeMultiFieldIndex extends AltBtree implements FieldIndex {
 
     private final void locateFields() 
     {
-        Class scope = cls;
         fld = new Field[fieldName.length];
         for (int i = 0; i < fieldName.length; i++) {
+            Class scope = cls;
             try { 
                 do { 
                     try { 

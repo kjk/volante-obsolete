@@ -55,6 +55,12 @@ public interface BitIndex extends IPersistent, IResource {
      * @return selection iterator
      */
     public Iterator iterator(int set, int clear);
+
+    /**
+     * Get iterator through all objects in the index
+     * @return iterator through all objects in the index
+     */
+    public Iterator iterator();
 }
 
 

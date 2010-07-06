@@ -3,7 +3,7 @@ package org.garret.perst.impl;
 import org.garret.perst.*;
 import java.util.*;
 
-public class RtreeR2<T extends IPersistent> extends PersistentResource implements SpatialIndexR2<T> {
+public class RtreeR2<T extends IPersistent> extends PersistentCollection<T> implements SpatialIndexR2<T> {
     private int           height;
     private int           n;
     private RtreeR2Page   root;
@@ -106,103 +106,138 @@ public class RtreeR2<T extends IPersistent> extends PersistentResource implement
         super.deallocate();
     }
 
-
-    public Iterator<T> iterator(RectangleR2 r) { 
-        return new RtreeIterator(r);
+    public Object[] toArray() {
+        return get(getWrappingRectangle());
     }
 
-    class RtreeIterator<T extends IPersistent> implements Iterator<T> { 
-        private RtreeR2Page[] pageStack;
-        private int[]         posStack;
-        private int           sp;
-        private RectangleR2   r;
-        private int           counter;
-
-        RtreeIterator(RectangleR2 rect) {             
+    public <E> E[] toArray(E[] arr) {
+        return getList(getWrappingRectangle()).toArray(arr);
+    }
+    
+    class RtreeIterator<E> extends IterableIterator<E> {
+        RtreeIterator(RectangleR2 r) { 
+            counter = updateCounter;
+            if (height == 0) { 
+                return;
+            }
+            this.r = r;            
             pageStack = new RtreeR2Page[height];
             posStack = new int[height];
-            r = rect;
-            sp = 0;
-            counter = updateCounter;
-            RtreeR2Page pg = root;
-            if (pg != null) { 
-              push:
-                while (true) { 
-                    for (int i = 0; i < pg.n; i++) { 
-                        if (rect.intersects(pg.b[i])) { 
-                            posStack[sp] = i;
-                            pageStack[sp] = pg;
-                            if (++sp == pageStack.length) { 
-                                return;
-                            }
-                            pg = (RtreeR2Page)pg.branch.get(i);
-                            continue push;
-                        }
-                    }
-                    popNext();
-                    return;
-                }
+
+            if (!gotoFirstItem(0, root)) { 
+                pageStack = null;
+                posStack = null;
             }
         }
 
+        public boolean hasNext() {
+            if (counter != updateCounter) { 
+                throw new ConcurrentModificationException();
+            }
+            return pageStack != null;
+        }
+
+        protected Object current(int sp) { 
+            return pageStack[sp].branch.get(posStack[sp]);
+        }
+
+        public E next() {
+            if (!hasNext()) { 
+                throw new NoSuchElementException();
+            }
+            E curr = (E)current(height-1);
+            if (!gotoNextItem(height-1)) { 
+                pageStack = null;
+                posStack = null;
+            }
+            return curr;
+        }
+ 
+        private boolean gotoFirstItem(int sp, RtreeR2Page pg) { 
+            for (int i = 0, n = pg.n; i < n; i++) { 
+                if (r.intersects(pg.b[i])) { 
+                    if (sp+1 == height || gotoFirstItem(sp+1, (RtreeR2Page)pg.branch.get(i))) { 
+                        pageStack[sp] = pg;
+                        posStack[sp] = i;
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+              
+ 
+        private boolean gotoNextItem(int sp) {
+            RtreeR2Page pg = pageStack[sp];
+            for (int i = posStack[sp], n = pg.n; ++i < n;) { 
+                if (r.intersects(pg.b[i])) { 
+                    if (sp+1 == height || gotoFirstItem(sp+1, (RtreeR2Page)pg.branch.get(i))) { 
+                        pageStack[sp] = pg;
+                        posStack[sp] = i;
+                        return true;
+                    }
+                }
+            }
+            pageStack[sp] = null;
+            return (sp > 0) ? gotoNextItem(sp-1) : false;
+        }
+              
         public void remove() { 
             throw new UnsupportedOperationException();
         }
 
-        public boolean hasNext() {
-            return sp > 0 && posStack[sp-1] < pageStack[sp-1].n;
-        }
-        
-        public T next() {
-            if (!hasNext()) { 
-                throw new NoSuchElementException();
-            }
-            if (counter != updateCounter) { 
-                throw new ConcurrentModificationException();
-            }
-            int i = posStack[sp-1];   
-            RtreeR2Page pg = pageStack[sp-1];
-            T curr = (T)pg.branch.get(i);
-            while (++i < pg.n) { 
-                if (r.intersects(pg.b[i])) { 
-                    posStack[sp-1] = i;
-                    return curr;
-                }
-            }
-            sp -= 1;
-            popNext();
-            return curr;
+        RtreeR2Page[] pageStack;
+        int[]         posStack;
+        int           counter;
+        RectangleR2   r;
+    }
+    
+    static class RtreeEntry<T> implements Map.Entry<RectangleR2,T> {
+        RtreeR2Page pg;
+        int         pos;
+
+	public RectangleR2 getKey() {
+	    return pg.b[pos];
+	}
+
+	public T getValue() {
+	    return (T)pg.branch.get(pos);
+	}
+
+  	public T setValue(T value) {
+            throw new UnsupportedOperationException();
         }
 
-        void popNext() { 
-          pop:
-            while (sp != 0) { 
-                sp -= 1;
-                int i = posStack[sp];
-                RtreeR2Page pg = pageStack[sp];
-                while (++i < pg.n) { 
-                    if (r.intersects(pg.b[i])) {
-                        posStack[sp] = i; 
-                        sp += 1;
-                      push:
-                        while (true) { 
-                            pg = (RtreeR2Page)pg.branch.get(i);
-                            for (i = 0; i < pg.n; i++) { 
-                                if (r.intersects(pg.b[i])) { 
-                                    posStack[sp] = i;
-                                    pageStack[sp] = pg;
-                                    if (++sp == pageStack.length) { 
-                                        return;
-                                    }
-                                    continue push;
-                                }
-                            }
-                            continue pop;
-                        }
-                    }
-                }
-            }
+        RtreeEntry(RtreeR2Page pg, int pos) { 
+            this.pg = pg;
+            this.pos = pos;
         }
+    }
+        
+    class RtreeEntryIterator extends RtreeIterator<Map.Entry<RectangleR2,T>> {
+        RtreeEntryIterator(RectangleR2 r) { 
+            super(r);
+        }
+        
+        protected Object current(int sp) { 
+            return new RtreeEntry(pageStack[sp], posStack[sp]);
+        }
+    }
+
+    public Iterator<T> iterator() {
+        return iterator(getWrappingRectangle());
+    }
+
+    public IterableIterator<Map.Entry<RectangleR2,T>> entryIterator() {
+        return entryIterator(getWrappingRectangle());
+    }
+
+    public IterableIterator<T> iterator(RectangleR2 r) { 
+        return new RtreeIterator<T>(r);
+    }
+
+    public IterableIterator<Map.Entry<RectangleR2,T>> entryIterator(RectangleR2 r) { 
+        return new RtreeEntryIterator(r);
     }
 }
     

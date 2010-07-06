@@ -201,7 +201,7 @@ public class Ttree<T extends IPersistent> extends PersistentCollection<T> implem
         return arr;
     }
 
-    static class TtreeIterator<T> implements Iterator<T> { 
+    static class TtreeIterator<T> extends IterableIterator<T> { 
         int           i;
         ArrayList     list;
         boolean       removed;
@@ -235,15 +235,15 @@ public class Ttree<T extends IPersistent> extends PersistentCollection<T> implem
         }
     }
         
-    public java.util.Iterator<T> iterator() {
+    public Iterator<T> iterator() {
         return iterator(null, null);
     }
 
-    public java.util.Iterator<T> iterator(Object from, Object till) {
+    public IterableIterator<T> iterator(Object from, Object till) {
         return iterator(from, true, till, true);
     }
 
-    public java.util.Iterator<T> iterator(Object from, boolean fromInclusive, Object till, boolean tillInclusive) {
+    public IterableIterator<T> iterator(Object from, boolean fromInclusive, Object till, boolean tillInclusive) {
         ArrayList list = new ArrayList();
         if (root != null) { 
             root.find(comparator, from, fromInclusive ? 1 : 0, till, tillInclusive ? 1 : 0, list);

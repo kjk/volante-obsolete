@@ -2,8 +2,20 @@ package org.garret.perst.impl;
 import  org.garret.perst.*;
 import java.util.*;
 
-public class TimeSeriesImpl<T extends TimeSeries.Tick> extends PersistentResource implements TimeSeries<T> { 
-    public void add(T tick) { 
+public class TimeSeriesImpl<T extends TimeSeries.Tick> extends PersistentCollection<T> implements TimeSeries<T> { 
+    public ArrayList<T> elements() { 
+        return new ArrayList<T>(this);
+    }
+
+    public Object[] toArray() { 
+        return elements().toArray();
+    }
+
+    public <E> E[] toArray(E[] arr) { 
+        return elements().toArray(arr);
+    }
+
+    public boolean add(T tick) { 
         long time = tick.getTime();
         IPersistent[] blocks = index.get(new Key(time - maxBlockTimeInterval), new Key(time));
         if (blocks.length != 0) { 
@@ -11,9 +23,10 @@ public class TimeSeriesImpl<T extends TimeSeries.Tick> extends PersistentResourc
         } else { 
             addNewBlock(tick);
         }
+        return true;
     }
 
-    class TimeSeriesIterator implements Iterator<T> { 
+    class TimeSeriesIterator extends IterableIterator<T> { 
         TimeSeriesIterator(long from, long till) { 
             pos = -1;
             this.till = till;
@@ -77,7 +90,7 @@ public class TimeSeriesImpl<T extends TimeSeries.Tick> extends PersistentResourc
     }
                 
             
-    class TimeSeriesReverseIterator implements Iterator<T> { 
+    class TimeSeriesReverseIterator extends IterableIterator<T> { 
         TimeSeriesReverseIterator(long from, long till) { 
             pos = -1;
             this.from = from;
@@ -144,20 +157,20 @@ public class TimeSeriesImpl<T extends TimeSeries.Tick> extends PersistentResourc
         return iterator(null, null, true);
     }
 
-    public Iterator<T> iterator(Date from, Date till) {
+    public IterableIterator<T> iterator(Date from, Date till) {
         return iterator(from, till, true);
     }
 
-    public Iterator<T> iterator(boolean ascent) {
+    public IterableIterator<T> iterator(boolean ascent) {
         return iterator(null, null, ascent);
     }
 
-    public Iterator<T> iterator(Date from, Date till, boolean ascent) { 
+    public IterableIterator<T> iterator(Date from, Date till, boolean ascent) { 
         long low = from == null ? 0 : from.getTime();
         long high = till == null ? Long.MAX_VALUE : till.getTime();
         return ascent 
-            ? (Iterator<T>)new TimeSeriesIterator(low, high)
-            : (Iterator<T>)new TimeSeriesReverseIterator(low, high);
+            ? (IterableIterator<T>)new TimeSeriesIterator(low, high)
+            : (IterableIterator<T>)new TimeSeriesReverseIterator(low, high);
     }
 
     public Date getFirstTime() {
@@ -178,8 +191,8 @@ public class TimeSeriesImpl<T extends TimeSeries.Tick> extends PersistentResourc
         return null;
     }
 
-    public long size() {
-        long n = 0;
+    public int size() {
+        int n = 0;
         Iterator blockIterator = index.iterator();
         while (blockIterator.hasNext()) { 
             Block block = (Block)blockIterator.next();            
@@ -216,10 +229,10 @@ public class TimeSeriesImpl<T extends TimeSeries.Tick> extends PersistentResourc
         return getTick(timestamp) != null;
     }
 
-    public long remove(Date from, Date till) {
+    public int remove(Date from, Date till) {
         long low = from == null ? 0 : from.getTime();
         long high = till == null ? Long.MAX_VALUE : till.getTime();
-        long nRemoved = 0;
+        int  nRemoved = 0;
         Key  fromKey = new Key(low - maxBlockTimeInterval);
         Key  tillKey =  new Key(high);
         Iterator blockIterator = index.iterator(fromKey, tillKey, Index.ASCENT_ORDER);
@@ -332,13 +345,18 @@ public class TimeSeriesImpl<T extends TimeSeries.Tick> extends PersistentResourc
         blockClass = ClassDescriptor.loadClass(getStorage(), blockClassName);
     }
 
-
-    public void deallocate() {
+    public void clear() { 
         Iterator blockIterator = index.iterator();
         while (blockIterator.hasNext()) {
             Block block = (Block)blockIterator.next();
             block.deallocate();
         }
+        index.clear();
+    }        
+
+
+    public void deallocate() {
+        clear();
         index.deallocate();
         super.deallocate();
     }

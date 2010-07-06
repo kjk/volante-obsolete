@@ -1,17 +1,17 @@
 package org.garret.perst;
 
-import java.util.ArrayList;
+import java.util.*;
 
 /**
  * Interface of object spatial index.
  * Spatial index is used to allow fast selection of spatial objects belonging to the specified rectangle.
  * Spatial index is implemented using Guttman R-Tree with quadratic split algorithm.
  */
-public interface SpatialIndex<T extends IPersistent> extends IPersistent, IResource { 
+public interface SpatialIndex<T extends IPersistent> extends IPersistent, IResource, Collection<T> { 
     /**
      * Find all objects located in the selected rectangle
      * @param r selected rectangle
-     * @return array list of objects which enveloping rectangle intersects with specified rectangle
+     * @return array of objects which enveloping rectangle intersects with specified rectangle
      */
     public IPersistent[] get(Rectangle r);
 
@@ -54,4 +54,31 @@ public interface SpatialIndex<T extends IPersistent> extends IPersistent, IResou
      * Remove all objects from the index
      */
     public void clear();
+
+    /**
+     * Get iterator through all members of the index
+     * @return iterator through all objects in the index
+     */
+    public Iterator<T> iterator();
+
+    /**
+     * Get entry iterator through all members of the index
+     * @return entry iterator which key specifies recrtangle and value - correspondent object
+     */
+    public IterableIterator<Map.Entry<Rectangle,T>> entryIterator();
+
+    /**
+     * Get objects which rectangle intersects with specified rectangle
+     * @param r selected rectangle
+     * @return iterator for objects which enveloping rectangle overlaps with specified rectangle
+     */
+    public IterableIterator<T> iterator(Rectangle r);
+
+    /**
+     * Get entry iterator through objects which rectangle intersects with specified rectangle
+     * @param r selected rectangle
+     * @return entry iterator for objects which enveloping rectangle overlaps with specified rectangle
+     */
+    public IterableIterator<Map.Entry<Rectangle,T>> entryIterator(Rectangle r);
 }
+

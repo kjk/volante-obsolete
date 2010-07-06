@@ -83,7 +83,8 @@ public interface GenericIndex extends IPersistent, IResource {
      * <tt>null</tt>.  This is useful in determining the length of this
      * index <i>only</i> if the caller knows that this index does
      * not contain any <tt>null</tt> elements.)<p>
-     * @return array of objects in the index ordered by key value
+     * @param arr specified array
+     * @return array of all objects in the index
      */
     public IPersistent[] toPersistentArray(IPersistent[] arr);
 

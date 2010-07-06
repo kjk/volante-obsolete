@@ -188,6 +188,11 @@ class BitIndexImpl extends Btree implements BitIndex
         int         counter;
     }
 
+    public Iterator iterator() 
+    { 
+        return iterator(0, 0);
+    } 
+
     public Iterator iterator(int set, int clear) 
     { 
         return new BitIndexIterator(set, clear);

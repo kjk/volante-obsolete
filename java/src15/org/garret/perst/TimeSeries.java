@@ -1,7 +1,6 @@
 package org.garret.perst;
 
-import java.util.Iterator;
-import java.util.Date;
+import java.util.*;
 
 /**
  * <p>
@@ -19,7 +18,7 @@ import java.util.Date;
  * the size of the block.
  * </p>
  */
-public interface TimeSeries<T extends TimeSeries.Tick> extends IPersistent, IResource { 
+public interface TimeSeries<T extends TimeSeries.Tick> extends IPersistent, IResource, Collection<T> { 
     /**
      * Interface for timeseries element.
      * You should derive your time series element from this class
@@ -58,7 +57,13 @@ public interface TimeSeries<T extends TimeSeries.Tick> extends IPersistent, IRes
      * Add new tick to time series
      * @param tick new time series element
      */
-    void     add(T tick);    
+    boolean add(T tick);    
+
+    /**
+     * Get list of alements in the time series (in ascending order)
+     * @return list of all elements
+     */
+    ArrayList<T> elements();
 
     /**
      * Get forward iterator through all time series elements
@@ -74,14 +79,14 @@ public interface TimeSeries<T extends TimeSeries.Tick> extends IPersistent, IRes
      * if null then take all elements till the end of time series
      * @return forward iterator within specified range.
      */
-    Iterator<T> iterator(Date from, Date till);
+    IterableIterator<T> iterator(Date from, Date till);
 
     /**
      * Get iterator through all time series elements
      * @param ascent direction of iteration
      * @return iterator in specified direction
      */
-    Iterator<T> iterator(boolean ascent);
+    IterableIterator<T> iterator(boolean ascent);
 
     /**
      * Get forward iterator for time series elements belonging to the specified range
@@ -92,7 +97,7 @@ public interface TimeSeries<T extends TimeSeries.Tick> extends IPersistent, IRes
      * @param ascent direction of iteration
      * @return iterator within specified range in specified direction
      */
-    Iterator<T> iterator(Date from, Date till, boolean ascent);
+    IterableIterator<T> iterator(Date from, Date till, boolean ascent);
 
     /**
      * Get timestamp of first time series element
@@ -110,7 +115,7 @@ public interface TimeSeries<T extends TimeSeries.Tick> extends IPersistent, IRes
      * Get number of elements in time series
      * @return number of elements in time series
      */
-    long size();
+    int size();
 
     /** 
      * Get tick for specified data
@@ -126,7 +131,7 @@ public interface TimeSeries<T extends TimeSeries.Tick> extends IPersistent, IRes
      * @return <code>true</code> if there is element in time series with such timestamp, 
      * <code>false</code> otherwise
      */
-    boolean  has(Date timestamp);
+    boolean has(Date timestamp);
 
     /**
      * Remove timeseries elements belonging to the specified range
@@ -136,7 +141,7 @@ public interface TimeSeries<T extends TimeSeries.Tick> extends IPersistent, IRes
      * if null then remove all elements till the end of time series
      * @return number of removed elements
      */
-    long remove(Date from, Date till);
+    int remove(Date from, Date till);
 }
 
     

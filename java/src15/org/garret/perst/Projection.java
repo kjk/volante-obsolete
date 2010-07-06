@@ -9,7 +9,7 @@ import java.lang.reflect.Field;
  * value of specified field (of IPersistent, array of IPersistent, Link or Relation type)
  * is inspected and all referenced object for projection (duplicate values are eliminated)
  */
-public class Projection<From extends IPersistent, To extends IPersistent> { 
+public class Projection<From extends IPersistent, To extends IPersistent> extends HashSet<To> { 
     /**
      * Constructor of projection specified by class and field name of projected objects
      * @param type base class for selected objects
@@ -22,7 +22,7 @@ public class Projection<From extends IPersistent, To extends IPersistent> {
     /**
      * Default constructor of projection. This constructor should be used
      * only when you are going to derive your class from Projection and redefine
-     * map method in it or sepcify type and fieldName later using setProjectionField
+     * map method in it or specify type and fieldName later using setProjectionField
      * method
      */
     public Projection() {}
@@ -61,7 +61,7 @@ public class Projection<From extends IPersistent, To extends IPersistent> {
 
     /**
      * Project specified selection
-     * @param selection iterator specifying selceted objects
+     * @param selection iterator specifying selected objects
      */
     public void project(Iterator<From> selection) { 
         while (selection.hasNext()) { 
@@ -70,73 +70,47 @@ public class Projection<From extends IPersistent, To extends IPersistent> {
     } 
 
     /**
+     * Project specified selection
+     * @param c selection iterator specifying selected objects
+     */
+    public void project(Collection<From> c) { 
+        for (From o : c) { 
+            map(o);
+        }
+    } 
+
+    /**
      * Join this projection with another projection.
      * Result of this join is set of objects present in both projections.
      */
     public void join(Projection<From, To> prj) { 
-        set.retainAll(prj.set);
+        retainAll(prj);
     }
 
     /**
      * Get result of preceding project and join operations
      * @return array of objects
      */
-    public IPersistent[] toArray() { 
-        return (IPersistent[])set.toArray(new IPersistent[set.size()]);
+    public IPersistent[] toPersistentArray() { 
+        return (IPersistent[])toArray(new IPersistent[size()]);
     }
 
     /**
-     * Get result of preceding project and join operations
-     * The runtime type of the returned array is that of the specified array.  
-     * If the index fits in the specified array, it is returned therein.  
-     * Otherwise, a new array is allocated with the runtime type of the 
-     * specified array and the size of this index.<p>
-     *
-     * If this index fits in the specified array with room to spare
-     * (i.e., the array has more elements than this index), the element
-     * in the array immediately following the end of the index is set to
-     * <tt>null</tt>.  This is useful in determining the length of this
-     * index <i>only</i> if the caller knows that this index does
-     * not contain any <tt>null</tt> elements.)<p>
-     * @param arr destination array 
-     * @return array of objects
-     */
-    public To[] toArray(To[] arr) { 
-        return (To[])set.toArray(arr);
-    }
-
-    /**
-     * Get number of objets in the result 
-     */
-    public int size() { 
-        return set.size();
-    }
-
-
-
-    /**
-     * Get iterator for result of preceding project and join operations
-     * @return iterator
-     */
-    public Iterator<To> iterator() { 
-        return set.iterator();
-    }
-
-    /**
-     * Reset projection - clear result of prceding project and join operations
+     * Reset projection - clear result of preceding project and join operations
      */
     public void reset() { 
-        set.clear();
+        clear();
     }
 
     /**
      * Add object to the set
      * @param obj objet to be added
      */
-    protected void add(To obj) { 
+    public boolean add(To obj) { 
         if (obj != null) { 
-            set.add(obj);
+            return super.add(obj);
         }
+        return false;
     }
 
     /**
@@ -147,7 +121,7 @@ public class Projection<From extends IPersistent, To extends IPersistent> {
      */
     protected void map(From obj) {   
         if (field == null) { 
-            set.add((To)obj);
+            add((To)obj);
         } else { 
             try { 
                 Object o = field.get(obj);
@@ -170,7 +144,5 @@ public class Projection<From extends IPersistent, To extends IPersistent> {
         }
     }
 
-
-    private HashSet<To> set = new HashSet<To>();
-    private Field       field;
+    private Field field;
 }

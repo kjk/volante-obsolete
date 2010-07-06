@@ -2,7 +2,7 @@ package org.garret.perst.impl;
 import  org.garret.perst.*;
 import  java.util.*;
 
-public abstract class PersistentCollection<T extends IPersistent> extends PersistentResource implements Collection<T>
+public abstract class PersistentCollection<T> extends PersistentResource implements Collection<T>
 {
     public boolean containsAll(Collection<?> c) {
 	Iterator<?> e = c.iterator();

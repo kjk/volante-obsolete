@@ -1,6 +1,6 @@
 package org.garret.perst;
 
-import java.util.Iterator;
+import java.util.*;
 
 /**
  * Interface of bit index.
@@ -10,7 +10,7 @@ import java.util.Iterator;
  * some binary or boolean property, for example "sex", but it is possible to 
  * use group of bits to represent enumerations with more possible values.
  */
-public interface BitIndex<T extends IPersistent> extends IPersistent, IResource { 
+public interface BitIndex<T extends IPersistent> extends IPersistent, IResource, Collection<T> { 
     /**
      * Get properties of specified object
      * @param obj object which properties are requested
@@ -53,7 +53,7 @@ public interface BitIndex<T extends IPersistent> extends IPersistent, IResource 
      * @param clear bitmask specifying bits which should be cleared (0)
      * @return selection iterator
      */
-    public Iterator<T> iterator(int set, int clear);
+    public IterableIterator<T> iterator(int set, int clear);
 }
 
 

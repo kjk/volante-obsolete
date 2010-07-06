@@ -83,7 +83,7 @@ class BitIndexImpl<T extends IPersistent> extends Btree<T> implements BitIndex<T
         modify();
     }
         
-    class BitIndexIterator<E extends IPersistent> implements Iterator<E> 
+    class BitIndexIterator<E extends IPersistent> extends IterableIterator<E> 
     { 
         BitIndexIterator(int set, int clear) 
         { 
@@ -187,7 +187,12 @@ class BitIndexImpl<T extends IPersistent> extends Btree<T> implements BitIndex<T
         int         counter;
     }
 
-    public Iterator<T> iterator(int set, int clear) 
+    public Iterator<T> iterator() 
+    {
+        return iterator(0, 0);
+    }
+
+    public IterableIterator<T> iterator(int set, int clear) 
     { 
         return new BitIndexIterator<T>(set, clear);
     }

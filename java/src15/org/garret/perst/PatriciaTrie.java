@@ -1,5 +1,6 @@
 package org.garret.perst;
 
+import java.util.*;
 
 /** 
  * PATRICIA trie (Practical Algorithm To Retrieve Information Coded In Alphanumeric).
@@ -11,7 +12,7 @@ package org.garret.perst;
  * This structure has it's main use in IP routing software, but can provide an interesting alternative 
  * to other structures such as hashtables when memory space is of concern.
  */
-public interface PatriciaTrie<T extends IPersistent> extends IPersistent, IResource { 
+public interface PatriciaTrie<T extends IPersistent> extends IPersistent, IResource, Collection<T> { 
     /** 
      * Add new key to the trie
      * @param key bit vector
@@ -46,4 +47,10 @@ public interface PatriciaTrie<T extends IPersistent> extends IPersistent, IResou
      * Clear the trie: remove all elements from trie
      */
     void clear();
+
+    /**
+     * Get list of all elements in the Trie
+     * @return list of all elements
+     */
+    ArrayList<T> elements();
 }

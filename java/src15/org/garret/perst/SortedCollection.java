@@ -115,7 +115,7 @@ public interface SortedCollection<T extends IPersistent> extends IPersistent, IR
      * @param till inclusive high boundary. If <code>null</code> then high boundary is not specified.
      * @return selection iterator
      */
-    public Iterator<T> iterator(Object from, Object till);
+    public IterableIterator<T> iterator(Object from, Object till);
 
     /**
      * Get iterator for traversing collection members  with key belonging to the specified range. 
@@ -125,7 +125,7 @@ public interface SortedCollection<T extends IPersistent> extends IPersistent, IR
      * @param tillInclusive specifies whether till boundary is inclusive or exclusive
      * @return selection iterator
      */
-    public Iterator<T> iterator(Object from, boolean fromInclusive, Object till, boolean tillInclusive);
+    public IterableIterator<T> iterator(Object from, boolean fromInclusive, Object till, boolean tillInclusive);
 
     /**
      * Get comparator used in this collection

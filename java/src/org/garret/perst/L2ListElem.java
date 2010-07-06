@@ -37,6 +37,7 @@ public class L2ListElem extends PersistentResource {
 
     /**
      * Link specified element in the list after this element
+     * @param elem element to be linked in the list after this elemen
      */
     public void linkAfter(L2ListElem elem) { 
         modify();
@@ -50,6 +51,7 @@ public class L2ListElem extends PersistentResource {
 
     /**
      * Link specified element in the list before this element
+     * @param elem element to be linked in the list before this elemen
      */
     public void linkBefore(L2ListElem elem) { 
         modify();
