@@ -1745,6 +1745,10 @@ namespace Perst.Impl
                     case ClassDescriptor.FieldType.tpDate:
                         offs += 8;
                         continue;
+                    case ClassDescriptor.FieldType.tpDecimal:
+                    case ClassDescriptor.FieldType.tpGuid:
+                        offs += 16;
+                        continue;
                     case ClassDescriptor.FieldType.tpString:
                     {
                         int strlen = Bytes.unpack4(obj, offs);
@@ -2329,6 +2333,10 @@ namespace Perst.Impl
                         case ClassDescriptor.FieldType.tpDate:
                             offs += 8;
                             continue;
+                        case ClassDescriptor.FieldType.tpDecimal:
+                        case ClassDescriptor.FieldType.tpGuid:
+                            offs += 16;
+                            continue;
                         case ClassDescriptor.FieldType.tpString:
                             len = Bytes.unpack4(body, offs);
                             offs += 4;
@@ -2503,10 +2511,31 @@ namespace Perst.Impl
                             offs += 8;
                             continue;
 					
+                        case ClassDescriptor.FieldType.tpDecimal:
+                        {
+                            int[] bits = new int[4];
+                            for (int j = 0; j < 4; j++) 
+                            { 
+                                bits[j] = Bytes.unpack4(body, offs);
+                                offs += 4;
+                            }
+                            f.SetValue(obj, new decimal(bits));
+                            break;
+                        }
+
+                        case ClassDescriptor.FieldType.tpGuid:
+                        {
+                            byte[] bits = new byte[16];
+                            Array.Copy(body, offs, bits, 0, 16);
+                            offs += 16;
+                            f.SetValue(obj, new Guid(bits));
+                            break;
+                        }
+
                         case ClassDescriptor.FieldType.tpString: 
                             len = Bytes.unpack4(body, offs);
                             offs += 4;
-                            System.String str = null;
+                            String str = null;
                             if (len >= 0)
                             {
                                 char[] chars = new char[len];
@@ -2995,7 +3024,7 @@ namespace Perst.Impl
 					
                     case ClassDescriptor.FieldType.tpChar: 
                         buf.extend(offs + 2);
-                        Bytes.pack2(buf.arr, offs, (short) f.GetValue(obj));
+                        Bytes.pack2(buf.arr, offs, (short) (char)f.GetValue(obj));
                         offs += 2;
                         continue;
 					
@@ -3030,6 +3059,24 @@ namespace Perst.Impl
                         offs += 8;
                         continue;
 					
+                    case ClassDescriptor.FieldType.tpDecimal:
+                    {
+                        buf.extend(offs + 16);
+                        int[] bits = Decimal.GetBits((decimal)f.GetValue(obj));
+                        for (int j = 0; j < 4; j++) 
+                        { 
+                            Bytes.pack4(buf.arr, offs, bits[j]);
+                            offs += 4;
+                        }
+                        break;
+                    }
+
+                    case ClassDescriptor.FieldType.tpGuid:
+                        buf.extend(offs + 16);
+                        Array.Copy(buf.arr, offs, ((Guid)f.GetValue(obj)).ToByteArray(), 0, 16);
+                        offs += 16;
+                        break;
+
                     case ClassDescriptor.FieldType.tpDate: 
                     {
                         buf.extend(offs + 8);

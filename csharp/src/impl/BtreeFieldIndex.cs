@@ -65,58 +65,65 @@ namespace Perst.Impl
         { 
             Object val = mbr is FieldInfo ? ((FieldInfo)mbr).GetValue(obj) : ((PropertyInfo)mbr).GetValue(obj, null);
             Key key = null;
-            switch (type) {
-              case ClassDescriptor.FieldType.tpBoolean:
-                key = new Key((bool)val);
-                break;
-              case ClassDescriptor.FieldType.tpByte:
-                key = new Key((byte)val);
-                break;
-              case ClassDescriptor.FieldType.tpSByte:
-                key = new Key((sbyte)val);
-                break;
-              case ClassDescriptor.FieldType.tpShort:
-                key = new Key((short)val);
-                break;
-              case ClassDescriptor.FieldType.tpUShort:
-                key = new Key((ushort)val);
-                break;
-              case ClassDescriptor.FieldType.tpChar:
-                key = new Key((char)val);
-                break;
-              case ClassDescriptor.FieldType.tpInt:
-                key = new Key((int)val);
-                break;            
-              case ClassDescriptor.FieldType.tpUInt:
-                key = new Key((uint)val);
-                break;            
-              case ClassDescriptor.FieldType.tpObject:
-                key = new Key((IPersistent)val);
-                break;
-              case ClassDescriptor.FieldType.tpLong:
-                key = new Key((long)val);
-                break;            
-              case ClassDescriptor.FieldType.tpULong:
-                key = new Key((ulong)val);
-                break;            
-              case ClassDescriptor.FieldType.tpDate:
-                key = new Key((DateTime)val);
-                break;
-              case ClassDescriptor.FieldType.tpFloat:
-                key = new Key((float)val);
-                break;
-              case ClassDescriptor.FieldType.tpDouble:
-                key = new Key((double)val);
-                break;
-              case ClassDescriptor.FieldType.tpString:
-                key = new Key((String)val);
-                break;
-             case ClassDescriptor.FieldType.tpEnum:
-                key = new Key((Enum)val);
-                break;
-             default:
-                Assert.Failed("Invalid type");
-                break;
+            switch (type) 
+            {
+                case ClassDescriptor.FieldType.tpBoolean:
+                    key = new Key((bool)val);
+                    break;
+                case ClassDescriptor.FieldType.tpByte:
+                    key = new Key((byte)val);
+                    break;
+                case ClassDescriptor.FieldType.tpSByte:
+                    key = new Key((sbyte)val);
+                    break;
+                case ClassDescriptor.FieldType.tpShort:
+                    key = new Key((short)val);
+                    break;
+                case ClassDescriptor.FieldType.tpUShort:
+                    key = new Key((ushort)val);
+                    break;
+                case ClassDescriptor.FieldType.tpChar:
+                    key = new Key((char)val);
+                    break;
+                case ClassDescriptor.FieldType.tpInt:
+                    key = new Key((int)val);
+                    break;            
+                case ClassDescriptor.FieldType.tpUInt:
+                    key = new Key((uint)val);
+                    break;            
+                case ClassDescriptor.FieldType.tpObject:
+                    key = new Key((IPersistent)val);
+                    break;
+                case ClassDescriptor.FieldType.tpLong:
+                    key = new Key((long)val);
+                    break;            
+                case ClassDescriptor.FieldType.tpULong:
+                    key = new Key((ulong)val);
+                    break;            
+                case ClassDescriptor.FieldType.tpDate:
+                    key = new Key((DateTime)val);
+                    break;
+                case ClassDescriptor.FieldType.tpFloat:
+                    key = new Key((float)val);
+                    break;
+                case ClassDescriptor.FieldType.tpDouble:
+                    key = new Key((double)val);
+                    break;
+                case ClassDescriptor.FieldType.tpDecimal:
+                    key = new Key((decimal)val);
+                    break;
+                case ClassDescriptor.FieldType.tpGuid:
+                    key = new Key((Guid)val);
+                    break;
+                case ClassDescriptor.FieldType.tpString:
+                    key = new Key((String)val);
+                    break;
+                case ClassDescriptor.FieldType.tpEnum:
+                    key = new Key((Enum)val);
+                    break;
+                default:
+                    Assert.Failed("Invalid type");
+                    break;
             }
             return key;
         }

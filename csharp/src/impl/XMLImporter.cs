@@ -374,6 +374,28 @@ namespace Perst.Impl
 #endif
                         dst += 8;
                         break;
+
+                    case ClassDescriptor.FieldType.tpDecimal: 
+                    {
+                        int[] bits = Decimal.GetBits(Decimal.Parse(val));
+                        buf.extend(dst+16);
+                        for (int j = 0; j < 4; j++) 
+                        { 
+                            Bytes.pack4(buf.arr, dst, bits[j]);
+                            dst += 4;
+                        }
+                        break;
+                    }
+
+                    case ClassDescriptor.FieldType.tpGuid: 
+                    {
+                        byte[] bits = new Guid(val).ToByteArray();
+                        buf.extend(dst+16);
+                        Array.Copy(bits, 0, buf.arr, dst, 16);
+                        dst += 16;
+                        break;
+                    }
+
                     case ClassDescriptor.FieldType.tpString:
                         buf.extend(dst + 4 + 2*val.Length);
                         Bytes.pack4(buf.arr, dst, val.Length);
@@ -449,6 +471,12 @@ namespace Perst.Impl
                 case ClassDescriptor.FieldType.tpDouble: 
                     return new Key(Double.Parse(val));
 					
+                case ClassDescriptor.FieldType.tpDecimal: 
+                    return new Key(Decimal.Parse(val));
+
+                case ClassDescriptor.FieldType.tpGuid: 
+                    return new Key(new Guid(val));
+
                 case ClassDescriptor.FieldType.tpString: 
                     return new Key(val);
 					
@@ -865,6 +893,62 @@ namespace Perst.Impl
                         offs += 8;
                         continue;
 					
+                    case ClassDescriptor.FieldType.tpDecimal: 
+                        buf.extend(offs + 16);
+                        if (elem != null)
+                        {
+                            decimal d = 0;
+                            if (elem.isIntValue())
+                            {
+                                d = elem.IntValue;
+                            }
+                            else if (elem.isRealValue())
+                            {
+                                d = (decimal)elem.RealValue;
+                            }
+                            else if (elem.isStringValue())
+                            {
+                                try 
+                                { 
+                                    d = Decimal.Parse(elem.StringValue);
+                                } 
+                                catch (FormatException) 
+                                {
+                                    throwException("Invalid date");
+                                }
+                            }
+                            else
+                            {
+                                throwException("Conversion for field " + fieldName + " is not possible");
+                            }
+                            int[] bits = Decimal.GetBits(d);
+                            buf.extend(offs+16);
+                            for (int j = 0; j < 4; j++) 
+                            { 
+                                Bytes.pack4(buf.arr, offs + j*4, bits[j]);
+                            }
+                        }
+                        offs += 16;
+                        continue;
+  
+                    case ClassDescriptor.FieldType.tpGuid: 
+                        buf.extend(offs + 16);
+                        if (elem != null)
+                        {
+                             if (elem.isStringValue())
+                            {
+                                Guid guid = new Guid(elem.StringValue);
+                                byte[] bits = guid.ToByteArray();
+                                Array.Copy(bits, 0, buf.arr, offs, 16);
+                            }
+                            else
+                            {
+                                throwException("Conversion for field " + fieldName + " is not possible");
+                            }
+                        }
+                        offs += 16;
+                        continue;
+                    
                     case ClassDescriptor.FieldType.tpDate: 
                         buf.extend(offs + 8);
                         if (elem != null)

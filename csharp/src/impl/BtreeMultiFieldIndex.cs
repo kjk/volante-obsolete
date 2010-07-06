@@ -151,6 +151,33 @@ namespace Perst.Impl
                         break;
                     }
 
+                    case ClassDescriptor.FieldType.tpDecimal:
+                    {
+                        int[] b1 = new int[4];
+                        int[] b2 = new int[4];
+                        for (int j = 0; j < 4; j++) 
+                        { 
+                            b1[j] = Bytes.unpack4(a1, o1);
+                            b2[j] = Bytes.unpack4(a2, o2);
+                            o1 += 4;
+                            o2 += 4;
+                        }
+                        diff = new decimal(b1).CompareTo(new decimal(b2));
+                        break;
+                    }
+
+                    case ClassDescriptor.FieldType.tpGuid:
+                    {
+                        byte[] b1 = new byte[16];
+                        byte[] b2 = new byte[16];
+                        Array.Copy(a1, o1, b1, 0, 16);
+                        Array.Copy(a2, o2, b2, 0, 16);
+                        o1 += 16;
+                        o2 += 16;
+                        diff = new Guid(b1).CompareTo(new Guid(b2));
+                        break;
+                    }
+
                     case ClassDescriptor.FieldType.tpString:
                     {
                         int len1 = Bytes.unpack4(a1, o1);
@@ -291,6 +318,27 @@ namespace Perst.Impl
 #endif
                         offs += 8;
                         break;
+
+                    case ClassDescriptor.FieldType.tpDecimal:
+                    {
+                        int[] bits = new int[4];
+                        for (int j = 0; j < 4; j++) 
+                        { 
+                            bits[j] = Bytes.unpack4(data, offs);
+                            offs += 4;
+                        }
+                        v = new decimal(bits);
+                        break;
+                    }
+
+                    case ClassDescriptor.FieldType.tpGuid:
+                    {
+                        byte[] bits = new byte[16];
+                        Array.Copy(data, offs, bits, 0, 16);
+                        offs += 16;
+                        v = new Guid(bits);
+                        break;
+                    }
 
                     case ClassDescriptor.FieldType.tpString:
                     {
@@ -438,6 +486,27 @@ namespace Perst.Impl
                     dst += 8;
                     break;
 	
+                case ClassDescriptor.FieldType.tpDecimal: 
+                {
+                    int[] bits = Decimal.GetBits((decimal)val);
+                    buf.extend(dst+16);
+                    for (int i = 0; i < 4; i++) 
+                    { 
+                        Bytes.pack4(buf.arr, dst, bits[i]);
+                        dst += 4;
+                    }
+                    break;
+                }
+
+                case ClassDescriptor.FieldType.tpGuid: 
+                {
+                    byte[] bits = ((Guid)val).ToByteArray();
+                    buf.extend(dst+16);
+                    Array.Copy(bits, 0, buf.arr, dst, 16);
+                    dst += 16;
+                    break;
+                }
+                
                 case ClassDescriptor.FieldType.tpString:
                 {
                     buf.extend(dst+4);

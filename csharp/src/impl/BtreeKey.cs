@@ -93,7 +93,25 @@ namespace Perst.Impl
                     key = new Key(BitConverter.Int64BitsToDouble(Bytes.unpack8(data, offs)));
 #endif
                     break;
-				
+
+                case ClassDescriptor.FieldType.tpGuid:
+                {
+                    byte[] bits = new byte[16];
+                    Array.Copy(data, offs, bits, 0, 16);
+                    key = new Key(new Guid(bits));
+                    break;
+                }
+                case ClassDescriptor.FieldType.tpDecimal:
+                {
+                    int[] bits = new int[4];
+                    bits[0] = Bytes.unpack4(data, offs);
+                    bits[1] = Bytes.unpack4(data, offs+4);
+                    bits[2] = Bytes.unpack4(data, offs+8);
+                    bits[3] = Bytes.unpack4(data, offs+12);
+                    key = new Key(new decimal(bits));
+                    break;
+                }
+
                 default: 
                     Assert.Failed("Invalid type");
                     break;
@@ -143,6 +161,20 @@ namespace Perst.Impl
 #endif
                     break;
 				
+                case ClassDescriptor.FieldType.tpDecimal:
+                {
+                    int[] bits = Decimal.GetBits(key.dec);
+                    for (int j = 0; j < 4; j++) 
+                    { 
+                        Bytes.pack4(dst, BtreePage.firstKeyOffs + i*16 + j*4, bits[j]);
+                    }
+                    break;
+                }
+
+                case ClassDescriptor.FieldType.tpGuid:
+                    Array.Copy(dst, BtreePage.firstKeyOffs + i*16, key.guid.ToByteArray(), 0, 16);
+                    break;
+
                 default: 
                     Assert.Failed("Invalid type");
                     break;

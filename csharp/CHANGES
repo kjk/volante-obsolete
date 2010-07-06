@@ -126,7 +126,8 @@ Attention: database format is incompatible with version 1.22!
 
 1. Make it possible to profile storage memory using Storage.getMemoryDump() method 
 
---- Release version 2.06 08.12.2003 -------------------------------------
+--- Release version 2.06 11.12.2003 -------------------------------------
 
 1. Make it possible to index properties
-
+2. Fix bug in packing char fields.
+3. Support of decimal and Guid types

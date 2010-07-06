@@ -60,9 +60,9 @@ namespace Perst.Impl
             tpDate,
             tpObject,
             tpValue,
-#if SUPPORT_RAW_TYPE
             tpRaw,
-#endif
+            tpGuid,
+            tpDecimal,
             tpLink,
             tpArrayOfBoolean,
             tpArrayOfByte,
@@ -81,14 +81,56 @@ namespace Perst.Impl
             tpArrayOfDate,
             tpArrayOfObject,
             tpArrayOfValue,
-#if SUPPORT_RAW_TYPE
             tpArrayOfRaw,
-#endif
+            tpArrayOfGuid,
+            tpArrayOfDecimal,
             tpLast
         };
 		
-        internal static int[] Sizeof = new int[] {1, 1, 1, 2, 2, 2, 4, 4, 4, 8, 8, 4, 8, 0, 8, 4,
-                                                  0, 0, 0, 0, 0, 0};
+        internal static int[] Sizeof = new int[] 
+        {
+            1, // tpBoolean,
+            1, // tpByte,
+            1, // tpSByte,
+            2, // tpShort, 
+            2, // tpUShort,
+            2, // tpChar,
+            4, // tpEnum,
+            4, // tpInt,
+            4, // tpUInt,
+            8, // tpLong,
+            8, // tpULong,
+            4, // tpFloat,
+            8, // tpDouble,
+            0, // tpString,
+            8, // tpDate,
+            4, // tpObject,
+            0, // tpValue,
+            0, // tpRaw,
+            16,// tpGuid,
+            16,// tpDecimal,
+            0, // tpLink,
+            0, // tpArrayOfBoolean,
+            0, // tpArrayOfByte,
+            0, // tpArrayOfSByte,
+            0, // tpArrayOfShort, 
+            0, // tpArrayOfUShort,
+            0, // tpArrayOfChar,
+            0, // tpArrayOfEnum,
+            0, // tpArrayOfInt,
+            0, // tpArrayOfUInt,
+            0, // tpArrayOfLong,
+            0, // tpArrayOfULong,
+            0, // tpArrayOfFloat,
+            0, // tpArrayOfDouble,
+            0, // tpArrayOfString,
+            0, // tpArrayOfDate,
+            0, // tpArrayOfObject,
+            0, // tpArrayOfValue,
+            0, // tpArrayOfRaw,
+            0, // tpArrayOfGuid,
+            4 // tpArrayOfDecimal,
+        };
 		
         internal static System.Type[] defaultConstructorProfile = new System.Type[0];
         internal static System.Object[] noArgs = new System.Object[0];
@@ -238,6 +280,14 @@ namespace Perst.Impl
             else if (c.IsEnum) 
             { 
                 type = FieldType.tpEnum;
+            }
+            else if (c.Equals(typeof(decimal)))
+            { 
+                type = FieldType.tpDecimal;
+            }
+            else if (c.Equals(typeof(Guid))) 
+            { 
+                type = FieldType.tpGuid;
             }
             else if (typeof(IPersistent).IsAssignableFrom(c))
             {

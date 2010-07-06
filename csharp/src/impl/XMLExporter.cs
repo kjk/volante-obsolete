@@ -139,12 +139,12 @@ namespace Perst.Impl
                     break;
 				
                 case ClassDescriptor.FieldType.tpChar: 
-                    writer.Write(System.Convert.ToString((char) Bytes.unpack2(body, offs)));
+                    writer.Write(System.Convert.ToString((ushort)Bytes.unpack2(body, offs)));
                     offs += 2;
                     break;
 				
                 case ClassDescriptor.FieldType.tpShort: 
-                    writer.Write(System.Convert.ToString(Bytes.unpack2(body, offs)));
+                    writer.Write(System.Convert.ToString((ushort)Bytes.unpack2(body, offs)));
                     offs += 2;
                     break;
 				
@@ -189,6 +189,26 @@ namespace Perst.Impl
                     offs += 8;
                     break;
 				
+                case ClassDescriptor.FieldType.tpGuid:
+                {
+                    byte[] bits = new byte[16];
+                    Array.Copy(body, offs, bits, 0, 16);
+                    offs += 16;
+                    writer.Write("\"" + new Guid(bits) + "\"");
+                    break;
+                }
+                case ClassDescriptor.FieldType.tpDecimal:
+                {
+                    int[] bits = new int[4];
+                    bits[0] = Bytes.unpack4(body, offs);
+                    bits[1] = Bytes.unpack4(body, offs+4);
+                    bits[2] = Bytes.unpack4(body, offs+8);
+                    bits[3] = Bytes.unpack4(body, offs+12);
+                    offs += 16;
+                    writer.Write("\"" + new decimal(bits) + "\"");
+                    break;
+                }
+
                 case ClassDescriptor.FieldType.tpString: 
                     for (int i = 0; i < size; i++)
                     {
@@ -372,12 +392,12 @@ namespace Perst.Impl
                         break;
 					
                     case ClassDescriptor.FieldType.tpChar: 
-                        writer.Write(System.Convert.ToString((char) Bytes.unpack2(body, offs)));
+                        writer.Write(System.Convert.ToString((ushort)Bytes.unpack2(body, offs)));
                         offs += 2;
                         break;
 					
                     case ClassDescriptor.FieldType.tpShort: 
-                        writer.Write(System.Convert.ToString(Bytes.unpack2(body, offs)));
+                        writer.Write(System.Convert.ToString((ushort)Bytes.unpack2(body, offs)));
                         offs += 2;
                         break;
 					
@@ -424,6 +444,27 @@ namespace Perst.Impl
 #endif
                         offs += 8;
                         break;
+
+				
+                    case ClassDescriptor.FieldType.tpGuid:
+                    {
+                        byte[] bits = new byte[16];
+                        Array.Copy(body, offs, bits, 0, 16);
+                        offs += 16;
+                        writer.Write("\"" + new Guid(bits) + "\"");
+                        break;
+                    }
+                    case ClassDescriptor.FieldType.tpDecimal:
+                    {
+                        int[] bits = new int[4];
+                        bits[0] = Bytes.unpack4(body, offs);
+                        bits[1] = Bytes.unpack4(body, offs+4);
+                        bits[2] = Bytes.unpack4(body, offs+8);
+                        bits[3] = Bytes.unpack4(body, offs+12);
+                        offs += 16;
+                        writer.Write("\"" + new decimal(bits) + "\"");
+                        break;
+                    }
 
                     case ClassDescriptor.FieldType.tpString: 
                         offs = exportString(body, offs);

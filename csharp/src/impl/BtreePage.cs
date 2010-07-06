@@ -131,7 +131,23 @@ namespace Perst.Impl
                     r8 = BitConverter.Int64BitsToDouble(Bytes.unpack8(pg.data, BtreePage.firstKeyOffs + i * 8));
 #endif
                     return key.dval < r8 ? -1 : key.dval == r8 ? 0 : 1;
-				
+
+                case ClassDescriptor.FieldType.tpDecimal:
+                {
+                    int[] bits = new int[4];
+                    for (int j = 0; j < 4; j++) 
+                    { 
+                        bits[j] = Bytes.unpack4(pg.data, BtreePage.firstKeyOffs + i*16 + j*4);
+                    }
+                    return key.dec.CompareTo(new decimal(bits));
+                }
+
+                case ClassDescriptor.FieldType.tpGuid:
+                {
+                    byte[] bits = new byte[16];
+                    Array.Copy(pg.data, BtreePage.firstKeyOffs + i*16, bits, 0, 16);
+                    return key.guid.CompareTo(new Guid(bits));
+                }				
             }
             Assert.Failed("Invalid type");
             return 0;
