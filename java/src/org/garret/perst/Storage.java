@@ -5,12 +5,25 @@ package org.garret.perst;
  */
 public abstract class Storage { 
     /**
+     * Constant specifying that page pool should be dynamically extended 
+     * to conatins all database file pages
+     */
+    public static final int INFINITE_PAGE_POOL = 0;
+    /**
+     * Constant specifying default pool size
+     */
+    public static final int DEFAULT_PAGE_POOL_SIZE = 4*1024*1024;
+
+    /**
      * Open the storage
      * @param filePath path to the database file
      * @param pagePoolSize size of page pool (in bytes). Page pool should contain
      * at least ten 4kb pages, so minimal page pool size should be at least 40Kb.
-     * But larger page pool ussually leads to better performance (unless it could not fit
-     * in memory and cause swapping).
+     * But larger page pool usually leads to better performance (unless it could not fit
+     * in memory and cause swapping). Value 0 of this paremeter corresponds to infinite
+     * page pool (all pages are cashed in memory). It is especially useful for in-memory
+     * database, when storage is created with NullFile.
+     * 
      */
     abstract public void open(String filePath, int pagePoolSize);
 
@@ -29,7 +42,7 @@ public abstract class Storage {
      * @param file user specific implementation of IFile interface
      */ 
     public void open(IFile file) {
-        open(file, 4*1024*1024);
+        open(file, DEFAULT_PAGE_POOL_SIZE);
     }
 
     /**
@@ -37,7 +50,7 @@ public abstract class Storage {
      * @param filePath path to the database file
      */ 
     public void open(String filePath) {
-        open(filePath, 4*1024*1024);
+        open(filePath, DEFAULT_PAGE_POOL_SIZE);
     }
 
     /**

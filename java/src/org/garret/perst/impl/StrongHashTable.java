@@ -1,14 +1,13 @@
 package org.garret.perst.impl;
 import  org.garret.perst.*;
-import  java.lang.ref.WeakReference;
 
-public class WeakHashTable implements OidHashTable { 
+public class StrongHashTable implements OidHashTable { 
     Entry table[];
     static final float loadFactor = 0.75f;
     int count;
     int threshold;
 
-    public WeakHashTable(int initialCapacity) {
+    public StrongHashTable(int initialCapacity) {
 	threshold = (int)(initialCapacity * loadFactor);
 	if (initialCapacity != 0) { 
 	    table = new Entry[initialCapacity];
@@ -33,12 +32,11 @@ public class WeakHashTable implements OidHashTable {
     }
 
     public synchronized void put(int oid, IPersistent obj) { 
-	WeakReference ref = new WeakReference(obj);
 	Entry tab[] = table;
 	int index = (oid & 0x7FFFFFFF) % tab.length;
 	for (Entry e = tab[index]; e != null; e = e.next) {
 	    if (e.oid == oid) {
-		e.ref = ref;
+		e.obj = obj;
 		return;
 	    }
 	}
@@ -50,7 +48,7 @@ public class WeakHashTable implements OidHashTable {
 	} 
 
 	// Creates the new entry.
-	tab[index] = new Entry(oid, ref, tab[index]);
+	tab[index] = new Entry(oid, obj, tab[index]);
 	count++;
     }
 
@@ -59,7 +57,7 @@ public class WeakHashTable implements OidHashTable {
 	int index = (oid & 0x7FFFFFFF) % tab.length;
 	for (Entry e = tab[index] ; e != null ; e = e.next) {
 	    if (e.oid == oid) {
-		return (IPersistent)e.ref.get();
+		return e.obj;
 	    }
 	}
 	return null;
@@ -76,24 +74,7 @@ public class WeakHashTable implements OidHashTable {
 	int oldCapacity = table.length;
 	Entry oldMap[] = table;
 	int i;
-	for (i = oldCapacity; --i >= 0;) {
-	    for (Entry prev = null, e = oldMap[i]; e != null; e = e.next) { 
-		if (e.ref.get() == null) { 
-		    count -= 1;
-		    if (prev == null) { 
-			oldMap[i] = e.next;
-		    } else { 
-			prev.next = e.next;
-		    }
-		} else { 
-		    prev = e;
-		}
-	    }
-	}
-	
-	if (count <= (threshold >>> 1)) {
-	    return;
-	}
+
 	int newCapacity = oldCapacity * 2 + 1;
 	Entry newMap[] = new Entry[newCapacity];
 
@@ -118,13 +99,13 @@ public class WeakHashTable implements OidHashTable {
 
     static class Entry { 
         Entry         next;
-        WeakReference ref;
+        IPersistent   obj;
         int           oid;
         
-        Entry(int oid, WeakReference ref, Entry chain) { 
+        Entry(int oid, IPersistent obj, Entry chain) { 
             next = chain;
             this.oid = oid;
-            this.ref = ref;
+            this.obj = obj;
         }
     }
 }

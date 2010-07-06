@@ -2,26 +2,34 @@ package org.garret.perst.impl;
 import  org.garret.perst.*;
 
 class PagePool { 
-    LRU   lru;
-    Page  freePages;
-    Page  hashTable[];
-    int   poolSize;
-    long  fileSize;
-    IFile file;
+    LRU     lru;
+    Page    freePages;
+    Page    hashTable[];
+    int     poolSize;
+    long    fileSize;
+    boolean autoExtended;
+    IFile   file;
 
-    int  nDirtyPages;
-    Page dirtyPages[];
+    int     nDirtyPages;
+    Page    dirtyPages[];
     
     boolean flushing;
 
+    static final int INFINITE_POOL_INITIAL_SIZE = 8;
+
     PagePool(int poolSize) { 
+        if (poolSize == 0) { 
+            autoExtended = true;
+            poolSize = INFINITE_POOL_INITIAL_SIZE;
+        }            
 	this.poolSize = poolSize;
     }
 
     final Page find(long addr, int state) { 	
 	Assert.that((addr & (Page.pageSize-1)) == 0);
 	Page pg;
-	int hashCode = (int)(addr >>> Page.pageBits) % poolSize;
+        int pageNo = (int)(addr >>> Page.pageBits);
+	int hashCode = pageNo % poolSize;
 
 	synchronized (this) { 		
 	    for (pg = hashTable[hashCode]; pg != null; pg = pg.collisionChain) 
@@ -37,7 +45,17 @@ class PagePool {
 		pg = freePages;
 		if (pg != null) { 
 		    freePages = (Page)pg.next;
-		} else { 
+		} else if (autoExtended) { 
+                    if (pageNo >= poolSize) {
+                        int newPoolSize = pageNo >= poolSize*2 ? pageNo+1 : poolSize*2;
+                        Page[] newHashTable = new Page[newPoolSize];
+                        System.arraycopy(hashTable, 0, newHashTable, 0, hashTable.length);
+                        hashTable = newHashTable;
+                        poolSize = newPoolSize;
+                    }
+                    pg = new Page();
+                    hashCode = pageNo;
+                } else { 
 		    Assert.that("unfixed page available", lru.prev != lru);
 		    pg = (Page)lru.prev;
 		    pg.unlink();
@@ -75,6 +93,11 @@ class PagePool {
 	    if ((pg.state & Page.psDirty) == 0 && (state & Page.psDirty) != 0)
 	    {
 		Assert.that(!flushing);
+                if (nDirtyPages >= dirtyPages.length) {                     
+                    Page[] newDirtyPages = new Page[nDirtyPages*2];
+                    System.arraycopy(dirtyPages, 0, newDirtyPages, 0, dirtyPages.length);
+                    dirtyPages = newDirtyPages;
+                }
 		dirtyPages[nDirtyPages] = pg;
 		pg.writeQueueIndex = nDirtyPages++;
 		pg.state |= Page.psDirty;
@@ -140,11 +163,13 @@ class PagePool {
 	nDirtyPages = 0;
 	lru = new LRU();
 	freePages = null;
-	for (int i = poolSize; --i >= 0; ) { 
-	    Page pg = new Page();
-	    pg.next = freePages;
-	    freePages = pg;
-	}
+        if (!autoExtended) { 
+            for (int i = poolSize; --i >= 0; ) { 
+                Page pg = new Page();
+                pg.next = freePages;
+                freePages = pg;
+            }
+        }
     }
 
     final synchronized void close() {
@@ -167,6 +192,11 @@ class PagePool {
 	if ((pg.state & Page.psDirty) == 0) { 
 	    Assert.that(!flushing);
 	    pg.state |= Page.psDirty;
+            if (nDirtyPages >= dirtyPages.length) {                     
+                Page[] newDirtyPages = new Page[nDirtyPages*2];
+                System.arraycopy(dirtyPages, 0, newDirtyPages, 0, dirtyPages.length);
+                dirtyPages = newDirtyPages;
+            }
 	    dirtyPages[nDirtyPages] = pg;
 	    pg.writeQueueIndex = nDirtyPages++;
 	}

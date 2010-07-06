@@ -25,7 +25,7 @@ public class StorageImpl extends Storage {
      */
     static final long dbDefaultExtensionQuantum = 1024*1024;
 
-    static final int  dbDatabaseOffsetBits = 32;  // up to 1 gigabyte, 37 - up to 1 terabyte database
+    static final int  dbDatabaseOffsetBits = 32;  // up to 1 gigabyte, 40 - up to 1 terabyte database
 
     static final int  dbAllocationQuantumBits = 5;
     static final int  dbAllocationQuantum = 1 << dbAllocationQuantumBits;
@@ -749,12 +749,11 @@ public class StorageImpl extends Storage {
         allocatedDelta = 0;
         gcDone = false;
 	modified = false;        
-        if (pagePoolSize == 0) { 
-            pagePoolSize = Page.pageSize*256;
-        }
         pool = new PagePool(pagePoolSize/Page.pageSize);
 
-        objectCache = new WeakHashTable(dbObjectCacheInitSize);
+        objectCache = (pagePoolSize == INFINITE_PAGE_POOL)
+            ? (OidHashTable)new StrongHashTable(dbObjectCacheInitSize) 
+            : (OidHashTable)new WeakHashTable(dbObjectCacheInitSize);
         classDescMap = new HashMap();
         modifiedList = new ArrayList();
         descList = null;
@@ -2490,7 +2489,7 @@ public class StorageImpl extends Storage {
     ArrayList modifiedList;
     boolean   truncateModifiedList;
 
-    WeakHashTable   objectCache;
+    OidHashTable    objectCache;
     HashMap         classDescMap;
     ClassDescriptor descList;
 }
