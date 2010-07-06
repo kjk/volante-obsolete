@@ -108,7 +108,7 @@ public interface TimeSeries extends IPersistent, IResource {
 
     /**
      * Get number of elements in time series
-     * @param number of elements in time series
+     * @return number of elements in time series
      */
     long     size();
 

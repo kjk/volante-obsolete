@@ -5,11 +5,16 @@ package org.garret.perst;
  */
 public class Persistent implements IPersistent { 
     public void load() {
-        if (storage != null) { 
+        if (storage != null && (state & RAW) != 0) { 
             storage.loadObject(this);
         }
     }
-    
+
+    public void loadAndModify() {
+        load();
+        modify();
+    }
+
     public final boolean isRaw() { 
         return (state & RAW) != 0;
     } 

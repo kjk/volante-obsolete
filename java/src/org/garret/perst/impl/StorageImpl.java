@@ -2089,10 +2089,14 @@ public class StorageImpl extends Storage {
             objectCache.put(oid, obj);
         }
         obj.assignOid(this, oid, false);
-        try { 
-            unpackObject(obj, desc, obj.recursiveLoading(), body, ObjectHeader.sizeof);
-        } catch (Exception x) { 
-            throw new StorageError(StorageError.ACCESS_VIOLATION, x);
+        if (obj instanceof FastSerializable) { 
+            ((FastSerializable)obj).unpack(body, ObjectHeader.sizeof);
+        } else { 
+            try { 
+                unpackObject(obj, desc, obj.recursiveLoading(), body, ObjectHeader.sizeof);
+            } catch (Exception x) { 
+                throw new StorageError(StorageError.ACCESS_VIOLATION, x);
+            }
         }
         obj.onLoad();
         return obj;
@@ -2532,11 +2536,15 @@ public class StorageImpl extends Storage {
         int offs = ObjectHeader.sizeof;
         buf.extend(offs);
         ClassDescriptor desc = getClassDescriptor(obj.getClass());
-        try {
-            offs = packObject(obj, desc, offs, buf);
-        } catch (Exception x) { 
-            throw new StorageError(StorageError.ACCESS_VIOLATION, x);
-        }        
+        if (obj instanceof FastSerializable) { 
+            offs = ((FastSerializable)obj).pack(buf, offs);
+        } else { 
+            try {
+                offs = packObject(obj, desc, offs, buf);
+            } catch (Exception x) { 
+                throw new StorageError(StorageError.ACCESS_VIOLATION, x);
+            }        
+        }
         ObjectHeader.setSize(buf.arr, 0, offs);
         ObjectHeader.setType(buf.arr, 0, desc.getOid());
         return buf.arr;        

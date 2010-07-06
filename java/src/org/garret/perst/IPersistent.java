@@ -46,6 +46,11 @@ public interface IPersistent extends java.io.Serializable {
     public void modify();
     
     /**
+     * Load object from the database (if needed) and mark it as modified
+     */
+    public void loadAndModify();
+
+    /**
      * Get object identifier (OID)
      * @return OID (0 if object is not persistent yet)
      */
@@ -93,7 +98,7 @@ public interface IPersistent extends java.io.Serializable {
      * you should not invoke it directly
      * @param storage associated storage
      * @param oid object identifier
-     * @param if object is a stub
+     * @return if object is a stub
      */
     public void assignOid(Storage storage, int oid, boolean raw);
 }

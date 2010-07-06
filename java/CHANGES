@@ -156,3 +156,6 @@ This interface was originally designed by atrick Morris-Suzuki and
 later changed by me.
 2. Fix bug in object modification mechanism which can cause deadlock.
 3. Make it possible to specify part of compound key in query
+
+--- Release version 2.15 06.02.2004 -------------------------------------
+1. Yet another implementation of transparent iterface to Perst using JAssist

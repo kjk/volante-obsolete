@@ -4,7 +4,7 @@
  * To change the template for this generated file go to
  * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
  */
-package org.garret.perst.aop;
+package org.garret.perst.aspectj;
 
 /**
  * @author Patrick Morris-Suzuki
@@ -16,42 +16,41 @@ import org.garret.perst.*;
 privileged public aspect PersistenceAspect {
     declare parents: AutoPersist extends IPersistent;
 
-    pointcut notPerstCode(): !within(org.garret.perst.*) && !within(org.garret.perst.impl.*) && !within(org.garret.perst.aop.*);
+    pointcut notPerstCode(): !within(org.garret.perst.*) && !within(org.garret.perst.impl.*) && !within(org.garret.perst.aspectj.*);
     
-    pointcut persistentMethod(): execution(!static * AutoPersist+.*(..)) && notPerstCode();
+    pointcut persistentMethod(): 
+        execution(!static * ((Persistent+ && !Persistent) || (AutoPersist+ && !(StrictAutoPersist+) && !AutoPersist)).*(..))
+        && !execution(void *.recursiveLoading());
                 
     /*
      * Load object at the beginning of each instance mehtod of persistent capable object
      */         
-    before(AutoPersist t) : persistentMethod() && this(t) {
+    before(IPersistent t) : persistentMethod() && this(t) {
         t.load();
     }
 
     /*
-     * Uncomment this code if you want to allow access to field of other objects
-     * (non-this access). It will significantly decrease efficiency of result code,
-     * because any access to instance fiels (doesn't matter access to self or foreign
-     * field) will be prepended by invocation of load() method. As far as 
-     * OOP design rules recommend to made all fields private or protected
-     * and access them only through methods, I highly recommend you to avoid 
-     * access to foreign fields and do not use this code. Access fields through getter
-     * methods will be in any case much efficient.
-     * 
-    pointcut persistentFieldAccess(): (set(!transient !static * AutoPersist+.*) 
-        || get(!transient !static * AutoPersist+.*)) && notPerstCode();
-
-    before(AutoPersist t) : persitentFieldAccess() && targer(t) {
+     * Read access to fields of persistent object
+     */ 
+    before(StrictAutoPersist t): get(!transient !static * StrictAutoPersist+.*) && notPerstCode() && target(t)
+    {
         t.load();
     }
-    */
 
-    pointcut fieldSet(): set(!transient !static * AutoPersist+.*)
-        && notPerstCode() && !withincode(*.new(..));
-    
+    /*
+     * Read access to fields of persistent object
+     */ 
+    before(StrictAutoPersist t): set(!transient !static * StrictAutoPersist+.*) && notPerstCode() && target(t) 
+    {
+        t.loadAndModify();
+    }
+
     /*
      * Automatically notice modifications to any fields.
      */
-    before(AutoPersist t):  fieldSet() && target(t)  {
+    before(AutoPersist t):  set(!transient !static * (AutoPersist+ && !(StrictAutoPersist+)).*)
+        && notPerstCode() && !withincode(*.new(..)) && target(t)  
+    {
         t.modify();
     }
     
@@ -94,11 +93,16 @@ privileged public aspect PersistenceAspect {
     }
     
     public void AutoPersist.load() {
-        if (storage != null) { 
+        if (storage != null && (state & RAW) != 0) { 
             storage.loadObject(this);
         }
     }
     
+    public void AutoPersist.loadAndModify() {
+        load();
+        modify();
+    }
+
     public final boolean AutoPersist.isRaw() { 
         return (state & RAW) != 0;
     } 

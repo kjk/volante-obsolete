@@ -1,15 +1,15 @@
 import org.garret.perst.*;
-import org.garret.perst.aop.*;
+import org.garret.perst.aspectj.*;
 import java.io.*;
-
-aspect PersistentClasses {
-     declare parents: Guess implements AutoPersist;
-}
 
 public class Guess {
     public Guess  yes;
     public Guess  no;
     public String question; 
+
+    static aspect PersistentClasses {
+        declare parents: Guess implements AutoPersist;
+    }
 
     static byte[] inputBuffer = new byte[256];
 

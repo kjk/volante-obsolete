@@ -24,10 +24,13 @@ public final class ClassDescriptor extends Persistent {
         }
     }    
 
-    transient Class           cls;
-    transient Constructor     defaultConstructor;
-    transient boolean         hasSubclasses;
-    transient boolean         resolved;
+    transient Class       cls;
+    transient Constructor defaultConstructor;
+    transient Constructor perstConstructor;
+    transient LoadFactory factory;
+    transient Object[]    perstConstructorParams;
+    transient boolean     hasSubclasses;
+    transient boolean     resolved;
 
 
     public static final int tpBoolean          = 0;
@@ -110,6 +113,7 @@ public final class ClassDescriptor extends Persistent {
     };
 
     static final Class[] defaultConstructorProfile = new Class[0];
+    static final Class[] perstConstructorProfile = new Class[]{ClassDescriptor.class};
 
     public boolean equals(ClassDescriptor cd) { 
         if (cd == null || allFields.length != cd.allFields.length) { 
@@ -125,10 +129,18 @@ public final class ClassDescriptor extends Persistent {
         
 
     Object newInstance() {
-        try { 
-            return defaultConstructor.newInstance(null);
-        } catch (Exception x) { 
-            throw new StorageError(StorageError.CONSTRUCTOR_FAILURE, cls, x);
+        if (factory != null) { 
+            return factory.create(this);
+        } else { 
+            try { 
+                if (perstConstructor != null) {
+                    return perstConstructor.newInstance(perstConstructorParams);
+                } else {                 
+                    return defaultConstructor.newInstance(null);
+                }
+            } catch (Exception x) { 
+                throw new StorageError(StorageError.CONSTRUCTOR_FAILURE, cls, x);
+            }
         }
     }
 
@@ -216,18 +228,33 @@ public final class ClassDescriptor extends Persistent {
 
     ClassDescriptor() {}
 
+    private void locateConstructor() { 
+        try { 
+            Class c = Class.forName(cls.getName() + "LoadFactory");
+            factory = (LoadFactory)c.newInstance();
+        } catch (Exception x1) { 
+            try {             
+                perstConstructor = cls.getDeclaredConstructor(perstConstructorProfile);
+                perstConstructorParams = new Object[]{this};
+                perstConstructor.setAccessible(true);
+            } catch (NoSuchMethodException x2) {
+                try { 
+                    defaultConstructor = cls.getDeclaredConstructor(defaultConstructorProfile);
+                    defaultConstructor.setAccessible(true);
+                } catch (NoSuchMethodException x3) {
+                    throw new StorageError(StorageError.DESCRIPTOR_FAILURE, cls, x3);
+                }
+            }
+        }
+    }
+
     ClassDescriptor(StorageImpl storage, Class cls) { 
         this.cls = cls;
         name = cls.getName();
         ArrayList list = new ArrayList();
         buildFieldList(storage, cls, list);
         allFields = (FieldDescriptor[])list.toArray(new FieldDescriptor[list.size()]);
-        try { 
-            defaultConstructor = cls.getDeclaredConstructor(defaultConstructorProfile);
-            defaultConstructor.setAccessible(true);
-        } catch (NoSuchMethodException x) {
-            throw new StorageError(StorageError.DESCRIPTOR_FAILURE, cls, x);
-        }
+        locateConstructor();
         resolved = true;
     }
 
@@ -291,12 +318,7 @@ public final class ClassDescriptor extends Persistent {
                 }
             }
         }
-        try { 
-            defaultConstructor = cls.getDeclaredConstructor(defaultConstructorProfile);
-            defaultConstructor.setAccessible(true);
-        } catch (NoSuchMethodException x) {
-            throw new StorageError(StorageError.DESCRIPTOR_FAILURE, cls, x);
-        }
+        locateConstructor();
         ((StorageImpl)getStorage()).classDescMap.put(cls, this);
     }
 

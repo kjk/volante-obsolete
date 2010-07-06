@@ -25,7 +25,7 @@ class PagePool {
     }
 
     final Page find(long addr, int state) {     
-        Assert.that((addr & (Page.pageSize-1)) == 0);
+        //Assert.that((addr & (Page.pageSize-1)) == 0);
         Page pg;
         int pageNo = (int)(addr >>> Page.pageBits);
         int hashCode = pageNo % poolSize;
@@ -100,7 +100,7 @@ class PagePool {
             }
         }                   
         synchronized (pg) { 
-            if ((pg.state & Page.psRaw) != 0) { 
+            if ((pg.state & Page.psRaw) != 0) {
                 if (file.read(pg.offs, pg.data) < Page.pageSize) {
                     for (int i = 0; i < Page.pageSize; i++) { 
                         pg.data[i] = 0;

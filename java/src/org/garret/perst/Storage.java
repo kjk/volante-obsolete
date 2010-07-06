@@ -114,7 +114,7 @@ public abstract class Storage {
      * Begin per-thread transaction. Two types op per-thread transactions are supported: 
      * exclusive and coopertative. In case of exclusive trasnaction, only one thread
      * can update the database. In cooperative mode, multiple transaction can work 
-     * concurrently and commit() method wil be invoked only when transactions of all threads
+     * concurrently and commit() method will be invoked only when transactions of all threads
      * are terminated.
      * @param mode <code>EXCLUSIVE_TRANSACTION</code> or <code>COOPERATIVE_TRANSACTION</code>
      */
