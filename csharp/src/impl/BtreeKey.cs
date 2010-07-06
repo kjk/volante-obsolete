@@ -27,6 +27,14 @@ namespace Perst.Impl
             key = new Key(sval);
         }
 		
+        internal void getByteArray(Page pg, int i) 
+        { 
+            int len = BtreePage.getKeyStrSize(pg, i);
+            int offs = BtreePage.firstKeyOffs + BtreePage.getKeyStrOffs(pg, i);
+            byte[] bval = new byte[len];
+            Array.Copy(pg.data, offs, bval, 0, len);
+            key = new Key(bval);
+        }
 		
         internal void  extract(Page pg, int offs, ClassDescriptor.FieldType type)
         {

@@ -27,7 +27,7 @@ namespace Perst
         /// <returns>instance of the storage factory
         /// 
         /// </returns>
-        public static StorageFactory getStorage() 
+        public static StorageFactory getInstance() 
         {
             return instance;
         }

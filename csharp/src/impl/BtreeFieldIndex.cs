@@ -43,7 +43,13 @@ namespace Perst.Impl
             this.className = cls.FullName;
         }
 
-        private Key extractKey(IPersistent obj) { 
+        protected override object unpackEnum(int val) 
+        {
+            return Enum.ToObject(fld.FieldType, val);
+        }
+
+        private Key extractKey(IPersistent obj) 
+        { 
             Object val = fld.GetValue(obj);
             Key key = null;
             switch (type) {
@@ -163,12 +169,12 @@ namespace Perst.Impl
             ArrayList list = new ArrayList();
             if (root != 0)
             {
-                BtreePage.find((StorageImpl) Storage, root, from, till, type, height, list);
+                BtreePage.find((StorageImpl) Storage, root, from, till, this, height, list);
             }
             return (IPersistent[]) list.ToArray(cls);
         }
 
-        public IPersistent[] toArray() 
+        public override IPersistent[] ToArray() 
         {
             IPersistent[] arr = (IPersistent[])Array.CreateInstance(cls, nElems);
             if (root != 0) { 

@@ -106,7 +106,7 @@ namespace Perst
         /// specified key type is not supported by implementation.
         /// 
         /// </exception>
-        abstract public Index createIndex(System.Type type, bool unique);
+        abstract public Index createIndex(Type type, bool unique);
 		
         /// <summary> 
         /// Create new field index
@@ -122,7 +122,23 @@ namespace Perst
         /// <exception cref="Perst.StorageError">StorageError(StorageError.INDEXED_FIELD_NOT_FOUND) if there is no such field in specified class,
         /// StorageError(StorageError.UNSUPPORTED_INDEX_TYPE) exception if type of specified field is not supported by implementation
         /// </exception>
-        abstract public FieldIndex createFieldIndex(System.Type type, String fieldName, bool unique);
+        abstract public FieldIndex createFieldIndex(Type type, string fieldName, bool unique);
+		
+        /// <summary> 
+        /// Create new multi-field index
+        /// </summary>
+        /// <param name="type">objects of which type (or derived from which type) will be included in the index
+        /// </param>
+        /// <param name="fieldNames">array of names of the fields. Field with such name should be present in specified class <code>type</code>
+        /// </param>
+        /// <param name="unique">whether index is unique (duplicate value of keys are not allowed)
+        /// </param>
+        /// <returns>persistent object implementing field index
+        /// </returns>
+        /// <exception cref="Perst.StorageError">StorageError(StorageError.INDEXED_FIELD_NOT_FOUND) if there is no such field in specified class,
+        /// StorageError(StorageError.UNSUPPORTED_INDEX_TYPE) exception if type of specified field is not supported by implementation
+        /// </exception>
+        abstract public FieldIndex createFieldIndex(Type type, string[] fieldNames, bool unique);
 		
         /// <summary>
         /// Create new spatial index

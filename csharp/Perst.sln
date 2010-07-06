@@ -49,6 +49,14 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestTtree", "TestTtree\Test
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestCompoundIndex", "TestCompoundIndex\TestCompoundIndex.csproj", "{86D21BDF-92FB-424D-8C25-5D3AC5F61F47}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestEnumerator", "TestEnumerator\TestEnumerator.csproj", "{778F806F-1012-46BF-890E-3A73D4EC076C}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfiguration) = preSolution
 		Debug = Debug
@@ -99,6 +107,14 @@ Global
 		{9D66F041-EE49-452E-A882-6E6431E92318}.Debug.Build.0 = Debug|.NET
 		{9D66F041-EE49-452E-A882-6E6431E92318}.Release.ActiveCfg = Release|.NET
 		{9D66F041-EE49-452E-A882-6E6431E92318}.Release.Build.0 = Release|.NET
+		{86D21BDF-92FB-424D-8C25-5D3AC5F61F47}.Debug.ActiveCfg = Debug|.NET
+		{86D21BDF-92FB-424D-8C25-5D3AC5F61F47}.Debug.Build.0 = Debug|.NET
+		{86D21BDF-92FB-424D-8C25-5D3AC5F61F47}.Release.ActiveCfg = Release|.NET
+		{86D21BDF-92FB-424D-8C25-5D3AC5F61F47}.Release.Build.0 = Release|.NET
+		{778F806F-1012-46BF-890E-3A73D4EC076C}.Debug.ActiveCfg = Debug|.NET
+		{778F806F-1012-46BF-890E-3A73D4EC076C}.Debug.Build.0 = Debug|.NET
+		{778F806F-1012-46BF-890E-3A73D4EC076C}.Release.ActiveCfg = Release|.NET
+		{778F806F-1012-46BF-890E-3A73D4EC076C}.Release.Build.0 = Release|.NET
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 	EndGlobalSection

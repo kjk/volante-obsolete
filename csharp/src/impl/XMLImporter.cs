@@ -45,7 +45,7 @@ namespace Perst.Impl
                     throwException("Element name expected");
                 }
                 System.String elemName = scanner.Identifier;
-                if (elemName.Equals("Perst.Impl.Btree") || elemName.Equals("Perst.Impl.BtreeFieldIndex"))
+                if (elemName.Equals("Perst.Impl.Btree") || elemName.Equals("Perst.Impl.BtreeFieldIndex") || elemName.Equals("Perst.Impl.BtreeMultiFieldIndex"))
                 {
                     createIndex(elemName);
                 }
@@ -301,86 +301,181 @@ namespace Perst.Impl
                 return ClassDescriptor.FieldType.tpObject;
             }
         }
-		
-        internal Key createKey(ClassDescriptor.FieldType type, System.String val)
+
+        Key createCompoundKey(ClassDescriptor.FieldType[] types, String[] values) 
         {
-            try
-            {
-                IPersistent obj;
-                switch (type)
-                {
-                    case ClassDescriptor.FieldType.tpBoolean: 
-                        return new Key(System.Int32.Parse(val) != 0);
-					
-                    case ClassDescriptor.FieldType.tpByte: 
-                        return new Key((byte) System.Int32.Parse(val));
-					
-                    case ClassDescriptor.FieldType.tpSByte: 
-                        return new Key((sbyte) System.Int32.Parse(val));
-					
-                    case ClassDescriptor.FieldType.tpChar: 
-                        return new Key((char) System.Int32.Parse(val));
-					
-                    case ClassDescriptor.FieldType.tpShort: 
-                        return new Key(System.UInt32.Parse(val));
-					
-                    case ClassDescriptor.FieldType.tpUShort: 
-                        return new Key((ushort) System.Int32.Parse(val));
-					
-                    case ClassDescriptor.FieldType.tpInt: 
-                        return new Key(System.Int32.Parse(val));
-					
-                    case ClassDescriptor.FieldType.tpUInt: 
-                    case ClassDescriptor.FieldType.tpEnum:
-                        return new Key(System.UInt32.Parse(val));
-					
-                    case ClassDescriptor.FieldType.tpObject: 
-                        obj = new Persistent();
-                        storage.assignOid(obj, mapId(System.Int32.Parse(val)));
-                        return new Key(obj);
-					
-                    case ClassDescriptor.FieldType.tpLong: 
-                        return new Key(System.Int64.Parse(val));
-					
-                    case ClassDescriptor.FieldType.tpULong: 
-                        return new Key(System.UInt64.Parse(val));
-					
-                    case ClassDescriptor.FieldType.tpFloat: 
-                        return new Key(System.Single.Parse(val));
-					
-                    case ClassDescriptor.FieldType.tpDouble: 
-                        return new Key(System.Double.Parse(val));
-					
-                    case ClassDescriptor.FieldType.tpString: 
-                        return new Key(val);
-					
-                    case ClassDescriptor.FieldType.tpDate: 
-                        return new Key(DateTime.Parse(val));
-					
-                    default: 
+            ByteBuffer buf = new ByteBuffer();
+            int dst = 0;
+
+            for (int i = 0; i < types.Length; i++) 
+            { 
+                String val = values[i];
+                switch (types[i]) 
+                { 
+                    case ClassDescriptor.FieldType.tpBoolean:
+                        buf.extend(dst+1);
+                        buf.arr[dst++] = (byte)(Int32.Parse(val) != 0 ? 1 : 0);
+                        break;
+                    case ClassDescriptor.FieldType.tpByte:
+                        buf.extend(dst+1);
+                        buf.arr[dst++] = Byte.Parse(val);
+                        break;
+                    case ClassDescriptor.FieldType.tpSByte:
+                        buf.extend(dst+1);
+                        buf.arr[dst++] = (byte)SByte.Parse(val);
+                        break;
+                    case ClassDescriptor.FieldType.tpChar:
+                        buf.extend(dst+2);
+                        Bytes.pack2(buf.arr, dst, (short)Int32.Parse(val));
+                        dst += 2;
+                        break;
+                    case ClassDescriptor.FieldType.tpShort:
+                        buf.extend(dst+2);
+                        Bytes.pack2(buf.arr, dst, Int16.Parse(val));
+                        dst += 2;
+                        break;
+                    case ClassDescriptor.FieldType.tpUShort:
+                        buf.extend(dst+2);
+                        Bytes.pack2(buf.arr, dst, (short)UInt16.Parse(val));
+                        dst += 2;
+                        break;
+                    case ClassDescriptor.FieldType.tpInt:
+                        buf.extend(dst+4);
+                        Bytes.pack4(buf.arr, dst, Int32.Parse(val));
+                        dst += 4;
+                        break;
+                    case ClassDescriptor.FieldType.tpUInt:
+                        buf.extend(dst+4);
+                        Bytes.pack4(buf.arr, dst, (int)UInt32.Parse(val));
+                        dst += 4;
+                        break;
+                    case ClassDescriptor.FieldType.tpObject:
+                        buf.extend(dst+4);
+                        Bytes.pack4(buf.arr, dst, mapId((int)UInt32.Parse(val)));
+                        dst += 4;
+                        break;
+                    case ClassDescriptor.FieldType.tpLong:
+                    case ClassDescriptor.FieldType.tpDate:
+                        buf.extend(dst+8);
+                        Bytes.pack8(buf.arr, dst, Int64.Parse(val));
+                        dst += 8;
+                        break;
+                    case ClassDescriptor.FieldType.tpFloat:
+                        buf.extend(dst+4);
+                        Bytes.pack4(buf.arr, dst, BitConverter.ToInt32(BitConverter.GetBytes(Single.Parse(val)), 0));
+                        dst += 4;
+                        break;
+                    case ClassDescriptor.FieldType.tpDouble:
+                        buf.extend(dst+8);
+#if COMPACT_NET_FRAMEWORK 
+                        Bytes.pack8(buf.arr, dst, BitConverter.ToInt64(BitConverter.GetBytes(Double.Parse(val)), 0));
+#else
+                        Bytes.pack8(buf.arr, dst, BitConverter.DoubleToInt64Bits(Double.Parse(val)));
+#endif
+                        dst += 8;
+                        break;
+                    case ClassDescriptor.FieldType.tpString:
+                        buf.extend(dst + 4 + 2*val.Length);
+                        Bytes.pack4(buf.arr, dst, val.Length);
+                        dst += 4;
+                        for (int j = 0, n = val.Length; j < n; j++) 
+                        { 
+                            Bytes.pack2(buf.arr, dst, (short)val[j]);
+                            dst += 2;
+                        }
+                        break;
+                    case ClassDescriptor.FieldType.tpArrayOfByte:
+                        buf.extend(dst + 4 + (val.Length >> 1));
+                        Bytes.pack4(buf.arr, dst, val.Length >> 1);
+                        dst += 4;
+                        for (int j = 0, n = val.Length; j < n; j+=2) 
+                        { 
+                            buf.arr[dst++] = (byte)((getHexValue(val[j]) << 4) | getHexValue(val[j+1]));
+                        }
+                        break;
+                    default:
                         throwException("Bad key type");
                         break;
-					
                 }
             }
-            catch (System.FormatException)
+            return new Key(buf.toArray());
+        }
+
+        Key createKey(ClassDescriptor.FieldType type, String val)
+        {
+            IPersistent obj;
+
+            switch (type)
             {
-                throwException("Failed to convert key value");
+                case ClassDescriptor.FieldType.tpBoolean: 
+                    return new Key(Int32.Parse(val) != 0);
+					
+                case ClassDescriptor.FieldType.tpByte: 
+                    return new Key(Byte.Parse(val));
+					
+                case ClassDescriptor.FieldType.tpSByte: 
+                    return new Key(SByte.Parse(val));
+					
+                case ClassDescriptor.FieldType.tpChar: 
+                    return new Key((char)Int32.Parse(val));
+					
+                case ClassDescriptor.FieldType.tpShort: 
+                    return new Key(Int16.Parse(val));
+					
+                case ClassDescriptor.FieldType.tpUShort: 
+                    return new Key(UInt16.Parse(val));
+					
+                case ClassDescriptor.FieldType.tpInt: 
+                    return new Key(Int32.Parse(val));
+					
+                case ClassDescriptor.FieldType.tpUInt: 
+                case ClassDescriptor.FieldType.tpEnum:
+                    return new Key(UInt32.Parse(val));
+					
+                case ClassDescriptor.FieldType.tpObject: 
+                    obj = new Persistent();
+                    storage.assignOid(obj, mapId((int)UInt32.Parse(val)));
+                    return new Key(obj);
+					
+                case ClassDescriptor.FieldType.tpLong: 
+                    return new Key(Int64.Parse(val));
+					
+                case ClassDescriptor.FieldType.tpULong: 
+                    return new Key(UInt64.Parse(val));
+					
+                case ClassDescriptor.FieldType.tpFloat: 
+                    return new Key(Single.Parse(val));
+					
+                case ClassDescriptor.FieldType.tpDouble: 
+                    return new Key(Double.Parse(val));
+					
+                case ClassDescriptor.FieldType.tpString: 
+                    return new Key(val);
+					
+                case ClassDescriptor.FieldType.tpArrayOfByte:
+                {
+                    byte[] buf = new byte[val.Length >> 1];
+                    for (int i = 0; i < buf.Length; i++) 
+                    { 
+                        buf[i] = (byte)((getHexValue(val[i*2]) << 4) | getHexValue(val[i*2+1]));
+                    }
+                    return new Key(buf);
+                }
+
+                case ClassDescriptor.FieldType.tpDate: 
+                    return new Key(DateTime.Parse(val));
+					
+                default: 
+                    throwException("Bad key type");
+                    break;
+					
             }
             return null;
         }
 		
         internal int parseInt(String str)
         {
-            try
-            {
-                return System.Int32.Parse(str);
-            }
-            catch (FormatException)
-            {
-                throwException("Bad integer constant");
-            }
-            return -1;
+            return Int32.Parse(str);
         }
 		
         internal Type findClassByName(String className) 
@@ -396,13 +491,14 @@ namespace Perst.Impl
 
         internal void  createIndex(String indexType)
         {
-            Btree btree;
+            Btree btree = null;
             XMLScanner.Token tkn;
             int oid = 0;
-            bool unique = false;
-            System.String className = null;
-            System.String fieldName = null;
-            System.String type = null;
+            bool     unique = false;
+            String   className = null;
+            String   fieldName = null;
+            String[] fieldNames = null;
+            String   type = null;
             while ((tkn = scanner.scan()) == XMLScanner.Token.IDENT)
             {
                 System.String attrName = scanner.Identifier;
@@ -423,13 +519,31 @@ namespace Perst.Impl
                 {
                     className = attrValue;
                 }
-                else if (attrName.Equals("field"))
-                {
-                    fieldName = attrValue;
-                }
                 else if (attrName.Equals("type"))
                 {
                     type = attrValue;
+                }
+                else if (attrName.StartsWith("field"))
+                {
+                    int len = attrName.Length;
+                    if (len == 5) 
+                    {
+                        fieldName = attrValue;
+                    } 
+                    else 
+                    { 
+                        int fieldNo = Int32.Parse(attrName.Substring(5));
+                        if (fieldNames == null || fieldNames.Length <= fieldNo) 
+                        { 
+                            String[] newFieldNames = new String[fieldNo+1];
+                            if (fieldNames != null) 
+                            { 
+                                Array.Copy(fieldNames, 0, newFieldNames, 0, fieldNames.Length);
+                            }
+                            fieldNames = newFieldNames;
+                        }
+                        fieldNames[fieldNo] = attrValue;
+                    }
                 }
             }
             if (tkn != XMLScanner.Token.GT)
@@ -442,11 +556,19 @@ namespace Perst.Impl
             }
             if (className != null)
             {
-                if (fieldName == null)
+                Type cls = findClassByName(className);
+                if (fieldName != null) 
+                { 
+                    btree = new BtreeFieldIndex(cls, fieldName, unique);
+                } 
+                else if (fieldNames != null) 
+                { 
+                    btree = new BtreeMultiFieldIndex(cls, fieldNames, unique);
+                } 
+                else
                 {
                     throwException("Field name is not specified for field index");
                 }
-                btree = new BtreeFieldIndex(findClassByName(className), fieldName, unique);
             }
             else
             {
@@ -465,10 +587,23 @@ namespace Perst.Impl
                     throwException("<ref> element expected");
                 }
                 XMLElement refElem = readElement("ref");
-                System.String entryKey = getAttribute(refElem, "key");
-                int entryOid = mapId(getIntAttribute(refElem, "id"));
-                Key key = createKey(btree.type, entryKey);
+                Key key;
+                if (fieldNames != null) 
+                { 
+                    String[] values = new String[fieldNames.Length];                
+                    ClassDescriptor.FieldType[] types = ((BtreeMultiFieldIndex)btree).types;
+                    for (int i = 0; i < values.Length; i++) 
+                    { 
+                        values[i] = getAttribute(refElem, "key"+i);
+                    }
+                    key = createCompoundKey(types, values);
+                } 
+                else 
+                { 
+                    key = createKey(btree.type, getAttribute(refElem, "key"));
+                }
                 IPersistent obj = new Persistent();
+                int entryOid = mapId(getIntAttribute(refElem, "id"));
                 storage.assignOid(obj, entryOid);
                 btree.insert(key, obj, false);
             }

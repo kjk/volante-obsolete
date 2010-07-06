@@ -80,13 +80,15 @@ namespace Perst.Impl
             tpArrayOfString,
             tpArrayOfDate,
             tpArrayOfObject,
-            tpArrayOfValue
+            tpArrayOfValue,
 #if SUPPORT_RAW_TYPE
-                ,tpArrayOfRaw
+            tpArrayOfRaw,
 #endif
+            tpLast
         };
 		
-        internal static int[] Sizeof = new int[] {1, 1, 1, 2, 2, 2, 4, 4, 4, 8, 8, 4, 8, 0, 8, 4};
+        internal static int[] Sizeof = new int[] {1, 1, 1, 2, 2, 2, 4, 4, 4, 8, 8, 4, 8, 0, 8, 4,
+                                                  0, 0, 0, 0, 0, 0};
 		
         internal static System.Type[] defaultConstructorProfile = new System.Type[0];
         internal static System.Object[] noArgs = new System.Object[0];

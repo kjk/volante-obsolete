@@ -31,13 +31,10 @@ namespace Perst.Impl
             unique = obj[offs] != 0;
         }
 
-        internal Btree(System.Type cls, bool unique)
+
+        internal Btree(Type cls, bool unique)
         {
-            type = ClassDescriptor.getTypeCode(cls);
-            if ((int)type >= (int)ClassDescriptor.FieldType.tpLink)
-            {
-                throw new StorageError(StorageError.ErrorCode.UNSUPPORTED_INDEX_TYPE, cls);
-            }
+            type = checkType(cls);
             this.unique = unique;
         }
 
@@ -47,6 +44,31 @@ namespace Perst.Impl
             this.unique = unique;
         }
 		
+        static protected ClassDescriptor.FieldType checkType(Type c) 
+        { 
+            ClassDescriptor.FieldType elemType = ClassDescriptor.getTypeCode(c);
+            if ((int)elemType >= (int)ClassDescriptor.FieldType.tpLink 
+                && elemType != ClassDescriptor.FieldType.tpArrayOfByte) 
+            { 
+                throw new StorageError(StorageError.ErrorCode.UNSUPPORTED_INDEX_TYPE, c);
+            }
+            return elemType;
+        }
+
+        protected virtual int compareByteArrays(byte[] key, byte[] item, int offs, int length) 
+        { 
+            int n = key.Length >= length ? length : key.Length;
+            for (int i = 0; i < n; i++) 
+            { 
+                int diff = key[i] - item[i+offs];
+                if (diff != 0) 
+                { 
+                    return diff;
+                }
+            }
+            return key.Length - length;
+        }
+        
         internal const int op_done     = 0;
         internal const int op_overflow = 1;
         internal const int op_underflow = 2;
@@ -107,7 +129,7 @@ namespace Perst.Impl
             if (root != 0)
             {
                 ArrayList list = new ArrayList();
-                BtreePage.find((StorageImpl) Storage, root, key, key, type, height, list);
+                BtreePage.find((StorageImpl) Storage, root, key, key, this, height, list);
                 if (list.Count > 1)
                 {
                     throw new StorageError(StorageError.ErrorCode.KEY_NOT_UNIQUE);
@@ -186,6 +208,14 @@ namespace Perst.Impl
             {
                 return new Key((DateTime)o);
             }
+            else if (o is byte[]) 
+            {
+                return new Key((byte[])o);
+            }
+            else if (o is object[]) 
+            {
+                return new Key((object[])o);
+            }
             else if (o is Enum) 
             {
                 return new Key((Enum)o);
@@ -214,7 +244,7 @@ namespace Perst.Impl
             if (root != 0)
             {
                 ArrayList list = new ArrayList();
-                BtreePage.find((StorageImpl) Storage, root, from, till, type, height, list);
+                BtreePage.find((StorageImpl) Storage, root, from, till, this, height, list);
                 if (list.Count == 0)
                 {
                     return emptySelection;
@@ -272,7 +302,7 @@ namespace Perst.Impl
             }
             else
             {
-                int result = BtreePage.insert(db, root, type, ins, height, unique, overwrite);
+                int result = BtreePage.insert(db, root, this, ins, height, unique, overwrite);
                 if (result == op_overflow)
                 {
                     root = BtreePage.allocate(db, root, type, ins);
@@ -313,13 +343,13 @@ namespace Perst.Impl
             {
                 throw new StorageError(StorageError.ErrorCode.KEY_NOT_FOUND);
             }
-            int result = BtreePage.remove(db, root, type, rem, height);
+            int result = BtreePage.remove(db, root, this, rem, height);
             if (result == op_not_found)
             {
                 throw new StorageError(StorageError.ErrorCode.KEY_NOT_FOUND);
             }
             nElems -= 1;
-            if (result == op_underflow && height != 1)
+            if (result == op_underflow)
             {
                 Page pg = db.getPage(root);
                 if (BtreePage.getnItems(pg) == 0)
@@ -327,7 +357,7 @@ namespace Perst.Impl
                     int newRoot = 0;
                     if (height != 1)  
                     {         
-                        newRoot = (type == ClassDescriptor.FieldType.tpString)
+                        newRoot = (type == ClassDescriptor.FieldType.tpString || type == ClassDescriptor.FieldType.tpArrayOfByte)
                             ? BtreePage.getKeyStrOid(pg, 0)
                             : BtreePage.getReference(pg, BtreePage.maxItems - 1);
                     }
@@ -423,9 +453,16 @@ namespace Perst.Impl
             }
         }        
 
-        internal static object unpackKey(StorageImpl db, Page pg, int pos, ClassDescriptor.FieldType type)
+        protected virtual object unpackEnum(int val) 
         {
-            int offs = BtreePage.firstKeyOffs + pos;
+            // Base B-Tree class has no information about particular enum type
+            // so it is not able to correctly unpack enum key
+            return val;
+        }
+
+        internal object unpackKey(StorageImpl db, Page pg, int pos)
+        {
+            int offs = BtreePage.firstKeyOffs + pos*ClassDescriptor.Sizeof[(int)type];
             byte[] data = pg.data;
 			
             switch (type)
@@ -452,8 +489,7 @@ namespace Perst.Impl
                     return Bytes.unpack4(data, offs);
                     
                 case ClassDescriptor.FieldType.tpEnum: 
-                    //!!! FIXME
-                    return Bytes.unpack4(data, offs);
+                    return unpackEnum(Bytes.unpack4(data, offs));
             
                 case ClassDescriptor.FieldType.tpUInt:
                     return (uint)Bytes.unpack4(data, offs);
@@ -482,6 +518,7 @@ namespace Perst.Impl
                 case ClassDescriptor.FieldType.tpString:
                 {
                     int len = BtreePage.getKeyStrSize(pg, pos);
+                    offs = BtreePage.firstKeyOffs + BtreePage.getKeyStrOffs(pg, pos);
                     char[] sval = new char[len];
                     for (int j = 0; j < len; j++)
                     {
@@ -490,21 +527,36 @@ namespace Perst.Impl
                     }
                     return new String(sval);
                 }
+                case ClassDescriptor.FieldType.tpArrayOfByte:
+                {
+                    return unpackByteArrayKey(pg, pos);
+                }
                 default: 
                     Assert.failed("Invalid type");
                     return null;
             }
         }
 
+        protected virtual object unpackByteArrayKey(Page pg, int pos)
+        {
+            int len = BtreePage.getKeyStrSize(pg, pos);
+            int offs = BtreePage.firstKeyOffs + BtreePage.getKeyStrOffs(pg, pos);
+            byte[] val = new byte[len];
+            Array.Copy(pg.data, offs, val, 0, len);
+            return val;
+        }
+
         class BtreeEnumerator : IEnumerator 
         {
-            internal BtreeEnumerator(StorageImpl db, int pageId, int height) 
+            internal BtreeEnumerator(Btree tree) 
             { 
-                this.db = db;
+                this.tree = tree;
+                db = (StorageImpl)tree.Storage;
+                int height = tree.height;
                 pageStack = new int[height];
                 posStack =  new int[height];
                 sp = 0;
-                rootId = pageId;
+                int pageId = tree.root;
                 hasCurrent = false;
                 while (--height >= 0) 
                 { 
@@ -586,7 +638,7 @@ namespace Perst.Impl
             public void Reset() 
             {
                 sp = 0;
-                int pageId = rootId;
+                int pageId = tree.root;
                 for (int height = pageStack.Length; --height >= 0;) 
                 { 
                     posStack[sp] = 0;
@@ -601,7 +653,7 @@ namespace Perst.Impl
             }
 
             protected StorageImpl db;
-            protected int         rootId;
+            protected Btree       tree;
             protected int[]       pageStack;
             protected int[]       posStack;
             protected int         sp;
@@ -612,8 +664,8 @@ namespace Perst.Impl
         
         class BtreeStrEnumerator : BtreeEnumerator 
         { 
-            internal BtreeStrEnumerator(StorageImpl db, int pageId, int height) 
-                : base(db, pageId, height)
+            internal BtreeStrEnumerator(Btree tree) 
+                : base(tree)
             {
             }
 
@@ -625,17 +677,16 @@ namespace Perst.Impl
 
         class BtreeDictionaryEnumerator : BtreeEnumerator, IDictionaryEnumerator 
         {
-            internal BtreeDictionaryEnumerator(StorageImpl db, int pageId, int height, ClassDescriptor.FieldType type) 
-                : base(db, pageId, height) 
+            internal BtreeDictionaryEnumerator(Btree tree) 
+                : base(tree) 
             {   
-                this.type = type;
             }
 
                 
             protected override void getCurrent(Page pg, int pos) 
             { 
                 oid = getReference(pg, pos);
-                key = unpackKey(db, pg, pos, type);
+                key = tree.unpackKey(db, pg, pos);
             }
 
             public override object Current 
@@ -683,13 +734,12 @@ namespace Perst.Impl
             }
 
             protected object key;
-            protected ClassDescriptor.FieldType type;
         }
 
         class BtreeDictionaryStrEnumerator : BtreeDictionaryEnumerator 
         {
-            internal BtreeDictionaryStrEnumerator(StorageImpl db, int pageId, int height) 
-                : base(db, pageId, height, ClassDescriptor.FieldType.tpString)
+            internal BtreeDictionaryStrEnumerator(Btree tree) 
+                : base(tree)
             {}
 
             protected override int getReference(Page pg, int pos) 
@@ -700,30 +750,39 @@ namespace Perst.Impl
     
         public IDictionaryEnumerator GetDictionaryEnumerator() 
         { 
-            return type == ClassDescriptor.FieldType.tpString 
-                ? new BtreeDictionaryStrEnumerator((StorageImpl)Storage, root, height)
-                : new BtreeDictionaryEnumerator((StorageImpl)Storage, root, height, type);
+            return type == ClassDescriptor.FieldType.tpString || type == ClassDescriptor.FieldType.tpArrayOfByte
+                ? new BtreeDictionaryStrEnumerator(this)
+                : new BtreeDictionaryEnumerator(this);
         }
 
         public IEnumerator GetEnumerator() 
         { 
-            return type == ClassDescriptor.FieldType.tpString 
-                ? new BtreeStrEnumerator((StorageImpl)Storage, root, height)
-                : new BtreeEnumerator((StorageImpl)Storage, root, height);
+            return type == ClassDescriptor.FieldType.tpString || type == ClassDescriptor.FieldType.tpArrayOfByte
+                ? new BtreeStrEnumerator(this)
+                : new BtreeEnumerator(this);
         }
+
+        internal int compareByteArrays(Key key, Page pg, int i) 
+        { 
+            return compareByteArrays((byte[])key.oval, 
+                pg.data, 
+                BtreePage.getKeyStrOffs(pg, i) + BtreePage.firstKeyOffs, 
+                BtreePage.getKeyStrSize(pg, i));
+        }
+
 
         class BtreeSelectionIterator : IEnumerator, IEnumerable 
         { 
-            internal BtreeSelectionIterator(StorageImpl db, int pageId, int height, ClassDescriptor.FieldType type, Key from, Key till, IterationOrder order) 
+            internal BtreeSelectionIterator(Btree tree, Key from, Key till, IterationOrder order) 
             { 
-                this.db = db;
+                this.db = (StorageImpl)tree.Storage;
                 this.from = from;
                 this.till = till;
-                this.type = type;
+                this.type = tree.type;
                 this.order = order;
-                this.rootId = pageId;
-                pageStack = new int[height];
-                posStack =  new int[height];
+                this.tree = tree;
+                pageStack = new int[tree.height];
+                posStack =  new int[tree.height];
                 Reset();
             }
 
@@ -737,7 +796,7 @@ namespace Perst.Impl
                 int i, l, r;
                 Page pg;
                 int height = pageStack.Length;
-                int pageId = rootId;
+                int pageId = tree.root;
                 hasCurrent = false;
                 sp = 0;
             
@@ -903,6 +962,170 @@ namespace Perst.Impl
                         { 
                             pg = db.getPage(pageStack[sp-1]);
                             if (BtreePage.compareStr(from, pg, posStack[sp-1]) >= from.inclusion) 
+                            { 
+                                sp = 0;
+                            }
+                            db.pool.unfix(pg);
+                        }
+                    }
+                } 
+                else if (type == ClassDescriptor.FieldType.tpArrayOfByte) 
+                { 
+                    if (order == IterationOrder.AscentOrder) 
+                    { 
+                        if (from == null) 
+                        { 
+                            while (--height >= 0) 
+                            { 
+                                posStack[sp] = 0;
+                                pageStack[sp] = pageId;
+                                pg = db.getPage(pageId);
+                                pageId = BtreePage.getKeyStrOid(pg, 0);
+                                end = BtreePage.getnItems(pg);
+                                db.pool.unfix(pg);
+                                sp += 1;
+                            }
+                        } 
+                        else 
+                        { 
+                            while (--height > 0) 
+                            { 
+                                pageStack[sp] = pageId;
+                                pg = db.getPage(pageId);
+                                l = 0;
+                                r = BtreePage.getnItems(pg);
+                                while (l < r)  
+                                {
+                                    i = (l+r) >> 1;
+                                    if (tree.compareByteArrays(from, pg, i) >= from.inclusion) 
+                                    {
+                                        l = i + 1; 
+                                    } 
+                                    else 
+                                    { 
+                                        r = i;
+                                    }
+                                }
+                                Assert.that(r == l); 
+                                posStack[sp] = r;
+                                pageId = BtreePage.getKeyStrOid(pg, r);
+                                db.pool.unfix(pg);
+                                sp += 1;
+                            }
+                            pageStack[sp] = pageId;
+                            pg = db.getPage(pageId);
+                            l = 0;
+                            end = r = BtreePage.getnItems(pg);
+                            while (l < r)  
+                            {
+                                i = (l+r) >> 1;
+                                if (tree.compareByteArrays(from, pg, i) >= from.inclusion) 
+                                {
+                                    l = i + 1; 
+                                } 
+                                else 
+                                { 
+                                    r = i;
+                                }
+                            }
+                            Assert.that(r == l); 
+                            if (r == end) 
+                            {
+                                sp += 1;
+                                gotoNextItem(pg, r-1);
+                            } 
+                            else 
+                            { 
+                                posStack[sp++] = r;
+                                db.pool.unfix(pg);
+                            }
+                        }
+                        if (sp != 0 && till != null) 
+                        { 
+                            pg = db.getPage(pageStack[sp-1]);
+                            if (-tree.compareByteArrays(till, pg, posStack[sp-1]) >= till.inclusion) 
+                            { 
+                                sp = 0;
+                            }
+                            db.pool.unfix(pg);
+                        }
+                    } 
+                    else 
+                    { // descent order
+                        if (till == null) 
+                        { 
+                            while (--height > 0) 
+                            { 
+                                pageStack[sp] = pageId;
+                                pg = db.getPage(pageId);
+                                posStack[sp] = BtreePage.getnItems(pg);
+                                pageId = BtreePage.getKeyStrOid(pg, posStack[sp]);
+                                db.pool.unfix(pg);
+                                sp += 1;
+                            }
+                            pageStack[sp] = pageId;
+                            pg = db.getPage(pageId);
+                            posStack[sp++] = BtreePage.getnItems(pg)-1;
+                            db.pool.unfix(pg);
+                        } 
+                        else 
+                        {
+                            while (--height > 0) 
+                            { 
+                                pageStack[sp] = pageId;
+                                pg = db.getPage(pageId);
+                                l = 0;
+                                r = BtreePage.getnItems(pg);
+                                while (l < r)  
+                                {
+                                    i = (l+r) >> 1;
+                                    if (tree.compareByteArrays(till, pg, i) >= 1-till.inclusion) 
+                                    {
+                                        l = i + 1; 
+                                    } 
+                                    else 
+                                    { 
+                                        r = i;
+                                    }
+                                }
+                                Assert.that(r == l); 
+                                posStack[sp] = r;
+                                pageId = BtreePage.getKeyStrOid(pg, r);
+                                db.pool.unfix(pg);
+                                sp += 1;
+                            }
+                            pageStack[sp] = pageId;
+                            pg = db.getPage(pageId);
+                            l = 0;
+                            r = BtreePage.getnItems(pg);
+                            while (l < r)  
+                            {
+                                i = (l+r) >> 1;
+                                if (tree.compareByteArrays(till, pg, i) >= 1-till.inclusion) 
+                                {
+                                    l = i + 1; 
+                                } 
+                                else 
+                                { 
+                                    r = i;
+                                }
+                            }
+                            Assert.that(r == l); 
+                            if (r == 0) 
+                            {
+                                sp += 1;
+                                gotoNextItem(pg, r);
+                            } 
+                            else 
+                            { 
+                                posStack[sp++] = r-1;
+                                db.pool.unfix(pg);
+                            }
+                        }
+                        if (sp != 0 && from != null) 
+                        { 
+                            pg = db.getPage(pageStack[sp-1]);
+                            if (tree.compareByteArrays(from, pg, posStack[sp-1]) >= from.inclusion) 
                             { 
                                 sp = 0;
                             }
@@ -1094,7 +1317,7 @@ namespace Perst.Impl
 
             protected virtual void getCurrent(Page pg, int pos)
             {
-                oid = (type == ClassDescriptor.FieldType.tpString)
+                oid = (type == ClassDescriptor.FieldType.tpString || type == ClassDescriptor.FieldType.tpArrayOfByte)
                     ? BtreePage.getKeyStrOid(pg, pos)
                     : BtreePage.getReference(pg, BtreePage.maxItems-1-pos);
             }
@@ -1184,6 +1407,77 @@ namespace Perst.Impl
                         }                    
                     }
                 } 
+                else if (type == ClassDescriptor.FieldType.tpArrayOfByte) 
+                { 
+                    if (order == IterationOrder.AscentOrder) 
+                    {                     
+                        if (++pos == end) 
+                        { 
+                            while (--sp != 0) 
+                            { 
+                                db.pool.unfix(pg);
+                                pos = posStack[sp-1];
+                                pg = db.getPage(pageStack[sp-1]);
+                                if (++pos <= BtreePage.getnItems(pg)) 
+                                {
+                                    posStack[sp-1] = pos;
+                                    do 
+                                    { 
+                                        int pageId = BtreePage.getKeyStrOid(pg, pos);
+                                        db.pool.unfix(pg);
+                                        pg = db.getPage(pageId);
+                                        end = BtreePage.getnItems(pg);
+                                        pageStack[sp] = pageId;
+                                        posStack[sp] = pos = 0;
+                                    } while (++sp < pageStack.Length);
+                                    break;
+                                }
+                            }
+                        } 
+                        else 
+                        { 
+                            posStack[sp-1] = pos;
+                        }
+                        if (sp != 0 && till != null && -tree.compareByteArrays(till, pg, pos) >= till.inclusion) 
+                        { 
+                            sp = 0;
+                        }
+                    } 
+                    else 
+                    { // descent order
+                        if (--pos < 0) 
+                        { 
+                            while (--sp != 0) 
+                            { 
+                                db.pool.unfix(pg);
+                                pos = posStack[sp-1];
+                                pg = db.getPage(pageStack[sp-1]);
+                                if (--pos >= 0) 
+                                {
+                                    posStack[sp-1] = pos;
+                                    do 
+                                    { 
+                                        int pageId = BtreePage.getKeyStrOid(pg, pos);
+                                        db.pool.unfix(pg);
+                                        pg = db.getPage(pageId);
+                                        pageStack[sp] = pageId;
+                                        posStack[sp] = pos = BtreePage.getnItems(pg);
+                                    } while (++sp < pageStack.Length);
+                                    posStack[sp-1] = --pos;
+                                    break;
+                                }
+                            }
+                        } 
+                        else 
+                        { 
+                            posStack[sp-1] = pos;
+                        }
+                        if (sp != 0 && from != null && tree.compareByteArrays(from, pg, pos) >= from.inclusion) 
+                        { 
+                            sp = 0;
+                        }                    
+                    }
+                } 
                 else 
                 { // scalar type
                     if (order == IterationOrder.AscentOrder) 
@@ -1262,7 +1556,7 @@ namespace Perst.Impl
             protected StorageImpl     db;
             protected int[]           pageStack;
             protected int[]           posStack;
-            protected int             rootId;
+            protected Btree           tree;
             protected int             sp;
             protected int             end;
             protected int             oid;
@@ -1275,14 +1569,14 @@ namespace Perst.Impl
 
         class BtreeDictionarySelectionIterator : BtreeSelectionIterator, IDictionaryEnumerator 
         { 
-            internal BtreeDictionarySelectionIterator(StorageImpl db, int pageId, int height, ClassDescriptor.FieldType type, Key from, Key till, IterationOrder order) 
-                : base(db, pageId, height, type, from, till, order)
+            internal BtreeDictionarySelectionIterator(Btree tree, Key from, Key till, IterationOrder order) 
+                : base(tree, from, till, order)
             {}
                
             protected override void getCurrent(Page pg, int pos)
             {
                 base.getCurrent(pg, pos);
-                key = unpackKey(db, pg, pos, type);
+                key = tree.unpackKey(db, pg, pos);
             }
              
             public override object Current 
@@ -1338,13 +1632,13 @@ namespace Perst.Impl
             return range(from, till, order).GetEnumerator();
         }
 
-        public IEnumerable range(Key from, Key till, IterationOrder order) 
+        public virtual IEnumerable range(Key from, Key till, IterationOrder order) 
         { 
             if ((from != null && from.type != type) || (till != null && till.type != type)) 
             { 
                 throw new StorageError(StorageError.ErrorCode.INCOMPATIBLE_KEY_TYPE);
             }
-            return new BtreeSelectionIterator((StorageImpl)Storage, root, height, type, from, till, order);
+            return new BtreeSelectionIterator(this, from, till, order);
         }
 
         public IEnumerable range(object from, object till, IterationOrder order) 
@@ -1357,13 +1651,13 @@ namespace Perst.Impl
             return range(getKeyFromObject(from), getKeyFromObject(till), IterationOrder.AscentOrder);
         }
  
-        public IDictionaryEnumerator GetDictionaryEnumerator(Key from, Key till, IterationOrder order) 
+        public virtual IDictionaryEnumerator GetDictionaryEnumerator(Key from, Key till, IterationOrder order) 
         { 
             if ((from != null && from.type != type) || (till != null && till.type != type)) 
             { 
                 throw new StorageError(StorageError.ErrorCode.INCOMPATIBLE_KEY_TYPE);
             }
-            return new BtreeDictionarySelectionIterator((StorageImpl)Storage, root, height, type, from, till, order);
+            return new BtreeDictionarySelectionIterator(this, from, till, order);
         }
     }
 }

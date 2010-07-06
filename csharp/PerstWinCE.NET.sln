@@ -36,6 +36,18 @@ Project("{20D4826A-C6FA-45DB-90F4-C717570B9F32}") = "TestSSD", "TestSSD\TestSSD.
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
+Project("{20D4826A-C6FA-45DB-90F4-C717570B9F32}") = "TestCompoundIndex", "TestCompoundIndex\TestCompoundIndex.csdproj", "{A3B0BE2B-67A6-4EA2-A08D-E0C2D4E7D149}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Project("{20D4826A-C6FA-45DB-90F4-C717570B9F32}") = "TestEnumerator", "TestEnumerator\TestEnumerator.csdproj", "{98403E91-4E83-4B91-AC11-A2DE894A308D}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Project("{20D4826A-C6FA-45DB-90F4-C717570B9F32}") = "TestTtree", "TestTtree\TestTtree.csdproj", "{C58DE3BC-E59C-4CCF-AAFD-C80610F94F2F}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfiguration) = preSolution
 		Debug = Debug
@@ -96,6 +108,24 @@ Global
 		{E6F8C24F-534F-4402-9587-7D2C4D7134FB}.Release.ActiveCfg = Release|Windows CE
 		{E6F8C24F-534F-4402-9587-7D2C4D7134FB}.Release.Build.0 = Release|Windows CE
 		{E6F8C24F-534F-4402-9587-7D2C4D7134FB}.Release.Deploy.0 = Release|Windows CE
+		{A3B0BE2B-67A6-4EA2-A08D-E0C2D4E7D149}.Debug.ActiveCfg = Debug|Windows CE
+		{A3B0BE2B-67A6-4EA2-A08D-E0C2D4E7D149}.Debug.Build.0 = Debug|Windows CE
+		{A3B0BE2B-67A6-4EA2-A08D-E0C2D4E7D149}.Debug.Deploy.0 = Debug|Windows CE
+		{A3B0BE2B-67A6-4EA2-A08D-E0C2D4E7D149}.Release.ActiveCfg = Release|Windows CE
+		{A3B0BE2B-67A6-4EA2-A08D-E0C2D4E7D149}.Release.Build.0 = Release|Windows CE
+		{A3B0BE2B-67A6-4EA2-A08D-E0C2D4E7D149}.Release.Deploy.0 = Release|Windows CE
+		{98403E91-4E83-4B91-AC11-A2DE894A308D}.Debug.ActiveCfg = Debug|Windows CE
+		{98403E91-4E83-4B91-AC11-A2DE894A308D}.Debug.Build.0 = Debug|Windows CE
+		{98403E91-4E83-4B91-AC11-A2DE894A308D}.Debug.Deploy.0 = Debug|Windows CE
+		{98403E91-4E83-4B91-AC11-A2DE894A308D}.Release.ActiveCfg = Release|Windows CE
+		{98403E91-4E83-4B91-AC11-A2DE894A308D}.Release.Build.0 = Release|Windows CE
+		{98403E91-4E83-4B91-AC11-A2DE894A308D}.Release.Deploy.0 = Release|Windows CE
+		{C58DE3BC-E59C-4CCF-AAFD-C80610F94F2F}.Debug.ActiveCfg = Debug|Windows CE
+		{C58DE3BC-E59C-4CCF-AAFD-C80610F94F2F}.Debug.Build.0 = Debug|Windows CE
+		{C58DE3BC-E59C-4CCF-AAFD-C80610F94F2F}.Debug.Deploy.0 = Debug|Windows CE
+		{C58DE3BC-E59C-4CCF-AAFD-C80610F94F2F}.Release.ActiveCfg = Release|Windows CE
+		{C58DE3BC-E59C-4CCF-AAFD-C80610F94F2F}.Release.Build.0 = Release|Windows CE
+		{C58DE3BC-E59C-4CCF-AAFD-C80610F94F2F}.Release.Deploy.0 = Release|Windows CE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 	EndGlobalSection

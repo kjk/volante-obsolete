@@ -15,6 +15,7 @@ public class TestIndex
     {
         internal Index strIndex;
         internal FieldIndex intIndex;
+        internal FieldIndex compoundIndex;
     }
 
     internal const int nRecords = 100000;
@@ -32,9 +33,11 @@ public class TestIndex
             root = new Root();
             root.strIndex = db.createIndex(typeof(System.String), true);
             root.intIndex = db.createFieldIndex(typeof(Record), "intKey", true);
+            root.compoundIndex = db.createFieldIndex(typeof(Record), new String[]{"strKey", "intKey"}, true);
             db.Root = root;
         }
         FieldIndex intIndex = root.intIndex;
+        FieldIndex compoundIndex = root.compoundIndex;
         Index strIndex = root.strIndex;
         DateTime start = DateTime.Now;
         long key = 1999;
@@ -47,6 +50,7 @@ public class TestIndex
             rec.realKey = (double)key;
             intIndex.put(rec);
             strIndex.put(new Key(rec.strKey), rec);
+            compoundIndex.put(rec);                
         }
         db.commit();
         System.Console.WriteLine("Elapsed time for inserting " + nRecords + " records: " + (DateTime.Now - start));
@@ -69,6 +73,7 @@ public class TestIndex
         root = (Root)db.Root;
         intIndex = root.intIndex;
         strIndex = root.strIndex;
+        compoundIndex = root.compoundIndex;
 	
         start = DateTime.Now;
         key = 1999;
@@ -78,8 +83,10 @@ public class TestIndex
             String strKey = System.Convert.ToString(key);
             Record rec1 = (Record) intIndex.get(new Key(key));
             Record rec2 = (Record) strIndex.get(new Key(strKey));
+            Record rec3 = (Record)compoundIndex.get(new Key(strKey, key));
             Assert.that(rec1 != null);
             Assert.that(rec1 == rec2);
+            Assert.that(rec1 == rec3);
             Assert.that(rec1.intKey == key);
             Assert.that(rec1.realKey == (double)key);
             Assert.that(strKey.Equals(rec1.strKey));

@@ -12,7 +12,7 @@ namespace Perst
         public int ival;
         public long lval;
         public double dval;
-        public char[] sval;
+        public object oval;
         public int inclusion;
 		
         /// <summary> Constructor of boolean key (boundary is inclusive)
@@ -111,19 +111,43 @@ namespace Perst
         {
         }
 		
+        /// <summary> Constructor of array of byte key (boundary is inclusive)
+        /// </summary>
+        public Key(byte[] v):this(v, true)
+        {
+        }
+		
+        /// <summary>
+        /// Constructor of compound key (boundary is inclusive)
+        /// </summary>
+        /// <param name="v">array of compound key values</param>
+        public Key(object[] v):this(v, true)
+        {
+        }    
+
+        /// <summary>
+        /// Constructor of compound key with two values (boundary is inclusive)
+        /// </summary>
+        /// <param name="v1">first value of compund key</param>
+        /// <param name="v2">second value of compund key</param>
+        public Key(object v1, object v2):this(new object[]{v1, v2}, true)
+        {
+        }    
+
+        
         /// <summary> Constructor of key with persistent object reference (boundary is inclusive)
         /// </summary>
         public Key(IPersistent v):this(v, true)
         {
         }
 		
-        public Key(FieldType type, long lval, double dval, char[] sval, bool inclusive)
+        public Key(FieldType type, long lval, double dval, object oval, bool inclusive)
         {
             this.type = type;
             this.ival = (int) lval;
             this.lval = lval;
             this.dval = dval;
-            this.sval = sval;
+            this.oval = oval;
             this.inclusion = inclusive?1:0;
         }
 		
@@ -280,7 +304,9 @@ namespace Perst
         public Key(System.DateTime v, bool inclusive):this(ClassDescriptor.FieldType.tpDate, (v.Ticks - 621355968000000000) / 10000, 0.0, null, inclusive)
         {
         }
-		
+
+		static readonly char[] EMPTY_STRING = new char[0];
+
         /// <summary> Constructor of string key
         /// </summary>
         /// <param name="v">key value
@@ -288,7 +314,7 @@ namespace Perst
         /// <param name="inclusive">whether boundary is inclusive or exclusive
         /// 
         /// </param>
-        public Key(System.String v, bool inclusive):this(ClassDescriptor.FieldType.tpString, 0, 0.0, v.ToCharArray(), inclusive)
+        public Key(string v, bool inclusive):this(ClassDescriptor.FieldType.tpString, 0, 0.0, v == null ? EMPTY_STRING : v.ToCharArray(), inclusive)
         {
         }
 		
@@ -303,6 +329,34 @@ namespace Perst
         {
         }
 		
+        /// <summary> Constructor of array of byte key
+        /// </summary>
+        /// <param name="v">key value
+        /// </param>
+        /// <param name="inclusive">whether boundary is inclusive or exclusive</param>
+        public Key(byte[] v, bool inclusive):this(ClassDescriptor.FieldType.tpArrayOfByte, 0, 0.0, v, inclusive)
+        {
+        }
+		
+        /// <summary>
+        /// Constructor of compound key (boundary is inclusive)
+        /// </summary>
+        /// <param name="v">array of compound key values</param>
+        /// <param name="inclusive">whether boundary is inclusive or exclusive</param>
+        public Key(object[] v, bool inclusive):this(ClassDescriptor.FieldType.tpArrayOfObject, 0, 0.0, v, inclusive) 
+        { 
+        }    
+
+        /// <summary>
+        /// Constructor of compound key with two values (boundary is inclusive)
+        /// </summary>
+        /// <param name="v1">first value of compund key</param>
+        /// <param name="v2">second value of compund key</param>
+        /// <param name="inclusive">whether boundary is inclusive or exclusive</param>
+        public Key(object v1, object v2, bool inclusive):this(new object[]{v1, v2}, inclusive)
+        {
+        }    
+
         /// <summary> Constructor of key with persistent object reference
         /// </summary>
         /// <param name="v">key value

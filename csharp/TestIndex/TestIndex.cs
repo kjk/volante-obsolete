@@ -29,7 +29,7 @@ public class TestIndex
         if (root == null)
         {
             root = new Root();
-            root.strIndex = db.createIndex(typeof(System.String), true);
+            root.strIndex = db.createIndex(typeof(String), true);
             root.intIndex = db.createIndex(typeof(long), true);
             db.Root = root;
         }
@@ -55,7 +55,7 @@ public class TestIndex
         {
             key = (3141592621L * key + 2718281829L) % 1000000007L;
             Record rec1 = (Record) intIndex.get(new Key(key));
-            Record rec2 = (Record) strIndex.get(new Key(System.Convert.ToString(key)));
+            Record rec2 = (Record) strIndex.get(new Key(Convert.ToString(key)));
             Assert.that(rec1 != null && rec1 == rec2);
         }
         System.Console.WriteLine("Elapsed time for performing " + nRecords * 2 + " index searches: " + (DateTime.Now - start));

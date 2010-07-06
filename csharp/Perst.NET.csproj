@@ -213,6 +213,11 @@
                     BuildAction = "Compile"
                 />
                 <File
+                    RelPath = "src\impl\BtreeMultiFieldIndex.cs"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
                     RelPath = "src\impl\BtreePage.cs"
                     SubType = "Code"
                     BuildAction = "Compile"

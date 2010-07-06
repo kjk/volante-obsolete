@@ -1353,6 +1353,20 @@ namespace Perst.Impl
             }
         }
 		
+        public override FieldIndex createFieldIndex(System.Type type, String[] fieldNames, bool unique)
+        {
+            lock(this)
+            {
+                if (!opened)
+                {
+                    throw new StorageError(StorageError.ErrorCode.STORAGE_NOT_OPENED);
+                }
+                BtreeMultiFieldIndex index = new BtreeMultiFieldIndex(type, fieldNames, unique);
+                setObjectOid(index, 0, false);
+                return index;
+            }
+        }
+
         public override Link createLink()
         {
             return new LinkImpl(8);
@@ -1467,7 +1481,7 @@ namespace Perst.Impl
                                         if (typeOid != 0) 
                                         { 
                                             ClassDescriptor desc = (ClassDescriptor)lookupObject(typeOid, typeof(ClassDescriptor));
-                                            if (desc.cls == typeof(Btree) || desc.cls == typeof(BtreeFieldIndex)) 
+                                            if (typeof(Btree).IsAssignableFrom(desc.cls)) 
                                             { 
                                                 Btree btree = new Btree(pg.data, ObjectHeader.Sizeof + offs);
                                                 setObjectOid(btree, 0, false);
@@ -1509,7 +1523,7 @@ namespace Perst.Impl
                             { 
                                 ClassDescriptor desc = findClassDescriptor(typeOid);
                                 if (desc != null 
-                                    && (desc.cls == typeof(Btree) || desc.cls == typeof(BtreeFieldIndex))) 
+                                    && (typeof(Btree).IsAssignableFrom(desc.cls))) 
                                 { 
                                     Btree btree = new Btree(pg.data, ObjectHeader.Sizeof + offs);
                                     pool.unfix(pg);
@@ -2440,10 +2454,10 @@ namespace Perst.Impl
                             else
                             {
                                 System.Type elemType = f.FieldType.GetElementType();
-                                Array arr = (IPersistent[]) System.Array.CreateInstance(elemType, len);
+                                Array arr = Array.CreateInstance(elemType, len);
                                 for (int j = 0; j < len; j++)
                                 {
-                                    arr.SetValue(Enum.ToObject(f.FieldType, Bytes.unpack4(body, offs)), j);
+                                    arr.SetValue(Enum.ToObject(elemType, Bytes.unpack4(body, offs)), j);
                                     offs += 4;
                                 }
                                 f.SetValue(obj, arr);

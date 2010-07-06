@@ -10,7 +10,6 @@ namespace Perst.Impl
         internal const int keySpace = Page.pageSize - firstKeyOffs;
         internal const int strKeySize = 8;
         internal const int maxItems = keySpace / 4;
-        internal const int maxStrKeySize = (keySpace - strKeySize * 2) / 4;
 		
         internal static int getnItems(Page pg)
         {
@@ -67,6 +66,11 @@ namespace Perst.Impl
                 offs += 2;
             }
         }
+        internal static void setKeyBytes(Page pg, int offs, byte[] bytes) 
+        { 
+            Array.Copy(bytes, 0, pg.data, firstKeyOffs + offs, bytes.Length);
+        }
+
         internal static void  setReference(Page pg, int index, int oid)
         {
             Bytes.pack4(pg.data, firstKeyOffs + index * 4, oid);
@@ -136,7 +140,7 @@ namespace Perst.Impl
 		
         internal static int compareStr(Key key, Page pg, int i)
         {
-            char[] chars = key.sval;
+            char[] chars = (char[])key.oval;
             int alen = chars.Length;
             int blen = BtreePage.getKeyStrSize(pg, i);
             int minlen = alen < blen?alen:blen;
@@ -155,7 +159,7 @@ namespace Perst.Impl
         }
 		
 		
-        internal static bool find(StorageImpl db, int pageId, Key firstKey, Key lastKey, ClassDescriptor.FieldType type, int height, ArrayList result)
+        internal static bool find(StorageImpl db, int pageId, Key firstKey, Key lastKey, Btree tree, int height, ArrayList result)
         {
             Page pg = db.getPage(pageId);
             int l = 0, n = getnItems(pg), r = n;
@@ -163,7 +167,7 @@ namespace Perst.Impl
             height -= 1;
             try
             {
-                if (type == ClassDescriptor.FieldType.tpString)
+                if (tree.type == ClassDescriptor.FieldType.tpString)
                 {
                     if (firstKey != null)
                     {
@@ -200,7 +204,7 @@ namespace Perst.Impl
                         {
                             do 
                             {
-                                if (!find(db, getKeyStrOid(pg, l), firstKey, lastKey, type, height, result))
+                                if (!find(db, getKeyStrOid(pg, l), firstKey, lastKey, tree, height, result))
                                 {
                                     return false;
                                 }
@@ -228,7 +232,81 @@ namespace Perst.Impl
                         {
                             do 
                             {
-                                if (!find(db, getKeyStrOid(pg, l), firstKey, lastKey, type, height, result))
+                                if (!find(db, getKeyStrOid(pg, l), firstKey, lastKey, tree, height, result))
+                                {
+                                    return false;
+                                }
+                            }
+                            while (++l <= n);
+                        }
+                    }
+                }
+                else if (tree.type == ClassDescriptor.FieldType.tpArrayOfByte)
+                {
+                    if (firstKey != null)
+                    {
+                        while (l < r)
+                        {
+                            int i = (l + r) >> 1;
+                            if (tree.compareByteArrays(firstKey, pg, i) >= firstKey.inclusion)
+                            {
+                                l = i + 1;
+                            }
+                            else
+                            {
+                                r = i;
+                            }
+                        }
+                        Assert.that(r == l);
+                    }
+                    if (lastKey != null)
+                    {
+                        if (height == 0)
+                        {
+                            while (l < n)
+                            {
+                                if (-tree.compareByteArrays(lastKey, pg, l) >= lastKey.inclusion)
+                                {
+                                    return false;
+                                }
+                                oid = getKeyStrOid(pg, l);
+                                result.Add(db.lookupObject(oid, null));
+                                l += 1;
+                            }
+                        }
+                        else
+                        {
+                            do 
+                            {
+                                if (!find(db, getKeyStrOid(pg, l), firstKey, lastKey, tree, height, result))
+                                {
+                                    return false;
+                                }
+                                if (l == n)
+                                {
+                                    return true;
+                                }
+                            }
+                            while (tree.compareByteArrays(lastKey, pg, l++) >= 0);
+                            return false;
+                        }
+                    }
+                    else
+                    {
+                        if (height == 0)
+                        {
+                            while (l < n)
+                            {
+                                oid = getKeyStrOid(pg, l);
+                                result.Add(db.lookupObject(oid, null));
+                                l += 1;
+                            }
+                        }
+                        else
+                        {
+                            do 
+                            {
+                                if (!find(db, getKeyStrOid(pg, l), firstKey, lastKey, tree, height, result))
                                 {
                                     return false;
                                 }
@@ -275,7 +353,7 @@ namespace Perst.Impl
                         {
                             do 
                             {
-                                if (!find(db, getReference(pg, maxItems - 1 - l), firstKey, lastKey, type, height, result))
+                                if (!find(db, getReference(pg, maxItems - 1 - l), firstKey, lastKey, tree, height, result))
                                 {
                                     return false;
                                 }
@@ -301,7 +379,7 @@ namespace Perst.Impl
                     {
                         do 
                         {
-                            if (!find(db, getReference(pg, maxItems - 1 - l), firstKey, lastKey, type, height, result))
+                            if (!find(db, getReference(pg, maxItems - 1 - l), firstKey, lastKey, tree, height, result))
                             {
                                 return false;
                             }
@@ -325,13 +403,25 @@ namespace Perst.Impl
             setnItems(pg, 1);
             if (type == ClassDescriptor.FieldType.tpString)
             {
-                int len = ins.key.sval.Length;
+                char[] sval = (char[])ins.key.oval;
+                int len = sval.Length;
                 setSize(pg, len * 2);
                 setKeyStrOffs(pg, 0, keySpace - len * 2);
                 setKeyStrSize(pg, 0, len);
                 setKeyStrOid(pg, 0, ins.oid);
                 setKeyStrOid(pg, 1, root);
-                setKeyStrChars(pg, keySpace - len * 2, ins.key.sval);
+                setKeyStrChars(pg, keySpace - len * 2, sval);
+            }
+            else if (type == ClassDescriptor.FieldType.tpArrayOfByte)
+            {
+                byte[] bval = (byte[])ins.key.oval;
+                int len = bval.Length;
+                setSize(pg, len);
+                setKeyStrOffs(pg, 0, keySpace - len);
+                setKeyStrSize(pg, 0, len);
+                setKeyStrOid(pg, 0, ins.oid);
+                setKeyStrOid(pg, 1, root);
+                setKeyBytes(pg, keySpace - len, bval);
             }
             else
             {
@@ -342,51 +432,20 @@ namespace Perst.Impl
             return pageId;
         }
 		
-        internal static int clonePage(StorageImpl db, int origPageId, ClassDescriptor.FieldType type, int height)
-        {
-            int newPageId = db.allocatePage();
-            Page newPage = db.putPage(newPageId);
-            Page origPage = db.getPage(origPageId);
-            int i, n = getnItems(origPage);
-            Array.Copy(origPage.data, 0, newPage.data, 0, Page.pageSize);
-			
-            if (--height != 0)
-            {
-                if (type == ClassDescriptor.FieldType.tpString)
-                {
-                    // page of strings
-                    for (i = 0; i <= n; i++)
-                    {
-                        setKeyStrOid(newPage, i, clonePage(db, getKeyStrOid(origPage, i), type, height));
-                    }
-                }
-                else
-                {
-                    for (i = 0; i <= n; i++)
-                    {
-                        setReference(newPage, maxItems - i - 1, clonePage(db, getReference(origPage, maxItems - i - 1), type, height));
-                    }
-                }
-            }
-            db.pool.unfix(newPage);
-            db.pool.unfix(origPage);
-            return newPageId;
-        }
-		
 		
         internal static void  memcpy(Page dst_pg, int dst_idx, Page src_pg, int src_idx, int len, int itemSize)
         {
             Array.Copy(src_pg.data, firstKeyOffs + src_idx * itemSize, dst_pg.data, firstKeyOffs + dst_idx * itemSize, len * itemSize);
         }
 		
-        internal static int insert(StorageImpl db, int pageId, ClassDescriptor.FieldType type, BtreeKey ins, int height, bool unique, bool overwrite)
+        internal static int insert(StorageImpl db, int pageId, Btree tree, BtreeKey ins, int height, bool unique, bool overwrite)
         {
             Page pg = db.getPage(pageId);
             int result;
             int l = 0, n = getnItems(pg), r = n;
             try
             {
-                if (type == ClassDescriptor.FieldType.tpString)
+                if (tree.type == ClassDescriptor.FieldType.tpString)
                 {
                     while (l < r)
                     {
@@ -403,7 +462,7 @@ namespace Perst.Impl
                     Assert.that(l == r);
                     if (--height != 0)
                     {
-                        result = insert(db, getKeyStrOid(pg, r), type, ins, height, unique, overwrite);
+                        result = insert(db, getKeyStrOid(pg, r), tree, ins, height, unique, overwrite);
                         Assert.that(result != Btree.op_not_found);
                         if (result != Btree.op_overflow)
                         {
@@ -424,6 +483,44 @@ namespace Perst.Impl
                     pg = db.putPage(pageId);
                     return insertStrKey(db, pg, r, ins, height);
                 }
+                else if (tree.type == ClassDescriptor.FieldType.tpArrayOfByte)
+                {
+                    while (l < r)
+                    {
+                        int i = (l + r) >> 1;
+                        if (tree.compareByteArrays(ins.key, pg, i) > 0)
+                        {
+                            l = i + 1;
+                        }
+                        else
+                        {
+                            r = i;
+                        }
+                    }
+                    Assert.that(l == r);
+                    if (--height != 0)
+                    {
+                        result = insert(db, getKeyStrOid(pg, r), tree, ins, height, unique, overwrite);
+                        Assert.that(result != Btree.op_not_found);
+                        if (result != Btree.op_overflow)
+                        {
+                            return result;
+                        }
+                    }
+                    else if (unique && r < n && tree.compareByteArrays(ins.key, pg, r) == 0)
+                    {
+                        if (overwrite) 
+                        { 
+                            setKeyStrOid(pg, r, ins.oid);
+                            return Btree.op_overwrite;
+                        }
+                        return Btree.op_duplicate;
+                    }
+                    db.pool.unfix(pg);
+                    pg = null;
+                    pg = db.putPage(pageId);
+                    return insertByteArrayKey(db, pg, r, ins, height);
+                }
                 else
                 {
                     while (l < r)
@@ -438,7 +535,7 @@ namespace Perst.Impl
                     /* insert before e[r] */
                     if (--height != 0)
                     {
-                        result = insert(db, getReference(pg, maxItems - r - 1), type, ins, height, unique, overwrite);
+                        result = insert(db, getReference(pg, maxItems - r - 1), tree, ins, height, unique, overwrite);
                         Assert.that(result != Btree.op_not_found);
                         if (result != Btree.op_overflow)
                         {
@@ -458,7 +555,7 @@ namespace Perst.Impl
                     db.pool.unfix(pg);
                     pg = null;
                     pg = db.putPage(pageId);
-                    int itemSize = ClassDescriptor.Sizeof[(int)type];
+                    int itemSize = ClassDescriptor.Sizeof[(int)tree.type];
                     int max = keySpace / (4 + itemSize);
                     if (n < max)
                     {
@@ -496,7 +593,7 @@ namespace Perst.Impl
                             memcpy(pg, maxItems - max + m - 1, pg, maxItems - max, max - r, 4);
                         }
                         ins.oid = pageId;
-                        ins.extract(b, firstKeyOffs + (m - 1) * itemSize, type);
+                        ins.extract(b, firstKeyOffs + (m - 1) * itemSize, tree.type);
                         if (height == 0)
                         {
                             setnItems(pg, max - m + 1);
@@ -527,7 +624,8 @@ namespace Perst.Impl
             int size = getSize(pg);
             int n = (height != 0)?nItems + 1:nItems;
             // insert before e[r]
-            int len = ins.key.sval.Length;
+            char[] sval = (char[])ins.key.oval;        
+            int len = sval.Length;
             if (size + len * 2 + (n + 1) * strKeySize <= keySpace)
             {
                 memcpy(pg, r + 1, pg, r, n - r, strKeySize);
@@ -535,7 +633,7 @@ namespace Perst.Impl
                 setKeyStrOffs(pg, r, keySpace - size);
                 setKeyStrSize(pg, r, len);
                 setKeyStrOid(pg, r, ins.oid);
-                setKeyStrChars(pg, keySpace - size, ins.key.sval);
+                setKeyStrChars(pg, keySpace - size, sval);
                 nItems += 1;
             }
             else
@@ -586,8 +684,7 @@ namespace Perst.Impl
                     int delta = (moved + addSize * 2 + (bn + 1) * strKeySize) - (j * strKeySize + size - subSize * 2 + inserted);
                     if (delta >= - prevDelta)
                     {
-                        char[] insKey = ins.key.sval;
-                        if (height == 0)
+                         if (height == 0)
                         {
                             ins.getStr(b, bn - 1);
                         }
@@ -606,7 +703,7 @@ namespace Perst.Impl
                                 setKeyStrOid(b, bn, ins.oid);
                             }
                         }
-                        nItems = compactify(pg, i);
+                        nItems = compactifyStrings(pg, i);
                         if (bn < r || (bn == r && height == 0))
                         {
                             memcpy(pg, r - i + 1, pg, r - i, n - r, strKeySize);
@@ -616,7 +713,7 @@ namespace Perst.Impl
                             setKeyStrOffs(pg, r - i, keySpace - size);
                             setKeyStrSize(pg, r - i, len);
                             setKeyStrOid(pg, r - i, ins.oid);
-                            setKeyStrChars(pg, keySpace - size, insKey);
+                            setKeyStrChars(pg, keySpace - size, sval);
                         }
                         setnItems(b, bn);
                         setSize(b, moved);
@@ -634,7 +731,7 @@ namespace Perst.Impl
                     if (bn == r)
                     {
                         setKeyStrOid(b, bn, ins.oid);
-                        setKeyStrChars(b, keySpace - moved, ins.key.sval);
+                        setKeyStrChars(b, keySpace - moved, sval);
                     }
                     else
                     {
@@ -650,8 +747,137 @@ namespace Perst.Impl
             return size + strKeySize * (nItems + 1) < keySpace / 2?Btree.op_underflow:Btree.op_done;
         }
 		
+        internal static int insertByteArrayKey(StorageImpl db, Page pg, int r, BtreeKey ins, int height)
+        {
+            int nItems = getnItems(pg);
+            int size = getSize(pg);
+            int n = (height != 0)?nItems + 1:nItems;
+            // insert before e[r]
+            byte[] bval = (byte[])ins.key.oval;        
+            int len = bval.Length;
+            if (size + len + (n + 1) * strKeySize <= keySpace)
+            {
+                memcpy(pg, r + 1, pg, r, n - r, strKeySize);
+                size += len;
+                setKeyStrOffs(pg, r, keySpace - size);
+                setKeyStrSize(pg, r, len);
+                setKeyStrOid(pg, r, ins.oid);
+                setKeyBytes(pg, keySpace - size, bval);
+                nItems += 1;
+            }
+            else
+            {
+                // page is full then divide page
+                int pageId = db.allocatePage();
+                Page b = db.putPage(pageId);
+                int moved = 0;
+                int inserted = len + strKeySize;
+                int prevDelta = (1 << 31) + 1;
+				
+                for (int bn = 0, i = 0; ; bn += 1)
+                {
+                    int addSize, subSize;
+                    int j = nItems - i - 1;
+                    int keyLen = getKeyStrSize(pg, i);
+                    if (bn == r)
+                    {
+                        keyLen = len;
+                        inserted = 0;
+                        addSize = len;
+                        if (height == 0)
+                        {
+                            subSize = 0;
+                            j += 1;
+                        }
+                        else
+                        {
+                            subSize = getKeyStrSize(pg, i);
+                        }
+                    }
+                    else
+                    {
+                        addSize = subSize = keyLen;
+                        if (height != 0)
+                        {
+                            if (i + 1 != r)
+                            {
+                                subSize += getKeyStrSize(pg, i + 1);
+                                j -= 1;
+                            }
+                            else
+                            {
+                                inserted = 0;
+                            }
+                        }
+                    }
+                    int delta = (moved + addSize + (bn + 1) * strKeySize) - (j * strKeySize + size - subSize + inserted);
+                    if (delta >= - prevDelta)
+                    {
+                        if (height == 0)
+                        {
+                            ins.getByteArray(b, bn - 1);
+                        }
+                        else
+                        {
+                            Assert.that("String fits in the B-Tree page", moved + (bn + 1) * strKeySize <= keySpace);
+                            if (bn != r)
+                            {
+                                ins.getByteArray(pg, i);
+                                setKeyStrOid(b, bn, getKeyStrOid(pg, i));
+                                size -= keyLen;
+                                i += 1;
+                            }
+                            else
+                            {
+                                setKeyStrOid(b, bn, ins.oid);
+                            }
+                        }
+                        nItems = compactifyByteArrays(pg, i);
+                        if (bn < r || (bn == r && height == 0))
+                        {
+                            memcpy(pg, r - i + 1, pg, r - i, n - r, strKeySize);
+                            size += len;
+                            nItems += 1;
+                            Assert.that("String fits in the B-Tree page", size + (n - i + 1) * strKeySize <= keySpace);
+                            setKeyStrOffs(pg, r - i, keySpace - size);
+                            setKeyStrSize(pg, r - i, len);
+                            setKeyStrOid(pg, r - i, ins.oid);
+                            setKeyBytes(pg, keySpace - size, bval);
+                        }
+                        setnItems(b, bn);
+                        setSize(b, moved);
+                        setSize(pg, size);
+                        setnItems(pg, nItems);
+                        ins.oid = pageId;
+                        db.pool.unfix(b);
+                        return Btree.op_overflow;
+                    }
+                    moved += keyLen;
+                    prevDelta = delta;
+                    Assert.that("String fits in the B-Tree page", moved + (bn + 1) * strKeySize <= keySpace);
+                    setKeyStrSize(b, bn, keyLen);
+                    setKeyStrOffs(b, bn, keySpace - moved);
+                    if (bn == r)
+                    {
+                        setKeyStrOid(b, bn, ins.oid);
+                        setKeyBytes(b, keySpace - moved, bval);
+                    }
+                    else
+                    {
+                        setKeyStrOid(b, bn, getKeyStrOid(pg, i));
+                        memcpy(b, keySpace - moved, pg, getKeyStrOffs(pg, i), keyLen, 1);
+                        size -= keyLen;
+                        i += 1;
+                    }
+                }
+            }
+            setnItems(pg, nItems);
+            setSize(pg, size);
+            return size + strKeySize * (nItems + 1) < keySpace / 2?Btree.op_underflow:Btree.op_done;
+        }
 		
-        internal static int compactify(Page pg, int m)
+		
+        internal static int compactifyStrings(Page pg, int m)
         {
             int i, j, offs, len, n = getnItems(pg);
             int[] size = new int[keySpace / 2 + 1];
@@ -739,9 +965,127 @@ namespace Perst.Impl
             return nItems;
         }
 		
+        internal static int compactifyByteArrays(Page pg, int m)
+        {
+            int i, j, offs, len, n = getnItems(pg);
+            int[] size = new int[keySpace + 1];
+            int[] index = new int[keySpace + 1];
+            if (m == 0)
+            {
+                return n;
+            }
+            int nZeroLengthArrays = 0;
+            if (m < 0)
+            {
+                m = - m;
+                for (i = 0; i < n - m; i++)
+                {
+                    len = getKeyStrSize(pg, i);
+                    if (len != 0)
+                    {
+                        offs = getKeyStrOffs(pg, i);
+                        size[offs + len] = len;
+                        index[offs + len] = i;
+                    }
+                    else
+                    {
+                        nZeroLengthArrays += 1;
+                    }
+                }
+                for (; i < n; i++)
+                {
+                    len = getKeyStrSize(pg, i);
+                    if (len != 0)
+                    {
+                        offs = getKeyStrOffs(pg, i);
+                        size[offs + len] = len;
+                        index[offs + len] = -1;
+                    }
+                }
+            }
+            else
+            {
+                for (i = 0; i < m; i++)
+                {
+                    len = getKeyStrSize(pg, i);
+                    if (len != 0)
+                    {
+                        offs = getKeyStrOffs(pg, i);
+                        size[offs + len] = len;
+                        index[offs + len] = - 1;
+                    }
+                }
+                for (; i < n; i++)
+                {
+                    len = getKeyStrSize(pg, i);
+                    if (len != 0)
+                    {
+                        offs = getKeyStrOffs(pg, i);
+                        size[offs + len] = len;
+                        index[offs + len] = i - m;
+                    }
+                    else
+                    {
+                        nZeroLengthArrays += 1;
+                    }
+                    setKeyStrOid(pg, i - m, getKeyStrOid(pg, i));
+                    setKeyStrSize(pg, i - m, len);
+                }
+                setKeyStrOid(pg, i - m, getKeyStrOid(pg, i));
+            }
+            int nItems = n -= m;
+            n -= nZeroLengthArrays;
+            for (offs = keySpace, i = offs; n != 0; i -= len)
+            {
+                len = size[i];
+                j = index[i];
+                if (j >= 0)
+                {
+                    offs -= len;
+                    n -= 1;
+                    setKeyStrOffs(pg, j, offs);
+                    if (offs != i - len)
+                    {
+                        memcpy(pg, offs, pg, i - len, len, 1);
+                    }
+                }
+            }
+            return nItems;
+        }
+		
         internal static int removeStrKey(Page pg, int r)
         {
             int len = getKeyStrSize(pg, r) * 2;
+            int offs = getKeyStrOffs(pg, r);
+            int size = getSize(pg);
+            int nItems = getnItems(pg);
+            if ((nItems + 1) * strKeySize >= keySpace)
+            {
+                memcpy(pg, r, pg, r + 1, nItems - r - 1, strKeySize);
+            }
+            else
+            {
+                memcpy(pg, r, pg, r + 1, nItems - r, strKeySize);
+            }
+            if (len != 0)
+            {
+                memcpy(pg, keySpace - size + len, pg, keySpace - size, size - keySpace + offs, 1);
+                for (int i = nItems; --i >= 0; )
+                {
+                    if (getKeyStrOffs(pg, i) < offs)
+                    {
+                        setKeyStrOffs(pg, i, getKeyStrOffs(pg, i) + len);
+                    }
+                }
+                setSize(pg, size -= len);
+            }
+            setnItems(pg, nItems - 1);
+            return size + strKeySize * nItems < keySpace / 2?Btree.op_underflow:Btree.op_done;
+        }
+		
+        internal static int removeByteArrayKey(Page pg, int r)
+        {
+            int len = getKeyStrSize(pg, r);
             int offs = getKeyStrOffs(pg, r);
             int size = getSize(pg);
             int nItems = getnItems(pg);
@@ -774,6 +1118,13 @@ namespace Perst.Impl
             ins.oid = getKeyStrOid(pg, r);
             removeStrKey(pg, r);
             return insertStrKey(db, pg, r, ins, height);
+        }
+		
+        internal static int replaceByteArrayKey(StorageImpl db, Page pg, int r, BtreeKey ins, int height)
+        {
+            ins.oid = getKeyStrOid(pg, r);
+            removeByteArrayKey(pg, r);
+            return insertByteArrayKey(db, pg, r, ins, height);
         }
 		
         internal static int handlePageUnderflow(StorageImpl db, Page pg, int r, ClassDescriptor.FieldType type, BtreeKey rem, int height)
@@ -868,7 +1219,7 @@ namespace Perst.Impl
                             rem.getStr(b, i - 1);
                             result = replaceStrKey(db, pg, r, rem, height);
                             setnItems(a, an);
-                            setnItems(b, compactify(b, i));
+                            setnItems(b, compactifyStrings(b, i));
                         }
                         db.pool.unfix(a);
                         db.pool.unfix(b);
@@ -993,7 +1344,7 @@ namespace Perst.Impl
                             setnItems(a, an);
                             rem.getStr(b, bn - k - 1);
                             result = replaceStrKey(db, pg, r - 1, rem, height);
-                            setnItems(b, compactify(b, - i));
+                            setnItems(b, compactifyStrings(b, - i));
                         }
                         db.pool.unfix(a);
                         db.pool.unfix(b);
@@ -1031,6 +1382,261 @@ namespace Perst.Impl
                         db.pool.unfix(b);
                         db.freePage(getKeyStrOid(pg, r - 1));
                         return removeStrKey(pg, r - 1);
+                    }
+                }
+            }
+            else if (type == ClassDescriptor.FieldType.tpArrayOfByte)
+            {
+                Page a = db.putPage(getKeyStrOid(pg, r));
+                int an = getnItems(a);
+                if (r < nItems)
+                {
+                    // exists greater page
+                    Page b = db.getPage(getKeyStrOid(pg, r + 1));
+                    int bn = getnItems(b);
+                    int merged_size = (an + bn) * strKeySize + getSize(a) + getSize(b);
+                    if (height != 1)
+                    {
+                        merged_size += getKeyStrSize(pg, r) + strKeySize * 2;
+                    }
+                    if (merged_size > keySpace)
+                    {
+                        // reallocation of nodes between pages a and b
+                        int i, j, k;
+                        db.pool.unfix(b);
+                        b = db.putPage(getKeyStrOid(pg, r + 1));
+                        int size_a = getSize(a);
+                        int size_b = getSize(b);
+                        int addSize, subSize;
+                        if (height != 1)
+                        {
+                            addSize = getKeyStrSize(pg, r);
+                            subSize = getKeyStrSize(b, 0);
+                        }
+                        else
+                        {
+                            addSize = subSize = getKeyStrSize(b, 0);
+                        }
+                        i = 0;
+                        int prevDelta = (an * strKeySize + size_a) - (bn * strKeySize + size_b);
+                        while (true)
+                        {
+                            i += 1;
+                            int delta = ((an + i) * strKeySize + size_a + addSize) - ((bn - i) * strKeySize + size_b - subSize);
+                            if (delta >= 0)
+                            {
+                                if (delta >= - prevDelta)
+                                {
+                                    i -= 1;
+                                }
+                                break;
+                            }
+                            size_a += addSize;
+                            size_b -= subSize;
+                            prevDelta = delta;
+                            if (height != 1)
+                            {
+                                addSize = subSize;
+                                subSize = getKeyStrSize(b, i);
+                            }
+                            else
+                            {
+                                addSize = subSize = getKeyStrSize(b, i);
+                            }
+                        }
+                        int result = Btree.op_done;
+                        if (i > 0)
+                        {
+                            k = i;
+                            if (height != 1)
+                            {
+                                int len = getKeyStrSize(pg, r);
+                                setSize(a, getSize(a) + len);
+                                setKeyStrOffs(a, an, keySpace - getSize(a));
+                                setKeyStrSize(a, an, len);
+                                memcpy(a, getKeyStrOffs(a, an), pg, getKeyStrOffs(pg, r), len, 1);
+                                k -= 1;
+                                an += 1;
+                                setKeyStrOid(a, an + k, getKeyStrOid(b, k));
+                                setSize(b, getSize(b) - getKeyStrSize(b, k));
+                            }
+                            for (j = 0; j < k; j++)
+                            {
+                                int len = getKeyStrSize(b, j);
+                                setSize(a, getSize(a) + len);
+                                setSize(b, getSize(b) - len);
+                                setKeyStrOffs(a, an, keySpace - getSize(a));
+                                setKeyStrSize(a, an, len);
+                                setKeyStrOid(a, an, getKeyStrOid(b, j));
+                                memcpy(a, getKeyStrOffs(a, an), b, getKeyStrOffs(b, j), len, 1);
+                                an += 1;
+                            }
+                            rem.getByteArray(b, i - 1);
+                            result = replaceByteArrayKey(db, pg, r, rem, height);
+                            setnItems(a, an);
+                            setnItems(b, compactifyByteArrays(b, i));
+                        }
+                        db.pool.unfix(a);
+                        db.pool.unfix(b);
+                        return result;
+                    }
+                    else
+                    {
+                        // merge page b to a
+                        if (height != 1)
+                        {
+                            int r_len = getKeyStrSize(pg, r);
+                            setKeyStrSize(a, an, r_len);
+                            setSize(a, getSize(a) + r_len);
+                            setKeyStrOffs(a, an, keySpace - getSize(a));
+                            memcpy(a, getKeyStrOffs(a, an), pg, getKeyStrOffs(pg, r), r_len, 1);
+                            an += 1;
+                            setKeyStrOid(a, an + bn, getKeyStrOid(b, bn));
+                        }
+                        for (int i = 0; i < bn; i++, an++)
+                        {
+                            setKeyStrSize(a, an, getKeyStrSize(b, i));
+                            setKeyStrOffs(a, an, getKeyStrOffs(b, i) - getSize(a));
+                            setKeyStrOid(a, an, getKeyStrOid(b, i));
+                        }
+                        setSize(a, getSize(a) + getSize(b));
+                        setnItems(a, an);
+                        memcpy(a, keySpace - getSize(a), b, keySpace - getSize(b), getSize(b), 1);
+                        db.pool.unfix(a);
+                        db.pool.unfix(b);
+                        db.freePage(getKeyStrOid(pg, r + 1));
+                        setKeyStrOid(pg, r + 1, getKeyStrOid(pg, r));
+                        return removeByteArrayKey(pg, r);
+                    }
+                }
+                else
+                {
+                    // page b is before a
+                    Page b = db.getPage(getKeyStrOid(pg, r - 1));
+                    int bn = getnItems(b);
+                    int merged_size = (an + bn) * strKeySize + getSize(a) + getSize(b);
+                    if (height != 1)
+                    {
+                        merged_size += getKeyStrSize(pg, r - 1) + strKeySize * 2;
+                    }
+                    if (merged_size > keySpace)
+                    {
+                        // reallocation of nodes between pages a and b
+                        int i, j, k, len;
+                        db.pool.unfix(b);
+                        b = db.putPage(getKeyStrOid(pg, r - 1));
+                        int size_a = getSize(a);
+                        int size_b = getSize(b);
+                        int addSize, subSize;
+                        if (height != 1)
+                        {
+                            addSize = getKeyStrSize(pg, r - 1);
+                            subSize = getKeyStrSize(b, bn - 1);
+                        }
+                        else
+                        {
+                            addSize = subSize = getKeyStrSize(b, bn - 1);
+                        }
+                        i = 0;
+                        int prevDelta = (an * strKeySize + size_a) - (bn * strKeySize + size_b);
+                        while (true)
+                        {
+                            i += 1;
+                            int delta = ((an + i) * strKeySize + size_a + addSize) - ((bn - i) * strKeySize + size_b - subSize);
+                            if (delta >= 0)
+                            {
+                                if (delta >= - prevDelta)
+                                {
+                                    i -= 1;
+                                }
+                                break;
+                            }
+                            prevDelta = delta;
+                            size_a += addSize;
+                            size_b -= subSize;
+                            if (height != 1)
+                            {
+                                addSize = subSize;
+                                subSize = getKeyStrSize(b, bn - i - 1);
+                            }
+                            else
+                            {
+                                addSize = subSize = getKeyStrSize(b, bn - i - 1);
+                            }
+                        }
+                        int result = Btree.op_done;
+                        if (i > 0)
+                        {
+                            k = i;
+                            Assert.that(i < bn);
+                            if (height != 1)
+                            {
+                                setSize(b, getSize(b) - getKeyStrSize(b, bn - k));
+                                memcpy(a, i, a, 0, an + 1, strKeySize);
+                                k -= 1;
+                                setKeyStrOid(a, k, getKeyStrOid(b, bn));
+                                len = getKeyStrSize(pg, r - 1);
+                                setKeyStrSize(a, k, len);
+                                setSize(a, getSize(a) + len);
+                                setKeyStrOffs(a, k, keySpace - getSize(a));
+                                memcpy(a, getKeyStrOffs(a, k), pg, getKeyStrOffs(pg, r - 1), len, 1);
+                            }
+                            else
+                            {
+                                memcpy(a, i, a, 0, an, strKeySize);
+                            }
+                            for (j = 0; j < k; j++)
+                            {
+                                len = getKeyStrSize(b, bn - k + j);
+                                setSize(a, getSize(a) + len);
+                                setSize(b, getSize(b) - len);
+                                setKeyStrOffs(a, j, keySpace - getSize(a));
+                                setKeyStrSize(a, j, len);
+                                setKeyStrOid(a, j, getKeyStrOid(b, bn - k + j));
+                                memcpy(a, getKeyStrOffs(a, j), b, getKeyStrOffs(b, bn - k + j), len, 1);
+                            }
+                            an += i;
+                            setnItems(a, an);
+                            rem.getByteArray(b, bn - k - 1);
+                            result = replaceByteArrayKey(db, pg, r - 1, rem, height);
+                            setnItems(b, compactifyByteArrays(b, - i));
+                        }
+                        db.pool.unfix(a);
+                        db.pool.unfix(b);
+                        return result;
+                    }
+                    else
+                    {
+                        // merge page b to a
+                        if (height != 1)
+                        {
+                            memcpy(a, bn + 1, a, 0, an + 1, strKeySize);
+                            int len = getKeyStrSize(pg, r - 1);
+                            setKeyStrSize(a, bn, len);
+                            setSize(a, getSize(a) + len);
+                            setKeyStrOffs(a, bn, keySpace - getSize(a));
+                            setKeyStrOid(a, bn, getKeyStrOid(b, bn));
+                            memcpy(a, getKeyStrOffs(a, bn), pg, getKeyStrOffs(pg, r - 1), len, 1);
+                            an += 1;
+                        }
+                        else
+                        {
+                            memcpy(a, bn, a, 0, an, strKeySize);
+                        }
+                        for (int i = 0; i < bn; i++)
+                        {
+                            setKeyStrOid(a, i, getKeyStrOid(b, i));
+                            setKeyStrSize(a, i, getKeyStrSize(b, i));
+                            setKeyStrOffs(a, i, getKeyStrOffs(b, i) - getSize(a));
+                        }
+                        an += bn;
+                        setnItems(a, an);
+                        setSize(a, getSize(a) + getSize(b));
+                        memcpy(a, keySpace - getSize(a), b, keySpace - getSize(b), getSize(b), 1);
+                        db.pool.unfix(a);
+                        db.pool.unfix(b);
+                        db.freePage(getKeyStrOid(pg, r - 1));
+                        return removeByteArrayKey(pg, r - 1);
                     }
                 }
             }
@@ -1140,16 +1746,138 @@ namespace Perst.Impl
             }
         }
 		
-        internal static int remove(StorageImpl db, int pageId, ClassDescriptor.FieldType type, BtreeKey rem, int height)
+        internal static int remove(StorageImpl db, int pageId, Btree tree, BtreeKey rem, int height)
         {
             Page pg = db.getPage(pageId);
             try
             {
                 int i, n = getnItems(pg), l = 0, r = n;
 				
-                if (type != ClassDescriptor.FieldType.tpString)
+                if (tree.type == ClassDescriptor.FieldType.tpString)
                 {
-                    int itemSize = ClassDescriptor.Sizeof[(int)type];
+                    while (l < r)
+                    {
+                        i = (l + r) >> 1;
+                        if (compareStr(rem.key, pg, i) > 0)
+                        {
+                            l = i + 1;
+                        }
+                        else
+                        {
+                            r = i;
+                        }
+                    }
+                    if (--height != 0)
+                    {
+                        do 
+                        {
+                            switch (remove(db, getKeyStrOid(pg, r), tree, rem, height))
+                            {
+                                case Btree.op_underflow: 
+                                    db.pool.unfix(pg);
+                                    pg = null;
+                                    pg = db.putPage(pageId);
+                                    return handlePageUnderflow(db, pg, r, tree.type, rem, height);
+								
+                                case Btree.op_done: 
+                                    return Btree.op_done;
+								
+                                case Btree.op_overflow: 
+                                    db.pool.unfix(pg);
+                                    pg = null;
+                                    pg = db.putPage(pageId);
+                                    return insertStrKey(db, pg, r, rem, height);
+								
+                            }
+                        }
+                        while (++r <= n);
+                    }
+                    else
+                    {
+                        while (r < n)
+                        {
+                            if (compareStr(rem.key, pg, r) == 0)
+                            {
+                                if (getKeyStrOid(pg, r) == rem.oid || rem.oid == 0)
+                                {
+                                    db.pool.unfix(pg);
+                                    pg = null;
+                                    pg = db.putPage(pageId);
+                                    return removeStrKey(pg, r);
+                                }
+                            }
+                            else
+                            {
+                                break;
+                            }
+                            r += 1;
+                        }
+                    }
+                } 
+                else if (tree.type == ClassDescriptor.FieldType.tpArrayOfByte)
+                {
+                    while (l < r)
+                    {
+                        i = (l + r) >> 1;
+                        if (tree.compareByteArrays(rem.key, pg, i) > 0)
+                        {
+                            l = i + 1;
+                        }
+                        else
+                        {
+                            r = i;
+                        }
+                    }
+                    if (--height != 0)
+                    {
+                        do 
+                        {
+                            switch (remove(db, getKeyStrOid(pg, r), tree, rem, height))
+                            {
+                                case Btree.op_underflow: 
+                                    db.pool.unfix(pg);
+                                    pg = null;
+                                    pg = db.putPage(pageId);
+                                    return handlePageUnderflow(db, pg, r, tree.type, rem, height);
+								
+                                case Btree.op_done: 
+                                    return Btree.op_done;
+								
+                                case Btree.op_overflow: 
+                                    db.pool.unfix(pg);
+                                    pg = null;
+                                    pg = db.putPage(pageId);
+                                    return insertByteArrayKey(db, pg, r, rem, height);
+								
+                            }
+                        }
+                        while (++r <= n);
+                    }
+                    else
+                    {
+                        while (r < n)
+                        {
+                            if (tree.compareByteArrays(rem.key, pg, r) == 0)
+                            {
+                                if (getKeyStrOid(pg, r) == rem.oid || rem.oid == 0)
+                                {
+                                    db.pool.unfix(pg);
+                                    pg = null;
+                                    pg = db.putPage(pageId);
+                                    return removeByteArrayKey(pg, r);
+                                }
+                            }
+                            else
+                            {
+                                break;
+                            }
+                            r += 1;
+                        }
+                    }
+                } 
+                else // scalars
+                {
+                    int itemSize = ClassDescriptor.Sizeof[(int)tree.type];
                     while (l < r)
                     {
                         i = (l + r) >> 1;
@@ -1190,12 +1918,12 @@ namespace Perst.Impl
                     }
                     do 
                     {
-                        switch (remove(db, getReference(pg, maxItems - r - 1), type, rem, height))
+                        switch (remove(db, getReference(pg, maxItems - r - 1), tree, rem, height))
                         {
                             case Btree.op_underflow: 
                                 db.pool.unfix(pg);
                                 pg = db.putPage(pageId);
-                                return handlePageUnderflow(db, pg, r, type, rem, height);
+                                return handlePageUnderflow(db, pg, r, tree.type, rem, height);
 							
                             case Btree.op_done: 
                                 return Btree.op_done;
@@ -1203,70 +1931,8 @@ namespace Perst.Impl
                         }
                     }
                     while (++r <= n);
-                    return Btree.op_not_found;
                 }
-                else
-                {
-                    while (l < r)
-                    {
-                        i = (l + r) >> 1;
-                        if (compareStr(rem.key, pg, i) > 0)
-                        {
-                            l = i + 1;
-                        }
-                        else
-                        {
-                            r = i;
-                        }
-                    }
-                    if (--height != 0)
-                    {
-                        do 
-                        {
-                            switch (remove(db, getKeyStrOid(pg, r), type, rem, height))
-                            {
-                                case Btree.op_underflow: 
-                                    db.pool.unfix(pg);
-                                    pg = null;
-                                    pg = db.putPage(pageId);
-                                    return handlePageUnderflow(db, pg, r, type, rem, height);
-								
-                                case Btree.op_done: 
-                                    return Btree.op_done;
-								
-                                case Btree.op_overflow: 
-                                    db.pool.unfix(pg);
-                                    pg = null;
-                                    pg = db.putPage(pageId);
-                                    return insertStrKey(db, pg, r, rem, height);
-								
-                            }
-                        }
-                        while (++r <= n);
-                    }
-                    else
-                    {
-                        while (r < n)
-                        {
-                            if (compareStr(rem.key, pg, r) == 0)
-                            {
-                                if (getKeyStrOid(pg, r) == rem.oid || rem.oid == 0)
-                                {
-                                    db.pool.unfix(pg);
-                                    pg = null;
-                                    pg = db.putPage(pageId);
-                                    return removeStrKey(pg, r);
-                                }
-                            }
-                            else
-                            {
-                                break;
-                            }
-                            r += 1;
-                        }
-                    }
-                    return Btree.op_not_found;
-                }
+                return Btree.op_not_found;
             }
             finally
             {
@@ -1284,7 +1950,7 @@ namespace Perst.Impl
             {
                 Page pg = db.getPage(pageId);
                 int n = getnItems(pg) + 1;
-                if (type == ClassDescriptor.FieldType.tpString)
+                if (type == ClassDescriptor.FieldType.tpString || type == ClassDescriptor.FieldType.tpArrayOfByte)
                 {
                     // page of strings
                     while (--n >= 0)
@@ -1313,7 +1979,7 @@ namespace Perst.Impl
                 int i, n = getnItems(pg);
                 if (--height != 0)
                 {
-                    if (type == ClassDescriptor.FieldType.tpString)
+                    if (type == ClassDescriptor.FieldType.tpString || type == ClassDescriptor.FieldType.tpArrayOfByte)
                     {
                         // page of strings
                         for (i = 0; i <= n; i++)
@@ -1331,21 +1997,21 @@ namespace Perst.Impl
                 }
                 else
                 {
-                    if (type != ClassDescriptor.FieldType.tpString)
-                    {
-                        // page of scalars
-                        for (i = 0; i < n; i++)
-                        {
-                            oid = getReference(pg, maxItems - 1 - i);
-                            result[pos++] = db.lookupObject(oid, null);
-                        }
-                    }
-                    else
+                    if (type == ClassDescriptor.FieldType.tpString || type == ClassDescriptor.FieldType.tpArrayOfByte)
                     {
                         // page of strings
                         for (i = 0; i < n; i++)
                         {
                             oid = getKeyStrOid(pg, i);
+                            result[pos++] = db.lookupObject(oid, null);
+                        }
+                    }
+                    else
+                    {
+                        // page of scalars
+                        for (i = 0; i < n; i++)
+                        {
+                            oid = getReference(pg, maxItems - 1 - i);
                             result[pos++] = db.lookupObject(oid, null);
                         }
                     }
@@ -1366,7 +2032,7 @@ namespace Perst.Impl
                 int i, n = getnItems(pg);
                 if (--height != 0) 
                 {
-                    if (type == ClassDescriptor.FieldType.tpString) 
+                    if (type == ClassDescriptor.FieldType.tpString || type == ClassDescriptor.FieldType.tpArrayOfByte) 
                     { // page of strings
                         for (i = 0; i <= n; i++) 
                         { 
@@ -1383,20 +2049,20 @@ namespace Perst.Impl
                 } 
                 else 
                 { 
-                    if (type != ClassDescriptor.FieldType.tpString) 
-                    { // page of scalars
-                        for (i = 0; i < n; i++) 
-                        { 
-                            db.markOid(getReference(pg, maxItems-1-i));
-                        }
-                    } 
-                    else 
+                    if (type == ClassDescriptor.FieldType.tpString || type == ClassDescriptor.FieldType.tpArrayOfByte) 
                     { // page of strings
                         for (i = 0; i < n; i++) 
                         {
                             db.markOid(getKeyStrOid(pg, i));
                         }
                     }
+                    else 
+                    { // page of scalars
+                        for (i = 0; i < n; i++) 
+                        { 
+                            db.markOid(getReference(pg, maxItems-1-i));
+                        }
+                    } 
                 }
             } 
             finally 
@@ -1414,7 +2080,7 @@ namespace Perst.Impl
                 int i, n = getnItems(pg);
                 if (--height != 0)
                 {
-                    if (type == ClassDescriptor.FieldType.tpString)
+                    if (type == ClassDescriptor.FieldType.tpString || type == ClassDescriptor.FieldType.tpArrayOfByte)
                     {
                         // page of strings
                         for (i = 0; i <= n; i++)
@@ -1432,21 +2098,21 @@ namespace Perst.Impl
                 }
                 else
                 {
-                    if (type != ClassDescriptor.FieldType.tpString)
+                    if (type == ClassDescriptor.FieldType.tpString || type == ClassDescriptor.FieldType.tpArrayOfByte)
+                    {
+                        // page of strings
+                        for (i = 0; i < n; i++)
+                        {
+                            exporter.exportAssoc(getKeyStrOid(pg, i), pg.data, BtreePage.firstKeyOffs + BtreePage.getKeyStrOffs(pg, i), BtreePage.getKeyStrSize(pg, i), type);
+                        }
+                    }
+                    else
                     {
                         // page of scalars
                         for (i = 0; i < n; i++)
                         {
                             exporter.exportAssoc(getReference(pg, maxItems - 1 - i), pg.data, BtreePage.firstKeyOffs + i * ClassDescriptor.Sizeof[(int)type], ClassDescriptor.Sizeof[(int)type], type);
 							
-                        }
-                    }
-                    else
-                    {
-                        // page of strings
-                        for (i = 0; i < n; i++)
-                        {
-                            exporter.exportAssoc(getKeyStrOid(pg, i), pg.data, BtreePage.firstKeyOffs + BtreePage.getKeyStrOffs(pg, i), BtreePage.getKeyStrSize(pg, i), type);
                         }
                     }
                 }
