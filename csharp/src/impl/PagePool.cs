@@ -275,13 +275,30 @@ namespace Perst.Impl
             unfix(pg);
         }
 		
+#if COMPACT_NET_FRAMEWORK
+        class PageComparator : System.Collections.IComparer 
+        {
+            public int Compare(object o1, object o2) 
+            {
+                long delta = ((Page)o1).offs - ((Page)o2).offs;
+                return delta < 0 ? -1 : delta == 0 ? 0 : 1;
+            }
+        }
+        static PageComparator pageComparator = new PageComparator();
+#endif
+
+
         internal virtual void  flush()
         {
             long maxOffs;
             lock(this)
             {
                 flushing = true;
+#if COMPACT_NET_FRAMEWORK
+                Array.Sort(dirtyPages, 0, nDirtyPages, pageComparator);
+#else
                 Array.Sort(dirtyPages, 0, nDirtyPages);
+#endif
                 maxOffs = fileSize;
             }
             for (int i = 0; i < nDirtyPages; i++)

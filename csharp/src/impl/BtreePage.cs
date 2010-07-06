@@ -121,7 +121,11 @@ namespace Perst.Impl
                     return key.dval < r4 ? -1 : key.dval == r4 ? 0 : 1;
 				
                 case ClassDescriptor.FieldType.tpDouble: 
+#if COMPACT_NET_FRAMEWORK 
+                    r8 = BitConverter.ToDouble(BitConverter.GetBytes(Bytes.unpack8(pg.data, BtreePage.firstKeyOffs + i * 8)), 0);
+#else
                     r8 = BitConverter.Int64BitsToDouble(Bytes.unpack8(pg.data, BtreePage.firstKeyOffs + i * 8));
+#endif
                     return key.dval < r8 ? -1 : key.dval == r8 ? 0 : 1;
 				
             }

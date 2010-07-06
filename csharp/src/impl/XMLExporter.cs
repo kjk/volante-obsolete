@@ -46,9 +46,10 @@ namespace Perst.Impl
                                 else
                                 {
                                     ClassDescriptor desc = (ClassDescriptor) storage.lookupObject(typeOid, typeof(ClassDescriptor));
-                                    writer.Write(" <" + desc.name + " id=\"" + oid + "\">\n");
+                                    String className = exportIdentifier(desc.name);
+                                    writer.Write(" <" + className + " id=\"" + oid + "\">\n");
                                     exportObject(desc, obj, ObjectHeader.Sizeof, 2);
-                                    writer.Write(" </" + desc.name + ">\n");
+                                    writer.Write(" </" + className + ">\n");
                                 }
                                 nExportedObjects += 1;
                             }
@@ -60,26 +61,31 @@ namespace Perst.Impl
             writer.Write("</database>\n");
         }
 		
+        internal String exportIdentifier(String name) 
+        { 
+            return name.Replace('+', '-');
+        }
+
         internal void  exportIndex(int oid, byte[] data)
         {
             Btree btree = new Btree(data, ObjectHeader.Sizeof);
             storage.assignOid(btree, oid);
-            writer.Write(" <btree-index id=\"" + oid + "\" unique=\"" + (btree.unique?'1':'0') + "\" type=\"" + btree.type + "\">\n");
+            writer.Write(" <Perst.Impl.Btree id=\"" + oid + "\" unique=\"" + (btree.unique?'1':'0') + "\" type=\"" + btree.type + "\">\n");
             btree.export(this);
-            writer.Write(" </btree-index>\n");
+            writer.Write(" </Perst.Impl.Btree>\n");
         }
 		
         internal void  exportFieldIndex(int oid, byte[] data)
         {
             Btree btree = new Btree(data, ObjectHeader.Sizeof);
             storage.assignOid(btree, oid);
-            writer.Write(" <btree-index id=\"" + oid + "\" unique=\"" + (btree.unique?'1':'0') + "\" class=");
+            writer.Write(" <Perst.Impl.BtreeFieldIndex id=\"" + oid + "\" unique=\"" + (btree.unique?'1':'0') + "\" class=");
             int offs = exportString(data, Btree.Sizeof);
             writer.Write(" field=");
             exportString(data, offs);
             writer.Write(">\n");
             btree.export(this);
-            writer.Write(" </btree-index>\n");
+            writer.Write(" </Perst.Impl.BtreeFieldIndex>\n");
         }
 		
         internal void  exportAssoc(int oid, byte[] body, int offs, int size, ClassDescriptor.FieldType type)
@@ -138,7 +144,11 @@ namespace Perst.Impl
                     break;
 				
                 case ClassDescriptor.FieldType.tpDouble: 
+#if COMPACT_NET_FRAMEWORK 
+                    writer.Write(System.Convert.ToString(BitConverter.ToDouble(BitConverter.GetBytes(Bytes.unpack8(body, offs)), 0)));
+#else
                     writer.Write(System.Convert.ToString(BitConverter.Int64BitsToDouble(Bytes.unpack8(body, offs))));
+#endif
                     break;
 				
                 case ClassDescriptor.FieldType.tpString: 
@@ -255,7 +265,8 @@ namespace Perst.Impl
             {
                 System.Reflection.FieldInfo f = all[i];
                 indentation(indent);
-                writer.Write("<" + f.Name + ">");
+                String fieldName = exportIdentifier(f.Name);
+                writer.Write("<" + fieldName + ">");
                 switch (type[i])
                 {
                     case ClassDescriptor.FieldType.tpBoolean: 
@@ -316,7 +327,11 @@ namespace Perst.Impl
                         break;
 				
                     case ClassDescriptor.FieldType.tpDouble: 
+#if COMPACT_NET_FRAMEWORK 
+                        writer.Write(System.Convert.ToString(BitConverter.ToDouble(BitConverter.GetBytes(Bytes.unpack8(body, offs)), 0)));
+#else
                         writer.Write(System.Convert.ToString(BitConverter.Int64BitsToDouble(Bytes.unpack8(body, offs))));
+#endif
                         offs += 8;
                         break;
 
@@ -357,7 +372,9 @@ namespace Perst.Impl
                         indentation(indent);
                         break;
 					
+#if SUPPORT_RAW_TYPE
                     case ClassDescriptor.FieldType.tpRaw: 
+#endif
                     case ClassDescriptor.FieldType.tpArrayOfByte: 
                     case ClassDescriptor.FieldType.tpArrayOfSByte: 
                         offs = exportBinary(body, offs);
@@ -597,7 +614,11 @@ namespace Perst.Impl
                             while (--len >= 0)
                             {
                                 indentation(indent + 1);
+#if COMPACT_NET_FRAMEWORK 
+                                writer.Write("<array-element>" + BitConverter.ToDouble(BitConverter.GetBytes(Bytes.unpack8(body, offs)), 0) + "</array-element>\n");
+#else
                                 writer.Write("<array-element>" + BitConverter.Int64BitsToDouble(Bytes.unpack8(body, offs)) + "</array-element>\n");
+#endif
                                 offs += 8;
                             }
                             indentation(indent);
@@ -709,6 +730,7 @@ namespace Perst.Impl
                         break;
                     }
 					
+#if SUPPORT_RAW_TYPE
                     case ClassDescriptor.FieldType.tpArrayOfRaw: 
                     {
                         int len = Bytes.unpack4(body, offs);
@@ -731,9 +753,9 @@ namespace Perst.Impl
                         }
                         break;
                     }
-					
+#endif				
                 }
-                writer.Write("</" + f.Name + ">\n");
+                writer.Write("</" + fieldName + ">\n");
             }
             return offs;
         }

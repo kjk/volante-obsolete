@@ -65,6 +65,15 @@ namespace Perst
         /// </returns>
         IPersistent[] get(object from, object till);
 
+        /// <summary> 
+        /// Check if index contains specified object
+        /// </summary>
+        /// <param name="obj">object to be searched in the index. Object should contain indexed field. 
+        /// </param>
+        /// <returns><code>true</code> if object is present in the index, <code>false</code> otherwise
+        /// </returns>
+        bool contains(IPersistent obj);
+
         /// <summary> Put new object in the index. 
         /// </summary>
         /// <param name="obj">object to be inserted in index. Object should contain indexed field. 

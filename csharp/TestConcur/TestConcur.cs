@@ -40,7 +40,9 @@ public class TestConcur {
     const int nThreads = 4;
 
     static Storage db;
-
+#if COMPACT_NET_FRAMEWORK
+    static int nFinishedThreads;
+#endif
     public static void run() { 
         L2List list = (L2List)db.Root;
         for (int i = 0; i < nIterations; i++) { 
@@ -61,6 +63,15 @@ public class TestConcur {
             last.linkAfter(list.head);
             list.unlock();
         }
+#if COMPACT_NET_FRAMEWORK
+        lock (typeof(TestConcur)) 
+        {
+            if (++nFinishedThreads == nThreads) 
+            {
+                db.close();
+            }
+        }
+#endif
     }
 
     public static void Main(String[] args) {
@@ -83,10 +94,13 @@ public class TestConcur {
             threads[i] = new Thread(new ThreadStart(run));
             threads[i].Start();
         }
-        for (int i = 0; i < nThreads; i++) { 
+#if !COMPACT_NET_FRAMEWORK
+        for (int i = 0; i < nThreads; i++) 
+        { 
             threads[i].Join();
         }
         db.close();
+#endif
     }
  }
 

@@ -49,13 +49,13 @@ public class TestIndex
             strIndex.put(new Key(rec.strKey), rec);
         }
         db.commit();
-        System.Console.Out.WriteLine("Elapsed time for inserting " + nRecords + " records: " + (DateTime.Now - start));
+        System.Console.WriteLine("Elapsed time for inserting " + nRecords + " records: " + (DateTime.Now - start));
 
         start = DateTime.Now;
         System.IO.StreamWriter writer = new System.IO.StreamWriter("test.xml");
         db.exportXML(writer);
         writer.Close();
-        System.Console.Out.WriteLine("Elapsed time for for XML export: " + (DateTime.Now - start));
+        System.Console.WriteLine("Elapsed time for for XML export: " + (DateTime.Now - start));
         
         db.close();
         db.open("test2.dbs", pagePoolSize);
@@ -64,7 +64,7 @@ public class TestIndex
         System.IO.StreamReader reader = new System.IO.StreamReader("test.xml");
         db.importXML(reader);
         reader.Close();
-        System.Console.Out.WriteLine("Elapsed time for for XML import: " + (DateTime.Now - start));
+        System.Console.WriteLine("Elapsed time for for XML import: " + (DateTime.Now - start));
 
         root = (Root)db.Root;
         intIndex = root.intIndex;
@@ -84,7 +84,7 @@ public class TestIndex
             Assert.that(rec1.realKey == (double)key);
             Assert.that(strKey.Equals(rec1.strKey));
         }
-        System.Console.Out.WriteLine("Elapsed time for performing " + nRecords * 2 + " index searches: " + (DateTime.Now - start));
+        System.Console.WriteLine("Elapsed time for performing " + nRecords * 2 + " index searches: " + (DateTime.Now - start));
         db.close();
     }
 }

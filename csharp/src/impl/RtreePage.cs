@@ -48,7 +48,7 @@ namespace Perst.Impl
 
         RtreePage() {}
 
-        public bool recursiveLoading() 
+        public override bool recursiveLoading() 
         {
             return false;
         }

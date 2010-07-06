@@ -189,6 +189,17 @@ namespace Perst
         /// <returns>reference to the object with specified OID</returns>
         abstract public IPersistent getObjectByOID(int oid);
 
+#if COMPACT_NET_FRAMEWORK
+        /// <summary>
+        /// Compact.NET framework doesn;t allow to get list of assemblies loaded
+        /// in application domain. Without it I do not know how to locate
+        /// class from foreign assembly by name. 
+        /// Assembly which creates Storare is automatically registered.
+        /// Other assemblies has to explicitely registered by programmer.
+        /// </summary>
+        /// <param name="assembly">registered assembly</param>
+        abstract public void registerAssembly(System.Reflection.Assembly assembly);
+#endif
 
         // Internal methods
 		

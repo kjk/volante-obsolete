@@ -27,6 +27,28 @@ namespace Perst
         /// </summary>
         void sharedLock();
   
+
+        /// <summary>
+        /// Lock persistent object in exclusive mode. Only one thread can lock object in exclusive mode at each
+        /// moment of time. Shared or exclusive lock requests of other threads will be blocked until
+        /// this lock is released.
+        /// shared locks on this objects, but not exclusive lock can be set until this lock is released.
+        /// 
+        /// This lock is reentrant, so thread owning the lock can successfully retrieve the lock many times
+        /// (and correspondent number of unlocks is needed to release the lock).
+        /// 
+        /// Locking the object doesn't prevent other threads from accessing the object - 
+        /// it only has influence on <code>sharedLock</code> and <code>exclusiveLock</code> methods.
+        /// So programmer should set proper lock before accessing the object in multithreaded application.
+        ///
+        /// Only persistent object (object which were assigned to the the storage either implicitly by
+        /// saving some other persistent object referencing this object, either explicitly by 
+        /// <code>Storage.makeObjectPersistent</code> method.   
+        /// </summary>
+        void exclusiveLock();
+
+
+#if !COMPACT_NET_FRAMEWORK
         /// <summary>
         /// Lock persistent object in shared mode. Other threads will be able to set their
         /// shared locks on this objects, but not exclusive lock can be set until this lock is released.
@@ -70,25 +92,6 @@ namespace Perst
         /// 
         /// Locking the object doesn't prevent other threads from accessing the object - 
         /// it only has influence on <code>sharedLock</code> and <code>exclusiveLock</code> methods.
-        /// So programmer should set proper lock before accessing the object in multithreaded application.
-        ///
-        /// Only persistent object (object which were assigned to the the storage either implicitly by
-        /// saving some other persistent object referencing this object, either explicitly by 
-        /// <code>Storage.makeObjectPersistent</code> method.   
-        /// </summary>
-        void exclusiveLock();
-
-        /// <summary>
-        /// Lock persistent object in exclusive mode. Only one thread can lock object in exclusive mode at each
-        /// moment of time. Shared or exclusive lock requests of other threads will be blocked until
-        /// this lock is released.
-        /// shared locks on this objects, but not exclusive lock can be set until this lock is released.
-        /// 
-        /// This lock is reentrant, so thread owning the lock can successfully retrieve the lock many times
-        /// (and correspondent number of unlocks is needed to release the lock).
-        /// 
-        /// Locking the object doesn't prevent other threads from accessing the object - 
-        /// it only has influence on <code>sharedLock</code> and <code>exclusiveLock</code> methods.
         ///So programmer should set proper lock before accessing the object in multithreaded application.
         ///
         /// Only persistent object (object which were assigned to the the storage either implicitly by
@@ -106,6 +109,7 @@ namespace Perst
         /// </DL>
         /// </returns>
         bool exclusiveLock(long timeout);
+#endif
 
         /// <summary>
         /// Remove granted lock. If lock was requested several times by one thread, then correspondent number

@@ -119,7 +119,7 @@ namespace Perst.Impl
         }
 
         
-        public bool Equals(object o) 
+        public override bool Equals(object o) 
         {
             if (o == this) 
             {
@@ -137,7 +137,7 @@ namespace Perst.Impl
             return ContainsAll(s);
         }
 
-        public int HashCode() 
+        public override int GetHashCode() 
         {
             int h = 0;
             foreach (IPersistent o in this) 
@@ -151,7 +151,7 @@ namespace Perst.Impl
         {
             foreach (object o in this) 
             { 
-                dst.SetValue(0, i++);
+                dst.SetValue(o, i++);
             }
         }
     }

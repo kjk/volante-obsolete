@@ -430,8 +430,11 @@ namespace Perst.Impl
                     return BitConverter.ToSingle(BitConverter.GetBytes(Bytes.unpack4(data, offs)), 0);
 
                 case ClassDescriptor.FieldType.tpDouble: 
+#if COMPACT_NET_FRAMEWORK 
+                    return BitConverter.ToDouble(BitConverter.GetBytes(Bytes.unpack8(data, offs)), 0);
+#else
                     return BitConverter.Int64BitsToDouble(Bytes.unpack8(data, offs));
-
+#endif
                 case ClassDescriptor.FieldType.tpString:
                 {
                     int len = BtreePage.getKeyStrSize(pg, pos);
@@ -523,7 +526,7 @@ namespace Perst.Impl
                 return false;
             }
 
-            public object Current
+            public virtual object Current
             {
                 get 
                 {
@@ -591,7 +594,7 @@ namespace Perst.Impl
                 key = unpackKey(db, pg, pos, type);
             }
 
-            public object Current 
+            public override object Current 
             {
                 get 
                 {
@@ -1052,7 +1055,7 @@ namespace Perst.Impl
                     : BtreePage.getReference(pg, BtreePage.maxItems-1-pos);
             }
  
-            public object Current 
+            public virtual object Current 
             {
                 get 
                 {
@@ -1238,7 +1241,7 @@ namespace Perst.Impl
                 key = unpackKey(db, pg, pos, type);
             }
              
-            public object Current 
+            public override object Current 
             {
                 get 
                 {

@@ -103,7 +103,7 @@ namespace Perst.Impl
             modify();
         }
 
-        public void deallocate() 
+        public override void deallocate() 
         {
             clear();
             base.deallocate();

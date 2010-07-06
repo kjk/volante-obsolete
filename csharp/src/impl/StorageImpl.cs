@@ -7,6 +7,18 @@ namespace Perst.Impl
 	
     public class StorageImpl:Storage
     {
+#if COMPACT_NET_FRAMEWORK
+        static StorageImpl() 
+        {
+            assemblies = new System.Collections.ArrayList();
+        }
+        public StorageImpl(Assembly callingAssembly) 
+        {
+            assemblies.Add(callingAssembly);
+            assemblies.Add(Assembly.GetExecutingAssembly());
+        }
+#endif
+
         public override IPersistent Root
         {
             get
@@ -394,7 +406,7 @@ namespace Perst.Impl
                                 if (oid != 0)
                                 {
                                     long prev = getPos(oid);
-                                    int marker = (int) prev & dbFlagsMask;
+                                    uint marker = (uint) prev & dbFlagsMask;
                                     pool.copy(pos, prev - marker, size);
                                     setPos(oid, pos | marker | dbModifiedFlag);
                                 }
@@ -463,7 +475,7 @@ namespace Perst.Impl
                                 if (oid != 0)
                                 {
                                     long prev = getPos(oid);
-                                    int marker = (int) prev & dbFlagsMask;
+                                    uint marker = (uint) prev & dbFlagsMask;
                                     pool.copy(pos, prev - marker, size);
                                     setPos(oid, pos | marker | dbModifiedFlag);
                                 }
@@ -515,7 +527,7 @@ namespace Perst.Impl
                                 if (oid != 0)
                                 {
                                     long prev = getPos(oid);
-                                    int marker = (int) prev & dbFlagsMask;
+                                    uint marker = (uint) prev & dbFlagsMask;
                                     pool.copy(pos, prev - marker, size);
                                     setPos(oid, pos | marker | dbModifiedFlag);
                                 }
@@ -631,7 +643,7 @@ namespace Perst.Impl
                     if (oid != 0)
                     {
                         long prev = getPos(oid);
-                        int marker = (int) prev & dbFlagsMask;
+                        uint marker = (uint) prev & dbFlagsMask;
                         pool.copy(pos, prev - marker, size);
                         setPos(oid, pos | marker | dbModifiedFlag);
                     }
@@ -828,8 +840,9 @@ namespace Perst.Impl
                 modifiedList = new ArrayList();
                 descList = null;
 				
+#if SUPPORT_RAW_TYPE
                 objectFormatter = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
-                
+#endif                
                 header = new Header();
                 byte[] buf = new byte[Header.Sizeof];
                 int rc = file.read(0, buf);
@@ -929,7 +942,7 @@ namespace Perst.Impl
                     pool.open(file, header.root[curr].size);
                     if (header.dirty)
                     {
-                        System.Console.Error.WriteLine("Database was not normally closed: start recovery");
+                        System.Console.WriteLine("Database was not normally closed: start recovery");
                         header.root[1 - curr].size = header.root[curr].size;
                         header.root[1 - curr].indexUsed = header.root[curr].indexUsed;
                         header.root[1 - curr].freeList = header.root[curr].freeList;
@@ -946,7 +959,7 @@ namespace Perst.Impl
                         pool.unfix(pg);
 						
                         pool.copy(header.root[1 - curr].index, header.root[curr].index, (header.root[curr].indexUsed * 8 + Page.pageSize - 1) & ~ (Page.pageSize - 1));
-                        System.Console.Error.WriteLine("Recovery completed");
+                        System.Console.WriteLine("Recovery completed");
                     }
                     else
                     {
@@ -1595,7 +1608,9 @@ namespace Perst.Impl
                     case ClassDescriptor.FieldType.tpValue:
                         offs = markObject(obj, offs, getClassDescriptor(f.FieldType));
                         continue;
+#if SUPPORT_RAW_TYPE
                     case ClassDescriptor.FieldType.tpRaw:
+#endif
                     case ClassDescriptor.FieldType.tpArrayOfByte:
                     case ClassDescriptor.FieldType.tpArrayOfSByte:
                     case ClassDescriptor.FieldType.tpArrayOfBoolean:
@@ -1685,6 +1700,7 @@ namespace Perst.Impl
                         }
                         continue;
                     }
+#if SUPPORT_RAW_TYPE
                     case ClassDescriptor.FieldType.tpArrayOfRaw:
                     {
                         int len = Bytes.unpack4(obj, offs);
@@ -1700,10 +1716,18 @@ namespace Perst.Impl
                         }
                         continue;
                     }
+#endif
                 }
             }
             return offs;
         }
+
+#if COMPACT_NET_FRAMEWORK
+        public override void registerAssembly(System.Reflection.Assembly assembly) 
+        {
+            assemblies.Add(assembly);
+        }
+#endif
 
         public override void  close()
         {
@@ -1983,7 +2007,11 @@ namespace Perst.Impl
                         continue;
 					
                     case ClassDescriptor.FieldType.tpDouble: 
+#if COMPACT_NET_FRAMEWORK 
+                        f.SetValue(obj, BitConverter.ToDouble(BitConverter.GetBytes(Bytes.unpack8(body, offs)), 0));
+#else
                         f.SetValue(obj, BitConverter.Int64BitsToDouble(Bytes.unpack8(body, offs)));
+#endif
                         offs += 8;
                         continue;
 					
@@ -2029,6 +2057,7 @@ namespace Perst.Impl
                         continue;
                     }
 					
+#if SUPPORT_RAW_TYPE
                     case ClassDescriptor.FieldType.tpRaw: 
                     {
                         int len = Bytes.unpack4(body, offs);
@@ -2042,7 +2071,7 @@ namespace Perst.Impl
                         }
                         continue;
                     }
-					
+#endif					
                     case ClassDescriptor.FieldType.tpArrayOfByte: 
                     {
                         int len = Bytes.unpack4(body, offs);
@@ -2299,7 +2328,11 @@ namespace Perst.Impl
                             double[] arr = new double[len];
                             for (int j = 0; j < len; j++)
                             {
+#if COMPACT_NET_FRAMEWORK 
+                                arr[j] = BitConverter.ToDouble(BitConverter.GetBytes(Bytes.unpack8(body, offs)), 0);
+#else
                                 arr[j] =  BitConverter.Int64BitsToDouble(Bytes.unpack8(body, offs));
+#endif
                                 offs += 8;
                             }
                             f.SetValue(obj, arr);
@@ -2401,6 +2434,7 @@ namespace Perst.Impl
                         continue;
                     }
 
+#if SUPPORT_RAW_TYPE
                     case ClassDescriptor.FieldType.tpArrayOfRaw:
                     {
                         int len = Bytes.unpack4(body, offs);
@@ -2430,7 +2464,7 @@ namespace Perst.Impl
                         }
                         continue;
                     }
-                    
+#endif                    
                     case ClassDescriptor.FieldType.tpLink: 
                     {
                         int len = Bytes.unpack4(body, offs);
@@ -2537,7 +2571,11 @@ namespace Perst.Impl
 					
                     case ClassDescriptor.FieldType.tpDouble: 
                         buf.extend(offs + 8);
+#if COMPACT_NET_FRAMEWORK 
+                        Bytes.pack8(buf.arr, offs, BitConverter.ToInt64(BitConverter.GetBytes((double) f.GetValue(obj)), 0));
+#else
                         Bytes.pack8(buf.arr, offs, BitConverter.DoubleToInt64Bits((double) f.GetValue(obj)));
+#endif
                         offs += 8;
                         continue;
 					
@@ -2589,6 +2627,7 @@ namespace Perst.Impl
                         continue;
                     }
  
+#if SUPPORT_RAW_TYPE
                     case ClassDescriptor.FieldType.tpRaw:
                     {
                         Object raw = f.GetValue(obj);
@@ -2613,6 +2652,7 @@ namespace Perst.Impl
                         }
                         continue;
                     }
+#endif
                     case ClassDescriptor.FieldType.tpArrayOfByte: 
                     {
                         byte[] arr = (byte[]) f.GetValue(obj);
@@ -2910,7 +2950,11 @@ namespace Perst.Impl
                             offs += 4;
                             for (int j = 0; j < len; j++)
                             {
+#if COMPACT_NET_FRAMEWORK 
+                                Bytes.pack8(buf.arr, offs, BitConverter.ToInt64(BitConverter.GetBytes(arr[j]), 0));
+#else
                                 Bytes.pack8(buf.arr, offs, BitConverter.DoubleToInt64Bits(arr[j]));
+#endif
                                 offs += 8;
                             }
                         }
@@ -3030,7 +3074,7 @@ namespace Perst.Impl
                         continue;
                     }
 
-
+#if SUPPORT_RAW_TYPE
                     case ClassDescriptor.FieldType.tpArrayOfRaw: 
                     {
                         Array arr = (Array) f.GetValue(obj);
@@ -3073,7 +3117,7 @@ namespace Perst.Impl
                         }
                         continue;
                     }
-		
+#endif		
                     case ClassDescriptor.FieldType.tpLink: 
                     {
                         Link link = (Link) f.GetValue(obj);
@@ -3121,8 +3165,13 @@ namespace Perst.Impl
         internal int committedIndexSize;
         internal int currIndexSize;
         
+#if COMPACT_NET_FRAMEWORK
+        internal static ArrayList assemblies;
+#endif
+
+#if SUPPORT_RAW_TYPE
         internal System.Runtime.Serialization.Formatters.Binary.BinaryFormatter objectFormatter;
-		
+#endif	
         internal int currIndex; // copy of header.root, used to allow read access to the database 
         // during transaction commit
         internal long usedSize; // total size of allocated objects since the beginning of the session

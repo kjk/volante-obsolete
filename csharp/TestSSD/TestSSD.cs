@@ -48,7 +48,7 @@ public class TestSSD : Persistent {
             try { 
                 return Int32.Parse(input(prompt));
             } catch (FormatException) { 
-                Console.Error.WriteLine("Invalid integer constant");
+                Console.WriteLine("Invalid integer constant");
             }
         }
     }
@@ -58,7 +58,7 @@ public class TestSSD : Persistent {
             try { 
                 return Double.Parse(input(prompt));
             } catch (FormatException) { 
-                Console.Error.WriteLine("Invalid floating point constant");
+                Console.WriteLine("Invalid floating point constant");
             }
         }
     }
@@ -112,12 +112,12 @@ public class TestSSD : Persistent {
                   case 3:
                     supplier = (Supplier)root.supplierName.get(new Key(input("Supplier name: ")));
                     if (supplier == null) { 
-                        Console.Error.WriteLine("No such supplier!");
+                        Console.WriteLine("No such supplier!");
                         break;
                     }
                     detail = (Detail)root.detailId.get(new Key(input("Detail ID: ")));
                     if (detail == null) { 
-                        Console.Error.WriteLine("No such detail!");
+                        Console.WriteLine("No such detail!");
                         break;
                     }
                     shipment = new Shipment();
@@ -142,7 +142,7 @@ public class TestSSD : Persistent {
                   case 6:
                     detail = (Detail)root.detailId.get(new Key(input("Detail ID: ")));
                     if (detail == null) { 
-                        Console.Error.WriteLine("No such detail!");
+                        Console.WriteLine("No such detail!");
                         break;
                     }
                     shipments = (Shipment[])root.shipmentDetail.get(new Key(detail), new Key(detail));
@@ -153,7 +153,7 @@ public class TestSSD : Persistent {
                   case 7:
                     supplier = (Supplier)root.supplierName.get(new Key(input("Supplier name: ")));
                     if (supplier == null) { 
-                        Console.Error.WriteLine("No such supplier!");
+                        Console.WriteLine("No such supplier!");
                         break;
                     }
                     shipments = (Shipment[])root.shipmentSupplier.get(new Key(supplier), new Key(supplier));

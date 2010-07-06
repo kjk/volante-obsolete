@@ -117,6 +117,22 @@ namespace Perst.Impl
             base.remove(new BtreeKey(extractKey(obj), obj.Oid));
         }
         
+        public bool contains(IPersistent obj) 
+        {
+            Key key = extractKey(obj);
+            if (unique) { 
+                return base.get(key) != null;
+            } else { 
+                IPersistent[] mbrs = get(key, key);
+                for (int i = 0; i < mbrs.Length; i++) { 
+                    if (mbrs[i] == obj) { 
+                        return true;
+                    }
+                }
+                return false;
+            }
+        }
+
         public void append(IPersistent obj) {
             lock(this) { 
                 Key key;
@@ -138,7 +154,7 @@ namespace Perst.Impl
             }
         }
 
-        public virtual IPersistent[] get(Key from, Key till)
+        public override IPersistent[] get(Key from, Key till)
         {
             if ((from != null && from.type != type) || (till != null && till.type != type))
             {

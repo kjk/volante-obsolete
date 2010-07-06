@@ -22,7 +22,11 @@ namespace Perst
         /// </param>
         public virtual Storage createStorage()
         {
+#if COMPACT_NET_FRAMEWORK
+            return new StorageImpl(System.Reflection.Assembly.GetCallingAssembly());
+#else
             return new StorageImpl();
+#endif
         }
 		
         /// <summary> Get instance of storage factory.

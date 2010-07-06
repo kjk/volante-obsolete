@@ -47,7 +47,7 @@ public class TestIndex
             strIndex.put(new Key(rec.strKey), rec);
         }
         db.commit();
-        System.Console.Out.WriteLine("Elapsed time for inserting " + nRecords + " records: " + (DateTime.Now - start));
+        System.Console.WriteLine("Elapsed time for inserting " + nRecords + " records: " + (DateTime.Now - start));
 		
         start = System.DateTime.Now;
         key = 1999;
@@ -58,7 +58,7 @@ public class TestIndex
             Record rec2 = (Record) strIndex.get(new Key(System.Convert.ToString(key)));
             Assert.that(rec1 != null && rec1 == rec2);
         }
-        System.Console.Out.WriteLine("Elapsed time for performing " + nRecords * 2 + " index searches: " + (DateTime.Now - start));
+        System.Console.WriteLine("Elapsed time for performing " + nRecords * 2 + " index searches: " + (DateTime.Now - start));
 
         start = System.DateTime.Now;
         key = Int64.MinValue;
@@ -79,7 +79,7 @@ public class TestIndex
             i += 1;
         }
         Assert.that(i == nRecords);
-        System.Console.Out.WriteLine("Elapsed time for iteration through " + (nRecords * 2) + " records: " + (DateTime.Now - start));
+        System.Console.WriteLine("Elapsed time for iteration through " + (nRecords * 2) + " records: " + (DateTime.Now - start));
 
         start = System.DateTime.Now;
         key = 1999;
@@ -91,7 +91,7 @@ public class TestIndex
             strIndex.remove(new Key(System.Convert.ToString(key)), rec);
             rec.deallocate();
         }
-        System.Console.Out.WriteLine("Elapsed time for deleting " + nRecords + " records: " + (DateTime.Now - start));
+        System.Console.WriteLine("Elapsed time for deleting " + nRecords + " records: " + (DateTime.Now - start));
         db.close();
     }
 }

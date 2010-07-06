@@ -50,7 +50,7 @@ public class Guess:Persistent
         {
             if (yes == null)
             {
-                System.Console.Out.WriteLine("It was very simple question for me...");
+                System.Console.WriteLine("It was very simple question for me...");
             }
             else
             {
@@ -110,7 +110,7 @@ public class Guess:Persistent
             db.commit();
         }
 		
-        System.Console.Out.WriteLine("End of the game");
+        System.Console.WriteLine("End of the game");
         db.close();
     }
 }

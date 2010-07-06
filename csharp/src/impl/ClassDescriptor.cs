@@ -44,7 +44,9 @@ namespace Perst.Impl
             tpDate,
             tpObject,
             tpValue,
+#if SUPPORT_RAW_TYPE
             tpRaw,
+#endif
             tpLink,
             tpArrayOfBoolean,
             tpArrayOfByte,
@@ -62,15 +64,32 @@ namespace Perst.Impl
             tpArrayOfString,
             tpArrayOfDate,
             tpArrayOfObject,
-            tpArrayOfValue,
-            tpArrayOfRaw
+            tpArrayOfValue
+#if SUPPORT_RAW_TYPE
+            ,tpArrayOfRaw
+#endif
         };
 		
         internal static int[] Sizeof = new int[] {1, 1, 1, 2, 2, 2, 4, 4, 4, 8, 8, 4, 8, 0, 8, 4};
 		
         internal static System.Type[] defaultConstructorProfile = new System.Type[0];
         internal static System.Object[] noArgs = new System.Object[0];
-		
+	
+	
+#if COMPACT_NET_FRAMEWORK
+        static internal object parseEnum(Type type, String value) 
+        {
+            foreach (FieldInfo fi in type.GetFields()) 
+            {
+                if (fi.IsLiteral && fi.Name.Equals(value)) 
+                {
+                    return fi.GetValue(null);
+                }
+            }
+            throw new ArgumentException(value);
+        }
+#endif
+
         internal Object newInstance()
         {
             try
@@ -187,7 +206,11 @@ namespace Perst.Impl
             }
             else
             {
+#if SUPPORT_RAW_TYPE
                 type = FieldType.tpRaw;
+#else
+                throw new StorageError(StorageError.ErrorCode.UNSUPPORTED_TYPE, c);
+#endif
             }
             return type;
         }
@@ -212,6 +235,26 @@ namespace Perst.Impl
         internal static Type lookup(String name)
         {
             Type cls = null;
+#if COMPACT_NET_FRAMEWORK
+            foreach (Assembly ass in StorageImpl.assemblies) 
+            { 
+                foreach (Module mod in ass.GetModules()) 
+                { 
+                    Type t = mod.GetType(name);
+                    if (t != null) 
+                    {
+                        if (cls != null) 
+                        { 
+                            throw new StorageError(StorageError.ErrorCode.AMBIGUITY_CLASS, name);
+                        } 
+                        else 
+                        { 
+                            cls = t;
+                        }
+                    }
+                }
+            }
+#else
             foreach (Assembly ass in AppDomain.CurrentDomain.GetAssemblies()) 
             { 
                 foreach (Module mod in ass.GetModules()) 
@@ -229,6 +272,7 @@ namespace Perst.Impl
                     }
                 }
             }
+#endif
             if (cls == null) 
             {
                 throw new StorageError(StorageError.ErrorCode.CLASS_NOT_FOUND, name);

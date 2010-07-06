@@ -30,8 +30,6 @@ namespace Perst.Impl
 		
         internal void  extract(Page pg, int offs, ClassDescriptor.FieldType type)
         {
-            int i, len;
-            char[] chars;
             byte[] data = pg.data;
 			
             switch (type)
@@ -81,7 +79,11 @@ namespace Perst.Impl
                     break;
 				
                 case ClassDescriptor.FieldType.tpDouble: 
+#if COMPACT_NET_FRAMEWORK 
+                    key = new Key(BitConverter.ToDouble(BitConverter.GetBytes(Bytes.unpack8(data, offs)), 0));
+#else
                     key = new Key(BitConverter.Int64BitsToDouble(Bytes.unpack8(data, offs)));
+#endif
                     break;
 				
                 default: 
@@ -126,7 +128,11 @@ namespace Perst.Impl
                     break;
 				
                 case ClassDescriptor.FieldType.tpDouble: 
+#if COMPACT_NET_FRAMEWORK 
+                    Bytes.pack8(dst, BtreePage.firstKeyOffs + i * 8, BitConverter.ToInt64(BitConverter.GetBytes((double)key.dval), 0));
+#else
                     Bytes.pack8(dst, BtreePage.firstKeyOffs + i * 8, BitConverter.DoubleToInt64Bits(key.dval));
+#endif
                     break;
 				
                 default: 
