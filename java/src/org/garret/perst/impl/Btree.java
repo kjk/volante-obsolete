@@ -181,6 +181,26 @@ class Btree extends PersistentResource implements Index {
     }
         
         
+    public IPersistent get(String key) { 
+        return get(new Key(key, true));
+    }
+
+    public boolean put(String key, IPersistent obj) {
+        return insert(new Key(key, true), obj, false);
+    }
+
+    public void set(String key, IPersistent obj) {
+        insert(new Key(key, true), obj, true);
+    }
+
+    public void  remove(String key, IPersistent obj) {
+        remove(new Key(key, true), obj);
+    }
+    
+    public void remove(String key) {
+        remove(new Key(key, true));
+    }
+
     public int size() {
         return nElems;
     }

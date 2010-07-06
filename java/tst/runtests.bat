@@ -9,3 +9,5 @@ call TestRaw
 call TestGC
 call TestConcur
 call TestXML
+call TestBlob
+call TestBlob

@@ -15,7 +15,7 @@ public interface Index extends IPersistent, IResource {
     /**
      * Get object by key (exact match)     
      * @param key specified key. It should match with type of the index and should be inclusive.
-     * @return object with this value of the key or <code>null</code> if key nmot found
+     * @return object with this value of the key or <code>null</code> if key not found
      * @exception StorageError(StorageError.KEY_NOT_UNIQUE) exception if there are more than 
      * one objects in the index with specified value of the key.
      */
@@ -54,7 +54,7 @@ public interface Index extends IPersistent, IResource {
     public void          set(Key key, IPersistent obj);
 
     /**
-     * Remove object with specified key from the tree.
+     * Remove object with specified key from the index
      * @param key value of the key of removed object
      * @param obj object removed from the index
      * @exception StorageError(StorageError.KEY_NOT_FOUND) exception if there is no such key in the index
@@ -68,6 +68,52 @@ public interface Index extends IPersistent, IResource {
      * or StorageError(StorageError.KEY_NOT_UNIQUE) if index is not unique.
      */
     public void          remove(Key key);
+
+
+    /**
+     * Get object by string key (exact match)     
+     * @param key string key 
+     * @return object with this value of the key or <code>null</code> if key not[ found
+     * @exception StorageError(StorageError.KEY_NOT_UNIQUE) exception if there are more than 
+     * one objects in the index with specified value of the key.
+     */
+    public IPersistent   get(String key);
+    
+    /**
+     * Put new object in the string index. 
+     * @param key string key
+     * @param obj object associated with this key. Object can be not yet peristent, in this case
+     * its forced to become persistent by assigning OID to it.
+     * @return <code>true</code> if object is successfully inserted in the index, 
+     * <code>false</code> if index was declared as unique and there is already object with such value
+     * of the key in the index. 
+     */
+    public boolean       put(String key, IPersistent obj);
+
+    /**
+     * Associate new value with string key. If there is already object with such key in the index, 
+     * then it will be removed from the index and new value associated with this key.
+     * @param key string key
+     * @param obj object associated with this key. Object can be not yet peristent, in this case
+     * its forced to become persistent by assigning OID to it.
+     */
+    public void          set(String key, IPersistent obj);
+
+    /**
+     * Remove object with specified string key from the index
+     * @param key value of the key of removed object
+     * @param obj object removed from the index
+     * @exception StorageError(StorageError.KEY_NOT_FOUND) exception if there is no such key in the index
+     */
+    public void          remove(String key, IPersistent obj);
+
+    /**
+     * Remove key from the unique string index.
+     * @param key value of removed key
+     * @exception StorageError(StorageError.KEY_NOT_FOUND) exception if there is no such key in the index,
+     * or StorageError(StorageError.KEY_NOT_UNIQUE) if index is not unique.
+     */
+    public void          remove(String key);
 
     /**
      * Get number of objects in the index

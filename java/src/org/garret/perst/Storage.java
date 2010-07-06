@@ -219,6 +219,15 @@ public abstract class Storage {
      */
     abstract public Relation createRelation(IPersistent owner);
 
+
+    /**
+     * Create new BLOB. Create object for storing large binary data.
+     * @return empty BLOB
+     */
+    abstract public Blob createBlob();
+
+
+
     /**
      * Commit transaction (if needed) and close the storage
      */

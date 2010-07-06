@@ -1195,6 +1195,11 @@ public class StorageImpl extends Storage {
         return new RelationImpl(owner);
     }
 
+    public Blob createBlob() { 
+        return new BlobImpl(Page.pageSize - ObjectHeader.sizeof - 3*4);
+    }
+
+
     final long getGCPos(int oid) { 
 	Page pg = pool.getPage(header.root[currIndex].index 
 			       + (oid >>> dbHandlesPerPageBits << Page.pageBits));

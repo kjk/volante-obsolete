@@ -22,6 +22,15 @@ public interface FieldIndex extends IPersistent {
     public IPersistent   get(Key key);
     
     /**
+     * Get object by string key (exact match)     
+     * @param key string key 
+     * @return object with this value of the key or <code>null</code> if key not[ found
+     * @exception StorageError(StorageError.KEY_NOT_UNIQUE) exception if there are more than 
+     * one objects in the index with specified value of the key.
+     */
+    public IPersistent   get(String key);
+    
+    /**
      * Get objects which key value belongs to the specified range.
      * Either from boundary, either till boundary either both of them can be <code>null</code>.
      * In last case the method returns all objects from the index.
