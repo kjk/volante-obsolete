@@ -1,110 +1,78 @@
 namespace Perst.Impl
 {
     using System;
-    using System.Collections;
     using Perst;
 	
     public class RelationImpl:Relation
     {
-        public override int Length 
+        public override int size()
         {
-             get 
-             {
-                 return link.Length;
-             }
-        }        
-
-        public override IPersistent this[int i] 
-        {
-            get 
-            {
-                return link.Get(i);
-            }
-            set 
-            {
-                link.Set(i, value);
-            }
-        }
-
-        public override int Size()
-        {
-            return link.Length;
+            return link.size();
         }
 		
-        public override IPersistent Get(int i)
+        public override IPersistent get(int i)
         {
-            return link.Get(i);
+            return link.get(i);
         }
 		
-        public override IPersistent GetRaw(int i)
+        public override IPersistent getRaw(int i)
         {
-            return link.GetRaw(i);
+            return link.getRaw(i);
         }
 		
-        public override void Set(int i, IPersistent obj)
+        public override void  set(int i, IPersistent obj)
         {
-            link.Set(i, obj);
+            link.set(i, obj);
         }
 		
-        public override void Remove(int i)
+        public override void  remove(int i)
         {
-            link.Remove(i);
+            link.remove(i);
         }
 		
-        public override void Insert(int i, IPersistent obj)
+        public override void  insert(int i, IPersistent obj)
         {
-            link.Insert(i, obj);
+            link.insert(i, obj);
         }
 		
-        public override void Add(IPersistent obj)
+        public override void  add(IPersistent obj)
         {
-            link.Add(obj);
+            link.add(obj);
         }
 		
-        public override void AddAll(IPersistent[] arr)
+        public override void  addAll(IPersistent[] arr)
         {
-            link.AddAll(arr);
+            link.addAll(arr);
         }
 		
-        public override void AddAll(IPersistent[] arr, int from, int length)
+        public override void  addAll(IPersistent[] arr, int from, int length)
         {
-            link.AddAll(arr, from, length);
+            link.addAll(arr, from, length);
         }
 		
-        public override void AddAll(Link anotherLink)
+        public override void  addAll(Link anotherLink)
         {
-            link.AddAll(anotherLink);
+            link.addAll(anotherLink);
         }
 		
-        public override IPersistent[] ToArray()
+        public override IPersistent[] toArray()
         {
-            return link.ToArray();
+            return link.toArray();
         }
 		
-        public override Array ToArray(Type elemType)
+        public override bool contains(IPersistent obj)
         {
-            return link.ToArray(elemType);
+            return link.contains(obj);
         }
 		
-        public override bool Contains(IPersistent obj)
+        public override int indexOf(IPersistent obj)
         {
-            return link.Contains(obj);
+            return link.indexOf(obj);
         }
 		
-        public override int IndexOf(IPersistent obj)
+        public override void  clear()
         {
-            return link.IndexOf(obj);
-        }
-		
-        public override IEnumerator GetEnumerator() 
-        {
-            return link.GetEnumerator();
-
-        }
-
-        public override void Clear()
-        {
-            link.Clear();
+            link.clear();
         }
 		
         internal RelationImpl(IPersistent owner):base(owner)

@@ -12,17 +12,9 @@ namespace Perst.Impl
 
         internal Rtree() {}
 
-        public int Count 
-        { 
-            get 
-            {
-                return n;
-            }
-        }
-
-        public void Put(Rectangle r, IPersistent obj) 
+        public void put(Rectangle r, IPersistent obj) 
         {
-            if (!obj.IsPersistent()) 
+            if (!obj.isPersistent()) 
             { 
                 ((StorageImpl)Storage).storeObject(obj);
             }
@@ -41,15 +33,15 @@ namespace Perst.Impl
                 }
             }
             n += 1;
-            Modify();
+            modify();
         }
     
-        public int Size() 
+        public int size() 
         { 
             return n;
         }
 
-        public void Remove(Rectangle r, IPersistent obj) 
+        public void remove(Rectangle r, IPersistent obj) 
         {
             if (root == null) 
             { 
@@ -75,20 +67,20 @@ namespace Perst.Impl
                     }
                 }
                 reinsertLevel -= 1;
-                p.Deallocate();
+                p.deallocate();
             }
             if (root.n == 1 && height > 1) 
             { 
                 RtreePage newRoot = (RtreePage)root.b[0].p;
-                root.Deallocate();
+                root.deallocate();
                 root = newRoot;
                 height -= 1;
             }
             n -= 1;
-            Modify();
+            modify();
         }
     
-        public IPersistent[] Get(Rectangle r) 
+        public IPersistent[] get(Rectangle r) 
         {
             ArrayList result = new ArrayList();
             if (root != null) 
@@ -99,7 +91,7 @@ namespace Perst.Impl
         }
 
 
-        public void Clear() 
+        public void clear() 
         {
             if (root != null) 
             { 
@@ -108,13 +100,13 @@ namespace Perst.Impl
             }
             height = 0;
             n = 0;
-            Modify();
+            modify();
         }
 
-        public override void Deallocate() 
+        public void deallocate() 
         {
-            Clear();
-            base.Deallocate();
+            clear();
+            base.deallocate();
         }
     }
 }

@@ -5,39 +5,31 @@ namespace Perst.Impl
 	
     class PagePool
     {
-        internal LRU    lru;
-        internal Page   freePages;
+        internal LRU lru;
+        internal Page freePages;
         internal Page[] hashTable;
-        internal int    poolSize;
-        internal bool   autoExtended;
-        internal IFile  file;
+        internal int poolSize;
+        internal long fileSize;
+        internal IFile file;
 		
         internal int nDirtyPages;
         internal Page[] dirtyPages;
 		
         internal bool flushing;
 		
-        const int INFINITE_POOL_INITIAL_SIZE = 8;
-
         internal PagePool(int poolSize)
         {
-            if (poolSize == 0) { 
-                autoExtended = true;
-                poolSize = INFINITE_POOL_INITIAL_SIZE;
-            }            
             this.poolSize = poolSize;
         }
 		
         internal Page find(long addr, int state)
         {
-            Assert.That((addr & (Page.pageSize - 1)) == 0);
+            Assert.that((addr & (Page.pageSize - 1)) == 0);
             Page pg;
-            int pageNo = (int)((ulong)addr >> Page.pageBits);
-            int hashCode =  pageNo % poolSize;
+            int hashCode = (int)(addr >> Page.pageBits) % poolSize;
 			
             lock(this)
             {
-                int nCollisions = 0;
                 for (pg = hashTable[hashCode]; pg != null; pg = pg.collisionChain)
                 {
                     if (pg.offs == addr)
@@ -48,7 +40,6 @@ namespace Perst.Impl
                         }
                         break;
                     }
-                    nCollisions += 1;
                 }
                 if (pg == null)
                 {
@@ -57,21 +48,9 @@ namespace Perst.Impl
                     {
                         freePages = (Page) pg.next;
                     }
-                    else if (autoExtended) 
-                    { 
-                        if (pageNo >= poolSize) {
-                            int newPoolSize = pageNo >= poolSize*2 ? pageNo+1 : poolSize*2;
-                            Page[] newHashTable = new Page[newPoolSize];
-                            Array.Copy(hashTable, 0, newHashTable, 0, hashTable.Length);
-                            hashTable = newHashTable;
-                            poolSize = newPoolSize;
-                        }
-                        pg = new Page();
-                        hashCode = pageNo;
-                    }
                     else
                     {
-                        Assert.That("unfixed page available", lru.prev != lru);
+                        Assert.that("unfixed page available", lru.prev != lru);
                         pg = (Page) lru.prev;
                         pg.unlink();
                         lock(pg)
@@ -79,11 +58,15 @@ namespace Perst.Impl
                             if ((pg.state & Page.psDirty) != 0)
                             {
                                 pg.state = 0;
-                                file.Write(pg.offs, pg.data);
+                                file.write(pg.offs, pg.data);
                                 if (!flushing)
                                 {
                                     dirtyPages[pg.writeQueueIndex] = dirtyPages[--nDirtyPages];
                                     dirtyPages[pg.writeQueueIndex].writeQueueIndex = pg.writeQueueIndex;
+                                }
+                                if (pg.offs >= fileSize)
+                                {
+                                    fileSize = pg.offs + Page.pageSize;
                                 }
                             }
                         }
@@ -111,12 +94,7 @@ namespace Perst.Impl
                 }
                 if ((pg.state & Page.psDirty) == 0 && (state & Page.psDirty) != 0)
                 {
-                    Assert.That(!flushing);
-                    if (nDirtyPages >= dirtyPages.Length) {                     
-                        Page[] newDirtyPages = new Page[nDirtyPages*2];
-                        Array.Copy(dirtyPages, 0, newDirtyPages, 0, dirtyPages.Length);
-                        dirtyPages = newDirtyPages;
-                    }
+                    Assert.that(!flushing);
                     dirtyPages[nDirtyPages] = pg;
                     pg.writeQueueIndex = nDirtyPages++;
                     pg.state |= Page.psDirty;
@@ -126,7 +104,7 @@ namespace Perst.Impl
             {
                 if ((pg.state & Page.psRaw) != 0)
                 {
-                    if (file.Read(pg.offs, pg.data) < Page.pageSize)
+                    if (file.read(pg.offs, pg.data) < Page.pageSize)
                     {
                         for (int i = 0; i < Page.pageSize; i++)
                         {
@@ -183,39 +161,20 @@ namespace Perst.Impl
             unfix(srcPage);
         }
 		
-        internal void write(long dstPos, byte[] src) 
-        {
-            Assert.That((dstPos & (Page.pageSize-1)) == 0);
-            Assert.That((src.Length & (Page.pageSize-1)) == 0);
-            for (int i = 0; i < src.Length;) 
-            { 
-                Page pg = find(dstPos, Page.psDirty);
-                byte[] dst = pg.data;
-                for (int j = 0; j < Page.pageSize; j++) 
-                { 
-                    dst[j] = src[i++];
-                }
-                unfix(pg);
-                dstPos += Page.pageSize;
-            }
-        }
-
-
-        internal void open(IFile f)
+        internal void  open(IFile f, long size)
         {
             file = f;
+            fileSize = size;
             hashTable = new Page[poolSize];
             dirtyPages = new Page[poolSize];
             nDirtyPages = 0;
             lru = new LRU();
             freePages = null;
-            if (!autoExtended) { 
-                for (int i = poolSize; --i >= 0; )
-                {
-                    Page pg = new Page();
-                    pg.next = freePages;
-                    freePages = pg;
-                }
+            for (int i = poolSize; --i >= 0; )
+            {
+                Page pg = new Page();
+                pg.next = freePages;
+                freePages = pg;
             }
         }
 		
@@ -223,7 +182,7 @@ namespace Perst.Impl
         {
             lock(this)
             {
-                file.Close();
+                file.close();
                 hashTable = null;
                 dirtyPages = null;
                 lru = null;
@@ -235,7 +194,7 @@ namespace Perst.Impl
         {
             lock(this)
             {
-                Assert.That(pg.accessCount > 0);
+                Assert.that(pg.accessCount > 0);
                 if (--pg.accessCount == 0)
                 {
                     lru.link(pg);
@@ -247,16 +206,11 @@ namespace Perst.Impl
         {
             lock(this)
             {
-                Assert.That(pg.accessCount > 0);
+                Assert.that(pg.accessCount > 0);
                 if ((pg.state & Page.psDirty) == 0)
                 {
-                    Assert.That(!flushing);
+                    Assert.that(!flushing);
                     pg.state |= Page.psDirty;
-                    if (nDirtyPages >= dirtyPages.Length) {                     
-                        Page[] newDirtyPages = new Page[nDirtyPages*2];
-                        Array.Copy(dirtyPages, 0, newDirtyPages, 0, dirtyPages.Length);
-                        dirtyPages = newDirtyPages;
-                    }
                     dirtyPages[nDirtyPages] = pg;
                     pg.writeQueueIndex = nDirtyPages++;
                 }
@@ -275,11 +229,11 @@ namespace Perst.Impl
 		
         internal byte[] get(long pos)
         {
-            Assert.That(pos != 0);
+            Assert.that(pos != 0);
             int offs = (int) pos & (Page.pageSize - 1);
             Page pg = find(pos - offs, 0);
             int size = ObjectHeader.getSize(pg.data, offs);
-            Assert.That(size >= ObjectHeader.Sizeof);
+            Assert.that(size >= ObjectHeader.Sizeof);
             byte[] obj = new byte[size];
             int dst = 0;
             while (size > Page.pageSize - offs)
@@ -321,29 +275,14 @@ namespace Perst.Impl
             unfix(pg);
         }
 		
-#if COMPACT_NET_FRAMEWORK
-        class PageComparator : System.Collections.IComparer 
-        {
-            public int Compare(object o1, object o2) 
-            {
-                long delta = ((Page)o1).offs - ((Page)o2).offs;
-                return delta < 0 ? -1 : delta == 0 ? 0 : 1;
-            }
-        }
-        static PageComparator pageComparator = new PageComparator();
-#endif
-
-
         internal virtual void  flush()
         {
+            long maxOffs;
             lock(this)
             {
                 flushing = true;
-#if COMPACT_NET_FRAMEWORK
-                Array.Sort(dirtyPages, 0, nDirtyPages, pageComparator);
-#else
                 Array.Sort(dirtyPages, 0, nDirtyPages);
-#endif
+                maxOffs = fileSize;
             }
             for (int i = 0; i < nDirtyPages; i++)
             {
@@ -352,14 +291,22 @@ namespace Perst.Impl
                 {
                     if ((pg.state & Page.psDirty) != 0)
                     {
-                        file.Write(pg.offs, pg.data);
+                        file.write(pg.offs, pg.data);
                         pg.state &= ~ Page.psDirty;
+                        if (pg.offs >= maxOffs)
+                        {
+                            maxOffs = pg.offs + Page.pageSize;
+                        }
                     }
                 }
             }
-            file.Sync();
+            file.sync();
             nDirtyPages = 0;
             flushing = false;
+            if (maxOffs > fileSize)
+            {
+                fileSize = maxOffs;
+            }
         }
     }
 }
