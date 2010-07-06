@@ -1619,7 +1619,10 @@ namespace Perst.Impl
         {
             lock(this)
             {
-                loadStub(obj.Oid, obj, obj.GetType());
+                if (obj.isRaw()) 
+                { 
+                    loadStub(obj.Oid, obj, obj.GetType());
+                }
             }
         }
 		

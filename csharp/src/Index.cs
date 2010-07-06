@@ -10,7 +10,7 @@ namespace Perst
     /// (each boundary can be specified or unspecified and can be inclusive or exclusive)
     /// Key should be of scalar, String, java.util.Date or peristent object type.
     /// </summary>
-    public interface Index : IPersistent
+    public interface Index : IPersistent, IResource
     {
         /// <summary> Get object by key (exact match)     
         /// </summary>

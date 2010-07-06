@@ -8,6 +8,8 @@ rd /s/q TestLink\obj
 rd /s/q TestLink\bin
 rd /s/q TestGC\obj
 rd /s/q TestGC\bin
+rd /s/q TestConcur\obj
+rd /s/q TestConcur\bin
 cd ..
 del /q perstnet.zip
 zip -r perstnet.zip Perst.NET

@@ -18,3 +18,6 @@ Initial release
 
 --- Release version 1.05 04.04.2003 -------------------------------------
 1. Add optional garbage collection
+
+--- Release version 1.06 09.04.2003 -------------------------------------
+1. Add obejct level locking

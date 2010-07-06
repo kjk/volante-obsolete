@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestLink", "TestLink\TestLi
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestGC", "TestGC\TestGC.csproj", "{4866D4F5-1DD7-46E0-9C8C-47AB98652295}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestConcur", "TestConcur\TestConcur.csproj", "{E26C8776-CE2C-443D-805F-70E5D1E357BB}"
+EndProject
 Global
 	GlobalSection(SolutionConfiguration) = preSolution
 		ConfigName.0 = Debug
@@ -43,6 +45,10 @@ Global
 		{4866D4F5-1DD7-46E0-9C8C-47AB98652295}.Debug.Build.0 = Debug|.NET
 		{4866D4F5-1DD7-46E0-9C8C-47AB98652295}.Release.ActiveCfg = Release|.NET
 		{4866D4F5-1DD7-46E0-9C8C-47AB98652295}.Release.Build.0 = Release|.NET
+		{E26C8776-CE2C-443D-805F-70E5D1E357BB}.Debug.ActiveCfg = Debug|.NET
+		{E26C8776-CE2C-443D-805F-70E5D1E357BB}.Debug.Build.0 = Debug|.NET
+		{E26C8776-CE2C-443D-805F-70E5D1E357BB}.Release.ActiveCfg = Release|.NET
+		{E26C8776-CE2C-443D-805F-70E5D1E357BB}.Release.Build.0 = Release|.NET
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 	EndGlobalSection

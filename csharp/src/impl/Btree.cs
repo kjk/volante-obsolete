@@ -4,7 +4,7 @@ namespace Perst.Impl
     using System.Collections;
     using Perst;
 	
-    class Btree:Persistent, Index
+    class Btree:PersistentResource, Index
     {
         internal int root;
         internal int height;

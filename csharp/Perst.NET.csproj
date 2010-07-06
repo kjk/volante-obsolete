@@ -61,6 +61,16 @@
                     Name = "System"
                     AssemblyName = "System"
                 />
+                <Reference
+                    Name = "System.Data"
+                    AssemblyName = "System.Data"
+                    HintPath = "..\WINNT\Microsoft.NET\Framework\v1.0.3705\System.Data.dll"
+                />
+                <Reference
+                    Name = "System.XML"
+                    AssemblyName = "System.XML"
+                    HintPath = "..\WINNT\Microsoft.NET\Framework\v1.0.3705\System.XML.dll"
+                />
             </References>
         </Build>
         <Files>
@@ -96,6 +106,11 @@
                     BuildAction = "Compile"
                 />
                 <File
+                    RelPath = "src\IResource.cs"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
                     RelPath = "src\Key.cs"
                     SubType = "Code"
                     BuildAction = "Compile"
@@ -107,6 +122,11 @@
                 />
                 <File
                     RelPath = "src\Persistent.cs"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "src\PersistentResource.cs"
                     SubType = "Code"
                     BuildAction = "Compile"
                 />

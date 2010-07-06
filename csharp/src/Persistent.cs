@@ -25,7 +25,7 @@ namespace Perst
         }
         public virtual void  load()
         {
-            if (raw)
+            if (storage != null)
             {
                 storage.loadObject(this);
             }
@@ -55,7 +55,10 @@ namespace Perst
             {
                 throw new StorageError(StorageError.ErrorCode.ACCESS_TO_STUB);
             }
-            storage.storeObject(this);
+            if (storage != null) 
+            {
+                storage.storeObject(this);
+            }
         }
 		
 		
