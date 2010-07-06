@@ -109,10 +109,14 @@ namespace Perst.Impl
                         o2 += 2;
                         break;
                     case ClassDescriptor.FieldType.tpInt:
-                        diff = Bytes.unpack4(a1, o1) - Bytes.unpack4(a2, o2);
+                    {
+                        int i1 = Bytes.unpack4(a1, o1);
+                        int i2 = Bytes.unpack4(a2, o2);
+                        diff = i1 < i2 ? -1 : i1 == i2 ? 0 : 1;
                         o1 += 4;
                         o2 += 4;
                         break;
+                    }
                     case ClassDescriptor.FieldType.tpUInt:
                     case ClassDescriptor.FieldType.tpEnum:
                     case ClassDescriptor.FieldType.tpObject:

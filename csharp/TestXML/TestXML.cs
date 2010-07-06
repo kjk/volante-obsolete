@@ -11,12 +11,17 @@ public class TestIndex
         internal double realKey;
     }
 
+    struct Point {
+        public int x;
+        public int y;
+    }
 
     class Root:Persistent
     {
         internal Index strIndex;
         internal FieldIndex intIndex;
         internal FieldIndex compoundIndex;
+        internal Point      point;
     }
 
     internal const int nRecords = 100000;
@@ -35,6 +40,8 @@ public class TestIndex
             root.strIndex = db.CreateIndex(typeof(System.String), true);
             root.intIndex = db.CreateFieldIndex(typeof(Record), "intKey", true);
             root.compoundIndex = db.CreateFieldIndex(typeof(Record), new String[]{"strKey", "intKey"}, true);
+            root.point.x = 1;
+            root.point.y = 2;
             db.Root = root;
         }
         FieldIndex intIndex = root.intIndex;
@@ -60,7 +67,7 @@ public class TestIndex
         System.IO.StreamWriter writer = new System.IO.StreamWriter("test.xml");
         db.ExportXML(writer);
         writer.Close();
-        System.Console.WriteLine("Elapsed time for for XML export: " + (DateTime.Now - start));
+        System.Console.WriteLine("Elapsed time for XML export: " + (DateTime.Now - start));
         
         db.Close();
         db.Open("test2.dbs", pagePoolSize);
@@ -69,13 +76,14 @@ public class TestIndex
         System.IO.StreamReader reader = new System.IO.StreamReader("test.xml");
         db.ImportXML(reader);
         reader.Close();
-        System.Console.WriteLine("Elapsed time for for XML import: " + (DateTime.Now - start));
+        System.Console.WriteLine("Elapsed time for XML import: " + (DateTime.Now - start));
 
         root = (Root)db.Root;
         intIndex = root.intIndex;
         strIndex = root.strIndex;
         compoundIndex = root.compoundIndex;
-	
+	    Debug.Assert(root.point.x == 1 && root.point.y == 2);
+
         start = DateTime.Now;
         key = 1999;
         for (i = 0; i < nRecords; i++)
