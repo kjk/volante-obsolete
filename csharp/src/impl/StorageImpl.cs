@@ -1843,6 +1843,11 @@ namespace Perst.Impl
             return new TimeSeriesImpl(this, blockClass, maxBlockTimeInterval);
         }
         
+        public override PatriciaTrie CreatePatriciaTrie()
+        {
+            return new PTrie();
+        }
+        
         public override void  ExportXML(System.IO.StreamWriter writer)
         {
             lock(this)
@@ -3085,7 +3090,7 @@ namespace Perst.Impl
             obj.AssignOid(this, oid, false);
             if (desc.serializer != null) 
             { 
-                desc.serializer.unpack(this, obj, body, obj.RecursiveLoading());
+                desc.serializer.unpack(this, obj, body, obj.RecursiveLoading(), encoding);
             } 
             else 
             { 
@@ -3884,7 +3889,7 @@ namespace Perst.Impl
 		
         internal byte[] packObject(object obj)
         {
-            ByteBuffer buf = new ByteBuffer();
+            ByteBuffer buf = new ByteBuffer(encoding);
             int offs = ObjectHeader.Sizeof;
             buf.extend(offs);
             ClassDescriptor desc = getClassDescriptor(obj.GetType());
@@ -4092,7 +4097,7 @@ public int packField(ByteBuffer buf, int offs, object val, ClassDescriptor.Field
                 case ClassDescriptor.FieldType.tpDate: 
                     return buf.packDate(offs, (DateTime)val);					
                 case ClassDescriptor.FieldType.tpString: 
-                    return buf.packString(offs, (string)val, encoding);					
+                    return buf.packString(offs, (string)val);					
                 case ClassDescriptor.FieldType.tpValue:
                     return packObject(val, fd.valueDesc, offs, buf);
                 case ClassDescriptor.FieldType.tpObject: 
@@ -4488,7 +4493,7 @@ public int packField(ByteBuffer buf, int offs, object val, ClassDescriptor.Field
                         offs += 4;
                         for (int j = 0; j < len; j++)
                         {
-                            offs = buf.packString(offs, arr[j], encoding);
+                            offs = buf.packString(offs, arr[j]);
                         }
                     }
                     break;

@@ -72,6 +72,10 @@ Project("{20D4826A-C6FA-45DB-90F4-C717570B9F32}") = "TestR2", "TestR2\TestR2.csd
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
+Project("{20D4826A-C6FA-45DB-90F4-C717570B9F32}") = "IpCountry", "IpCountry\IpCountry.csdproj", "{EEB7CD7C-A4AB-4C2C-A5CF-92EE6BD089D2}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfiguration) = preSolution
 		Debug = Debug
@@ -186,6 +190,12 @@ Global
 		{746E9034-D60D-4FB9-B564-FC4AC1E5428A}.Release.ActiveCfg = Release|Windows CE
 		{746E9034-D60D-4FB9-B564-FC4AC1E5428A}.Release.Build.0 = Release|Windows CE
 		{746E9034-D60D-4FB9-B564-FC4AC1E5428A}.Release.Deploy.0 = Release|Windows CE
+		{EEB7CD7C-A4AB-4C2C-A5CF-92EE6BD089D2}.Debug.ActiveCfg = Debug|Windows CE
+		{EEB7CD7C-A4AB-4C2C-A5CF-92EE6BD089D2}.Debug.Build.0 = Debug|Windows CE
+		{EEB7CD7C-A4AB-4C2C-A5CF-92EE6BD089D2}.Debug.Deploy.0 = Debug|Windows CE
+		{EEB7CD7C-A4AB-4C2C-A5CF-92EE6BD089D2}.Release.ActiveCfg = Release|Windows CE
+		{EEB7CD7C-A4AB-4C2C-A5CF-92EE6BD089D2}.Release.Build.0 = Release|Windows CE
+		{EEB7CD7C-A4AB-4C2C-A5CF-92EE6BD089D2}.Release.Deploy.0 = Release|Windows CE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 	EndGlobalSection

@@ -366,7 +366,7 @@ namespace Perst.Impl
 
         private Key extractKey(IPersistent obj) 
         { 
-            ByteBuffer buf = new ByteBuffer();
+            ByteBuffer buf = new ByteBuffer(null);
             int dst = 0;
             for (int i = 0; i < types.Length; i++) 
             { 
@@ -387,7 +387,7 @@ namespace Perst.Impl
                 throw new StorageError(StorageError.ErrorCode.INCOMPATIBLE_KEY_TYPE);
             }
             Object[] values = (Object[])key.oval;
-            ByteBuffer buf = new ByteBuffer();
+            ByteBuffer buf = new ByteBuffer(null);
             int dst = 0;
                 
             for (int i = 0; i < values.Length; i++) 
@@ -451,7 +451,7 @@ namespace Perst.Impl
                     dst = buf.packGuid(dst, (Guid)val);
                     break;            
                 case ClassDescriptor.FieldType.tpString:
-                    dst = buf.packString(dst, (string)val, null);
+                    dst = buf.packString(dst, (string)val);
                     break;            
                 case ClassDescriptor.FieldType.tpArrayOfByte:
                     buf.extend(dst+4);

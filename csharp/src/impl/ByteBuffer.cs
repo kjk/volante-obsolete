@@ -87,7 +87,7 @@ namespace Perst.Impl
             return offs + 8;
         }
  
-        public int packString(int offs, string s, Encoding encoding)
+        public int packString(int offs, string s)
         {
             if (s == null)
             {
@@ -121,12 +121,14 @@ namespace Perst.Impl
             return offs;
         }
 
-        public ByteBuffer()
+        public ByteBuffer(Encoding encoding)
         {
             arr = new byte[64];
+            this.encoding = encoding;
         }
 		
-        public byte[] arr;
-        public int used;
+        internal byte[]   arr;
+        internal int      used;
+        internal Encoding encoding;
     }
 }

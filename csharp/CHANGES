@@ -301,3 +301,7 @@ stored in OS file buffers and sooner or later them will be written to the disk)
 1. Make it possible to specify encoding for storing string
 2. Add StorageListener class
 3. Fix compilation problem with Compact.Net framework and multifield alternative indices
+
+--- Release version 2.37 10.10.2004 -------------------------------------
+1. Add PATRICIA Trie container
+2. Fix problem with generated pack/unpack functions introduced in 2.36 version

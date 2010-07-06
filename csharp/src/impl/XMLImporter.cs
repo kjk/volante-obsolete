@@ -304,7 +304,7 @@ namespace Perst.Impl
 
         Key createCompoundKey(ClassDescriptor.FieldType[] types, String[] values) 
         {
-            ByteBuffer buf = new ByteBuffer();
+            ByteBuffer buf = new ByteBuffer(null);
             int dst = 0;
 
             for (int i = 0; i < types.Length; i++) 
@@ -369,7 +369,7 @@ namespace Perst.Impl
                         break;
 
                     case ClassDescriptor.FieldType.tpString:
-                        dst = buf.packString(dst, val, null);
+                        dst = buf.packString(dst, val);
                         break;
 
                     case ClassDescriptor.FieldType.tpArrayOfByte:
@@ -620,7 +620,7 @@ namespace Perst.Impl
         {
             ClassDescriptor desc = storage.getClassDescriptor(findClassByName(elem.Name));
             int oid = mapId(getIntAttribute(elem, "id"));
-            ByteBuffer buf = new ByteBuffer();
+            ByteBuffer buf = new ByteBuffer(storage.encoding);
             int offs = ObjectHeader.Sizeof;
             buf.extend(offs);
 			
@@ -1026,7 +1026,7 @@ namespace Perst.Impl
                             {
                                 throwException("Conversion for field " + fieldName + " is not possible");
                             }
-                            offs = buf.packString(offs, val, storage.encoding);
+                            offs = buf.packString(offs, val);
                             continue;
                         }
                         buf.extend(offs + 4);
@@ -1463,7 +1463,7 @@ namespace Perst.Impl
                                 {
                                     throwException("Conversion for field " + fieldName + " is not possible");
                                 }
-                                offs = buf.packString(offs, val, storage.encoding);  
+                                offs = buf.packString(offs, val);  
                                 item = item.NextSibling;
                             }
                         }

@@ -79,6 +79,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestR2", "TestR2\TestR2.csp
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IpCountry", "IpCountry\IpCountry.csproj", "{65203C2F-A218-41C1-926E-B443CBE3125D}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfiguration) = preSolution
 		Debug = Debug
@@ -165,6 +169,10 @@ Global
 		{4E1CC7EC-642C-40AD-AC5A-EA2FA3EBFDE2}.Debug.Build.0 = Debug|.NET
 		{4E1CC7EC-642C-40AD-AC5A-EA2FA3EBFDE2}.Release.ActiveCfg = Release|.NET
 		{4E1CC7EC-642C-40AD-AC5A-EA2FA3EBFDE2}.Release.Build.0 = Release|.NET
+		{65203C2F-A218-41C1-926E-B443CBE3125D}.Debug.ActiveCfg = Debug|.NET
+		{65203C2F-A218-41C1-926E-B443CBE3125D}.Debug.Build.0 = Debug|.NET
+		{65203C2F-A218-41C1-926E-B443CBE3125D}.Release.ActiveCfg = Release|.NET
+		{65203C2F-A218-41C1-926E-B443CBE3125D}.Release.Build.0 = Release|.NET
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 	EndGlobalSection

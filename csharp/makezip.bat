@@ -36,6 +36,9 @@ del /q *.dbs
 rd /s/q TestTimeSeries\obj
 rd /s/q TestTimeSeries\bin
 del /q *.xml
+rd /s/q IpCountry\obj
+rd /s/q IpCountry\bin
+del /q IpCountry\*.dbs
 del /q *.suo
 cd ..
 del /q perstnet.zip

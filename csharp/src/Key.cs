@@ -8,14 +8,14 @@ namespace Perst
     /// </summary>
     public class Key
     {
-        public FieldType type;
-        public int ival;
-        public long lval;
-        public double dval;
-        public object oval;
-        public decimal dec;
-        public Guid    guid;
-        public int inclusion;
+        public readonly FieldType type;
+        public readonly int       ival;
+        public readonly long      lval;
+        public readonly double    dval;
+        public readonly object    oval;
+        public readonly decimal   dec;
+        public readonly Guid      guid;
+        public readonly int       inclusion;
 		
         /// <summary> Constructor of boolean key (boundary is inclusive)
         /// </summary>

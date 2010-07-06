@@ -163,6 +163,16 @@
                     BuildAction = "Compile"
                 />
                 <File
+                    RelPath = "src\PatriciaTrie.cs"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "src\PatriciaTrieKey.cs"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
                     RelPath = "src\Persistent.cs"
                     SubType = "Code"
                     BuildAction = "Compile"
@@ -374,6 +384,11 @@
                 />
                 <File
                     RelPath = "src\impl\PerstSink.cs"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "src\impl\PTrie.cs"
                     SubType = "Code"
                     BuildAction = "Compile"
                 />
