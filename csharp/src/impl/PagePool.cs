@@ -37,6 +37,7 @@ namespace Perst.Impl
 			
             lock(this)
             {
+                int nCollisions = 0;
                 for (pg = hashTable[hashCode]; pg != null; pg = pg.collisionChain)
                 {
                     if (pg.offs == addr)
@@ -47,6 +48,7 @@ namespace Perst.Impl
                         }
                         break;
                     }
+                    nCollisions += 1;
                 }
                 if (pg == null)
                 {

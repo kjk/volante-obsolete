@@ -83,34 +83,20 @@ namespace Perst.Impl
                     break;
 				
                 case ClassDescriptor.FieldType.tpFloat: 
-                    key = new Key(BitConverter.ToSingle(BitConverter.GetBytes(Bytes.unpack4(data, offs)), 0));
+                    key = new Key(Bytes.unpackF4(data, offs));
                     break;
 				
                 case ClassDescriptor.FieldType.tpDouble: 
-#if COMPACT_NET_FRAMEWORK 
-                    key = new Key(BitConverter.ToDouble(BitConverter.GetBytes(Bytes.unpack8(data, offs)), 0));
-#else
-                    key = new Key(BitConverter.Int64BitsToDouble(Bytes.unpack8(data, offs)));
-#endif
+                    key = new Key(Bytes.unpackF8(data, offs));
                     break;
 
                 case ClassDescriptor.FieldType.tpGuid:
-                {
-                    byte[] bits = new byte[16];
-                    Array.Copy(data, offs, bits, 0, 16);
-                    key = new Key(new Guid(bits));
+                    key = new Key(Bytes.unpackGuid(data, offs));
                     break;
-                }
+                
                 case ClassDescriptor.FieldType.tpDecimal:
-                {
-                    int[] bits = new int[4];
-                    bits[0] = Bytes.unpack4(data, offs);
-                    bits[1] = Bytes.unpack4(data, offs+4);
-                    bits[2] = Bytes.unpack4(data, offs+8);
-                    bits[3] = Bytes.unpack4(data, offs+12);
-                    key = new Key(new decimal(bits));
+                    key = new Key(Bytes.unpackDecimal(data, offs));
                     break;
-                }
 
                 default: 
                     Assert.Failed("Invalid type");
@@ -150,30 +136,21 @@ namespace Perst.Impl
                     break;
 				
                 case ClassDescriptor.FieldType.tpFloat: 
-                    Bytes.pack4(dst, BtreePage.firstKeyOffs + i * 4, BitConverter.ToInt32(BitConverter.GetBytes((float)key.dval), 0));
+                    Bytes.packF4(dst, BtreePage.firstKeyOffs + i * 4, (float)key.dval);
                     break;
 				
                 case ClassDescriptor.FieldType.tpDouble: 
-#if COMPACT_NET_FRAMEWORK 
-                    Bytes.pack8(dst, BtreePage.firstKeyOffs + i * 8, BitConverter.ToInt64(BitConverter.GetBytes((double)key.dval), 0));
-#else
-                    Bytes.pack8(dst, BtreePage.firstKeyOffs + i * 8, BitConverter.DoubleToInt64Bits(key.dval));
-#endif
+                    Bytes.packF8(dst, BtreePage.firstKeyOffs + i * 8, key.dval);
                     break;
 				
                 case ClassDescriptor.FieldType.tpDecimal:
-                {
-                    int[] bits = Decimal.GetBits(key.dec);
-                    for (int j = 0; j < 4; j++) 
-                    { 
-                        Bytes.pack4(dst, BtreePage.firstKeyOffs + i*16 + j*4, bits[j]);
-                    }
+                    Bytes.packDecimal(dst, BtreePage.firstKeyOffs + i * 16, key.dec);
                     break;
-                }
 
                 case ClassDescriptor.FieldType.tpGuid:
-                    Array.Copy(dst, BtreePage.firstKeyOffs + i*16, key.guid.ToByteArray(), 0, 16);
+                    Bytes.packGuid(dst, BtreePage.firstKeyOffs + i * 16, key.guid);
                     break;
+
 
                 default: 
                     Assert.Failed("Invalid type");

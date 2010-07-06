@@ -13,7 +13,7 @@ namespace Perst.Impl
         internal FieldDescriptor[] allFields;
         internal bool              hasReferences;
 
-        internal class FieldDescriptor : Persistent 
+        public class FieldDescriptor : Persistent 
         { 
             internal String          fieldName;
             internal String          className;
@@ -38,6 +38,8 @@ namespace Perst.Impl
         internal ConstructorInfo defaultConstructor;
         [NonSerialized()]
         internal bool resolved;
+        [NonSerialized()]
+        internal GeneratedSerializer serializer;
 		
         internal static bool serializeNonPersistentObjects;
 
@@ -178,6 +180,42 @@ namespace Perst.Impl
             }
         }
 		
+#if COMPACT_NET_FRAMEWORK
+        internal void generateSerializer() {}
+#else
+        private static CodeGenerator serializerGenerator = new CodeGenerator();
+
+        internal void generateSerializer()
+        {
+            if (!cls.IsPublic) 
+            { 
+                return;
+            }
+            FieldDescriptor[] flds = allFields;
+            for (int i = 0, n = flds.Length; i < n; i++) 
+            {
+                FieldDescriptor fd = flds[i];
+                switch (fd.type) 
+                { 
+                    case FieldType.tpValue:
+                    case FieldType.tpArrayOfValue:
+                    case FieldType.tpArrayOfObject:
+                    case FieldType.tpArrayOfEnum:
+                    case FieldType.tpArrayOfRaw:
+                        return;
+                    default:
+                        break;
+                }
+                FieldInfo f = flds[i].field;
+                if (f != null && !f.IsPublic) 
+                {
+                    return;
+                }
+            }
+            serializer = serializerGenerator.Generate(this);
+        }
+#endif
+        
         internal void  buildFieldList(StorageImpl storage, System.Type cls, ArrayList list)
         {
             System.Type superclass = cls.BaseType;
@@ -345,6 +383,7 @@ namespace Perst.Impl
                 throw new StorageError(StorageError.ErrorCode.DESCRIPTOR_FAILURE, cls);
             }
             resolved = true;
+            generateSerializer();
         }
 		
         internal static bool FindTypeByName(Type t, object name) 
@@ -467,6 +506,7 @@ namespace Perst.Impl
                 throw new StorageError(StorageError.ErrorCode.DESCRIPTOR_FAILURE, cls);
             }
             ((StorageImpl)Storage).classDescMap[cls] = this;
+            generateSerializer();
         }
 
         internal ClassDescriptor resolve() 

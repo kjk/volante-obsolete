@@ -121,33 +121,18 @@ namespace Perst.Impl
                     return (ulong)key.lval < u8 ? -1 : (ulong)key.lval == u8 ? 0 : 1;
 				
                 case ClassDescriptor.FieldType.tpFloat: 
-                    r4 = BitConverter.ToSingle(BitConverter.GetBytes(Bytes.unpack4(pg.data, BtreePage.firstKeyOffs + i * 4)), 0);
+                    r4 = Bytes.unpackF4(pg.data, BtreePage.firstKeyOffs + i * 4);
                     return key.dval < r4 ? -1 : key.dval == r4 ? 0 : 1;
 				
                 case ClassDescriptor.FieldType.tpDouble: 
-#if COMPACT_NET_FRAMEWORK 
-                    r8 = BitConverter.ToDouble(BitConverter.GetBytes(Bytes.unpack8(pg.data, BtreePage.firstKeyOffs + i * 8)), 0);
-#else
-                    r8 = BitConverter.Int64BitsToDouble(Bytes.unpack8(pg.data, BtreePage.firstKeyOffs + i * 8));
-#endif
+                    r8 = Bytes.unpackF8(pg.data, BtreePage.firstKeyOffs + i * 8);
                     return key.dval < r8 ? -1 : key.dval == r8 ? 0 : 1;
 
                 case ClassDescriptor.FieldType.tpDecimal:
-                {
-                    int[] bits = new int[4];
-                    for (int j = 0; j < 4; j++) 
-                    { 
-                        bits[j] = Bytes.unpack4(pg.data, BtreePage.firstKeyOffs + i*16 + j*4);
-                    }
-                    return key.dec.CompareTo(new decimal(bits));
-                }
+                   return key.dec.CompareTo(Bytes.unpackDecimal(pg.data, BtreePage.firstKeyOffs + i*16));
 
                 case ClassDescriptor.FieldType.tpGuid:
-                {
-                    byte[] bits = new byte[16];
-                    Array.Copy(pg.data, BtreePage.firstKeyOffs + i*16, bits, 0, 16);
-                    return key.guid.CompareTo(new Guid(bits));
-                }				
+                    return key.guid.CompareTo(Bytes.unpackGuid(pg.data, BtreePage.firstKeyOffs + i*16));
             }
             Assert.Failed("Invalid type");
             return 0;

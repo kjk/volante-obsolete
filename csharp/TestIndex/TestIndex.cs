@@ -2,17 +2,17 @@ using System;
 using System.Collections;
 using Perst;
 
-class Record:Persistent
+public class Record:Persistent
 {
-    internal System.String strKey;
-    internal long intKey;
+    public string strKey;
+    public long intKey;
 }
 
 
-class Root:Persistent
+public class Root:Persistent
 {
-    internal Index strIndex;
-    internal Index intIndex;
+    public Index strIndex;
+    public Index intIndex;
 }
 
 public class TestIndex

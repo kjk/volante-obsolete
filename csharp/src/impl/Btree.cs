@@ -512,29 +512,17 @@ namespace Perst.Impl
                     return (ulong)Bytes.unpack8(data, offs);
  				
                 case ClassDescriptor.FieldType.tpFloat: 
-                    return BitConverter.ToSingle(BitConverter.GetBytes(Bytes.unpack4(data, offs)), 0);
+                    return Bytes.unpackF4(data, offs);
 
                 case ClassDescriptor.FieldType.tpDouble: 
-#if COMPACT_NET_FRAMEWORK 
-                    return BitConverter.ToDouble(BitConverter.GetBytes(Bytes.unpack8(data, offs)), 0);
-#else
-                    return BitConverter.Int64BitsToDouble(Bytes.unpack8(data, offs));
-#endif
+                    return Bytes.unpackF8(data, offs);
+
                 case ClassDescriptor.FieldType.tpGuid:
-                {
-                    byte[] bits = new byte[16];
-                    Array.Copy(data, offs, bits, 0, 16);
-                    return new Guid(bits);
-                }
+                    return Bytes.unpackGuid(data, offs);
+                
                 case ClassDescriptor.FieldType.tpDecimal:
-                {
-                    int[] bits = new int[4];
-                    bits[0] = Bytes.unpack4(data, offs);
-                    bits[1] = Bytes.unpack4(data, offs+4);
-                    bits[2] = Bytes.unpack4(data, offs+8);
-                    bits[3] = Bytes.unpack4(data, offs+12);
-                    return new decimal(bits);
-                }
+                    return Bytes.unpackDecimal(data, offs);
+
                 case ClassDescriptor.FieldType.tpString:
                 {
                     int len = BtreePage.getKeyStrSize(pg, pos);

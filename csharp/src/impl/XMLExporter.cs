@@ -176,38 +176,24 @@ namespace Perst.Impl
                     break;
 				
                 case ClassDescriptor.FieldType.tpFloat: 
-                    writer.Write(System.Convert.ToString(BitConverter.ToSingle(BitConverter.GetBytes(Bytes.unpack4(body, offs)), 0)));
+                    writer.Write(System.Convert.ToString(Bytes.unpackF4(body, offs)));
                     offs += 4;
                     break;
 				
                 case ClassDescriptor.FieldType.tpDouble: 
-#if COMPACT_NET_FRAMEWORK 
-                    writer.Write(System.Convert.ToString(BitConverter.ToDouble(BitConverter.GetBytes(Bytes.unpack8(body, offs)), 0)));
-#else
-                    writer.Write(System.Convert.ToString(BitConverter.Int64BitsToDouble(Bytes.unpack8(body, offs))));
-#endif
+                    writer.Write(System.Convert.ToString(Bytes.unpackF8(body, offs)));
                     offs += 8;
                     break;
 				
                 case ClassDescriptor.FieldType.tpGuid:
-                {
-                    byte[] bits = new byte[16];
-                    Array.Copy(body, offs, bits, 0, 16);
+                    writer.Write(Bytes.unpackGuid(body, offs).ToString());
                     offs += 16;
-                    writer.Write("\"" + new Guid(bits) + "\"");
                     break;
-                }
+
                 case ClassDescriptor.FieldType.tpDecimal:
-                {
-                    int[] bits = new int[4];
-                    bits[0] = Bytes.unpack4(body, offs);
-                    bits[1] = Bytes.unpack4(body, offs+4);
-                    bits[2] = Bytes.unpack4(body, offs+8);
-                    bits[3] = Bytes.unpack4(body, offs+12);
+                    writer.Write(Bytes.unpackDecimal(body, offs).ToString());
                     offs += 16;
-                    writer.Write("\"" + new decimal(bits) + "\"");
                     break;
-                }
 
                 case ClassDescriptor.FieldType.tpString: 
                     for (int i = 0; i < size; i++)
@@ -227,25 +213,16 @@ namespace Perst.Impl
                     break;
 
                 case ClassDescriptor.FieldType.tpDate: 
-                {
-                    long msec = Bytes.unpack8(body, offs);
+                    writer.Write(Bytes.unpackDate(body, offs).ToString());
                     offs += 8;
-                    if (msec >= 0)
-                    {
-                        writer.Write(new System.DateTime(msec).ToString());
-                    }
-                    else
-                    {
-                        writer.Write("null");
-                    }
                     break;
-                }
+
                 default:
-                    Assert.That(false);
+                    Assert.Failed("Invalid type");
                     break;
             }              
             return offs;                                            
-        } 
+        }
                                                                     
         void exportCompoundKey(byte[] body, int offs, int size, ClassDescriptor.FieldType type) 
         { 
@@ -432,39 +409,24 @@ namespace Perst.Impl
                         break;
 					
                     case ClassDescriptor.FieldType.tpFloat: 
-                        writer.Write(System.Convert.ToString(BitConverter.ToSingle(BitConverter.GetBytes(Bytes.unpack4(body, offs)), 0)));
+                        writer.Write(System.Convert.ToString(Bytes.unpackF4(body, offs)));
                         offs += 4;
                         break;
 				
                     case ClassDescriptor.FieldType.tpDouble: 
-#if COMPACT_NET_FRAMEWORK 
-                        writer.Write(System.Convert.ToString(BitConverter.ToDouble(BitConverter.GetBytes(Bytes.unpack8(body, offs)), 0)));
-#else
-                        writer.Write(System.Convert.ToString(BitConverter.Int64BitsToDouble(Bytes.unpack8(body, offs))));
-#endif
+                        writer.Write(System.Convert.ToString(Bytes.unpackF8(body, offs)));
                         offs += 8;
                         break;
-
 				
                     case ClassDescriptor.FieldType.tpGuid:
-                    {
-                        byte[] bits = new byte[16];
-                        Array.Copy(body, offs, bits, 0, 16);
+                        writer.Write("\"" + Bytes.unpackGuid(body, offs) + "\"");
                         offs += 16;
-                        writer.Write("\"" + new Guid(bits) + "\"");
                         break;
-                    }
+
                     case ClassDescriptor.FieldType.tpDecimal:
-                    {
-                        int[] bits = new int[4];
-                        bits[0] = Bytes.unpack4(body, offs);
-                        bits[1] = Bytes.unpack4(body, offs+4);
-                        bits[2] = Bytes.unpack4(body, offs+8);
-                        bits[3] = Bytes.unpack4(body, offs+12);
+                        writer.Write("\"" + Bytes.unpackDecimal(body, offs) + "\"");
                         offs += 16;
-                        writer.Write("\"" + new decimal(bits) + "\"");
                         break;
-                    }
 
                     case ClassDescriptor.FieldType.tpString: 
                         offs = exportString(body, offs);
@@ -723,7 +685,7 @@ namespace Perst.Impl
                             while (--len >= 0)
                             {
                                 indentation(indent + 1);
-                                writer.Write("<array-element>" + BitConverter.ToSingle(BitConverter.GetBytes(Bytes.unpack4(body, offs)), 0) + "</array-element>\n");
+                                writer.Write("<array-element>" + Bytes.unpackF4(body, offs) + "</array-element>\n");
                                 offs += 4;
                             }
                             indentation(indent);
@@ -745,11 +707,7 @@ namespace Perst.Impl
                             while (--len >= 0)
                             {
                                 indentation(indent + 1);
-#if COMPACT_NET_FRAMEWORK 
-                                writer.Write("<array-element>" + BitConverter.ToDouble(BitConverter.GetBytes(Bytes.unpack8(body, offs)), 0) + "</array-element>\n");
-#else
-                                writer.Write("<array-element>" + BitConverter.Int64BitsToDouble(Bytes.unpack8(body, offs)) + "</array-element>\n");
-#endif
+                                writer.Write("<array-element>" + Bytes.unpackF8(body, offs) + "</array-element>\n");
                                 offs += 8;
                             }
                             indentation(indent);
@@ -771,21 +729,53 @@ namespace Perst.Impl
                             while (--len >= 0)
                             {
                                 indentation(indent + 1);
-                                long msec = Bytes.unpack8(body, offs);
+                                writer.Write("<array-element>\"" + Bytes.unpackDate(body, offs) + "\"</array-element>\n");
                                 offs += 8;
-                                if (msec >= 0)
-                                {
-                                    writer.Write("<array-element>\"" + new System.DateTime(Bytes.unpack8(body, offs)) + "\"</array-element>\n");
-                                }
-                                else
-                                {
-                                    writer.Write("<array-element>null</array-element>\n");
-                                }
                             }
                         }
                         break;
                     }
 					
+                    case ClassDescriptor.FieldType.tpArrayOfGuid: 
+                    {
+                        int len = Bytes.unpack4(body, offs);
+                        offs += 4;
+                        if (len < 0)
+                        {
+                            writer.Write("null");
+                        }
+                        else
+                        {
+                            writer.Write('\n');
+                            while (--len >= 0)
+                            {
+                                writer.Write("<array-element>\"" + Bytes.unpackGuid(body, offs) + "\"</array-element>\n");
+                                offs += 16;
+                            }
+                        }
+                        break;
+                    }
+
+                    case ClassDescriptor.FieldType.tpArrayOfDecimal: 
+                    {
+                        int len = Bytes.unpack4(body, offs);
+                        offs += 4;
+                        if (len < 0)
+                        {
+                            writer.Write("null");
+                        }
+                        else
+                        {
+                            writer.Write('\n');
+                            while (--len >= 0)
+                            {
+                                writer.Write("<array-element>\"" + Bytes.unpackDecimal(body, offs) + "\"</array-element>\n");
+                                offs += 16;
+                            }
+                        }
+                        break;
+                    }
+
                     case ClassDescriptor.FieldType.tpArrayOfString: 
                     {
                         int len = Bytes.unpack4(body, offs);

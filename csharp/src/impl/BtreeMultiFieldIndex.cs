@@ -129,8 +129,8 @@ namespace Perst.Impl
                     
                     case ClassDescriptor.FieldType.tpFloat:
                     {
-                        float f1 = BitConverter.ToSingle(BitConverter.GetBytes(Bytes.unpack4(a1, o1)), 0);
-                        float f2 = BitConverter.ToSingle(BitConverter.GetBytes(Bytes.unpack4(a2, o2)), 0);
+                        float f1 = Bytes.unpackF4(a1, o1);
+                        float f2 = Bytes.unpackF4(a2, o2);
                         diff = f1 < f2 ? -1 : f1 == f2 ? 0 : 1;
                         o1 += 4;
                         o2 += 4;
@@ -138,13 +138,8 @@ namespace Perst.Impl
                     }
                     case ClassDescriptor.FieldType.tpDouble:
                     {
-#if COMPACT_NET_FRAMEWORK 
-                        double d1 = BitConverter.ToDouble(BitConverter.GetBytes(Bytes.unpack8(a1, o1)), 0);
-                        double d2 = BitConverter.ToDouble(BitConverter.GetBytes(Bytes.unpack8(a2, o2)), 0);
-#else
-                        double d1 = BitConverter.Int64BitsToDouble(Bytes.unpack8(a1, o1));
-                        double d2 = BitConverter.Int64BitsToDouble(Bytes.unpack8(a2, o2));
-#endif
+                        double d1 = Bytes.unpackF8(a1, o1);
+                        double d2 = Bytes.unpackF8(a2, o2);
                         diff = d1 < d2 ? -1 : d1 == d2 ? 0 : 1;
                         o1 += 8;
                         o2 += 8;
@@ -153,28 +148,21 @@ namespace Perst.Impl
 
                     case ClassDescriptor.FieldType.tpDecimal:
                     {
-                        int[] b1 = new int[4];
-                        int[] b2 = new int[4];
-                        for (int j = 0; j < 4; j++) 
-                        { 
-                            b1[j] = Bytes.unpack4(a1, o1);
-                            b2[j] = Bytes.unpack4(a2, o2);
-                            o1 += 4;
-                            o2 += 4;
-                        }
-                        diff = new decimal(b1).CompareTo(new decimal(b2));
-                        break;
-                    }
-
-                    case ClassDescriptor.FieldType.tpGuid:
-                    {
-                        byte[] b1 = new byte[16];
-                        byte[] b2 = new byte[16];
-                        Array.Copy(a1, o1, b1, 0, 16);
-                        Array.Copy(a2, o2, b2, 0, 16);
+                        decimal d1 = Bytes.unpackDecimal(a1, o1);
+                        decimal d2 = Bytes.unpackDecimal(a2, o2);
+                        diff = d1.CompareTo(d2);
                         o1 += 16;
                         o2 += 16;
-                        diff = new Guid(b1).CompareTo(new Guid(b2));
+                        break;
+                    }
+ 
+                    case ClassDescriptor.FieldType.tpGuid:
+                    {
+                        Guid g1 = Bytes.unpackGuid(a1, o1);
+                        Guid g2 = Bytes.unpackGuid(a2, o2);
+                        diff = g1.CompareTo(g2);
+                        o1 += 16;
+                        o2 += 16;
                         break;
                     }
 
@@ -306,39 +294,24 @@ namespace Perst.Impl
                         break;
  				
                     case ClassDescriptor.FieldType.tpFloat: 
-                        v = BitConverter.ToSingle(BitConverter.GetBytes(Bytes.unpack4(data, offs)), 0);
+                        v = Bytes.unpackF4(data, offs);
                         offs += 4;
                         break;
 
                     case ClassDescriptor.FieldType.tpDouble: 
-#if COMPACT_NET_FRAMEWORK 
-                        v = BitConverter.ToDouble(BitConverter.GetBytes(Bytes.unpack8(data, offs)), 0);
-#else
-                        v = BitConverter.Int64BitsToDouble(Bytes.unpack8(data, offs));
-#endif
+                        v = Bytes.unpackF8(data, offs);
                         offs += 8;
                         break;
 
                     case ClassDescriptor.FieldType.tpDecimal:
-                    {
-                        int[] bits = new int[4];
-                        for (int j = 0; j < 4; j++) 
-                        { 
-                            bits[j] = Bytes.unpack4(data, offs);
-                            offs += 4;
-                        }
-                        v = new decimal(bits);
+                        v = Bytes.unpackDecimal(data, offs);
+                        offs += 16;
                         break;
-                    }
 
                     case ClassDescriptor.FieldType.tpGuid:
-                    {
-                        byte[] bits = new byte[16];
-                        Array.Copy(data, offs, bits, 0, 16);
+                        v = Bytes.unpackGuid(data, offs);
                         offs += 16;
-                        v = new Guid(bits);
                         break;
-                    }
 
                     case ClassDescriptor.FieldType.tpString:
                     {
@@ -353,6 +326,7 @@ namespace Perst.Impl
                         v = new String(sval);
                         break;
                     }
+
                     case ClassDescriptor.FieldType.tpArrayOfByte:
                     {
                         int len = Bytes.unpack4(data, offs);
@@ -411,131 +385,62 @@ namespace Perst.Impl
             switch (type) 
             {
                 case ClassDescriptor.FieldType.tpBoolean:
-                    buf.extend(dst+1);
-                    buf.arr[dst++] = (byte)((bool)val ? 1 : 0);
+                    dst = buf.packBool(dst, (bool)val);
                     break;
                 case ClassDescriptor.FieldType.tpByte:
-                    buf.extend(dst+1);
-                    buf.arr[dst++] = (byte)val;
+                    dst = buf.packI1(dst, (byte)val);
                     break;
                 case ClassDescriptor.FieldType.tpSByte:
-                    buf.extend(dst+1);
-                    buf.arr[dst++] = (byte)(sbyte)val;
+                    dst = buf.packI1(dst, (sbyte)val);
                     break;
                 case ClassDescriptor.FieldType.tpShort:
-                    buf.extend(dst+2);
-                    Bytes.pack2(buf.arr, dst, (short)val);
-                    dst += 2;
+                    dst = buf.packI2(dst, (short)val);
                     break;
                 case ClassDescriptor.FieldType.tpUShort:
-                    buf.extend(dst+2);
-                    Bytes.pack2(buf.arr, dst, (short)(ushort)val);
-                    dst += 2;
+                    dst = buf.packI2(dst, (ushort)val);
                     break;
                 case ClassDescriptor.FieldType.tpChar:
-                    buf.extend(dst+2);
-                    Bytes.pack2(buf.arr, dst, (short)(char)val);
-                    dst += 2;
+                    dst = buf.packI2(dst, (char)val);
                     break;
                 case ClassDescriptor.FieldType.tpInt:
-                    buf.extend(dst+4);
-                    Bytes.pack4(buf.arr, dst, (int)val);
-                    dst += 4;
+                case ClassDescriptor.FieldType.tpEnum:
+                    dst = buf.packI4(dst, (int)val);
                     break;            
                 case ClassDescriptor.FieldType.tpUInt:
-                    buf.extend(dst+4);
-                    Bytes.pack4(buf.arr, dst, (int)(uint)val);
-                    dst += 4;
+                    dst = buf.packI4(dst, (int)(uint)val);
                     break;            
                 case ClassDescriptor.FieldType.tpObject:
-                    buf.extend(dst+4);
-                    Bytes.pack4(buf.arr, dst, val != null ? (int)((IPersistent)val).Oid : 0);
-                    dst += 4;
-                    break;
+                    dst = buf.packI4(dst, val != null ? (int)((IPersistent)val).Oid : 0);
+                    break;            
                 case ClassDescriptor.FieldType.tpLong:
-                    buf.extend(dst+8);
-                    Bytes.pack8(buf.arr, dst, (long)val);
-                    dst += 8;
+                    dst = buf.packI8(dst, (long)val);
                     break;            
                 case ClassDescriptor.FieldType.tpULong:
-                    buf.extend(dst+8);
-                    Bytes.pack8(buf.arr, dst, (long)(ulong)val);
-                    dst += 8;
+                    dst = buf.packI8(dst, (long)(ulong)val);
                     break;            
                 case ClassDescriptor.FieldType.tpDate:
-                {
-                    DateTime d = (DateTime)val;
-                    buf.extend(dst+8);
-                    Bytes.pack8(buf.arr, dst, d.Ticks);
-                    dst += 8;
+                    dst = buf.packDate(dst, (DateTime)val);
                     break;            
-                }                   
                 case ClassDescriptor.FieldType.tpFloat: 
-                    buf.extend(dst+4);
-                    Bytes.pack4(buf.arr, dst, BitConverter.ToInt32(BitConverter.GetBytes((float)val), 0));
-                    dst += 4;
-                    break;
-				
+                    dst = buf.packF4(dst, (float)val);
+                    break;            
                 case ClassDescriptor.FieldType.tpDouble: 
-                    buf.extend(dst+8);
-#if COMPACT_NET_FRAMEWORK 
-                    Bytes.pack8(buf.arr, dst, BitConverter.ToInt64(BitConverter.GetBytes((double)val), 0));
-#else
-                    Bytes.pack8(buf.arr, dst, BitConverter.DoubleToInt64Bits((double)val));
-#endif
-                    dst += 8;
-                    break;
-	
+                    dst = buf.packF8(dst, (double)val);
+                    break;            
                 case ClassDescriptor.FieldType.tpDecimal: 
-                {
-                    int[] bits = Decimal.GetBits((decimal)val);
-                    buf.extend(dst+16);
-                    for (int i = 0; i < 4; i++) 
-                    { 
-                        Bytes.pack4(buf.arr, dst, bits[i]);
-                        dst += 4;
-                    }
-                    break;
-                }
-
+                    dst = buf.packDecimal(dst, (decimal)val);
+                    break;            
                 case ClassDescriptor.FieldType.tpGuid: 
-                {
-                    byte[] bits = ((Guid)val).ToByteArray();
-                    buf.extend(dst+16);
-                    Array.Copy(bits, 0, buf.arr, dst, 16);
-                    dst += 16;
-                    break;
-                }
-                
+                    dst = buf.packGuid(dst, (Guid)val);
+                    break;            
                 case ClassDescriptor.FieldType.tpString:
-                {
-                    buf.extend(dst+4);
-                    string str = (string)val;
-                    if (str != null) 
-                    { 
-                        int len = str.Length;
-                        Bytes.pack4(buf.arr, dst, len);
-                        dst += 4;
-                        buf.extend(dst + len*2);
-                        for (int j = 0; j < len; j++) 
-                        { 
-                            Bytes.pack2(buf.arr, dst, (short)str[j]);
-                            dst += 2;
-                        }
-                    } 
-                    else 
-                    { 
-                        Bytes.pack4(buf.arr, dst, 0);
-                        dst += 4;
-                    }
-                    break;
-                }
+                    dst = buf.packString(dst, (string)val);
+                    break;            
                 case ClassDescriptor.FieldType.tpArrayOfByte:
-                {
                     buf.extend(dst+4);
-                    byte[] arr = (byte[])val;
-                    if (arr != null) 
+                    if (val != null) 
                     { 
+                        byte[] arr = (byte[])val;
                         int len = arr.Length;
                         Bytes.pack4(buf.arr, dst, len);
                         dst += 4;                          
@@ -549,13 +454,6 @@ namespace Perst.Impl
                         dst += 4;
                     }
                     break;
-                }
-                case ClassDescriptor.FieldType.tpEnum:
-                    buf.extend(dst+4);
-                    Bytes.pack4(buf.arr, dst, (int)val);
-                    dst += 4;
-                    break;
-
                 default:
                     Assert.Failed("Invalid type");
                     break;

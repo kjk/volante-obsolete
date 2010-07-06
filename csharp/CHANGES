@@ -152,3 +152,12 @@ Attention: database format is incompatible with version 1.22!
 1. Add Storage.backup method which can be used for online backups and database compactification
 2. Add support of time series
 3. Fix bugs in unpacking arrays of values
+
+--- Release version 2.12 12.01.2004 -------------------------------------
+1. Dynamically generate packing/unpacking code for persistent objects. 
+This feature works only for public classes with public members
+and not having components of the following types: value, 
+array of value, array of objects, arrays of enums.
+Also it is not supported in Compact.NET version. 
+Dynamic generation is automatically used when class meets described
+above criteria.

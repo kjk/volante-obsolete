@@ -313,100 +313,65 @@ namespace Perst.Impl
                 switch (types[i]) 
                 { 
                     case ClassDescriptor.FieldType.tpBoolean:
-                        buf.extend(dst+1);
-                        buf.arr[dst++] = (byte)(Int32.Parse(val) != 0 ? 1 : 0);
+                        dst = buf.packBool(dst, Int32.Parse(val) != 0);
                         break;
+
                     case ClassDescriptor.FieldType.tpByte:
-                        buf.extend(dst+1);
-                        buf.arr[dst++] = Byte.Parse(val);
-                        break;
                     case ClassDescriptor.FieldType.tpSByte:
-                        buf.extend(dst+1);
-                        buf.arr[dst++] = (byte)SByte.Parse(val);
+                        dst = buf.packI1(dst, Int32.Parse(val));
                         break;
+
                     case ClassDescriptor.FieldType.tpChar:
-                        buf.extend(dst+2);
-                        Bytes.pack2(buf.arr, dst, (short)Int32.Parse(val));
-                        dst += 2;
-                        break;
                     case ClassDescriptor.FieldType.tpShort:
-                        buf.extend(dst+2);
-                        Bytes.pack2(buf.arr, dst, Int16.Parse(val));
-                        dst += 2;
-                        break;
                     case ClassDescriptor.FieldType.tpUShort:
-                        buf.extend(dst+2);
-                        Bytes.pack2(buf.arr, dst, (short)UInt16.Parse(val));
-                        dst += 2;
+                        dst = buf.packI2(dst, Int32.Parse(val));
                         break;
+
                     case ClassDescriptor.FieldType.tpInt:
+                        dst = buf.packI4(dst, Int32.Parse(val));
+                        break;
+
                     case ClassDescriptor.FieldType.tpEnum:
-                        buf.extend(dst+4);
-                        Bytes.pack4(buf.arr, dst, Int32.Parse(val));
-                        dst += 4;
-                        break;
                     case ClassDescriptor.FieldType.tpUInt:
-                        buf.extend(dst+4);
-                        Bytes.pack4(buf.arr, dst, (int)UInt32.Parse(val));
-                        dst += 4;
+                        dst = buf.packI4(dst, (int)UInt32.Parse(val));
                         break;
+
                     case ClassDescriptor.FieldType.tpObject:
-                        buf.extend(dst+4);
-                        Bytes.pack4(buf.arr, dst, mapId((int)UInt32.Parse(val)));
-                        dst += 4;
+                        dst = buf.packI4(dst, mapId((int)UInt32.Parse(val)));
                         break;
+
                     case ClassDescriptor.FieldType.tpLong:
+                        dst = buf.packI8(dst, Int64.Parse(val));
+                        break;
+
+                    case ClassDescriptor.FieldType.tpULong:
+                        dst = buf.packI8(dst, (long)UInt64.Parse(val));
+                        break;
+
                     case ClassDescriptor.FieldType.tpDate:
-                        buf.extend(dst+8);
-                        Bytes.pack8(buf.arr, dst, Int64.Parse(val));
-                        dst += 8;
+                        dst = buf.packDate(dst, DateTime.Parse(val));
                         break;
+
                     case ClassDescriptor.FieldType.tpFloat:
-                        buf.extend(dst+4);
-                        Bytes.pack4(buf.arr, dst, BitConverter.ToInt32(BitConverter.GetBytes(Single.Parse(val)), 0));
-                        dst += 4;
+                        dst = buf.packF4(dst, Single.Parse(val));
                         break;
+
                     case ClassDescriptor.FieldType.tpDouble:
-                        buf.extend(dst+8);
-#if COMPACT_NET_FRAMEWORK 
-                        Bytes.pack8(buf.arr, dst, BitConverter.ToInt64(BitConverter.GetBytes(Double.Parse(val)), 0));
-#else
-                        Bytes.pack8(buf.arr, dst, BitConverter.DoubleToInt64Bits(Double.Parse(val)));
-#endif
-                        dst += 8;
+                        dst = buf.packF8(dst, Double.Parse(val));
                         break;
 
                     case ClassDescriptor.FieldType.tpDecimal: 
-                    {
-                        int[] bits = Decimal.GetBits(Decimal.Parse(val));
-                        buf.extend(dst+16);
-                        for (int j = 0; j < 4; j++) 
-                        { 
-                            Bytes.pack4(buf.arr, dst, bits[j]);
-                            dst += 4;
-                        }
+                        dst = buf.packDecimal(dst, Decimal.Parse(val));
                         break;
-                    }
 
                     case ClassDescriptor.FieldType.tpGuid: 
-                    {
-                        byte[] bits = new Guid(val).ToByteArray();
-                        buf.extend(dst+16);
-                        Array.Copy(bits, 0, buf.arr, dst, 16);
-                        dst += 16;
+                        dst = buf.packGuid(dst, new Guid(val));
                         break;
-                    }
 
                     case ClassDescriptor.FieldType.tpString:
-                        buf.extend(dst + 4 + 2*val.Length);
-                        Bytes.pack4(buf.arr, dst, val.Length);
-                        dst += 4;
-                        for (int j = 0, n = val.Length; j < n; j++) 
-                        { 
-                            Bytes.pack2(buf.arr, dst, (short)val[j]);
-                            dst += 2;
-                        }
+                        dst = buf.packString(dst, val);
                         break;
+
                     case ClassDescriptor.FieldType.tpArrayOfByte:
                         buf.extend(dst + 4 + (val.Length >> 1));
                         Bytes.pack4(buf.arr, dst, val.Length >> 1);
@@ -849,11 +814,11 @@ namespace Perst.Impl
                         {
                             if (elem.isIntValue())
                             {
-                                Bytes.pack4(buf.arr, offs, BitConverter.ToInt32(BitConverter.GetBytes((float) elem.IntValue), 0));
+                                Bytes.packF4(buf.arr, offs, (float)elem.IntValue);
                             }
                             else if (elem.isRealValue())
                             {
-                                Bytes.pack4(buf.arr, offs, BitConverter.ToInt32(BitConverter.GetBytes((float) elem.RealValue), 0));
+                                Bytes.packF4(buf.arr, offs, (float) elem.RealValue);
                             }
                             else
                             {
@@ -867,25 +832,14 @@ namespace Perst.Impl
                         buf.extend(offs + 8);
                         if (elem != null)
                         {
-#if COMPACT_NET_FRAMEWORK 
                             if (elem.isIntValue())
                             {
-                                Bytes.pack8(buf.arr, offs, BitConverter.ToInt64(BitConverter.GetBytes((double) elem.IntValue), 0));
+                                Bytes.packF8(buf.arr, offs, (double) elem.IntValue);
                             }
                             else if (elem.isRealValue())
                             {
-                                Bytes.pack8(buf.arr, offs, BitConverter.ToInt64(BitConverter.GetBytes((double) elem.RealValue), 0));
+                                Bytes.packF8(buf.arr, offs, elem.RealValue);
                             }
-#else
-                            if (elem.isIntValue())
-                            {
-                                Bytes.pack8(buf.arr, offs, BitConverter.DoubleToInt64Bits((double) elem.IntValue));
-                            }
-                            else if (elem.isRealValue())
-                            {
-                                Bytes.pack8(buf.arr, offs, BitConverter.DoubleToInt64Bits((double) elem.RealValue));
-                            }
-#endif
                             else
                             {
                                 throwException("Conversion for field " + fieldName + " is not possible");
@@ -922,12 +876,8 @@ namespace Perst.Impl
                             {
                                 throwException("Conversion for field " + fieldName + " is not possible");
                             }
-                            int[] bits = Decimal.GetBits(d);
-                            buf.extend(offs+16);
-                            for (int j = 0; j < 4; j++) 
-                            { 
-                                Bytes.pack4(buf.arr, offs + j*4, bits[j]);
-                            }
+                            Bytes.packDecimal(buf.arr, offs, d);
+
                         }
                         offs += 16;
                         continue;
@@ -936,7 +886,7 @@ namespace Perst.Impl
                         buf.extend(offs + 16);
                         if (elem != null)
                         {
-                             if (elem.isStringValue())
+                            if (elem.isStringValue())
                             {
                                 Guid guid = new Guid(elem.StringValue);
                                 byte[] bits = guid.ToByteArray();
@@ -966,7 +916,7 @@ namespace Perst.Impl
                             {
                                 try 
                                 { 
-                                    Bytes.pack8(buf.arr, offs, DateTime.Parse(elem.StringValue).Ticks);
+                                    Bytes.packDate(buf.arr, offs, DateTime.Parse(elem.StringValue));
                                 } 
                                 catch (FormatException) 
                                 {
@@ -1305,11 +1255,11 @@ namespace Perst.Impl
                             {
                                 if (item.isIntValue())
                                 {
-                                   Bytes.pack4(buf.arr, offs, BitConverter.ToInt32(BitConverter.GetBytes((float)item.IntValue), 0));
+                                   Bytes.packF4(buf.arr, offs, (float)item.IntValue);
                                 }
                                 else if (item.isRealValue())
                                 {
-                                    Bytes.pack4(buf.arr, offs, BitConverter.ToInt32(BitConverter.GetBytes((float)item.RealValue), 0));
+                                    Bytes.packF4(buf.arr, offs, (float)item.RealValue);
                                 }
                                 else
                                 {
@@ -1337,25 +1287,14 @@ namespace Perst.Impl
                             offs += 4;
                             while (--len >= 0)
                             {
-#if COMPACT_NET_FRAMEWORK 
                                 if (item.isIntValue())
                                 {
-                                    Bytes.pack8(buf.arr, offs,  BitConverter.ToInt64(BitConverter.GetBytes((double) item.IntValue), 0));
+                                    Bytes.packF8(buf.arr, offs, (double)item.IntValue);
                                 }
                                 else if (item.isRealValue())
                                 {
-                                    Bytes.pack8(buf.arr, offs,  BitConverter.ToInt64(BitConverter.GetBytes(item.RealValue), 0));
+                                    Bytes.packF8(buf.arr, offs, item.RealValue);
                                 }
-#else
-                                if (item.isIntValue())
-                                {
-                                    Bytes.pack8(buf.arr, offs,  BitConverter.DoubleToInt64Bits((double) item.IntValue));
-                                }
-                                else if (item.isRealValue())
-                                {
-                                    Bytes.pack8(buf.arr, offs,  BitConverter.DoubleToInt64Bits(item.RealValue));
-                                }
-#endif
                                 else
                                 {
                                     throwException("Conversion for field " + fieldName + " is not possible");
@@ -1390,7 +1329,7 @@ namespace Perst.Impl
                                 {
                                     try 
                                     { 
-                                        Bytes.pack8(buf.arr, offs, DateTime.Parse(item.StringValue).Ticks);
+                                        Bytes.packDate(buf.arr, offs, DateTime.Parse(item.StringValue));
                                     }
                                     catch (FormatException)
                                     {
@@ -1399,6 +1338,72 @@ namespace Perst.Impl
                                 }
                                 item = item.NextSibling;
                                 offs += 8;
+                            }
+                        }
+                        continue;
+					
+                    case ClassDescriptor.FieldType.tpArrayOfDecimal: 
+                        if (elem == null || elem.isNullValue())
+                        {
+                            buf.extend(offs + 4);
+                            Bytes.pack4(buf.arr, offs, - 1);
+                            offs += 4;
+                        }
+                        else
+                        {
+                            XMLElement item = elem.getSibling("array-element");
+                            int len = (item == null)?0:item.Counter;
+                            buf.extend(offs + 4 + len * 16);
+                            Bytes.pack4(buf.arr, offs, len);
+                            offs += 4;
+                            while (--len >= 0)
+                            {
+                                if (item.isStringValue())
+                                {
+                                    try 
+                                    { 
+                                        Bytes.packDecimal(buf.arr, offs, Decimal.Parse(item.StringValue));
+                                    }
+                                    catch (FormatException)
+                                    {
+                                        throwException("Conversion for field " + fieldName + " is not possible");
+                                    }
+                                }
+                                item = item.NextSibling;
+                                offs += 16;
+                            }
+                        }
+                        continue;
+					
+                    case ClassDescriptor.FieldType.tpArrayOfGuid: 
+                        if (elem == null || elem.isNullValue())
+                        {
+                            buf.extend(offs + 4);
+                            Bytes.pack4(buf.arr, offs, - 1);
+                            offs += 4;
+                        }
+                        else
+                        {
+                            XMLElement item = elem.getSibling("array-element");
+                            int len = (item == null)?0:item.Counter;
+                            buf.extend(offs + 4 + len * 16);
+                            Bytes.pack4(buf.arr, offs, len);
+                            offs += 4;
+                            while (--len >= 0)
+                            {
+                                if (item.isStringValue())
+                                {
+                                    try 
+                                    { 
+                                        Bytes.packGuid(buf.arr, offs, new Guid(item.StringValue));
+                                    }
+                                    catch (FormatException)
+                                    {
+                                        throwException("Conversion for field " + fieldName + " is not possible");
+                                    }
+                                }
+                                item = item.NextSibling;
+                                offs += 16;
                             }
                         }
                         continue;

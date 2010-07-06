@@ -55,7 +55,7 @@
                     IncrementalBuild = "true"
                     NoStdLib = "false"
                     NoWarn = ""
-                    Optimize = "false"
+                    Optimize = "true"
                     OutputPath = "bin\"
                     RegisterForComInterop = "false"
                     RemoveIntegerChecks = "false"
@@ -259,6 +259,16 @@
                 />
                 <File
                     RelPath = "src\impl\ClassDescriptor.cs"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "src\impl\CodeGenerator.cs"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "src\impl\GeneratedSerializer.cs"
                     SubType = "Code"
                     BuildAction = "Compile"
                 />

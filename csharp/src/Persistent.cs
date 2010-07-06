@@ -2,11 +2,17 @@ namespace Perst
 {
     using System;
     using System.Runtime.InteropServices;
+#if !COMPACT_NET_FRAMEWORK
+    using System.ComponentModel;
+#endif
 	
     /// <summary> Base class for all persistent capable objects
     /// </summary>
     public class Persistent : IPersistent
     {
+#if !COMPACT_NET_FRAMEWORK
+        [Browsable(false)]
+#endif
         public virtual int Oid
         {
             get
@@ -15,6 +21,9 @@ namespace Perst
             }	
         }
 
+#if !COMPACT_NET_FRAMEWORK
+        [Browsable(false)]
+#endif
         public virtual Storage Storage
         {
             get
