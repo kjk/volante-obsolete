@@ -108,6 +108,11 @@
                     BuildAction = "Compile"
                 />
                 <File
+                    RelPath = "src\GenericIndex.cs"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
                     RelPath = "src\IFile.cs"
                     SubType = "Code"
                     BuildAction = "Compile"
@@ -164,6 +169,11 @@
                 />
                 <File
                     RelPath = "src\NullFile.cs"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "src\PArray.cs"
                     SubType = "Code"
                     BuildAction = "Compile"
                 />
@@ -254,6 +264,11 @@
                 />
                 <File
                     RelPath = "src\StorageListener.cs"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "src\StreamFile.cs"
                     SubType = "Code"
                     BuildAction = "Compile"
                 />
@@ -394,6 +409,11 @@
                 />
                 <File
                     RelPath = "src\impl\PagePool.cs"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "src\impl\PArrayImpl.cs"
                     SubType = "Code"
                     BuildAction = "Compile"
                 />

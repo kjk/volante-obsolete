@@ -467,7 +467,7 @@ namespace Perst.Impl
             if (type.IsInterface) 
             {
                 wrapperType = module.DefineType(generatedClassName, TypeAttributes.Public, 
-                    type.IsSubclassOf(typeof(IResource)) ? typeof(PersistentResource) : typeof(Persistent));
+                    typeof(IResource).IsAssignableFrom(type) ? typeof(PersistentResource) : typeof(Persistent));
                 wrapperType.AddInterfaceImplementation(type);
             } 
             else 
@@ -490,21 +490,18 @@ namespace Perst.Impl
                 { 
                     Type returnType = getter.ReturnType;
                     String fieldName = prop.Name;
-                    if (Char.IsUpper(fieldName[0])) 
+                    Type fieldType;
+                    if (typeof(IPersistent).IsAssignableFrom(returnType)) 
                     {
-                        fieldName = Char.ToLower(fieldName[0]) + fieldName.Substring(1);
+                        fieldType = typeof(int);
+                        fieldName = "r_" + fieldName;
                     } 
                     else 
                     {
-                        fieldName = "_" + fieldName;
+                        fieldType = returnType;
+                        fieldName = "s_" + fieldName;
                     }
-
-                    Type fieldType = returnType;
-                    if (fieldType.IsSubclassOf(typeof(IPersistent))) 
-                    {
-                        fieldType = typeof(int);
-                    }
-                    if (fieldType.IsArray && fieldType.GetElementType().IsSubclassOf(typeof(IPersistent))) 
+                    if (fieldType.IsArray && typeof(IPersistent).IsAssignableFrom(fieldType.GetElementType()))
                     {
                         throw new StorageError(StorageError.ErrorCode.UNSUPPORTED_TYPE);
                     }
@@ -544,12 +541,16 @@ namespace Perst.Impl
                     il = setterImpl.GetILGenerator();
 
                     il.Emit(OpCodes.Ldarg_0);
-                    il.Emit(OpCodes.Ldarg_1);
                     if (fieldType != returnType) 
                     {
                         il.Emit(OpCodes.Ldarg_0);
                         il.Emit(OpCodes.Callvirt, getStorage);
+                        il.Emit(OpCodes.Ldarg_1);
                         il.Emit(OpCodes.Callvirt, makePersistent);
+                    } 
+                    else 
+                    {
+                        il.Emit(OpCodes.Ldarg_1);
                     }
                     il.Emit(OpCodes.Stfld, fb);
                     il.Emit(OpCodes.Ldarg_0);
@@ -609,7 +610,7 @@ namespace Perst.Impl
         private MethodInfo modify = typeof(IPersistent).GetMethod("Modify");
         private MethodInfo getStorage = typeof(IPersistent).GetProperty("Storage").GetGetMethod();
         private MethodInfo getByOid = typeof(Storage).GetMethod("GetObjectByOID");
-        private MethodInfo makePersistent = typeof(IPersistent).GetMethod("MakePersistent");
+        private MethodInfo makePersistent = typeof(Storage).GetMethod("MakePersistent");
 
         private int[] arrayOfInt = new int[0];
 

@@ -1567,6 +1567,33 @@ namespace Perst.Impl
             return wrapper;
         }
 #endif
+        public override int MakePersistent(IPersistent obj) 
+        {
+            if (obj == null) 
+            {
+                return 0;
+            }
+            if (obj.Oid != 0)
+            {
+                return obj.Oid;
+            }
+            lock (this) 
+            {
+                if (!opened) 
+                { 
+                    throw new StorageError(StorageError.ErrorCode.STORAGE_NOT_OPENED);
+                }
+                lock(objectCache) 
+                {
+                    int oid = allocateId();
+                    obj.AssignOid(this, oid, false);
+                    setPos(oid, 0);
+                    objectCache.put(oid, obj);
+                    objectCache.setDirty(oid);
+                    return oid;
+                }
+            }
+        }
 
         public override void Backup(System.IO.Stream stream)
         {
@@ -1900,6 +1927,16 @@ namespace Perst.Impl
         public override Link CreateLink(int initialSize)
         {
             return new LinkImpl(initialSize);
+        }
+		
+        public override PArray CreateArray()
+        {
+            return CreateArray(8);
+        }
+		
+        public override PArray CreateArray(int initialSize)
+        {
+            return new PArrayImpl(this, initialSize);
         }
 		
         public override Relation CreateRelation(IPersistent owner)
@@ -2507,6 +2544,7 @@ namespace Perst.Impl
                         continue;
                     }
                     case ClassDescriptor.FieldType.tpArrayOfObject:
+                    case ClassDescriptor.FieldType.tpArrayOfOid:
                     case ClassDescriptor.FieldType.tpLink:
                     {
                         int len = Bytes.unpack4(obj, offs);
@@ -3017,6 +3055,10 @@ namespace Perst.Impl
             if ((val = props["perst.file.noflush"]) != null) 
             { 
                 noFlush = getBooleanValue(val);
+                if (opened) 
+                { 
+                    pool.file.NoFlush = noFlush;
+                }
             }
             if ((val = props["perst.alternative.btree"]) != null) 
             { 
@@ -3069,6 +3111,10 @@ namespace Perst.Impl
             else if (name.Equals("perst.file.noflush")) 
             { 
                 noFlush = getBooleanValue(val);
+                if (opened) 
+                { 
+                    pool.file.NoFlush = noFlush;
+                }
             }
             else if (name.Equals("perst.alternative.btree")) 
             { 
@@ -3104,6 +3150,7 @@ namespace Perst.Impl
             }
         }
 
+    
         
         protected internal override void modifyObject(IPersistent obj) 
         {
@@ -3451,6 +3498,7 @@ namespace Perst.Impl
                 case ClassDescriptor.FieldType.tpArrayOfUInt:
                 case ClassDescriptor.FieldType.tpArrayOfFloat:
                 case ClassDescriptor.FieldType.tpArrayOfObject:
+                case ClassDescriptor.FieldType.tpArrayOfOid:
                 case ClassDescriptor.FieldType.tpLink:
                     len = Bytes.unpack4(body, offs);
                     offs += 4;
@@ -4137,6 +4185,24 @@ namespace Perst.Impl
                         val = new LinkImpl(arr);
                     }
                     break;
+                case ClassDescriptor.FieldType.tpArrayOfOid: 
+                    len = Bytes.unpack4(body, offs);
+                    offs += 4;
+                    if (len < 0)
+                    {
+                        val = null;
+                    }
+                    else
+                    {
+                        int[] arr = new int[len];
+                        for (int j = 0; j < len; j++)
+                        {
+                            arr[j] = Bytes.unpack4(body, offs);
+                            offs += 4;
+                        }
+                        val = new PArrayImpl(this, arr);
+                    }
+                    break;
             }
             return offs;
         }
@@ -4816,6 +4882,27 @@ public int packField(ByteBuffer buf, int offs, object val, ClassDescriptor.Field
                             offs += 4;
                         }
                         link.Unpin();
+                    }
+                    break;
+                case ClassDescriptor.FieldType.tpArrayOfOid: 
+                    if (val == null)
+                    {
+                        buf.extend(offs + 4);
+                        Bytes.pack4(buf.arr, offs, - 1);
+                        offs += 4;
+                    }
+                    else
+                    {
+                        PArray arr = (PArray)val;
+                        int len = arr.Length;
+                        buf.extend(offs + 4 + len * 4);
+                        Bytes.pack4(buf.arr, offs, len);
+                        offs += 4;
+                        for (int j = 0; j < len; j++)
+                        {
+                            Bytes.pack4(buf.arr, offs, arr.GetOid(j));
+                            offs += 4;
+                        }
                     }
                     break;
             }

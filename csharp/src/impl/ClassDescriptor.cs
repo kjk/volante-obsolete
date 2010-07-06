@@ -205,6 +205,7 @@ namespace Perst.Impl
                     case FieldType.tpValue:
                     case FieldType.tpArrayOfValue:
                     case FieldType.tpArrayOfObject:
+                    case FieldType.tpArrayOfOid:
                     case FieldType.tpArrayOfEnum:
                     case FieldType.tpArrayOfRaw:
                         return;
@@ -219,22 +220,12 @@ namespace Perst.Impl
             }
             serializer = serializerGenerator.Generate(this);
         }
-#endif
         
         static private bool isObjectProperty(Type cls, FieldInfo f)
         {
-            string name = f.Name;
-            if (name[0] == '_') 
-            {
-                name = name.Substring(1);
-            } 
-            else 
-            {
-                name = Char.ToUpper(name[0]) + name.Substring(1);
-            }
-            PropertyInfo pi = cls.GetProperty(name, BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic);
-            return pi != null && pi.PropertyType.IsSubclassOf(typeof(IPersistent));
-        }
+            return typeof(PersistentWrapper).IsAssignableFrom(cls) && f.Name.StartsWith("r_");
+         }
+#endif
 
         internal void  buildFieldList(StorageImpl storage, System.Type cls, ArrayList list)
         {
@@ -244,7 +235,9 @@ namespace Perst.Impl
                 buildFieldList(storage, superclass, list);
             }
             System.Reflection.FieldInfo[] flds = cls.GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.DeclaredOnly);
-            bool isWrapper = cls.IsSubclassOf(typeof(PersistentWrapper));
+#if !COMPACT_NET_FRAMEWORK 
+            bool isWrapper = typeof(PersistentWrapper).IsAssignableFrom(cls);
+#endif
             for (int i = 0; i < flds.Length; i++)
             {
                 FieldInfo f = flds[i];
@@ -257,6 +250,7 @@ namespace Perst.Impl
                     FieldType type = getTypeCode(f.FieldType);
                     switch (type) 
                     {
+#if !COMPACT_NET_FRAMEWORK 
                         case FieldType.tpInt:
                             if (isWrapper && isObjectProperty(cls, f)) 
                             {
@@ -264,6 +258,8 @@ namespace Perst.Impl
                                 type = FieldType.tpOid;
                             } 
                             break;
+#endif
+                        case FieldType.tpArrayOfOid:
                         case FieldType.tpArrayOfObject:
                         case FieldType.tpObject:
                         case FieldType.tpLink:

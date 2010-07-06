@@ -38,5 +38,14 @@ namespace Perst
         /// <summary> Close file
         /// </summary>
         void Close();
+
+        /// <summary>
+        /// Boolean property. Set to <c>true</c> to avoid flushing the stream, or <c>false</c> to flush the stream with every calls to <see cref="Sync"/>
+        /// </summary>
+        bool NoFlush
+        {
+            get;
+            set;
+        }
     }
 }

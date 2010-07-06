@@ -63,11 +63,7 @@ namespace Perst
 		
         public virtual int MakePersistent(Storage storage)
         {
-            if (oid == 0)
-            {
-                storage.storeObject(this);
-            }
-            return oid;
+            return (oid != 0) ? oid : storage.MakePersistent(this);
         }
 		
         public virtual void Store()

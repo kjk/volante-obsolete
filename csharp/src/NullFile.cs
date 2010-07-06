@@ -21,6 +21,12 @@ namespace Perst
 
         public void Lock() {}
 
-         public void Close() {}
+        public void Close() {}
+
+        public bool NoFlush
+        {
+            get { return false; }
+            set {}
+        }
     }
 }

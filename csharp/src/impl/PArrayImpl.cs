@@ -4,7 +4,7 @@ namespace Perst.Impl
     using System.Collections;
     using Perst;
 	
-    public class LinkImpl : Link
+    public class PArrayImpl : PArray
     {
         public virtual int Size()
         {
@@ -61,6 +61,15 @@ namespace Perst.Impl
             {
                 throw new IndexOutOfRangeException();
             }
+            return new PersistentStub(storage, arr[i]);
+        }
+		
+        public virtual int GetOid(int i)
+        {
+            if (i < 0 || i >= used)
+            {
+                throw new IndexOutOfRangeException();
+            }
             return arr[i];
         }
 		
@@ -70,7 +79,7 @@ namespace Perst.Impl
             {
                 throw new IndexOutOfRangeException();
             }
-            arr[i] = obj;
+            arr[i] = storage.MakePersistent(obj);
         }
 		
         public virtual void Remove(int i)
@@ -81,14 +90,14 @@ namespace Perst.Impl
             }
             used -= 1;
             Array.Copy(arr, i + 1, arr, i, used - i);
-            arr[used] = null;
+            arr[used] = 0;
         }
 		
         internal void reserveSpace(int len)
         {
             if (used + len > arr.Length)
             {
-                IPersistent[] newArr = new IPersistent[used + len > arr.Length * 2?used + len:arr.Length * 2];
+                int[] newArr = new int[used + len > arr.Length * 2?used + len:arr.Length * 2];
                 Array.Copy(arr, 0, newArr, 0, used);
                 arr = newArr;
             }
@@ -102,14 +111,14 @@ namespace Perst.Impl
             }
             reserveSpace(1);
             Array.Copy(arr, i, arr, i + 1, used - i);
-            arr[i] = obj;
+            arr[i] = storage.MakePersistent(obj);
             used += 1;
         }
 		
         public virtual void Add(IPersistent obj)
         {
             reserveSpace(1);
-            arr[used++] = obj;
+            arr[used++] = storage.MakePersistent(obj);
         }
 		
         public virtual void AddAll(IPersistent[] a)
@@ -119,18 +128,31 @@ namespace Perst.Impl
 		
         public virtual void AddAll(IPersistent[] a, int from, int length)
         {
+            int i, j;
             reserveSpace(length);
-            Array.Copy(a, from, arr, used, length);
-            used += length;
+            for (i = from, j = used; --length >= 0; i++, j++) 
+            { 
+                arr[j] = storage.MakePersistent(a[i]); 
+            }
+            used = j;
         }
 		
         public virtual void AddAll(Link link)
         {
             int n = link.Length;
             reserveSpace(n);
-            for (int i = 0, j = used; i < n; i++, j++)
+            if (link is PArray) 
             {
-                arr[j] = link.GetRaw(i);
+                PArray src = (PArray)link; 
+                for (int i = 0, j = used; i < n; i++, j++)
+                {
+                    arr[j] = src.GetOid(i);
+                }
+            } else {
+                for (int i = 0, j = used; i < n; i++, j++)
+                {
+                    arr[j] = storage.MakePersistent(link.GetRaw(i));
+                }
             }
             used += n;
         }
@@ -167,35 +189,21 @@ namespace Perst.Impl
 		
         public virtual int IndexOf(IPersistent obj)
         {
-            int oid;
-            if (obj != null && (oid = ((IPersistent)obj).Oid) != 0) 
-            { 
-                for (int i = used; --i >= 0;) 
-                {
-                    IPersistent elem = arr[i];
-                    if (elem != null && elem.Oid == oid) 
-                    {
-                        return i;
-                    }
-                }
-            } 
-            else 
-            { 
-                for (int i = used; --i >= 0;) 
-                {
-                    if (arr[i] == obj) 
-                    {
-                        return i;
-                    }
-                }
+            int oid = obj == null ? 0 : ((IPersistent)obj).Oid;
+            for (int i = used; --i >= 0;) 
+            {
+                 if (arr[i] == oid) 
+                 {
+                     return i;
+                 }
             }
             return - 1;
         }
 		
         public virtual bool ContainsElement(int i, IPersistent obj) 
         {
-            IPersistent elem = arr[i];
-            return elem == obj || (elem != null && elem.Oid != 0 && elem.Oid == obj.Oid);
+            int oid = arr[i];
+            return (obj == null && oid == 0) || (obj != null && obj.Oid == oid);
         }
 
         public virtual void Clear()
@@ -204,10 +212,10 @@ namespace Perst.Impl
             used = 0;
         }
 		
-        class LinkEnumerator : IEnumerator { 
+        class ArrayEnumerator : IEnumerator { 
             public bool MoveNext() 
             {
-                if (i+1 < link.Length) { 
+                if (i+1 < arr.Length) { 
                     i += 1;
                     return true;
                 }
@@ -218,7 +226,7 @@ namespace Perst.Impl
             {
                 get 
                 {
-                    return link[i];
+                    return arr[i];
                 }
             }
 
@@ -227,68 +235,53 @@ namespace Perst.Impl
                 i = -1;
             }
 
-            internal LinkEnumerator(Link link) { 
-                this.link = link;
+            internal ArrayEnumerator(PArray arr) { 
+                this.arr = arr;
                 i = -1;
             }
 
-            private int  i;
-            private Link link;
+            private int    i;
+            private PArray arr;
         }      
 
         public IEnumerator GetEnumerator() 
         { 
-            return new LinkEnumerator(this);
+            return new ArrayEnumerator(this);
         }
 
         public void Pin() 
         { 
-            for (int i = 0, n = used; i < n; i++) 
-            { 
-                arr[i] = loadElem(i);
-            }
         }
 
         public void Unpin() 
         { 
-            for (int i = 0, n = used; i < n; i++) 
-            { 
-                IPersistent elem = arr[i];
-                if (elem != null && !elem.IsRaw() && elem.IsPersistent()) 
-                { 
-                    arr[i] = new PersistentStub(elem.Storage, elem.Oid);
-                }
-            }
         }
 
         private IPersistent loadElem(int i)
         {
-            IPersistent elem = arr[i];
-            if (elem != null && elem.IsRaw())
-            {
-                // arr[i] = elem = ((StorageImpl) elem.Storage).lookupObject(elem.Oid, null);
-                elem = ((StorageImpl) elem.Storage).lookupObject(elem.Oid, null);
-            }
-            return elem;
+            return storage.lookupObject(arr[i], null);
         }
 		
 
-        internal LinkImpl()
+        internal PArrayImpl()
         {
         }
 		
-        internal LinkImpl(int initSize)
+        internal PArrayImpl(StorageImpl storage, int initSize)
         {
-            arr = new IPersistent[initSize];
+            this.storage = storage;
+            arr = new int[initSize];
         }
 		
-        internal LinkImpl(IPersistent[] arr)
+        internal PArrayImpl(StorageImpl storage, int[] oids)
         {
-            this.arr = arr;
-            used = arr.Length;
+            this.storage = storage;
+            arr = oids;
+            used = oids.Length;
         }
 		
-        internal IPersistent[] arr;
-        internal int used;
+        internal int[]       arr;
+        internal int         used;
+        internal StorageImpl storage;
     }
 }

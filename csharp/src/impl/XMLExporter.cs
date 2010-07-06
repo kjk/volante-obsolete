@@ -864,6 +864,7 @@ namespace Perst.Impl
 					
                     case ClassDescriptor.FieldType.tpLink: 
                     case ClassDescriptor.FieldType.tpArrayOfObject: 
+                    case ClassDescriptor.FieldType.tpArrayOfOid: 
                     {
                         int len = Bytes.unpack4(body, offs);
                         offs += 4;

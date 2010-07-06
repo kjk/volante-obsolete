@@ -22,10 +22,6 @@ namespace Perst.Impl
 
         public void Put(Rectangle r, IPersistent obj) 
         {
-            if (!obj.IsPersistent()) 
-            { 
-                ((StorageImpl)Storage).storeObject(obj);
-            }
             if (root == null) 
             { 
                 root = new RtreePage(obj, r);

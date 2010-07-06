@@ -32,7 +32,13 @@ namespace Perst.Impl
             }
 #endif
         }
-		
+
+        public bool NoFlush
+        {
+            get { return this.noFlush; }
+            set { this.noFlush = value; }
+        }
+        
         public virtual void  Close()
         {
             file.Close();
@@ -40,7 +46,9 @@ namespace Perst.Impl
 		
         public virtual void Lock() 
         {
+#if !COMPACT_NET_FRAMEWORK 
             file.Lock(0, long.MaxValue);
+#endif
         }
 
         internal OSFile(String filePath, bool readOnly, bool noFlush)

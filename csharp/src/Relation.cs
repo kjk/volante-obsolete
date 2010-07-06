@@ -41,7 +41,7 @@ namespace Perst
 		
         public abstract IPersistent[] ToArray();
 
-        public abstract IPersistent[] ToRawArray();
+        public abstract Array ToRawArray();
 
         public abstract Array ToArray(Type elemType);
 

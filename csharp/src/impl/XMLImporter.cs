@@ -1494,6 +1494,7 @@ namespace Perst.Impl
                         continue;
 					
                     case ClassDescriptor.FieldType.tpArrayOfObject: 
+                    case ClassDescriptor.FieldType.tpArrayOfOid: 
                     case ClassDescriptor.FieldType.tpLink: 
                         if (elem == null || elem.isNullValue())
                         {

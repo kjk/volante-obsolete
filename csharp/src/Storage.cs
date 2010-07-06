@@ -222,10 +222,27 @@ namespace Perst
         /// <summary> Create one-to-many link with specified initial size.
         /// </summary>
         /// <param name="intialSize">initial size of the array</param>
-        /// <returns>new empty link, new members can be added to the link later.
+        /// <returns>new link with specified size
         /// 
         /// </returns>
         abstract public Link CreateLink(int initialSize);
+		
+        /// <summary> Create dynamcially extended array of reference to persistent objects.
+        /// It is inteded to be used in classes using virtual properties to 
+        /// access components of persistent objects.  
+        /// </summary>
+        /// <returns>new empty array, new members can be added to the array later.
+        /// </returns>
+        abstract public PArray CreateArray();
+		
+        /// <summary> Create dynamcially extended array of reference to persistent objects.
+        /// It is inteded to be used in classes using virtual properties to 
+        /// access components of persistent objects.  
+        /// </summary>
+        /// <param name="intialSize">initially allocated size of the array</param>
+        /// <returns>new empty array, new members can be added to the array later.
+        /// </returns>
+        abstract public PArray CreateArray(int initialSize);
 		
         /// <summary> Create relation object. Unlike link which represent embedded relation and stored
         /// inside owner object, this Relation object is standalone persisitent object
@@ -325,6 +342,16 @@ namespace Perst
         /// <param name="oid">object oid</param>
         /// <returns>reference to the object with specified OID</returns>
         abstract public IPersistent GetObjectByOID(int oid);
+
+        /// <summary> 
+        /// Explicitely make object peristent. Usually objects are made persistent
+        /// implicitlely using "persistency on reachability apporach", but this
+        /// method allows to do it explicitly. If object is already persistent, execution of
+        /// this method has no effect.
+        /// </summary>
+        /// <param name="obj">object to be made persistent</param>
+        /// <returns>OID assigned to the object</returns>
+        abstract public int MakePersistent(IPersistent obj);
 
         ///
         /// <summary>
@@ -458,7 +485,7 @@ namespace Perst
         /// Other assemblies has to explicitely registered by programmer.
         /// </summary>
         /// <param name="assembly">registered assembly</param>
-        abstract public void RegisterAssembly(Reflection.Assembly assembly);
+        abstract public void RegisterAssembly(System.Reflection.Assembly assembly);
 #else
         /// <summary>
         /// Create persistent class wrapper. This wrapper will implement virtual properties

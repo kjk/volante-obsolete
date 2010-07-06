@@ -390,7 +390,7 @@ namespace Perst.Impl
             }
             if (!obj.IsPersistent())
             {
-                db.storeObject(obj);
+                db.MakePersistent(obj);
             }
             BtreeKey ins = new BtreeKey(checkKey(key), obj.Oid);
             if (root == 0)

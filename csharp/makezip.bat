@@ -12,6 +12,8 @@ rd /s/q TestIndex2\obj
 rd /s/q TestIndex2\bin
 rd /s/q TestLink\obj
 rd /s/q TestLink\bin
+rd /s/q TestList\obj
+rd /s/q TestList\bin
 rd /s/q TestGC\obj
 rd /s/q TestGC\bin
 rd /s/q TestConcur\obj

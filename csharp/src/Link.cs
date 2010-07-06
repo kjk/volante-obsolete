@@ -122,7 +122,7 @@ namespace Perst
         /// </summary>
         /// <returns>array of object with relation members used in implementation of Link class
         /// </returns>
-        IPersistent[] ToRawArray(); 
+        Array ToRawArray(); 
 
 
         /// <summary> Get relation members as array with specifed element type

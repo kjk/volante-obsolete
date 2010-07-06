@@ -24,7 +24,7 @@ namespace Perst.Impl
         { 
             if (!o.IsPersistent()) 
             { 
-                ((StorageImpl)Storage).storeObject(o);
+                ((StorageImpl)Storage).MakePersistent(o);
             }
             return base.Put(new Key(o), o);
         }

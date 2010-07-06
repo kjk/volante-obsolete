@@ -353,3 +353,12 @@ Perst will automatically generate class which will provide implementations
 of these properties. You only have to use IStorage.CreateClass method to construct objects
 instead of direct invocation of constructors. See "PropGuess" sample.
 2. Add file locking to prevent modification of database file by more than one application
+
+--- Release version 2.45 16.12.2004 -------------------------------------
+1. Derive Index and FieldIndex interface from common base GenericIndex
+2. Add StreamFile 
+3. Make it possible to toggle "perst.file.noflush" property on the fly (not only before storage open).
+4. Fix bugs in virtual property based transparent API implementation
+5. Add PArray class to be used instead of array of references in virtual property based transparent API
+6. Change semantic of IPersistent.MakePersistent method, now it doesn't store transparent object
+in the storage, it just assigns OID and marks it as modified

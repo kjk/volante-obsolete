@@ -57,7 +57,7 @@ namespace Perst.Impl
             }
             if (!obj.IsPersistent()) 
             { 
-                db.storeObject(obj);
+                db.MakePersistent(obj);
             }
             Key ins = new Key(mask, obj.Oid);
             if (root == 0) 
