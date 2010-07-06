@@ -87,7 +87,7 @@ namespace Perst.Impl
                 throw new IndexOutOfRangeException();
             }
             reserveSpace(1);
-            Array.Copy(arr, i + 1, arr, i, used - i);
+            Array.Copy(arr, i, arr, i + 1, used - i);
             arr[i] = obj;
             used += 1;
         }

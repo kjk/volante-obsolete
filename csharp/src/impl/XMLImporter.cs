@@ -511,7 +511,7 @@ namespace Perst.Impl
             Type type = (Type)classMap[className];
             if (type == null) 
             {
-                type = ClassDescriptor.lookup(className);
+                type = ClassDescriptor.lookup(storage, className);
                 classMap[className] = type;
             }
             return type;

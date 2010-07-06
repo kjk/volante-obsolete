@@ -352,9 +352,18 @@ namespace Perst.Impl
             return t.FullName.Equals(name);
         }
 
-        internal static Type lookup(String name)
+        internal static Type lookup(Storage storage, String name)
         {
             Type cls = null;
+            ClassLoader loader = storage.Loader;
+            if (loader != null) 
+            { 
+                cls = loader.LoadClass(name);
+                if (cls != null) 
+                { 
+                    return cls;
+                }
+            }
 #if COMPACT_NET_FRAMEWORK
             foreach (Assembly ass in StorageImpl.assemblies) 
             { 
@@ -402,7 +411,7 @@ namespace Perst.Impl
 
         public override void OnLoad()
         {
-            cls = lookup(name);
+            cls = lookup(Storage, name);
             Type scope = cls;
             int n = allFields.Length;
             for (int i = n; --i >= 0;) 

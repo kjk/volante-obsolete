@@ -1375,7 +1375,12 @@ namespace Perst.Impl
 
         public override Link CreateLink()
         {
-            return new LinkImpl(8);
+            return CreateLink(8);
+        }
+		
+        public override Link CreateLink(int initialSize)
+        {
+            return new LinkImpl(initialSize);
         }
 		
         public override Relation CreateRelation(IPersistent owner)

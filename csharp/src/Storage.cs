@@ -9,7 +9,7 @@ namespace Perst
     };
 	
 	
-	/// <summary> Object storage
+    /// <summary> Object storage
     /// </summary>
     public abstract class Storage
     {
@@ -175,6 +175,14 @@ namespace Perst
         /// </returns>
         abstract public Link CreateLink();
 		
+        /// <summary> Create one-to-many link with specified initial size.
+        /// </summary>
+        /// <param name="intialSize">initial size of the array</param>
+        /// <returns>new empty link, new members can be added to the link later.
+        /// 
+        /// </returns>
+        abstract public Link CreateLink(int initialSize);
+		
         /// <summary> Create relation object. Unlike link which represent embedded relation and stored
         /// inside owner object, this Relation object is standalone persisitent object
         /// containing references to owner and members of the relation
@@ -239,44 +247,44 @@ namespace Perst
         /// <returns>reference to the object with specified OID</returns>
         abstract public IPersistent GetObjectByOID(int oid);
 
-         ///
-         /// <summary>
-         /// Set database property. This method should be invoked before opening database. 
-         /// </summary>
-         /// <remarks> 
-         /// Currently the following boolean properties are supported:
-         /// <TABLE><TR><TH>Property name</TH><TH>Parameter type</TH><TH>Default value</TH><TH>Description</TH></TR>
-         /// <TR><TD><code>perst.serialize.transient.objects</code></TD><TD>bool</TD><TD>false</TD>
-         /// <TD>Serialize any class not derived from IPersistent or IValue using standard Java serialization
-         /// mechanism. Packed object closure is stored in database as byte array. Latter the same mechanism is used
-         /// to unpack the objects. To be able to use this mechanism object and all objects referenced from it
-         /// should implement <code>java.io.Serializable</code> interface and should not contain references
-         /// to persistent objects. If such object is referenced from N persistent object, N instances of this object
-         /// will be stored in the database and after loading there will be N instances in memory.
-         /// </TD></TR>
-         /// <TR><TD><code>perst.object.cache.init.size</code></TD><TD>int</TD><TD>1319</TD>
-         /// <TD>Initial size of object cache
-         /// </TD></TR>
-         /// <TR><TD><code>perst.object.index.init.size</code></TD><TD>int</TD><TD>1024</TD>
-         /// <TD>Initial size of object index (specifying large value increase initial size of database, but reduce
-         /// number of index reallocations)
-         /// </TD></TR>
-         /// <TR><TD><code>perst.extension.quantum</code></TD><TD>long</TD><TD>1048576</TD>
-         /// <TD>Object allocation bitmap extension quantum. Memory is allocate by scanning bitmap. If there is no
-         /// large enough hole, then database is extended by the value of dbDefaultExtensionQuantum. 
-         /// This parameter should not be smaller than 64Kb.
-         /// </TD></TR>
-         /// <TR><TD><code>perst.gc.threshold</code></TD><TD>long</TD><TD>long.MaxValue</TD>
-         /// <TD>Threshold for initiation of garbage collection. 
-         /// If it is set to the value different from long.MaxValue, GC will be started each time 
-         /// when delta between total size of allocated and deallocated objects exceeds specified threashold OR                                                                                                                                                                                                                           
-         /// after reaching end of allocation bitmap in allocator.
-         /// </TD></TR>
-         /// </TABLE>
-         /// </remarks>
-         /// <param name="name">name of the property</param>
-         /// <param name="val">value of the property</param>
-         ///
+        ///
+        /// <summary>
+        /// Set database property. This method should be invoked before opening database. 
+        /// </summary>
+        /// <remarks> 
+        /// Currently the following boolean properties are supported:
+        /// <TABLE><TR><TH>Property name</TH><TH>Parameter type</TH><TH>Default value</TH><TH>Description</TH></TR>
+        /// <TR><TD><code>perst.serialize.transient.objects</code></TD><TD>bool</TD><TD>false</TD>
+        /// <TD>Serialize any class not derived from IPersistent or IValue using standard Java serialization
+        /// mechanism. Packed object closure is stored in database as byte array. Latter the same mechanism is used
+        /// to unpack the objects. To be able to use this mechanism object and all objects referenced from it
+        /// should implement <code>java.io.Serializable</code> interface and should not contain references
+        /// to persistent objects. If such object is referenced from N persistent object, N instances of this object
+        /// will be stored in the database and after loading there will be N instances in memory.
+        /// </TD></TR>
+        /// <TR><TD><code>perst.object.cache.init.size</code></TD><TD>int</TD><TD>1319</TD>
+        /// <TD>Initial size of object cache
+        /// </TD></TR>
+        /// <TR><TD><code>perst.object.index.init.size</code></TD><TD>int</TD><TD>1024</TD>
+        /// <TD>Initial size of object index (specifying large value increase initial size of database, but reduce
+        /// number of index reallocations)
+        /// </TD></TR>
+        /// <TR><TD><code>perst.extension.quantum</code></TD><TD>long</TD><TD>1048576</TD>
+        /// <TD>Object allocation bitmap extension quantum. Memory is allocate by scanning bitmap. If there is no
+        /// large enough hole, then database is extended by the value of dbDefaultExtensionQuantum. 
+        /// This parameter should not be smaller than 64Kb.
+        /// </TD></TR>
+        /// <TR><TD><code>perst.gc.threshold</code></TD><TD>long</TD><TD>long.MaxValue</TD>
+        /// <TD>Threshold for initiation of garbage collection. 
+        /// If it is set to the value different from long.MaxValue, GC will be started each time 
+        /// when delta between total size of allocated and deallocated objects exceeds specified threashold OR                                                                                                                                                                                                                           
+        /// after reaching end of allocation bitmap in allocator.
+        /// </TD></TR>
+        /// </TABLE>
+        /// </remarks>
+        /// <param name="name">name of the property</param>
+        /// <param name="val">value of the property</param>
+        ///
         abstract public void SetProperty(String name, Object val);
 
         ///
@@ -287,6 +295,27 @@ namespace Perst
         /// <param name="props">collections with storage properties</param>
         ///
         abstract public void SetProperties(System.Collections.Specialized.NameValueCollection props);
+
+
+        /// <summary>
+        /// Set class loader. This class loader will be used to locate classes for 
+        /// loaded class descriptors. If class loader is not specified or
+        /// it did find the class, then class will be searched in all active assemblies
+        /// </summary>
+        public ClassLoader Loader
+        {
+       
+            set 
+            { 
+                loader = value;
+            }
+
+            get 
+            { 
+                return loader;
+            }
+        }
+
 
 #if COMPACT_NET_FRAMEWORK
         /// <summary>
@@ -384,5 +413,7 @@ namespace Perst
             po.storage = this;
             po.state = raw ? (int)Persistent.ObjectState.RAW : 0;
         }
+
+        private ClassLoader loader;
     }
 }

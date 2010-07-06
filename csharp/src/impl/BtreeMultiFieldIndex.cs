@@ -38,7 +38,7 @@ namespace Perst.Impl
 
         public override void OnLoad()
         {
-            cls = ClassDescriptor.lookup(className);
+            cls = ClassDescriptor.lookup(Storage, className);
             locateFields();
         }
 		
