@@ -16,7 +16,8 @@ namespace Perst.Impl
         {
         }
 		
-        internal Btree(byte[] obj, int offs) {
+        internal Btree(byte[] obj, int offs) 
+        {
             root = Bytes.unpack4(obj, offs);
             offs += 4;
             height = Bytes.unpack4(obj, offs);
@@ -241,7 +242,8 @@ namespace Perst.Impl
             }
         }        
 
-        class BtreeEnumerator : IEnumerator { 
+        class BtreeEnumerator : IEnumerator 
+        { 
             internal BtreeEnumerator(StorageImpl db, int pageId, int height) 
             { 
                 this.db = db;
@@ -266,7 +268,8 @@ namespace Perst.Impl
                 return BtreePage.getReference(pg, BtreePage.maxItems-1-pos);
             }
 
-            public bool MoveNext() {
+            public bool MoveNext() 
+            {
                 return sp > 0 && posStack[sp-1] < end;
             }
 
@@ -341,7 +344,7 @@ namespace Perst.Impl
         class BtreeStrEnumerator : BtreeEnumerator 
         { 
             internal BtreeStrEnumerator(StorageImpl db, int pageId, int height) 
-              : base(db, pageId, height)
+                : base(db, pageId, height)
             {
             }
 
@@ -356,6 +359,553 @@ namespace Perst.Impl
             return type == ClassDescriptor.FieldType.tpString 
                 ? new BtreeStrEnumerator((StorageImpl)Storage, root, height)
                 : new BtreeEnumerator((StorageImpl)Storage, root, height);
+        }
+
+
+        class BtreeSelectionIterator : IEnumerator 
+        { 
+            internal BtreeSelectionIterator(StorageImpl db, int pageId, int height, ClassDescriptor.FieldType type, Key from, Key till, IterationOrder order) 
+            { 
+                this.db = db;
+                this.from = from;
+                this.till = till;
+                this.type = type;
+                this.order = order;
+                this.rootId = pageId;
+                pageStack = new int[height];
+                posStack =  new int[height];
+                Reset();
+            }
+
+            public void Reset() 
+            {
+                int i, l, r;
+                Page pg;
+                int height = pageStack.Length;
+                int pageId = rootId;
+                sp = 0;
+            
+                if (type == ClassDescriptor.FieldType.tpString) 
+                { 
+                    if (order == IterationOrder.AscentOrder) 
+                    { 
+                        if (from == null) 
+                        { 
+                            while (--height >= 0) 
+                            { 
+                                posStack[sp] = 0;
+                                pageStack[sp] = pageId;
+                                pg = db.getPage(pageId);
+                                pageId = BtreePage.getKeyStrOid(pg, 0);
+                                end = BtreePage.getnItems(pg);
+                                db.pool.unfix(pg);
+                                sp += 1;
+                            }
+                        } 
+                        else 
+                        { 
+                            while (--height > 0) 
+                            { 
+                                pageStack[sp] = pageId;
+                                pg = db.getPage(pageId);
+                                l = 0;
+                                r = BtreePage.getnItems(pg);
+                                while (l < r)  
+                                {
+                                    i = (l+r) >> 1;
+                                    if (BtreePage.compareStr(from, pg, i) >= from.inclusion) 
+                                    {
+                                        l = i + 1; 
+                                    } 
+                                    else 
+                                    { 
+                                        r = i;
+                                    }
+                                }
+                                Assert.that(r == l); 
+                                posStack[sp] = r;
+                                pageId = BtreePage.getKeyStrOid(pg, r);
+                                db.pool.unfix(pg);
+                                sp += 1;
+                            }
+                            pageStack[sp] = pageId;
+                            pg = db.getPage(pageId);
+                            l = 0;
+                            end = r = BtreePage.getnItems(pg);
+                            while (l < r)  
+                            {
+                                i = (l+r) >> 1;
+                                if (BtreePage.compareStr(from, pg, i) >= from.inclusion) 
+                                {
+                                    l = i + 1; 
+                                } 
+                                else 
+                                { 
+                                    r = i;
+                                }
+                            }
+                            Assert.that(r == l); 
+                            if (r == end) 
+                            {
+                                sp += 1;
+                                gotoNextItem(pg, r-1);
+                            } 
+                            else 
+                            { 
+                                posStack[sp++] = r;
+                                db.pool.unfix(pg);
+                            }
+                        }
+                        if (sp != 0 && till != null) 
+                        { 
+                            pg = db.getPage(pageStack[sp-1]);
+                            if (-BtreePage.compareStr(till, pg, posStack[sp-1]) >= till.inclusion) 
+                            { 
+                                sp = 0;
+                            }
+                            db.pool.unfix(pg);
+                        }
+                    } 
+                    else 
+                    { // descent order
+                        if (till == null) 
+                        { 
+                            while (--height > 0) 
+                            { 
+                                pageStack[sp] = pageId;
+                                pg = db.getPage(pageId);
+                                posStack[sp] = BtreePage.getnItems(pg);
+                                pageId = BtreePage.getKeyStrOid(pg, posStack[sp]);
+                                db.pool.unfix(pg);
+                                sp += 1;
+                            }
+                            pageStack[sp] = pageId;
+                            pg = db.getPage(pageId);
+                            posStack[sp++] = BtreePage.getnItems(pg)-1;
+                            db.pool.unfix(pg);
+                        } 
+                        else 
+                        {
+                            while (--height > 0) 
+                            { 
+                                pageStack[sp] = pageId;
+                                pg = db.getPage(pageId);
+                                l = 0;
+                                r = BtreePage.getnItems(pg);
+                                while (l < r)  
+                                {
+                                    i = (l+r) >> 1;
+                                    if (BtreePage.compareStr(till, pg, i) >= 1-till.inclusion) 
+                                    {
+                                        l = i + 1; 
+                                    } 
+                                    else 
+                                    { 
+                                        r = i;
+                                    }
+                                }
+                                Assert.that(r == l); 
+                                posStack[sp] = r;
+                                pageId = BtreePage.getKeyStrOid(pg, r);
+                                db.pool.unfix(pg);
+                                sp += 1;
+                            }
+                            pageStack[sp] = pageId;
+                            pg = db.getPage(pageId);
+                            l = 0;
+                            r = BtreePage.getnItems(pg);
+                            while (l < r)  
+                            {
+                                i = (l+r) >> 1;
+                                if (BtreePage.compareStr(till, pg, i) >= 1-till.inclusion) 
+                                {
+                                    l = i + 1; 
+                                } 
+                                else 
+                                { 
+                                    r = i;
+                                }
+                            }
+                            Assert.that(r == l); 
+                            if (r == 0) 
+                            {
+                                sp += 1;
+                                gotoNextItem(pg, r);
+                            } 
+                            else 
+                            { 
+                                posStack[sp++] = r-1;
+                                db.pool.unfix(pg);
+                            }
+                        }
+                        if (sp != 0 && from != null) 
+                        { 
+                            pg = db.getPage(pageStack[sp-1]);
+                            if (BtreePage.compareStr(from, pg, posStack[sp-1]) >= from.inclusion) 
+                            { 
+                                sp = 0;
+                            }
+                            db.pool.unfix(pg);
+                        }
+                    }
+                } 
+                else 
+                { // scalar type
+                    if (order == IterationOrder.AscentOrder) 
+                    { 
+                        if (from == null) 
+                        { 
+                            while (--height >= 0) 
+                            { 
+                                posStack[sp] = 0;
+                                pageStack[sp] = pageId;
+                                pg = db.getPage(pageId);
+                                pageId = BtreePage.getReference(pg, BtreePage.maxItems-1);
+                                end = BtreePage.getnItems(pg);
+                                db.pool.unfix(pg);
+                                sp += 1;
+                            }
+                        } 
+                        else 
+                        { 
+                            while (--height > 0) 
+                            { 
+                                pageStack[sp] = pageId;
+                                pg = db.getPage(pageId);
+                                l = 0;
+                                r = BtreePage.getnItems(pg);
+                                while (l < r)  
+                                {
+                                    i = (l+r) >> 1;
+                                    if (BtreePage.compare(from, pg, i) >= from.inclusion) 
+                                    {
+                                        l = i + 1; 
+                                    } 
+                                    else 
+                                    { 
+                                        r = i;
+                                    }
+                                }
+                                Assert.that(r == l); 
+                                posStack[sp] = r;
+                                pageId = BtreePage.getReference(pg, BtreePage.maxItems-1-r);
+                                db.pool.unfix(pg);
+                                sp += 1;
+                            }
+                            pageStack[sp] = pageId;
+                            pg = db.getPage(pageId);
+                            l = 0;
+                            r = end = BtreePage.getnItems(pg);
+                            while (l < r)  
+                            {
+                                i = (l+r) >> 1;
+                                if (BtreePage.compare(from, pg, i) >= from.inclusion) 
+                                {
+                                    l = i + 1; 
+                                } 
+                                else 
+                                { 
+                                    r = i;
+                                }
+                            }
+                            Assert.that(r == l); 
+                            if (r == end) 
+                            {
+                                sp += 1;
+                                gotoNextItem(pg, r-1);
+                            } 
+                            else 
+                            { 
+                                posStack[sp++] = r;
+                                db.pool.unfix(pg);
+                            }
+                        }
+                        if (sp != 0 && till != null) 
+                        { 
+                            pg = db.getPage(pageStack[sp-1]);
+                            if (-BtreePage.compare(till, pg, posStack[sp-1]) >= till.inclusion) 
+                            { 
+                                sp = 0;
+                            }
+                            db.pool.unfix(pg);
+                        }
+                    } 
+                    else 
+                    { // descent order
+                        if (till == null) 
+                        { 
+                            while (--height > 0) 
+                            { 
+                                pageStack[sp] = pageId;
+                                pg = db.getPage(pageId);
+                                posStack[sp] = BtreePage.getnItems(pg);
+                                pageId = BtreePage.getReference(pg, BtreePage.maxItems-1-posStack[sp]);
+                                db.pool.unfix(pg);
+                                sp += 1;
+                            }
+                            pageStack[sp] = pageId;
+                            pg = db.getPage(pageId);
+                            posStack[sp++] = BtreePage.getnItems(pg)-1;
+                            db.pool.unfix(pg);
+                        } 
+                        else 
+                        {
+                            while (--height > 0) 
+                            { 
+                                pageStack[sp] = pageId;
+                                pg = db.getPage(pageId);
+                                l = 0;
+                                r = BtreePage.getnItems(pg);
+                                while (l < r)  
+                                {
+                                    i = (l+r) >> 1;
+                                    if (BtreePage.compare(till, pg, i) >= 1-till.inclusion) 
+                                    {
+                                        l = i + 1; 
+                                    } 
+                                    else 
+                                    { 
+                                        r = i;
+                                    }
+                                }
+                                Assert.that(r == l); 
+                                posStack[sp] = r;
+                                pageId = BtreePage.getReference(pg, BtreePage.maxItems-1-r);
+                                db.pool.unfix(pg);
+                                sp += 1;
+                            }
+                            pageStack[sp] = pageId;
+                            pg = db.getPage(pageId);
+                            l = 0;
+                            r = BtreePage.getnItems(pg);
+                            while (l < r)  
+                            {
+                                i = (l+r) >> 1;
+                                if (BtreePage.compare(till, pg, i) >= 1-till.inclusion) 
+                                {
+                                    l = i + 1; 
+                                } 
+                                else 
+                                { 
+                                    r = i;
+                                }
+                            }
+                            Assert.that(r == l);  
+                            if (r == 0) 
+                            { 
+                                sp += 1;
+                                gotoNextItem(pg, r);
+                            } 
+                            else 
+                            { 
+                                posStack[sp++] = r-1;
+                                db.pool.unfix(pg);
+                            }
+                        }
+                        if (sp != 0 && from != null) 
+                        { 
+                            pg = db.getPage(pageStack[sp-1]);
+                            if (BtreePage.compare(from, pg, posStack[sp-1]) >= from.inclusion) 
+                            { 
+                                sp = 0;
+                            }
+                            db.pool.unfix(pg);
+                        }
+                    }
+                }
+            }
+                
+
+            public bool MoveNext() 
+            {
+                return sp != 0;
+            }
+
+            public object Current 
+            {
+                get 
+                {
+                    if (sp == 0) 
+                    { 
+                        throw new InvalidOperationException();
+                    }
+                    int pos = posStack[sp-1];   
+                    Page pg = db.getPage(pageStack[sp-1]);
+                    Object obj = (type == ClassDescriptor.FieldType.tpString)
+                        ? db.lookupObject(BtreePage.getKeyStrOid(pg, pos), null)
+                        : db.lookupObject(BtreePage.getReference(pg, BtreePage.maxItems-1-pos), null);
+                    gotoNextItem(pg, pos);
+                    return obj;
+                }
+            }
+
+            protected void gotoNextItem(Page pg, int pos)
+            {
+                if (type == ClassDescriptor.FieldType.tpString) 
+                { 
+                    if (order == IterationOrder.AscentOrder) 
+                    {                     
+                        if (++pos == end) 
+                        { 
+                            while (--sp != 0) 
+                            { 
+                                db.pool.unfix(pg);
+                                pos = posStack[sp-1];
+                                pg = db.getPage(pageStack[sp-1]);
+                                if (++pos <= BtreePage.getnItems(pg)) 
+                                {
+                                    posStack[sp-1] = pos;
+                                    do 
+                                    { 
+                                        int pageId = BtreePage.getKeyStrOid(pg, pos);
+                                        db.pool.unfix(pg);
+                                        pg = db.getPage(pageId);
+                                        end = BtreePage.getnItems(pg);
+                                        pageStack[sp] = pageId;
+                                        posStack[sp] = pos = 0;
+                                    } while (++sp < pageStack.Length);
+                                    break;
+                                }
+                            }
+                        } 
+                        else 
+                        { 
+                            posStack[sp-1] = pos;
+                        }
+                        if (sp != 0 && till != null && -BtreePage.compareStr(till, pg, pos) >= till.inclusion) 
+                        { 
+                            sp = 0;
+                        }
+                    } 
+                    else 
+                    { // descent order
+                        if (--pos < 0) 
+                        { 
+                            while (--sp != 0) 
+                            { 
+                                db.pool.unfix(pg);
+                                pos = posStack[sp-1];
+                                pg = db.getPage(pageStack[sp-1]);
+                                if (--pos >= 0) 
+                                {
+                                    posStack[sp-1] = pos;
+                                    do 
+                                    { 
+                                        int pageId = BtreePage.getKeyStrOid(pg, pos);
+                                        db.pool.unfix(pg);
+                                        pg = db.getPage(pageId);
+                                        pageStack[sp] = pageId;
+                                        posStack[sp] = pos = BtreePage.getnItems(pg);
+                                    } while (++sp < pageStack.Length);
+                                    posStack[sp-1] = --pos;
+                                    break;
+                                }
+                            }
+                        } 
+                        else 
+                        { 
+                            posStack[sp-1] = pos;
+                        }
+                        if (sp != 0 && from != null && BtreePage.compareStr(from, pg, pos) >= from.inclusion) 
+                        { 
+                            sp = 0;
+                        }                    
+                    }
+                } 
+                else 
+                { // scalar type
+                    if (order == IterationOrder.AscentOrder) 
+                    {                     
+                        if (++pos == end) 
+                        { 
+                            while (--sp != 0) 
+                            { 
+                                db.pool.unfix(pg);
+                                pos = posStack[sp-1];
+                                pg = db.getPage(pageStack[sp-1]);
+                                if (++pos <= BtreePage.getnItems(pg)) 
+                                {
+                                    posStack[sp-1] = pos;
+                                    do 
+                                    { 
+                                        int pageId = BtreePage.getReference(pg, BtreePage.maxItems-1-pos);
+                                        db.pool.unfix(pg);
+                                        pg = db.getPage(pageId);
+                                        end = BtreePage.getnItems(pg);
+                                        pageStack[sp] = pageId;
+                                        posStack[sp] = pos = 0;
+                                    } while (++sp < pageStack.Length);
+                                    break;
+                                }
+                            }
+                        } 
+                        else 
+                        { 
+                            posStack[sp-1] = pos;
+                        }
+                        if (sp != 0 && till != null && -BtreePage.compare(till, pg, pos) >= till.inclusion) 
+                        { 
+                            sp = 0;
+                        }
+                    } 
+                    else 
+                    { // descent order
+                        if (--pos < 0) 
+                        { 
+                            while (--sp != 0) 
+                            { 
+                                db.pool.unfix(pg);
+                                pos = posStack[sp-1];
+                                pg = db.getPage(pageStack[sp-1]);
+                                if (--pos >= 0) 
+                                {
+                                    posStack[sp-1] = pos;
+                                    do 
+                                    { 
+                                        int pageId = BtreePage.getReference(pg, BtreePage.maxItems-1-pos);
+                                        db.pool.unfix(pg);
+                                        pg = db.getPage(pageId);
+                                        pageStack[sp] = pageId;
+                                        posStack[sp] = pos = BtreePage.getnItems(pg);
+                                    } while (++sp < pageStack.Length);
+                                    posStack[sp-1] = --pos;
+                                    break;
+                                }
+                            }
+                        } 
+                        else 
+                        { 
+                            posStack[sp-1] = pos;
+                        }
+                        if (sp != 0 && from != null && BtreePage.compare(from, pg, pos) >= from.inclusion) 
+                        { 
+                            sp = 0;
+                        }                    
+                    }
+                }
+                db.pool.unfix(pg);
+            }
+            
+ 
+            StorageImpl     db;
+            int[]           pageStack;
+            int[]           posStack;
+            int             rootId;
+            int             sp;
+            int             end;
+            Key             from;
+            Key             till;
+            IterationOrder  order;
+            ClassDescriptor.FieldType type;
+        }
+
+        public IEnumerator GetEnumerator(Key from, Key till, IterationOrder order) 
+        { 
+            if ((from != null && from.type != type) || (till != null && till.type != type)) 
+            { 
+                throw new StorageError(StorageError.ErrorCode.INCOMPATIBLE_KEY_TYPE);
+            }
+            return new BtreeSelectionIterator((StorageImpl)Storage, root, height, type, from, till, order);
         }
     }
 }

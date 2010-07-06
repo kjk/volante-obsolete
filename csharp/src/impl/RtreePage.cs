@@ -62,14 +62,21 @@ namespace Perst.Impl
                 // not leaf page
                 int i, mini = 0;
                 int minIncr = Int32.MaxValue;
-                int area = r.area();
+                int minArea = Int32.MaxValue;
                 for (i = 0; i < n; i++) 
                 { 
+                    int area = b[i].r.area();
                     int incr = Rectangle.joinArea(b[i].r, r) - area;
                     if (incr < minIncr) 
                     { 
                         minIncr = incr;
+                        minArea = area;
                         mini = i;
+                    }
+                    else if (incr == minIncr && area < minArea)
+                    {
+                        minArea = area;
+                        mini = i;        
                     }
                 }
                 RtreePage p = (RtreePage)b[mini].p;

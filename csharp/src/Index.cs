@@ -3,6 +3,12 @@ namespace Perst
     using System;
     using System.Collections;
 	
+    public enum IterationOrder 
+    {
+        AscentOrder, 
+        DescentOrder
+    };
+    
     /// <summary> Interface of object index.
     /// Index is used to provide fast access to the object by key. 
     /// Object in the index are stored ordered by key value. 
@@ -94,5 +100,18 @@ namespace Perst
         /// 
         /// </returns>
         IPersistent[] toArray();
+
+        /// <summary>
+        /// Get iterator for traversing objects in the index with key belonging to the specified range. 
+        /// You should not update/remove or add members to the index during iteration
+        /// </summary>
+        /// <param name="from">Low boundary. If <code>null</code> then low boundary is not specified.
+        /// Low boundary can be inclusive or exclusive.</param>
+        /// <param name="till">High boundary. If <code>null</code> then high boundary is not specified.
+        /// High boundary can be inclusive or exclusive.</param>
+        /// <param name="order"><code>AscanrOrder</code> or <code>DescentOrder</code></param>
+        /// <returns>selection iterator</returns>
+        ///
+        IEnumerator GetEnumerator(Key from, Key till, IterationOrder order);
     }
 }
