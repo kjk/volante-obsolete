@@ -217,3 +217,15 @@ methods now return reference to the removed/replaced object.
 persistent classes from serialized transient objects. 
 4. Fix bug in XMLExporter.exportBinary
 5. Change R-Tree and rectangle implementation to calculate rectangles area using long type
+
+--- Release version 2.29 05.07.2004 -------------------------------------
+1. Make it possible to use Storage.gc() for verification of consistency of database.
+Now this method returns number of deallocated (garbage objects) and detects dangling references in
+the database. 
+2. Add SpatialIndexR2 and RectangleR2 classes for spatial objects with floating point coordinates.
+Also new spatial index is more efficient for large collections (it doesn't pin all its pages in memory).
+SpatialIndexR2 class provides iterator to accessed overlaped object one-by-one.
+3. Add SpatialIndex.getWrappingRectangle() and  SpatialIndexR2.getWrappingRectangle() methods
+4. Add Link.setSize() method.
+5. Add MappedFile class based on java.nio package for mapping database file on virtual memory
+(JDK 1.5 version only)

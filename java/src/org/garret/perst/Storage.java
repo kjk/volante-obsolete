@@ -207,10 +207,16 @@ public abstract class Storage {
     abstract public FieldIndex createFieldIndex(Class type, String[] fieldNames, boolean unique);
 
     /**
-     * Create new spatial index
+     * Create new spatial index with integer coordinates
      * @return persistent object implementing spatial index
      */
     abstract public SpatialIndex createSpatialIndex();
+
+    /**
+     * Create new R2 spatial index 
+     * @return persistent object implementing spatial index
+     */
+    abstract public SpatialIndexR2 createSpatialIndexR2();
 
     /**
      * Create new sorted collection with specified comparator
@@ -297,8 +303,9 @@ public abstract class Storage {
 
     /**
      * Explicit start of garbage collector
+     * @return number of collected (deallocated) objects
      */
-    abstract public void gc();
+    abstract public int gc();
 
     /**
      * Export database in XML format 

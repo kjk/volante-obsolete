@@ -9,6 +9,15 @@ public class LinkImpl<T extends IPersistent> implements Link<T> {
         return used;
     }
 
+    public void setSize(int newSize) { 
+        if (newSize < used) { 
+            for (int i = used; --i >= newSize; arr[i] = null);
+        } else { 
+            reserveSpace(newSize - used);            
+        }
+        used = newSize;
+    }
+
     public T get(int i) {
         if (i < 0 || i >= used) { 
             throw new IndexOutOfBoundsException();

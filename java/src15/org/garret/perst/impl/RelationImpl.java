@@ -8,6 +8,10 @@ public class RelationImpl<M extends IPersistent, O extends IPersistent> extends 
         return link.size();
     }
     
+    public void setSize(int newSize) {
+        link.setSize(newSize);
+    }
+    
     public boolean isEmpty() {
         return link.isEmpty();
     }

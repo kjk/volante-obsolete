@@ -1,1 +1,1 @@
-ajc *.java -aspectpath ../../lib/perst_aspectj.jar
+ajc *.aj -aspectpath ../../lib/perst_aspectj.jar

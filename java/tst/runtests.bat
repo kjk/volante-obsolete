@@ -4,6 +4,7 @@ call TestCompoundIndex
 call TestMod
 call TestIndexIterator
 call TestRtree
+call TestR2
 call TestTtree
 call TestRaw
 call TestRaw

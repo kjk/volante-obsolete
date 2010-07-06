@@ -74,6 +74,12 @@ public class Rtree<T extends IPersistent> extends PersistentResource implements 
         return result;
     }
     
+    public Rectangle getWrappingRectangle() {
+        if (root != null) { 
+            return root.cover();
+        }
+        return null;
+    }
 
     public void clear() {
         if (root != null) { 

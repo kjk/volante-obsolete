@@ -56,6 +56,15 @@ public class LinkImpl implements Link {
         arr[used] = null;
     }
 
+    public void setSize(int newSize) { 
+        if (newSize < used) { 
+            for (int i = used; --i >= newSize; arr[i] = null);
+        } else { 
+            reserveSpace(newSize - used);            
+        }
+        used = newSize;
+    }
+
     void reserveSpace(int len) { 
         if (used + len > arr.length) { 
             IPersistent[] newArr = new IPersistent[used + len > arr.length*2 ? used + len : arr.length*2];

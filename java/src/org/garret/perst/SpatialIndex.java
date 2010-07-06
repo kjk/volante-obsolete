@@ -34,6 +34,13 @@ public interface SpatialIndex extends IPersistent, IResource {
      * @return number of objects in the index
      */
     public int  size();
+
+
+    /**
+     * Get wrapping rectangle 
+     * @return minimal rectangle containing all rectangles in the index     
+     */
+    public Rectangle getWrappingRectangle();
     
     /**
      * Remove all objects from the index

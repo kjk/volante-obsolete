@@ -69,6 +69,12 @@ public class Rtree extends PersistentResource implements SpatialIndex {
         return (IPersistent[])result.toArray(new IPersistent[result.size()]);
     }
 
+    public Rectangle getWrappingRectangle() {
+        if (root != null) { 
+            return root.cover();
+        }
+        return null;
+    }
 
     public void clear() {
         if (root != null) { 

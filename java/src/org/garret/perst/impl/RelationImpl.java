@@ -7,6 +7,10 @@ public class RelationImpl extends Relation {
         return link.size();
     }
     
+    public void setSize(int newSize) {
+        link.setSize(newSize);
+    }
+    
     public IPersistent get(int i) {
         return link.get(i);
     }

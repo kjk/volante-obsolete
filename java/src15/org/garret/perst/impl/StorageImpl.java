@@ -1436,6 +1436,13 @@ public class StorageImpl extends Storage {
         return new Rtree<T>();
     }
 
+    public synchronized <T extends IPersistent> SpatialIndexR2<T> createSpatialIndexR2() {
+        if (!opened) { 
+            throw new StorageError(StorageError.STORAGE_NOT_OPENED);
+        }
+        return new RtreeR2<T>();
+    }
+
     public synchronized <T extends IPersistent> FieldIndex<T> createFieldIndex(Class type, String fieldName, boolean unique) {
         if (!opened) { 
             throw new StorageError(StorageError.STORAGE_NOT_OPENED);
@@ -1499,6 +1506,9 @@ public class StorageImpl extends Storage {
     final void markOid(int oid) { 
         if (oid != 0) {  
             long pos = getGCPos(oid);
+            if ((pos & (dbFreeHandleFlag|dbPageObjectFlag)) != 0) { 
+                throw new StorageError(StorageError.INVALID_OID);
+            }
             int bit = (int)(pos >>> dbAllocationQuantumBits);
             if ((blackBitmap[bit >>> 5] & (1 << (bit & 31))) == 0) { 
                 greyBitmap[bit >>> 5] |= 1 << (bit & 31);
@@ -1514,13 +1524,13 @@ public class StorageImpl extends Storage {
         gcThreshold = maxAllocatedDelta;
     }
 
-    public synchronized void gc() { 
+    public synchronized int gc() { 
         synchronized (objectCache) { 
             if (!opened) {
                 throw new StorageError(StorageError.STORAGE_NOT_OPENED);
             }
             if (gcDone) { 
-                return;
+                return 0;
             }
             // System.out.println("Start GC, allocatedDelta=" + allocatedDelta + ", header[" + currIndex + "].size=" + header.root[currIndex].size + ", gcTreshold=" + gcThreshold);
                 
@@ -1567,6 +1577,7 @@ public class StorageImpl extends Storage {
             }    
         
             // sweep
+            int nDeallocated = 0;
             gcDone = true;
             for (i = dbFirstUserId, j = committedIndexSize; i < j; i++) {
                 pos = getGCPos(i);
@@ -1582,6 +1593,7 @@ public class StorageImpl extends Storage {
                         int typeOid = ObjectHeader.getType(pg.data, offs);
                         if (typeOid != 0) { 
                             ClassDescriptor desc = findClassDescriptor(typeOid);
+                            nDeallocated += 1;
                             if (Btree.class.isAssignableFrom(desc.cls)) { 
                                 Btree btree = new Btree(pg.data, ObjectHeader.sizeof + offs);
                                 pool.unfix(pg);
@@ -1602,6 +1614,7 @@ public class StorageImpl extends Storage {
             greyBitmap = null;
             blackBitmap = null;
             allocatedDelta = 0;
+            return nDeallocated;
         }
     }
 

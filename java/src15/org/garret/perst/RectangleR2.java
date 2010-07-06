@@ -1,58 +1,58 @@
 package org.garret.perst;
 
 /**
- * Rectangle with integer cooordinates. This class is used in spatial index.
+ * R2 rectangle class. This class is used in spatial index.
  */
-public class Rectangle implements IValue, Cloneable {
-    private int top;
-    private int left;
-    private int bottom;
-    private int right;
+public class RectangleR2 implements IValue, Cloneable {
+    private double top;
+    private double left;
+    private double bottom;
+    private double right;
 
     /**
      * Smallest Y coordinate of the rectangle
      */
-    public final int getTop() { 
+    public final double getTop() { 
         return top;
     }
 
     /**
      * Smallest X coordinate of the rectangle
      */
-    public final int getLeft() { 
+    public final double getLeft() { 
         return left;
     }
 
     /**
      * Greatest Y coordinate  of the rectangle
      */
-    public final int getBottom() { 
+    public final double getBottom() { 
         return bottom;
     }
 
     /**
      * Greatest X coordinate  of the rectangle
      */
-     public final int getRight() { 
+     public final double getRight() { 
         return right;
     }
 
     /**
      * Rectangle area
      */
-    public final long area() { 
-        return (long)(bottom-top)*(right-left);
+    public final double area() { 
+        return (bottom-top)*(right-left);
     }
 
     /**
      * Area of covered rectangle for two sepcified rectangles
      */
-    public static long joinArea(Rectangle a, Rectangle b) {
-        int left = (a.left < b.left) ? a.left : b.left;
-        int right = (a.right > b.right) ? a.right : b.right;
-        int top = (a.top < b.top) ? a.top : b.top;
-        int bottom = (a.bottom > b.bottom) ? a.bottom : b.bottom;
-        return (long)(bottom-top)*(right-left);
+    public static double joinArea(RectangleR2 a, RectangleR2 b) {
+        double left = (a.left < b.left) ? a.left : b.left;
+        double right = (a.right > b.right) ? a.right : b.right;
+        double top = (a.top < b.top) ? a.top : b.top;
+        double bottom = (a.bottom > b.bottom) ? a.bottom : b.bottom;
+        return (bottom-top)*(right-left);
     }
 
     /**
@@ -60,7 +60,7 @@ public class Rectangle implements IValue, Cloneable {
      */
     public Object clone() { 
         try { 
-            Rectangle r = (Rectangle)super.clone();
+            RectangleR2 r = (RectangleR2)super.clone();
             r.top = this.top;
             r.left = this.left;
             r.bottom = this.bottom;
@@ -75,7 +75,7 @@ public class Rectangle implements IValue, Cloneable {
     /**
      * Create copy of the rectangle
      */
-    public Rectangle(Rectangle r) {
+    public RectangleR2(RectangleR2 r) {
         this.top = r.top;
         this.left = r.left;
         this.bottom = r.bottom;
@@ -85,7 +85,7 @@ public class Rectangle implements IValue, Cloneable {
     /**
      * Construct rectangle with specified coordinates
      */
-    public Rectangle(int top, int left, int bottom, int right) { 
+    public RectangleR2(double top, double left, double bottom, double right) { 
         Assert.that(top <= bottom && left <= right);
         this.top = top;
         this.left = left;
@@ -96,13 +96,13 @@ public class Rectangle implements IValue, Cloneable {
     /**
      * Default constructor for PERST
      */
-    public Rectangle() {}
+    public RectangleR2() {}
 
     /**
      * Join two rectangles. This rectangle is updates to contain cover of this and specified rectangle.
      * @param r rectangle to be joined with this rectangle
      */
-    public final void join(Rectangle r) { 
+    public final void join(RectangleR2 r) { 
         if (left > r.left) { 
             left = r.left;
         }
@@ -124,8 +124,8 @@ public class Rectangle implements IValue, Cloneable {
      * @param b second joined rectangle
      * @return rectangle containing cover of these two rectangles
      */
-    public static Rectangle join(Rectangle a, Rectangle b) {
-        Rectangle r = new Rectangle(a);
+    public static RectangleR2 join(RectangleR2 a, RectangleR2 b) {
+        RectangleR2 r = new RectangleR2(a);
         r.join(b);
         return r;
     }
@@ -133,14 +133,14 @@ public class Rectangle implements IValue, Cloneable {
     /**
      * Checks if this rectangle intersects with specified rectangle
      */
-    public final boolean intersects(Rectangle r) { 
+    public final boolean intersects(RectangleR2 r) { 
         return left <= r.right && top <= r.bottom && right >= r.left && bottom >= r.top;
     }
 
     /**
      * Checks if this rectangle contains the specified rectangle
      */
-    public final boolean contains(Rectangle r) { 
+    public final boolean contains(RectangleR2 r) { 
         return left <= r.left && top <= r.top && right >= r.right && bottom >= r.bottom;
     }
 
@@ -148,8 +148,8 @@ public class Rectangle implements IValue, Cloneable {
      * Check if two rectangles are equal
      */
     public boolean equals(Object o) { 
-        if (o instanceof Rectangle) { 
-            Rectangle r = (Rectangle)o;
+        if (o instanceof RectangleR2) { 
+            RectangleR2 r = (RectangleR2)o;
             return left == r.left && top == r.top && right == r.right && bottom == r.bottom;
         }
         return false;
@@ -159,7 +159,8 @@ public class Rectangle implements IValue, Cloneable {
      * Hash code consists of all rectangle coordinates
      */
     public int hashCode() { 
-        return top ^ (bottom << 1) ^ (left << 2) ^ (right << 3);
+        return (int)(Double.doubleToLongBits(top) ^ (Double.doubleToLongBits(bottom) << 1) 
+                     ^ (Double.doubleToLongBits(left) << 2) ^ (Double.doubleToLongBits(right) << 3));
     }
 
     public String toString() { 

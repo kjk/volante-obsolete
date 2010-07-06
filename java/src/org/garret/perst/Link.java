@@ -17,6 +17,13 @@ public interface Link {
     public int size();
     
     /**
+     * Set number of the linked objects 
+     * @param size new number of linked objects (if it is greater than original number, 
+     * than extra elements will be set to null)
+     */
+    public void setSize(int newSize);
+    
+    /**
      * Get related object by index
      * @param i index of the object in the relation
      * @return referenced object

@@ -20,6 +20,13 @@ public interface Link<T extends IPersistent> extends Collection<T> {
     public int size();
     
     /**
+     * Set number of the linked objects 
+     * @param size new number of linked objects (if it is greater than original number, 
+     * than extra elements will be set to null)
+     */
+    public void setSize(int newSize);
+    
+    /**
      * Returns <tt>true</tt> if there are no related object
      *
      * @return <tt>true</tt> if there are no related object
