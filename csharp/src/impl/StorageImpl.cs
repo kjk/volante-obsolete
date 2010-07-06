@@ -149,9 +149,13 @@ namespace Perst.Impl
 		
         protected internal override void  deallocateObject(IPersistent obj)
         {
+            int oid = obj.Oid;
+            if (oid == 0) 
+            { 
+                return;
+            }       
             lock(this)
             {
-                int oid = obj.Oid;
                 long pos = getPos(oid);
                 int offs = (int) pos & (Page.pageSize - 1);
                 if ((offs & (dbFreeHandleFlag | dbPageObjectFlag)) != 0)
@@ -172,6 +176,7 @@ namespace Perst.Impl
                     cloneBitmap(pos, size);
                 }
                 modified = true;
+                setObjectOid(obj, 0, false);
             }
         }
 		
@@ -1218,7 +1223,7 @@ namespace Perst.Impl
 		
         public override Link createLink()
         {
-            return new LinkImpl();
+            return new LinkImpl(8);
         }
 		
         public override Relation createRelation(IPersistent owner)

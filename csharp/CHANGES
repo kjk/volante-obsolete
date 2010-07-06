@@ -1,9 +1,11 @@
 --- Release version 1.01 21.22.2003 -------------------------------------
-
 Initial release
 
 --- Release version 1.02 25.02.2003 -------------------------------------
-
 1. Support value types
 2. Add FieldIndex interface
 3. Fix bug in unique index support
+
+--- Release version 1.03 03.03.2003 -------------------------------------
+1. Fix bug in LinkImpl constructor
+2. Make it possible to call IPersistent.deallate multiple times.

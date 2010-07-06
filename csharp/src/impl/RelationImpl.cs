@@ -77,7 +77,7 @@ namespace Perst.Impl
 		
         internal RelationImpl(IPersistent owner):base(owner)
         {
-            link = new LinkImpl();
+            link = new LinkImpl(8);
         }
 		
         internal LinkImpl link;

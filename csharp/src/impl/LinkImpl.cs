@@ -149,6 +149,11 @@ namespace Perst.Impl
         {
         }
 		
+        internal LinkImpl(int initSize)
+        {
+            arr = new IPersistent[initSize];
+        }
+		
         internal LinkImpl(IPersistent[] arr)
         {
             this.arr = arr;
