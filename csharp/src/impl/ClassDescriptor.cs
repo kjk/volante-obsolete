@@ -41,6 +41,7 @@ namespace Perst.Impl
             tpString,
             tpDate,
             tpObject,
+            tpValue,
             tpLink,
             tpArrayOfBoolean,
             tpArrayOfByte,
@@ -57,7 +58,8 @@ namespace Perst.Impl
             tpArrayOfDouble,
             tpArrayOfString,
             tpArrayOfDate,
-            tpArrayOfObject
+            tpArrayOfObject,
+            tpArrayOfValue
         };
 		
         internal static int[] Sizeof = new int[] {1, 1, 1, 2, 2, 2, 4, 4, 4, 8, 8, 4, 8, 0, 8, 4};
@@ -162,6 +164,10 @@ namespace Perst.Impl
             {
                 type = FieldType.tpObject;
             }
+            else if (typeof(ValueType).IsAssignableFrom(c))
+            {
+                type = FieldType.tpValue;
+            }
             else if (c.Equals(typeof(Link)))
             {
                 type = FieldType.tpLink;
@@ -199,31 +205,38 @@ namespace Perst.Impl
             return t.Name.Equals(name);
         }
 
-        public void  resolve()
+        internal static Type lookup(String name)
         {
-            if (cls == null)
-            {
-                foreach (Assembly ass in AppDomain.CurrentDomain.GetAssemblies()) 
+            Type cls = null;
+            foreach (Assembly ass in AppDomain.CurrentDomain.GetAssemblies()) 
+            { 
+                foreach (Module mod in ass.GetModules()) 
                 { 
-                    foreach (Module mod in ass.GetModules()) 
+                    foreach (Type t in mod.FindTypes(new TypeFilter(FindTypeByName), name)) 
                     { 
-                        foreach (Type t in mod.FindTypes(new TypeFilter(FindTypeByName), name)) 
+                        if (cls != null) 
                         { 
-                            if (cls != null) 
-                            { 
-                                throw new StorageError(StorageError.ErrorCode.AMBIGUITY_CLASS, name);
-                            } 
-                            else 
-                            { 
-                                cls = t;
-                            }
+                            throw new StorageError(StorageError.ErrorCode.AMBIGUITY_CLASS, name);
+                        } 
+                        else 
+                        { 
+                            cls = t;
                         }
                     }
                 }
-                if (cls == null) 
-                {
-                    throw new StorageError(StorageError.ErrorCode.CLASS_NOT_FOUND, name);
-                }
+            }
+            if (cls == null) 
+            {
+                throw new StorageError(StorageError.ErrorCode.CLASS_NOT_FOUND, name);
+            }
+            return cls;
+        }
+
+        public void  resolve()
+        {
+            if (cls == null) 
+            {
+                cls = lookup(name);
                 build();
                 if (nFields != allFields.Length)
                 {
@@ -231,6 +244,7 @@ namespace Perst.Impl
                 }
             }
         }
+    
 		
         internal void  build()
         {

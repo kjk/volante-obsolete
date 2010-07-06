@@ -64,7 +64,9 @@ namespace Perst
         /// </returns>
         bool recursiveLoading();
         /// <summary> Get storage in which this object is stored
-        /// @object container (null if object is not persistent yet)
         /// </summary>
+        /// <returns>storage containing this object (null if object is not persistent yet)
+        /// 
+        /// </returns>
     }
 }

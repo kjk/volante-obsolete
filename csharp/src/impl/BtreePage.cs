@@ -406,7 +406,7 @@ namespace Perst.Impl
                             return result;
                         }
                     }
-                    else if (unique && compareStr(ins.key, pg, r) == 0)
+                    else if (unique && r < n && compareStr(ins.key, pg, r) == 0)
                     {
                         if (overwrite) 
                         { 
@@ -441,7 +441,7 @@ namespace Perst.Impl
                         }
                         n += 1;
                     }
-                    else if (unique && compare(ins.key, pg, r) == 0)
+                    else if (unique && r < n && compare(ins.key, pg, r) == 0)
                     {
                         if (overwrite) 
                         { 
