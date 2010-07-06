@@ -63,12 +63,12 @@ namespace Perst.Impl
             { 
                 // not leaf page
                 int i, mini = 0;
-                int minIncr = Int32.MaxValue;
-                int minArea = Int32.MaxValue;
+                long minIncr = Int64.MaxValue;
+                long minArea = Int64.MaxValue;
                 for (i = 0; i < n; i++) 
                 { 
-                    int area = b[i].r.Area();
-                    int incr = Rectangle.JoinArea(b[i].r, r) - area;
+                    long area = b[i].r.Area();
+                    long incr = Rectangle.JoinArea(b[i].r, r) - area;
                     if (incr < minIncr) 
                     { 
                         minIncr = incr;
@@ -208,9 +208,9 @@ namespace Perst.Impl
         internal RtreePage splitPage(Branch br) 
         { 
             int i, j, seed0 = 0, seed1 = 0;
-            int[]  rectArea = new int[card+1];
-            int    waste;
-            int    worstWaste = Int32.MinValue;
+            long[] rectArea = new long[card+1];
+            long   waste;
+            long   worstWaste = Int64.MinValue;
             //
             // As the seeds for the two groups, find two rectangles which waste 
             // the most area if covered by a single rectangle.
@@ -237,7 +237,7 @@ namespace Perst.Impl
             }       
             byte[] taken = new byte[card];
             Rectangle group0, group1;
-            int       groupArea0, groupArea1;
+            long      groupArea0, groupArea1;
             int       groupCard0, groupCard1;
             RtreePage pg;
 
@@ -269,12 +269,12 @@ namespace Perst.Impl
                 && groupCard1 < card + 1 - minFill)
             {
                 int betterGroup = -1, chosen = -1;
-                int biggestDiff = -1;
+                long biggestDiff = -1;
                 for (i = 0; i < card; i++) 
                 { 
                     if (taken[i] == 0) 
                     { 
-                        int diff = (Rectangle.JoinArea(group0, b[i].r) - groupArea0)
+                        long diff = (Rectangle.JoinArea(group0, b[i].r) - groupArea0)
                             - (Rectangle.JoinArea(group1, b[i].r) - groupArea1);
                         if (diff > biggestDiff || -diff > biggestDiff) 
                         { 

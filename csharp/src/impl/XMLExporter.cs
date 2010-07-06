@@ -208,7 +208,7 @@ namespace Perst.Impl
                     for (int i = 0; i < size; i++) 
                     { 
                         byte b = body[offs++];
-                        writer.Write(hexDigit[(b >> 4) & 0xFF]);
+                        writer.Write(hexDigit[(b >> 4) & 0xF]);
                         writer.Write(hexDigit[b & 0xF]);
                     }
                     break;
@@ -336,7 +336,7 @@ namespace Perst.Impl
                 while (--len >= 0)
                 {
                     byte b = body[offs++];
-                    writer.Write(hexDigit[b >> 4]);
+                    writer.Write(hexDigit[(b >> 4) & 0xF]);
                     writer.Write(hexDigit[b & 0xF]);
                 }
                 writer.Write('\"');

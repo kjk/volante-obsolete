@@ -1,4 +1,4 @@
-namespace Perst.Impl
+        namespace Perst.Impl
 {
     using System;
     using System.Collections;
@@ -277,6 +277,14 @@ namespace Perst.Impl
             else if (o is IPersistent) 
             {
                 return new Key((IPersistent)o);
+            }
+            else if (o is Guid)
+            {
+                return new Key((Guid)o);
+            }
+            else if (o is Decimal)
+            {
+                return new Key((Decimal)o);
             }
             throw new StorageError(StorageError.ErrorCode.UNSUPPORTED_TYPE);
         }

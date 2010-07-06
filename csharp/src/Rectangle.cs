@@ -60,21 +60,21 @@ namespace Perst
         /// <summary>
         /// Rectangle area
         /// </summary>
-        public int Area() 
+        public long Area() 
         { 
-            return (_bottom-_top)*(_right-_left);
+            return (long)(_bottom-_top)*(_right-_left);
         }
 
         /// <summary>
         /// Area of covered rectangle for two sepcified rectangles
         /// </summary>
-        public static int JoinArea(Rectangle a, Rectangle b) 
+        public static long JoinArea(Rectangle a, Rectangle b) 
         {
             int _left = (a._left < b._left) ? a._left : b._left;
             int _right = (a._right > b._right) ? a._right : b._right;
             int _top = (a._top < b._top) ? a._top : b._top;
             int _bottom = (a._bottom > b._bottom) ? a._bottom : b._bottom;
-            return (_bottom-_top)*(_right-_left);
+            return (long)(_bottom-_top)*(_right-_left);
         }
 
 
