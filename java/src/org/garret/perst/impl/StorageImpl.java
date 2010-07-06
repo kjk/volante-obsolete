@@ -1424,7 +1424,9 @@ public class StorageImpl extends Storage {
     }
 
     protected synchronized void loadObject(IPersistent obj) {
-        loadStub(obj.getOid(), obj, obj.getClass());
+        if (obj.isRaw()) { 
+            loadStub(obj.getOid(), obj, obj.getClass());
+        }
     }
 
     final IPersistent lookupObject(int oid, Class cls) {

@@ -23,6 +23,17 @@ public abstract class Storage {
     }
     
     /**
+     * Explicitly make object persistent (assign to the storage).
+     * If object is already persistent, this method has no effect
+     * @param obj object to be made persistent.
+     */
+    public void makeObjectPeristent(IPersistent obj) {
+        if (obj.getOid() == 0) { 
+            storeObject(obj);
+        }
+    }
+
+    /**
      * Get storage root. Storage can have exactly one root object. 
      * If you need to have several root object and access them by name (as is is possible 
      * in many other OODBMSes), you should create index and use it as root object.
@@ -37,6 +48,8 @@ public abstract class Storage {
      * persistent and stored in the storage
      */
     abstract public void setRoot(IPersistent root);
+
+    
 
     /**
      * Commit changes done by the lat transaction. Transaction is started implcitlely with forst update

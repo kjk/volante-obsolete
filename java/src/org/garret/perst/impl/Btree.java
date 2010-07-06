@@ -2,7 +2,7 @@ package org.garret.perst.impl;
 import  org.garret.perst.*;
 import  java.util.ArrayList;
 
-class Btree extends Persistent implements Index { 
+class Btree extends PersistentResource implements Index { 
     int       root;
     int       height;
     int       type;

@@ -24,6 +24,7 @@ public class StorageError extends Error {
     public static final int CLASS_NOT_FOUND        = 18;
     public static final int NULL_VALUE             = 19;
     public static final int INDEXED_FIELD_NOT_FOUND= 20;
+    public static final int LOCK_FAILED            = 21;
 
     private static final String[] messageText = {
         "",
@@ -46,7 +47,8 @@ public class StorageError extends Error {
         "Object access violation",
         "Failed to locate",
         "Null value", 
-        "Could not find indexed field"
+        "Could not find indexed field",
+        "Lock could not be granted"
     };
 
     /**

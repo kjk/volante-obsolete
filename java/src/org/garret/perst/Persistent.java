@@ -5,7 +5,7 @@ package org.garret.perst;
  */
 public class Persistent implements IPersistent { 
     public void load() {
-        if (raw) { 
+        if (storage != null) { 
             storage.loadObject(this);
         }
     }
@@ -28,7 +28,9 @@ public class Persistent implements IPersistent {
         if (raw) { 
             throw new StorageError(StorageError.ACCESS_TO_STUB);
         }
-        storage.storeObject(this);
+        if (storage != null) { 
+            storage.storeObject(this);
+        }
     }
   
     public final int getOid() {
