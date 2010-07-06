@@ -74,6 +74,13 @@ public interface FieldIndex extends IPersistent {
     public void          remove(IPersistent obj);
 
     /**
+     * Check if index contains specified object
+     * @param obj object to be searched in the index. Object should contain indexed field. 
+     * @return <code>true</code> if object is present in the index, <code>false</code> otherwise
+     */
+    public boolean       contains(IPersistent obj);
+
+    /**
      * Get number of objects in the index
      * @return number of objects in the index
      */

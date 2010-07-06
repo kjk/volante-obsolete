@@ -36,9 +36,10 @@ public class XMLExporter {
                                 exportFieldIndex(oid, obj);
                             } else { 
                                 ClassDescriptor desc = (ClassDescriptor)storage.lookupObject(typeOid, ClassDescriptor.class);
-                                writer.write(" <" + desc.name + " id=\"" + oid + "\">\n");
+                                String className = exportIdentifier(desc.name);
+                                writer.write(" <" + className + " id=\"" + oid + "\">\n");
                                 exportObject(desc, obj, ObjectHeader.sizeof, 2);
-                                writer.write(" </" + desc.name + ">\n");
+                                writer.write(" </" + className + ">\n");
                             }
                             nExportedObjects += 1;
                         }
@@ -49,28 +50,32 @@ public class XMLExporter {
         writer.write("</database>\n");        
     }
 
+    final String exportIdentifier(String name) { 
+        return name.replace('$', '-');
+    }
+
     final void exportIndex(int oid,  byte[] data) throws IOException 
     { 
         Btree btree = new Btree(data, ObjectHeader.sizeof);
         storage.assignOid(btree, oid);
-        writer.write(" <btree-index id=\"" + oid + "\" unique=\"" + (btree.unique ? '1' : '0') 
+        writer.write(" <org.garret.perst.impl.Btree id=\"" + oid + "\" unique=\"" + (btree.unique ? '1' : '0') 
                      + "\" type=\"" + ClassDescriptor.signature[btree.type] + "\">\n");
         btree.export(this);
-        writer.write(" </btree-index>\n");
+        writer.write(" </org.garret.perst.impl.Btree>\n");
     }
 
     final void exportFieldIndex(int oid,  byte[] data) throws IOException
     { 
         Btree btree = new Btree(data, ObjectHeader.sizeof);
         storage.assignOid(btree, oid);
-        writer.write(" <btree-index id=\"" + oid + "\" unique=\"" + (btree.unique ? '1' : '0') 
+        writer.write(" <org.garret.perst.impl.BtreeFieldIndex id=\"" + oid + "\" unique=\"" + (btree.unique ? '1' : '0') 
                      + "\" class=");
         int offs = exportString(data, Btree.sizeof);
         writer.write(" field=");
         exportString(data, offs);
         writer.write(">\n");
         btree.export(this);
-        writer.write(" </btree-index>\n");
+        writer.write(" </org.garret.perst.impl.BtreeFieldIndex>\n");
     }
 
     final void exportAssoc(int oid, byte[] body, int offs, int size, int type) throws IOException
@@ -194,7 +199,8 @@ public class XMLExporter {
         for (int i = 0, n = all.length; i < n; i++) { 
             Field f = all[i];
             indentation(indent);
-            writer.write("<" + f.getName() + ">");
+            String fieldName = exportIdentifier(f.getName());
+            writer.write("<" + fieldName + ">");
             switch (type[i]) { 
                 case ClassDescriptor.tpBoolean:
                     writer.write(body[offs++] != 0 ? "1" : "0");
@@ -482,7 +488,7 @@ public class XMLExporter {
                     break;
                 }
             }
-            writer.write("</" + f.getName() + ">\n");
+            writer.write("</" + fieldName + ">\n");
         }
         return offs;
     }

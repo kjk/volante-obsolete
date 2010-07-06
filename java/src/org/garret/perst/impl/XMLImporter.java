@@ -48,8 +48,8 @@ public class XMLImporter {
                 throwException("Element name expected");
             }
             String elemName = scanner.getIdentifier();
-            if (elemName.equals("btree-index")) { 
-                createIndex();
+            if (elemName.equals("org.garret.perst.impl.Btree") || elemName.equals("org.garret.perst.impl.BtreeFieldIndex")) { 
+                createIndex(elemName);
             } else { 
                 createObject(readElement(elemName));
             }
@@ -287,7 +287,7 @@ public class XMLImporter {
         return -1;
     }
 
-    final void createIndex() throws XMLImportException
+    final void createIndex(String indexType) throws XMLImportException
     {
         Btree btree;
         int tkn;
@@ -355,7 +355,7 @@ public class XMLImporter {
         }
         if (tkn != XMLScanner.XML_LTS 
             || scanner.scan() != XMLScanner.XML_IDENT
-            || !scanner.getIdentifier().equals("btree-index")
+            || !scanner.getIdentifier().equals(indexType)
             || scanner.scan() != XMLScanner.XML_GT)
         {
             throwException("Element is not closed");
@@ -1156,10 +1156,13 @@ public class XMLImporter {
                     }
                   default:
                     i = 0;
-                    while (Character.isLetterOrDigit((char)ch) || ch == '$' || ch == '-' || ch == ':' || ch == '_' || ch == '.') {
+                    while (Character.isLetterOrDigit((char)ch) || ch == '-' || ch == ':' || ch == '_' || ch == '.') {
                         if (i == size) { 
                             throw new XMLImportException(line, column, "Bad XML file format");
                         }
+                        if (ch == '-') { 
+                            ch = '$';
+                        }                                
                         sconst[i++] = (char)ch;
                         ch = get();
                     }

@@ -117,6 +117,21 @@ class BtreeFieldIndex extends Btree implements FieldIndex {
         super.remove(new BtreeKey(extractKey(obj), obj.getOid()));
     }
 
+    public boolean contains(IPersistent obj) {
+        Key key = extractKey(obj);
+        if (unique) { 
+            return super.get(key) != null;
+        } else { 
+            IPersistent[] mbrs = get(key, key);
+            for (int i = 0; i < mbrs.length; i++) { 
+                if (mbrs[i] == obj) { 
+                    return true;
+                }
+            }
+            return false;
+        }
+    }
+
     public synchronized void append(IPersistent obj) {
         Key key;
         try { 
