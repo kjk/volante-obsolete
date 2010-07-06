@@ -36,6 +36,22 @@ namespace Perst.Impl
             }
         }
 
+        public Type IndexedClass 
+        {
+            get 
+            { 
+                return cls;
+            }
+        }
+
+        public MemberInfo[] KeyFields 
+        {
+            get 
+            { 
+                return mbr;
+            }
+        }
+
         public override void OnLoad()
         {
             cls = ClassDescriptor.lookup(Storage, className);

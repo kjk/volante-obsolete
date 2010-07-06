@@ -49,8 +49,10 @@ namespace Perst.Impl
         static protected ClassDescriptor.FieldType checkType(Type c) 
         { 
             ClassDescriptor.FieldType elemType = ClassDescriptor.getTypeCode(c);
-            if ((int)elemType >= (int)ClassDescriptor.FieldType.tpLink 
-                && elemType != ClassDescriptor.FieldType.tpArrayOfByte) 
+            if ((int)elemType > (int)ClassDescriptor.FieldType.tpObject
+                && elemType != ClassDescriptor.FieldType.tpArrayOfByte
+                && elemType != ClassDescriptor.FieldType.tpDecimal
+                && elemType != ClassDescriptor.FieldType.tpGuid) 
             { 
                 throw new StorageError(StorageError.ErrorCode.UNSUPPORTED_INDEX_TYPE, c);
             }
@@ -110,6 +112,54 @@ namespace Perst.Impl
             }
         }
 
+        public Type KeyType 
+        { 
+            get 
+            {
+                switch (type) 
+                { 
+                    case ClassDescriptor.FieldType.tpBoolean:
+                        return typeof(bool);
+                    case ClassDescriptor.FieldType.tpSByte:
+                        return typeof(sbyte);
+                    case ClassDescriptor.FieldType.tpByte:
+                        return typeof(byte);
+                    case ClassDescriptor.FieldType.tpChar:
+                        return typeof(char);
+                    case ClassDescriptor.FieldType.tpShort:
+                        return typeof(short);
+                    case ClassDescriptor.FieldType.tpUShort:
+                        return typeof(ushort);
+                    case ClassDescriptor.FieldType.tpInt:
+                        return typeof(int);
+                    case ClassDescriptor.FieldType.tpUInt:
+                        return typeof(uint);
+                    case ClassDescriptor.FieldType.tpLong:
+                        return typeof(long);
+                    case ClassDescriptor.FieldType.tpULong:
+                        return typeof(ulong);
+                    case ClassDescriptor.FieldType.tpFloat:
+                        return typeof(float);
+                    case ClassDescriptor.FieldType.tpDouble:
+                        return typeof(double);
+                    case ClassDescriptor.FieldType.tpString:
+                        return typeof(string);
+                    case ClassDescriptor.FieldType.tpDate:
+                        return typeof(DateTime);
+                    case ClassDescriptor.FieldType.tpObject:
+                        return typeof(IPersistent);
+                    case ClassDescriptor.FieldType.tpArrayOfByte:
+                        return typeof(byte[]);
+                    case ClassDescriptor.FieldType.tpGuid:
+                        return typeof(Guid);
+                    case ClassDescriptor.FieldType.tpDecimal:
+                        return typeof(decimal);
+                    default:
+                        return null;
+                }
+            }
+        }
+
         public IPersistent this[object key] 
         {
             get 
@@ -147,6 +197,7 @@ namespace Perst.Impl
             }
             return null;
         }
+
 
         internal Key getKeyFromObject(object o) 
         {
@@ -247,11 +298,7 @@ namespace Perst.Impl
             {
                 ArrayList list = new ArrayList();
                 BtreePage.find((StorageImpl) Storage, root, from, till, this, height, list);
-                if (list.Count == 0)
-                {
-                    return emptySelection;
-                }
-                else
+                if (list.Count != 0)
                 {
                     return (IPersistent[]) list.ToArray(typeof(IPersistent));
                 }
@@ -259,6 +306,24 @@ namespace Perst.Impl
             return emptySelection;
         }
 		
+        public IPersistent[] PrefixSearch(string key) 
+        { 
+            if (ClassDescriptor.FieldType.tpString != type) 
+            { 
+                throw new StorageError(StorageError.ErrorCode.INCOMPATIBLE_KEY_TYPE);
+            }
+            if (root != 0) 
+            { 
+                ArrayList list = new ArrayList();
+                BtreePage.prefixSearch((StorageImpl)Storage, root, key, height, list);
+                if (list.Count != 0) 
+                { 
+                    return (IPersistent[]) list.ToArray(typeof(IPersistent));
+                }
+            }
+            return emptySelection;
+        }
+
         public virtual IPersistent[] Get(object from, object till)
         {
             return Get(getKeyFromObject(from), getKeyFromObject(till));

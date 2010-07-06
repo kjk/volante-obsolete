@@ -68,8 +68,12 @@ namespace Perst.Impl
         /// This parameter should not be smaller than dbFirstUserId
         /// </summary>
         internal static long dbDefaultExtensionQuantum = 1024 * 1024;
-		
-        internal const int dbDatabaseOffsetBits = 32; // up to 1 gigabyte, 37 - up to 1 terabyte database
+
+#if LARGE_DATABASE_SUPPORT		
+        internal const int dbDatabaseOffsetBits = 37; // up to 128 gigabytes
+#else
+        internal const int dbDatabaseOffsetBits = 32; // up to 4 gigabyte
+#endif
 		
         internal const int dbAllocationQuantumBits = 5;
         internal const int dbAllocationQuantum = 1 << dbAllocationQuantumBits;

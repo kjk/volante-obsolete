@@ -2,6 +2,7 @@ namespace Perst
 {
     using System;
     using System.Collections;
+    using System.Reflection;
 	
     /// <summary> Interface of indexed field. 
     /// Index is used to provide fast access to the object by the value of indexed field. 
@@ -80,6 +81,14 @@ namespace Perst
         /// </returns>
         IPersistent[] GetPrefix(string prefix);
         
+        /// <summary> 
+        /// Locate all objects which key is prefix of specified word.
+        /// </summary>
+        /// <param name="word">string which prefixes are located in index</param>
+        /// <returns>array of objects which key is prefix of specified word, ordered by key value
+        /// </returns>
+        IPersistent[] PrefixSearch(string word);
+
         /// <summary> 
         /// Check if index contains specified object
         /// </summary>
@@ -309,5 +318,16 @@ namespace Perst
         ///
         IDictionaryEnumerator GetDictionaryEnumerator(Key from, Key till, IterationOrder order);
 
-    }
+        /// <summary>
+        /// Get class obejct objects which can be inserted in this index
+        /// </summary>
+        /// <returns>class specified in Storage.createFielIndex method</returns>
+        Type IndexedClass{get;}
+
+        /// <summary>
+        /// Get fields used as a key
+        /// </summary>
+        /// <returns>array of index key fields</returns>
+        MemberInfo[] KeyFields{get;}
+   }
 }

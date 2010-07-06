@@ -204,3 +204,10 @@ of pack/unpack methods.
    in applications with large number of classes
 3. Detect bugs related with incorrect serialization of persistent object as raw or value type
 4. Fix bug in automatic scheme evalaution implementation.
+
+--- Release version 2.21 16.04.2004 -------------------------------------
+1. Add Index.KeyType, FieldIndex.IndexedClass and FieldIndex.KeyFields properties
+2. Add Index.PrefixSearch method which can be used to locate keys which are prefixes of the specified word.
+
+--- Release version 2.22 ??.04.2004 -------------------------------------
+1. Fix bug in dbTimeSeries class

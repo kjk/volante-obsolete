@@ -514,7 +514,7 @@ namespace Perst.Impl
 
         internal TimeSeriesImpl() {}
    
-        public void onLoad() 
+        public override void OnLoad() 
         {  
             lookupConstructor(ClassDescriptor.lookup(Storage, blockClassName));
         }

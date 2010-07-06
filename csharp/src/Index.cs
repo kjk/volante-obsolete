@@ -86,7 +86,14 @@ namespace Perst
         /// </returns>
         IPersistent[] GetPrefix(string prefix);
 
-        
+        /// <summary> 
+        /// Locate all objects which key is prefix of specified word.
+        /// </summary>
+        /// <param name="word">string which prefixes are located in index</param>
+        /// <returns>array of objects which key is prefix of specified word, ordered by key value
+        /// </returns>
+        IPersistent[] PrefixSearch(string word);
+    
         /// <summary> Put new object in the index. 
         /// </summary>
         /// <param name="key">object key wrapper
@@ -337,5 +344,11 @@ namespace Perst
         /// <returns>selection iterator</returns>
         ///
         IDictionaryEnumerator GetDictionaryEnumerator(Key from, Key till, IterationOrder order);
+
+        /// <summary>
+        /// Get type of index key
+        /// </summary>
+        /// <returns>type of index key</returns>
+        Type KeyType {get;}
     }
 }

@@ -58,7 +58,7 @@ public class TestTimeSeries {
         public TimeSeries quotes;
     }
 
-    const int nElements = 10000000;
+    const int nElements = 1000000;
     const int pagePoolSize = 32*1024*1024;
 
     static public void Main(string[] args) {   
