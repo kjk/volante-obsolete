@@ -105,7 +105,6 @@ namespace Perst.Impl
         internal int remove(Rectangle r, IPersistent obj, int level, ArrayList reinsertList) 
         {
             Load();
-            Modify();
             if (--level != 0) 
             { 
                 for (int i = 0; i < n; i++) 
@@ -119,6 +118,7 @@ namespace Perst.Impl
                             if (pg.n >= minFill) 
                             { 
                                 b[i] = new Branch(pg.cover(), pg);
+                                Modify();
                             } 
                             else 
                             { 
@@ -190,6 +190,8 @@ namespace Perst.Impl
         {
             n -= 1;
             Array.Copy(b, i+1, b, i, n-i);
+            b[n].p = null;
+            Modify();
         }
 
         internal RtreePage addBranch(Branch br) 
@@ -331,8 +333,6 @@ namespace Perst.Impl
                     }
                 }
             }
-            pg.n = groupCard0;
-            n = groupCard1;
             for (i = 0, j = 0; i < groupCard1; j++) 
             { 
                 if (taken[j] == 2) 
@@ -340,6 +340,12 @@ namespace Perst.Impl
                     b[i++] = b[j];
                 }
             }
+            for (j = n; i < j; i++) 
+            { 
+                b[i].p = null;
+            }       
+            pg.n = groupCard0;
+            n = groupCard1;
             return pg;
         }   
 

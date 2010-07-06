@@ -912,7 +912,7 @@ namespace Perst.Impl
 		
         public override void Open(String filePath, int pagePoolSize)
         {
-            OSFile file = new OSFile(filePath, readOnly);      
+            OSFile file = new OSFile(filePath, readOnly, noFlush);      
             try 
             {
                 Open(file, pagePoolSize);
@@ -926,7 +926,7 @@ namespace Perst.Impl
 
         public override void Open(String filePath, int pagePoolSize, String cipherKey)
         {
-            Rc4File file = new Rc4File(filePath, readOnly, cipherKey);      
+            Rc4File file = new Rc4File(filePath, readOnly, noFlush, cipherKey);      
             try 
             {
                 Open(file, pagePoolSize);
@@ -2719,6 +2719,10 @@ namespace Perst.Impl
             { 
                 readOnly = getBooleanValue(val);
             }
+            if ((val = props["perst.file.noflush"]) != null) 
+            { 
+                noFlush = getBooleanValue(val);
+            }
             if ((val = props["perst.alternative.btree"]) != null) 
             { 
                 alternativeBtree = getBooleanValue(val);
@@ -2758,6 +2762,10 @@ namespace Perst.Impl
             else if (name.Equals("perst.file.readonly")) 
             { 
                 readOnly = getBooleanValue(val);
+            }
+            else if (name.Equals("perst.file.noflush")) 
+            { 
+                noFlush = getBooleanValue(val);
             }
             else if (name.Equals("perst.alternative.btree")) 
             { 
@@ -4495,6 +4503,7 @@ public int packField(ByteBuffer buf, int offs, object val, ClassDescriptor.Field
         private int  objectCacheInitSize  = dbDefaultObjectCacheInitSize;
         private long extensionQuantum     = dbDefaultExtensionQuantum;
         private bool readOnly = false;
+        private bool noFlush = false;
         private bool alternativeBtree = false;
         private bool backgroundGc = false;
 

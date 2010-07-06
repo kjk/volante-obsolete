@@ -348,6 +348,14 @@ namespace Perst
         /// <TR><TD><code>perst.file.readonly</code></TD><TD>bool</TD><TD>false</TD>
         /// <TD>Database file should be opened in read-only mode.
         /// </TD></TR>
+        /// <TR><TD><code>perst.file.noflush</code></TD><TD>bool</TD><TD>false</TD>
+        /// <TD>To not flush file during transaction commit. It will greatly increase performance because
+        /// eliminate synchronous write to the disk (when program has to wait until all changed
+        /// are actually written to the disk). But it can cause database corruption in case of 
+        /// OS or power failure (but abnormal termination of application itself should not cause
+        /// the problem, because all data which were written to the file, but is not yet saved to the disk is 
+        /// stored in OS file buffers and sooner or later them will be written to the disk)
+        /// </TD></TR>
         /// <TR><TD><code>perst.alternative.btree</code></TD><TD>bool</TD><TD>false</TD>
         /// <TD>Use aternative implementation of B-Tree (not using direct access to database
         /// file pages). This implementation should be used in case of serialized per thread transctions.
@@ -498,7 +506,7 @@ namespace Perst
 
         /// <summary>
         /// Get size of the database
-        ///
+        /// </summary>
         abstract public long DatabaseSize {get;}
 
 

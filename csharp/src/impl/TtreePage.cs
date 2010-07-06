@@ -603,6 +603,7 @@ namespace Perst.Impl
                         //{ 
                         //    item[i-1] = item[i];
                         //}
+                        item[n-1] = null;
                         nItems -= 1;
                         return OK;
                     }

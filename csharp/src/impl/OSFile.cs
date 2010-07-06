@@ -27,7 +27,9 @@ namespace Perst.Impl
         {
             file.Flush();
 #if !COMPACT_NET_FRAMEWORK 
-            FlushFileBuffers(file.Handle.ToInt32());
+            if (!noFlush) { 
+                FlushFileBuffers(file.Handle.ToInt32());
+            }
 #endif
         }
 		
@@ -36,12 +38,14 @@ namespace Perst.Impl
             file.Close();
         }
 		
-        internal OSFile(String filePath, bool readOnly)
+        internal OSFile(String filePath, bool readOnly, bool noFlush)
         {
+            this.noFlush = noFlush;
             file = new FileStream(filePath, FileMode.OpenOrCreate, 
                                   readOnly ? FileAccess.Read : FileAccess.ReadWrite);
         }
 		
         protected FileStream file;
+        protected bool       noFlush;
     }
 }

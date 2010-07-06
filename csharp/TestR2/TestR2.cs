@@ -20,6 +20,10 @@ public class TestR2 : Persistent
         SpatialObject so;
         RectangleR2 r;
         DateTime start = DateTime.Now;
+        if (args.Length > 0 && "noflush" == args[0]) 
+        { 
+            db.SetProperty("perst.file.noflush", true);
+        }
         db.Open("testr2.dbs");
         TestR2 root = (TestR2)db.Root;
         if (root == null) 

@@ -37,8 +37,8 @@ namespace Perst.Impl
             return 0;
         }
 
-        public Rc4File(String filePath, bool readOnly, String key) 
-        : base(filePath, readOnly)
+        public Rc4File(String filePath, bool readOnly, bool noFlush, String key) 
+        : base(filePath, readOnly, noFlush)
         {
             length = file.Length & ~(Page.pageSize-1);
             setKey(key);
