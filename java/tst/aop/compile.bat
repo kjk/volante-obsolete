@@ -1,0 +1,1 @@
+ajc *.java -aspectpath ../../lib/perst_aop.jar

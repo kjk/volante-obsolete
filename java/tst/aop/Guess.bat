@@ -1,0 +1,1 @@
+java -classpath ../../lib/perst_aop.jar;.;%classpath% Guess

@@ -1,0 +1,1 @@
+ajc org/garret/perst/aop/*.java -injars ../lib/perst.jar -outjar ../lib/perst_aop.jar

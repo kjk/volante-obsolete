@@ -63,7 +63,7 @@ class BtreeMultiFieldIndex extends Btree implements FieldIndex {
         int o2 = offs;
         byte[] a1 = key;
         byte[] a2 = item;
-        for (int i = 0; i < fld.length; i++) {
+        for (int i = 0; i < fld.length && o1 < key.length; i++) {
             int diff = 0;
             switch (types[i]) { 
               case ClassDescriptor.tpBoolean:
@@ -359,7 +359,7 @@ class BtreeMultiFieldIndex extends Btree implements FieldIndex {
         Object[] values = (Object[])key.oval;
         ByteBuffer buf = new ByteBuffer();
         int dst = 0;
-        for (int i = 0; i < fld.length; i++) { 
+        for (int i = 0; i < values.length; i++) { 
             Object v = values[i];
             switch (types[i]) {
               case ClassDescriptor.tpBoolean:

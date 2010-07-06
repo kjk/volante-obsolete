@@ -149,3 +149,10 @@ Attention: database format is incompatible with version 1.22!
 
 --- Release version 2.13 24.01.2004 -------------------------------------
 1. Add 007 benchmark
+
+--- Release version 2.14 30.01.2004 -------------------------------------
+1. Providing transparent interface to Perst using AspectJ.
+This interface was originally designed by atrick Morris-Suzuki and
+later changed by me.
+2. Fix bug in object modification mechanism which can cause deadlock.
+3. Make it possible to specify part of compound key in query

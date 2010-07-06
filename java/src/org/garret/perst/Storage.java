@@ -399,22 +399,15 @@ public abstract class Storage {
 
     // Internal methods
 
-    abstract protected void deallocateObject(IPersistent obj);
+    abstract public/*protected*/  void deallocateObject(IPersistent obj);
 
-    abstract protected void storeObject(IPersistent obj);
+    abstract public/*protected*/ void storeObject(IPersistent obj);
 
-    abstract protected void storeFinalizedObject(IPersistent obj);
+    abstract public/*protected*/ void storeFinalizedObject(IPersistent obj);
 
-    abstract protected void modifyObject(IPersistent obj);
+    abstract public/*protected*/ void modifyObject(IPersistent obj);
 
-    abstract protected void loadObject(IPersistent obj);
-
-    final protected void setObjectOid(IPersistent obj, int oid, boolean raw) { 
-        Persistent po = (Persistent)obj;
-        po.oid = oid;
-        po.storage = this;
-        po.state = raw ? Persistent.RAW : 0;
-    }
+    abstract public/*protected*/ void loadObject(IPersistent obj);
 
     private ClassLoader loader;
 }

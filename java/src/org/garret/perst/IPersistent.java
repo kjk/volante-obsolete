@@ -83,9 +83,18 @@ public interface IPersistent extends java.io.Serializable {
 
     /**
      * Invalidate object. Invalidated object has to be explicitly
-     * reloaded using load() method. Attempt to store invalidated object
+     * reloaded usin3g load() method. Attempt to store invalidated object
      * will cause StoraegError exception.
      */
     public void invalidate();
+
+    /**
+     * Assign OID to the object. This method is used by storage class and 
+     * you should not invoke it directly
+     * @param storage associated storage
+     * @param oid object identifier
+     * @param if object is a stub
+     */
+    public void assignOid(Storage storage, int oid, boolean raw);
 }
 

@@ -112,7 +112,7 @@ public class StorageImpl extends Storage {
         return oid;
     }
 
-    protected synchronized void deallocateObject(IPersistent obj) 
+    public/*protected*/ synchronized void deallocateObject(IPersistent obj) 
     {
         synchronized (objectCache) {
             int oid = obj.getOid();
@@ -135,7 +135,7 @@ public class StorageImpl extends Storage {
             } else { 
                 cloneBitmap(pos, size);
             }
-            setObjectOid(obj, 0, false);
+            obj.assignOid(this, 0, false);
         }
     }
     
@@ -902,7 +902,7 @@ public class StorageImpl extends Storage {
     }
 
     final void assignOid(IPersistent obj, int oid) { 
-        setObjectOid(obj, oid, false);
+        obj.assignOid(this, oid, false);
     }
 
     final void registerClassDescriptor(ClassDescriptor desc) { 
@@ -910,7 +910,7 @@ public class StorageImpl extends Storage {
         desc.next = descList;
         descList = desc;
         checkIfFinal(desc);
-        storeObject(desc);
+        storeObject0(desc);
         header.root[1-currIndex].classDescList = desc.getOid();
         modified = true;
     }        
@@ -938,7 +938,7 @@ public class StorageImpl extends Storage {
             throw new StorageError(StorageError.STORAGE_NOT_OPENED);
         }
         if (!root.isPersistent()) { 
-            storeObject(root);
+            storeObject0(root);
         }
         header.root[1-currIndex].rootObject = root.getOid();
         modified = true;
@@ -1306,7 +1306,7 @@ public class StorageImpl extends Storage {
             throw new StorageError(StorageError.STORAGE_NOT_OPENED);
         }
         PersistentSet set = new PersistentSet();
-        setObjectOid(set, 0, false);
+        set.assignOid(this, 0, false);
         return set;
     }
         
@@ -1315,7 +1315,7 @@ public class StorageImpl extends Storage {
             throw new StorageError(StorageError.STORAGE_NOT_OPENED);
         }
         Btree index = new Btree(keyType, unique);
-        setObjectOid(index, 0, false);
+        index.assignOid(this, 0, false);
         return index;
     }
 
@@ -1331,7 +1331,7 @@ public class StorageImpl extends Storage {
             throw new StorageError(StorageError.STORAGE_NOT_OPENED);
         }        
         FieldIndex index = new BtreeFieldIndex(type, fieldName, unique);
-        setObjectOid(index, 0, false);
+        index.assignOid(this, 0, false);
         return index;
     }
 
@@ -1340,7 +1340,7 @@ public class StorageImpl extends Storage {
             throw new StorageError(StorageError.STORAGE_NOT_OPENED);
         }        
         FieldIndex index = new BtreeMultiFieldIndex(type, fieldNames, unique);
-        setObjectOid(index, 0, false);
+        index.assignOid(this, 0, false);
         return index;
     }
 
@@ -1435,7 +1435,7 @@ public class StorageImpl extends Storage {
                                         ClassDescriptor desc = findClassDescriptor(typeOid);
                                         if (Btree.class.isAssignableFrom(desc.cls)) { 
                                             Btree btree = new Btree(pg.data, ObjectHeader.sizeof + offs);
-                                            setObjectOid(btree, 0, false);
+                                            btree.assignOid(this, 0, false);
                                             btree.markTree();
                                         } else if (desc.hasReferences) { 
                                             markObject(pool.get(pos), ObjectHeader.sizeof, desc);
@@ -1468,7 +1468,7 @@ public class StorageImpl extends Storage {
                             if (Btree.class.isAssignableFrom(desc.cls)) { 
                                 Btree btree = new Btree(pg.data, ObjectHeader.sizeof + offs);
                                 pool.unfix(pg);
-                                setObjectOid(btree, i, false);
+                                btree.assignOid(this, i, false);
                                 btree.deallocate();
                             } else { 
                                 int size = ObjectHeader.getSize(pg.data, offs);
@@ -1531,7 +1531,7 @@ public class StorageImpl extends Storage {
                                         ClassDescriptor desc = findClassDescriptor(typeOid);
                                         if (Btree.class.isAssignableFrom(desc.cls)) { 
                                             Btree btree = new Btree(pg.data, ObjectHeader.sizeof + offs);
-                                            setObjectOid(btree, 0, false);
+                                            btree.assignOid(this, 0, false);
                                             int nPages = btree.markTree();
                                             if (FieldIndex.class.isAssignableFrom(desc.cls)) { 
                                                 fieldIndexUsage.nInstances += 1;
@@ -1930,15 +1930,15 @@ public class StorageImpl extends Storage {
         return oid == 0 ? null : lookupObject(oid, null);
     }
 
-    protected synchronized void modifyObject(IPersistent obj) {
+    public/*protected*/ synchronized void modifyObject(IPersistent obj) {
         synchronized(objectCache) { 
             if (!obj.isModified()) { 
                 objectCache.setDirty(obj.getOid());
             }
         }
     }
-
-    protected synchronized void storeObject(IPersistent obj) 
+    
+    public/*protected*/ synchronized void storeObject(IPersistent obj) 
     {
         if (!opened) { 
             throw new StorageError(StorageError.STORAGE_NOT_OPENED);
@@ -1948,7 +1948,7 @@ public class StorageImpl extends Storage {
         }
     }
 
-    protected void storeFinalizedObject(IPersistent obj) 
+    public/*protected*/ void storeFinalizedObject(IPersistent obj) 
     {
         if (opened) { 
             synchronized (objectCache) { 
@@ -1966,7 +1966,7 @@ public class StorageImpl extends Storage {
         if (oid == 0) { 
             oid = allocateId();
             objectCache.put(oid, obj);
-            setObjectOid(obj, oid, false);
+            obj.assignOid(this, oid, false);
             newObject = true;
         } else if (obj.isModified()) {
             objectCache.clearDirty(oid);
@@ -2009,7 +2009,7 @@ public class StorageImpl extends Storage {
         pool.put(pos & ~dbFlagsMask, data, newSize);
     }
 
-    protected synchronized void loadObject(IPersistent obj) {
+    public/*protected*/ synchronized void loadObject(IPersistent obj) {
         if (obj.isRaw()) { 
             loadStub(obj.getOid(), obj, obj.getClass());
         }
@@ -2027,7 +2027,7 @@ public class StorageImpl extends Storage {
         int oid = 0;
         if (obj != null) { 
             if (!obj.isPersistent()) { 
-                storeObject(obj);
+                storeObject0(obj);
             }
             oid = obj.getOid();
         }
@@ -2065,7 +2065,7 @@ public class StorageImpl extends Storage {
             desc = findClassDescriptor(typeOid);
         }
         stub = (IPersistent)desc.newInstance();
-        setObjectOid(stub, oid, true);
+        stub.assignOid(this, oid, true);
         objectCache.put(oid, stub);
         return stub;
     }
@@ -2088,7 +2088,7 @@ public class StorageImpl extends Storage {
             obj = (IPersistent)desc.newInstance();
             objectCache.put(oid, obj);
         }
-        setObjectOid(obj, oid, false);
+        obj.assignOid(this, oid, false);
         try { 
             unpackObject(obj, desc, obj.recursiveLoading(), body, ObjectHeader.sizeof);
         } catch (Exception x) { 
@@ -2513,7 +2513,7 @@ public class StorageImpl extends Storage {
                                 stub = objectCache.get(elemOid);
                                 if (stub == null) { 
                                     stub = new Persistent();
-                                    setObjectOid(stub, elemOid, true);
+                                    stub.assignOid(this, elemOid, true);
                                 }
                             }
                             arr[j] = stub;

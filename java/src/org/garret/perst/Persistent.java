@@ -90,12 +90,18 @@ public class Persistent implements IPersistent {
         }
     }
 
-    transient Storage storage;
-    transient int     oid;
-    transient int     state;
+    transient private Storage storage;
+    transient private int     oid;
+    transient private int     state;
 
-    static final int RAW   = 1;
-    static final int DIRTY = 2;
+    static private final int RAW   = 1;
+    static private final int DIRTY = 2;
+
+    public void assignOid(Storage storage, int oid, boolean raw) { 
+        this.oid = oid;
+        this.storage = storage;
+        state = raw ? RAW : 0;
+    }
 }
 
 
