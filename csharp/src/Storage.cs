@@ -186,6 +186,14 @@ namespace Perst
         /// 
         /// </returns>
         abstract public Relation CreateRelation(IPersistent owner);
+
+
+        /// <summary>
+        /// Create new BLOB. Create object for storing large binary data.
+        /// </summary>
+        /// <returns>empty BLOB</returns>
+        abstract public Blob CreateBlob();
+
 		
         /// <summary> Commit transaction (if needed) and close the storage
         /// </summary>

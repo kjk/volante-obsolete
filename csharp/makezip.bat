@@ -24,8 +24,11 @@ rd /s/q TestEnumerator\obj
 rd /s/q TestEnumerator\bin
 rd /s/q TestCompoundIndex\obj
 rd /s/q TestCompoundIndex\bin
+rd /s/q TestBlob\obj
+rd /s/q TestBlob\bin
 del /q *.dbs
 del /q *.xml
+del /q *.suo
 cd ..
 del /q perstnet.zip
 zip -r perstnet.zip Perst.NET

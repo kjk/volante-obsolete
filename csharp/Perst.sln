@@ -51,6 +51,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Guess", "Guess\Guess.csproj
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestBlob", "TestBlob\TestBlob.csproj", "{5F572942-DB1D-4E32-80EB-3E978B70F66B}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfiguration) = preSolution
 		Debug = Debug
@@ -109,6 +113,10 @@ Global
 		{6082AFF2-5525-4957-8741-5F63D35D5EEB}.Debug.Build.0 = Debug|.NET
 		{6082AFF2-5525-4957-8741-5F63D35D5EEB}.Release.ActiveCfg = Release|.NET
 		{6082AFF2-5525-4957-8741-5F63D35D5EEB}.Release.Build.0 = Release|.NET
+		{5F572942-DB1D-4E32-80EB-3E978B70F66B}.Debug.ActiveCfg = Debug|.NET
+		{5F572942-DB1D-4E32-80EB-3E978B70F66B}.Debug.Build.0 = Debug|.NET
+		{5F572942-DB1D-4E32-80EB-3E978B70F66B}.Release.ActiveCfg = Release|.NET
+		{5F572942-DB1D-4E32-80EB-3E978B70F66B}.Release.Build.0 = Release|.NET
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 	EndGlobalSection

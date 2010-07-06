@@ -136,3 +136,7 @@ Attention: database format is incompatible with version 1.22!
 
 1. Fix critical bug in object index relocation algorithm
 2. Fix bug in recovery procedure
+
+--- Release version 2.08 20.12.2003 -------------------------------------
+
+1. Add Blob class

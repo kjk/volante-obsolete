@@ -1383,6 +1383,11 @@ namespace Perst.Impl
             return new RelationImpl(owner);
         }
 
+        public override Blob CreateBlob() 
+        {
+            return new BlobImpl(Page.pageSize - ObjectHeader.Sizeof - 16);
+        }
+
         public override void  ExportXML(System.IO.StreamWriter writer)
         {
             lock(this)
@@ -1872,6 +1877,7 @@ namespace Perst.Impl
             return offs;
         }
 
+ 
 #if COMPACT_NET_FRAMEWORK
         public override void RegisterAssembly(System.Reflection.Assembly assembly) 
         {

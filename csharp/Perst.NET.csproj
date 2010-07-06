@@ -98,6 +98,11 @@
                     BuildAction = "Compile"
                 />
                 <File
+                    RelPath = "src\Blob.cs"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
                     RelPath = "src\FieldIndex.cs"
                     SubType = "Code"
                     BuildAction = "Compile"
@@ -199,6 +204,11 @@
                 />
                 <File
                     RelPath = "src\XMLImportException.cs"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "src\impl\BlobImpl.cs"
                     SubType = "Code"
                     BuildAction = "Compile"
                 />
