@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Collections;
 #endif
 
-namespace Perst
+namespace NachoDB
 {
     /// <summary>
     /// Base class for all persistent collections

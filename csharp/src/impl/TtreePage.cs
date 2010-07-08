@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Collections;
 #endif
 
-namespace Perst.Impl 
+namespace NachoDB.Impl 
 {
 
 #if USE_GENERICS

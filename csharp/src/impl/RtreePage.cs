@@ -1,8 +1,8 @@
-namespace Perst.Impl
+namespace NachoDB.Impl
 {
     using System;
     using System.Collections;
-    using Perst;
+    using NachoDB;
     using System.Diagnostics;
 #if USE_GENERICS
     using Link = Perst.Link<IPersistent>;

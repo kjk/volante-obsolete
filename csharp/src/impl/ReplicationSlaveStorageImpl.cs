@@ -1,10 +1,10 @@
-namespace Perst.Impl
+namespace NachoDB.Impl
 {
     using System;
     using System.Net;
     using System.Net.Sockets;
     using System.Threading;
-    using Perst;
+    using NachoDB;
     
     public class ReplicationSlaveStorageImpl : StorageImpl, ReplicationSlaveStorage
     { 

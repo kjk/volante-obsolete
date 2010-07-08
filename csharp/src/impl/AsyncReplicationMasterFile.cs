@@ -1,10 +1,10 @@
-namespace Perst.Impl    
+namespace NachoDB.Impl    
 {
     using System;
     using System.Threading;
     using System.Net;
     using System.Net.Sockets;
-    using Perst;
+    using NachoDB;
 	
     /// <summary>
     /// File performing asynchronous replication of changed pages to specified slave nodes.

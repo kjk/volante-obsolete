@@ -1,6 +1,6 @@
 using System;
 
-namespace Perst
+namespace NachoDB
 {
     /// <summary>
     /// Information about memory usage for the correspondent class. 

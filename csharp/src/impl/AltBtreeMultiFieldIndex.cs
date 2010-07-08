@@ -1,4 +1,4 @@
-namespace Perst.Impl
+namespace NachoDB.Impl
 {
     using System;
 #if USE_GENERICS
@@ -7,7 +7,7 @@ namespace Perst.Impl
     using System.Collections;
     using System.Reflection;
     using System.Diagnostics;
-    using Perst;
+    using NachoDB;
     
 #if USE_GENERICS
     class AltBtreeMultiFieldIndex<T>:AltBtree<object[],T>, MultiFieldIndex<T> where T:class,IPersistent

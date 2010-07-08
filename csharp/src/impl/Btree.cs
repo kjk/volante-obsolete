@@ -1,4 +1,4 @@
-namespace Perst.Impl
+namespace NachoDB.Impl
 {
     using System;
 #if USE_GENERICS
@@ -6,7 +6,7 @@ namespace Perst.Impl
 #endif
     using System.Collections;
     using System.Diagnostics;
-    using Perst;
+    using NachoDB;
 
     enum BtreeResult {
         Done,
@@ -536,7 +536,7 @@ namespace Perst.Impl
             StorageImpl db = (StorageImpl) Storage;
             if (db == null) 
             { 
-                throw new StorageError(Perst.StorageError.ErrorCode.DELETED_OBJECT);
+                throw new StorageError(NachoDB.StorageError.ErrorCode.DELETED_OBJECT);
             }
             if (!obj.IsPersistent())
             {
@@ -594,7 +594,7 @@ namespace Perst.Impl
             StorageImpl db = (StorageImpl) Storage;
             if (db == null) 
             { 
-                throw new StorageError(Perst.StorageError.ErrorCode.DELETED_OBJECT);
+                throw new StorageError(NachoDB.StorageError.ErrorCode.DELETED_OBJECT);
             }
             if (root == 0)
             {
@@ -929,7 +929,7 @@ namespace Perst.Impl
                 db = (StorageImpl)tree.Storage;
                 if (db == null) 
                 { 
-                    throw new StorageError(Perst.StorageError.ErrorCode.DELETED_OBJECT);
+                    throw new StorageError(NachoDB.StorageError.ErrorCode.DELETED_OBJECT);
                 }
                 sp = 0;
                 int height = tree.height;
@@ -1139,7 +1139,7 @@ namespace Perst.Impl
                 db = (StorageImpl)tree.Storage;
                 if (db == null) 
                 { 
-                    throw new StorageError(Perst.StorageError.ErrorCode.DELETED_OBJECT);
+                    throw new StorageError(NachoDB.StorageError.ErrorCode.DELETED_OBJECT);
                 }
                 pageStack = new int[height];
                 posStack = new int[height];

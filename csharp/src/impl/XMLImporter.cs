@@ -1,9 +1,9 @@
-namespace Perst.Impl
+namespace NachoDB.Impl
 {
     using System;
     using System.Collections;
     using System.Reflection;
-    using Perst;
+    using NachoDB;
 	
     public class XMLImporter
     {

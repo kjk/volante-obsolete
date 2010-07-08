@@ -1,4 +1,4 @@
-namespace Perst.Impl
+namespace NachoDB.Impl
 {
     using System;
     using System.Collections;
@@ -6,7 +6,7 @@ namespace Perst.Impl
     using System.Runtime.InteropServices;
     using System.Diagnostics;
     using System.Text;
-    using Perst;
+    using NachoDB;
 	
     public sealed class ClassDescriptor:Persistent
     {

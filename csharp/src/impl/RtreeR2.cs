@@ -1,11 +1,11 @@
-namespace Perst.Impl
+namespace NachoDB.Impl
 {
     using System;
 #if USE_GENERICS
     using System.Collections.Generic;
 #endif
     using System.Collections;
-    using Perst;
+    using NachoDB;
 	
 #if USE_GENERICS
     class RtreeR2<T>:PersistentCollection<T>, SpatialIndexR2<T> where T:class,IPersistent

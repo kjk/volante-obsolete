@@ -1,4 +1,4 @@
-namespace Perst
+namespace NachoDB
 {
     using System;
 #if USE_GENERICS
@@ -77,7 +77,7 @@ namespace Perst
         /// Object can be not yet peristent, in this case
         /// its forced to become persistent by assigning OID to it.
         /// </param>
-        /// <exception cref="Perst.StorageError"><code>StorageError(StorageError.ErrorCode.INCOMPATIBLE_KEY_TYPE)</code> 
+        /// <exception cref="NachoDB.StorageError"><code>StorageError(StorageError.ErrorCode.INCOMPATIBLE_KEY_TYPE)</code> 
         /// is thrown when indexed field has type other than <code>int</code> or <code>long</code></exception>
 #if USE_GENERICS
         void Append(V obj);
@@ -99,7 +99,7 @@ namespace Perst
         /// <param name="key">wrapper of removed key
         /// </param>
         /// <returns>removed object</returns>
-        /// <exception cref="Perst.StorageError">StorageError(StorageError.ErrorCode.KEY_NOT_FOUND) exception if there is no such key in the index,
+        /// <exception cref="NachoDB.StorageError">StorageError(StorageError.ErrorCode.KEY_NOT_FOUND) exception if there is no such key in the index,
         /// or StorageError(StorageError.ErrorCode.KEY_NOT_UNIQUE) if index is not unique.
         /// 
         /// </exception>
@@ -114,7 +114,7 @@ namespace Perst
         /// <param name="key">value of removed key
         /// </param>
         /// <returns>removed object</returns>
-        /// <exception cref="Perst.StorageError">StorageError(StorageError.ErrorCode.KEY_NOT_FOUND) exception if there is no such key in the index,
+        /// <exception cref="NachoDB.StorageError">StorageError(StorageError.ErrorCode.KEY_NOT_FOUND) exception if there is no such key in the index,
         /// or StorageError(StorageError.ErrorCode.KEY_NOT_UNIQUE) if index is not unique.
         /// 
         /// </exception>

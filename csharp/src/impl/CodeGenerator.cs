@@ -6,7 +6,7 @@ using System.Reflection.Emit;
 using System.Threading;
 using System.Globalization;
 
-namespace Perst.Impl
+namespace NachoDB.Impl
 {
     /// <summary>
     /// Generate code for condition

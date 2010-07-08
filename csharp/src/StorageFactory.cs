@@ -1,7 +1,7 @@
-namespace Perst
+namespace NachoDB
 {
     using System;
-    using Perst.Impl;
+    using NachoDB.Impl;
 	
     /// <summary> Storage factory
     /// </summary>

@@ -1,4 +1,4 @@
-namespace Perst
+namespace NachoDB
 {
     /// <summary> Base class for persistent comparator used in SortedCollection class
     /// </summary>

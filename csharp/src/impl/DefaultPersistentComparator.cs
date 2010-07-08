@@ -1,7 +1,7 @@
-namespace Perst.Impl
+namespace NachoDB.Impl
 {
     using System;
-    using Perst;
+    using NachoDB;
 
 #if USE_GENERICS
     public class DefaultPersistentComparator<K,V> : PersistentComparator<K,V> where V:class,IPersistent,IComparable<V>,IComparable<K> 

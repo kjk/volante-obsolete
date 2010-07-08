@@ -1,4 +1,4 @@
-namespace Perst
+namespace NachoDB
 {
     /// <summary>
     /// This implementation of <code>IFile</code> interface can be used

@@ -2,7 +2,7 @@ using System;
 using System.Net;
 using System.Diagnostics;
 
-namespace Perst
+namespace NachoDB
 {
     /// 
     /// Convert different type of keys to 64-bit long value used in PATRICIA trie 

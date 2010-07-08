@@ -1,4 +1,4 @@
-namespace Perst
+namespace NachoDB
 {
     using System;
     using System.Collections;
@@ -144,7 +144,7 @@ namespace Perst
         /// </param>
         /// <returns>persistent object implementing index
         /// </returns>
-        /// <exception cref="Perst.StorageError">StorageError(StorageError.ErrorCode.UNSUPPORTED_INDEX_TYPE) exception if 
+        /// <exception cref="NachoDB.StorageError">StorageError(StorageError.ErrorCode.UNSUPPORTED_INDEX_TYPE) exception if 
         /// specified key type is not supported by implementation.
         /// 
         /// </exception>
@@ -171,7 +171,7 @@ namespace Perst
         /// </param>
         /// <returns>persistent object implementing thick index
         /// </returns>
-        /// <exception cref="Perst.StorageError">StorageError(StorageError.ErrorCode.UNSUPPORTED_INDEX_TYPE) exception if 
+        /// <exception cref="NachoDB.StorageError">StorageError(StorageError.ErrorCode.UNSUPPORTED_INDEX_TYPE) exception if 
         /// specified key type is not supported by implementation.
         /// 
         /// </exception>
@@ -205,7 +205,7 @@ namespace Perst
         /// </param>
         /// <returns>persistent object implementing field index
         /// </returns>
-        /// <exception cref="Perst.StorageError">StorageError(StorageError.INDEXED_FIELD_NOT_FOUND) if there is no such field in specified class,
+        /// <exception cref="NachoDB.StorageError">StorageError(StorageError.INDEXED_FIELD_NOT_FOUND) if there is no such field in specified class,
         /// StorageError(StorageError.UNSUPPORTED_INDEX_TYPE) exception if type of specified field is not supported by implementation
         /// </exception>
         FieldIndex CreateFieldIndex(Type type, string fieldName, bool unique);
@@ -237,7 +237,7 @@ namespace Perst
         /// </param>
         /// <returns>persistent object implementing field index
         /// </returns>
-        /// <exception cref="Perst.StorageError">StorageError(StorageError.INDEXED_FIELD_NOT_FOUND) if there is no such field in specified class,
+        /// <exception cref="NachoDB.StorageError">StorageError(StorageError.INDEXED_FIELD_NOT_FOUND) if there is no such field in specified class,
         /// StorageError(StorageError.UNSUPPORTED_INDEX_TYPE) exception if type of specified field is not supported by implementation
         /// </exception>
         MultiFieldIndex CreateFieldIndex(Type type, string[] fieldNames, bool unique);

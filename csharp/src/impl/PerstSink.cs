@@ -2,7 +2,7 @@ using System;
 using System.Reflection;
 using System.Runtime.Remoting.Messaging;
 
-namespace Perst.Impl
+namespace NachoDB.Impl
 {
     public class PerstSink : IMessageSink 
     {

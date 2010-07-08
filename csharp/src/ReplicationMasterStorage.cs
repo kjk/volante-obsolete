@@ -1,4 +1,4 @@
-namespace Perst
+namespace NachoDB
 {
     /// <summary>
     /// Storage performing replication of changed pages to specified slave nodes.

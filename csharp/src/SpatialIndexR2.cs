@@ -1,4 +1,4 @@
-namespace Perst
+namespace NachoDB
 {
     using System;
 #if USE_GENERICS
@@ -50,7 +50,7 @@ namespace Perst
         /// </param>
         /// <param name="obj">object removed from the index
         /// </param>
-        /// <exception  cref="Perst.StorageError">StorageError(StorageError.KEY_NOT_FOUND) exception 
+        /// <exception  cref="NachoDB.StorageError">StorageError(StorageError.KEY_NOT_FOUND) exception 
         /// if there is no such key in the index
         /// </exception>
 #if USE_GENERICS

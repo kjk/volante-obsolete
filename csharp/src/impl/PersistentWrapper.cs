@@ -1,4 +1,4 @@
-namespace Perst.Impl
+namespace NachoDB.Impl
 {
     public interface PersistentWrapper 
     {

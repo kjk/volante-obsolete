@@ -3,9 +3,9 @@ using System;
 using System.Collections.Generic;
 #endif
 using System.Collections;
-using Perst;
+using NachoDB;
 
-namespace Perst.Impl
+namespace NachoDB.Impl
 {
 #if USE_GENERICS
     class ThickIndex<K,V> : PersistentCollection<V>, Index<K,V> where V:class,IPersistent

@@ -1,4 +1,4 @@
-namespace Perst
+namespace NachoDB
 {
 	/// <summary>
 	/// Class encapsulating native .Net string. System.String is not persistent object

@@ -1,7 +1,7 @@
-namespace Perst.Impl        
+namespace NachoDB.Impl        
 {
     using System;
-    using Perst;
+    using NachoDB;
     using System.Diagnostics;
 	
     class PagePool

@@ -1,4 +1,4 @@
-namespace Perst.Impl
+namespace NachoDB.Impl
 {
     using System;
 #if USE_GENERICS
@@ -6,7 +6,7 @@ using System.Collections.Generic;
 #else
 using System.Collections;
 #endif
-    using Perst;
+    using NachoDB;
 	
 #if USE_GENERICS
     public class LinkImpl<T> : Link<T> where T:class,IPersistent

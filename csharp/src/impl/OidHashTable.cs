@@ -1,6 +1,6 @@
-namespace Perst.Impl
+namespace NachoDB.Impl
 {
-    using Perst;
+    using NachoDB;
 
     public interface OidHashTable { 
         bool        remove(int oid);

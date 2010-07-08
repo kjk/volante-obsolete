@@ -1,11 +1,11 @@
 using System;
-using Perst.Impl;
+using NachoDB.Impl;
 using System.Runtime.Remoting.Contexts;
 using System.Runtime.Remoting.Messaging;
 using System.Runtime.Remoting.Activation;
   
 
-namespace Perst
+namespace NachoDB
 {
     /// <summary>
     /// Attribute providing transparent persistency for context bound objects.

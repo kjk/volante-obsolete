@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Collections;
 #endif
 
-namespace Perst.Impl
+namespace NachoDB.Impl
 {
 #if USE_GENERICS
     class ScalableSet<T> : PersistentCollection<T>, ISet<T> where T:class,IPersistent

@@ -1,4 +1,4 @@
-namespace Perst
+namespace NachoDB
 {    
     /// <summary>
 	/// Interface to store/fetch large binary objects

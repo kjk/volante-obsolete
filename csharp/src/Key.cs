@@ -1,8 +1,8 @@
-namespace Perst
+namespace NachoDB
 {
     using System;
-    using ClassDescriptor = Perst.Impl.ClassDescriptor;
-    using FieldType = Perst.Impl.ClassDescriptor.FieldType;
+    using ClassDescriptor = NachoDB.Impl.ClassDescriptor;
+    using FieldType = NachoDB.Impl.ClassDescriptor.FieldType;
 	
     /// <summary> Class for specifying key value (neededd to access obejct by key usig index)
     /// </summary>

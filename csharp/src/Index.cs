@@ -1,4 +1,4 @@
-namespace Perst
+namespace NachoDB
 {
     using System;
 #if USE_GENERICS
@@ -94,7 +94,7 @@ namespace Perst
         /// </param>
         /// <param name="obj">object removed from the index
         /// </param>
-        /// <exception cref="Perst.StorageError">StorageError(StorageError.ErrorCode.KEY_NOT_FOUND) exception if there is no such key in the index
+        /// <exception cref="NachoDB.StorageError">StorageError(StorageError.ErrorCode.KEY_NOT_FOUND) exception if there is no such key in the index
         /// 
         /// </exception>
 #if USE_GENERICS
@@ -109,7 +109,7 @@ namespace Perst
         /// </param>
         /// <param name="obj">object removed from the index
         /// </param>
-        /// <exception cref="Perst.StorageError">StorageError(StorageError.ErrorCode.KEY_NOT_FOUND) exception if there is no such key in the index
+        /// <exception cref="NachoDB.StorageError">StorageError(StorageError.ErrorCode.KEY_NOT_FOUND) exception if there is no such key in the index
         /// 
         /// </exception>
 #if USE_GENERICS
@@ -123,7 +123,7 @@ namespace Perst
         /// <param name="key">wrapper of removed key
         /// </param>
         /// <returns>removed object</returns>
-        /// <exception cref="Perst.StorageError">StorageError(StorageError.ErrorCode.KEY_NOT_FOUND) exception if there is no such key in the index,
+        /// <exception cref="NachoDB.StorageError">StorageError(StorageError.ErrorCode.KEY_NOT_FOUND) exception if there is no such key in the index,
         /// or StorageError(StorageError.ErrorCode.KEY_NOT_UNIQUE) if index is not unique.
         /// 
         /// </exception>
@@ -138,7 +138,7 @@ namespace Perst
         /// <param name="key">value of removed key
         /// </param>
         /// <returns>removed object</returns>
-        /// <exception cref="Perst.StorageError">StorageError(StorageError.ErrorCode.KEY_NOT_FOUND) exception if there is no such key in the index,
+        /// <exception cref="NachoDB.StorageError">StorageError(StorageError.ErrorCode.KEY_NOT_FOUND) exception if there is no such key in the index,
         /// or StorageError(StorageError.ErrorCode.KEY_NOV_UNIQUE) if index is not unique.
         /// 
         /// </exception>

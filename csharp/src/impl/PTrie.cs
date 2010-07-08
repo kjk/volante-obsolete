@@ -1,12 +1,12 @@
 using System;
-using Perst;
+using NachoDB;
 #if USE_GENERICS
 using System.Collections.Generic;
 #else
 using System.Collections;
 #endif
 
-namespace Perst.Impl
+namespace NachoDB.Impl
 {
 #if USE_GENERICS
     class PTrie<T> : PersistentCollection<T>, PatriciaTrie<T>  where T:class,IPersistent 

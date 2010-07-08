@@ -1,5 +1,5 @@
 using System;
-using Perst;
+using NachoDB;
 
 class Detail : Persistent 
 {

@@ -1,4 +1,4 @@
-namespace Perst
+namespace NachoDB
 {
     using System;
 #if USE_GENERICS
@@ -57,7 +57,7 @@ namespace Perst
         /// </param>
         /// <returns>object with this value of the key or <code>null</code> if key nmot found
         /// </returns>
-        /// <exception cref="Perst.StorageError">StorageError(StorageError.ErrorCode.KEY_NOT_UNIQUE) exception if there are more than 
+        /// <exception cref="NachoDB.StorageError">StorageError(StorageError.ErrorCode.KEY_NOT_UNIQUE) exception if there are more than 
         /// one objects in the index with specified value of the key.
         /// 
         /// </exception>
@@ -73,7 +73,7 @@ namespace Perst
         /// </param>
         /// <returns>object with this value of the key or <code>null</code> if key nmot found
         /// </returns>
-        /// <exception cref="Perst.StorageError">StorageError(StorageError.ErrorCode.KEY_NOT_UNIQUE) exception if there are more than 
+        /// <exception cref="NachoDB.StorageError">StorageError(StorageError.ErrorCode.KEY_NOT_UNIQUE) exception if there are more than 
         /// one objects in the index with specified value of the key.
         /// 
         /// </exception>

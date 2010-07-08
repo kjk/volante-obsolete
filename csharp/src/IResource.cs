@@ -1,4 +1,4 @@
-namespace Perst
+namespace NachoDB
 {
     ///<summary>
     /// Interface of object supporting locking

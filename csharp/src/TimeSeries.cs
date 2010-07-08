@@ -1,4 +1,4 @@
-namespace Perst
+namespace NachoDB
 {
     using System;
 #if USE_GENERICS
@@ -183,20 +183,20 @@ namespace Perst
         /// <summary>
         /// Get timestamp of first time series element
         /// </summary>
-        /// <exception cref="Perst.StorageError">StorageError(StorageError.ErrorClass.KEY_NOT_FOUND) if time series is empy</exception>
+        /// <exception cref="NachoDB.StorageError">StorageError(StorageError.ErrorClass.KEY_NOT_FOUND) if time series is empy</exception>
         DateTime FirstTime {get;}
 
         /// <summary>
         /// Get timestamp of last time series element
         /// </summary>
-        /// <exception cref="Perst.StorageError">StorageError(StorageError.ErrorClass.KEY_NOT_FOUND) if time series is empy</exception>
+        /// <exception cref="NachoDB.StorageError">StorageError(StorageError.ErrorClass.KEY_NOT_FOUND) if time series is empy</exception>
         DateTime LastTime {get;}
 
         /// <summary> 
         /// Get tick for specified data
         /// </summary>
         /// <param name="timestamp">time series element timestamp</param>
-        /// <exception cref="Perst.StorageError">StorageError(StorageError.ErrorClass.KEY_NOT_FOUND) if no element with such timestamp exists</exception>
+        /// <exception cref="NachoDB.StorageError">StorageError(StorageError.ErrorClass.KEY_NOT_FOUND) if no element with such timestamp exists</exception>
 #if USE_GENERICS
         T this[DateTime timestamp] 
 #else

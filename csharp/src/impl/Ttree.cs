@@ -1,4 +1,4 @@
-namespace Perst.Impl
+namespace NachoDB.Impl
 {
     using System;
 #if USE_GENERICS
@@ -6,7 +6,7 @@ namespace Perst.Impl
 #else
     using System.Collections;
 #endif
-    using Perst;
+    using NachoDB;
 
 #if USE_GENERICS
     class Ttree<K,V>:PersistentCollection<V>, SortedCollection<K,V>  where V:class,IPersistent

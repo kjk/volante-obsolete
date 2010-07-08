@@ -1,4 +1,4 @@
-namespace Perst.Impl
+namespace NachoDB.Impl
 {
     using System;
 #if USE_GENERICS
@@ -8,7 +8,7 @@ namespace Perst.Impl
 #endif
     using System.Reflection;
     using System.Diagnostics;
-    using Perst;
+    using NachoDB;
 	
 #if USE_GENERICS
     class TimeSeriesImpl<T> : PersistentResource, TimeSeries<T> where T:TimeSeriesTick

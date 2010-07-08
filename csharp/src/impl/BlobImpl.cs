@@ -1,8 +1,8 @@
-namespace Perst.Impl
+namespace NachoDB.Impl
 {
     using System;
     using System.IO;
-    using Perst;
+    using NachoDB;
 
 
     public class BlobImpl : PersistentResource, Blob 
