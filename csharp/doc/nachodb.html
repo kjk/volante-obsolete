@@ -1,0 +1,1231 @@
+<HTML>
+<HEAD>
+<TITLE>PERST - Simple, Fast, Convenient Object Oriented Database</TITLE>
+<UL>
+<LI> <A HREF = "#introduction">Introduction</A>
+
+<LI> <A HREF = "#features">Features</A>
+  <UL>
+  <LI> <A HREF = "#pbs">Persistency by reachability</A>
+  <LI> <A HREF = "#load">Semitransparent object loading</A>
+  <LI> <A HREF = "#scheme">Automatic sheme evaluation</A>
+  <LI> <A HREF = "#relations">Relations</A>
+  <LI> <A HREF = "#indices">Indices</A>
+  <LI> <A HREF = "#projection">Projection</A>
+  <LI> <A HREF = "#transaction">Transaction model</A>
+  </UL>
+<LI> <A HREF = "#transparent">Transparent API's</A>
+  <UL>
+  <LI> <A HREF = "#remoting">Using .Net remoting API</A>
+  <LI> <A HREF = "#props">Using virtual properties</A>
+  </UL>
+<LI> <A HREF = "#implementation">PERST implementation issues</A>
+  <UL>
+  <LI> <A HREF = "#memory">Memory allocation</A>
+  <LI> <A HREF = "#logless">Logless transactions</A>
+  </UL>
+<LI> <A HREF = "#where">Where to use</A>
+<LI> <A HREF = "#quick">Quick start</A>
+<LI> <A HREF = "#tuning">Tuning</A>
+<LI> <A HREF = "#tips">Tricks and tips</A>
+<LI> <A HREF = "WebPages/Solution_Perst.HTM">Perst API Web Pages</A>
+<LI> <A HREF = "#distribution">Distribution terms</A>
+</UL>
+</UL>
+
+<BODY>
+<HR>
+<H2><A NAME = "introduction">Introduction</A></H2>
+
+PERST is very simple object oriented embedded database. It is easy to use and
+provide high performance. It is intended to be used in applications which needs to deal with persistent 
+data in more sophisticated way than load/store object tree provided but standard serialization mechanism.
+Although PERST is very simple, it provides fault tolerant support (ACID transactions) 
+and concurrent access to the database.<P> 
+
+The main advantage of PERST is tight integration with programming language.
+There is no gap between database and application data models - PERST directly stores language objects.
+So there is no need in packing/unpacking code, which has to be written for traditional relational databases. 
+Also PERST (unlike many other OODBMS) requires no special compiler or preprocessor. And still it is able to 
+provide high level of transparency.<P>
+
+<H2> <A NAME = "features">Features</A></H2>
+Lets now describe key features of PERST architecture. 
+
+<H3> <A NAME = "pbs">Persistency by reachability</A></H3>
+
+PERST is implementing <I>persistency by reachability</I> approach. Object of any class derived from 
+<code>Persistent</code> base class is considered as persistent capable. It is automatically made
+persistent and stored in the storage when it is referenced from some other persistent object and
+<code>store</code> method of that object was invoked. So there is no need (but it is possible) to explicitly 
+assign object to the storage.<P>
+
+The storage has one special <I>root</I> object. Root object is the only persistent object accessed in the special
+way (using <code>Storage.getRoot</code> method). All other persistent objects are accessed in normal way:
+either by traversing by references from another persistent objects, either using object containers (<code>Index</code>, 
+<code>Link</code> or <code>Relation</code>). Unlike many other OODBMS, there can be only one root in the storage.
+If you need to have several named roots, you should create <code>Index</code> object and use it as root object.<P>
+
+PERST requires that each persistent capable class should be derived from <code>Persistent</code> class.
+It makes not possible to store "foreign" classes in the storage. This is the cost of easy use of PERST and lack
+of any specialized preprocessors or compilers. Also components of persistent capable object are restricted to have 
+the following types:
+
+<DL>
+<DT>Scalar types
+<DD>Any valid CSharp scalar type: boolean, integer, real or enum. For example <code>bool, int, short, double,...</code>
+<DT>String type
+<DD><code>System.String</code> type
+<DT>Date type
+<DD><code>System.DateTime</code> type
+<DT>Reference to the persistent object
+<DD>Any class inherited from <code>Persistent</code> or any interface extending <code>IPersistent</code> interface.
+<DT>Value type
+<DD>Any C-Sharp value type with the same restrictions for types of components as for persitent capable objects.
+Values are stored inside the persistent object containing them. 
+<DT>Raw binary type
+<DD>Any CSharp class not derived from <code>IPersistent</code> or  <code>IValue</code> interfaces and marked as Serializable.
+Standard CSharp serialization mechanism will be used to pack cluster of such objects into byte array which will be 
+stored in the database. The class should be marked with <code>Serializable</code> attribute
+and should not contain references to persistent objects. 
+<DT>Array type
+<DD>One dimensional array with type of the components described above
+<DT>Link type
+<DD>One-to-many link or from implementation point of view - dynamic array of persistent object.
+Links are created using <code>Storage.createLink</code> method.
+</DL><P>
+
+Unfortunately it is not possible to detect if object is changed or not without saving old state of the object
+and performing field-by-field comparison with new state of the object. But overhead of such solution 
+(both space and CPU) is very high. In PERST it is responsibility of programmer to save object in the storage.
+It can be done by <code>Persistent.store</code> method. or <code>Persistent.modify</code> methods.<P>
+
+<code>Persistent.store</code> method writes object in the storage as well
+as all objects referenced from this object which are not yet persistent. So if you create tree of objects
+and assign reference to the root of this tree to some persistent object <B>X</B>, it is only necessary to 
+invoke <code>store()</code> method in this object <B>X</B>. But then if you update one of the elements in this tree, 
+you should invoke <code>store()</code> individually for each such element (<code>X.store()</code> will
+NOT now automatically save referenced objects).<P>
+
+<code>Persistent.modify</code> method mark object is modified but doesn't immediately write it to the storage.
+All objects marked as modified will be stored to the storage during transaction commit (<code>store</code> method
+will be invoked for each modified object). So using <code>modify</code> method is preferable if object
+is updated multiple times within transaction. In this case instead of storing it several times, it will
+be stored only once at the end.<P>
+
+
+<H3> <A NAME = "load">Semitransparent object loading</A></H3>
+
+PERST is not using any special compiler or preprocessor. And since C# doesn't provide
+runtime behavior reflection (changing behavior of object at runtime), it is not possible to implement completely
+transparent persistence (when there are no differences between access to transient and persistent objects).
+Instead of it PERST propose transparent behavior in most cases with some exceptions.<P>
+
+<code>IPersistent</code> interface declares <code>recursiveLoading</code> method. Default implementation of 
+this method in <code>Persistent</code> class always returns <code>true</code>. In this case PERST 
+will recursively load any object referenced from target object when target object is loaded. 
+So it cause implicit loading of all cluster of referenced objects from storage to main memory.
+It is similar with how serialization mechanism works.<P>
+
+To avoid overflow of main memory caused by recursive loading of all objects fro the storage, 
+programmer has to overload <code>recursiveLoading</code> method in some classes and return <code>false</code> n it.
+Objects loaded from such object will not be implicitly loaded and programmer has to explicitly 
+invoke <code>Persistent.load</code> method to load them. So <code>recursiveLoading</code> method can be used
+to control loading of objects from storage to main memory.<P>
+
+Also it is important to notice that containers (<code>Link, Relation, Index</code>) always load member object on demand 
+(do not perform automatic loading of all objects in the containers). Since access to the container members is always 
+performed through methods of the container class, programmer will never notice it - container methods will always
+return loaded object(s).<P>
+
+PERST is using default constructor (constructor without parameters) to create object loaded from the storage. 
+It means the following things:
+<OL>
+<LI>All persistent capable classes should have default constructor (or have no constructor at all, in this case
+it will be automatically generated by compiler). Default constructor should not necessarily be public, it can have any
+access type. 
+<LI>Default constructor should initialize only transient fields. 
+<LI>Default constructor is used to create instance of the persistent object loaded from the storage. 
+So at the time of default constructor execution field of the constructed object are not yet assigned values stored in the database.
+If you need these values to be able to perform initialization of transient fields, then you need to perform this initialization in
+<code>onLoad</code> method which is invoked after fetching of all values of non-transient fields of persistent object from the storage. 
+</OL><P>
+
+So summarizing all above, proposed mechanism is convenient and easy to use because it doesn't require programmer
+to explicitly load any referenced object and from another point of view is is flexible above by providing programmer control
+on object loading. Only those classes (usually containers) which explicitly control loading of their
+members (by overloading <code>recursiveLoading</code> to return <code>false</code> value) should be aware
+calling <code>Persistent.load</code> method.<P> 
+
+
+
+<H3> <A NAME = "scheme">Automatic scheme evaluation</A></H3>
+
+PERST supports lazy automatic scheme evaluation. When class format is changed, 
+PERST perform conversion of loaded object to new format. If this object is modified, 
+it will be stored in new format. So object is converted to the new format on demand.
+PERST is able to handle the following scheme changes:
+
+<OL>
+<LI>Compatible change of scalar type (change which could not cause data truncation).
+For example it is possible to change <code>int</code> type to <code>long</code> or 
+<code>int</code> to <code>float</code>. But changing type from <code>int</code> to
+<code>short</code> is not possible. More precisely, PERST is able to perform any conversion
+which is supported by Java reflection mechanism (field type XXX can be changed to YYY
+if <code>java.lang.reflect.Field.setXXX</code> method can be applied to the component with type YYY).
+<LI>Reordering components within class or moving component to base or derived class.
+<LI>Adding/removing classes from class inheritance hierarchy.
+<LI>Changing format of classes with value semantic. 
+</OL><P>
+
+All other schema modifications (such as renaming fields, incompatible change of field type)
+could not be handled by PERST automatic schema modification mechanism. 
+In this case you can use Perst XML export/import mechanism. Database can be 
+exported to XML format using <code>Storage.exportXML</code> method, 
+then recreated with new class definitions and  after it saved data can be imported using 
+<code>Storage.importXML</code> method.<P>
+
+
+<H3> <A NAME = "relations">Relations</A></H3>
+
+CSharp references provides a way to implement one-to-one relation between objects.
+But in many cases one-to-many and many-to-many relations are needed. 
+PERST provides <code>Link</code> interface to deal with relations of such kind.
+This interface allows to add/delete/inspect members of the relation.
+Members of the relation can be accessed by index or be extracted as array of objects.<P>
+
+Relations can be of two kinds: <I>embedded</I> (when references to the related objects are stored in relation
+owner object itself) and <I>standalone</I> (when relation is separate object, which contains
+the reference to the relation owner and relation members). Both kinds of relations
+implements Link interface. Embedded relation is created by <code>Storage.createLink</code> method
+and standalone relation is represented by Relation persistent class created by
+<code>Storage.createRelation</code> method.<P>
+
+So relation between two classes A and B can be implemented in the following way:<P>
+
+<TABLE BORDER>
+<TR><TH>Relation type</TH><TH>Object A</TH><TH>Object B</TH></TR>
+<TR><TD>one-to-one</TD><TD><code>B bref;</code></TD><TD><code>A aref;</code></TD></TR>
+<TR><TD>one-to-many</TD><TD><code>Link bref;</code></TD><TD><code>A aref;</code></TD></TR>
+<TR><TD>many-to-one</TD><TD><code>B bref;</code></TD><TD><code>Link aref;</code></TD></TR>
+<TR><TD>many-to-many</TD><TD><code>Link bref;</code></TD><TD><code>Link aref;</code></TD></TR>
+</TABLE><P>
+
+<H3> <A NAME = "indices">Indices</A></H3>
+
+Usually objects are accessed by traversing from one object to another using references or links.
+But it is frequently needed to locate object by key. In .NET <code>Hashtable</code> class
+can be used for it. In databases usually more sophisticated search is required. 
+I do not want to implement in PERST complete SQL language, because it immediately makes DBMS huge and slow.
+But in most cases application is performing only very simple queries using exact match or key range.
+This is done in PERST by <code>Index</code> and <code>IndexField</code> interfaces. First interface is used
+for independent specification key and associated value. <code>IndexField</code> interface allows to index objects
+using one of the fields of this object (key field).<P>
+
+
+Indices are created in PERST using <code>Storage.createIndex</code> or <code>Storage.createFieldIndex</code> methods. 
+There can be several index implementations
+but right now only one implementation based on B+Tree is provided (because B+Tree is the most efficient structure
+for disk based databases). Methods of <code>Index</code> and <code>FieldIndex</code> interface allows to add, remove and 
+locate objects by key. It is possible to perform search either specifying exact key value either specifying range of key values
+(high or low boundary or both of them can be skipped or can be declared as been exclusive or inclusive).
+So it is possible to perform the following types of search:<P>
+
+<OL>
+<LI>key is equals to VAL
+<LI>key belongs to [MIN_VAL, MAX_VAL]
+<LI>key belongs to [MIN_VAL, MAX_VAL)
+<LI>key belongs to (MIN_VAL, MAX_VAL]
+<LI>key belongs to (MIN_VAL, MAX_VAL)
+<LI>key is greater than MIN_VAL
+<LI>key is greater or equals to MIN_VAL
+<LI>key is less than than MAX_VAL
+<LI>key is less than or equals to MAX_VAL
+</OL><P>
+
+There are several different ways of selecting objects using index:
+<DL>
+<DT><code>IPersistent get(Key key)</code>
+<DD>Get object by key. This method should be used for unique indices to locate object by exact key value.
+<DT><code>IPersistent[] get(Key from, Key till)</code>
+<DD>Get array of objects with key belonging to the specified range. Either from boundary, either till boundary either both of them can be <code>null</code>. Both boundaries can be inclusive or exclusive.
+<DT><code>IEnumerator GetEnumerator()</code>
+<DD>Get iterator which will traverse all objects in the index in key ascending order.
+You can use index in <code>foreach</code> construction to iterate through all indexed objects. 
+<DT><code>IEnumerator GetEnumerator(Key from, Key till, IterationOrder order)</code>
+<DD>Get iterator for objects with key belonging to the specified range. Either from boundary, either till boundary either both of them can be <code>null</code>. Both boundaries can be inclusive or exclusive. Objects can be traversed in key ascending or descending order .
+</DL><P>
+
+If you need set of persistent objects you should use <code>Storage.createSet</code> method.
+Set is implemented using B+Tree where object OID is used as a key.<P> 
+
+PERST also support spatial indices (<code>org.garret.perst.SpatialIndex</code>) and generic indices with
+user defined comparator (<code>org.garret.perst.SortedCollection</code>). 
+Spatial index is implemented using Guttman's R-Tree with quadratic split algorithm.
+It allows efficient search of R2 objects. Sorted collection provides almost the same methods
+as <code>FieldIndex</code> but it uses user defined comparator to compare collection members.
+Sorted collection is implemented using T-Tree and is especially efficient for main-memory
+databases.</P>
+
+The table below summarize information about all indeices supported by PERST:
+
+<TABLE border>
+<TR><TH>Interface</TH><TH>Description</TH><TH>Key type</TH><TH>Implementation</TH><TH>Created by</TH></TH>
+<TR>
+<TD><code>Index</code></TD>
+<TD>Index with explicitely specified key used for exact match or range queries</TD>
+<TD>scalar, string or reference</TD>
+<TD align=center>B+Tree</TD>
+<TD><code>Storage.CreateIndex(Type type, boolean unique)</code></TD>
+</TR>
+<TR>
+<TD><code>Index</code></TD>
+<TD>The same as above but assuming that there can be a lot of duplicate key values</TD>
+<TD>scalar, string or reference</TD>
+<TD align=center>B+Tree</TD>
+<TD><code>Storage.CreateThinkIndex(Type type)</code></TD>
+</TR>
+<TR>
+<TD><code>FieldIndex</code></TD>
+<TD>Index constructed for one of the object fields</TD>
+<TD>scalar, string or reference</TD>
+<TD align=center>B+Tree</TD>
+<TD><code>Storage.CreateFieldIndex(Type type, String fieldName, boolean unique)</code></TD>
+</TR>
+<TR>
+<TD><code>BitIndex</code></TD>
+<TD>Bit index for searching object by bitmap of properties</TD>
+<TD>persistent object</TD>
+<TD align=center>B+Tree</TD>
+<TD><code>Storage.CreateBitIndex()</code></TD>
+</TR>
+<TR>
+<TD><code>ISet</code></TD>
+<TD>Set of persistent objects</TD>
+<TD>-</TD>
+<TD align=center>B+Tree</TD>
+<TD><code>Storage.CreateSet()</code></TD>
+</TR>
+<TR>
+<TD><code>IPersistentSet</code></TD>
+<TD>Scalable set of persistent objects (can efficienty handle both small and large number of members</TD>
+<TD>persistent object</TD>
+<TD align=center>Link or B+Tree</TD>
+<TD><code>Storage.CreateScalableSet()</code></TD>
+</TR>
+<TR>
+<TD><code>SpatialIndex</code></TD>
+<TD>Index for spatial objects</TD>
+<TD>Rectangle</TD>
+<TD align=center>R-Tree</TD>
+<TD><code>Storage.CreateSpatialIndex()</code></TD>
+</TR>
+<TR>
+<TD><code>SpatialIndexR2</code></TD>
+<TD>Index for spatial objects with real coordinates</TD>
+<TD>RectangleR2</TD>
+<TD align=center>R-Tree</TD>
+<TD><code>Storage.CreateSpatialIndexR2()</code></TD>
+</TR>
+<TR>
+<TD><code>SortedCollection</code></TD>
+<TD>Index with user defined comparator</TD>
+<TD>any</TD>
+<TD align=center>T-Tree</TD>
+<TD><code>Storage.CreateSortedCollection(PersistentComparator comparator, boolean unique)</code></TD>
+</TR>
+</TABLE><P>
+
+
+<H3> <A NAME = "projection">Projection</A></H3>
+
+Using PERST indices programmer can easily implement most of simple SQL queries, like:
+
+<pre>
+    select * from T where x=?;
+</pre>
+
+PERST relations can be used to implement simple joins, 
+like the following SQL query fetching all order to the particular vendor:
+
+<pre>
+    select * from O Order, V Vendor where O.vendorID = V.id AND V.name='ABC';
+</pre>
+
+In PERST it is possible to select first vendor using index search and ten traverse 
+correspondent relation to locate all orders to this vendor.<P>
+
+But sometimes it is needed to implement more complex queries.
+It is also possible in Perst without need to write query in some special 
+(non-procedural) language. Class <code>Projection</code> is use to combine results
+of several simple operations (such index search). Lets start explanation of this class with an 
+example. Consider that we need to know all order for the detail with name started with 'D1' 
+shipped by vendors with name started with 'V1' or 'V3'. 
+SQL statement which perform this query is the following:
+
+<pre>
+    select * from O Order, V Vendor, D Detail where D.name like 'D1%' and O.detailID = D.id
+        and O.vendorID = V.id and (V.name like 'V1%' OR V.name like 'V3%');
+</pre>
+
+
+And now how it can be done in Perst. Consider that we have indices for 
+details and vendors:
+
+<pre>
+    FieldIndex detailIndex = db.CreateFieldIndex(typeof(Detail), "name", true);
+    FieldIndex vendorIndex = db.CreateFieldIndex(typeof(Vendor), "name", true);
+</pre>
+
+
+Set of requested orders can be obtained in the following way:
+
+<pre>
+    //  Projection from vendors to orders (using "orders" field of Link type)
+    Projection v2o = new Projection(typeof(Vendor), "orders");
+    //  Projection from details to orders (using "orders" field of Link type)
+    Projection d2o = new Projection(typeof(Detail), "orders");
+    // Select vendors with name like 'V1%'
+    v2o.Project(vendorIndex.StartsWith("V1"));
+    // Select vendors with name like 'V3%'
+    v2o.Project(vendorIndex.StartsWith("V3"));
+    // Select details with name like 'D1%'
+    d2o.Project(detailIndex.StartsWith("D1"));
+    // Join projections
+    v2o.Join(d2o);
+    // Get array of requested orders
+    Order[] orders = (Order[])v2o.ToArray(typeof(Order)]);
+</pre>
+
+So, as you see Projection class is used for several purposes:
+
+<OL>
+<LI>Combine result of several simple operations (implementing OR operator)
+<LI>Eliminate duplicates of such merge
+<LI>Get set of related objects (perform projection using specified projection field)
+<LI>Join several projections (analogue of SQL JOIN)
+</OL><P>
+
+It is possible to derive your own class from <code>Projection</code> to implement 
+more sophisticated projections than using single projection field.<P>
+
+If you need to sort selection in some particular order, then most efficient way 
+is to use <code>FieldIndex</code> for it. When you select objects using index, selected objects
+are sorted by search key. If you need to sort selection by field which is not search key, 
+than you can use <code>Array.Sort</code> method. For example if in the query described above
+we need to sort orders by price field, it can be done with the following statement:
+
+<pre>
+    Array.Sort(orders, Order.PriceComparer);
+</pre><P>
+
+
+<H3> <A NAME = "transaction">Transaction model</A></H3>
+
+PERST preserve consistency of the data in case of system or application failure. 
+Transaction mechanism is used to implement all-or-nothing database update. 
+Transaction in PERST are started implicitly when update operation is first time performed 
+and finished explicitly by <code>commit, rollback</code> or <code>close</code> methods.<P>
+
+Commit of transaction cause synchronous write of changed pages to the disk.
+Synchronous write (application is blocked until data is really flushed to the disk) is very expensive operation.
+Average positioning time for modern disks is about 10ms, so them are usually not able to perform in one second
+more than 100 writes in random places. As far as transaction usually consists of several updated pages, 
+it leads to average performance about 10 transaction commits per second.<P>
+
+Performance can be greatly increased if you minimize number of commits (larger transactions).
+PERST is using shadow mechanism for transaction implementation. When object is changed first time
+during transaction, shadow of the object is created and original object is kept unchanged. If 
+object is updated multiple times during transaction, shadow is create only once. 
+Because of using shows, PERST do not need transaction log file. So in PERST
+long transaction can not cause transaction log overflow as in most of other DBMSes.
+Quite the contrary, if you do not call commit at all, PERST works as DBMS without transaction
+support, adding almost no overhead of supporting transactions.<P>
+
+The only drawback of long transactions is possibility to loose a lot of changes in case of fault.
+PERST will preserve consistency of the database, but all changes made since list commit will be lost.<P> 
+
+
+<H2> <A NAME = "transparent">Transparent API's</A></H2>
+<H3> <A NAME = "remoting">Using .Net remoting API</A></H3>
+
+.Net framework provides System.Runtime.Remoting package for easy
+implementation of distributed applications. Programmer should only derived
+its class from ContextBoundObject and use ContextAttribute which is responsible
+for providing <i>message sink</i>: mechanism for controlling invocation of methods and access
+to fields of the object. Using this API its is possible to implement not only distributed
+system, but also any system based on <i>metaobject protocol</i>: protocol of controlling
+behavior of the object. For example it is possible to implement transparent interface to object
+oriented database using this API.<p>
+
+Perst.NET includes two classes PersistentContext and TransparentPersistenceAttrribute
+which are used to provide transparent persistence for C# objects using .Net remoting API. 
+If application class is derived from PersistentContext and marked with TransparentPersistence 
+attribute, it will automatically load on demand its content from the database and 
+automatically store content if the object is modified. Implementation of 
+<code>recursiveLoading</code> method in <code>PersistentContext</code> class returns false, 
+so object are loaded from the database only when them are accessed.<P>
+
+But there are two significant restrictions on using remoting API:
+<UL>
+<LI>Remoting API can handle only public members of the class
+<LI>It cause significant performance overhead (invocation of method through remoting API
+is about 100 times slower than normal method invocation).
+</UL><P>
+
+<code>TransparentGuess</code> example illustrates using of this Perst transparent API.<p>
+
+<H3><A NAME = "props">Using virtual properties</A></H3>
+
+Yet another attempt to build transparent API to Perst without using special
+preprocessor (enhancer) is based on the idea of using virtual properties.
+Unlike Java, C# provides property mechanism which allows to encapsulate 
+representation of object component. Idea originally proposed by 
+<A href="shiziye@hotmail.com">Shi Ziye</A> is very simple - generate wrapper class
+which will implement these properties. So programmer should not worry any more
+about cutting recursive loading of objects by redefinition of
+<code>IPersistent.RecursiveLoading</code> method and explicit loading 
+of object using <code>IPersistent.Load</code> method or about explicit
+marking of updated object by <code>IPersistent.Modify</code> method.
+So a lot of error prone things are disappears. But certainly this approach has their 
+own drawbacks:
+
+<OL>
+<LI>Your persistent objects can not have persistent fields, instead of it
+you should define abstract properties (it is also possible to define properties
+in interface). Fortunately C# provides convenient mechanism for working
+with properties, so it will significantly complicates programming. 
+<LI>You can not create persistent object by new operator - you should
+use <code>IStorage.CreateClass</code> method which will generate wrapper class
+and create instance of this class. Also persistent class should have no constructor
+except default. And this default constructor should not do something else except 
+initialization of transient components, because this constructor will be invoked each time 
+object is loaded from the storage.
+<LI>It is not possible to have arrays of references. You have to use 
+<code>Perst.PArray</code> class instead.
+<LI>Generation of wrapper classes is not cheap operations, so if there are many classes
+in your applications, then it can take significant time during database open.
+<LI>This mechanism will not work in Compact.Net framework 
+because it doesn't support code generation at runtime.
+</OL><P>
+
+There are two possible ways of defining persistent classes using this API.
+First is based in using interfaces:
+
+<pre>
+class Node:IPersistent {
+    int Weight {
+        get;
+        set;
+    }
+    Node Parent { 
+        get;
+        set;
+    }
+}
+</pre>
+
+Please notice that you should extend IPersistent interface.
+In this case Perst will derive generated wrapper class from
+<code>Perst.Persistent</code> class (or from <code>Perst.PersistentResource</code> class 
+if specified interface extends <code>Perst.IResource</code> interface).
+Wrapper class will implement specified interface and contains correspondent fields:
+
+<pre>
+class NodeWrapper:Persistent, Node {
+    public int Weight {
+        get {
+            return weight;
+        }
+        set {
+            weight = value;
+            Modify();
+        }
+    }
+    public Node Parent {
+        get {
+            return (Node)Storage.getByOid(parent);
+        }
+        set {
+            parent = value.MakePersistent(Storage);
+            Modify();
+        }
+    }
+}
+</pre>
+
+         
+In the second case you are using abstract class instead of interface:
+
+<pre>
+interface Node:Persistent {
+    public abstract int Weight {
+        get;
+        set;
+    }
+    public abstract Node Parent { 
+        get;
+        set;
+    }
+}
+</pre>
+
+This class has to be derived from Persistent or PersistentResource class.
+There is only one difference in generated wrapper class - it extends specified 
+abstract class:
+
+<pre>
+class NodeWrapper:Node {
+    ...
+}
+</pre><p>
+
+As far as there are not direct references between objects when this API is used, 
+garbage collector will remove from memory all persistent objects which are not referenced
+from some program variables. That is why it is highly recommended to use LRU object cache
+to increase performance (it is used by default).<p>
+
+<code>PropGuess</code> example illustrates using of this Perst transparent API.<p>
+
+
+<H2> <A NAME = "implementation">PERST implementation issues</A></H2>
+
+Below is more detailed description of PERST implementation.
+This section can be skipped if you are not interested in the details of implementation:<P>
+
+
+<H3> <A NAME = "memory">Memory allocation</A></H3>
+
+Memory allocation is performed in PERST by bitmap. Memory is allocated in
+chunks called allocation quantum. In current version of PERST size of
+allocation quantum is 64 byte. It means that size of all allocated objects is
+aligned on 64 byte boundary. Each 64 byte of database memory is represented by
+one bit in the bitmap. To locate hole of requested size in bitmap, PERST
+sequentially searches bitmap pages for correspondent number of successive
+cleared bits. PERST use three arrays indexed by bitmap byte, which
+makes possible fast calculation of hole offset and size within the byte.<P>
+
+PERST performs cyclic scanning of bitmap pages. It keeps identifier
+of current bitmap page and current position within the page. Each time
+when allocation request arrives, scanning of the bitmap starts from the
+current position.
+When last allocated bitmap page is scanned, scanning continues from the
+beginning (from the first bitmap page) and until current position.
+When no free space is found after full cycle through all bitmap pages,
+new bulk of memory is allocated. Size of extension is maximum of
+size of allocated object and extension quantum. Extension quantum is parameter
+of database, specified in constructor. Bitmap is extended to be able to map
+additional space. If virtual space is exhausted and no more
+bitmap pages can be allocated, then <code>OutOfMemory</code> error
+is reported.<P>
+
+Allocation memory using bitmap provides high locality of references
+(objects are mostly allocated sequentially) and also minimizes
+number of modified pages. Minimization of number of modified pages is
+significant when commit operation is performed and all dirty pages should
+be flushed on the disk. When all cloned objects are placed sequentially,
+number of modified pages is minimal and so transaction commit time is also
+reduced. Using extension quantum also helps to
+preserve sequential allocation. Once bitmap is extended, objects will
+be allocated sequentially until extension quantum will be completely used.
+Only after reaching the end of the bitmap, scanning restarts from the beginning
+searching for holes in previously allocated memory.<P>
+
+
+To reduce number of bitmap pages scans, PERST associates descriptor with
+each page, which is used to remember maximal size of the hole on the page.
+Calculation of maximal hole size is performed in the following way:
+if object of size <I>M</I> can not be allocated from this bitmap pages,
+then maximal hole size is less than <I>M</I>, so <I>M</I>
+is stored in the page descriptor if previous value of descriptor is large
+than <I>M</I>. For next allocation of object of size greater or
+equal than <I>M</I>, we will skip this bitmap page. Page descriptor
+is reset when some object is deallocated within this bitmap page.<P>
+
+Some database objects
+(like hash table pages) should be aligned on page boundary
+to provide more efficient access. PERST memory  allocator checks requested
+size and if it is aligned on page boundary, then address of
+allocated memory segment is also aligned on page boundary. Search of free hole
+will be done faster in this case, because PERST increases step of current
+position increment according to the value of alignment.<P>
+
+To be able to deallocate memory used by object, PERST needs to keep
+somewhere
+information about object size. PERST memory allocator deals with two types
+of objects - normal table records and page objects.
+All table records are prepended by record header, which contains
+record size and pointer of L2-list linking all records in the table.
+So size of the table record object can be extracted from record header.
+Page objects always occupies the whole database page are are allocated at
+the positions aligned on page boundary. Page objects has no headers.
+PERST distinguish page objects
+with normal object by using special marker in object index.<P>
+
+
+<H3> <A NAME = "logless">Shadow transaction mechanism</A></H3>
+
+Each record (object) in PERST has unique identifier (OID).
+Object identifiers
+are used to implement references between objects. To locate object by
+reference, its OID is used as index in array of object offsets within the file.
+This array is called <I>object index</I> and element of this array -
+<I>object handle</I>. These are two copies of object
+indices in PERST, one of which is current and other - shadow.
+Header of database contains pointers to both object indices and indicator
+which index is current at this moment.<P>
+
+When object is modified first time, it is cloned
+(copy of the object is created) and object handle in current index is
+changed to point to newly created object copy. And shadow index still
+contains handle which points to the original version of the object.
+All changes are done with the object copy, leaving original object unchanged.
+PERST marks in special bitmap page of the object index, which contains
+modified object handle.<P>
+
+When transaction is committed, PERST first checks if size of object index
+was increased during current transaction. If so, it also reallocates shadow
+copy of object index. Then PERST frees memory for all "old objects",
+i.e. objects which was cloned within transaction. Memory can not be
+deallocated before commit, because we wants to preserve consistent
+state of the database by keeping cloned object unchanged.
+If we deallocate memory immediately after cloning, new object can be
+allocated at the place of cloned object and we loose
+consistency. As far as memory deallocation is done in PERST by bitmap
+using the same transaction mechanism as for normal database objects,
+deallocation of object space will require clearing some bits in bitmap page,
+which also should be cloned before modification. Cloning bitmap page will
+require new space for allocation the page copy, and we can reuse space of
+deallocated objects. And it is not acceptable due to the reason explained
+above - we will loose database consistency. That is why deallocation
+of object is done in two steps. When object is cloned, all bitmap pages
+used for marking objects space, are also cloned (if not
+not cloned before). So when transaction is committed, we only clear bits in
+bitmap pages and no more requests for allocation memory can be generated at
+this moment.<P>
+
+After deallocation of old copies, PERST flushes all modified pages on disk
+to synchronize content of the memory and disk file. After that PERST
+changes current object index indicator in database
+header to switch roles of the object indices. Now object index, which was
+current becomes shadow, and shadow index becomes current. Then PERST again
+flushes modified page (i.e. page with database header) on disk, transferring
+database to new consistent state.
+After that PERST copies all modified handles from new object index
+to object index which was previously shadow and now becomes current.
+At this moment contents of both indices is synchronized and PERST is ready
+to start new transaction.<P>
+
+Bitmap of modified object index pages is used to minimize time of committing
+transaction. Not the whole object index, but only its modified pages should be
+copied. After committing of transaction bitmap is cleared.<P>
+
+When transaction is explicitly aborted by <code>Storage.rollback</code>
+method, shadow object index is copied back to the current index, eliminating
+all changes done by aborted transaction. After the end of copying,
+both indices are identical again and database state corresponds to the moment
+before the start of current transaction.<P>
+
+Allocation of object handles is done by free handles list. Header of the list
+is also shadowed and two instances of list headers are stored in database
+header. Switch between them is done in the same way as switch of
+object indices. When there are no more free elements in the list, PERST
+allocates handles from the unused part of new index. When there is no
+more space in the index, it is reallocated. Object index is the only
+entity in database whose is not cloned on modification. Instead of this
+two copies of object index are always used.<P>
+
+There are some predefined OID values in PERST. OID <I>0</I> is reserved
+as invalid object identifier. OID starting from <I>1</I> are reserved for bitmap pages.
+Number of bitmap pages depends on database maximum virtual space.
+For one terabyte virtual space, 8 Kb page size and 64 byte allocation quantum,
+32K bitmap pages are required. So 32K handles are reserved in object index for
+bitmap. Bitmap pages are allocated on demand, when database size is extended.
+So OID of first users object will be 0x8002.<P>
+
+Recovery procedure is trivial in PERST. There are two instances of
+object index, one of which is current and another corresponds to
+consistent database state. When database is opened, PERST checks database
+header to detect if database was normally closed. If not
+(<code>dirty</code> flag is set in database header), then PERST performs
+database recovery. Recovery is very similar to rollback of transaction.
+Indicator of current index in database object header is used to
+determine index corresponding to consistent database state and object handles
+from this index are copied to another object index, eliminating
+all changes done by uncommitted transaction. As far as the only action
+performed by recovery procedure is copying of objects index (really only
+handles having different values in current and shadow indices are copied to
+reduce number of modified pages) and size of object index is small,
+recovery can be done very fast.
+Fast recovery procedure reduces "out-of-service" time of application.<P>
+
+
+<H2> <A NAME = "where">Where to use</A></H2>
+
+PERST is simple and fast embedded database engine. 
+If your applications need embedded database engine and do not need to execute complex SQL queries, 
+and the only thing you need is to be able to store/fetch/locate object in the database using navigation 
+through references or indexed search by key, then PERST is what you need. It will provide much better performance
+than relational database and other (more sophisticated) object oriented database.<P>
+
+The table below summarize <B>pro</B> features of PERST:<P>
+
+<OL>
+<LI>Tight and transparent integration with programming language
+<LI>No gap in database and application data model
+<LI>Easy to use
+<LI>Minimal requirements (PERST package itself has size only 51Kb and it can be configured to use minimal memory and disk
+space during its work)
+<LI>High performance (no overheads of communication, locking and parsing and executing queries)
+<LI>Fault tolerance (transaction support)
+<LI>Fast recovery after fault
+<LI>Zero administration efforts (database consists of the single file), there is no need
+to define or tune any database parameters. Such situation like transaction log overflow can never happen
+</OL>
+
+Certainly nothing in this world can have only positive features.
+No <B>contra</B> list which contains features lacking in PERST:
+
+<OL>
+<LI>No procedural query language
+<LI>Remote access by multiple clients (unless you will implement you own server).
+<LI>Data distribution
+<LI>Lack of support of any standard (for example ODMG)
+</OL>
+
+<H2> <A NAME = "quick">Quick start</A></H2>
+
+You can build PERST using Microsoft Visual .NET solution file.
+Template of PERST application is the following:
+
+<PRE>
+
+using Perst;
+
+public class YourPersistentClass : Persistent {
+    int    x;
+    String y;
+    Link   links;
+    ...
+
+
+    void doUpdate() { 
+        x = 1;
+        y = "Hello World";
+        links = getStorage().CreateLink();
+        store(); // save changes in the database
+    }
+}
+
+public class YourRoot : Persistent {
+    YourPersistentClass ref;
+    Index myIndex;
+
+    void foo() { 
+        ref.doUpdate(); // referenced object has no to be explictely loaded
+    }
+
+    
+};
+
+
+public class YourApplication {
+    static public void Main(String[] args) { 
+        String databaseFilePath = args[0]; // path to the database file
+        int pagePoolSize = Int32.Parse(args[1]); // size of page pol in bytes
+
+        Storage storage = StorageFactory.Instance.CreateStorage();
+        storage.Open(databaseFilePath, pagePoolSize);
+
+        YourRoot root = (YourRoot)storage.Root;
+        if (root == null) { 
+            // Storage was not initialized yet
+            root = new YourRoot();
+            root.myIndex = storage.CreateIndex(typeof(string), true); // unique index
+            storage.setRoot(root);
+        }
+
+        root.foo(); // all objects referenced from root are implicitly loaded
+        YourPersistentClass obj = (YourPersistentClass)root.myIndex["John"]; // find object with key "John"
+        
+        ... // do something else with database
+        
+        storage.Commit(); // commit transaction
+
+        ... // do something else with database
+
+        storage.Close(); // commit the last transaction and close the database
+    }
+}
+</PRE><P>
+
+You can also look at PERST examples:<P>
+
+<DL>
+<DT>Guess.cs
+<DD>Very simple game: "Guess An Animal". This program stores user's answers in tree structure and
+use this information to construct its questions. 
+<DT>TransparentGuess.cs
+<DD>The same example but using transparent API .Net remoting API
+<DT>PropGuess.cs
+<DD>The same example but using trasparent API using virtual properties
+<DT>TestIndex.cs
+<DD>Test of B+Tree. This test stores, find and delete objects to the index and also measure 
+performance.
+<DT>TestIndex2.cs
+<DD>Test of T-Tree. The same test as TestIndex.cs but implemented using SortedCollection (T-Tree).
+<DT>TestCompoundIndex.cs
+<DD>Test of B+Tree compound indices. 
+<DT>TestEnumerator.cs
+<DD>Test of enumerators for B+Tree.
+<DT>TestLink.cs
+<DD>Test of handling relations between objects in DyBASE using Link interface.
+<DT>TestList.cs
+<DD>Test of handling very large list of linked objects using virtual proxy API
+<DT>TestSSD.java
+<DD>Supplier-Shipment-Detail example. This example illustrates how joins can be implemented in PERST.
+<DT>TestSOD.java
+<DD>Supplier-Order-Detail example. This example illustrates alternative apporach for 
+implementing many-to-many relations based on using Projection class.
+<DT>TestRTree.cs
+<DD>Test of spatial index.
+<DT>TestR2.java
+<DD>Test of R2 spatial index.
+<DT>TestBit.java
+<DD>Test of bit index.
+<DT>TestTtree.cs
+<DD>Test of sorted collection.
+<DT>TestRaw.cs
+<DD>Test of using CSharp serialization mechanism for storing in database alien objects
+<DT>TestBlob.java
+<DD>Test of handling large binary objects in Perst
+<DT>TestTimeSeries.java
+<DD>Test and example of handling time series data
+<DT>TestXML.cs
+<DD>Test of XML import/export.
+<DT>TestBackup.java
+<DD>Test of database online backup.
+<DT>TestConcur.cs
+<DD>Test of DyBASE locking mechanism and concurrent access to the database
+<DT>TestGC.cs
+<DD>Test implicit memory deallocation (garbage collction) in DyBASE.
+<DT>TestReplic.cs
+<DD>Test of Perst replication mechanism. 
+performance.
+</DL><P>
+
+Tests are located in <code>tst</code> directory and can be build using <code>compile.bat</code>
+script.<P> 
+
+<H2><A NAME = "tuning">Tuning</A></H2>
+
+This sections contains several hints how to adjust PERST parameters and increase database performance.<P>
+
+Speed of accessing data at the disk is several times slower than speed of access data in main memory. 
+That is why caching of data is the key to increase database performance. PERST is using 
+pool of pages to optimize access to the disk. Page pool size can be specified in <code>Storage.open</code>
+method (by default it is 4Mb). Usually increasing page pool leads to better performance. But you should 
+notice the following things:
+
+<UL>
+<LI>There is can be a limit for maximal size of memory used by application.
+
+<LI>If you specify very large pool size, leaving no free memory for other applications and operating system, 
+then swapping will cause significant performance degradation.
+
+<LI>Operating system itself maintains file buffers.
+So data is cached twice. Certainly accessing data from page pool is much faster than from 
+operating system cache, because in this case no operating system calls and context switches are needed. 
+
+<LI>It is not possible to specify empty page pool (leaving all caching for operating system).
+When data is access from the page, it is pinned in page pool. So page pool should contain enough entries
+to keep all pinned pages. So do no make page pool size less then 64kb.
+</UL><P>
+
+If you think that all your data should fit in main memory, you can use
+<code>Storage.INFINITE_PAGE_POOL</code> constant in <code>Storage.open</code> method.
+In this case page pool will be dynamically extended when new page is requested. 
+As a result, all pages will be cached and present in memory. So each page is read from the disk only once. 
+Also in this case strong object cache is used instead of weak object cache. It means that all fetched
+objects are also pinned in memory and object is unpacked only once. It is important to notice
+that amount of used main memory will be greater than database size: all objects will be present in memory in packed
+(inside the page containing the object) and in unpacked (referenced from object cached) form.<P>
+
+In some applications (for example for mobile devices) persistency is not needed. But such PERST container classes
+as Link, Index, FieldIndex, SpatialIndex still can be used by application. In this case you can use
+<code>NullFile</code> implementation of <code>IFile</code> interface together
+with <code>Storage.INFINITE_PAGE_POOL</code> to create transient in-memory database. Data in this case will never be 
+written on the disk.<P> 
+
+There are some constants defined in <code>StorageImpl</code> class which has influence on
+initial and maximal database size. If you want to change them, you will have to rebuild PERST.
+Below is detailed description of this parameters:<P>
+
+<TABLE BORDER>
+<TR><TH>Parameter</TH><TH>Default value</TH><TH>Description</TH></TR>
+<TR><TD><code>dbDefaultInitIndexSize</code></TD><TD>1024</TD>
+<TD>Initial object index size. Object index is increased on demand. Reallocation of index is
+expensive operation and so to minimize number of such reallocations, object index size is always doubled.
+Specifying larger initial index size allows to reduce number of future reallocations and so a little bit increase
+performance (certainly if your application allocates such number of object). But it also leads to larger initial
+size of database file. With default value of this parameter, initial database size is about 50Kb.
+</TD></TR>
+
+<TR><TD><code>dbDefaultExtensionQuantum</code></TD><TD>4Mb</TD>
+<TD>Database extension quantum. 
+Memory is allocate by scanning bitmap. If there is no large enough hole, then database is extended by the value of 
+<code>dbDefaultExtensionQuantum</code>. Increasing the value of this parameters leads to less frequent 
+rescanning of allocation bitmap from the very beginning. It leads to faster allocation speed and better locality of 
+reference for created objects (because there is more chances that them will be allocated sequentially). 
+From the other side it leads to less efficient memory usage. Reducing the value of this parameter force reusing 
+of existed holes in memory allocation bitmap. 
+</TD></TR>
+
+
+<TR><TD><code>dbObjectCacheInitSize</code></TD><TD>1319</TD>
+<TD>Size of object cache. PERST needs this cache to check if object with such OID already 
+present in memory. This cache uses weak references to allow garbage collector to do it work. 
+When some threshold of filling cache is reached, cached is reallocated by doubling its size.
+Once again increasing this parameter can save some number of cache reallocations.
+</TD></TR>
+</TABLE><P>
+
+Now some hints how to increase PERST performance and reduce size of used main memory.
+If you database performs a lot of updates of persistent data, then the main limiting factor is speed 
+of writing changes to the disk. Especially synchronous write to the disk performed by commit.
+If you will do commit after each update, then average speed will be about 10 updates per second 
+(this estimation is based on the assumption than average disk access time is about 10msec and
+each transaction commit usually requires writing about 10 pages in random places in the file).
+But it is possible to dramatically increase update performance if you group several updates in 
+one transactions. PERST is creating shadow of the object when it is
+first time updated inside transaction. If object will be updated once in N transactions, 
+then N shadows will be created. If object will be updated N times inside one transaction, then
+shadow will be created only once. It explains advantage of having one large transaction.<P>
+
+But if you will perform update of large number of objects in one transaction and for each updated
+object shadow is created, then it leads to significant increase of database file size.
+If you update each object in the database inside one transaction, database size will be 
+almost doubled! And if you perform each update in separate transaction, then size of database
+will be almost unchanged (because space of allocated shadow objects will be reused in this case).
+So the best approach is to perform commit after 100 or 1000 updates, it will
+reduce overhead of each commit and save database size.<P>
+
+
+If your persistent object form tree or graph where all objects cab be accessed by reference from the root object,
+then once you will load root object in main memory and store reference to it in some variable, 
+GC will never be able to collect any instance of loaded persistent object (because it will be accessible from
+the root object). So when you application access more and more objects from the storage, 
+at some moment of time all of them will have to be loaded in main memory. It can cause space exhaustion.
+To prevent this situation you should avoid to store in variables references to container objects which 
+contain references to a large number of members. Especially it is true for storage root object.
+In this case GC is able to do it work and throw out from the memory objects which are not used 
+at this moment (to which there are no references from local variable). 
+But it is important to say that objects accessible though the index by key can be normally deallocated by garbage
+collector. So in this case special care is not needed.<P>
+
+
+<H2><A NAME = "tips">Tricks and tips</A></H2>
+<dl>
+<dt><i>When to use what collection structure?</i></dt>
+<dd>
+<dl>
+<dt>Link</dt>
+<dd>to be used for relatively small collections (objects < 100)
+</dd>
+<dt>Relation </dt>
+<dd>is essentially a Link with the addition of being a 1-n 
+relation. The Projection class can be used for 'query like' purposes.
+</dd>
+<dt>FieldIndex</dt>
+<dd>to be used for large collections (objects &gt; 100). Indexed on 
+a know attribute or number of attributes (&gt;1 attributes constitutes a 
+'composite key'). FieldIndex is implemented using B+Tree. B-Tree pages size is 4kb, so 
+minimal size occupied by index is also 4kb, so care should be taken as to when and 
+where to use it.
+</dd>
+<dt>Index </dt>
+<dd>to be used for large collections (objects &gt; 100). Indexation is 
+'done' whilst adding the object to the collection. Index is implemented using B+Tree.
+</dd>
+<dt>BitIndex</dt>
+<dd>locate object but set of its boolean properties
+</dd>
+<dt>ISet</dt>
+<dd>very convenient for storing objects in a Set environment 
+(there can be only one instance of an object in the set). ISet is implemented using B+Tree.
+</dd>
+<dt>SortedCollection</dt>
+<dd>is the best for in-memory databases with complex user defined keys. 
+It is implemented using T-Tree (structure optimized for in-memory databases)
+and do not store values of keys inside T-Tree pages, using provided comparator
+methods instead. 
+</dd>
+<dt>SpatialIndex</dt>
+<dd>fast access two objects with two integer coordinates (spatial data for example).
+SpatialCollection is implemented using Guttman's R-Tree with quadratic split algorithm.
+</dd>
+<dt>SpatialIndexR2</dt>
+<dd>fast access two objects with two real coordinates (spatial data for example).
+SpatialCollectionR2 is implemented using Guttman's R-Tree with quadratic split algorithm.
+Unlike SpatialIndex it doesn't pin all its pages in memory, and so is able to handle larger 
+collections. 
+</dd>
+</dl>
+</dd><p>
+
+<dt><i>Can Key class be stores in database?</i></dt>
+<dd>
+A Key class is *not* persistent capable and can thus *not* be stored. If 
+one wants to have it readily available one can make it transient and 
+instantiate it through the onLoad() method or via the default 
+constructor of the class.
+</dd><p>
+
+<dt><i>How to defined constructors for persistent objects?</i></dt>
+<dd>
+The normal default constructor of a class is always used by Perst when 
+loading objects.
+This implies that when one needs to create attributes that are to remain 
+one has to either:
+<UL>
+<LI>Check for oid existence on the object (if oid then object already 
+exists in the db)
+<LI>Leave the default constructor as is and introduce an alternate 
+constructor that is only called on new object creation.
+</ul>
+<p>
+Initialization of transient attributes or resettable attributes should/ 
+can be done via the default constructor or the onLoad() method, which is 
+called when an object is retrieved from the db.
+</dd><p>
+
+<dt><i>When redefinition of recursiveLoading method is needed?</i></dt>
+<dd>By default Perst recursively load all referenced objects.
+So once you access some persistent object, the complete closure of persistent objects,
+directly or indirectly reachable from this object by references, is loaded.
+So in theory loading of root object can cause loading of all objects in the database.
+If it is not desired (because loading of all objects will take significant amount of time or because
+it will cause memory exhaustion), then you should stop recursion by redefinition of 
+<code>recursiveLoading</code> method in some classes. You should explicitly load all object referenced
+from object with disabled recursive loading. 
+<P>
+But really situation is better. It is important to notice that all Perst collection classes
+always load their members on demand. It means that once you have reference for example to FielIndex, 
+only header of this collection object will be loaded and members will be loaded on demand. 
+It is true for all other Perst collections: Link, Relation, Index, SortedCollection, PersistentSet. 
+As far as persistent objects in database are usually accessible through collections, in 
+most cases explicit loading of persistent objects is not needed. But be careful: if in addition 
+to placing all your objects in some index, you also link them for example in L2-List, then
+fetching single object will cause loading of all other objects from this collection!
+</dd><p>
+
+<dt><i>How to store classes not derived from Persistent?</i></dt>
+<dd>
+Perst allows to store transient objects using standard Java serialization mechanism. 
+To enable this feature, you should set <code>Storage.setProperty("perst.serialize.transient.objects")</code>. 
+Perst will correctly handle reference to persistent object from serialized transient objects. 
+But it is important to notice, that identity of saved transient objects is not preserved. 
+If there was transient object O referenced from persistent objects P1 and P2, then when
+objects P1 and P2 are stored, instance of O object will be serialized both in P1 and P2 record. 
+And when P1 and P2 object will be reloaded from the database, them will refer to different instances
+O1 and O2. Also please notice, that is impossible to mark transient objects is modified.
+Of some of referenced transient objects is updated, you should also update persistent object
+referencing (directly or indirectly) this object.
+</dd><p>
+
+<dt><i>When commit transaction?</i></dt>
+<dd>
+Commit operation requires synchronous write to the disk. It is very slow operation (modern disks
+are not able to perform more than 100 such operations per second). So to improve performance it is
+better to perform commit not so frequent. But certainly you should realize than once some problem
+arrives (application or system crash or just power fault), then all uncommitted data will be lost.
+</dd>
+
+<dt><i>How to deallocate objects?</i></dt>
+<dd>
+Perst doesn't automatically exclude deleted object from any indices containing
+this object. So it is responsibility of programmer to remove object
+from all indices before it is deallocated.<BR>
+Perst also doesn't remove any object referenced from removed object.
+If it is needed - programmer should do it himself.<BR>
+Explicit deletion of object can cause two problems:
+<UL>
+<LI>Dangling references (references to the removed objects).
+<LI>Garbage in the database (unreferenced objects).
+</UL>
+First problem is most critical and can cause database data corruption.
+To prevent this problem it is strongly recommended to use Perst garbage collector
+instead of explicit memory deallocation. If it is not possible (due to performance 
+or some other reasons), it still can be used for debugging, since Perst GC is able to detect 
+both problems: it will throw <code>StorageError(StorageError.ErrorCode.INVALID_OID)</code> exception
+if reference to the deleted object is found and return non zero number of collected objects
+if there is garbage in the database. 
+
+<dt><i>Why applicsation normally working in single-threaded mode got
+assertion failures or some other exceptions if database is updated by mode than one thread?</i></dt>
+<dd>
+Perst doesn't synchronize itself access
+of application to the persistent objects. It is responsibility of
+application to set proper lock to avoid concurrent access to the same
+object. So just using beginThreadTransaction and endThreadTransaction
+is not enough for correct concurrent work with persistent objects.
+So the following alternatives are possible:
+
+1. Access database only from one thread
+2. Access database from multiple thread but use global lock to provide
+mutual exclusion of each thread. So thread lock mutex, do some
+operations with database, commit transaction and unlock mutex.
+3. Use per-thread transactions in EXCLUSIVE_TRANSACTION mode.
+This approach is similar to 2), but Perst will provide exclusion of
+threads itself.
+4. Use per-thread transactions in SERIALIZABLE_TRANSACTION mode +
+objet level locking + alternative B-Tree implementation.
+
+Please notice that in alternative 1-3 only one thread is accessing
+database at each moment of time, so it is not possible to say about
+concurrent execution. But it doesn't mean that with approach 4) you
+will get the best performance - because of locking overhead and
+alternative B-Tree implementation which is less efficient than
+original implementation for very large databases.
+Also approach 4 is most difficult to program - because setting proper
+locks is responsibility of programmer and incorrect locking can cause
+synchronization problems: race conditions (as you have with
+ArrayIndexOutOfBoundsException) or deadlocks (two or more threads
+mutually block each other).
+</dl>
+
+
+
+<H2><A NAME = "distribution">Distribution terms</A></H2>
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the <A HREF="#Software">Software</A>), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:<P>
+
+<A NAME="Software">
+<B>
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+AUTHOR OF THIS SOFTWARE BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
+IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+</B>
+</A><P>
+
+I will provide e-mail support and help you with development of
+PERST applications.<P>
+<HR>
+<P ALIGN="CENTER"><A HREF="http://www.garret.ru/~knizhnik">
+<B>Look for new version at my homepage</B></A><B> | </B>
+<A HREF="mailto:knizhnik@garret.ru">
+<B>E-Mail me about bugs and problems</B></A></P>
+</BODY>
+</HTML>
+
+
+
+
+
