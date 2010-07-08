@@ -5,7 +5,7 @@ namespace NachoDB.Impl
     using NachoDB;
     using System.Diagnostics;
 #if USE_GENERICS
-    using Link = Perst.Link<IPersistent>;
+    using Link = NachoDB.Link<IPersistent>;
 #endif
 	
     class RtreeR2Page:Persistent 

@@ -9,7 +9,7 @@ using System.Collections;
 namespace NachoDB.Impl
 {
 #if USE_GENERICS
-    class PTrie<T> : PersistentCollection<T>, PatriciaTrie<T>  where T:class,IPersistent 
+    class PTrie<T> : PersistentCollection<T>, PatriciaTrie<T>  where T:class, IPersistent 
 #else
     class PTrie : PersistentCollection, PatriciaTrie 
 #endif

@@ -9,9 +9,9 @@ namespace NachoDB.Impl
 {
 	
 #if USE_GENERICS
-    class Rtree<T>:PersistentCollection<T>, SpatialIndex<T> where T:class,IPersistent
+    class Rtree<T> : PersistentCollection<T>, SpatialIndex<T> where T : class, IPersistent
 #else
-    class Rtree:PersistentCollection, SpatialIndex
+    class Rtree : PersistentCollection, SpatialIndex
 #endif
     {
         private int         height;

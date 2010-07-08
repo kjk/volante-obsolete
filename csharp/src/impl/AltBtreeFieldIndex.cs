@@ -10,9 +10,9 @@ namespace NachoDB.Impl
     using NachoDB;
     
 #if USE_GENERICS
-    class AltBtreeFieldIndex<K,V>:AltBtree<K,V>, FieldIndex<K,V> where V:class,IPersistent
+    class AltBtreeFieldIndex<K,V> : AltBtree<K,V>, FieldIndex<K,V> where V:class, IPersistent
 #else
-    class AltBtreeFieldIndex:AltBtree, FieldIndex
+    class AltBtreeFieldIndex : AltBtree, FieldIndex
 #endif
     {
         internal String className;
@@ -221,7 +221,11 @@ namespace NachoDB.Impl
             } 
             else 
             { 
+#if USE_GENERICS
+                V[] mbrs = Get(key, key);
+#else
                 IPersistent[] mbrs = Get(key, key);
+#endif
                 for (int i = 0; i < mbrs.Length; i++) 
                 { 
                     if (mbrs[i] == obj) 

@@ -1,4 +1,5 @@
-namespace NachoDB.Impl    
+#if !OMIT_XML
+namespace NachoDB.Impl
 {
     using System;
     using System.Reflection;
@@ -13,7 +14,7 @@ namespace NachoDB.Impl
             this.storage = storage;
             this.writer = writer;
         }
-		
+
         public virtual void  exportDatabase(int rootOid)
         {
             writer.Write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
@@ -96,7 +97,7 @@ namespace NachoDB.Impl
             while (nExportedObjects != 0);
             writer.Write("</database>\n");
         }
-		
+
         internal String exportIdentifier(String name) 
         { 
             name = name.Replace('+', '-');
@@ -949,7 +950,6 @@ namespace NachoDB.Impl
                         }
                         break;
                     }
-					
 #if SUPPORT_RAW_TYPE
                     case ClassDescriptor.FieldType.tpArrayOfRaw: 
                     {
@@ -973,14 +973,13 @@ namespace NachoDB.Impl
                         }
                         break;
                     }
-#endif				
+#endif
                 }
                 writer.Write("</" + fieldName + ">\n");
             }
             return offs;
         }
-		
-		
+
         private StorageImpl storage;
         private System.IO.StreamWriter writer;
         private int[] markedBitmap;
@@ -988,3 +987,4 @@ namespace NachoDB.Impl
         private ClassDescriptor.FieldType[] compoundKeyTypes;
     }
 }
+#endif

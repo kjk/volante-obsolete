@@ -1,3 +1,4 @@
+#if !OMIT_XML
 namespace NachoDB.Impl
 {
     using System;
@@ -2012,3 +2013,4 @@ namespace NachoDB.Impl
         }
     }
 }
+#endif

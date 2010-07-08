@@ -11,9 +11,9 @@ namespace NachoDB.Impl
 
     
 #if USE_GENERICS
-    class AltBtree<K,V>:PersistentCollection<V>, Index<K,V> where V:class,IPersistent
+    class AltBtree<K,V> : PersistentCollection<V>, Index<K,V> where V:class, IPersistent
 #else
-    class AltBtree:PersistentCollection, Index
+    class AltBtree : PersistentCollection, Index
 #endif
     {
         public Type KeyType
@@ -126,7 +126,7 @@ namespace NachoDB.Impl
             }
         }
         
-        internal abstract class BtreePage:Persistent
+        internal abstract class BtreePage : Persistent
         {
             internal abstract Array Data{get;}
             internal int nItems;
@@ -534,7 +534,7 @@ namespace NachoDB.Impl
         }
         
         
-        class BtreePageOfByte:BtreePage
+        class BtreePageOfByte : BtreePage
         {
             override internal Array Data
             {
@@ -586,7 +586,7 @@ namespace NachoDB.Impl
             }
         }
         
-        class BtreePageOfSByte:BtreePage
+        class BtreePageOfSByte : BtreePage
         {
             override internal Array Data
             {
@@ -638,7 +638,7 @@ namespace NachoDB.Impl
             }
         }
         
-        class BtreePageOfBoolean:BtreePageOfByte
+        class BtreePageOfBoolean : BtreePageOfByte
         {
             internal override Key getKey(int i)
             {
@@ -664,7 +664,7 @@ namespace NachoDB.Impl
             }
         }
         
-        class BtreePageOfShort:BtreePage
+        class BtreePageOfShort : BtreePage
         {
             override internal Array Data
             {
@@ -715,7 +715,7 @@ namespace NachoDB.Impl
             }
         }
         
-        class BtreePageOfUShort:BtreePage
+        class BtreePageOfUShort : BtreePage
         {
             override internal Array Data
             {
@@ -766,7 +766,7 @@ namespace NachoDB.Impl
             }
         }
         
-        class BtreePageOfInt:BtreePage
+        class BtreePageOfInt : BtreePage
         {
             override internal Array Data
             {
@@ -801,7 +801,7 @@ namespace NachoDB.Impl
                 return key.ival - data[i];
             }
             
-            internal override void  insert(BtreeKey key, int i)
+            internal override void insert(BtreeKey key, int i)
             {
                 items[i] = key.node;
                 data[i] = key.key.ival;
@@ -817,7 +817,7 @@ namespace NachoDB.Impl
             }
         }
         
-        class BtreePageOfUInt:BtreePage
+        class BtreePageOfUInt : BtreePage
         {
             override internal Array Data
             {
@@ -868,7 +868,7 @@ namespace NachoDB.Impl
             }
         }
         
-        class BtreePageOfLong:BtreePage
+        class BtreePageOfLong : BtreePage
         {
             override internal Array Data
             {
@@ -919,7 +919,7 @@ namespace NachoDB.Impl
             }
         }
         
-        class BtreePageOfULong:BtreePage
+        class BtreePageOfULong : BtreePage
         {
             override internal Array Data
             {
@@ -970,7 +970,7 @@ namespace NachoDB.Impl
             }
         }
         
-        class BtreePageOfFloat:BtreePage
+        class BtreePageOfFloat : BtreePage
         {
             override internal Array Data
             {
@@ -1021,7 +1021,7 @@ namespace NachoDB.Impl
             }
         }
         
-        class BtreePageOfDouble:BtreePage
+        class BtreePageOfDouble : BtreePage
         {
             override internal Array Data
             {
@@ -1072,7 +1072,7 @@ namespace NachoDB.Impl
             }
         }
         
-        class BtreePageOfGuid:BtreePage
+        class BtreePageOfGuid : BtreePage
         {
             override internal Array Data
             {
@@ -1123,7 +1123,7 @@ namespace NachoDB.Impl
             }
         }
         
-        class BtreePageOfDecimal:BtreePage
+        class BtreePageOfDecimal : BtreePage
         {
             override internal Array Data
             {
@@ -1174,7 +1174,7 @@ namespace NachoDB.Impl
             }
         }
         
-        class BtreePageOfObject:BtreePage
+        class BtreePageOfObject : BtreePage
         {
             override internal Array Data
             {
@@ -1226,7 +1226,7 @@ namespace NachoDB.Impl
             }
         }
         
-        class BtreePageOfString:BtreePage
+        class BtreePageOfString : BtreePage
         {
             override internal Array Data
             {
@@ -1341,7 +1341,7 @@ namespace NachoDB.Impl
             }
         }
         
-        class BtreePageOfRaw:BtreePage
+        class BtreePageOfRaw : BtreePage
         {
             override internal Array Data
             {
@@ -1396,9 +1396,7 @@ namespace NachoDB.Impl
             {
             }
         }
-        
-        
-        
+
         internal static ClassDescriptor.FieldType checkType(Type c)
         {
             ClassDescriptor.FieldType elemType = ClassDescriptor.getTypeCode(c);

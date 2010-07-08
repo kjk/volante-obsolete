@@ -11,7 +11,7 @@ namespace NachoDB.Impl
 
 	
 #if USE_GENERICS
-    class PersistentSet<T> : Btree<T,T>, ISet<T> where T:class,IPersistent
+    class PersistentSet<T> : Btree<T,T>, ISet<T> where T:class, IPersistent
 #else
     class PersistentSet : Btree, ISet
 #endif

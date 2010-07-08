@@ -241,14 +241,18 @@ namespace NachoDB.Impl
         MethodInfo GetConstructor(FieldInfo f, string name)
         { 
             MethodInfo mi = typeof(StorageImpl).GetMethod(name, BindingFlags.Instance|BindingFlags.NonPublic|BindingFlags.DeclaredOnly);
-            return mi.BindGenericParameters(f.FieldType.GetGenericArguments());
+            //return mi.BindGenericParameters(f.FieldType.GetGenericArguments());
+            //TODO: verify it's MakeGenericMethod
+            return mi.MakeGenericMethod(f.FieldType.GetGenericArguments());
         }
 #endif
 
         internal static String getTypeName(Type t)
         {
 #if USE_GENERICS
-            if (t.HasGenericArguments)
+            // TODO: was t.HasGenericArguments
+            // Verify it's really ContainsGenericParameters
+            if (t.ContainsGenericParameters)
             { 
                 Type[] genericArgs = t.GetGenericArguments();
                 t = t.GetGenericTypeDefinition();
@@ -530,7 +534,7 @@ namespace NachoDB.Impl
                             { 
                                 genericParams[n++] = lookup(storage, name.Substring(p, i-p-1));
                                 Debug.Assert(n == genericParams.Length);
-                                cls = genericType.BindGenericParameters(genericParams);
+                                cls = genericType.MakeGenericType(genericParams);
                                 if (cls == null)
                                 { 
                                     throw new StorageError(StorageError.ErrorCode.CLASS_NOT_FOUND, name);

@@ -8,7 +8,7 @@ namespace NachoDB.Impl
     using System.Text;
     using NachoDB;
 	
-    public class StorageImpl:Storage
+    public class StorageImpl : Storage
     {
         public const int DEFAULT_PAGE_POOL_SIZE = 4*1024*1024;
 
@@ -2241,7 +2241,7 @@ namespace NachoDB.Impl
             return new BlobImpl(Page.pageSize - ObjectHeader.Sizeof - 16);
         }
 
-        
+#if !OMIT_XML
         public void  ExportXML(System.IO.StreamWriter writer)
         {
             lock(this)
@@ -2258,7 +2258,7 @@ namespace NachoDB.Impl
                 }
             }
         }
-		
+
         public void  ImportXML(System.IO.StreamReader reader)
         {
             lock(this)
@@ -2271,6 +2271,7 @@ namespace NachoDB.Impl
                 xmlImporter.importDatabase();
             }
         }
+#endif
 
         internal long getGCPos(int oid) 
         { 

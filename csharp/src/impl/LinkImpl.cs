@@ -315,7 +315,11 @@ using System.Collections;
             { 
                 for (int i = used; --i >= 0;) 
                 {
+#if USE_GENERICS
+                    if ((T)arr[i] == obj) 
+#else
                     if (arr[i] == obj) 
+#endif
                     {
                         return i;
                     }
@@ -323,7 +327,7 @@ using System.Collections;
             }
             return - 1;
         }
-		
+
 #if USE_GENERICS
         public virtual bool ContainsElement(int i, T obj) 
 #else
@@ -331,7 +335,11 @@ using System.Collections;
 #endif
         {
             IPersistent elem = arr[i];
+#if USE_GENERICS
+            return (T)elem == obj || (elem != null && elem.Oid != 0 && elem.Oid == obj.Oid);
+#else
             return elem == obj || (elem != null && elem.Oid != 0 && elem.Oid == obj.Oid);
+#endif
         }
 
         public virtual void Clear()

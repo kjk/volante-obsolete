@@ -1,7 +1,7 @@
 namespace NachoDB
 {
     using System;
-	
+
     /// <summary> Interface of all persistent capable objects
     /// </summary>
     public interface IPersistent
@@ -11,15 +11,13 @@ namespace NachoDB
         int Oid
         {
             get;
-				
         }
-
 
         /// <summary> Get storage in which this object is stored
         /// </summary>
         Storage Storage
         {
-            get;				
+            get;
         }
         
         /// <summary> Load object from the database (if needed)

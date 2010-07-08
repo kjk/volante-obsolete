@@ -721,6 +721,7 @@ namespace NachoDB.Impl
             base.Deallocate();
         }
 
+#if !OMIT_XML
         public void export(XMLExporter exporter)
         {
             if (root != 0)
@@ -728,6 +729,7 @@ namespace NachoDB.Impl
                 BtreePage.exportPage((StorageImpl) Storage, exporter, root, type, height);
             }
         }		
+#endif
 
         public int markTree() 
         { 

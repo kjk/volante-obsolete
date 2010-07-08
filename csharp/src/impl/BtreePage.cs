@@ -2175,8 +2175,8 @@ namespace NachoDB.Impl
             }
             return nPages;
         }
-    
-		
+
+#if !OMIT_XML
         internal static void  exportPage(StorageImpl db, XMLExporter exporter, int pageId, ClassDescriptor.FieldType type, int height)
         {
             Page pg = db.getPage(pageId);
@@ -2227,5 +2227,6 @@ namespace NachoDB.Impl
                 db.pool.unfix(pg);
             }
         }
+#endif
     }
 }

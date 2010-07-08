@@ -92,7 +92,6 @@ namespace NachoDB
         /// <param name="cipherKey">cipher key</param>
         void  Open(String filePath, int pagePoolSize, String cipherKey);
 
-        
         /// <summary>Check if database is opened
         /// </summary>
         /// <returns><code>true</code> if database was opened by <code>open</code> method, 
@@ -541,6 +540,7 @@ namespace NachoDB
         /// 
         int Gc();
 
+#if !OMIT_XML
         /// <summary> Export database in XML format 
         /// </summary>
         /// <param name="writer">writer for generated XML document
@@ -554,7 +554,7 @@ namespace NachoDB
         /// 
         /// </param>
         void  ImportXML(System.IO.StreamReader reader);
-		
+#endif
         		
         /// <summary> 
         /// Retrieve object by OID. This method should be used with care because
