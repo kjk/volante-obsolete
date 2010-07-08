@@ -40,16 +40,18 @@ NACHODB=$(OUTDIR)/NachoDB.dll
 TESTS_NAMES=TestBackup TestBit TestBlob TestCompoundIndex TestConcur TestEnumerator\
 	TestGC TestIndex TestIndex2 TestList TestR2 TestRaw TestReplic TestRtree\
 	TestTimeSeries TestTtree TestXML
-
 TESTS = $(patsubst %, $(OUTDIR)/%.exe, ${TESTS_NAMES})
 
-# TESTS=$(OUTDIR)/TestBit.exe $(OUTDIR)/TestBlob.exe $(OUTDIR)/TestBackup.exe
+EXAMPLES_NAMES=Guess IpCountry PropGuess TestLink TestSOD TestSSD TransparentGuess
+EXAMPLES = $(patsubst %, $(OUTDIR)/%.exe, ${EXAMPLES_NAMES})
 
-all: nachodb tests
+all: nachodb tests examples
 
 nachodb: $(OUTDIR) $(NACHODB)
 
 tests: nachodb $(TESTS)
+
+examples: nachodb $(EXAMPLES)
 
 $(OUTDIR):
 	@mkdir -p $(OUTDIR)
@@ -109,6 +111,27 @@ $(OUTDIR)/TestTtree.exe: tests/TestTtree/TestTtree.cs
 	$(CSC) -t:exe -r:$(NACHODB) -out:$@ $<
 
 $(OUTDIR)/TestXML.exe: tests/TestXML/TestXML.cs
+	$(CSC) -t:exe -r:$(NACHODB) -out:$@ $<
+
+$(OUTDIR)/Guess.exe: examples/Guess/Guess.cs
+	$(CSC) -t:exe -r:$(NACHODB) -out:$@ $<
+
+$(OUTDIR)/IpCountry.exe: examples/IpCountry/IpCountry.cs
+	$(CSC) -t:exe -r:$(NACHODB) -out:$@ $<
+
+$(OUTDIR)/PropGuess.exe: examples/PropGuess/Guess.cs
+	$(CSC) -t:exe -r:$(NACHODB) -out:$@ $<
+
+$(OUTDIR)/TestLink.exe: examples/TestLink/TestLink.cs
+	$(CSC) -t:exe -r:$(NACHODB) -out:$@ $<
+
+$(OUTDIR)/TestSOD.exe: examples/TestSOD/TestSOD.cs
+	$(CSC) -t:exe -r:$(NACHODB) -out:$@ $<
+
+$(OUTDIR)/TestSSD.exe: examples/TestSSD/TestSSD.cs
+	$(CSC) -t:exe -r:$(NACHODB) -out:$@ $<
+
+$(OUTDIR)/TransparentGuess.exe: examples/TransparentGuess/Guess.cs
 	$(CSC) -t:exe -r:$(NACHODB) -out:$@ $<
 
 clean:
