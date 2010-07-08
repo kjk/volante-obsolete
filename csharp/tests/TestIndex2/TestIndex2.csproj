@@ -68,8 +68,8 @@
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Perst.NET.csproj">
-      <Name>Perst.NET</Name>
+    <ProjectReference Include="..\..\NachoDB.csproj">
+      <Name>NachoDB</Name>
       <Project>{1FF2E6AE-B540-4EA9-BD18-5F077EE61291}</Project>
       <Package>{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</Package>
     </ProjectReference>

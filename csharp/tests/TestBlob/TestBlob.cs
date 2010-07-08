@@ -10,7 +10,7 @@ public class TestBlob
         db.Open("testblob.dbs");
         byte[] buf = new byte[1024];
         int rc;
-        string[] files = Directory.GetFiles("\\Perst.NET\\src\\impl", "*.cs");
+        string[] files = Directory.GetFiles(@"src\impl", "*.cs");
 #if USE_GENERICS
         Index<string,Blob> root = (Index<string,Blob>)db.Root;
 #else

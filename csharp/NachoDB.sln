@@ -20,7 +20,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestCompoundIndex", "tests\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestEnumerator", "tests\TestEnumerator\TestEnumerator.csproj", "{778F806F-1012-46BF-890E-3A73D4EC076C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Perst.NET", "Perst.NET.csproj", "{1FF2E6AE-B540-4EA9-BD18-5F077EE61291}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NachoDB", "NachoDB.csproj", "{1FF2E6AE-B540-4EA9-BD18-5F077EE61291}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestIndex", "tests\TestIndex\TestIndex.csproj", "{C5117801-7766-4B0B-A0E5-BA2BAB968072}"
 EndProject

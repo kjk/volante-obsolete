@@ -2,3 +2,4 @@
 *.dbs
 *bin/
 *obj/
+csharp/test.xml
