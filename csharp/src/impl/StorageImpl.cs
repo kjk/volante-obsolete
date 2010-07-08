@@ -938,7 +938,7 @@ namespace NachoDB.Impl
             catch (StorageError ex) 
             {
                 file.Close();            
-                throw ex;
+                throw;
             }
         }
 
@@ -966,7 +966,7 @@ namespace NachoDB.Impl
             catch (StorageError ex) 
             {
                 file.Close();            
-                throw ex;
+                throw;
             }
         }
 

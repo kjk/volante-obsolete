@@ -203,7 +203,7 @@ namespace NachoDB.Impl
                 { 
                     return false;
                 }
-                throw x;
+                throw;
             }
             return true;
         }
