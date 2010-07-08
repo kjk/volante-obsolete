@@ -36,7 +36,7 @@ public class TestXML
     static public void  Main(System.String[] args)
     {
         int i;
-        Storage db = StorageFactory.Instance.CreateStorage();
+        Storage db = StorageFactory.CreateStorage();
 		
         db.Open("test1.dbs", pagePoolSize);
         Root root = (Root) db.Root;

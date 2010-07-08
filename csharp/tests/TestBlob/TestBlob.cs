@@ -6,7 +6,7 @@ public class TestBlob
 { 
     public static void Main(string[] args) 
     { 
-        Storage db = StorageFactory.Instance.CreateStorage();
+        Storage db = StorageFactory.CreateStorage();
         db.Open("testblob.dbs");
         byte[] buf = new byte[1024];
         int rc;

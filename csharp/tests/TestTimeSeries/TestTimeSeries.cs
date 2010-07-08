@@ -75,7 +75,7 @@ public class TestTimeSeries
         Stock stock;
         int i;
 
-        Storage db = StorageFactory.Instance.CreateStorage();
+        Storage db = StorageFactory.CreateStorage();
         db.Open("testts.dbs", pagePoolSize);
 #if USE_GENERICS
         FieldIndex<string,Stock> stocks = (FieldIndex<string,Stock>)db.Root;

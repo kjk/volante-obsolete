@@ -18,7 +18,7 @@ public class TestRtree : Persistent {
     const int nIterations = 100000;
 
     public static void Main(String[] args) { 
-        Storage db = StorageFactory.Instance.CreateStorage();
+        Storage db = StorageFactory.CreateStorage();
         SpatialObject so;
         Rectangle r;
         DateTime start = DateTime.Now;

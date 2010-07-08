@@ -32,7 +32,7 @@ public class TestBackup
     static public void  Main(System.String[] args)
     {
         int i;
-        Storage db = StorageFactory.Instance.CreateStorage();
+        Storage db = StorageFactory.CreateStorage();
 		
         db.Open("testbck1.dbs", pagePoolSize);
         Root root = (Root) db.Root;

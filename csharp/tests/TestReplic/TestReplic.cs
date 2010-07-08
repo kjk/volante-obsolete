@@ -43,7 +43,7 @@ public class TestReplic
         }
         if ("master" == args[0]) { 
             ReplicationMasterStorage db = 
-                StorageFactory.Instance.CreateReplicationMasterStorage(new string[]{"localhost:" + port},
+                StorageFactory.CreateReplicationMasterStorage(new string[]{"localhost:" + port},
                                                                        async ? asyncBufSize : 0);
             db.SetProperty("perst.file.noflush", true);            
             db.SetProperty("perst.replication.ack", ack);
@@ -77,7 +77,7 @@ public class TestReplic
                                + (DateTime.Now - start));
         } else if ("slave" == args[0]) { 
             ReplicationSlaveStorage db = 
-                StorageFactory.Instance.CreateReplicationSlaveStorage(port); 
+                StorageFactory.CreateReplicationSlaveStorage(port); 
             db.SetProperty("perst.file.noflush", true);
             db.SetProperty("perst.replication.ack", ack);
             db.Open("slave.dbs", pagePoolSize);         

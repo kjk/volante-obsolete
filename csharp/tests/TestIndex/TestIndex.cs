@@ -29,7 +29,7 @@ public class TestIndex
     static public void  Main(string[] args)
     {
         int i;
-        Storage db = StorageFactory.Instance.CreateStorage();
+        Storage db = StorageFactory.CreateStorage();
 		
         bool serializableTransaction = false;
         for (i = 0; i < args.Length; i++) 

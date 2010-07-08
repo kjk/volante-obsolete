@@ -91,7 +91,7 @@ public class Guess:Persistent
 	
     static public void  Main(string[] args)
     {
-        Storage db = StorageFactory.Instance.CreateStorage();
+        Storage db = StorageFactory.CreateStorage();
 		
         db.Open("guess.dbs", 4*1024*1024, "GUESS");
         Guess root = (Guess) db.Root;

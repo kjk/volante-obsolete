@@ -95,7 +95,7 @@ public class TestTtree
 
     static public void Main(String[] args) 
     {	
-        Storage db = StorageFactory.Instance.CreateStorage();
+        Storage db = StorageFactory.CreateStorage();
 
         db.Open("testtree.dbs", pagePoolSize);
         PersonList root = (PersonList)db.Root;

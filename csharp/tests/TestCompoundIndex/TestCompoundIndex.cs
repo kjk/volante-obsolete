@@ -14,7 +14,7 @@ public class TestCompoundIndex
 
     static public void Main(string[] args) {	
         int i;
-        Storage db = StorageFactory.Instance.CreateStorage();
+        Storage db = StorageFactory.CreateStorage();
         for (i = 0; i < args.Length; i++) 
         { 
             if ("altbtree" == args[i]) 

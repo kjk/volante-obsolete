@@ -21,7 +21,7 @@ public class TestR2 : Persistent
 
     public static void Main(String[] args) 
     { 
-        Storage db = StorageFactory.Instance.CreateStorage();
+        Storage db = StorageFactory.CreateStorage();
         SpatialObject so;
         RectangleR2 r;
         DateTime start = DateTime.Now;

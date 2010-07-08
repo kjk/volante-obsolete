@@ -70,7 +70,7 @@ public class TestSSD : Persistent {
     }
 
     static public void Main(String[] args) {	
-        Storage db = StorageFactory.Instance.CreateStorage();
+        Storage db = StorageFactory.CreateStorage();
         Supplier   supplier;
         Detail     detail;
         Shipment   shipment;

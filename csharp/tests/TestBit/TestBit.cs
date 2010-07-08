@@ -75,7 +75,7 @@ public class TestBit
 
     static public void Main(string[] args) 
     {    
-        Storage db = StorageFactory.Instance.CreateStorage();
+        Storage db = StorageFactory.CreateStorage();
         db.Open("testbit.dbs", pagePoolSize);
 
         Catalogue root = (Catalogue)db.Root;

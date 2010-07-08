@@ -18,7 +18,7 @@ public class TestList
 {
     static void Main(string[] args)
     {
-        Storage db = StorageFactory.Instance.CreateStorage();
+        Storage db = StorageFactory.CreateStorage();
 
         db.Open("LinkedList.dbs", 10 * 1024 * 1024, "LinkedList"); // 10M cache
 

@@ -26,7 +26,7 @@ public class TestEnumerator
 
     static public void Main(string[] args) 
     {	
-        Storage db = StorageFactory.Instance.CreateStorage();
+        Storage db = StorageFactory.CreateStorage();
 
         if (args.Length > 0) { 
             if ("altbtree" == args[0]) 

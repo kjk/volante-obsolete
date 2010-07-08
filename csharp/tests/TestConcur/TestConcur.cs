@@ -77,7 +77,7 @@ public class TestConcur {
     }
 
     public static void Main(String[] args) {
-        db = StorageFactory.Instance.CreateStorage();
+        db = StorageFactory.CreateStorage();
 	db.Open("testconcur.dbs");
         L2List list = (L2List)db.Root;
         if (list == null) { 

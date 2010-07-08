@@ -25,7 +25,7 @@ public class TestGC {
     const int nIterations = 100000;
 
     static public void Main(String[] args) {	
-        Storage db = StorageFactory.Instance.CreateStorage();
+        Storage db = StorageFactory.CreateStorage();
     
         for (int i = 0; i < args.Length; i++) 
         { 
