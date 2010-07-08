@@ -53,6 +53,9 @@ tests: nachodb $(TESTS)
 
 examples: nachodb $(EXAMPLES)
 
+runtests: force
+	./runtests.sh $(OUTDIR)
+
 $(OUTDIR):
 	@mkdir -p $(OUTDIR)
 
@@ -136,3 +139,5 @@ $(OUTDIR)/TransparentGuess.exe: examples/TransparentGuess/Guess.cs
 
 clean:
 	rm -rf bin
+
+force: ;
