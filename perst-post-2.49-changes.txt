@@ -1,0 +1,193 @@
+Changes made in Perst after 2.49 (from which NachoDB derives).
+It would be nice to add those features as well.
+
+This list is bassed on http://www.garret.ru/news.html and
+http://en.wikipedia.org/wiki/Perst
+
+Items on this list are good features to be added to nupe.
+
+2.50 (2005-01-25)
+* Change Perst license. Starting from this version Perst it is necessary to buy
+  commercial license for using Perst in commercial products.
+* Fix race condition problem in Persistent.Load method
+
+2.51 (2005-02-07)
+* Integrate JSQL - make it possible to select collection members using SQL-like queries
+* Support remove() method for Btree and AltBtree selection iterators (Java version)
+* Fix bug in fetching classes with privite fields declared in base classes (.Net version)
+
+2.52 (2005-02-07)
+* Add Database class emulating object-relational database on top of Perst 
+
+2.53 (2005-02-22)
+* Fix problems with handling null values of enum fields in JDK 1.5 version.
+* Support concurrent iterators (recover iterator state instead of throwing
+  ConcurrentModificationException if underlying collection is modified outside
+  iterator) dd Database class emulating object-relational database on top of Perst
+* Support generics for the latest release of Visual Studion 2005 (Perst.NET)
+
+2.54 (2005-03-03)
+* Make database format tolerant to order of members in class in the particular
+  JVM
+* Fix bugs in AltBtree iterators introduced in 2.53 Perst.Net version
+
+2.55 (2005-03-21)
+
+* Add versioning support (Version and VersionHistory classes)
+* Make it possible to postion BLOB output stream to the arbitrary position
+* Add Perst interface to Lucene full text search engine (store Lucene indices in
+  Perst storage)
+* Avoid false ambiguity exceptions if same assembly is specified twice in
+  assembly list
+
+2.56 (2005-05-19)
+* Add "perst.slave.connection.timeout" storage property allowing to specify
+  connection timeout for replicated model.
+* Do not insert entries in object cache during finalization
+* Change behavior of Storage.makePeristent method. Now by default it works as
+  prior version 2.46 - immediately storing object in the storage. To avoid such
+  behavior, set "perst.force.store" property to false. In this case object will
+  be just assigned OID and marked as modified (unfortunately garbage collection
+  and finalization in Java is implemented in such way, that in this case
+  application intensively putting roots of objects trees in index can cause
+  memory overflow.
+
+2.57 (2005-06-08)
+* Add Storage.merge(Iterator[]) and Storage.join(Iterator[]) to efficiently
+  merge and join results of several index searches. It allows efficient
+  implementation of complex search conditions.
+* Force assignment of OID to objects referenced by fields used as a key in
+  FieldIndex when object is inserted in index.
+* Fix problems with JRocket JVM.
+* Fix problem with interference of explicit deallocation of objects and
+  garbage collection
+
+2.58 (2005-06-29)
+* Support compound indices (before Perst supports only compound multi-field indices)
+* Support RDF data model (http://www.w3.org/RDF/): store/fetch/searching RDF
+  data, XML based queries
+* Change implentation of contains() method in Perst collection to be consistent
+  with JDK collections (comparison using equals method). Add containsObject
+  method which is more efficient and check if collection contains specified
+  object instance.
+* Change Database class to support table inheritance and polymorphic queries.
+
+2.59 (2005-06-29)
+* Advanced replication model: support adding of new slave nodes to running
+  master and background replication of the database to new nodes
+* Fix problem with execution of read-only transactions at slave nodes
+* Support elements with non-unique timestamps in TimeSeries class
+* Fix problem with commit and rollback of serializable per-thread transactions
+* Properly handle event fields in persistent objects (.Net version)
+* Fix problem with prefix search implementation in AltBtree (.Net version)
+
+2.60 (2005-07-06)
+* Support custom memory allocators and page caching limit. Please see "What is
+  the most efficient way of storing multimedia data?" section of "Tricks and
+  tips" chapter of Perst manual for more information.
+* Add CompressedFile and CompressDatabase utility. Now it is possible to work
+  with compressed database in read-ony mode.
+* Support multifiles in .Net Perst version
+* Make it possible to pass null in Storage.setRoot
+* Fix bug in JDK 1.5 version of FieldIndex
+
+2.61 (2005-08-02)
+* LinkImpl class in JDK 1.5 version implements java.util.List interface
+* Make it possible to perfrom select for update in Database class (set exclusive lock)
+* Add IPerisistentMap class implementing IDictionary/java.util.Map interface and
+  efficiently handle both small and large number of members
+* Correctly handle rollback of deallocated objects in case of using per-thread
+  serializable transactions
+* Fix bug in extracting string key in AltBtreeFieldIndex
+* Fix bugs in locking implementation in Compact.Net serializable trasactio mode.
+* Replace methods deprecated in .Net framework 2.0
+* Add IPersistentList interface which implementation is based on B-Tree and
+  provides efficient random access for large lists.
+* Add scalable list container which is able to efficently handle both small and
+  large lists. Until size of list is small, Link implementation is used. When
+  number of elements exceeds some threshold, B-Tree based implementation of list
+  is used. (JDK 1.5 version only)
+* Catch JSQLRuntimeExceptions in QueryImpl.FilterItertator
+* Change implementation of Blob to avoid stack overflow when large files are storied
+* Add junit tests
+
+2.62 (2005-09-09)
+* Add random access index: index optimized for access to elements by position
+* Add GenericIndex.entryIterator(int start, int order) method
+* Fix bug in XML import of array of strings
+* Make it possible to choose in Perst.Net synchronous or asynchronous generation 
+  of pack/unpack methods.
+* Add IBidirectionalIterator returned by implementation of IPeristentList 
+  interface and IPersistentList.GetEnumerator(int i) method allowing to start 
+  iteration from element with specified index.
+
+2.63 (2005-09-30)
+* Fix bug in BlobInputStream (it returns 0 at the end of stream instead of -1).
+* Fix bug in PersistentListImpl.remove method
+
+2.64 (2006-01-18)
+* Fix bug in B-Tree iterator reconstruction method
+* Make PagePool.copy method synchronized
+* Add ThreadSafeIterator class - it can be used as wrapper for all Perst
+ iterators to perform safe iteration through the Perst collections in
+ mutlithreaded environment
+* Make getThransactionContext and setTransactionContext methods public allowing 
+  multiple threads to share the same transaction
+* Add INamedClassLoader class allowing to store in database association of 
+  persistent class with it's class loader
+* Implement random access to BLOBs
+
+July 2007
+* Integration with Apache Lucene full-text search engine is added to Perst for Java
+* Addition of multi-version concurrency control (fine-grain database locking)
+* Automated updating of indexes when objects/rows of a table are inserted,
+  edited or deleted
+
+January 2008
+
+* McObject announces that Perst for Java has been verified as compatible with
+  the Android mobile device platform backed by Google and the Open Handset Alliance
+* Introduction of TestIndex, a demo application showing Perst and Android’s
+  bundled SQLite database performing the same tasks side by side. TestIndex is
+  offered as a free download, with complete source code, from McObject's Web site
+
+February 2008
+
+* Support for KD-Tree or k-dimensional tree, a database index with uses in
+  spatial and pattern-matching applications, is added. KD trees are useful in
+  handling multi-dimensional data, and in applications where query predicates
+  contain various combinations of object fields (for example, to construct
+  Query-By-Example, or QBE features)
+
+June 2008
+
+* Perst gains built-in full-text search (no longer dependent on Apache Lucene).
+  McObject states benefit as greater efficiency compared to using Lucene, and a
+  smaller footprint (the Lucene .jar file is several hundred kilobytes in size,
+  while including search capability in Perst adds just a few kilobytes).
+* On-the-fly data compression is added to Perst Lite, reducing stored data size
+  by three to five times
+* Support for Language Integrated Query (LINQ) is added to Perst for .NET
+* Perst for .NET’s API guide is updated to MSDN-like formatting familiar to
+  .NET programmers. The new documentation, generated using Visual Studio’s
+  SandCastle tool, consists of a single Windows help file, which saves space
+  compared to the earlier approach using many HTML pages.
+
+January 2009
+
+* In version 4.0, Perst gains the ability to add persistence to "foreign" objects,
+  or objects not derived from its Persistent class. This enables Perst to be
+  added as storage for existing applications including commercial or open source
+  class frameworks, including GUI classes, object-request brokers, and
+  industry-specific solutions; UML tools that generate classes from wizards;
+  and programs whose source code is not available.
+* New features in Perst Lite include support for full-text search; automatic
+  determination of storage type (JSR-75, which allows access to file systems on
+  certain devices; or Java ME’s Record Management System (RMS) persistent storage
+  mechanism); support for weak references; and improved integration with the
+  EclipseME development framework.
+* Perst for Java distribution (including Perst and Perst Lite embedded databases)
+  adds an example application that builds on the database's full-text search
+  capability to provide a local search engine for contact management files on a
+  cell phone or other mobile device. The software is available as TestIndex for
+  Java ME (Perst Lite) and as ContactsIndex for Android.
