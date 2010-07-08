@@ -6,10 +6,10 @@ NachoDB is an object-oriented, small, fast, free, embeddable database for .NET a
 Origin.
 -------
 
-NachoDB is a continuation of Perst database. Perst was licensed under liberal MIT license
+NachoDB is a continuation of Perst database. Perst was licensed under liberal BSD license
 until version 2.49. In version 2.50 the license was changed to dual GPL/commercial license.
 
-NachoDB is a fork of the latest MIT-licensed version (2.49) and is now developed
+NachoDB is a fork of the latest BSD-licensed version (2.49) and is now developed
 independently of Perst, preserving liberal license, so that you can use it
 in both open-source and commercial code for free.
 
