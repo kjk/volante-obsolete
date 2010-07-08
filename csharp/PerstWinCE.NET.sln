@@ -3,80 +3,80 @@ Project("{20D4826A-C6FA-45DB-90F4-C717570B9F32}") = "Perst.NET", "Perst.NET.csdp
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
-Project("{20D4826A-C6FA-45DB-90F4-C717570B9F32}") = "TestIndex", "TestIndex\TestIndex.csdproj", "{6D340671-DF42-4B44-888D-35F15258685D}"
+Project("{20D4826A-C6FA-45DB-90F4-C717570B9F32}") = "TestIndex", "tests\TestIndex\TestIndex.csdproj", "{6D340671-DF42-4B44-888D-35F15258685D}"
 	ProjectSection(ProjectDependencies) = postProject
 		{DEBB572F-D270-433F-AADF-EA80B483BFE8} = {DEBB572F-D270-433F-AADF-EA80B483BFE8}
 	EndProjectSection
 EndProject
-Project("{20D4826A-C6FA-45DB-90F4-C717570B9F32}") = "Guess", "Guess\Guess.csdproj", "{6ED3F61C-0E64-43BD-8030-DBC3BA80FB12}"
+Project("{20D4826A-C6FA-45DB-90F4-C717570B9F32}") = "Guess", "examples\Guess\Guess.csdproj", "{6ED3F61C-0E64-43BD-8030-DBC3BA80FB12}"
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
-Project("{20D4826A-C6FA-45DB-90F4-C717570B9F32}") = "TestXML", "TestXML\TestXML.csdproj", "{7D7B2D30-EA1F-4454-BF29-C0934FA605E3}"
+Project("{20D4826A-C6FA-45DB-90F4-C717570B9F32}") = "TestXML", "tests\TestXML\TestXML.csdproj", "{7D7B2D30-EA1F-4454-BF29-C0934FA605E3}"
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
-Project("{20D4826A-C6FA-45DB-90F4-C717570B9F32}") = "TestLink", "TestLink\TestLink.csdproj", "{65643720-5963-4B3F-8FB9-3ECDC6057D1E}"
+Project("{20D4826A-C6FA-45DB-90F4-C717570B9F32}") = "TestLink", "examples\TestLink\TestLink.csdproj", "{65643720-5963-4B3F-8FB9-3ECDC6057D1E}"
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
-Project("{20D4826A-C6FA-45DB-90F4-C717570B9F32}") = "TestConcur", "TestConcur\TestConcur.csdproj", "{AC03BC4A-64DB-40A8-B3BA-B7C6DBBC4060}"
+Project("{20D4826A-C6FA-45DB-90F4-C717570B9F32}") = "TestConcur", "tests\TestConcur\TestConcur.csdproj", "{AC03BC4A-64DB-40A8-B3BA-B7C6DBBC4060}"
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
-Project("{20D4826A-C6FA-45DB-90F4-C717570B9F32}") = "TestGC", "TestGC\TestGC.csdproj", "{DFEAF29C-F3BB-4179-89D3-2305E7278206}"
+Project("{20D4826A-C6FA-45DB-90F4-C717570B9F32}") = "TestGC", "tests\TestGC\TestGC.csdproj", "{DFEAF29C-F3BB-4179-89D3-2305E7278206}"
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
-Project("{20D4826A-C6FA-45DB-90F4-C717570B9F32}") = "TestRtree", "TestRtree\TestRtree.csdproj", "{22614263-86CA-46D2-A708-412A5F573871}"
+Project("{20D4826A-C6FA-45DB-90F4-C717570B9F32}") = "TestRtree", "tests\TestRtree\TestRtree.csdproj", "{22614263-86CA-46D2-A708-412A5F573871}"
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
-Project("{20D4826A-C6FA-45DB-90F4-C717570B9F32}") = "TestSSD", "TestSSD\TestSSD.csdproj", "{E6F8C24F-534F-4402-9587-7D2C4D7134FB}"
+Project("{20D4826A-C6FA-45DB-90F4-C717570B9F32}") = "TestSSD", "examples\TestSSD\TestSSD.csdproj", "{E6F8C24F-534F-4402-9587-7D2C4D7134FB}"
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
-Project("{20D4826A-C6FA-45DB-90F4-C717570B9F32}") = "TestCompoundIndex", "TestCompoundIndex\TestCompoundIndex.csdproj", "{A3B0BE2B-67A6-4EA2-A08D-E0C2D4E7D149}"
+Project("{20D4826A-C6FA-45DB-90F4-C717570B9F32}") = "TestCompoundIndex", "tests\TestCompoundIndex\TestCompoundIndex.csdproj", "{A3B0BE2B-67A6-4EA2-A08D-E0C2D4E7D149}"
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
-Project("{20D4826A-C6FA-45DB-90F4-C717570B9F32}") = "TestEnumerator", "TestEnumerator\TestEnumerator.csdproj", "{98403E91-4E83-4B91-AC11-A2DE894A308D}"
+Project("{20D4826A-C6FA-45DB-90F4-C717570B9F32}") = "TestEnumerator", "tests\TestEnumerator\TestEnumerator.csdproj", "{98403E91-4E83-4B91-AC11-A2DE894A308D}"
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
-Project("{20D4826A-C6FA-45DB-90F4-C717570B9F32}") = "TestTtree", "TestTtree\TestTtree.csdproj", "{C58DE3BC-E59C-4CCF-AAFD-C80610F94F2F}"
+Project("{20D4826A-C6FA-45DB-90F4-C717570B9F32}") = "TestTtree", "tests\TestTtree\TestTtree.csdproj", "{C58DE3BC-E59C-4CCF-AAFD-C80610F94F2F}"
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
-Project("{20D4826A-C6FA-45DB-90F4-C717570B9F32}") = "TestBlob", "TestBlob\TestBlob.csdproj", "{9C25DB1A-FD72-4D29-A41C-DDEF453F2515}"
+Project("{20D4826A-C6FA-45DB-90F4-C717570B9F32}") = "TestBlob", "tests\TestBlob\TestBlob.csdproj", "{9C25DB1A-FD72-4D29-A41C-DDEF453F2515}"
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
-Project("{20D4826A-C6FA-45DB-90F4-C717570B9F32}") = "TestBackup", "TestBackup\TestBackup.csdproj", "{DE272A51-C987-418D-9BFF-169F3C6D1CEE}"
+Project("{20D4826A-C6FA-45DB-90F4-C717570B9F32}") = "TestBackup", "tests\TestBackup\TestBackup.csdproj", "{DE272A51-C987-418D-9BFF-169F3C6D1CEE}"
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
-Project("{20D4826A-C6FA-45DB-90F4-C717570B9F32}") = "TestTimeSeries", "TestTimeSeries\TestTimeSeries.csdproj", "{75441689-0B78-4423-A65B-6976CA34F94E}"
+Project("{20D4826A-C6FA-45DB-90F4-C717570B9F32}") = "TestTimeSeries", "tests\TestTimeSeries\TestTimeSeries.csdproj", "{75441689-0B78-4423-A65B-6976CA34F94E}"
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
-Project("{20D4826A-C6FA-45DB-90F4-C717570B9F32}") = "TestSOD", "TestSOD\TestSOD.csdproj", "{6C1DC6D6-9575-483D-8D2D-9133DC6C9350}"
+Project("{20D4826A-C6FA-45DB-90F4-C717570B9F32}") = "TestSOD", "examples\TestSOD\TestSOD.csdproj", "{6C1DC6D6-9575-483D-8D2D-9133DC6C9350}"
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
-Project("{20D4826A-C6FA-45DB-90F4-C717570B9F32}") = "TestIndex2", "TestIndex2\TestIndex2.csdproj", "{EB559C38-F7F3-45D7-AF1D-73546C5BE457}"
+Project("{20D4826A-C6FA-45DB-90F4-C717570B9F32}") = "TestIndex2", "tests\TestIndex2\TestIndex2.csdproj", "{EB559C38-F7F3-45D7-AF1D-73546C5BE457}"
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
-Project("{20D4826A-C6FA-45DB-90F4-C717570B9F32}") = "TestR2", "TestR2\TestR2.csdproj", "{746E9034-D60D-4FB9-B564-FC4AC1E5428A}"
+Project("{20D4826A-C6FA-45DB-90F4-C717570B9F32}") = "TestR2", "tests\TestR2\TestR2.csdproj", "{746E9034-D60D-4FB9-B564-FC4AC1E5428A}"
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
-Project("{20D4826A-C6FA-45DB-90F4-C717570B9F32}") = "IpCountry", "IpCountry\IpCountry.csdproj", "{EEB7CD7C-A4AB-4C2C-A5CF-92EE6BD089D2}"
+Project("{20D4826A-C6FA-45DB-90F4-C717570B9F32}") = "IpCountry", "examples\IpCountry\IpCountry.csdproj", "{EEB7CD7C-A4AB-4C2C-A5CF-92EE6BD089D2}"
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
-Project("{20D4826A-C6FA-45DB-90F4-C717570B9F32}") = "TestBit", "TestBit\TestBit.csdproj", "{49CBC761-0ECE-4B4F-AF6C-17B736B70E98}"
+Project("{20D4826A-C6FA-45DB-90F4-C717570B9F32}") = "TestBit", "tests\TestBit\TestBit.csdproj", "{49CBC761-0ECE-4B4F-AF6C-17B736B70E98}"
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject

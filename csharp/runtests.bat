@@ -29,6 +29,6 @@ tests\TestBlob\bin\debug\TestBlob
 tests\TestTimeSeries\bin\debug\TestTimeSeries
 tests\TestBit\bin\debug\TestBit
 tests\TestList\bin\debug\TestList
-tests\start TestReplic\bin\debug\TestReplic master
+start tests\TestReplic\bin\debug\TestReplic master
 tests\TestReplic\bin\debug\TestReplic slave
 set path=%save_path%

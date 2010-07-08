@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestLink", "TestLink\TestLink.csproj", "{4AD11980-9877-4B77-86D5-60834064C3F8}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestLink", "examples\TestLink\TestLink.csproj", "{4AD11980-9877-4B77-86D5-60834064C3F8}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestGC", "tests\TestGC\TestGC.csproj", "{4866D4F5-1DD7-46E0-9C8C-47AB98652295}"
 EndProject
@@ -12,7 +12,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestXML", "tests\TestXML\Te
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestRaw", "tests\TestRaw\TestRaw.csproj", "{F9EB8007-A334-431E-BFD9-6558B545095C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestSSD", "TestSSD\TestSSD.csproj", "{107C5E43-9BB6-4FA2-B6A2-AA8D8A4D3898}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestSSD", "examples\TestSSD\TestSSD.csproj", "{107C5E43-9BB6-4FA2-B6A2-AA8D8A4D3898}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestTtree", "tests\TestTtree\TestTtree.csproj", "{9D66F041-EE49-452E-A882-6E6431E92318}"
 EndProject
@@ -24,7 +24,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Perst.NET", "Perst.NET.cspr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestIndex", "tests\TestIndex\TestIndex.csproj", "{C5117801-7766-4B0B-A0E5-BA2BAB968072}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Guess", "Guess\Guess.csproj", "{6082AFF2-5525-4957-8741-5F63D35D5EEB}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Guess", "examples\Guess\Guess.csproj", "{6082AFF2-5525-4957-8741-5F63D35D5EEB}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestBlob", "tests\TestBlob\TestBlob.csproj", "{5F572942-DB1D-4E32-80EB-3E978B70F66B}"
 EndProject
@@ -32,19 +32,19 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestBackup", "tests\TestBac
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestTimeSeries", "tests\TestTimeSeries\TestTimeSeries.csproj", "{2E7C9D04-D830-427D-9BEE-15595C3B1537}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestSOD", "TestSOD\TestSOD.csproj", "{A56330C0-2CFA-4D48-B5C7-98F9F2CEFCD4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestSOD", "examples\TestSOD\TestSOD.csproj", "{A56330C0-2CFA-4D48-B5C7-98F9F2CEFCD4}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestIndex2", "tests\TestIndex2\TestIndex2.csproj", "{BAF5C28D-8850-42DE-BE79-50DFF0387D20}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TransparentGuess", "TransparentGuess\TransparentGuess.csproj", "{EC8C0B52-E7C1-4F40-A058-A8F8E9948B02}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TransparentGuess", "examples\TransparentGuess\TransparentGuess.csproj", "{EC8C0B52-E7C1-4F40-A058-A8F8E9948B02}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestR2", "tests\TestR2\TestR2.csproj", "{4E1CC7EC-642C-40AD-AC5A-EA2FA3EBFDE2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IpCountry", "IpCountry\IpCountry.csproj", "{65203C2F-A218-41C1-926E-B443CBE3125D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IpCountry", "examples\IpCountry\IpCountry.csproj", "{65203C2F-A218-41C1-926E-B443CBE3125D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestBit", "tests\TestBit\TestBit.csproj", "{97908AA5-C765-4B4F-A9F3-C509F0DDB142}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PropGuess", "PropGuess\PropGuess.csproj", "{AE432241-108A-4D41-9E11-5E6AC2D26FB4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PropGuess", "examples\PropGuess\PropGuess.csproj", "{AE432241-108A-4D41-9E11-5E6AC2D26FB4}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestList", "tests\TestList\TestList.csproj", "{FF1AADED-3F7D-43C5-8BAD-801C98EB7D2B}"
 EndProject
