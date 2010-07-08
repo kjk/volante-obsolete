@@ -1,3 +1,4 @@
 *.suo
+*.dbs
 *bin/
 *obj/

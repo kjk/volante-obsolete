@@ -1,34 +1,34 @@
 set save_path=%path%
 set path=bin;%path%
 del *.dbs
-TestIndex\bin\debug\TestIndex
+tests\TestIndex\bin\debug\TestIndex
 del *.dbs
-TestIndex\bin\debug\TestIndex altbtree
+tests\TestIndex\bin\debug\TestIndex altbtree
 del *.dbs
-TestIndex\bin\debug\TestIndex altbtree serializable
+tests\TestIndex\bin\debug\TestIndex altbtree serializable
 del *.dbs
-TestIndex\bin\debug\TestIndex inmemory
-TestIndex2\bin\debug\TestIndex2
-TestEnumerator\bin\debug\TestEnumerator
+tests\TestIndex\bin\debug\TestIndex inmemory
+tests\TestIndex2\bin\debug\TestIndex2
+tests\TestEnumerator\bin\debug\TestEnumerator
 del *.dbs
-TestEnumerator\bin\debug\TestEnumerator altbtree
-TestCompoundIndex\bin\debug\TestCompoundIndex
-TestRtree\bin\debug\TestRtree
-TestR2\bin\debug\TestR2
-TestTtree\bin\debug\TestTtree
-TestRaw\bin\debug\TestRaw
-TestRaw\bin\debug\TestRaw
-TestGC\bin\debug\TestGC
-TestGC\bin\debug\TestGC background
-TestGC\bin\debug\TestGC background altbtree
-TestConcur\bin\debug\TestConcur
-TestXML\bin\debug\TestXML
-TestBackup\bin\debug\TestBackup
-TestBlob\bin\debug\TestBlob
-TestBlob\bin\debug\TestBlob
-TestTimeSeries\bin\debug\TestTimeSeries
-TestBit\bin\debug\TestBit
-TestList\bin\debug\TestList
-start TestReplic\bin\debug\TestReplic master
-TestReplic\bin\debug\TestReplic slave
+tests\TestEnumerator\bin\debug\TestEnumerator altbtree
+tests\TestCompoundIndex\bin\debug\TestCompoundIndex
+tests\TestRtree\bin\debug\TestRtree
+tests\TestR2\bin\debug\TestR2
+tests\TestTtree\bin\debug\TestTtree
+tests\TestRaw\bin\debug\TestRaw
+tests\TestRaw\bin\debug\TestRaw
+tests\TestGC\bin\debug\TestGC
+tests\TestGC\bin\debug\TestGC background
+tests\TestGC\bin\debug\TestGC background altbtree
+tests\TestConcur\bin\debug\TestConcur
+tests\TestXML\bin\debug\TestXML
+tests\TestBackup\bin\debug\TestBackup
+tests\TestBlob\bin\debug\TestBlob
+tests\TestBlob\bin\debug\TestBlob
+tests\TestTimeSeries\bin\debug\TestTimeSeries
+tests\TestBit\bin\debug\TestBit
+tests\TestList\bin\debug\TestList
+tests\start TestReplic\bin\debug\TestReplic master
+tests\TestReplic\bin\debug\TestReplic slave
 set path=%save_path%
