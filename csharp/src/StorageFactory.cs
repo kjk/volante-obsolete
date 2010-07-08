@@ -2,7 +2,7 @@ namespace NachoDB
 {
     using System;
     using NachoDB.Impl;
-	
+
     /// <summary> Storage factory
     /// </summary>
     public class StorageFactory
@@ -20,8 +20,9 @@ namespace NachoDB
             return new StorageImpl();
 #endif
         }
-		
+
 #if !COMPACT_NET_FRAMEWORK
+#if !OMIT_REPLICATION
         /// <summary>
         /// Create new instance of the master node of replicated storage
         /// </summary>
@@ -49,6 +50,7 @@ namespace NachoDB
         {
             return new ReplicationSlaveStorageImpl(port);
         }
+#endif
 #endif
     }	
 }

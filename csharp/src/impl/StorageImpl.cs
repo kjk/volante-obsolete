@@ -85,18 +85,17 @@ namespace NachoDB.Impl
         const int dbHandlesPerPageBits = Page.pageBits - 3;
         const int dbHandlesPerPage = 1 << dbHandlesPerPageBits;
         const int dbDirtyPageBitmapSize = 1 << (32 - dbHandlesPerPageBits - 3);
-		
+
         const int dbInvalidId = 0;
         const int dbBitmapId = 1;
         const int dbFirstUserId = dbBitmapId + dbBitmapPages;
-		
+
         internal const int dbPageObjectFlag = 1;
         internal const int dbModifiedFlag = 2;
         internal const int dbFreeHandleFlag = 4;
         internal const int dbFlagsMask = 7;
         internal const int dbFlagsBits = 3;
-		
-         
+
         int getBitmapPageId(int i) 
         { 
             return i < dbBitmapPages ? dbBitmapId + i : header.root[1-currIndex].bitmapExtent + i;

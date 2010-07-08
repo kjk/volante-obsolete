@@ -1,3 +1,4 @@
+#if !OMIT_REPLICATION
 namespace NachoDB.Impl    
 {
     using NachoDB;
@@ -27,3 +28,4 @@ namespace NachoDB.Impl
         internal int      asyncBufSize;
     }
 }
+#endif

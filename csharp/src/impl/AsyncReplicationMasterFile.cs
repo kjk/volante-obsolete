@@ -1,11 +1,12 @@
-namespace NachoDB.Impl    
+#if !OMIT_REPLICATION
+namespace NachoDB.Impl
 {
     using System;
     using System.Threading;
     using System.Net;
     using System.Net.Sockets;
     using NachoDB;
-	
+
     /// <summary>
     /// File performing asynchronous replication of changed pages to specified slave nodes.
     /// </summary>
@@ -23,7 +24,6 @@ namespace NachoDB.Impl
             this.asyncBufSize = asyncBufSize;
             start();
         }
-
 
         /// <summary>
         /// Constructor of replication master file
@@ -170,3 +170,4 @@ namespace NachoDB.Impl
         private Thread  thread;
     }
 }
+#endif

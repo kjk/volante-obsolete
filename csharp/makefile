@@ -2,7 +2,9 @@
 # Valid options:
 # CFG=[rel|dbg] - default: rel
 # GENERICS=[yes|no] - default: no
-# OMITXML=[yes|no] - default: no
+# OMIT_XML=[yes|no] - default: no
+# OMIT_REPLICATION=[yes|no] - default: no
+
 CSC=mcs
 
 CSC_FLAGS = -d:SUPPORT_RAW_TYPE
@@ -23,9 +25,14 @@ CSC_FLAGS += -d:USE_GENERICS
 OUTDIR:=$(OUTDIR)-generics
 endif
 
-ifeq ($(OMITXML),yes)
+ifeq ($(OMIT_XML),yes)
 CSC_FLAGS += -d:OMIT_XML
 OUTDIR:=$(OUTDIR)-noxml
+endif
+
+ifeq ($(OMIT_REPLICATION),yes)
+CSC_FLAGS += -D:OMIT_REPLICATION
+OUTDIR:=$(OUTDIR)-norepl
 endif
 
 NACHODB=$(OUTDIR)/NachoDB.dll

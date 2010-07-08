@@ -1,3 +1,4 @@
+#if !OMIT_REPLICATION
 namespace NachoDB.Impl
 {
     using System;
@@ -233,7 +234,7 @@ namespace NachoDB.Impl
                     if (transactionCommit) 
                     { 
                         lck.Unlock();
-                        lock(commit) 
+                        lock(commit)
                         { 
                             Monitor.PulseAll(commit);
                         }
@@ -243,9 +244,9 @@ namespace NachoDB.Impl
             }            
         }
 
-        public override void Close() 
+        public override void Close()
         {
-            lock(done) 
+            lock (done)
             {
                 listening = false;
             }
@@ -257,20 +258,20 @@ namespace NachoDB.Impl
             base.Close();
         }
 
-        private void hangup() 
-        { 
-            if (socket != null) 
+        private void hangup()
+        {
+            if (socket != null)
             { 
-                try 
-                { 
+                try
+                {
                     socket.Close();
-                } 
+                }
                 catch (SocketException) {}
                 socket = null;
             }
         }
 
-        protected override bool isDirty() 
+        protected override bool isDirty()
         { 
             return false;
         }
@@ -289,4 +290,4 @@ namespace NachoDB.Impl
         protected Thread       thread;
     }
 }
-
+#endif

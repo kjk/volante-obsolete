@@ -1,3 +1,4 @@
+#if !OMIT_REPLICATION
 namespace NachoDB.Impl    
 {
     using System;
@@ -183,3 +184,4 @@ namespace NachoDB.Impl
         protected ReplicationMasterStorageImpl storage;
     }
 }
+#endif
