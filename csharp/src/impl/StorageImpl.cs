@@ -30,10 +30,7 @@ namespace NachoDB.Impl
             {
                 lock (this)
                 {
-                    if (!opened)
-                    {
-                        throw new StorageError(StorageError.ErrorCode.STORAGE_NOT_OPENED);
-                    }
+                    ensureOpened();
                     int rootOid = header.root[1 - currIndex].rootObject;
                     return (rootOid == 0) ? null : lookupObject(rootOid, null);
                 }
@@ -43,10 +40,7 @@ namespace NachoDB.Impl
             {
                 lock (this)
                 {
-                    if (!opened)
-                    {
-                        throw new StorageError(StorageError.ErrorCode.STORAGE_NOT_OPENED);
-                    }
+                    ensureOpened();
                     if (!value.IsPersistent())
                     {
                         storeObject0(value);
@@ -95,6 +89,14 @@ namespace NachoDB.Impl
         internal const int dbFlagsMask = 7;
         internal const int dbFlagsBits = 3;
 
+        internal void ensureOpened()
+        {
+            if (!opened)
+            {
+                throw new StorageError(StorageError.ErrorCode.STORAGE_NOT_OPENED);
+            }
+        }
+                
         int getBitmapPageId(int i) 
         { 
             return i < dbBitmapPages ? dbBitmapId + i : header.root[1-currIndex].bitmapExtent + i;
@@ -1262,10 +1264,7 @@ namespace NachoDB.Impl
             { 
                 lock (this)
                 {
-                    if (!opened)
-                    {
-                        throw new StorageError(StorageError.ErrorCode.STORAGE_NOT_OPENED);
-                    }
+                    ensureOpened();
                     objectCache.flush();
            
                     if (!modified)
@@ -1470,10 +1469,7 @@ namespace NachoDB.Impl
         {
             lock (this)
             {
-                if (!opened)
-                {
-                    throw new StorageError(StorageError.ErrorCode.STORAGE_NOT_OPENED);
-                }
+                ensureOpened();
                 objectCache.invalidate();
         
                 if (!modified) 
@@ -1550,10 +1546,7 @@ namespace NachoDB.Impl
         {
             lock (this) 
             {
-                if (!opened) 
-                { 
-                    throw new StorageError(StorageError.ErrorCode.STORAGE_NOT_OPENED);
-                }
+                ensureOpened();
 
                 lock (objectCache) 
                 {
@@ -1592,10 +1585,7 @@ namespace NachoDB.Impl
             }
             lock (this) 
             {
-                if (!opened) 
-                { 
-                    throw new StorageError(StorageError.ErrorCode.STORAGE_NOT_OPENED);
-                }
+                ensureOpened();
                 lock (objectCache) 
                 {
                     int oid = allocateId();
@@ -1612,10 +1602,7 @@ namespace NachoDB.Impl
         {
             lock (this)
             {
-                if (!opened)
-                {
-                    throw new StorageError(StorageError.ErrorCode.STORAGE_NOT_OPENED);
-                }
+                ensureOpened();
                 objectCache.flush();
                 int    curr = 1-currIndex;
                 int    nObjects = header.root[curr].indexUsed;
@@ -1805,10 +1792,8 @@ namespace NachoDB.Impl
         {
             lock (this)
             {
-                if (!opened)
-                {
-                    throw new StorageError(StorageError.ErrorCode.STORAGE_NOT_OPENED);
-                }
+                ensureOpened();
+
                 Index<K,V> index = alternativeBtree 
                     ? (Index<K,V>)new AltBtree<K,V>(unique)
                     : (Index<K,V>)new Btree<K,V>(unique);
@@ -1821,10 +1806,7 @@ namespace NachoDB.Impl
         {
             lock (this)
             {
-                if (!opened)
-                {
-                    throw new StorageError(StorageError.ErrorCode.STORAGE_NOT_OPENED);
-                }
+                ensureOpened();
                 return new ThickIndex<K,V>(this);
             }
         }
@@ -1833,10 +1815,7 @@ namespace NachoDB.Impl
         {
             lock (this)
             {
-                if (!opened) 
-                { 
-                    throw new StorageError(StorageError.ErrorCode.STORAGE_NOT_OPENED);
-                }
+                ensureOpened();
                 BitIndex<T> index = new BitIndexImpl<T>();
                 index.AssignOid(this, 0, false);
                 return index;
@@ -1847,10 +1826,7 @@ namespace NachoDB.Impl
         {
             lock (this)
             {
-                if (!opened)
-                {
-                    throw new StorageError(StorageError.ErrorCode.STORAGE_NOT_OPENED);
-                }
+                ensureOpened();
                 Rtree<T> index = new Rtree<T>();
                 index.AssignOid(this, 0, false);
                 return index;
@@ -1861,10 +1837,7 @@ namespace NachoDB.Impl
         {
             lock (this)
             {
-                if (!opened)
-                {
-                    throw new StorageError(StorageError.ErrorCode.STORAGE_NOT_OPENED);
-                }
+                ensureOpened();
                 RtreeR2<T> index = new RtreeR2<T>();
                 index.AssignOid(this, 0, false);
                 return index;
@@ -1873,19 +1846,13 @@ namespace NachoDB.Impl
 
         public SortedCollection<K,V> CreateSortedCollection<K,V>(PersistentComparator<K,V> comparator, bool unique) where V:class,IPersistent
         {
-            if (!opened) 
-            { 
-                throw new StorageError(StorageError.ErrorCode.STORAGE_NOT_OPENED);
-            }        
+            ensureOpened();       
             return new Ttree<K,V>(comparator, unique);
         }
 
         public SortedCollection<K,V> CreateSortedCollection<K,V>(bool unique) where V:class,IPersistent,IComparable<K>,IComparable<V>
         {
-            if (!opened) 
-            { 
-                throw new StorageError(StorageError.ErrorCode.STORAGE_NOT_OPENED);
-            }        
+            ensureOpened();    
             return new Ttree<K,V>(new DefaultPersistentComparator<K,V>(), unique);
         }
 
@@ -1893,10 +1860,8 @@ namespace NachoDB.Impl
         {
             lock (this)
             {
-                if (!opened)
-                {
-                    throw new StorageError(StorageError.ErrorCode.STORAGE_NOT_OPENED);
-                }
+                ensureOpened();
+
                 ISet<T> s = alternativeBtree 
                     ? (ISet<T>)new AltPersistentSet<T>()
                     : (ISet<T>)new PersistentSet<T>();
@@ -1914,10 +1879,8 @@ namespace NachoDB.Impl
         {
             lock (this)
             {
-                if (!opened)
-                {
-                    throw new StorageError(StorageError.ErrorCode.STORAGE_NOT_OPENED);
-                }
+                ensureOpened();
+
                 return new ScalableSet<T>(this, initialSize);
             }
         }
@@ -1926,10 +1889,7 @@ namespace NachoDB.Impl
         {
             lock (this)
             {
-                if (!opened)
-                {
-                    throw new StorageError(StorageError.ErrorCode.STORAGE_NOT_OPENED);
-                }
+                ensureOpened();
                 FieldIndex<K,V> index = alternativeBtree
                     ? (FieldIndex<K,V>)new AltBtreeFieldIndex<K,V>(fieldName, unique)
                     : (FieldIndex<K,V>)new BtreeFieldIndex<K,V>(fieldName, unique);
@@ -1942,10 +1902,8 @@ namespace NachoDB.Impl
         {
             lock (this)
             {
-                if (!opened)
-                {
-                    throw new StorageError(StorageError.ErrorCode.STORAGE_NOT_OPENED);
-                }
+                ensureOpened();
+
 #if COMPACT_NET_FRAMEWORK
                 if (alternativeBtree) 
                 {
@@ -2036,10 +1994,8 @@ namespace NachoDB.Impl
         {
             lock (this)
             {
-                if (!opened)
-                {
-                    throw new StorageError(StorageError.ErrorCode.STORAGE_NOT_OPENED);
-                }
+                ensureOpened();
+
                 Index index = alternativeBtree 
                     ? (Index)new AltBtree(keyType, unique)
                     : (Index)new Btree(keyType, unique);
@@ -2052,10 +2008,8 @@ namespace NachoDB.Impl
         {
             lock (this)
             {
-                if (!opened)
-                {
-                    throw new StorageError(StorageError.ErrorCode.STORAGE_NOT_OPENED);
-                }
+                ensureOpened();
+
                 return new ThickIndex(keyType, this);
             }
         }
@@ -2064,10 +2018,8 @@ namespace NachoDB.Impl
         {
             lock (this)
             {
-                if (!opened) 
-                { 
-                    throw new StorageError(StorageError.ErrorCode.STORAGE_NOT_OPENED);
-                }
+                ensureOpened();
+
                 BitIndex index = new BitIndexImpl();
                 index.AssignOid(this, 0, false);
                 return index;
@@ -2078,10 +2030,8 @@ namespace NachoDB.Impl
         {
             lock (this)
             {
-                if (!opened)
-                {
-                    throw new StorageError(StorageError.ErrorCode.STORAGE_NOT_OPENED);
-                }
+                ensureOpened();
+
                 Rtree index = new Rtree();
                 index.AssignOid(this, 0, false);
                 return index;
@@ -2092,10 +2042,8 @@ namespace NachoDB.Impl
         {
             lock (this)
             {
-                if (!opened)
-                {
-                    throw new StorageError(StorageError.ErrorCode.STORAGE_NOT_OPENED);
-                }
+                ensureOpened();
+
                 RtreeR2 index = new RtreeR2();
                 index.AssignOid(this, 0, false);
                 return index;
@@ -2104,19 +2052,13 @@ namespace NachoDB.Impl
 
         public SortedCollection CreateSortedCollection(PersistentComparator comparator, bool unique) 
         {
-            if (!opened) 
-            { 
-                throw new StorageError(StorageError.ErrorCode.STORAGE_NOT_OPENED);
-            }        
+            ensureOpened();      
             return new Ttree(comparator, unique);
         }
 
         public SortedCollection CreateSortedCollection(bool unique) 
         {
-            if (!opened) 
-            { 
-                throw new StorageError(StorageError.ErrorCode.STORAGE_NOT_OPENED);
-            }        
+            ensureOpened();
             return new Ttree(new DefaultPersistentComparator(), unique);
         }
 
@@ -2124,10 +2066,7 @@ namespace NachoDB.Impl
         {
             lock (this)
             {
-                if (!opened)
-                {
-                    throw new StorageError(StorageError.ErrorCode.STORAGE_NOT_OPENED);
-                }
+                ensureOpened();
                 ISet s = alternativeBtree 
                     ? (ISet)new AltPersistentSet()
                     : (ISet)new PersistentSet();
@@ -2145,10 +2084,7 @@ namespace NachoDB.Impl
         {
             lock (this)
             {
-                if (!opened)
-                {
-                    throw new StorageError(StorageError.ErrorCode.STORAGE_NOT_OPENED);
-                }
+                ensureOpened();
                 return new ScalableSet(this, initialSize);
             }
         }
@@ -2157,10 +2093,7 @@ namespace NachoDB.Impl
         {
             lock (this)
             {
-                if (!opened)
-                {
-                    throw new StorageError(StorageError.ErrorCode.STORAGE_NOT_OPENED);
-                }
+                ensureOpened();
                 FieldIndex index = alternativeBtree
                     ? (FieldIndex)new AltBtreeFieldIndex(type, fieldName, unique)
                     : (FieldIndex)new BtreeFieldIndex(type, fieldName, unique);
@@ -2173,10 +2106,7 @@ namespace NachoDB.Impl
         {
             lock (this)
             {
-                if (!opened)
-                {
-                    throw new StorageError(StorageError.ErrorCode.STORAGE_NOT_OPENED);
-                }
+                ensureOpened();
 #if COMPACT_NET_FRAMEWORK
                 if (alternativeBtree) 
                 {
@@ -2238,10 +2168,7 @@ namespace NachoDB.Impl
         {
             lock (this)
             {
-                if (!opened)
-                {
-                    throw new StorageError(StorageError.ErrorCode.STORAGE_NOT_OPENED);
-                }
+                ensureOpened();
                 int rootOid = header.root[1-currIndex].rootObject;
                 if (rootOid != 0)
                 {
@@ -2255,10 +2182,7 @@ namespace NachoDB.Impl
         {
             lock (this)
             {
-                if (!opened)
-                {
-                    throw new StorageError(StorageError.ErrorCode.STORAGE_NOT_OPENED);
-                }
+                ensureOpened();
                 XMLImporter xmlImporter = new XMLImporter(this, reader);
                 xmlImporter.importDatabase();
             }
@@ -2485,10 +2409,8 @@ namespace NachoDB.Impl
         {
             lock (objectCache) 
             { 
-                if (!opened) 
-                {
-                    throw new StorageError(StorageError.ErrorCode.STORAGE_NOT_OPENED);
-                }
+                ensureOpened();
+
                 if (gcDone || gcActive) 
                 { 
                     return 0;
@@ -2519,10 +2441,8 @@ namespace NachoDB.Impl
             { 
                 lock (objectCache) 
                 { 
-                    if (!opened) 
-                    {
-                        throw new StorageError(StorageError.ErrorCode.STORAGE_NOT_OPENED);
-                    }
+                    ensureOpened();
+
                     int bitmapSize = (int)(header.root[currIndex].size >> (dbAllocationQuantumBits + 5)) + 1;
                     bool existsNotMarkedObjects;
                     long pos;
@@ -3400,10 +3320,8 @@ namespace NachoDB.Impl
         {
             lock (this) 
             {
-                if (!opened) 
-                { 
-                    throw new StorageError(StorageError.ErrorCode.STORAGE_NOT_OPENED);
-                }
+                ensureOpened();
+
                 lock (objectCache) 
                 { 
                     storeObject0(obj);
@@ -3527,7 +3445,6 @@ namespace NachoDB.Impl
         internal ClassDescriptor findClassDescriptor(int oid) 
         { 
             return (ClassDescriptor)lookupObject(oid, typeof(ClassDescriptor));
-                                                                                                                                            
         }
 
         protected virtual IPersistent unswizzle(int oid, System.Type cls, bool recursiveLoading)
