@@ -6,3 +6,9 @@
 4. Wrote Unix/Mac makefile and test runner (using mono)
 5. Fix AltBtree enumerators to detect tree modification during enumeration
 6. Started unit tests
+7. Converted polymorphic Storage.SetProperty() method into C# properties
+8. Remove Storage.SetGcThreshold() since it's redundant with the new
+   Storage.GcThreshold property
+9. Fix Storage.FileNoFlush so that it works also before database is opened,
+   as per docs.
+10. Converted Storage.CacheKind property from a string to Storage.CacheType enum

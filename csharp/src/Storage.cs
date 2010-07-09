@@ -557,57 +557,6 @@ namespace NachoDB
         /// <returns>OID assigned to the object</returns>
         int MakePersistent(IPersistent obj);
 
-        /// <summary>
-        /// Set database property. This method should be invoked before opening database. 
-        /// </summary>
-        /// <remarks> 
-        /// Currently the following boolean properties are supported:
-        /// <TABLE><TR><TH>Property name</TH><TH>Parameter type</TH><TH>Default value</TH><TH>Description</TH></TR>
-        /// <TR><TD><code>perst.serialize.transient.objects</code></TD><TD>bool</TD><TD>false</TD>
-        /// <TD>Serialize any class not derived from IPersistent or IValue using standard Java serialization
-        /// mechanism. Packed object closure is stored in database as byte array. Latter the same mechanism is used
-        /// to unpack the objects. To be able to use this mechanism, object and all objects referenced from it
-        /// should be marked with Serializable attribute and should not contain references
-        /// to persistent objects. If such object is referenced from N persistent object, N instances of this object
-        /// will be stored in the database and after loading there will be N instances in memory.
-        /// </TD></TR>
-        /// <TR><TD><code>perst.object.cache.init.size</code></TD><TD>int</TD><TD>1319</TD>
-        /// <TD>Initial size of object cache
-        /// </TD></TR>
-        /// <TR><TD><code>perst.object.cache.kind</code></TD><TD>String</TD><TD>"lru"</TD>
-        /// <TD>Kind of object cache. The following values are supported:
-        /// "strong", "weak", "lru". <B>Strong</B> cache uses strong (normal)                                                                         
-        /// references to refer persistent objects. Thus none of loaded persistent objects                                                                                                                                         
-        /// can be deallocated by GC. <B>Weak</B> and <b>lru</b> caches use weak references. 
-        /// But <b>lru</b> cache also pin some number of recently used objects.
-        /// </TD></TR>
-        /// <TR><TD><code>perst.object.index.init.size</code></TD><TD>int</TD><TD>1024</TD>
-        /// <TD>Initial size of object index (specifying large value increase initial size of database, but reduce
-        /// number of index reallocations)
-        /// </TD></TR>
-        /// <TR><TD><code>perst.extension.quantum</code></TD><TD>long</TD><TD>1048576</TD>
-        /// <TD>Object allocation bitmap extension quantum. Memory is allocate by scanning bitmap. If there is no
-        /// large enough hole, then database is extended by the value of dbDefaultExtensionQuantum. 
-        /// This parameter should not be smaller than 64Kb.
-        /// </TD></TR>
-        /// <TR><TD><code>perst.code.generation</code></TD><TD>bool</TD><TD>true</TD>
-        /// <TD>enable or disable dynamic generation of pack/unpack methods for persistent 
-        /// classes. Such methods can be generated only for classes with public fields.
-        /// Using generated methods instead of .Net reflection API increase speed of
-        /// object store/fetch operations, but generation itself takes additional time at 
-        /// startup 
-        /// </TD></TR>
-        /// <TR><TD><code>perst.file.readonly</code></TD><TD>bool</TD><TD>false</TD>
-        /// <TD>Database file should be opened in read-only mode.
-        /// </TD></TR>
-        /// <TR><TD><code>perst.file.noflush</code></TD><TD>bool</TD><TD>false</TD>
-        /// <TD>To not flush file during transaction commit. It will greatly increase performance because
-        /// eliminate synchronous write to the disk (when program has to wait until all changed
-        /// are actually written to the disk). But it can cause database corruption in case of 
-        /// OS or power failure (but abnormal termination of application itself should not cause
-        /// the problem, because all data which were written to the file, but is not yet saved to the disk is 
-        /// stored in OS file buffers and sooner or later them will be written to the disk)
-        /// </TD></TR>
         /// <TR><TD><code>perst.alternative.btree</code></TD><TD>bool</TD><TD>false</TD>
         /// <TD>Use aternative implementation of B-Tree (not using direct access to database
         /// file pages). This implementation should be used in case of serialized per thread transctions.
@@ -618,44 +567,44 @@ namespace NachoDB
         /// Also it provides better performance (about 3 times comaring with old implementation) because
         /// of object caching. And B-Tree supports keys of user defined types. 
         /// </TD></TR>
-        /// <TR><TD><code>perst.background.gc</code></TD><TD>bool</TD><TD>false</TD>
-        /// <TD>Perform garbage collection in separate thread without blocking the main application.                                                                                          
-        /// </TD></TR>
-        /// <TR><TD><code>perst.string.encoding</code></TD><TD>String</TD><TD>null</TD>
-        /// <TD>Specifies encoding of storing strings in the database. By default Perst stores 
-        /// strings as sequence of chars (two bytes per char). If all strings in application are in 
-        /// the same language, then using encoding  can signifficantly reduce space needed
-        /// to store string (about two times). But please notice, that this option has influence
-        /// on all strings  stored in database. So if you already have some data in the storage
-        /// and then change encoding, then it can cause incorrect fetching of strings and even database crash.
-        /// </TD></TR>
-        /// <TR><TD><code>perst.replication.ack</code></TD><TD>Boolean</TD><TD>false</TD>
-        /// <TD>Request acknowledgement from slave that it receives all data before transaction
-        /// commit. If this option is not set, then replication master node just writes
-        /// data to the socket not warring whether it reaches slave node or not.
-        /// When this option is set to true, master not will wait during each transaction commit acknowledgement
-        /// from slave node. Please notice that this option should be either set or not set both
-        /// at slave and master node. If it is set only on one of this nodes then behavior of
-        /// the system is unpredicted. This option can be used both in synchronous and asynchronous replication
-        /// mode. The only difference is that in first case main application thread will be blocked waiting
-        /// for acknowledgment, while in the asynchronous mode special replication thread will be blocked
-        /// allowing thread performing commit to proceed.
-        /// </TD></TR>
-        /// </TABLE>
-        /// </remarks>
-        /// <param name="name">name of the property</param>
-        /// <param name="val">value of the property</param>
-
         bool AlternativeBtree { get; set; }
 
+        /// <TR><TD><code>perst.serialize.transient.objects</code></TD><TD>bool</TD><TD>false</TD>
+        /// <TD>Serialize any class not derived from IPersistent or IValue using standard Java serialization
+        /// mechanism. Packed object closure is stored in database as byte array. Latter the same mechanism is used
+        /// to unpack the objects. To be able to use this mechanism, object and all objects referenced from it
+        /// should be marked with Serializable attribute and should not contain references
+        /// to persistent objects. If such object is referenced from N persistent object, N instances of this object
+        /// will be stored in the database and after loading there will be N instances in memory.
+        /// </TD></TR>
         bool SerializeTransientObjects { get; set; }
 
+        /// <summary>Set/get initial size of object index. Bigger values increase
+        /// initial size of database but reduce number of index reallocations.
+        /// Default value: 1024
+        /// </summary>
         int  ObjectIndexInitSize { get; set; }
 
+        /// <summary>Set/get initial size of object cache. Default value: 1319
+        /// </summary>
         int  ObjectCacheInitSize { get; set; }
 
+        /// <summary>Set/get kind of object cache.
+        /// If cache is CacheType.Strong none of the loaded persistent objects
+        /// can be deallocated by GC.
+        /// CacheType.Weak and CacheType.Lru both use weak references, so loaded
+        /// objects can be deallocated. Lru cache can also pin some number of
+        /// recently used objects for improved perforance.
+        /// Default value: CacheType.Lru
+        /// </summary>
         CacheType CacheKind { get; set; }
 
+        /// <summary>Set/get object allocation bitmap extenstion quantum. Memory
+        /// is allocated by scanning a bitmap. If there is no hole large enough,
+        /// then database is extended by this value. It should not be smaller
+        /// than 64 KB.
+        /// Default value: 104857 bytes (1 MB)
+        /// </summary>
         long ExtensionQuantum { get; set; }
 
         /// <TD><code>perst.gc.threshold</code></TD><TD>long</TD><TD>long.MaxValue</TD>
@@ -673,16 +622,58 @@ namespace NachoDB
         /// </param>
         long GcThreshold { get; set; }
 
+        /// <summary>Set/get whether garbage collection is performed in a
+        /// separate thread in order to not block main application.
+        /// Default value: false
+        /// </summary>
         bool BackgroundGc { get; set; }
 
+        /// <summary>Set/get whether dynamic code generation is used to generate
+        /// pack/unpack methods for persisted classes.
+        /// If used, serialization/deserialization of classed with public fields
+        /// only will be faster. On the downside, those methods must be generated
+        /// at startup, increasing startup time.
+        /// Default value: false
+        /// </summary>
         bool CodeGeneration { get; set; }
 
+        /// <summary>Set/get whether a file is opened in read-only mode.
+        /// Default value: false
+        /// </summary>
         bool FileReadOnly { get; set; }
 
+        /// <TR><TD><code>perst.file.noflush</code></TD><TD>bool</TD><TD>false</TD>
+        /// <TD>To not flush file during transaction commit. It will greatly increase performance because
+        /// eliminate synchronous write to the disk (when program has to wait until all changed
+        /// are actually written to the disk). But it can cause database corruption in case of 
+        /// OS or power failure (but abnormal termination of application itself should not cause
+        /// the problem, because all data which were written to the file, but is not yet saved to the disk is 
+        /// stored in OS file buffers and sooner or later them will be written to the disk)
+        /// </TD></TR>
         bool FileNoFlush { get; set; }
 
+        /// <TR><TD><code>perst.replication.ack</code></TD><TD>Boolean</TD><TD>false</TD>
+        /// <TD>Request acknowledgement from slave that it receives all data before transaction
+        /// commit. If this option is not set, then replication master node just writes
+        /// data to the socket not warring whether it reaches slave node or not.
+        /// When this option is set to true, master not will wait during each transaction commit acknowledgement
+        /// from slave node. Please notice that this option should be either set or not set both
+        /// at slave and master node. If it is set only on one of this nodes then behavior of
+        /// the system is unpredicted. This option can be used both in synchronous and asynchronous replication
+        /// mode. The only difference is that in first case main application thread will be blocked waiting
+        /// for acknowledgment, while in the asynchronous mode special replication thread will be blocked
+        /// allowing thread performing commit to proceed.
+        /// </TD></TR>
         bool ReplicationAck { get; set; }
 
+        /// <TR><TD><code>perst.string.encoding</code></TD><TD>String</TD><TD>null</TD>
+        /// <TD>Specifies encoding of storing strings in the database. By default Perst stores 
+        /// strings as sequence of chars (two bytes per char). If all strings in application are in 
+        /// the same language, then using encoding  can signifficantly reduce space needed
+        /// to store string (about two times). But please notice, that this option has influence
+        /// on all strings  stored in database. So if you already have some data in the storage
+        /// and then change encoding, then it can cause incorrect fetching of strings and even database crash.
+        /// </TD></TR>
         Encoding StringEncoding { get; set; }
 
         /// <summary>
