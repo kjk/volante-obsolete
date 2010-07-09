@@ -936,16 +936,17 @@ namespace NachoDB.Impl
             }
         }
 
-        protected virtual OidHashTable createObjectCache(string kind, int pagePoolSize, int objectCacheSize) 
+        protected virtual OidHashTable createObjectCache(CacheType kind, int pagePoolSize, int objectCacheSize) 
         { 
-            if (pagePoolSize == 0 || "strong".Equals(kind)) 
+            if (pagePoolSize == 0 || kind == CacheType.Strong) 
             {
                 return new StrongHashTable(objectCacheSize);
             }
-            if ("weak".Equals(kind)) 
+            if (kind == CacheType.Weak) 
             { 
                 return new WeakHashTable(objectCacheSize);
             }
+            Debug.Assert(kind == CacheType.Lru);
             return new LruObjectCache(objectCacheSize);
         }
 
@@ -3346,7 +3347,7 @@ namespace NachoDB.Impl
             }
         }
 
-        // TODO: should be string?
+        // TODO: needs tests
         public Encoding StringEncoding
         {
             set
@@ -3355,9 +3356,8 @@ namespace NachoDB.Impl
             }
         }
 
-        // TODO: change to an enum
         //TODO: needs tests
-        public string CacheKind
+        public CacheType CacheKind
         {
             set
             {
@@ -5167,7 +5167,7 @@ namespace NachoDB.Impl
         private int  initIndexSize        = dbDefaultInitIndexSize;
         private int  objectCacheInitSize  = dbDefaultObjectCacheInitSize;
         private long extensionQuantum     = dbDefaultExtensionQuantum;
-        private string cacheKind = "lru";
+        private CacheType cacheKind = CacheType.Lru;
         private bool readOnly = false;
         private bool noFlush = false;
         private bool alternativeBtree = false;

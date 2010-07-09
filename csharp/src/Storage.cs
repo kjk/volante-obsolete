@@ -32,6 +32,13 @@ namespace NachoDB
         ReplicationSlave
     }
 
+    public enum CacheType
+    {
+        Lru,
+        Strong,
+        Weak
+    }
+
     /// <summary> Object storage
     /// </summary>
     public interface Storage
@@ -674,7 +681,7 @@ namespace NachoDB
 
         int  ObjectCacheInitSize { set; }
 
-        string CacheKind { set; }
+        CacheType CacheKind { set; }
 
         long ExtensionQuantum { set; }
 
