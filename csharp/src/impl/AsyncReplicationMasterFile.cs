@@ -70,7 +70,7 @@ namespace NachoDB.Impl
                     p.pos = pos;
                     p.host = i;
 
-                    lock(async) 
+                    lock (async) 
                     { 
                         buffered += data.Length;
                         while (buffered > asyncBufSize) 
@@ -79,7 +79,7 @@ namespace NachoDB.Impl
                         }
                     }
                     
-                    lock(go) 
+                    lock (go) 
                     { 
                         if (head == null) 
                         { 
@@ -100,7 +100,7 @@ namespace NachoDB.Impl
             while (true) 
             { 
                 Parcel p;
-                lock(go) 
+                lock (go) 
                 {
                     while (head == null) 
                     { 
@@ -114,7 +114,7 @@ namespace NachoDB.Impl
                     head = p.next;
                 }  
             
-                lock(async) 
+                lock (async) 
                 { 
                     if (buffered > asyncBufSize) 
                     { 
@@ -151,7 +151,7 @@ namespace NachoDB.Impl
 
         public override void Close() 
         {
-            lock(go) 
+            lock (go) 
             {
                 closed = true;
                 Monitor.Pulse(go);

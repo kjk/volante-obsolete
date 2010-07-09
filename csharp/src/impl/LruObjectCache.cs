@@ -23,10 +23,10 @@ namespace NachoDB.Impl
             pinLimit = size;
             pinList.lru = pinList.mru = pinList;
         }
-		
+
         public bool remove(int oid)
         {
-            lock(this)
+            lock (this)
             {
                 Entry[] tab = table;
                 int index = (oid & 0x7FFFFFFF) % tab.Length;
@@ -51,7 +51,7 @@ namespace NachoDB.Impl
                 return false;
             }
         }
-		
+
         private void unpinObject(Entry e) 
         {
             if (e.pin != null) 
@@ -87,7 +87,7 @@ namespace NachoDB.Impl
 
         public void  put(int oid, IPersistent obj)
         {
-            lock(this)
+            lock (this)
             {
                 Entry[] tab = table;
                 int index = (oid & 0x7FFFFFFF) % tab.Length;
@@ -107,19 +107,19 @@ namespace NachoDB.Impl
                     tab = table;
                     index = (oid & 0x7FFFFFFF) % tab.Length;
                 }
-				
+
                 // Creates the new entry.
                 tab[index] = new Entry(oid, new WeakReference(obj), tab[index]);
                 pinObject(tab[index], obj);
                 count++;
             }
         }
-		
+
         public IPersistent get(int oid)
         {
             while (true) 
             { 
-                lock(this)
+                lock (this)
                 {
                     Entry[] tab = table;
                     int index = (oid & 0x7FFFFFFF) % tab.Length;

@@ -6,7 +6,7 @@ namespace NachoDB
 #if !COMPACT_NET_FRAMEWORK
     using System.ComponentModel;
 #endif
-	
+
     /// <summary> Base class for all persistent capable objects
     /// </summary>
     public class Persistent : IPersistent
@@ -19,7 +19,7 @@ namespace NachoDB
             get
             {
                 return oid;
-            }	
+            }
         }
 
 #if !COMPACT_NET_FRAMEWORK
@@ -30,7 +30,7 @@ namespace NachoDB
             get
             {
                 return storage;
-            }			
+            }
         }
 
         public virtual void Load()
@@ -40,7 +40,7 @@ namespace NachoDB
                 storage.loadObject(this);
             }
         }
-		
+
         public bool IsRaw() 
         { 
             return (state & ObjectState.RAW) != 0;
@@ -60,12 +60,12 @@ namespace NachoDB
         {
             return oid != 0;
         }
-		
+
         public virtual int MakePersistent(Storage storage)
         {
             return (oid != 0) ? oid : storage.MakePersistent(this);
         }
-		
+
         public virtual void Store()
         {
             if ((state & ObjectState.RAW) != 0)
@@ -78,7 +78,7 @@ namespace NachoDB
                 state &= ~ObjectState.DIRTY;
             }
         }
-		
+
         public void Modify() 
         { 
             if ((state & ObjectState.DIRTY) == 0 && oid != 0) 
@@ -103,23 +103,22 @@ namespace NachoDB
                 oid = 0;
             }
         }
-		
+
         public virtual bool RecursiveLoading()
         {
             return true;
         }
-		
-		
+
         public override bool Equals(object o)
         {
             return o is IPersistent && ((IPersistent) o).Oid == oid;
         }
-		
+
         public override int GetHashCode()
         {
             return oid;
         }
-		
+
         public virtual void OnLoad() 
         {
         }
@@ -163,7 +162,6 @@ namespace NachoDB
                 state &= ~ObjectState.RAW;
             }
         }
-
 
         [NonSerialized()]
         internal protected Storage storage;

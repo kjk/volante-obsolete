@@ -2,23 +2,23 @@ namespace NachoDB.Impl
 {
     using System;
     using NachoDB;
-	
+
     public class WeakHashTable : OidHashTable
     {
         internal Entry[] table;
         internal const float loadFactor = 0.75f;
         internal int count;
         internal int threshold;
-		
+
         public WeakHashTable(int initialCapacity)
         {
             threshold = (int) (initialCapacity * loadFactor);
             table = new Entry[initialCapacity];
         }
-		
+
         public bool remove(int oid)
         {
-            lock(this)
+            lock (this)
             {
                 Entry[] tab = table;
                 int index = (oid & 0x7FFFFFFF) % tab.Length;
@@ -42,10 +42,10 @@ namespace NachoDB.Impl
                 return false;
             }
         }
-		
-        public void  put(int oid, IPersistent obj)
+
+        public void put(int oid, IPersistent obj)
         {
-            lock(this)
+            lock (this)
             {
                 Entry[] tab = table;
                 int index = (oid & 0x7FFFFFFF) % tab.Length;
@@ -64,18 +64,18 @@ namespace NachoDB.Impl
                     tab = table;
                     index = (oid & 0x7FFFFFFF) % tab.Length;
                 }
-				
+
                 // Creates the new entry.
                 tab[index] = new Entry(oid, new WeakReference(obj), tab[index]);
                 count++;
             }
         }
-		
+
         public IPersistent get(int oid)
         {
             while (true) 
             { 
-                lock(this)
+                lock (this)
                 {
                     Entry[] tab = table;
                     int index = (oid & 0x7FFFFFFF) % tab.Length;

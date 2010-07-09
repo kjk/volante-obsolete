@@ -2,14 +2,14 @@ namespace NachoDB.Impl
 {
     using System;
     using NachoDB;
-	
+
     public class StrongHashTable : OidHashTable
     {
         internal Entry[] table;
         internal const float loadFactor = 0.75f;
         internal int count;
         internal int threshold;
-		
+
         public StrongHashTable(int initialCapacity)
         {
             threshold = (int) (initialCapacity * loadFactor);
@@ -18,10 +18,10 @@ namespace NachoDB.Impl
                 table = new Entry[initialCapacity];
             }
         }
-		
+
         public bool remove(int oid)
         {
-            lock(this)
+            lock (this)
             {
                 Entry[] tab = table;
                 int index = (oid & 0x7FFFFFFF) % tab.Length;
@@ -45,10 +45,10 @@ namespace NachoDB.Impl
                 return false;
             }
         }
-		
+
         public void  put(int oid, IPersistent obj)
         {
-            lock(this)
+            lock (this)
             {
                 Entry[] tab = table;
                 int index = (oid & 0x7FFFFFFF) % tab.Length;
@@ -67,16 +67,16 @@ namespace NachoDB.Impl
                     tab = table;
                     index = (oid & 0x7FFFFFFF) % tab.Length;
                 }
-				
+
                 // Creates the new entry.
                 tab[index] = new Entry(oid, obj, tab[index]);
                 count++;
             }
         }
-		
+
         public IPersistent get(int oid)
         {
-            lock(this)
+            lock (this)
             {
                 Entry[] tab = table;
                 int index = (oid & 0x7FFFFFFF) % tab.Length;
@@ -90,10 +90,10 @@ namespace NachoDB.Impl
                 return null;
             }
         }
-		
+
         public void flush() 
         {
-            lock(this) 
+            lock (this) 
             {
                 for (int i = 0; i < table.Length; i++) 
                 { 
@@ -110,7 +110,7 @@ namespace NachoDB.Impl
     
         public void invalidate() 
         {
-            lock(this) 
+            lock (this) 
             {
                 for (int i = 0; i < table.Length; i++) 
                 { 
@@ -136,31 +136,29 @@ namespace NachoDB.Impl
 
             int newCapacity = oldCapacity * 2 + 1;
             Entry[] newMap = new Entry[newCapacity];
-			
+
             threshold = (int) (newCapacity * loadFactor);
             table = newMap;
-			
+
             for (i = oldCapacity; --i >= 0; )
             {
                 for (Entry old = oldMap[i]; old != null; )
                 {
                     Entry e = old;
                     old = old.next;
-					
+
                     int index = (e.oid & 0x7FFFFFFF) % newCapacity;
                     e.next = newMap[index];
                     newMap[index] = e;
                 }
             }
         }
-		
-         
+
         public int size()
         {
             return count;
         }
 
-        	
         public void setDirty(int oid) 
         {
         } 
@@ -174,7 +172,7 @@ namespace NachoDB.Impl
             internal Entry next;
             internal IPersistent oref;
             internal int oid;
-		
+
             internal Entry(int oid, IPersistent oref, Entry chain)
             {
                 next = chain;

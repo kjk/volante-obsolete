@@ -28,7 +28,7 @@ namespace NachoDB.Impl
         {
             get
             {
-                lock(this)
+                lock (this)
                 {
                     if (!opened)
                     {
@@ -41,7 +41,7 @@ namespace NachoDB.Impl
 
             set
             {
-                lock(this)
+                lock (this)
                 {
                     if (!opened)
                     {
@@ -176,7 +176,7 @@ namespace NachoDB.Impl
 
         public void  deallocateObject(IPersistent obj)
         {
-            lock(this)
+            lock (this)
             {
                 lock (objectCache) 
                 { 
@@ -1260,7 +1260,7 @@ namespace NachoDB.Impl
         {
             lock (backgroundGcMonitor) 
             { 
-                lock(this)
+                lock (this)
                 {
                     if (!opened)
                     {
@@ -1468,7 +1468,7 @@ namespace NachoDB.Impl
         
         public void Rollback()
         {
-            lock(this)
+            lock (this)
             {
                 if (!opened)
                 {
@@ -1554,7 +1554,8 @@ namespace NachoDB.Impl
                 { 
                     throw new StorageError(StorageError.ErrorCode.STORAGE_NOT_OPENED);
                 }
-                lock(objectCache) 
+
+                lock (objectCache) 
                 {
                     Type wrapper = getWrapper(type);
                     IPersistent obj = (IPersistent)wrapper.Assembly.CreateInstance(wrapper.Name);
@@ -1595,7 +1596,7 @@ namespace NachoDB.Impl
                 { 
                     throw new StorageError(StorageError.ErrorCode.STORAGE_NOT_OPENED);
                 }
-                lock(objectCache) 
+                lock (objectCache) 
                 {
                     int oid = allocateId();
                     obj.AssignOid(this, oid, false);
@@ -1609,7 +1610,7 @@ namespace NachoDB.Impl
 
         public void Backup(System.IO.Stream stream)
         {
-            lock(this)
+            lock (this)
             {
                 if (!opened)
                 {
@@ -1802,7 +1803,7 @@ namespace NachoDB.Impl
 #if USE_GENERICS
         public Index<K,V> CreateIndex<K,V>(bool unique) where V:class,IPersistent
         {
-            lock(this)
+            lock (this)
             {
                 if (!opened)
                 {
@@ -1818,7 +1819,7 @@ namespace NachoDB.Impl
 
         public Index<K,V> CreateThickIndex<K,V>() where V:class,IPersistent
         {
-            lock(this)
+            lock (this)
             {
                 if (!opened)
                 {
@@ -1830,7 +1831,7 @@ namespace NachoDB.Impl
         
         public BitIndex<T> CreateBitIndex<T>() where T:class,IPersistent
         {
-            lock(this)
+            lock (this)
             {
                 if (!opened) 
                 { 
@@ -1844,7 +1845,7 @@ namespace NachoDB.Impl
 
         public SpatialIndex<T> CreateSpatialIndex<T>() where T:class,IPersistent
         {
-            lock(this)
+            lock (this)
             {
                 if (!opened)
                 {
@@ -1858,7 +1859,7 @@ namespace NachoDB.Impl
 
         public SpatialIndexR2<T> CreateSpatialIndexR2<T>() where T:class,IPersistent
         {
-            lock(this)
+            lock (this)
             {
                 if (!opened)
                 {
@@ -1890,7 +1891,7 @@ namespace NachoDB.Impl
 
         public ISet<T> CreateSet<T>() where T:class,IPersistent
         {
-            lock(this)
+            lock (this)
             {
                 if (!opened)
                 {
@@ -1911,7 +1912,7 @@ namespace NachoDB.Impl
 
         public ISet<T> CreateScalableSet<T>(int initialSize) where T:class,IPersistent
         {
-            lock(this)
+            lock (this)
             {
                 if (!opened)
                 {
@@ -1923,7 +1924,7 @@ namespace NachoDB.Impl
 
         public FieldIndex<K,V> CreateFieldIndex<K,V>(String fieldName, bool unique) where V:class,IPersistent
         {
-            lock(this)
+            lock (this)
             {
                 if (!opened)
                 {
@@ -1939,7 +1940,7 @@ namespace NachoDB.Impl
 
         public MultiFieldIndex<T> CreateFieldIndex<T>(string[] fieldNames, bool unique) where T:class,IPersistent
         {
-            lock(this)
+            lock (this)
             {
                 if (!opened)
                 {
@@ -2033,7 +2034,7 @@ namespace NachoDB.Impl
 #else
         public Index CreateIndex(System.Type keyType, bool unique)
         {
-            lock(this)
+            lock (this)
             {
                 if (!opened)
                 {
@@ -2049,7 +2050,7 @@ namespace NachoDB.Impl
 
         public Index CreateThickIndex(Type keyType)
         {
-            lock(this)
+            lock (this)
             {
                 if (!opened)
                 {
@@ -2061,7 +2062,7 @@ namespace NachoDB.Impl
         
         public BitIndex CreateBitIndex() 
         {
-            lock(this)
+            lock (this)
             {
                 if (!opened) 
                 { 
@@ -2075,7 +2076,7 @@ namespace NachoDB.Impl
 
         public SpatialIndex CreateSpatialIndex() 
         {
-            lock(this)
+            lock (this)
             {
                 if (!opened)
                 {
@@ -2089,7 +2090,7 @@ namespace NachoDB.Impl
 
         public SpatialIndexR2 CreateSpatialIndexR2() 
         {
-            lock(this)
+            lock (this)
             {
                 if (!opened)
                 {
@@ -2121,7 +2122,7 @@ namespace NachoDB.Impl
 
         public ISet CreateSet() 
         {
-            lock(this)
+            lock (this)
             {
                 if (!opened)
                 {
@@ -2142,7 +2143,7 @@ namespace NachoDB.Impl
 
         public ISet CreateScalableSet(int initialSize) 
         {
-            lock(this)
+            lock (this)
             {
                 if (!opened)
                 {
@@ -2154,7 +2155,7 @@ namespace NachoDB.Impl
 
         public FieldIndex CreateFieldIndex(System.Type type, String fieldName, bool unique)
         {
-            lock(this)
+            lock (this)
             {
                 if (!opened)
                 {
@@ -2170,7 +2171,7 @@ namespace NachoDB.Impl
 
         public MultiFieldIndex CreateFieldIndex(System.Type type, String[] fieldNames, bool unique)
         {
-            lock(this)
+            lock (this)
             {
                 if (!opened)
                 {
@@ -2235,7 +2236,7 @@ namespace NachoDB.Impl
 #if !OMIT_XML
         public void  ExportXML(System.IO.StreamWriter writer)
         {
-            lock(this)
+            lock (this)
             {
                 if (!opened)
                 {
@@ -2252,7 +2253,7 @@ namespace NachoDB.Impl
 
         public void  ImportXML(System.IO.StreamReader reader)
         {
-            lock(this)
+            lock (this)
             {
                 if (!opened)
                 {
@@ -2514,7 +2515,7 @@ namespace NachoDB.Impl
 
         public Hashtable GetMemoryDump() 
         { 
-            lock(this) 
+            lock (this) 
             { 
                 lock (objectCache) 
                 { 
@@ -2951,7 +2952,7 @@ namespace NachoDB.Impl
 
                         lock (backgroundGcMonitor) 
                         { 
-                            lock(this) 
+                            lock (this) 
                             { 
                                 commit0();
                             }
@@ -3024,7 +3025,7 @@ namespace NachoDB.Impl
                         ((IPersistent)ctx.modified[--i]).Invalidate();
                     } while (i != 0);
                 
-                    lock(this) 
+                    lock (this) 
                     { 
                         rollback0();
                     }
@@ -3103,7 +3104,7 @@ namespace NachoDB.Impl
 
                         lock (backgroundGcMonitor) 
                         { 
-                            lock(this) 
+                            lock (this) 
                             { 
                                 commit0();
                             }
@@ -3174,7 +3175,7 @@ namespace NachoDB.Impl
                         ((IPersistent)ctx.modified[--i]).Invalidate();
                     } while (i != 0);
                 
-                    lock(this) 
+                    lock (this) 
                     { 
                         rollback0();
                     }
@@ -3403,7 +3404,7 @@ namespace NachoDB.Impl
                 { 
                     throw new StorageError(StorageError.ErrorCode.STORAGE_NOT_OPENED);
                 }
-                lock(objectCache) 
+                lock (objectCache) 
                 { 
                     storeObject0(obj);
                 }
@@ -3490,7 +3491,7 @@ namespace NachoDB.Impl
 
         public void loadObject(IPersistent obj)
         {
-            lock(this)
+            lock (this)
             {
                 if (obj.IsRaw()) 
                 { 

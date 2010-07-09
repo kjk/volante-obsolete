@@ -83,8 +83,7 @@ namespace NachoDB
                 wait(false);
             } 
         }
-                    
-                    
+
         public void ExclusiveLock() 
         {
             Thread currThread = Thread.CurrentThread;
@@ -300,6 +299,7 @@ namespace NachoDB
                 }
             } 
         }
+
         public void Unlock() 
         {
             lock (this) 

@@ -243,7 +243,7 @@ namespace NachoDB.Impl
         public void Append(IPersistent obj) 
 #endif
         {
-            lock(this) 
+            lock (this) 
             { 
                 Key key;
                 object val; 

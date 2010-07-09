@@ -26,7 +26,6 @@ namespace NachoDB
         /// <code>Storage.makeObjectPersistent</code> method.
         /// </summary>
         void SharedLock();
-  
 
         /// <summary>
         /// Lock persistent object in exclusive mode. Only one thread can lock object in exclusive mode at each
@@ -46,7 +45,6 @@ namespace NachoDB
         /// <code>Storage.makeObjectPersistent</code> method.   
         /// </summary>
         void ExclusiveLock();
-
 
 #if !COMPACT_NET_FRAMEWORK
         /// <summary>

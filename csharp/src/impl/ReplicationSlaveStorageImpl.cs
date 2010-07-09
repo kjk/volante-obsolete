@@ -87,7 +87,7 @@ namespace NachoDB.Impl
 
         protected void WaitInitializationCompletion() 
         {
-            lock(init) 
+            lock (init) 
             { 
                 while (!initialized) 
                 { 
@@ -103,7 +103,7 @@ namespace NachoDB.Impl
         /// </summary>
         public void WaitForModification() 
         { 
-            lock(commit) 
+            lock (commit) 
             { 
                 if (socket != null) 
                 { 
@@ -161,7 +161,7 @@ namespace NachoDB.Impl
                     { 
                         rc = -1;
                     }
-                    lock(done) 
+                    lock (done) 
                     { 
                         if (!listening) 
                         { 
@@ -209,7 +209,7 @@ namespace NachoDB.Impl
                 } 
                 else if (pos < 0) 
                 { 
-                    lock(commit) 
+                    lock (commit) 
                     { 
                         hangup();
                         Monitor.PulseAll(commit);
@@ -225,7 +225,7 @@ namespace NachoDB.Impl
                 { 
                     if (!initialized && buf[PAGE_DATA_OFFSET + DB_HDR_INITIALIZED_OFFSET] != 0) 
                     { 
-                        lock(init) 
+                        lock (init) 
                         { 
                             initialized = true;
                             Monitor.Pulse(init);
@@ -234,7 +234,7 @@ namespace NachoDB.Impl
                     if (transactionCommit) 
                     { 
                         lck.Unlock();
-                        lock(commit)
+                        lock (commit)
                         { 
                             Monitor.PulseAll(commit);
                         }

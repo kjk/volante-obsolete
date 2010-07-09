@@ -28,15 +28,15 @@ namespace NachoDB.Impl
             }            
             this.poolSize = poolSize;
         }
-		
+
         internal Page find(long addr, int state)
         {
             Debug.Assert((addr & (Page.pageSize - 1)) == 0);
             Page pg;
             int pageNo = (int)((ulong)addr >> Page.pageBits);
             int hashCode =  pageNo % poolSize;
-			
-            lock(this)
+
+            lock (this)
             {
                 int nCollisions = 0;
                 for (pg = hashTable[hashCode]; pg != null; pg = pg.collisionChain)
@@ -75,7 +75,7 @@ namespace NachoDB.Impl
                         Debug.Assert(lru.prev != lru, "unfixed page available");
                         pg = (Page) lru.prev;
                         pg.unlink();
-                        lock(pg)
+                        lock (pg)
                         {
                             if ((pg.state & Page.psDirty) != 0)
                             {
@@ -216,10 +216,10 @@ namespace NachoDB.Impl
                 }
             }
         }
-		
+
         internal void  close()
         {
-            lock(this)
+            lock (this)
             {
                 file.Close();
                 hashTable = null;
@@ -228,10 +228,10 @@ namespace NachoDB.Impl
                 freePages = null;
             }
         }
-		
+
         internal void  unfix(Page pg)
         {
-            lock(this)
+            lock (this)
             {
                 Debug.Assert(pg.accessCount > 0);
                 if (--pg.accessCount == 0)
@@ -240,10 +240,10 @@ namespace NachoDB.Impl
                 }
             }
         }
-		
-        internal void  modify(Page pg)
+
+        internal void modify(Page pg)
         {
-            lock(this)
+            lock (this)
             {
                 Debug.Assert(pg.accessCount > 0);
                 if ((pg.state & Page.psDirty) == 0)
@@ -334,7 +334,7 @@ namespace NachoDB.Impl
 
         internal virtual void  flush()
         {
-            lock(this)
+            lock (this)
             {
                 flushing = true;
 #if COMPACT_NET_FRAMEWORK
@@ -346,7 +346,7 @@ namespace NachoDB.Impl
             for (int i = 0; i < nDirtyPages; i++)
             {
                 Page pg = dirtyPages[i];
-                lock(pg)
+                lock (pg)
                 {
                     if ((pg.state & Page.psDirty) != 0)
                     {
