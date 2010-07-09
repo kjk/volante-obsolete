@@ -30,8 +30,7 @@ namespace NachoDB
         /// </summary>
         ReplicationSlave
     };
-	
-	
+
     /// <summary> Object storage
     /// </summary>
     public interface Storage
@@ -54,14 +53,14 @@ namespace NachoDB
         /// unlimited - dynamically extended to conatins all database file pages.
         /// </param>
         void  Open(String filePath, int pagePoolSize);
-		
+
         /// <summary> Open the storage with default page pool size
         /// </summary>
         /// <param name="filePath">path to the database file
         /// 
         /// </param>
         void  Open(String filePath);
-		
+
         /// <summary> Open the storage
         /// </summary>
         /// <param name="file">user specific implementation of IFile interface
@@ -73,7 +72,7 @@ namespace NachoDB
         /// 
         /// </param>
         void  Open(IFile file, int pagePoolSize);
-		
+
         /// <summary> Open the storage with default page pool size
         /// </summary>
         /// <param name="file">user specific implementation of IFile interface
@@ -98,23 +97,23 @@ namespace NachoDB
         /// <code>false</code> otherwise
         /// </returns>        
         bool IsOpened();
-		
+
         /// <summary> Set new storage root object.
         /// </summary>
         /// <param name="root">object to become new storage root. If it is not persistent yet, it is made
         /// persistent and stored in the storage
         /// 
         /// </param>
-		
+
         /// <summary> Commit changes done by the last transaction. Transaction is started implcitlely with forst update
         /// opertation.
         /// </summary>
         void  Commit();
-		
+
         /// <summary> Rollback changes made by the last transaction
         /// </summary>
         void  Rollback();
-		
+
         /// <summary>
         /// Backup current state of database
         /// </summary>
@@ -149,7 +148,7 @@ namespace NachoDB
         /// </exception>
         Index CreateIndex(Type type, bool unique);
 #endif
-		
+
 #if USE_GENERICS
         /// <summary> Create new thick index (index with large number of duplicated keys).
         /// K parameter specifies key type, V - associated object type.
@@ -176,7 +175,7 @@ namespace NachoDB
         /// </exception>
         Index CreateThickIndex(Type type);
 #endif
-	
+
 #if USE_GENERICS
         /// <summary> 
         /// Create new field index
@@ -209,7 +208,7 @@ namespace NachoDB
         /// </exception>
         FieldIndex CreateFieldIndex(Type type, string fieldName, bool unique);
 #endif
-		
+
 #if USE_GENERICS
         /// <summary> 
         /// Create new multi-field index
@@ -241,7 +240,7 @@ namespace NachoDB
         /// </exception>
         MultiFieldIndex CreateFieldIndex(Type type, string[] fieldNames, bool unique);
 #endif
-	
+
         /// <summary>
         /// Create new bit index. Bit index is used to select object 
         /// with specified set of (boolean) properties.
@@ -324,7 +323,7 @@ namespace NachoDB
 #else
         Link CreateLink();
 #endif
-		
+
         /// <summary> Create one-to-many link with specified initial size.
         /// </summary>
         /// <param name="intialSize">initial size of the array</param>
@@ -336,7 +335,7 @@ namespace NachoDB
 #else
         Link CreateLink(int initialSize);
 #endif
-		
+
         /// <summary>  Create new scalable set references to persistent objects.
         /// This container can effciently store small number of references as well 
         /// as very large number references. When number of memers is small, 
@@ -350,7 +349,7 @@ namespace NachoDB
 #else
         ISet CreateScalableSet();
 #endif
-		
+
         /// <summary>  Create new scalable set references to persistent objects.
         /// This container can effciently store small number of references as well 
         /// as very large number references. When number of memers is small, 
@@ -365,7 +364,7 @@ namespace NachoDB
 #else
         ISet CreateScalableSet(int initialSize);
 #endif
-		
+
         /// <summary> Create dynamcially extended array of reference to persistent objects.
         /// It is inteded to be used in classes using virtual properties to 
         /// access components of persistent objects.  
@@ -377,7 +376,7 @@ namespace NachoDB
 #else
         PArray CreateArray();
 #endif
-		
+
         /// <summary> Create dynamcially extended array of reference to persistent objects.
         /// It is inteded to be used in classes using virtual properties to 
         /// access components of persistent objects.  
@@ -390,7 +389,7 @@ namespace NachoDB
 #else
         PArray CreateArray(int initialSize);
 #endif
-		
+
         /// <summary> Create relation object. Unlike link which represent embedded relation and stored
         /// inside owner object, this Relation object is standalone persisitent object
         /// containing references to owner and members of the relation
@@ -406,7 +405,6 @@ namespace NachoDB
 #else
         Relation CreateRelation(IPersistent owner);
 #endif
-
 
         /// <summary>
         /// Create new BLOB. Create object for storing large binary data.
@@ -457,7 +455,7 @@ namespace NachoDB
         /// <returns>new empty time series</returns>
         TimeSeries CreateTimeSeries(Type blockClass, long maxBlockTimeInterval);
 #endif
-		
+
         /// <summary>
         /// Create PATRICIA trie (Practical Algorithm To Retrieve Information Coded In Alphanumeric)
         /// Tries are a kind of tree where each node holds a common part of one or more keys. 
@@ -475,7 +473,6 @@ namespace NachoDB
 #else
         PatriciaTrie CreatePatriciaTrie();
 #endif
-
 
 #if USE_GENERICS
         /// <summary>
@@ -509,7 +506,7 @@ namespace NachoDB
         /// array of IPersistent references
         /// </returns>
         PArray<IPersistent> CreateArray();
-		
+
         /// Create new generic array of reference
         /// </summary>
         /// <param name="initialSize">Initial array size</param>
@@ -517,8 +514,7 @@ namespace NachoDB
         /// array of IPersistent references
         /// </returns>
         PArray<IPersistent> CreateArray(int initialSize);
-#endif		
-
+#endif
 
         /// <summary> Commit transaction (if needed) and close the storage
         /// </summary>
@@ -547,7 +543,7 @@ namespace NachoDB
         /// 
         /// </param>
         void  ExportXML(System.IO.StreamWriter writer);
-		
+
         /// <summary> Import data from XML file
         /// </summary>
         /// <param name="reader">XML document reader
@@ -555,7 +551,7 @@ namespace NachoDB
         /// </param>
         void  ImportXML(System.IO.StreamReader reader);
 #endif
-        		
+
         /// <summary> 
         /// Retrieve object by OID. This method should be used with care because
         /// if object is deallocated, its OID can be reused. In this case
@@ -698,7 +694,6 @@ namespace NachoDB
         /// </summary>
         ClassLoader Loader {get; set;}
 
-
 #if COMPACT_NET_FRAMEWORK
         /// <summary>
         /// Compact.NET framework doesn;t allow to get list of assemblies loaded
@@ -811,15 +806,14 @@ namespace NachoDB
 
 
         // Internal methods
-		
         void  deallocateObject(IPersistent obj);
-		
+
         void  storeObject(IPersistent obj);
-		
+
         void  storeFinalizedObject(IPersistent obj);
-		
+
         void  loadObject(IPersistent obj);
-		
+
         void  modifyObject(IPersistent obj);
 
         void  lockObject(IPersistent obj);
