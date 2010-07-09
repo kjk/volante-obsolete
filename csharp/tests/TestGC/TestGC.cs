@@ -31,7 +31,7 @@ public class TestGC {
         { 
             if ("altbtree" == args[i]) 
             { 
-                db.SetProperty("perst.alternative.btree", true);
+                db.AlternativeBtree = true;
             } 
             else if ("background" == args[i]) 
             { 

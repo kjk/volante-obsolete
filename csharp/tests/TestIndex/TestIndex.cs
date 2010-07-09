@@ -39,11 +39,11 @@ public class TestIndex
             } 
             else if ("altbtree" == args[i]) 
             { 
-                db.SetProperty("perst.alternative.btree", true);
+                db.AlternativeBtree = true;
             } 
             else if ("serializable" == args[i]) 
             { 
-                db.SetProperty("perst.alternative.btree", true);
+                db.AlternativeBtree = true;
                 serializableTransaction = true;
             } 
             else 

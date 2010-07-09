@@ -31,7 +31,7 @@ public class TestEnumerator
         if (args.Length > 0) { 
             if ("altbtree" == args[0]) 
             {
-                db.SetProperty("perst.alternative.btree", true);
+                db.AlternativeBtree = true;
             } 
             else 
             {

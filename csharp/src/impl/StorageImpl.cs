@@ -3322,10 +3322,7 @@ namespace NachoDB.Impl
                     pool.file.NoFlush = noFlush;
                 }
             }
-            if ((val = props["perst.alternative.btree"]) != null) 
-            { 
-                alternativeBtree = getBooleanValue(val);
-            }
+
             if ((val = props["perst.background.gc"]) != null) 
             { 
                 backgroundGc = getBooleanValue(val);
@@ -3337,6 +3334,13 @@ namespace NachoDB.Impl
             if ((val = props["perst.replication.ack"]) != null) 
             {
                 replicationAck = getBooleanValue(val);
+            }
+        }
+
+        public bool AlternativeBtree {
+            set
+            {
+                alternativeBtree = value;
             }
         }
 
@@ -3381,11 +3385,7 @@ namespace NachoDB.Impl
                 { 
                     pool.file.NoFlush = noFlush;
                 }
-            }
-            else if (name.Equals("perst.alternative.btree")) 
-            { 
-                alternativeBtree = getBooleanValue(val);
-            }       
+            }   
             else if (name.Equals("perst.background.gc")) 
             {
                 backgroundGc = getBooleanValue(val);
@@ -3545,7 +3545,7 @@ namespace NachoDB.Impl
             modified = true;
             pool.put(pos & ~dbFlagsMask, data, newSize);
         }
-		
+
         public void loadObject(IPersistent obj)
         {
             lock(this)
@@ -3556,7 +3556,7 @@ namespace NachoDB.Impl
                 }
             }
         }
-		
+
         internal IPersistent lookupObject(int oid, System.Type cls)
         {
             IPersistent obj = objectCache.get(oid);
@@ -3566,7 +3566,7 @@ namespace NachoDB.Impl
             }
             return obj;
         }
-		
+
         protected virtual int swizzle(IPersistent obj)
         {
             int oid = 0;
@@ -3580,7 +3580,7 @@ namespace NachoDB.Impl
             }
             return oid;
         }
-		
+
         internal ClassDescriptor findClassDescriptor(int oid) 
         { 
             return (ClassDescriptor)lookupObject(oid, typeof(ClassDescriptor));
@@ -3628,7 +3628,7 @@ namespace NachoDB.Impl
             objectCache.put(oid, stub);
             return stub;
         }
-		
+
         internal IPersistent loadStub(int oid, IPersistent obj, System.Type cls)
         {
             long pos = getPos(oid);
@@ -3931,7 +3931,7 @@ namespace NachoDB.Impl
             }    
             return offs;
         }
-#endif					
+#endif
 
         public int unpackField(byte[] body, int offs, bool recursiveLoading, ref object val, ClassDescriptor.FieldDescriptor fd, ClassDescriptor.FieldType type, IPersistent po)
 
@@ -3942,7 +3942,7 @@ namespace NachoDB.Impl
                 case ClassDescriptor.FieldType.tpBoolean: 
                     val = body[offs++] != 0;
                     break;
-					
+
                 case ClassDescriptor.FieldType.tpByte: 
                     val = body[offs++];
                     break;
@@ -3950,12 +3950,12 @@ namespace NachoDB.Impl
                 case ClassDescriptor.FieldType.tpSByte: 
                     val = (sbyte)body[offs++];
                     break;
-										
+
                 case ClassDescriptor.FieldType.tpChar: 
                     val = (char)Bytes.unpack2(body, offs);
                     offs += 2;
                     break;
-					
+
                 case ClassDescriptor.FieldType.tpShort: 
                     val = Bytes.unpack2(body, offs);
                     offs += 2;
@@ -3965,7 +3965,7 @@ namespace NachoDB.Impl
                     val = (ushort)Bytes.unpack2(body, offs);
                     offs += 2;
                     break;
-					
+
                 case ClassDescriptor.FieldType.tpEnum: 
                     val = Enum.ToObject(fd.field.FieldType, Bytes.unpack4(body, offs));
                     offs += 4;

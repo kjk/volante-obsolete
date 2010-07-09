@@ -133,7 +133,7 @@ public class UnitTest2
         UnitTests.SafeDeleteFile(dbName);
         
         Storage db = StorageFactory.CreateStorage();
-        db.SetProperty("perst.alternative.btree", true);
+        db.AlternativeBtree = true;
         db.Open(dbName);
         Root root = (Root)db.Root;
         UnitTests.AssertThat(null == root);
@@ -220,7 +220,7 @@ public class UnitTestsRunner
 { 
     public static void Main(string[] args) 
     {
-        //UnitTest1.Run();
+        UnitTest1.Run();
         UnitTest2.Run();
         Console.WriteLine(String.Format("Failed {0} out of {1} tests", UnitTests.FailedTests, UnitTests.TotalTests));
     }

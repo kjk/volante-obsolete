@@ -57,7 +57,6 @@ namespace NachoDB
         /// <summary> Open the storage with default page pool size
         /// </summary>
         /// <param name="filePath">path to the database file
-        /// 
         /// </param>
         void  Open(String filePath);
 
@@ -69,7 +68,6 @@ namespace NachoDB
         /// at least ten 4kb pages, so minimal page pool size should be at least 40Kb.
         /// But larger page pool ussually leads to better performance (unless it could not fit
         /// in memory and cause swapping).
-        /// 
         /// </param>
         void  Open(IFile file, int pagePoolSize);
 
@@ -102,7 +100,6 @@ namespace NachoDB
         /// </summary>
         /// <param name="root">object to become new storage root. If it is not persistent yet, it is made
         /// persistent and stored in the storage
-        /// 
         /// </param>
 
         /// <summary> Commit changes done by the last transaction. Transaction is started implcitlely with forst update
@@ -490,7 +487,7 @@ namespace NachoDB
         /// link of IPersistent references
         /// </returns>
         Link<IPersistent> CreateLink();
-		
+
         /// <summary>
         /// Create new generic link with specified initial size
         /// </summary>
@@ -669,6 +666,8 @@ namespace NachoDB
         /// <param name="val">value of the property</param>
         ///
         void SetProperty(String name, Object val);
+
+        bool AlternativeBtree { set; }
 
         ///
         /// <summary>Set database properties. This method should be invoked before opening database. 

@@ -19,7 +19,7 @@ public class TestCompoundIndex
         { 
             if ("altbtree" == args[i]) 
             { 
-                db.SetProperty("perst.alternative.btree", true);
+                db.AlternativeBtree = true;
             }
         } 
         db.Open("testcidx.dbs", pagePoolSize);
