@@ -668,6 +668,7 @@ namespace NachoDB
         void SetProperty(String name, Object val);
 
         bool AlternativeBtree { set; }
+        bool SerializeTransientObjects { set; }
 
         ///
         /// <summary>Set database properties. This method should be invoked before opening database. 

@@ -3282,10 +3282,6 @@ namespace NachoDB.Impl
         public void SetProperties(System.Collections.Specialized.NameValueCollection props) 
         {
             string val;
-            if ((val = props["perst.serialize.transient.objects"]) != null) 
-            { 
-                ClassDescriptor.serializeNonPersistentObjects = getBooleanValue(val);
-            } 
             if ((val = props["perst.object.cache.init.size"]) != null) 
             { 
                 objectCacheInitSize = (int)getIntegerValue(val);
@@ -3337,20 +3333,25 @@ namespace NachoDB.Impl
             }
         }
 
-        public bool AlternativeBtree {
+        public bool AlternativeBtree 
+        {
             set
             {
                 alternativeBtree = value;
             }
         }
 
+        public bool SerializeTransientObjects
+        {
+            set
+            {
+                ClassDescriptor.serializeNonPersistentObjects = value;
+            }
+        }
+
         public void SetProperty(string name, object val)
         {
-            if (name.Equals("perst.serialize.transient.objects")) 
-            { 
-                ClassDescriptor.serializeNonPersistentObjects = getBooleanValue(val);
-            } 
-            else if (name.Equals("perst.object.cache.init.size")) 
+            if (name.Equals("perst.object.cache.init.size")) 
             { 
                 objectCacheInitSize = (int)getIntegerValue(val);
             } 

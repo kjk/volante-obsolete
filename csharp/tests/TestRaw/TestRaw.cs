@@ -28,7 +28,7 @@ public class TestRaw : Persistent
     public static void Main(String[] args) 
     { 
         Storage db = StorageFactory.CreateStorage();
-        db.SetProperty("perst.serialize.transient.objects", true);
+        db.SerializeTransientObjects = true;
         db.Open("testraw.dbs");
         TestRaw root = (TestRaw)db.Root;
         if (root == null) 
