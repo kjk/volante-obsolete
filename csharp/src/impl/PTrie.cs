@@ -18,7 +18,6 @@ namespace NachoDB.Impl
         private PTrieNode rootOne;
         private int       count;
 
-
 #if USE_GENERICS
         public override IEnumerator<T> GetEnumerator() 
         {
@@ -381,7 +380,7 @@ namespace NachoDB.Impl
                 }
                 return obj;
             }
-				
+
 #if USE_GENERICS
             internal T findExactMatch(ulong key, int keyLength) 
 #else
@@ -418,7 +417,7 @@ namespace NachoDB.Impl
                     }
                 }
                 return null;
-            }		
+            }
 
             internal bool isNotUsed() 
             { 
@@ -486,7 +485,7 @@ namespace NachoDB.Impl
                     }
                 }
                 return null;
-            }		
+            }
 
             public override void Deallocate() 
             {

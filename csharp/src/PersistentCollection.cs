@@ -31,7 +31,6 @@ namespace NachoDB
         public abstract IEnumerator GetEnumerator();
 #endif
         
-        
         public abstract int Count 
         { 
             get;

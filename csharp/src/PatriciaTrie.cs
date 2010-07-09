@@ -30,7 +30,6 @@ namespace NachoDB
         /// <param name="obj">persistent object associated with this key</param>
         /// <returns>previous object associtated with this key or <code>null</code> if there
         /// was no such object</returns>
-        ///
 #if USE_GENERICS
         T Add(PatriciaTrieKey key, T obj);
 #else
@@ -42,7 +41,6 @@ namespace NachoDB
         /// </summary>
         /// <param name="key">bit vector</param>
         /// <returns>object associated with this deepest possible match with specified key</returns>
-        ///
 #if USE_GENERICS
         T FindBestMatch(PatriciaTrieKey key);
 #else
@@ -54,7 +52,6 @@ namespace NachoDB
         /// </summary>
         /// <param name="key">bit vector</param>
         /// <returns>object associated with this key or NULL if match is not found</returns>
-        ///
 #if USE_GENERICS
         T FindExactMatch(PatriciaTrieKey key);
 #else
@@ -66,7 +63,6 @@ namespace NachoDB
         /// </summary>
         /// <param name="key">bit vector</param>
         /// <returns>object associated with removed key or <code>null</code> if such key is not found</returns>
-        ///
 #if USE_GENERICS
         T Remove(PatriciaTrieKey key);
 #else
@@ -77,7 +73,6 @@ namespace NachoDB
         /// <summary>
         /// Clear the trie: remove all elements from trie
         /// </summary>
-        ///
         void Clear();
 #endif
     }

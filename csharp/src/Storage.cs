@@ -149,7 +149,6 @@ namespace NachoDB
         /// </returns>
         /// <exception cref="NachoDB.StorageError">StorageError(StorageError.ErrorCode.UNSUPPORTED_INDEX_TYPE) exception if 
         /// specified key type is not supported by implementation.
-        /// 
         /// </exception>
         Index CreateIndex(Type type, bool unique);
 #endif
@@ -163,7 +162,6 @@ namespace NachoDB
         /// </returns>
         /// <exception cref="Perst.StorageError">StorageError(StorageError.ErrorCode.UNSUPPORTED_INDEX_TYPE) exception if 
         /// specified key type is not supported by implementation.
-        /// 
         /// </exception>
         Index<K,V> CreateThickIndex<K,V>() where V:class,IPersistent;
 #else
@@ -176,7 +174,6 @@ namespace NachoDB
         /// </returns>
         /// <exception cref="NachoDB.StorageError">StorageError(StorageError.ErrorCode.UNSUPPORTED_INDEX_TYPE) exception if 
         /// specified key type is not supported by implementation.
-        /// 
         /// </exception>
         Index CreateThickIndex(Type type);
 #endif
@@ -321,7 +318,6 @@ namespace NachoDB
         /// <summary> Create one-to-many link.
         /// </summary>
         /// <returns>new empty link, new members can be added to the link later.
-        /// 
         /// </returns>
 #if USE_GENERICS
         Link<T> CreateLink<T>() where T:class,IPersistent;
@@ -333,7 +329,6 @@ namespace NachoDB
         /// </summary>
         /// <param name="intialSize">initial size of the array</param>
         /// <returns>new link with specified size
-        /// 
         /// </returns>
 #if USE_GENERICS
         Link<T> CreateLink<T>(int initialSize) where T:class,IPersistent;
@@ -403,7 +398,6 @@ namespace NachoDB
         /// </param>
         /// <returns>object representing empty relation (relation with specified owner and no members), 
         /// new members can be added to the link later.
-        /// 
         /// </returns>
 #if USE_GENERICS
         Relation<M,O> CreateRelation<M,O>(O owner) where M:class,IPersistent where O:class,IPersistent;
@@ -472,7 +466,6 @@ namespace NachoDB
         /// to other structures such as hashtables when memory space is of concern.
         /// </summary>
         /// <returns>created PATRICIA trie</returns>
-        ///
 #if USE_GENERICS
         PatriciaTrie<T> CreatePatriciaTrie<T>() where T:class,IPersistent;
 #else
@@ -532,27 +525,23 @@ namespace NachoDB
         /// </summary>
         /// <param name="allocatedDelta"> delta between total size of allocated and deallocated object since last GC or storage opening
         /// </param>
-        ///
         void SetGcThreshold(long allocatedDelta);
 
         /// <summary>Explicit start of garbage collector
         /// </summary>
         /// <returns>number of collected (deallocated) objects</returns>
-        /// 
         int Gc();
 
 #if !OMIT_XML
         /// <summary> Export database in XML format 
         /// </summary>
         /// <param name="writer">writer for generated XML document
-        /// 
         /// </param>
         void  ExportXML(System.IO.StreamWriter writer);
 
         /// <summary> Import data from XML file
         /// </summary>
         /// <param name="reader">XML document reader
-        /// 
         /// </param>
         void  ImportXML(System.IO.StreamReader reader);
 #endif
@@ -673,32 +662,31 @@ namespace NachoDB
         /// <param name="name">name of the property</param>
         /// <param name="val">value of the property</param>
 
-        bool AlternativeBtree { set; }
+        bool AlternativeBtree { get; set; }
 
-        bool SerializeTransientObjects { set; }
+        bool SerializeTransientObjects { get; set; }
 
-        int  ObjectIndexInitSize { set; }
+        int  ObjectIndexInitSize { get; set; }
 
-        int  ObjectCacheInitSize { set; }
+        int  ObjectCacheInitSize { get; set; }
 
-        CacheType CacheKind { set; }
+        CacheType CacheKind { get; set; }
 
-        long ExtensionQuantum { set; }
+        long ExtensionQuantum { get; set; }
 
-        long GcThreshold { set; }
+        long GcThreshold { get; set; }
 
-        bool BackgroundGc { set; }
+        bool BackgroundGc { get; set; }
 
-        bool CodeGeneration { set; }
+        bool CodeGeneration { get; set; }
 
-        bool FileReadOnly { set; }
+        bool FileReadOnly { get; set; }
 
-        bool FileNoFlush { set; }
+        bool FileNoFlush { get; set; }
 
-        bool ReplicationAck { set; }
+        bool ReplicationAck { get; set; }
 
-        Encoding StringEncoding { set; }
-
+        Encoding StringEncoding { get; set; }
 
         /// <summary>
         /// Set storage listener.

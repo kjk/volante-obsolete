@@ -4,21 +4,15 @@ using System.Diagnostics;
 
 namespace NachoDB
 {
-    /// 
     /// Convert different type of keys to 64-bit long value used in PATRICIA trie 
     /// (Practical Algorithm To Retrieve Information Coded In Alphanumeric)
-    ///
     public class PatriciaTrieKey 
     {
-        ///
         /// Bit mask representing bit vector.
         /// The last digit of the key is the right most bit of the mask
-        ///
         internal readonly ulong mask;
 
-        ///
         /// Length of bit vector (can not be larger than 64)
-        ///
         internal readonly int   length;
 
         public PatriciaTrieKey(ulong mask, int length) 

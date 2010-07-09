@@ -290,7 +290,6 @@ namespace NachoDB.Impl
 #endif
         }
 
-
         class ExtendDictionaryEnumerator : IDictionaryEnumerator 
         {  
             public object Current 

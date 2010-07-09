@@ -3250,63 +3250,49 @@ namespace NachoDB.Impl
 
         public bool AlternativeBtree 
         {
-            set
-            {
-                alternativeBtree = value;
-            }
+            set { alternativeBtree = value; }
+            get { return alternativeBtree; }
         }
 
         public bool SerializeTransientObjects
         {
-            set
-            {
-                ClassDescriptor.serializeNonPersistentObjects = value;
-            }
+            set { ClassDescriptor.serializeNonPersistentObjects = value; }
+            get { return ClassDescriptor.serializeNonPersistentObjects; }
         }
 
         // TODO: needs tests
         public int ObjectIndexInitSize
         {
-            set
-            {
-                initIndexSize = value;
-            }
+            set { initIndexSize = value; }
+            get { return initIndexSize; }
         }        
 
         // TODO: needs tests
         public long ExtensionQuantum
         {
-            set
-            {
-                extensionQuantum = value;
-            }
+            set { extensionQuantum = value; }
+            get { return extensionQuantum; }
         }
 
         // TODO: needs tests
         public long GcThreshold
         {
-            set
-            {
-                gcThreshold = value;
-            }
+            set { gcThreshold = value; }
+            get { return gcThreshold; }
         }
 
         // TODO: needs tests
         public bool CodeGeneration
         {
-            set
-            {
-                enableCodeGeneration = value;
-            }
+            set { enableCodeGeneration = value; }
+            get { return enableCodeGeneration; }
         }
 
         // TODO: needs tests
         public bool FileReadOnly
         {
-            set
-            {
-                readOnly = value;
-            }
+            set { readOnly = value; }
+            get { return readOnly; }
         }
 
         // TODO: needs tests
@@ -3321,50 +3307,48 @@ namespace NachoDB.Impl
                     pool.file.NoFlush = value;
                 }
             }
+            get
+            {
+                if (opened)
+                {
+                    return pool.file.NoFlush;
+                }
+                return noFlush;
+            }
         }
 
         // TODO: needs tests
         public bool BackgroundGc
         {
-            set
-            {
-                backgroundGc = value;
-            }
+            set { backgroundGc = value; }
+            get { return backgroundGc; }
         }
 
         public bool ReplicationAck
         {
-            set
-            {
-                replicationAck = value;
-            }
+            set { replicationAck = value; }
+            get { return replicationAck; }
         }
 
         // TODO: needs tests
         public int ObjectCacheInitSize
         {
-            set
-            {
-                objectCacheInitSize = value;
-            }
+            set { objectCacheInitSize = value; }
+            get { return objectCacheInitSize; }
         }
 
         // TODO: needs tests
         public Encoding StringEncoding
         {
-            set
-            {
-                encoding = value;
-            }
+            set { encoding = value; }
+            get { return encoding; }
         }
 
         //TODO: needs tests
         public CacheType CacheKind
         {
-            set
-            {
-                cacheKind = value;
-            }
+            set { cacheKind = value; }
+            get { return cacheKind; }
         }
 
         public StorageListener SetListener(StorageListener listener)
