@@ -2,7 +2,7 @@ namespace NachoDB.Impl
 {
     using System;
     using NachoDB;
-	
+
     public class LruObjectCache : OidHashTable
     {
         internal Entry[] table;
@@ -13,7 +13,7 @@ namespace NachoDB.Impl
         internal int pinLimit;
         internal int nPinned;
         internal Entry pinList;
-		
+
         public LruObjectCache(int size)
         {
             int initialCapacity = size == 0 ? defaultInitSize : size;
@@ -60,7 +60,6 @@ namespace NachoDB.Impl
                 nPinned -= 1;
             }
         }
-        
 
         private void pinObject(Entry e, IPersistent obj) 
         { 
@@ -163,9 +162,8 @@ namespace NachoDB.Impl
                 GC.WaitForPendingFinalizers();
             }
         }
-		
 
-        internal void  rehash()
+        internal void rehash()
         {
             int oldCapacity = table.Length;
             Entry[] oldMap = table;
@@ -195,31 +193,31 @@ namespace NachoDB.Impl
                     }
                 }
             }
-			
+
             if ((uint)count <= ((uint)threshold >> 1))
             {
                 return;
             }
             int newCapacity = oldCapacity * 2 + 1;
             Entry[] newMap = new Entry[newCapacity];
-			
+
             threshold = (int) (newCapacity * loadFactor);
             table = newMap;
-			
+
             for (i = oldCapacity; --i >= 0; )
             {
                 for (Entry old = oldMap[i]; old != null; )
                 {
                     Entry e = old;
                     old = old.next;
-					
+
                     int index = (e.oid & 0x7FFFFFFF) % newCapacity;
                     e.next = newMap[index];
                     newMap[index] = e;
                 }
             }
         }
-		
+
         public void flush() 
         {
             while (true) 
@@ -345,7 +343,6 @@ namespace NachoDB.Impl
             return count;
         }
 
-	
         internal class Entry
         {
             internal Entry         next;
@@ -377,7 +374,7 @@ namespace NachoDB.Impl
                 lru = head;
                 pin = obj;
             }
-		
+
             internal void clear() 
             { 
                 oref.Target = null;

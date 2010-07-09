@@ -127,8 +127,7 @@ namespace NachoDB.Impl
             }
         }
     
-
-        internal void  rehash()
+        internal void rehash()
         {
             int oldCapacity = table.Length;
             Entry[] oldMap = table;
