@@ -16,6 +16,9 @@ For both Java and C#:
  * add code-coverate to build system
  * write tests to provie 100% code coverage
  * maybe: consistently name interface
+ * StrongHashTable, WeakHashTable and LruObjectCache could be simplifed by 
+   adding findEntry() and removeFoundEntry() functions. Also, instead of using
+   custom hashtable, maybe a built-in hash would do (needs benchmarks)
 
 Java specific:
  * test with other jvms (e.g. http://jamvm.sourceforge.net/)
