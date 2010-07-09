@@ -1767,7 +1767,6 @@ namespace NachoDB.Impl
             Remove(new BtreeKey(KeyBuilder.getKeyFromObject(key), obj));    
         }
         
-        
         internal virtual void Remove(BtreeKey rem)
         {
             if (root == null)
@@ -1948,7 +1947,7 @@ namespace NachoDB.Impl
 
             public bool MoveNext() 
             {
-                if (tree.updateCounter != tree.updateCounter) 
+                if (counter != tree.updateCounter) 
                 { 
                     throw new InvalidOperationException("B-Tree was modified");
                 }
@@ -2034,7 +2033,6 @@ namespace NachoDB.Impl
             {   
             }
 
-                
             protected override void getCurrent(BtreePage pg, int pos) 
             { 
                 base.getCurrent(pg, pos);
@@ -2309,7 +2307,7 @@ namespace NachoDB.Impl
 
             public bool MoveNext() 
             {
-                if (tree.updateCounter != tree.updateCounter) 
+                if (counter != tree.updateCounter) 
                 { 
                     throw new InvalidOperationException("B-Tree was modified");
                 }
@@ -2419,7 +2417,6 @@ namespace NachoDB.Impl
                     }
                 }
             }
-            
             
             protected BtreePage[] pageStack;
             protected int[] posStack;

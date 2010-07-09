@@ -3,7 +3,7 @@ namespace NachoDB
     using System;
     using ClassDescriptor = NachoDB.Impl.ClassDescriptor;
     using FieldType = NachoDB.Impl.ClassDescriptor.FieldType;
-	
+
     /// <summary> Class for specifying key value (neededd to access obejct by key usig index)
     /// </summary>
     public class Key
@@ -16,13 +16,13 @@ namespace NachoDB
         public readonly decimal   dec;
         public readonly Guid      guid;
         public readonly int       inclusion;
-		
+
         /// <summary> Constructor of boolean key (boundary is inclusive)
         /// </summary>
         public Key(bool v):this(v, true)
         {
         }
-		
+
         /// <summary> Constructor of signed byte key (boundary is inclusive)
         /// </summary>
         public Key(sbyte v):this(v, true)
@@ -34,37 +34,37 @@ namespace NachoDB
         public Key(byte v):this(v, true)
         {
         }
-		
+
         /// <summary> Constructor of char key (boundary is inclusive)
         /// </summary>
         public Key(char v):this(v, true)
         {
         }
-		
+
         /// <summary> Constructor of short key (boundary is inclusive)
         /// </summary>
         public Key(short v):this(v, true)
         {
         }
-		
+
         /// <summary> Constructor of unsigned short key (boundary is inclusive)
         /// </summary>
         public Key(ushort v):this(v, true)
         {
         }
-		
+
         /// <summary> Constructor of int key (boundary is inclusive)
         /// </summary>
         public Key(int v):this(v, true)
         {
         }
-		
+
         /// <summary> Constructor of unsigned int key (boundary is inclusive)
         /// </summary>
         public Key(uint v):this(v, true)
         {
         }
-		
+
         /// <summary> Constructor of enum key (boundary is inclusive)
         /// </summary>
         public Key(Enum v):this(v, true)
@@ -76,25 +76,25 @@ namespace NachoDB
         public Key(long v):this(v, true)
         {
         }
-		
+
         /// <summary> Constructor of unsigned long key (boundary is inclusive)
         /// </summary>
         public Key(ulong v):this(v, true)
         {
         }
-		
+
         /// <summary> Constructor of float key (boundary is inclusive)
         /// </summary>
         public Key(float v):this(v, true)
         {
         }
-		
+
         /// <summary> Constructor of double key (boundary is inclusive)
         /// </summary>
         public Key(double v):this(v, true)
         {
         }
-		
+
         /// <summary> Constructor of decimal key (boundary is inclusive)
         /// </summary>
         public Key(decimal v):this(v, true)
@@ -112,13 +112,13 @@ namespace NachoDB
         public Key(DateTime v):this(v, true)
         {
         }
-		
+
         /// <summary> Constructor of string key (boundary is inclusive)
         /// </summary>
         public Key(string v):this(v, true)
         {
         }
-		
+
         /// <summary> Constructor of key of user defined type (boundary is inclusive)
         /// </summary>
         public Key(IComparable v):this(v, true)
@@ -130,13 +130,13 @@ namespace NachoDB
         public Key(char[] v):this(v, true)
         {
         }
-		
+
         /// <summary> Constructor of array of byte key (boundary is inclusive)
         /// </summary>
         public Key(byte[] v):this(v, true)
         {
         }
-		
+
         /// <summary>
         /// Constructor of compound key (boundary is inclusive)
         /// </summary>
@@ -154,26 +154,25 @@ namespace NachoDB
         {
         }    
 
-        
         /// <summary> Constructor of key with persistent object reference (boundary is inclusive)
         /// </summary>
         public Key(IPersistent v):this(v, true)
         {
         }
-		
+
         internal Key(FieldType type, bool inclusive)
         {
             this.type = type;
             this.inclusion = inclusive?1:0;
         }
-		
+
         internal Key(FieldType type, int oid)
         {
             this.type = type;
             ival = oid;
             this.inclusion = 1;
         }
-		
+
         /// <summary> Constructor of boolean key
         /// </summary>
         /// <param name="v">key value
@@ -185,7 +184,7 @@ namespace NachoDB
         {
             ival = v ? 1 : 0;
         }
-		
+
         /// <summary> Constructor of signed byte key
         /// </summary>
         /// <param name="v">key value
@@ -197,7 +196,7 @@ namespace NachoDB
         {
             ival = v;
         }
-		
+
         /// <summary> Constructor of byte key
         /// </summary>
         /// <param name="v">key value
@@ -221,7 +220,7 @@ namespace NachoDB
         {
             ival = v;
         }
-		
+
         /// <summary> Constructor of short key
         /// </summary>
         /// <param name="v">key value
@@ -233,7 +232,7 @@ namespace NachoDB
         {
             ival = v;
         }
-		
+
         /// <summary> Constructor of unsigned short key
         /// </summary>
         /// <param name="v">key value
@@ -269,7 +268,7 @@ namespace NachoDB
         {
             ival = v;
         }
-		
+
         /// <summary> Constructor of unsigned int key
         /// </summary>
         /// <param name="v">key value
@@ -281,7 +280,7 @@ namespace NachoDB
         {
             ival = (int)v;
         }
-		
+
         /// <summary> Constructor of long key
         /// </summary>
         /// <param name="v">key value
@@ -293,7 +292,7 @@ namespace NachoDB
         {
             lval = v;
         }
-		
+
         /// <summary> Constructor of unsigned long key
         /// </summary>
         /// <param name="v">key value
@@ -305,7 +304,7 @@ namespace NachoDB
         {
             lval = (long)v;
         }
-		
+
         /// <summary> Constructor of float key
         /// </summary>
         /// <param name="v">key value
@@ -317,7 +316,7 @@ namespace NachoDB
         {
             dval = v;
         }
-		
+
         /// <summary> Constructor of double key
         /// </summary>
         /// <param name="v">key value
@@ -329,7 +328,7 @@ namespace NachoDB
         {
             dval = v;
         }
-		
+
         /// <summary> Constructor of decimal key
         /// </summary>
         /// <param name="v">key value
@@ -377,7 +376,7 @@ namespace NachoDB
         {
             oval = v;
         }
-		
+
         /// <summary> Constructor of array of char key
         /// </summary>
         /// <param name="v">key value
@@ -389,7 +388,7 @@ namespace NachoDB
         {
             oval = v;
         }
-		
+
         /// <summary> Constructor of array of byte key
         /// </summary>
         /// <param name="v">key value
@@ -399,7 +398,7 @@ namespace NachoDB
         {
             oval = v;
         }
-		
+
         /// <summary>
         /// Constructor of compound key (boundary is inclusive)
         /// </summary>

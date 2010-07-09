@@ -105,7 +105,7 @@ public class TestIndex
             db.Commit();
         }
         System.Console.WriteLine("Elapsed time for inserting " + nRecords + " records: " + (DateTime.Now - start));
-		
+
         start = System.DateTime.Now;
         key = 1999;
         for (i = 0; i < nRecords; i++)
