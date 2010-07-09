@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Collections;
 #endif
     using NachoDB;
-	
+
 #if USE_GENERICS
     public class LinkImpl<T> : Link<T> where T:class,IPersistent
 #else
@@ -22,9 +22,7 @@ using System.Collections;
             }
         } 
                 
-    
-
-        public int Count 
+         public int Count 
         { 
             get 
             {
@@ -71,7 +69,7 @@ using System.Collections;
         {
             return used;
         }
-		
+
         public virtual int Length 
         {
             get 
@@ -123,7 +121,7 @@ using System.Collections;
             }
             return loadElem(i);
         }
-		
+
         public virtual IPersistent GetRaw(int i)
         {
             if (i < 0 || i >= used)
@@ -132,7 +130,7 @@ using System.Collections;
             }
             return arr[i];
         }
-		
+
 #if USE_GENERICS
         public virtual void Set(int i, T obj)
 #else
@@ -146,7 +144,7 @@ using System.Collections;
             arr[i] = obj;
             Modify();
         }
-		
+
 #if USE_GENERICS
         public bool Remove(T obj) 
 #else
@@ -180,7 +178,7 @@ using System.Collections;
             arr[used] = null;
             Modify();
         }
-		
+
         internal void reserveSpace(int len)
         {
             if (used + len > arr.Length)
