@@ -6,11 +6,11 @@ namespace NachoDB.Impl
 #endif
     using System.Collections;
     using NachoDB;
-	
+
 #if USE_GENERICS
-    class RtreeR2<T>:PersistentCollection<T>, SpatialIndexR2<T> where T:class,IPersistent
+    class RtreeR2<T> : PersistentCollection<T>, SpatialIndexR2<T> where T : class, IPersistent
 #else
-    class RtreeR2:PersistentCollection, SpatialIndexR2
+    class RtreeR2 : PersistentCollection, SpatialIndexR2
 #endif
     {
         private int         height;
@@ -300,8 +300,7 @@ namespace NachoDB.Impl
                 pageStack[sp] = null;
                 return (sp > 0) ? gotoNextItem(sp-1) : false;
             }
-              
- 
+
             protected RtreeR2Page[] pageStack;
             protected int[]         posStack;
             protected int           counter;
@@ -377,3 +376,4 @@ namespace NachoDB.Impl
         }
     }
 }
+

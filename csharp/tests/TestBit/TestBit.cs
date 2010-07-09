@@ -42,7 +42,7 @@ public enum Options
     DISEL             = 0x10000000,
     TURBO             = 0x20000000,
     GASOLINE          = 0x40000000,
-};
+}
 
 class Car : Persistent 
 { 
@@ -53,9 +53,7 @@ class Car : Persistent
     internal string  model;
     internal string  vendor;
     internal string  specification;
-
 }
-
 
 class Catalogue : Persistent {
 #if USE_GENERICS
@@ -65,8 +63,7 @@ class Catalogue : Persistent {
     internal FieldIndex modelIndex;
     internal BitIndex   optionIndex;
 #endif
-};
-    
+}
 
 public class TestBit 
 { 
@@ -119,7 +116,6 @@ public class TestBit
         }
         Console.WriteLine("Elapsed time for inserting " + nRecords + " records: " 
             + (DateTime.Now - start));
-
 
         start = DateTime.Now;
         i = 0;

@@ -5,7 +5,7 @@ namespace NachoDB.Impl
     using System.Collections;
     using System.Reflection;
     using NachoDB;
-	
+
     public class XMLImporter
     {
         public XMLImporter(StorageImpl storage, System.IO.StreamReader reader)
@@ -14,7 +14,7 @@ namespace NachoDB.Impl
             scanner = new XMLScanner(reader);
             classMap = new Hashtable();
         }
-		
+
         public virtual void  importDatabase()
         {
             if (scanner.scan() != XMLScanner.Token.LT || scanner.scan() != XMLScanner.Token.IDENT || !scanner.Identifier.Equals("database"))
@@ -37,7 +37,7 @@ namespace NachoDB.Impl
             idMap = new int[rootId * 2];
             idMap[rootId] = storage.allocateId();
             storage.header.root[1 - storage.currIndex].rootObject = idMap[rootId];
-			
+
             XMLScanner.Token tkn;
             while ((tkn = scanner.scan()) == XMLScanner.Token.LT)
             {
@@ -64,7 +64,7 @@ namespace NachoDB.Impl
                 throwException("Root element is not closed");
             }
         }
-		
+
         internal class XMLElement
         {
             internal XMLElement NextSibling
@@ -73,58 +73,59 @@ namespace NachoDB.Impl
                 {
                     return next;
                 }
-				
             }
+
             internal int Counter
             {
                 get
                 {
                     return counter;
                 }
-				
             }
+
             internal long IntValue
             {
                 get
                 {
                     return ivalue;
                 }
-				
+
                 set
                 {
                     ivalue = value;
                     valueType = XMLValueType.INT_VALUE;
                 }
-				
             }
+
             internal double RealValue
             {
                 get
                 {
                     return rvalue;
                 }
-				
+
                 set
                 {
                     rvalue = value;
                     valueType = XMLValueType.REAL_VALUE;
                 }
-				
             }
+
             internal String StringValue
             {
                 get
                 {
                     return svalue;
                 }
-				
+
                 set
                 {
                     svalue = value;
                     valueType = XMLValueType.STRING_VALUE;
                 }
-				
+
             }
+
             internal String Name
             {
                 get
@@ -144,7 +145,7 @@ namespace NachoDB.Impl
             private double       rvalue;
             private XMLValueType valueType;
             private int          counter;
-			
+
             enum XMLValueType 
             { 
                 NO_VALUE,
@@ -153,13 +154,13 @@ namespace NachoDB.Impl
                 REAL_VALUE,
                 NULL_VALUE
             }
-			
+
             internal XMLElement(System.String name)
             {
                 this.name = name;
                 valueType = XMLValueType.NO_VALUE;
             }
-			
+
             internal void  addSibling(XMLElement elem)
             {
                 if (siblings == null)
@@ -182,7 +183,7 @@ namespace NachoDB.Impl
                     elem.counter = 1;
                 }
             }
-			
+
             internal void  addAttribute(System.String name, System.String val)
             {
                 if (attributes == null)
@@ -191,7 +192,7 @@ namespace NachoDB.Impl
                 }
                 attributes[name] = val;
             }
-			
+
             internal XMLElement getSibling(System.String name)
             {
                 if (siblings != null)
@@ -200,43 +201,38 @@ namespace NachoDB.Impl
                 }
                 return null;
             }
-			
-			
-			
+
             internal System.String getAttribute(System.String name)
             {
                 return attributes != null?(System.String) attributes[name]:null;
             }
-			
-			
-			
-			
+
             internal void  setNullValue()
             {
                 valueType = XMLValueType.NULL_VALUE;
             }
-			
+
             internal bool isIntValue()
             {
                 return valueType == XMLValueType.INT_VALUE;
             }
-			
+
             internal bool isRealValue()
             {
                 return valueType == XMLValueType.REAL_VALUE;
             }
-			
+
             internal bool isStringValue()
             {
                 return valueType == XMLValueType.STRING_VALUE;
             }
-			
+
             internal bool isNullValue()
             {
                 return valueType == XMLValueType.NULL_VALUE;
             }
         }
-		
+
         internal System.String getAttribute(XMLElement elem, String name)
         {
             System.String val = elem.getAttribute(name);
@@ -246,8 +242,7 @@ namespace NachoDB.Impl
             }
             return val;
         }
-		
-		
+
         internal int getIntAttribute(XMLElement elem, String name)
         {
             System.String val = elem.getAttribute(name);
@@ -265,7 +260,7 @@ namespace NachoDB.Impl
             }
             return - 1;
         }
-		
+
         internal int mapId(int id)
         {
             int oid = 0;
@@ -289,7 +284,7 @@ namespace NachoDB.Impl
             }
             return oid;
         }
-		
+
         internal ClassDescriptor.FieldType mapType(System.String signature)
         {
             try 
@@ -401,46 +396,46 @@ namespace NachoDB.Impl
             {
                 case ClassDescriptor.FieldType.tpBoolean: 
                     return new Key(Int32.Parse(val) != 0);
-					
+
                 case ClassDescriptor.FieldType.tpByte: 
                     return new Key(Byte.Parse(val));
-					
+
                 case ClassDescriptor.FieldType.tpSByte: 
                     return new Key(SByte.Parse(val));
-					
+
                 case ClassDescriptor.FieldType.tpChar: 
                     return new Key((char)Int32.Parse(val));
-					
+
                 case ClassDescriptor.FieldType.tpShort: 
                     return new Key(Int16.Parse(val));
-					
+
                 case ClassDescriptor.FieldType.tpUShort: 
                     return new Key(UInt16.Parse(val));
-					
+
                 case ClassDescriptor.FieldType.tpInt: 
                     return new Key(Int32.Parse(val));
-					
+
                 case ClassDescriptor.FieldType.tpUInt: 
                 case ClassDescriptor.FieldType.tpEnum:
                     return new Key(UInt32.Parse(val));
-					
+
                 case ClassDescriptor.FieldType.tpOid: 
                     return new Key(ClassDescriptor.FieldType.tpOid, mapId((int)UInt32.Parse(val)));
                 case ClassDescriptor.FieldType.tpObject: 
                     return new Key(new PersistentStub(storage, mapId((int)UInt32.Parse(val))));
-					
+
                 case ClassDescriptor.FieldType.tpLong: 
                     return new Key(Int64.Parse(val));
-					
+
                 case ClassDescriptor.FieldType.tpULong: 
                     return new Key(UInt64.Parse(val));
-					
+
                 case ClassDescriptor.FieldType.tpFloat: 
                     return new Key(Single.Parse(val));
-					
+
                 case ClassDescriptor.FieldType.tpDouble: 
                     return new Key(Double.Parse(val));
-					
+
                 case ClassDescriptor.FieldType.tpDecimal: 
                     return new Key(Decimal.Parse(val));
 
@@ -449,7 +444,7 @@ namespace NachoDB.Impl
 
                 case ClassDescriptor.FieldType.tpString: 
                     return new Key(val);
-					
+
                 case ClassDescriptor.FieldType.tpArrayOfByte:
                 {
                     byte[] buf = new byte[val.Length >> 1];
@@ -462,20 +457,20 @@ namespace NachoDB.Impl
 
                 case ClassDescriptor.FieldType.tpDate: 
                     return new Key(DateTime.Parse(val));
-					
+
                 default: 
                     throwException("Bad key type");
                     break;
-					
+
             }
             return null;
         }
-		
+
         internal int parseInt(String str)
         {
             return Int32.Parse(str);
         }
-		
+
         internal Type findClassByName(String className) 
         {
             Type type = (Type)classMap[className];
@@ -620,7 +615,7 @@ namespace NachoDB.Impl
                 }
             }
             storage.assignOid(btree, oid);
-			
+
             while ((tkn = scanner.scan()) == XMLScanner.Token.LT)
             {
                 if (scanner.scan() != XMLScanner.Token.IDENT || !scanner.Identifier.Equals("ref"))
@@ -670,10 +665,10 @@ namespace NachoDB.Impl
 #endif
             long pos = storage.allocate(size, 0);
             storage.setPos(oid, pos | StorageImpl.dbModifiedFlag);
-			
+
             storage.pool.put(pos & ~ StorageImpl.dbFlagsMask, data, size);
         }
-		
+
         internal void  createObject(XMLElement elem)
         {
             ClassDescriptor desc = storage.getClassDescriptor(findClassByName(elem.Name));
@@ -681,17 +676,17 @@ namespace NachoDB.Impl
             ByteBuffer buf = new ByteBuffer(storage.encoding);
             int offs = ObjectHeader.Sizeof;
             buf.extend(offs);
-			
+
             offs = packObject(elem, desc, offs, buf);
-			
+
             ObjectHeader.setSize(buf.arr, 0, offs);
             ObjectHeader.setType(buf.arr, 0, desc.Oid);
-			
+
             long pos = storage.allocate(offs, 0);
             storage.setPos(oid, pos | StorageImpl.dbModifiedFlag);
             storage.pool.put(pos, buf.arr, offs);
         }
-		
+
         internal int getHexValue(char ch)
         {
             if (ch >= '0' && ch <= '9')
@@ -712,7 +707,7 @@ namespace NachoDB.Impl
             }
             return - 1;
         }
-		
+
         internal int importBinary(XMLElement elem, int offs, ByteBuffer buf, String fieldName) 
         { 
             if (elem == null || elem.isNullValue()) 
@@ -793,7 +788,7 @@ namespace NachoDB.Impl
                 FieldInfo f = fd.field;
                 String fieldName = fd.fieldName;
                 XMLElement elem = (objElem != null)?objElem.getSibling(fieldName):null;
-				
+
                 switch (fd.type)
                 {
                     case ClassDescriptor.FieldType.tpByte: 
@@ -816,7 +811,7 @@ namespace NachoDB.Impl
                         }
                         offs += 1;
                         continue;
-					
+
                     case ClassDescriptor.FieldType.tpBoolean: 
                         buf.extend(offs + 1);
                         if (elem != null)
@@ -836,7 +831,7 @@ namespace NachoDB.Impl
                         }
                         offs += 1;
                         continue;
-					
+
                     case ClassDescriptor.FieldType.tpShort: 
                     case ClassDescriptor.FieldType.tpUShort: 
                     case ClassDescriptor.FieldType.tpChar: 
@@ -858,7 +853,7 @@ namespace NachoDB.Impl
                         }
                         offs += 2;
                         continue;
-					
+
                     case ClassDescriptor.FieldType.tpEnum: 
                         buf.extend(offs + 4);
                         if (elem != null)
@@ -893,7 +888,6 @@ namespace NachoDB.Impl
                         }
                         offs += 4;
                         continue;
-					
 
                     case ClassDescriptor.FieldType.tpInt: 
                     case ClassDescriptor.FieldType.tpUInt: 
@@ -915,7 +909,7 @@ namespace NachoDB.Impl
                         }
                         offs += 4;
                         continue;
-					
+
                     case ClassDescriptor.FieldType.tpLong: 
                     case ClassDescriptor.FieldType.tpULong: 
                         buf.extend(offs + 8);
@@ -936,7 +930,7 @@ namespace NachoDB.Impl
                         }
                         offs += 8;
                         continue;
-					
+
                     case ClassDescriptor.FieldType.tpFloat: 
                         buf.extend(offs + 4);
                         if (elem != null)
@@ -956,7 +950,7 @@ namespace NachoDB.Impl
                         }
                         offs += 4;
                         continue;
-					
+
                     case ClassDescriptor.FieldType.tpDouble: 
                         buf.extend(offs + 8);
                         if (elem != null)
@@ -976,7 +970,7 @@ namespace NachoDB.Impl
                         }
                         offs += 8;
                         continue;
-					
+
                     case ClassDescriptor.FieldType.tpDecimal: 
                         buf.extend(offs + 16);
                         if (elem != null)
@@ -1059,7 +1053,7 @@ namespace NachoDB.Impl
                         }
                         offs += 8;
                         continue;
-					
+
                     case ClassDescriptor.FieldType.tpString: 
                         if (elem != null)
                         {
@@ -1091,7 +1085,7 @@ namespace NachoDB.Impl
                         Bytes.pack4(buf.arr, offs, - 1);
                         offs += 4;
                         continue;
-					
+
                     case ClassDescriptor.FieldType.tpOid: 
                     case ClassDescriptor.FieldType.tpObject: 
                     {
@@ -1110,11 +1104,11 @@ namespace NachoDB.Impl
                         offs += 4;
                         continue;
                     }
-					
+
                     case ClassDescriptor.FieldType.tpValue: 
                         offs = packObject(elem, fd.valueDesc, offs, buf);
                         continue;
-					
+
 #if SUPPORT_RAW_TYPE
                     case ClassDescriptor.FieldType.tpRaw: 
 #endif
@@ -1122,7 +1116,7 @@ namespace NachoDB.Impl
                     case ClassDescriptor.FieldType.tpArrayOfSByte: 
                         offs = importBinary(elem, offs, buf, fieldName);
                         continue;
-					
+
                     case ClassDescriptor.FieldType.tpArrayOfBoolean: 
                         if (elem == null || elem.isNullValue())
                         {
@@ -1156,7 +1150,7 @@ namespace NachoDB.Impl
                             }
                         }
                         continue;
-					
+
                     case ClassDescriptor.FieldType.tpArrayOfChar: 
                     case ClassDescriptor.FieldType.tpArrayOfShort: 
                     case ClassDescriptor.FieldType.tpArrayOfUShort: 
@@ -1192,7 +1186,7 @@ namespace NachoDB.Impl
                             }
                         }
                         continue;
-					
+
                     case ClassDescriptor.FieldType.tpArrayOfEnum: 
                         if (elem == null || elem.isNullValue())
                         {
@@ -1242,7 +1236,6 @@ namespace NachoDB.Impl
                             }
                         }
                         continue;
-                        
 
                     case ClassDescriptor.FieldType.tpArrayOfInt: 
                     case ClassDescriptor.FieldType.tpArrayOfUInt: 
@@ -1278,7 +1271,7 @@ namespace NachoDB.Impl
                             }
                         }
                         continue;
-					
+
                     case ClassDescriptor.FieldType.tpArrayOfLong: 
                     case ClassDescriptor.FieldType.tpArrayOfULong: 
                         if (elem == null || elem.isNullValue())
@@ -1313,7 +1306,7 @@ namespace NachoDB.Impl
                             }
                         }
                         continue;
-					
+
                     case ClassDescriptor.FieldType.tpArrayOfFloat: 
                         if (elem == null || elem.isNullValue())
                         {
@@ -1347,7 +1340,7 @@ namespace NachoDB.Impl
                             }
                         }
                         continue;
-					
+
                     case ClassDescriptor.FieldType.tpArrayOfDouble: 
                         if (elem == null || elem.isNullValue())
                         {
@@ -1381,7 +1374,7 @@ namespace NachoDB.Impl
                             }
                         }
                         continue;
-					
+
                     case ClassDescriptor.FieldType.tpArrayOfDate: 
                         if (elem == null || elem.isNullValue())
                         {
@@ -1418,7 +1411,7 @@ namespace NachoDB.Impl
                             }
                         }
                         continue;
-					
+
                     case ClassDescriptor.FieldType.tpArrayOfDecimal: 
                         if (elem == null || elem.isNullValue())
                         {
@@ -1451,7 +1444,7 @@ namespace NachoDB.Impl
                             }
                         }
                         continue;
-					
+
                     case ClassDescriptor.FieldType.tpArrayOfGuid: 
                         if (elem == null || elem.isNullValue())
                         {
@@ -1484,7 +1477,7 @@ namespace NachoDB.Impl
                             }
                         }
                         continue;
-					
+
                     case ClassDescriptor.FieldType.tpArrayOfString: 
                         if (elem == null || elem.isNullValue())
                         {
@@ -1527,7 +1520,7 @@ namespace NachoDB.Impl
                             }
                         }
                         continue;
-					
+
                     case ClassDescriptor.FieldType.tpArrayOfObject: 
                     case ClassDescriptor.FieldType.tpArrayOfOid: 
                     case ClassDescriptor.FieldType.tpLink: 
@@ -1558,7 +1551,7 @@ namespace NachoDB.Impl
                             }
                         }
                         continue;
-					
+
                     case ClassDescriptor.FieldType.tpArrayOfValue: 
                         if (elem == null || elem.isNullValue())
                         {
@@ -1580,7 +1573,7 @@ namespace NachoDB.Impl
                             }
                         }
                         continue;
-					
+
 #if SUPPORT_RAW_TYPE
                     case ClassDescriptor.FieldType.tpArrayOfRaw: 
                         if (elem == null || elem.isNullValue())
@@ -1607,7 +1600,7 @@ namespace NachoDB.Impl
             }
             return offs;
         }
-		
+
         internal XMLElement readElement(System.String name)
         {
             XMLElement elem = new XMLElement(name);
@@ -1619,7 +1612,7 @@ namespace NachoDB.Impl
                 {
                     case XMLScanner.Token.GTS: 
                         return elem;
-					
+
                     case XMLScanner.Token.GT: 
                         while ((tkn = scanner.scan()) == XMLScanner.Token.LT)
                         {
@@ -1637,17 +1630,17 @@ namespace NachoDB.Impl
                                 elem.StringValue = scanner.String;
                                 tkn = scanner.scan();
                                 break;
-							
+
                             case XMLScanner.Token.ICONST: 
                                 elem.IntValue = scanner.Int;
                                 tkn = scanner.scan();
                                 break;
-							
+
                             case XMLScanner.Token.FCONST: 
                                 elem.RealValue = scanner.Real;
                                 tkn = scanner.scan();
                                 break;
-							
+
                             case XMLScanner.Token.IDENT: 
                                 if (scanner.Identifier.Equals("null"))
                                 {
@@ -1659,14 +1652,14 @@ namespace NachoDB.Impl
                                 }
                                 tkn = scanner.scan();
                                 break;
-							
+
                         }
                         if (tkn != XMLScanner.Token.LTS || scanner.scan() != XMLScanner.Token.IDENT || !scanner.Identifier.Equals(name) || scanner.scan() != XMLScanner.Token.GT)
                         {
                             throwException("Element is not closed");
                         }
                         return elem;
-					
+
                     case XMLScanner.Token.IDENT: 
                         attribute = scanner.Identifier;
                         if (scanner.scan() != XMLScanner.Token.EQ || scanner.scan() != XMLScanner.Token.SCONST)
@@ -1675,26 +1668,25 @@ namespace NachoDB.Impl
                         }
                         elem.addAttribute(attribute, scanner.String);
                         continue;
-					
+
                     default: 
                         throwException("Unexpected token");
                         break;
-					
+
                 }
             }
         }
-		
+
         internal void  throwException(System.String message)
         {
             throw new XMLImportException(scanner.Line, scanner.Column, message);
         }
-		
+
         internal StorageImpl storage;
         internal XMLScanner  scanner;
         internal Hashtable   classMap;
         internal int[] idMap; 
-		
-		
+
         internal class XMLScanner
         {
             internal virtual System.String Identifier
@@ -1703,48 +1695,48 @@ namespace NachoDB.Impl
                 {
                     return ident;
                 }
-				
             }
+
             internal virtual System.String String
             {
                 get
                 {
                     return new String(sconst, 0, slen);
                 }
-				
             }
+
             internal virtual long Int
             {
                 get
                 {
                     return iconst;
                 }
-				
             }
+
             internal virtual double Real
             {
                 get
                 {
                     return fconst;
                 }
-				
             }
+
             internal virtual int Line
             {
                 get
                 {
                     return line;
                 }
-				
             }
+
             internal virtual int Column
             {
                 get
                 {
                     return column;
                 }
-				
             }
+
             internal enum Token 
             {
                 IDENT,
@@ -1757,8 +1749,8 @@ namespace NachoDB.Impl
                 GTS,
                 EQ,
                 EOF
-            };
-			
+            }
+
             internal System.IO.StreamReader reader;
             internal int    line;
             internal int    column;
@@ -1770,7 +1762,7 @@ namespace NachoDB.Impl
             internal int    size;
             internal int    ungetChar;
             internal bool   hasUngetChar;
-			
+
             internal XMLScanner(System.IO.StreamReader reader)
             {
                 this.reader = reader;
@@ -1779,7 +1771,7 @@ namespace NachoDB.Impl
                 column = 0;
                 hasUngetChar = false;
             }
-			
+
             internal int get()
             {
                 if (hasUngetChar)
@@ -1803,7 +1795,7 @@ namespace NachoDB.Impl
                 }
                 return ch;
             }
-			
+
             internal void  unget(int ch)
             {
                 if (ch == '\n')
@@ -1817,12 +1809,12 @@ namespace NachoDB.Impl
                 ungetChar = ch;
                 hasUngetChar = true;
             }
-			
+
             internal Token scan()
             {
                 int i, ch;
                 bool floatingPoint;
-				
+
                 while (true)
                 {
                     do 
@@ -1833,7 +1825,7 @@ namespace NachoDB.Impl
                         }
                     }
                     while (ch <= ' ');
-					
+
                     switch (ch)
                     {
                         case '<': 
@@ -1859,10 +1851,10 @@ namespace NachoDB.Impl
                                 return Token.LT;
                             }
                             return Token.LTS;
-						
+
                         case '>': 
                             return Token.GT;
-						
+
                         case '/': 
                             ch = get();
                             if (ch != '>')
@@ -1871,10 +1863,10 @@ namespace NachoDB.Impl
                                 throw new XMLImportException(line, column, "Bad XML file format");
                             }
                             return Token.GTS;
-						
+
                         case '=': 
                             return Token.EQ;
-						
+
                         case '"': 
                             i = 0;
                             while (true)
@@ -1895,7 +1887,7 @@ namespace NachoDB.Impl
                                             }
                                             ch = '&';
                                             break;
-										
+
                                         case 'l': 
                                             if (get() != 't' || get() != ';')
                                             {
@@ -1903,7 +1895,7 @@ namespace NachoDB.Impl
                                             }
                                             ch = '<';
                                             break;
-										
+
                                         case 'g': 
                                             if (get() != 't' || get() != ';')
                                             {
@@ -1911,7 +1903,7 @@ namespace NachoDB.Impl
                                             }
                                             ch = '>';
                                             break;
-										
+
                                         case 'q': 
                                             if (get() != 'u' || get() != 'o' || get() != 't' || get() != ';')
                                             {
@@ -1919,10 +1911,10 @@ namespace NachoDB.Impl
                                             }
                                             ch = '"';
                                             break;
-										
+
                                         default: 
                                             throw new XMLImportException(line, column, "Bad XML file format");
-										
+
                                     }
                                 }
                                 else if (ch == '"')
@@ -1938,7 +1930,7 @@ namespace NachoDB.Impl
                                 }
                                 sconst[i++] = (char) ch;
                             }
-						
+
                         case '-': case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9': 
                             i = 0;
                             floatingPoint = false;
@@ -1977,7 +1969,7 @@ namespace NachoDB.Impl
                                 }
                                 ch = get();
                             }
-						
+
                         default: 
                             i = 0;
                             while (System.Char.IsLetterOrDigit((char) ch) || ch == '-' || ch == ':' || ch == '_' || ch == '.')
@@ -2014,3 +2006,4 @@ namespace NachoDB.Impl
     }
 }
 #endif
+

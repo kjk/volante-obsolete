@@ -126,9 +126,9 @@ namespace NachoDB.Impl
         void init(Type cls, ClassDescriptor.FieldType type, string[] fieldNames, bool unique, long autoincCount);
     }
 
-    class Btree<K,V>:PersistentCollection<V>, Index<K,V>, Btree where V:class,IPersistent
+    class Btree<K,V> : PersistentCollection<V>, Index<K,V>, Btree where V : class,IPersistent
 #else
-    class Btree:PersistentCollection, Index
+    class Btree : PersistentCollection, Index
 #endif
     {
         internal int root;
@@ -138,13 +138,13 @@ namespace NachoDB.Impl
         internal bool unique;
         [NonSerialized()]
         internal int  updateCounter;
-		
+
         internal static int Sizeof = ObjectHeader.Sizeof + 4 * 4 + 1;
 
         internal Btree()
         {
         }
-		
+
         internal Btree(byte[] obj, int offs) 
         {
             root = Bytes.unpack4(obj, offs);
@@ -157,7 +157,6 @@ namespace NachoDB.Impl
             offs += 4;
             unique = obj[offs] != 0;
         }
-
 
 #if USE_GENERICS
         internal Btree(bool unique)
@@ -187,7 +186,7 @@ namespace NachoDB.Impl
             this.type = type;
             this.unique = unique;
         }
-		
+
         public virtual void init(Type cls, ClassDescriptor.FieldType type, string[] fieldNames, bool unique, long autoincCount) 
         {
             this.type = type;

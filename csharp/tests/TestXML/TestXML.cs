@@ -4,7 +4,7 @@ using System.Diagnostics;
 
 public class TestXML
 {
-    class Record:Persistent
+    class Record : Persistent
     {
         internal String strKey;
         internal long   intKey;
@@ -16,7 +16,7 @@ public class TestXML
         public int y;
     }
 
-    class Root:Persistent
+    class Root : Persistent
     {
 #if USE_GENERICS
         internal Index<string,Record>    strIndex;
@@ -32,12 +32,12 @@ public class TestXML
 
     internal const int nRecords = 100000;
     internal static int pagePoolSize = 32 * 1024 * 1024;
-	
+
     static public void  Main(System.String[] args)
     {
         int i;
         Storage db = StorageFactory.CreateStorage();
-		
+
         db.Open("test1.dbs", pagePoolSize);
         Root root = (Root) db.Root;
         if (root == null)

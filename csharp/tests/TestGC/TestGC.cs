@@ -2,14 +2,14 @@ using System;
 using NachoDB;
 using System.Diagnostics;
 
-class PObject:Persistent 
+class PObject : Persistent 
 { 
     internal long    intKey;
     internal PObject next;
     internal String  strKey;
-};
+}
 
-class StorageRoot:Persistent {
+class StorageRoot : Persistent {
     internal PObject list;
 #if USE_GENERICS
     internal Index<string,PObject> strIndex;
@@ -83,3 +83,4 @@ public class TestGC {
         db.Close();
     }
 }
+

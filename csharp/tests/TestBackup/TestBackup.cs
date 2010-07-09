@@ -5,15 +5,14 @@ using System.Diagnostics;
 
 public class TestBackup
 {
-    class Record:Persistent
+    class Record : Persistent
     {
         internal String strKey;
         internal long   intKey;
         internal double realKey;
     }
 
-
-    class Root:Persistent
+    class Root : Persistent
     {
 #if USE_GENERICS
         internal Index<string,Record> strIndex;
@@ -28,12 +27,12 @@ public class TestBackup
 
     internal const int nRecords = 100000;
     internal static int pagePoolSize = 32 * 1024 * 1024;
-	
+
     static public void  Main(System.String[] args)
     {
         int i;
         Storage db = StorageFactory.CreateStorage();
-		
+
         db.Open("testbck1.dbs", pagePoolSize);
         Root root = (Root) db.Root;
         if (root == null)
@@ -88,7 +87,7 @@ public class TestBackup
         intIndex = root.intIndex;
         strIndex = root.strIndex;
         compoundIndex = root.compoundIndex;
-	
+
         start = DateTime.Now;
         key = 1999;
         for (i = 0; i < nRecords; i++)

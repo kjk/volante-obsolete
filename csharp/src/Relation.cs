@@ -12,7 +12,7 @@ namespace NachoDB
 #if USE_GENERICS
     public abstract class Relation<M,O> : PersistentCollection<M>, Link<M> where M:class,IPersistent where O:class,IPersistent
 #else
-    public abstract class Relation:PersistentCollection, Link
+    public abstract class Relation : PersistentCollection, Link
 #endif
     {
         public abstract int Size();

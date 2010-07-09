@@ -7,8 +7,8 @@ namespace NachoDB.Impl
     using System.Diagnostics;
     using System.Text;
     using NachoDB;
-	
-    public sealed class ClassDescriptor:Persistent
+
+    public sealed class ClassDescriptor : Persistent
     {
         internal ClassDescriptor   next;
         internal String            name;
@@ -48,7 +48,7 @@ namespace NachoDB.Impl
         internal bool resolved;
         [NonSerialized()]
         internal GeneratedSerializer serializer;
-		
+
         internal static bool serializeNonPersistentObjects;
 
         public enum FieldType 
@@ -97,8 +97,8 @@ namespace NachoDB.Impl
             tpArrayOfGuid,
             tpArrayOfDecimal,
             tpLast
-        };
-		
+        }
+
         internal static int[] Sizeof = new int[] 
         {
             1, // tpBoolean,
@@ -145,10 +145,10 @@ namespace NachoDB.Impl
             0, // tpArrayOfGuid,
             0  // tpArrayOfDecimal,
         };
-		
+
         internal static Type[] defaultConstructorProfile = new Type[0];
         internal static object[] noArgs = new object[0];
-	
+
 #if COMPACT_NET_FRAMEWORK
         static internal object parseEnum(Type type, String value) 
         {

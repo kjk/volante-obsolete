@@ -3,14 +3,13 @@ using System.Collections;
 using NachoDB;
 using System.Diagnostics;
 
-public class Record:Persistent
+public class Record : Persistent
 {
     public string strKey;
     public long intKey;
 }
 
-
-public class Root:Persistent
+public class Root : Persistent
 {
 #if USE_GENERICS
     public Index<string,Record> strIndex;
@@ -25,12 +24,12 @@ public class TestIndex
 {
     internal const int nRecords = 100000;
     internal static int pagePoolSize = 32 * 1024 * 1024;
-	
+
     static public void  Main(string[] args)
     {
         int i;
         Storage db = StorageFactory.CreateStorage();
-		
+
         bool serializableTransaction = false;
         for (i = 0; i < args.Length; i++) 
         { 

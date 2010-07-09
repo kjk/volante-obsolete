@@ -29,7 +29,7 @@ namespace NachoDB
         /// It runs concurrently with receiving updates from master node.
         /// </summary>
         ReplicationSlave
-    };
+    }
 
     /// <summary> Object storage
     /// </summary>

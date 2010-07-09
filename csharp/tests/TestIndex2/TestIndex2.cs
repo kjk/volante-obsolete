@@ -3,14 +3,13 @@ using System.Collections;
 using NachoDB;
 using System.Diagnostics;
 
-public class Record:Persistent
+public class Record : Persistent
 {
     public string strKey;
     public long intKey;
 }
 
-
-public class Root:Persistent
+public class Root : Persistent
 {
 #if USE_GENERICS
     public SortedCollection<string,Record> strIndex;
@@ -22,7 +21,7 @@ public class Root:Persistent
 }
 
 #if USE_GENERICS
-public class IntRecordComparator:PersistentComparator<long,Record> 
+public class IntRecordComparator : PersistentComparator<long,Record> 
 {
     public override int CompareMembers(Record m1, Record m2) 
     {
@@ -37,7 +36,7 @@ public class IntRecordComparator:PersistentComparator<long,Record>
     }
 }
 #else
-public class IntRecordComparator:PersistentComparator 
+public class IntRecordComparator : PersistentComparator 
 {
     public override int CompareMembers(IPersistent m1, IPersistent m2) 
     {
@@ -54,7 +53,7 @@ public class IntRecordComparator:PersistentComparator
 #endif
 
 #if USE_GENERICS
-public class StrRecordComparator:PersistentComparator<string,Record> 
+public class StrRecordComparator : PersistentComparator<string,Record> 
 {
     public override int CompareMembers(Record m1, Record m2) 
     {
@@ -67,7 +66,7 @@ public class StrRecordComparator:PersistentComparator<string,Record>
     }
 }
 #else
-public class StrRecordComparator:PersistentComparator 
+public class StrRecordComparator : PersistentComparator 
 {
     public override int CompareMembers(IPersistent m1, IPersistent m2) 
     {
@@ -85,12 +84,12 @@ public class TestIndex
 {
     internal const int nRecords = 100000;
     internal static int pagePoolSize = 0; // infine page pool
-	
+
     static public void  Main(System.String[] args)
     {
         int i;
         Storage db = StorageFactory.CreateStorage();
-		
+
         db.Open("testidx2.dbs", pagePoolSize);
         Root root = (Root) db.Root;
         if (root == null)
@@ -161,7 +160,6 @@ public class TestIndex
         }
         Debug.Assert(i == nRecords);
         System.Console.WriteLine("Elapsed time for iteration through " + (nRecords * 2) + " records: " + (DateTime.Now - start));
-
 
         Hashtable map = db.GetMemoryDump();
         Console.WriteLine("Memory usage");

@@ -14,8 +14,7 @@ namespace NachoDB
          Exclusive = 0,
          Inclusive = 1, 
          None = -1 // open interval
-    };    
-
+    }
 
     /// <summary>
     /// Interface of sorted collection.

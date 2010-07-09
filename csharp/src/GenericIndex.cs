@@ -10,7 +10,7 @@ namespace NachoDB
     {
         AscentOrder, 
         DescentOrder
-    };
+    }
     
     /// <summary> Interface of object index.
     /// Index is used to provide fast access to the object by key. 

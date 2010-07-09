@@ -7,8 +7,8 @@ namespace NachoDB.Impl
 #if USE_GENERICS
     using Link = NachoDB.Link<IPersistent>;
 #endif
-	
-    class RtreeR2Page:Persistent 
+
+    class RtreeR2Page : Persistent 
     {
         const int card = (Page.pageSize-ObjectHeader.Sizeof-4*3)/(8*4+4);
         const int minFill = card/2;

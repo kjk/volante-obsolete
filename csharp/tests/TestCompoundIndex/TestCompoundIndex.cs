@@ -10,7 +10,7 @@ public class TestCompoundIndex
     class Record : Persistent { 
         internal String strKey;
         internal int    intKey;
-    };
+    }
 
     static public void Main(string[] args) {	
         int i;

@@ -9,9 +9,9 @@ namespace NachoDB.Impl
     using NachoDB;
 
 #if USE_GENERICS
-    class Ttree<K,V>:PersistentCollection<V>, SortedCollection<K,V>  where V:class,IPersistent
+    class Ttree<K,V> : PersistentCollection<V>, SortedCollection<K,V> where V : class, IPersistent
 #else
-    class Ttree:PersistentCollection, SortedCollection 
+    class Ttree : PersistentCollection, SortedCollection 
 #endif
     {
 #if USE_GENERICS
