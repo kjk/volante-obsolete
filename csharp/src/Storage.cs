@@ -518,15 +518,6 @@ namespace NachoDB
         /// </summary>
         void  Close();
 
-        /// <summary> Set threshold for initiation of garbage collection. By default garbage collection is disable (threshold is set to
-        /// Int64.MaxValue). If it is set to the value different fro Long.MAX_VALUE, GC will be started each time when
-        /// delta between total size of allocated and deallocated objects exceeds specified threashold OR
-        /// after reaching end of allocation bitmap in allocator. 
-        /// </summary>
-        /// <param name="allocatedDelta"> delta between total size of allocated and deallocated object since last GC or storage opening
-        /// </param>
-        void SetGcThreshold(long allocatedDelta);
-
         /// <summary>Explicit start of garbage collector
         /// </summary>
         /// <returns>number of collected (deallocated) objects</returns>
@@ -566,7 +557,6 @@ namespace NachoDB
         /// <returns>OID assigned to the object</returns>
         int MakePersistent(IPersistent obj);
 
-        ///
         /// <summary>
         /// Set database property. This method should be invoked before opening database. 
         /// </summary>
@@ -599,12 +589,6 @@ namespace NachoDB
         /// <TD>Object allocation bitmap extension quantum. Memory is allocate by scanning bitmap. If there is no
         /// large enough hole, then database is extended by the value of dbDefaultExtensionQuantum. 
         /// This parameter should not be smaller than 64Kb.
-        /// </TD></TR>
-        /// <TR><TD><code>perst.gc.threshold</code></TD><TD>long</TD><TD>long.MaxValue</TD>
-        /// <TD>Threshold for initiation of garbage collection. 
-        /// If it is set to the value different from long.MaxValue, GC will be started each time 
-        /// when delta between total size of allocated and deallocated objects exceeds specified threashold OR                                                                                                                                                                                                                           
-        /// after reaching end of allocation bitmap in allocator.
         /// </TD></TR>
         /// <TR><TD><code>perst.code.generation</code></TD><TD>bool</TD><TD>true</TD>
         /// <TD>enable or disable dynamic generation of pack/unpack methods for persistent 
@@ -674,6 +658,19 @@ namespace NachoDB
 
         long ExtensionQuantum { get; set; }
 
+        /// <TD><code>perst.gc.threshold</code></TD><TD>long</TD><TD>long.MaxValue</TD>
+        /// <TD>Threshold for initiation of garbage collection. 
+        /// If it is set to the value different from long.MaxValue, GC will be started each time 
+        /// when delta between total size of allocated and deallocated objects exceeds specified threashold OR                                                                                                                                                                                                                           
+        /// after reaching end of allocation bitmap in allocator.</TD>
+        /// ---
+        /// <summary>Set threshold for initiation of garbage collection. By default garbage collection is disable (threshold is set to
+        /// Int64.MaxValue). If it is set to the value different fro Long.MAX_VALUE, GC will be started each time when
+        /// delta between total size of allocated and deallocated objects exceeds specified threashold OR
+        /// after reaching end of allocation bitmap in allocator. 
+        /// </summary>
+        /// <param>delta between total size of allocated and deallocated object since last GC or storage opening
+        /// </param>
         long GcThreshold { get; set; }
 
         bool BackgroundGc { get; set; }
@@ -693,7 +690,6 @@ namespace NachoDB
         /// </summary>summary>
         /// <param name="listener">new storage listener (may be null)</param>
         /// <returns>previous storage listener</returns>
-        ///
         StorageListener SetListener(StorageListener listener);
 
         /// <summary>

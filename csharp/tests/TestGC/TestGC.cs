@@ -43,7 +43,7 @@ public class TestGC {
             }
         }
         db.Open("testgc.dbs");
-        db.SetGcThreshold(1000000);
+        db.GcThreshold = 1000000;
         StorageRoot root = new StorageRoot();
 #if USE_GENERICS
         Index<string,PObject> strIndex = root.strIndex = db.CreateIndex<string,PObject>(true);

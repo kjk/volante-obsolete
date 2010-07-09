@@ -2295,11 +2295,6 @@ namespace NachoDB.Impl
             return pool.getPage(getGCPos(oid) & ~dbFlagsMask);
         }
 
-        public void SetGcThreshold(long maxAllocatedDelta) 
-        {
-            gcThreshold = maxAllocatedDelta;
-        }
-
         public int Gc() 
         { 
             lock (this) 
