@@ -27,7 +27,7 @@ namespace NachoDB.Impl
         /// Constructor of replication master file
         /// </summary>
         /// <param name="file">local file used to store data locally</param>
-        /// <param name="hosts">slave node hosts to which replicastion will be performed</param>
+        /// <param name="hosts">slave node hosts to which replication will be performed</param>
         /// <param name="ack">whether master should wait acknowledgment from slave node during trasanction commit</param>
         public ReplicationMasterFile(IFile file, string[] hosts, bool ack) 
         {         

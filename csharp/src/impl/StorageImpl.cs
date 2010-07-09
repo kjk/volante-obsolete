@@ -7,7 +7,7 @@ namespace NachoDB.Impl
     using System.Diagnostics;
     using System.Text;
     using NachoDB;
-	
+
     public class StorageImpl : Storage
     {
         public const int DEFAULT_PAGE_POOL_SIZE = 4*1024*1024;
@@ -38,7 +38,7 @@ namespace NachoDB.Impl
                     return (rootOid == 0) ? null : lookupObject(rootOid, null);
                 }
             }
-			
+
             set
             {
                 lock(this)
@@ -55,18 +55,17 @@ namespace NachoDB.Impl
                     modified = true;
                 }
             }
-			
         }
  
         /// <summary> Initialial database index size - increasing it reduce number of inde reallocation but increase
         /// initial database size. Should be set before openning connection.
         /// </summary>
         const int dbDefaultInitIndexSize = 1024;
-		
+
         /// <summary> Initial capacity of object hash
         /// </summary>
         const int dbDefaultObjectCacheInitSize = 1319;
-		
+
         /// <summary> Database extension quantum. Memory is allocate by scanning bitmap. If there is no
         /// large enough hole, then database is extended by the value of dbDefaultExtensionQuantum 
         /// This parameter should not be smaller than dbFirstUserId
@@ -75,7 +74,7 @@ namespace NachoDB.Impl
 
         const int dbDatabaseOffsetBits = 32; // up to 4 gigabyte
         const int dbLargeDatabaseOffsetBits = 40; // up to 1 terabyte
-		
+
         const int dbAllocationQuantumBits = 5;
         const int dbAllocationQuantum = 1 << dbAllocationQuantumBits;
         const int dbBitmapSegmentBits = Page.pageBits + 3 + dbAllocationQuantumBits;
@@ -115,8 +114,8 @@ namespace NachoDB.Impl
                 return pos;
             }
         }
-		
-        internal void  setPos(int oid, long pos)
+
+        internal void setPos(int oid, long pos)
         {
             lock (objectCache) 
             {
@@ -126,7 +125,7 @@ namespace NachoDB.Impl
                 pool.unfix(pg);
             }
         }
-		
+
         internal byte[] get(int oid)
         {
             long pos = getPos(oid);
@@ -136,7 +135,7 @@ namespace NachoDB.Impl
             }
             return pool.get(pos & ~ dbFlagsMask);
         }
-		
+
         internal Page getPage(int oid)
         {
             long pos = getPos(oid);
@@ -146,7 +145,7 @@ namespace NachoDB.Impl
             }
             return pool.getPage(pos & ~ dbFlagsMask);
         }
-		
+
         internal Page putPage(int oid)
         {
             lock (objectCache) 
@@ -167,15 +166,14 @@ namespace NachoDB.Impl
                 return pool.putPage(pos & ~ dbFlagsMask);
             }
         }
-		
-		
+
         internal int allocatePage()
         {
             int oid = allocateId();
             setPos(oid, allocate(Page.pageSize, 0) | dbPageObjectFlag | dbModifiedFlag);
             return oid;
         }
-		
+
         public void  deallocateObject(IPersistent obj)
         {
             lock(this)
@@ -211,7 +209,7 @@ namespace NachoDB.Impl
                 }
             }
         }
-    		
+
         internal void  freePage(int oid)
         {
             long pos = getPos(oid);
@@ -226,7 +224,7 @@ namespace NachoDB.Impl
             }
             freeId(oid);
         }
-		
+
         virtual protected bool isDirty()
         { 
              return header.dirty;
@@ -261,7 +259,7 @@ namespace NachoDB.Impl
                         |= 1 << ((oid >> dbHandlesPerPageBits) & 31);
                     return oid;
                 }
-			
+
                 if (currIndexSize >= header.root[curr].indexSize)
                 {
                     int oldIndexSize = header.root[curr].indexSize;
@@ -295,7 +293,7 @@ namespace NachoDB.Impl
                 return oid;
             }
         }
-		
+
         internal void  freeId(int oid)
         {
             lock (objectCache) 
@@ -304,15 +302,15 @@ namespace NachoDB.Impl
                 header.root[1 - currIndex].freeList = oid;
             }
         }
-		
+
         internal static byte[] firstHoleSize = new byte[]{8, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 6, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 7, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 6, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0};
         internal static byte[] lastHoleSize = new byte[]{8, 7, 6, 6, 5, 5, 5, 5, 4, 4, 4, 4, 4, 4, 4, 4, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
         internal static byte[] maxHoleSize = new byte[]{8, 7, 6, 6, 5, 5, 5, 5, 4, 4, 4, 4, 4, 4, 4, 4, 4, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 5, 4, 3, 3, 2, 2, 2, 2, 3, 2, 2, 2, 2, 2, 2, 2, 4, 3, 2, 2, 2, 2, 2, 2, 3, 2, 2, 2, 2, 2, 2, 2, 6, 5, 4, 4, 3, 3, 3, 3, 3, 2, 2, 2, 2, 2, 2, 2, 4, 3, 2, 2, 2, 1, 1, 1, 3, 2, 1, 1, 2, 1, 1, 1, 5, 4, 3, 3, 2, 2, 2, 2, 3, 2, 1, 1, 2, 1, 1, 1, 4, 3, 2, 2, 2, 1, 1, 1, 3, 2, 1, 1, 2, 1, 1, 1, 7, 6, 5, 5, 4, 4, 4, 4, 3, 3, 3, 3, 3, 3, 3, 3, 4, 3, 2, 2, 2, 2, 2, 2, 3, 2, 2, 2, 2, 2, 2, 2, 5, 4, 3, 3, 2, 2, 2, 2, 3, 2, 1, 1, 2, 1, 1, 1, 4, 3, 2, 2, 2, 1, 1, 1, 3, 2, 1, 1, 2, 1, 1, 1, 6, 5, 4, 4, 3, 3, 3, 3, 3, 2, 2, 2, 2, 2, 2, 2, 4, 3, 2, 2, 2, 1, 1, 1, 3, 2, 1, 1, 2, 1, 1, 1, 5, 4, 3, 3, 2, 2, 2, 2, 3, 2, 1, 1, 2, 1, 1, 1, 4, 3, 2, 2, 2, 1, 1, 1, 3, 2, 1, 1, 2, 1, 1, 0};
         internal static byte[] maxHoleOffset = new byte[]{0, 1, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 0, 1, 5, 5, 5, 5, 5, 5, 0, 5, 5, 5, 5, 5, 5, 5, 0, 1, 2, 2, 0, 3, 3, 3, 0, 1, 6, 6, 0, 6, 6, 6, 0, 1, 2, 2, 0, 6, 6, 6, 0, 1, 6, 6, 0, 6, 6, 6, 0, 1, 2, 2, 3, 3, 3, 3, 0, 1, 4, 4, 0, 4, 4, 4, 0, 1, 2, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 5, 0, 1, 2, 2, 0, 3, 3, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 2, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 7, 0, 1, 2, 2, 3, 3, 3, 3, 0, 4, 4, 4, 4, 4, 4, 4, 0, 1, 2, 2, 0, 5, 5, 5, 0, 1, 5, 5, 0, 5, 5, 5, 0, 1, 2, 2, 0, 3, 3, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 2, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 6, 0, 1, 2, 2, 3, 3, 3, 3, 0, 1, 4, 4, 0, 4, 4, 4, 0, 1, 2, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 5, 0, 1, 2, 2, 0, 3, 3, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 2, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 0};
-		
+
         internal const int pageBits = Page.pageSize * 8;
         internal const int inc = Page.pageSize / dbAllocationQuantum / 8;
-		
+
         internal static void  memset(Page pg, int offs, int pattern, int len)
         {
             byte[] arr = pg.data;
@@ -322,7 +320,7 @@ namespace NachoDB.Impl
                 arr[offs++] = pat;
             }
         }
-		
+
         public long UsedSize
         { 
             get       
@@ -346,14 +344,14 @@ namespace NachoDB.Impl
                 header.root[1 - currIndex].size = size;
             }
         }
-		
+
         internal class Location
         {
             internal long pos;
             internal long size;
             internal Location next;
         }
-		
+
         internal bool wasReserved(long pos, long size)
         {
             for (Location location = reservedChain; location != null; location = location.next)
@@ -365,7 +363,7 @@ namespace NachoDB.Impl
             }
             return false;
         }
-		
+
         internal void  reserveLocation(long pos, long size)
         {
             Location location = new Location();
@@ -374,12 +372,12 @@ namespace NachoDB.Impl
             location.next = reservedChain;
             reservedChain = location;
         }
-		
+
         internal void  commitLocation()
         {
             reservedChain = reservedChain.next;
         }
-		
+
         Page putBitmapPage(int i) 
         { 
             return putPage(getBitmapPageId(i));
@@ -390,7 +388,6 @@ namespace NachoDB.Impl
             return getPage(getBitmapPageId(i));
         }
 
-		
         internal long allocate(long size, int oid)
         {
             lock (objectCache) 
@@ -413,10 +410,10 @@ namespace NachoDB.Impl
                 int freeBitmapPage = 0;
                 int  curr = 1 - currIndex;
                 Page pg;
-			
+
                 lastPage = header.root[curr].bitmapEnd - dbBitmapId;
                 usedSize += size;
-			
+
                 if (alignment == 0)
                 {
                     firstPage = currPBitmapPage;
@@ -427,7 +424,7 @@ namespace NachoDB.Impl
                     firstPage = currRBitmapPage;
                     offs = currRBitmapOffs;
                 }
-			
+
                 while (true)
                 {
                     if (alignment == 0) 
@@ -797,7 +794,7 @@ namespace NachoDB.Impl
                 }
             }
         }
-		
+
         void fillBitmap(long adr, int len) 
         { 
             while (true) 
@@ -819,8 +816,7 @@ namespace NachoDB.Impl
                 }
             }
         }
-		
-		
+
         internal void  free(long pos, long size)
         {
             lock (objectCache) 
@@ -832,10 +828,10 @@ namespace NachoDB.Impl
                 int offs = (int) (quantNo & (Page.pageSize * 8 - 1)) >> 3;
                 Page pg = putBitmapPage(pageId);
                 int bitOffs = (int) quantNo & 7;
-			
+
                 allocatedDelta -= (long)objBitSize << dbAllocationQuantumBits;
                 usedSize -= (long)objBitSize << dbAllocationQuantumBits;
-			
+
                 if ((pos & (Page.pageSize - 1)) == 0 && size >= Page.pageSize)
                 {
                     if (pageId == currPBitmapPage && offs < currPBitmapOffs)
@@ -848,7 +844,7 @@ namespace NachoDB.Impl
                     currRBitmapOffs = offs;
                 }
                 bitmapPageAvailableSpace[pageId] = System.Int32.MaxValue;
-			
+
                 if (objBitSize > 8 - bitOffs)
                 {
                     objBitSize -= 8 - bitOffs;
@@ -875,8 +871,8 @@ namespace NachoDB.Impl
                 pool.unfix(pg);
             }
         }
-		
-        internal void  cloneBitmap(long pos, long size)
+
+        internal void cloneBitmap(long pos, long size)
         {
             lock (objectCache) 
             {
@@ -894,7 +890,7 @@ namespace NachoDB.Impl
                     allocate(Page.pageSize, oid);
                     cloneBitmap(pos & ~ dbFlagsMask, Page.pageSize);
                 }
-			
+
                 if (objBitSize > 8 - bitOffs)
                 {
                     objBitSize -= 8 - bitOffs;
@@ -916,7 +912,7 @@ namespace NachoDB.Impl
                 }
             }
         }
-		
+
         public void Open(String filePath)
         {
             Open(filePath, DEFAULT_PAGE_POOL_SIZE);
@@ -953,7 +949,6 @@ namespace NachoDB.Impl
             }
             return new LruObjectCache(objectCacheSize);
         }
-        
 
         public void Open(String filePath, int pagePoolSize, String cipherKey)
         {
@@ -986,7 +981,7 @@ namespace NachoDB.Impl
                     indexSize = dbFirstUserId;
                 }
                 indexSize = (indexSize + dbHandlesPerPage - 1) & ~ (dbHandlesPerPage - 1);
-				
+
                 dirtyPagesMap = new int[dbDirtyPageBitmapSize / 4 + 1];
                 gcThreshold = Int64.MaxValue;
                 backgroundGcMonitor = new object();
@@ -1011,12 +1006,12 @@ namespace NachoDB.Impl
                 transactionLock = new PersistentResource();
 
                 modified = false;
-				
+
                 objectCache =  createObjectCache(cacheKind, pagePoolSize, objectCacheInitSize);
                 
                 classDescMap = new Hashtable();
                 descList = null;
-				
+
 #if SUPPORT_RAW_TYPE
                 objectFormatter = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
 #endif                
@@ -1051,16 +1046,16 @@ namespace NachoDB.Impl
                     header.root[1].indexUsed = dbFirstUserId;
                     header.root[1].freeList = 0;
                     used += indexSize * 8L;
-					
+
                     header.root[0].shadowIndex = header.root[1].index;
                     header.root[1].shadowIndex = header.root[0].index;
                     header.root[0].shadowIndexSize = indexSize;
                     header.root[1].shadowIndexSize = indexSize;
-					
+
                     int bitmapPages = (int) ((used + Page.pageSize * (dbAllocationQuantum * 8 - 1) - 1) / (Page.pageSize * (dbAllocationQuantum * 8 - 1)));
                     long bitmapSize = (long)bitmapPages * Page.pageSize;
                     int usedBitmapSize = (int) ((used + bitmapSize) >> (dbAllocationQuantumBits + 3));
-					
+
                     for (i = 0; i < bitmapPages; i++) 
                     { 
                         pg = pool.putPage(used + (long)i*Page.pageSize);
@@ -1092,7 +1087,7 @@ namespace NachoDB.Impl
                     header.root[1].size = used;
                     usedSize = used;
                     committedIndexSize = currIndexSize = dbFirstUserId;
-					
+
                     pool.write(header.root[1].index, index);
                     pool.write(header.root[0].index, index);
 
@@ -1137,7 +1132,7 @@ namespace NachoDB.Impl
                         pg = pool.putPage(0);
                         header.pack(pg.data);
                         pool.unfix(pg);
-						
+
                         pool.copy(header.root[1-curr].index,    
                                   header.root[curr].index, 
                                   (header.root[curr].indexUsed * 8L + Page.pageSize - 1) & ~ (Page.pageSize - 1));
@@ -1169,7 +1164,7 @@ namespace NachoDB.Impl
         { 
             return opened;
         }
-		
+
         internal static void  checkIfFinal(ClassDescriptor desc)
         {
             System.Type cls = desc.cls;
@@ -1186,8 +1181,7 @@ namespace NachoDB.Impl
                 }
             }
         }
-		
-		
+
         internal void  reloadScheme()
         {
             classDescMap.Clear();
@@ -1226,7 +1220,6 @@ namespace NachoDB.Impl
 #endif
         }
  
-
         internal void generateSerializers() 
         {
             for (ClassDescriptor desc = descList; desc != null; desc = desc.next) 
@@ -1239,7 +1232,7 @@ namespace NachoDB.Impl
         {
             obj.AssignOid(this, oid, false);
         }
-			
+
         internal void registerClassDescriptor(ClassDescriptor desc) 
         { 
             classDescMap[desc.cls] = desc;
@@ -1250,7 +1243,6 @@ namespace NachoDB.Impl
             header.root[1-currIndex].classDescList = desc.Oid;
             modified = true;
         }      
-
 
         internal ClassDescriptor getClassDescriptor(System.Type cls)
         {
@@ -1263,7 +1255,6 @@ namespace NachoDB.Impl
             }
             return desc;
         }
-		    
 
         public void Commit()
         {
@@ -1374,7 +1365,7 @@ namespace NachoDB.Impl
                     j += 8;
                 }
                 while (--n != 0);
-		
+
                 pool.unfix(srcIndex);
                 pool.unfix(dstIndex);
             }
@@ -1415,7 +1406,7 @@ namespace NachoDB.Impl
             header.pack(pg.data);
             pool.unfix(pg);
             pool.flush();
-	
+
             header.root[1-curr].size = header.root[curr].size;
             header.root[1-curr].indexUsed = currIndexSize;
             header.root[1-curr].freeList = header.root[curr].freeList;
@@ -1423,7 +1414,7 @@ namespace NachoDB.Impl
             header.root[1-curr].rootObject = header.root[curr].rootObject;
             header.root[1-curr].classDescList = header.root[curr].classDescList;
             header.root[1-curr].bitmapExtent = header.root[curr].bitmapExtent;
-	
+
             if (currIndexSize == 0 || newIndexSize != oldIndexSize)
             {
                 if (currIndexSize == 0)
@@ -1471,7 +1462,6 @@ namespace NachoDB.Impl
             committedIndexSize = currIndexSize;
         }
         
-		
         public void Rollback()
         {
             lock(this)
@@ -1526,14 +1516,13 @@ namespace NachoDB.Impl
             header.dirty = true;
             usedSize = header.root[curr].size;
             currIndexSize = committedIndexSize;
-				
+
             currRBitmapPage = currPBitmapPage = 0;
             currRBitmapOffs = currPBitmapOffs = 0;
-				
+
             reloadScheme();
         }
         
-		
         private void memset(byte[] arr, int off, int len, byte val) 
         { 
             while (--len >= 0) 
@@ -1848,7 +1837,6 @@ namespace NachoDB.Impl
             }
         }
 
-
         public SpatialIndex<T> CreateSpatialIndex<T>() where T:class,IPersistent
         {
             lock(this)
@@ -1876,7 +1864,7 @@ namespace NachoDB.Impl
                 return index;
             }
         }
-		
+
         public SortedCollection<K,V> CreateSortedCollection<K,V>(PersistentComparator<K,V> comparator, bool unique) where V:class,IPersistent
         {
             if (!opened) 
@@ -1943,7 +1931,7 @@ namespace NachoDB.Impl
                 return index;
             }
         }
-		
+
         public MultiFieldIndex<T> CreateFieldIndex<T>(string[] fieldNames, bool unique) where T:class,IPersistent
         {
             lock(this)
@@ -1972,32 +1960,32 @@ namespace NachoDB.Impl
         {
             return CreateLink<T>(8);
         }
-		
+
         public Link<T> CreateLink<T>(int initialSize) where T:class,IPersistent
         {
             return new LinkImpl<T>(initialSize);
         }
-		
+
         internal Link<T> ConstructLink<T>(IPersistent[] arr, IPersistent owner) where T:class,IPersistent
         {
             return new LinkImpl<T>(arr, owner);
         }
-		
+
         public PArray<T> CreateArray<T>() where T:class,IPersistent
         {
             return CreateArray<T>(8);
         }
-		
+
         public PArray<T> CreateArray<T>(int initialSize) where T:class,IPersistent
         {
             return new PArrayImpl<T>(this, initialSize);
         }
-		
+
         internal PArray<T> ConstructArray<T>(int[] arr, IPersistent owner) where T:class,IPersistent
         {
             return new PArrayImpl<T>(this, arr, owner);
         }
-		
+
         public Relation<M,O> CreateRelation<M,O>(O owner) where M:class,IPersistent where O:class,IPersistent
         {
             return new RelationImpl<M,O>(owner);
@@ -2022,7 +2010,7 @@ namespace NachoDB.Impl
         {
             return CreateLink<IPersistent>(8);
         }
-		
+
         public Link<IPersistent> CreateLink(int initialSize)
         {
             return CreateLink<IPersistent>(initialSize);
@@ -2032,7 +2020,7 @@ namespace NachoDB.Impl
         {
             return CreateArray<IPersistent>(8);
         }
-		
+
         public PArray<IPersistent> CreateArray(int initialSize)
         {
             return CreateArray<IPersistent>(initialSize);
@@ -2094,7 +2082,7 @@ namespace NachoDB.Impl
                 return index;
             }
         }
-		
+
         public SpatialIndexR2 CreateSpatialIndexR2() 
         {
             lock(this)
@@ -2108,7 +2096,7 @@ namespace NachoDB.Impl
                 return index;
             }
         }
-		
+
         public SortedCollection CreateSortedCollection(PersistentComparator comparator, bool unique) 
         {
             if (!opened) 
@@ -2175,7 +2163,7 @@ namespace NachoDB.Impl
                 return index;
             }
         }
-		
+
         public MultiFieldIndex CreateFieldIndex(System.Type type, String[] fieldNames, bool unique)
         {
             lock(this)
@@ -2204,22 +2192,22 @@ namespace NachoDB.Impl
         {
             return CreateLink(8);
         }
-		
+
         public Link CreateLink(int initialSize)
         {
             return new LinkImpl(initialSize);
         }
-		
+
         public PArray CreateArray()
         {
             return CreateArray(8);
         }
-		
+
         public PArray CreateArray(int initialSize)
         {
             return new PArrayImpl(this, initialSize);
         }
-		
+
         public Relation CreateRelation(IPersistent owner)
         {
             return new RelationImpl(owner);
@@ -2325,7 +2313,6 @@ namespace NachoDB.Impl
 #endif
         }
 
-
         private void mark()
         {
             // Console.WriteLine("Start GC, allocatedDelta=" + allocatedDelta + ", header[" + currIndex + "].size=" + header.root[currIndex].size + ", gcTreshold=" + gcThreshold);
@@ -2386,7 +2373,6 @@ namespace NachoDB.Impl
                 } while (existsNotMarkedObjects);
             }
         }
-
 
         private int sweep() 
         {
@@ -2526,7 +2512,6 @@ namespace NachoDB.Impl
                 return sweep();
             }
         }
- 
 
         public Hashtable GetMemoryDump() 
         { 
@@ -2877,7 +2862,6 @@ namespace NachoDB.Impl
             return offs;
         }
 
- 
         internal class ThreadTransactionContext 
         {
             internal int       nested;
@@ -3027,7 +3011,6 @@ namespace NachoDB.Impl
             }
         }
 
-
         public void RollbackThreadTransaction()
         {
             ThreadTransactionContext ctx = TransactionContext;
@@ -3070,8 +3053,6 @@ namespace NachoDB.Impl
                 }
             }
         }
-	    
-
 #else
         public virtual void BeginThreadTransaction(TransactionMode mode)
         {
@@ -3105,7 +3086,6 @@ namespace NachoDB.Impl
                 }
             }
         }
-        
 
         public virtual void EndThreadTransaction(int maxDelay)
         {
@@ -3265,7 +3245,7 @@ namespace NachoDB.Impl
             dirtyPagesMap = null;
             descList = null;
         }
-		
+
         private bool getBooleanValue(Object val) 
         { 
             if (val is bool)  
@@ -3298,7 +3278,6 @@ namespace NachoDB.Impl
                 throw new StorageError(StorageError.ErrorCode.BAD_PROPERTY_VALUE);            
             }
         }
-
      
         public void SetProperties(System.Collections.Specialized.NameValueCollection props) 
         {
@@ -3431,7 +3410,6 @@ namespace NachoDB.Impl
             this.listener = listener;
             return prevListener;
         }
-
     
         public IPersistent GetObjectByOID(int oid)
         {
@@ -3441,8 +3419,6 @@ namespace NachoDB.Impl
             }
         }
 
-    
-        
         public void modifyObject(IPersistent obj) 
         {
             lock (this) 

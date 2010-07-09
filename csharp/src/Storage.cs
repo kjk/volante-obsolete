@@ -6,26 +6,26 @@ namespace NachoDB
     public enum TransactionMode
     { 
         /// <summary>
-        /// Exclusive per-thread transaction: each thread access database in exclusive mode
+        /// Exclusive per-thread transaction: each thread accesses database in exclusive mode
         /// </summary>
         Exclusive,
         /// <summary>
         /// Cooperative mode; all threads share the same transaction. Commit will commit changes made
         /// by all threads. To make this schema work correctly, it is necessary to ensure (using locking)
         /// that no thread is performing update of the database while another one tries to perform commit.
-        /// Also please notice that rollback will undo the work of all threads. 
+        /// Rollback will undo the work of all threads. 
         /// </summary>
         Cooperative,
         /// <summary>
         /// Serializable per-thread transaction. Unlike exclusive mode, threads can concurrently access database, 
-        /// but effect will be the same as them work exclusively.
+        /// but effect will be the same as them working exclusively.
         /// To provide such behavior, programmer should lock all access objects (or use hierarchical locking).
         /// When object is updated, exclusive lock should be set, otherwise shared lock is enough.
         /// Lock should be preserved until the end of transaction.
         /// </summary>
         Serializable,
         /// <summary>
-        /// Read only transaction which can be started at replicastion slave node.
+        /// Read only transaction which can be started at replication slave node.
         /// It runs concurrently with receiving updates from master node.
         /// </summary>
         ReplicationSlave
@@ -803,7 +803,6 @@ namespace NachoDB
         /// Get size of the database
         /// </summary>
         long DatabaseSize {get;}
-
 
         // Internal methods
         void  deallocateObject(IPersistent obj);
