@@ -27,7 +27,8 @@ public class TestR2 : Persistent
         DateTime start = DateTime.Now;
         if (args.Length > 0 && "noflush" == args[0]) 
         { 
-            db.SetProperty("perst.file.noflush", true);
+            // TODO: probably wrong, has to be done after Open()
+            db.FileNoFlush = true;
         }
         db.Open("testr2.dbs");
         TestR2 root = (TestR2)db.Root;

@@ -2,6 +2,7 @@ namespace NachoDB
 {
     using System;
     using System.Collections;
+    using System.Text;
 
     public enum TransactionMode
     { 
@@ -664,20 +665,33 @@ namespace NachoDB
         /// </remarks>
         /// <param name="name">name of the property</param>
         /// <param name="val">value of the property</param>
-        ///
-        void SetProperty(String name, Object val);
 
         bool AlternativeBtree { set; }
+
         bool SerializeTransientObjects { set; }
 
-        ///
-        /// <summary>Set database properties. This method should be invoked before opening database. 
-        /// For list of supported properties please see <see cref="SetProperty">setProperty</see>. 
-        /// All not recognized properties are ignored.
-        /// </summary>
-        /// <param name="props">collections with storage properties</param>
-        ///
-        void SetProperties(System.Collections.Specialized.NameValueCollection props);
+        int  ObjectIndexInitSize { set; }
+
+        int  ObjectCacheInitSize { set; }
+
+        string CacheKind { set; }
+
+        long ExtensionQuantum { set; }
+
+        long GcThreshold { set; }
+
+        bool BackgroundGc { set; }
+
+        bool CodeGeneration { set; }
+
+        bool FileReadOnly { set; }
+
+        bool FileNoFlush { set; }
+
+        bool ReplicationAck { set; }
+
+        Encoding StringEncoding { set; }
+
 
         /// <summary>
         /// Set storage listener.

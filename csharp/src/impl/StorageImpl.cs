@@ -228,8 +228,7 @@ namespace NachoDB.Impl
         virtual protected bool isDirty()
         { 
              return header.dirty;
-        } 	
-
+        }
 
         internal void setDirty() 
         {
@@ -294,7 +293,7 @@ namespace NachoDB.Impl
             }
         }
 
-        internal void  freeId(int oid)
+        internal void freeId(int oid)
         {
             lock (objectCache) 
             {
@@ -1287,6 +1286,7 @@ namespace NachoDB.Impl
             int newIndexSize = header.root[1-curr].indexSize;
             int nPages = committedIndexSize >> dbHandlesPerPageBits;
             Page pg;
+
             if (newIndexSize > oldIndexSize)
             {
                 cloneBitmap(header.root[curr].index, oldIndexSize*8L);
@@ -1305,6 +1305,7 @@ namespace NachoDB.Impl
                 header.root[1-curr].shadowIndexSize = newIndexSize;
                 free(header.root[curr].index, oldIndexSize*8L);
             }
+
             for (i = 0; i < nPages; i++)
             {
                 if ((map[i >> 5] & (1 << (i & 31))) != 0)
@@ -1369,6 +1370,7 @@ namespace NachoDB.Impl
                 pool.unfix(srcIndex);
                 pool.unfix(dstIndex);
             }
+
             for (i = 0; i <= nPages; i++)
             {
                 if ((map[i >> 5] & (1 << (i & 31))) != 0)
@@ -1381,6 +1383,7 @@ namespace NachoDB.Impl
                     pool.unfix(pg);
                 }
             }
+
             if (currIndexSize > committedIndexSize)
             {
                 long page = (header.root[1-curr].index + committedIndexSize * 8L) & ~ (Page.pageSize - 1);
@@ -1756,6 +1759,7 @@ namespace NachoDB.Impl
                         }
                     }
                 }
+
                 for (i = 0; i < nObjects; i++) 
                 {
                     long pos = index[i];
@@ -1850,7 +1854,7 @@ namespace NachoDB.Impl
                 return index;
             }
         }
-		
+
         public SpatialIndexR2<T> CreateSpatialIndexR2<T>() where T:class,IPersistent
         {
             lock(this)
@@ -2067,7 +2071,6 @@ namespace NachoDB.Impl
                 return index;
             }
         }
-
 
         public SpatialIndex CreateSpatialIndex() 
         {
@@ -3161,7 +3164,6 @@ namespace NachoDB.Impl
             }
         }
 
-
         public void RollbackThreadTransaction()
         {
             ThreadTransactionContext ctx = TransactionContext;
@@ -3202,7 +3204,6 @@ namespace NachoDB.Impl
                 }
             }
         }
-	    
 
 #endif
 
@@ -3246,93 +3247,6 @@ namespace NachoDB.Impl
             descList = null;
         }
 
-        private bool getBooleanValue(Object val) 
-        { 
-            if (val is bool)  
-            { 
-                return (bool)val;
-            }
-            else if (val is string) 
-            {
-                return bool.Parse((string)val);
-            }
-            throw new StorageError(StorageError.ErrorCode.BAD_PROPERTY_VALUE);
-        }
-
-        private long getIntegerValue(Object val) 
-        { 
-            if (val is int)  
-            {
-                return (int)val;
-            } 
-            else if (val is long) 
-            {
-                return (long)val;
-            } 
-            else if (val is string) 
-            { 
-                return long.Parse((string)val);
-            } 
-            else 
-            {                                                                  
-                throw new StorageError(StorageError.ErrorCode.BAD_PROPERTY_VALUE);            
-            }
-        }
-     
-        public void SetProperties(System.Collections.Specialized.NameValueCollection props) 
-        {
-            string val;
-            if ((val = props["perst.object.cache.init.size"]) != null) 
-            { 
-                objectCacheInitSize = (int)getIntegerValue(val);
-            }
-            if ((val = props["perst.object.cache.kind"]) != null) 
-            { 
-                cacheKind = val;
-            }
-            if ((val = props["perst.object.index.init.size"]) != null) 
-            { 
-                initIndexSize = (int)getIntegerValue(val);
-            }
-            if ((val = props["perst.extension.quantum"]) != null) 
-            { 
-                extensionQuantum = getIntegerValue(val);
-            } 
-            if ((val = props["perst.gc.threshold"]) != null) 
-            { 
-                gcThreshold = getIntegerValue(val);
-            }
-            if ((val = props["perst.code.generation"]) != null) 
-            { 
-                enableCodeGeneration = getBooleanValue(val);
-            }
-            if ((val = props["perst.file.readonly"]) != null) 
-            { 
-                readOnly = getBooleanValue(val);
-            }
-            if ((val = props["perst.file.noflush"]) != null) 
-            { 
-                noFlush = getBooleanValue(val);
-                if (opened) 
-                { 
-                    pool.file.NoFlush = noFlush;
-                }
-            }
-
-            if ((val = props["perst.background.gc"]) != null) 
-            { 
-                backgroundGc = getBooleanValue(val);
-            }
-            if ((val = props["perst.string.encoding"]) != null) 
-            {
-                encoding = Encoding.GetEncoding(val);
-            }
-            if ((val = props["perst.replication.ack"]) != null) 
-            {
-                replicationAck = getBooleanValue(val);
-            }
-        }
-
         public bool AlternativeBtree 
         {
             set
@@ -3349,59 +3263,105 @@ namespace NachoDB.Impl
             }
         }
 
-        public void SetProperty(string name, object val)
+        // TODO: needs tests
+        public int ObjectIndexInitSize
         {
-            if (name.Equals("perst.object.cache.init.size")) 
-            { 
-                objectCacheInitSize = (int)getIntegerValue(val);
-            } 
-            else if (name.Equals("perst.object.cache.kind")) 
-            { 
-               cacheKind = (string)val;
-            } 
-            else if (name.Equals("perst.object.index.init.size")) 
-            { 
-                initIndexSize = (int)getIntegerValue(val);
-            } 
-            else if (name.Equals("perst.extension.quantum")) 
-            { 
-                extensionQuantum = getIntegerValue(val);
-            } 
-            else if (name.Equals("perst.gc.threshold")) 
-            { 
-                gcThreshold = getIntegerValue(val);
+            set
+            {
+                initIndexSize = value;
             }
-            else if (name.Equals("perst.code.generation")) 
-            { 
-                enableCodeGeneration = getBooleanValue(val);
+        }        
+
+        // TODO: needs tests
+        public long ExtensionQuantum
+        {
+            set
+            {
+                extensionQuantum = value;
             }
-            else if (name.Equals("perst.file.readonly")) 
-            { 
-                readOnly = getBooleanValue(val);
+        }
+
+        // TODO: needs tests
+        public long GcThreshold
+        {
+            set
+            {
+                gcThreshold = value;
             }
-            else if (name.Equals("perst.file.noflush")) 
-            { 
-                noFlush = getBooleanValue(val);
-                if (opened) 
-                { 
-                    pool.file.NoFlush = noFlush;
+        }
+
+        // TODO: needs tests
+        public bool CodeGeneration
+        {
+            set
+            {
+                enableCodeGeneration = value;
+            }
+        }
+
+        // TODO: needs tests
+        public bool FileReadOnly
+        {
+            set
+            {
+                readOnly = value;
+            }
+        }
+
+        // TODO: needs tests
+        public bool FileNoFlush
+        {
+            set
+            {
+                if (opened)
+                {
+                    pool.file.NoFlush = value;
                 }
-            }   
-            else if (name.Equals("perst.background.gc")) 
-            {
-                backgroundGc = getBooleanValue(val);
             }
-            else if (name.Equals("perst.string.encoding")) 
+        }
+
+        // TODO: needs tests
+        public bool BackgroundGc
+        {
+            set
             {
-                encoding = Encoding.GetEncoding((string)val);
+                backgroundGc = value;
             }
-            else if (name.Equals("perst.replication.ack")) 
+        }
+
+        public bool ReplicationAck
+        {
+            set
             {
-                replicationAck = getBooleanValue(val);
+                replicationAck = value;
             }
-            else 
-            { 
-                throw new StorageError(StorageError.ErrorCode.NO_SUCH_PROPERTY);
+        }
+
+        // TODO: needs tests
+        public int ObjectCacheInitSize
+        {
+            set
+            {
+                objectCacheInitSize = value;
+            }
+        }
+
+        // TODO: should be string?
+        public Encoding StringEncoding
+        {
+            set
+            {
+                encoding = value;
+            }
+        }
+
+        // TODO: change to an enum
+        //TODO: needs tests
+        public string CacheKind
+        {
+            set
+            {
+                cacheKind = value;
             }
         }
 
@@ -3807,6 +3767,7 @@ namespace NachoDB.Impl
                         }
                     }
                     break;
+
                 case ClassDescriptor.FieldType.tpArrayOfValue:
                     len = Bytes.unpack4(body, offs);
                     offs += 4;
@@ -3982,7 +3943,7 @@ namespace NachoDB.Impl
                     val = (uint)Bytes.unpack4(body, offs);
                     offs += 4;
                     break;
-					
+
                 case ClassDescriptor.FieldType.tpLong: 
                     val = Bytes.unpack8(body, offs);
                     offs += 8;
@@ -3992,17 +3953,17 @@ namespace NachoDB.Impl
                     val = (ulong)Bytes.unpack8(body, offs);
                     offs += 8;
                     break;
-					
+
                 case ClassDescriptor.FieldType.tpFloat: 
                     val = Bytes.unpackF4(body, offs);
                     offs += 4;
                     break;
-					
+
                 case ClassDescriptor.FieldType.tpDouble: 
                     val = Bytes.unpackF8(body, offs);
                     offs += 8;
                     break;
-					
+
                 case ClassDescriptor.FieldType.tpDecimal:
                     val = Bytes.unpackDecimal(body, offs);
                     offs += 16;
@@ -4020,12 +3981,12 @@ namespace NachoDB.Impl
                     val = str;
                     break;
                 }
-					
+
                 case ClassDescriptor.FieldType.tpDate: 
                     val = Bytes.unpackDate(body, offs);
                     offs += 8;
                     break;
-					
+
                 case ClassDescriptor.FieldType.tpObject: 
                     if (fd == null) 
                     { 
@@ -4043,12 +4004,12 @@ namespace NachoDB.Impl
                     val = fd.field.GetValue(val);
                     offs = unpackObject(val, fd.valueDesc, recursiveLoading, body, offs, po);
                     break;
-					
+
 #if SUPPORT_RAW_TYPE
                 case ClassDescriptor.FieldType.tpRaw: 
                     offs = unpackRawValue(body, offs, out val, recursiveLoading);
                     break;
-#endif					
+#endif
                 case ClassDescriptor.FieldType.tpArrayOfByte: 
                     len = Bytes.unpack4(body, offs);
                     offs += 4;
@@ -4082,7 +4043,7 @@ namespace NachoDB.Impl
                         val = arr;
                     }
                     break;
-					
+
                 case ClassDescriptor.FieldType.tpArrayOfBoolean: 
                     len = Bytes.unpack4(body, offs);
                     offs += 4;
@@ -4100,7 +4061,7 @@ namespace NachoDB.Impl
                         val = arr;
                     }
                     break;
-					
+
                 case ClassDescriptor.FieldType.tpArrayOfShort: 
                     len = Bytes.unpack4(body, offs);
                     offs += 4;
@@ -4138,7 +4099,7 @@ namespace NachoDB.Impl
                         val = arr;
                     }
                     break;
-					
+
                 case ClassDescriptor.FieldType.tpArrayOfChar: 
                     len = Bytes.unpack4(body, offs);
                     offs += 4;
@@ -4215,7 +4176,7 @@ namespace NachoDB.Impl
                         val = arr;
                     }
                     break;
-					
+
                 case ClassDescriptor.FieldType.tpArrayOfLong: 
                     len = Bytes.unpack4(body, offs);
                     offs += 4;
@@ -4253,7 +4214,7 @@ namespace NachoDB.Impl
                         val = arr;
                     }
                     break;
-					
+
                 case ClassDescriptor.FieldType.tpArrayOfFloat: 
                     len = Bytes.unpack4(body, offs);
                     offs += 4;
@@ -4272,7 +4233,7 @@ namespace NachoDB.Impl
                         val = arr;
                     }
                     break;
-					
+
                 case ClassDescriptor.FieldType.tpArrayOfDouble: 
                     len = Bytes.unpack4(body, offs);
                     offs += 4;
@@ -4291,7 +4252,7 @@ namespace NachoDB.Impl
                         val = arr;
                     }
                     break;
-					
+
                 case ClassDescriptor.FieldType.tpArrayOfDate: 
                     len = Bytes.unpack4(body, offs);
                     offs += 4;
@@ -4310,7 +4271,7 @@ namespace NachoDB.Impl
                         val = arr;
                     }
                     break;
-					
+
                 case ClassDescriptor.FieldType.tpArrayOfString: 
                     len = Bytes.unpack4(body, offs);
                     offs += 4;
@@ -4328,7 +4289,7 @@ namespace NachoDB.Impl
                         val = arr;
                     }
                     break;
-					
+
                 case ClassDescriptor.FieldType.tpArrayOfDecimal: 
                     len = Bytes.unpack4(body, offs);
                     offs += 4;
@@ -4347,7 +4308,7 @@ namespace NachoDB.Impl
                         val = arr;
                     }
                     break;
-					
+
                 case ClassDescriptor.FieldType.tpArrayOfGuid: 
                     len = Bytes.unpack4(body, offs);
                     offs += 4;
@@ -4366,7 +4327,7 @@ namespace NachoDB.Impl
                         val = arr;
                     }
                     break;
-					
+
                 case ClassDescriptor.FieldType.tpArrayOfObject: 
                     len = Bytes.unpack4(body, offs);
                     offs += 4;
@@ -4386,7 +4347,7 @@ namespace NachoDB.Impl
                         val = arr;
                     }
                     break;
-					
+
                 case ClassDescriptor.FieldType.tpArrayOfValue:
                     len = Bytes.unpack4(body, offs);
                     offs += 4;
@@ -4458,6 +4419,7 @@ namespace NachoDB.Impl
 #endif
                     }
                     break;
+
                 case ClassDescriptor.FieldType.tpArrayOfOid: 
                     len = Bytes.unpack4(body, offs);
                     offs += 4;
@@ -4483,7 +4445,7 @@ namespace NachoDB.Impl
             }
             return offs;
         }
-		
+
         internal byte[] packObject(IPersistent obj)
         {
             ByteBuffer buf = new ByteBuffer(encoding);
@@ -4657,8 +4619,7 @@ namespace NachoDB.Impl
         }
 #endif
 
-
-public int packField(ByteBuffer buf, int offs, object val, ClassDescriptor.FieldDescriptor fd, ClassDescriptor.FieldType type, IPersistent po)
+        public int packField(ByteBuffer buf, int offs, object val, ClassDescriptor.FieldDescriptor fd, ClassDescriptor.FieldType type, IPersistent po)
         {
             switch (type)
             {
@@ -4693,9 +4654,9 @@ public int packField(ByteBuffer buf, int offs, object val, ClassDescriptor.Field
                 case ClassDescriptor.FieldType.tpGuid:
                     return buf.packGuid(offs, (Guid)val);
                 case ClassDescriptor.FieldType.tpDate: 
-                    return buf.packDate(offs, (DateTime)val);					
+                    return buf.packDate(offs, (DateTime)val);
                 case ClassDescriptor.FieldType.tpString: 
-                    return buf.packString(offs, (string)val);					
+                    return buf.packString(offs, (string)val);
                 case ClassDescriptor.FieldType.tpValue:
                     return packObject(val, fd.valueDesc, offs, buf, po);
                 case ClassDescriptor.FieldType.tpObject: 
@@ -4724,6 +4685,7 @@ public int packField(ByteBuffer buf, int offs, object val, ClassDescriptor.Field
                         offs += len;
                     }
                     break;
+
                 case ClassDescriptor.FieldType.tpArrayOfSByte: 
                     if (val == null)
                     {
@@ -4745,7 +4707,7 @@ public int packField(ByteBuffer buf, int offs, object val, ClassDescriptor.Field
                         offs += len;
                     }
                     break;
- 					
+ 
                 case ClassDescriptor.FieldType.tpArrayOfBoolean: 
                     if (val == null)
                     {
@@ -4766,7 +4728,7 @@ public int packField(ByteBuffer buf, int offs, object val, ClassDescriptor.Field
                         }
                     }
                     break;
- 					
+ 
                 case ClassDescriptor.FieldType.tpArrayOfShort: 
                     if (val == null)
                     {
@@ -4810,7 +4772,7 @@ public int packField(ByteBuffer buf, int offs, object val, ClassDescriptor.Field
                         }
                     }
                     break;
-					
+
                 case ClassDescriptor.FieldType.tpArrayOfChar: 
                     if (val == null)
                     {
@@ -4854,7 +4816,7 @@ public int packField(ByteBuffer buf, int offs, object val, ClassDescriptor.Field
                         }
                     }
                     break;
- 					
+ 
                 case ClassDescriptor.FieldType.tpArrayOfInt: 
                     if (val == null)
                     {
@@ -4898,7 +4860,7 @@ public int packField(ByteBuffer buf, int offs, object val, ClassDescriptor.Field
                         }
                     }
                     break;
-					
+
                 case ClassDescriptor.FieldType.tpArrayOfLong: 
                     if (val == null)
                     {
@@ -4942,7 +4904,7 @@ public int packField(ByteBuffer buf, int offs, object val, ClassDescriptor.Field
                         }
                     }
                     break;
-					
+
                 case ClassDescriptor.FieldType.tpArrayOfFloat: 
                     if (val == null)
                     {
@@ -4964,7 +4926,7 @@ public int packField(ByteBuffer buf, int offs, object val, ClassDescriptor.Field
                         }
                     }
                     break;
-					
+
                 case ClassDescriptor.FieldType.tpArrayOfDouble: 
                     if (val == null)
                     {
@@ -4986,7 +4948,7 @@ public int packField(ByteBuffer buf, int offs, object val, ClassDescriptor.Field
                         }
                     }
                     break;
-					
+
                 case ClassDescriptor.FieldType.tpArrayOfValue: 
                     if (val == null)
                     {
@@ -5030,7 +4992,7 @@ public int packField(ByteBuffer buf, int offs, object val, ClassDescriptor.Field
                         }
                     }
                     break;
-					
+
                 case ClassDescriptor.FieldType.tpArrayOfDecimal: 
                     if (val == null)
                     {
@@ -5052,7 +5014,7 @@ public int packField(ByteBuffer buf, int offs, object val, ClassDescriptor.Field
                         }
                     }
                     break;
-					
+
                 case ClassDescriptor.FieldType.tpArrayOfGuid: 
                     if (val == null)
                     {
@@ -5074,7 +5036,7 @@ public int packField(ByteBuffer buf, int offs, object val, ClassDescriptor.Field
                         }
                     }
                     break;
-					
+
                 case ClassDescriptor.FieldType.tpArrayOfString: 
                     if (val == null)
                     {
@@ -5095,7 +5057,7 @@ public int packField(ByteBuffer buf, int offs, object val, ClassDescriptor.Field
                         }
                     }
                     break;
-					
+
                 case ClassDescriptor.FieldType.tpArrayOfObject: 
                     if (val == null)
                     {
@@ -5138,7 +5100,7 @@ public int packField(ByteBuffer buf, int offs, object val, ClassDescriptor.Field
                         }
                     }
                     break;
-#endif		
+#endif
                 case ClassDescriptor.FieldType.tpLink: 
                     if (val == null)
                     {
@@ -5162,6 +5124,7 @@ public int packField(ByteBuffer buf, int offs, object val, ClassDescriptor.Field
                         link.Unpin();
                     }
                     break;
+
                 case ClassDescriptor.FieldType.tpArrayOfOid: 
                     if (val == null)
                     {
@@ -5187,10 +5150,9 @@ public int packField(ByteBuffer buf, int offs, object val, ClassDescriptor.Field
             }
             return offs;
         }
-		
+
         public ClassLoader Loader
         {
-       
             set 
             { 
                 loader = value;
@@ -5217,7 +5179,7 @@ public int packField(ByteBuffer buf, int offs, object val, ClassDescriptor.Field
         internal Header   header; // base address of database file mapping
         internal int[]    dirtyPagesMap; // bitmap of changed pages in current index
         internal bool     modified;
-		
+
         internal int currRBitmapPage; //current bitmap page for allocating records
         internal int currRBitmapOffs; //offset in current bitmap page for allocating 
         //unaligned records
@@ -5225,7 +5187,7 @@ public int packField(ByteBuffer buf, int offs, object val, ClassDescriptor.Field
         internal int currPBitmapOffs; //offset in current bitmap page for allocating 
         //page objects
         internal Location reservedChain;
-		
+
         internal int committedIndexSize;
         internal int currIndexSize;
         
@@ -5253,7 +5215,7 @@ public int packField(ByteBuffer buf, int offs, object val, ClassDescriptor.Field
         internal long usedSize; // total size of allocated objects since the beginning of the session
         internal int[] bitmapPageAvailableSpace;
         internal bool opened;
-		
+
         internal int[]     greyBitmap; // bitmap of visited during GC but not yet marked object
         internal int[]     blackBitmap;    // bitmap of objects marked during GC 
         internal long      gcThreshold;
@@ -5278,10 +5240,8 @@ public int packField(ByteBuffer buf, int offs, object val, ClassDescriptor.Field
 
         internal static readonly LocalDataStoreSlot transactionContext = Thread.AllocateDataSlot();
         internal bool useSerializableTransactions;
-		
-
     }
-	
+
     class RootPage
     {
         internal long size; // database file size
@@ -5299,17 +5259,17 @@ public int packField(ByteBuffer buf, int offs, object val, ClassDescriptor.Field
 
         internal const int Sizeof = 64;
     }
-	
+
     class Header
     {
         internal int curr; // current root
         internal bool dirty; // database was not closed normally
         internal bool initialized; // database is initilaized
-		
+
         internal RootPage[] root;
-		
+
         internal static int Sizeof = 3 + RootPage.Sizeof * 2;
-		
+
         internal void  pack(byte[] rec)
         {
             int offs = 0;
@@ -5344,7 +5304,7 @@ public int packField(ByteBuffer buf, int offs, object val, ClassDescriptor.Field
                 offs += 4;
             }
         }
-		
+
         internal void  unpack(byte[] rec)
         {
             int offs = 0;

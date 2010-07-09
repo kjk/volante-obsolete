@@ -45,8 +45,9 @@ public class TestReplic
             ReplicationMasterStorage db = 
                 StorageFactory.CreateReplicationMasterStorage(new string[]{"localhost:" + port},
                                                                        async ? asyncBufSize : 0);
-            db.SetProperty("perst.file.noflush", true);            
-            db.SetProperty("perst.replication.ack", ack);
+            // TODO: probably wrong, has to be done after Open()
+            db.FileNoFlush = true;
+            db.ReplicationAck = ack;
             db.Open("master.dbs", pagePoolSize);
 
 #if USE_GENERICS
@@ -78,8 +79,9 @@ public class TestReplic
         } else if ("slave" == args[0]) { 
             ReplicationSlaveStorage db = 
                 StorageFactory.CreateReplicationSlaveStorage(port); 
-            db.SetProperty("perst.file.noflush", true);
-            db.SetProperty("perst.replication.ack", ack);
+            // TODO: probably wrong, has to be done after Open()
+            db.FileNoFlush = true;
+            db.ReplicationAck = ack;
             db.Open("slave.dbs", pagePoolSize);         
             DateTime total = new DateTime(0);
             int n = 0;

@@ -35,7 +35,7 @@ public class TestGC {
             } 
             else if ("background" == args[i]) 
             { 
-                db.SetProperty("perst.background.gc", true);
+                db.BackgroundGc = true;
             } 
             else 
             { 
