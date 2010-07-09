@@ -4,14 +4,14 @@ namespace NachoDB.Impl
     using System.Collections;
     using System.Diagnostics;
     using NachoDB;
-	
+
     internal class BtreePage
     {
         internal const int firstKeyOffs = 4;
         internal const int keySpace = Page.pageSize - firstKeyOffs;
         internal const int strKeySize = 8;
         internal const int maxItems = keySpace / 4;
-		
+
         internal static int getnItems(Page pg)
         {
             return Bytes.unpack2(pg.data, 0);
@@ -32,12 +32,12 @@ namespace NachoDB.Impl
         {
             return Bytes.unpack2(pg.data, firstKeyOffs + index * 8 + 6);
         }
-		
+
         internal static int getReference(Page pg, int index)
         {
             return Bytes.unpack4(pg.data, firstKeyOffs + index * 4);
         }
-		
+
         internal static void  setnItems(Page pg, int nItems)
         {
             Bytes.pack2(pg.data, 0, (short) nItems);
@@ -76,7 +76,7 @@ namespace NachoDB.Impl
         {
             Bytes.pack4(pg.data, firstKeyOffs + index * 4, oid);
         }
-		
+
         internal static int compare(Key key, Page pg, int i)
         {
             long i8;
@@ -93,15 +93,15 @@ namespace NachoDB.Impl
                 case ClassDescriptor.FieldType.tpBoolean: 
                 case ClassDescriptor.FieldType.tpByte: 
                     return (byte)key.ival - pg.data[BtreePage.firstKeyOffs + i];
-				
+
                 case ClassDescriptor.FieldType.tpShort: 
                     return (short) key.ival - Bytes.unpack2(pg.data, BtreePage.firstKeyOffs + i * 2);
                 case ClassDescriptor.FieldType.tpUShort: 
                     return (ushort) key.ival - (ushort)Bytes.unpack2(pg.data, BtreePage.firstKeyOffs + i * 2);
-				
+
                 case ClassDescriptor.FieldType.tpChar: 
                     return (char) key.ival - (char) Bytes.unpack2(pg.data, BtreePage.firstKeyOffs + i * 2);
-				
+
                 case ClassDescriptor.FieldType.tpObject: 
                 case ClassDescriptor.FieldType.tpUInt: 
                 case ClassDescriptor.FieldType.tpOid: 
@@ -112,7 +112,7 @@ namespace NachoDB.Impl
                 case ClassDescriptor.FieldType.tpInt: 
                     i4 = Bytes.unpack4(pg.data, BtreePage.firstKeyOffs + i * 4);
                     return key.ival < i4 ? -1 : key.ival == i4 ? 0 : 1;
-				
+
                 case ClassDescriptor.FieldType.tpLong: 
                     i8 = Bytes.unpack8(pg.data, BtreePage.firstKeyOffs + i * 8);
                     return key.lval < i8 ? -1 : key.lval == i8 ? 0 : 1;
@@ -121,11 +121,11 @@ namespace NachoDB.Impl
                 case ClassDescriptor.FieldType.tpULong: 
                     u8 = (ulong)Bytes.unpack8(pg.data, BtreePage.firstKeyOffs + i * 8);
                     return (ulong)key.lval < u8 ? -1 : (ulong)key.lval == u8 ? 0 : 1;
-				
+
                 case ClassDescriptor.FieldType.tpFloat: 
                     r4 = Bytes.unpackF4(pg.data, BtreePage.firstKeyOffs + i * 4);
                     return key.dval < r4 ? -1 : key.dval == r4 ? 0 : 1;
-				
+
                 case ClassDescriptor.FieldType.tpDouble: 
                     r8 = Bytes.unpackF8(pg.data, BtreePage.firstKeyOffs + i * 8);
                     return key.dval < r8 ? -1 : key.dval == r8 ? 0 : 1;
@@ -139,8 +139,7 @@ namespace NachoDB.Impl
             Debug.Assert(false, "Invalid type");
             return 0;
         }
-		
-		
+
         internal static int compareStr(Key key, Page pg, int i)
         {
             char[] chars = (char[])key.oval;
@@ -160,8 +159,7 @@ namespace NachoDB.Impl
             }
             return alen - blen;
         }
-		
-		
+
         internal static bool find(StorageImpl db, int pageId, Key firstKey, Key lastKey, Btree tree, int height, ArrayList result)
         {
             Page pg = db.getPage(pageId);
@@ -397,8 +395,7 @@ namespace NachoDB.Impl
             }
             return true;
         }
-		
-		
+
         static int comparePrefix(string key, Page pg, int i) 
         { 
             int alen = key.Length;
@@ -511,13 +508,12 @@ namespace NachoDB.Impl
             db.pool.unfix(pg);
             return pageId;
         }
-		
-		
-        internal static void  memcpy(Page dst_pg, int dst_idx, Page src_pg, int src_idx, int len, int itemSize)
+
+        internal static void memcpy(Page dst_pg, int dst_idx, Page src_pg, int src_idx, int len, int itemSize)
         {
             Array.Copy(src_pg.data, firstKeyOffs + src_idx * itemSize, dst_pg.data, firstKeyOffs + dst_idx * itemSize, len * itemSize);
         }
-		
+
         internal static BtreeResult insert(StorageImpl db, int pageId, Btree tree, BtreeKey ins, int height, bool unique, bool overwrite)
         {
             Page pg = db.getPage(pageId);
@@ -715,7 +711,7 @@ namespace NachoDB.Impl
                 }
             }
         }
-		
+
         internal static BtreeResult insertStrKey(StorageImpl db, Page pg, int r, BtreeKey ins, int height)
         {
             int nItems = getnItems(pg);
@@ -742,7 +738,7 @@ namespace NachoDB.Impl
                 int moved = 0;
                 int inserted = len * 2 + strKeySize;
                 int prevDelta = (1 << 31) + 1;
-				
+
                 for (int bn = 0, i = 0; ; bn += 1)
                 {
                     int addSize, subSize;
@@ -844,7 +840,7 @@ namespace NachoDB.Impl
             setSize(pg, size);
             return size + strKeySize * (nItems + 1) < keySpace / 2?BtreeResult.Underflow:BtreeResult.Done;
         }
-		
+
         internal static BtreeResult insertByteArrayKey(StorageImpl db, Page pg, int r, BtreeKey ins, int height)
         {
             int nItems = getnItems(pg);
@@ -871,7 +867,7 @@ namespace NachoDB.Impl
                 int moved = 0;
                 int inserted = len + strKeySize;
                 int prevDelta = (1 << 31) + 1;
-				
+
                 for (int bn = 0, i = 0; ; bn += 1)
                 {
                     int addSize, subSize;
@@ -973,8 +969,7 @@ namespace NachoDB.Impl
             setSize(pg, size);
             return size + strKeySize * (nItems + 1) < keySpace / 2?BtreeResult.Underflow:BtreeResult.Done;
         }
-		
-		
+
         internal static int compactifyStrings(Page pg, int m)
         {
             int i, j, offs, len, n = getnItems(pg);
@@ -1062,7 +1057,7 @@ namespace NachoDB.Impl
             }
             return nItems;
         }
-		
+
         internal static int compactifyByteArrays(Page pg, int m)
         {
             int i, j, offs, len, n = getnItems(pg);
@@ -1150,7 +1145,7 @@ namespace NachoDB.Impl
             }
             return nItems;
         }
-		
+
         internal static BtreeResult removeStrKey(Page pg, int r)
         {
             int len = getKeyStrSize(pg, r) * 2;
@@ -1180,7 +1175,7 @@ namespace NachoDB.Impl
             setnItems(pg, nItems - 1);
             return size + strKeySize * nItems < keySpace / 2?BtreeResult.Underflow:BtreeResult.Done;
         }
-		
+
         internal static BtreeResult removeByteArrayKey(Page pg, int r)
         {
             int len = getKeyStrSize(pg, r);
@@ -1210,21 +1205,21 @@ namespace NachoDB.Impl
             setnItems(pg, nItems - 1);
             return size + strKeySize * nItems < keySpace / 2?BtreeResult.Underflow:BtreeResult.Done;
         }
-		
+
         internal static BtreeResult replaceStrKey(StorageImpl db, Page pg, int r, BtreeKey ins, int height)
         {
             ins.oid = getKeyStrOid(pg, r);
             removeStrKey(pg, r);
             return insertStrKey(db, pg, r, ins, height);
         }
-		
+
         internal static BtreeResult replaceByteArrayKey(StorageImpl db, Page pg, int r, BtreeKey ins, int height)
         {
             ins.oid = getKeyStrOid(pg, r);
             removeByteArrayKey(pg, r);
             return insertByteArrayKey(db, pg, r, ins, height);
         }
-		
+
         internal static BtreeResult handlePageUnderflow(StorageImpl db, Page pg, int r, ClassDescriptor.FieldType type, BtreeKey rem, int height)
         {
             int nItems = getnItems(pg);
@@ -1843,14 +1838,14 @@ namespace NachoDB.Impl
                 }
             }
         }
-		
+
         internal static BtreeResult remove(StorageImpl db, int pageId, Btree tree, BtreeKey rem, int height)
         {
             Page pg = db.getPage(pageId);
             try
             {
                 int i, n = getnItems(pg), l = 0, r = n;
-				
+
                 if (tree.FieldType == ClassDescriptor.FieldType.tpString)
                 {
                     while (l < r)
@@ -1876,16 +1871,16 @@ namespace NachoDB.Impl
                                     pg = null;
                                     pg = db.putPage(pageId);
                                     return handlePageUnderflow(db, pg, r, tree.FieldType, rem, height);
-								
+
                                 case BtreeResult.Done: 
                                     return BtreeResult.Done;
-								
+
                                 case BtreeResult.Overflow: 
                                     db.pool.unfix(pg);
                                     pg = null;
                                     pg = db.putPage(pageId);
                                     return insertStrKey(db, pg, r, rem, height);
-								
+
                             }
                         }
                         while (++r <= n);
@@ -1939,16 +1934,16 @@ namespace NachoDB.Impl
                                     pg = null;
                                     pg = db.putPage(pageId);
                                     return handlePageUnderflow(db, pg, r, tree.FieldType, rem, height);
-								
+
                                 case BtreeResult.Done: 
                                     return BtreeResult.Done;
-								
+
                                 case BtreeResult.Overflow: 
                                     db.pool.unfix(pg);
                                     pg = null;
                                     pg = db.putPage(pageId);
                                     return insertByteArrayKey(db, pg, r, rem, height);
-								
+
                             }
                         }
                         while (++r <= n);
@@ -2027,10 +2022,10 @@ namespace NachoDB.Impl
                                 db.pool.unfix(pg);
                                 pg = db.putPage(pageId);
                                 return handlePageUnderflow(db, pg, r, tree.FieldType, rem, height);
-							
+
                             case BtreeResult.Done: 
                                 return BtreeResult.Done;
-							
+
                         }
                     }
                     while (++r <= n);
@@ -2046,8 +2041,8 @@ namespace NachoDB.Impl
                 }
             }
         }
-		
-        internal static void  purge(StorageImpl db, int pageId, ClassDescriptor.FieldType type, int height)
+
+        internal static void purge(StorageImpl db, int pageId, ClassDescriptor.FieldType type, int height)
         {
             if (--height != 0)
             {
@@ -2072,7 +2067,7 @@ namespace NachoDB.Impl
             }
             db.freePage(pageId);
         }
-		
+
         internal static int traverseForward(StorageImpl db, int pageId, ClassDescriptor.FieldType type, int height, IPersistent[] result, int pos)
         {
             Page pg = db.getPage(pageId);
@@ -2217,7 +2212,6 @@ namespace NachoDB.Impl
                         for (i = 0; i < n; i++)
                         {
                             exporter.exportAssoc(getReference(pg, maxItems - 1 - i), pg.data, BtreePage.firstKeyOffs + i * ClassDescriptor.Sizeof[(int)type], ClassDescriptor.Sizeof[(int)type], type);
-							
                         }
                     }
                 }

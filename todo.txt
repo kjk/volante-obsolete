@@ -1,20 +1,30 @@
-Next++:
- * fix TestBlob.cs
+All the possible things to do next.
+
+For both Java and C#:
  * write a test app that scans directories and stores the information
    in the database, to see how big the database is and how fast the access
    is to information about files/directories
- * write a basic web page (host on github with their pages thingy?)
+ * write a basic web page and host either on blog.kowalczyk.info or nachodb.org
  * auto-generate docs and put them on web page
  * better test framework (steal ideas from sqlite?)
  * write docs on how to work on NachoDB codebase
  * write docs on how to use NachoDB in your own code
  * write even more tests
- * test with other jvms (e.g. http://jamvm.sourceforge.net/)
  * make releases and push them to my s3, link from a webpage
+ * ambitious: add integrated, small full-text search (maybe port FTS 
+   from SQliteSharp but store indexes in NachoDB)
+ * add code-coverate to build system
+ * write tests to provie 100% code coverage
 
-Maybe:
- * write ant makefile (to make it easy to run from eclipse)
- 
-Ambitious:
- * add integrated full-text search (maybe port FTS from SQliteSharp but
-   store indexes in NachoDB)
+Java specific:
+ * test with other jvms (e.g. http://jamvm.sourceforge.net/)
+ * change namespace to nachodb.org
+ * Unix makefile and 
+ * maybe: write ant makefile (to make it easy to run from eclipse)
+
+C# specific:
+ * add Silverligth target and test with Silverlight
+ * ambitious: add LINQ support
+ * maybe: can BtreePageOfX in AltBtree.cs be done with generics,
+   for shorter code?
+ * maybe: can we make Key class use generics, for simpler code?

@@ -570,13 +570,13 @@ namespace NachoDB.Impl
                 return (byte) key.ival - data[i];
             }
             
-            internal override void  insert(BtreeKey key, int i)
+            internal override void insert(BtreeKey key, int i)
             {
                 items[i] = key.node;
                 data[i] = (byte) key.key.ival;
             }
             
-            internal BtreePageOfByte(Storage s):base(s, MAX_ITEMS)
+            internal BtreePageOfByte(Storage s) : base(s, MAX_ITEMS)
             {
                 data = new byte[MAX_ITEMS];
             }
@@ -622,13 +622,13 @@ namespace NachoDB.Impl
                 return (sbyte) key.ival - data[i];
             }
             
-            internal override void  insert(BtreeKey key, int i)
+            internal override void insert(BtreeKey key, int i)
             {
                 items[i] = key.node;
                 data[i] = (sbyte) key.key.ival;
             }
             
-            internal BtreePageOfSByte(Storage s):base(s, MAX_ITEMS)
+            internal BtreePageOfSByte(Storage s) : base(s, MAX_ITEMS)
             {
                 data = new sbyte[MAX_ITEMS];
             }
@@ -659,7 +659,7 @@ namespace NachoDB.Impl
             {
             }
             
-            internal BtreePageOfBoolean(Storage s):base(s)
+            internal BtreePageOfBoolean(Storage s) : base(s)
             {
             }
         }
@@ -699,13 +699,13 @@ namespace NachoDB.Impl
                 return (short) key.ival - data[i];
             }
             
-            internal override void  insert(BtreeKey key, int i)
+            internal override void insert(BtreeKey key, int i)
             {
                 items[i] = key.node;
                 data[i] = (short) key.key.ival;
             }
             
-            internal BtreePageOfShort(Storage s):base(s, MAX_ITEMS)
+            internal BtreePageOfShort(Storage s) : base(s, MAX_ITEMS)
             {
                 data = new short[MAX_ITEMS];
             }
@@ -750,13 +750,13 @@ namespace NachoDB.Impl
                 return (ushort) key.ival - data[i];
             }
             
-            internal override void  insert(BtreeKey key, int i)
+            internal override void insert(BtreeKey key, int i)
             {
                 items[i] = key.node;
                 data[i] = (ushort) key.key.ival;
             }
             
-            internal BtreePageOfUShort(Storage s):base(s, MAX_ITEMS)
+            internal BtreePageOfUShort(Storage s) : base(s, MAX_ITEMS)
             {
                 data = new ushort[MAX_ITEMS];
             }
@@ -807,7 +807,7 @@ namespace NachoDB.Impl
                 data[i] = key.key.ival;
             }
             
-            internal BtreePageOfInt(Storage s):base(s, MAX_ITEMS)
+            internal BtreePageOfInt(Storage s) : base(s, MAX_ITEMS)
             {
                 data = new int[MAX_ITEMS];
             }
@@ -852,13 +852,13 @@ namespace NachoDB.Impl
                 return (uint) key.ival < data[i] ? -1 : (uint) key.ival == data[i] ? 0 : 1;
             }
             
-            internal override void  insert(BtreeKey key, int i)
+            internal override void insert(BtreeKey key, int i)
             {
                 items[i] = key.node;
                 data[i] = (uint) key.key.ival;
             }
             
-            internal BtreePageOfUInt(Storage s):base(s, MAX_ITEMS)
+            internal BtreePageOfUInt(Storage s) : base(s, MAX_ITEMS)
             {
                 data = new uint[MAX_ITEMS];
             }
@@ -903,13 +903,13 @@ namespace NachoDB.Impl
                 return key.lval < data[i] ? -1 : key.lval == data[i] ? 0 : 1;
             }
             
-            internal override void  insert(BtreeKey key, int i)
+            internal override void insert(BtreeKey key, int i)
             {
                 items[i] = key.node;
                 data[i] = key.key.lval;
             }
             
-            internal BtreePageOfLong(Storage s):base(s, MAX_ITEMS)
+            internal BtreePageOfLong(Storage s) : base(s, MAX_ITEMS)
             {
                 data = new long[MAX_ITEMS];
             }
@@ -954,13 +954,13 @@ namespace NachoDB.Impl
                 return (ulong)key.lval < data[i] ? -1 : (ulong)key.lval == data[i] ? 0 : 1;
             }
             
-            internal override void  insert(BtreeKey key, int i)
+            internal override void insert(BtreeKey key, int i)
             {
                 items[i] = key.node;
                 data[i] = (ulong)key.key.lval;
             }
             
-            internal BtreePageOfULong(Storage s):base(s, MAX_ITEMS)
+            internal BtreePageOfULong(Storage s) : base(s, MAX_ITEMS)
             {
                 data = new ulong[MAX_ITEMS];
             }
@@ -1005,13 +1005,13 @@ namespace NachoDB.Impl
                 return (float) key.dval < data[i]?- 1:(float) key.dval == data[i]?0:1;
             }
             
-            internal override void  insert(BtreeKey key, int i)
+            internal override void insert(BtreeKey key, int i)
             {
                 items[i] = key.node;
                 data[i] = (float) key.key.dval;
             }
             
-            internal BtreePageOfFloat(Storage s):base(s, MAX_ITEMS)
+            internal BtreePageOfFloat(Storage s) : base(s, MAX_ITEMS)
             {
                 data = new float[MAX_ITEMS];
             }
@@ -1056,13 +1056,13 @@ namespace NachoDB.Impl
                 return key.dval < data[i]?- 1:key.dval == data[i]?0:1;
             }
             
-            internal override void  insert(BtreeKey key, int i)
+            internal override void insert(BtreeKey key, int i)
             {
                 items[i] = key.node;
                 data[i] = key.key.dval;
             }
             
-            internal BtreePageOfDouble(Storage s):base(s, MAX_ITEMS)
+            internal BtreePageOfDouble(Storage s) : base(s, MAX_ITEMS)
             {
                 data = new double[MAX_ITEMS];
             }
@@ -1107,13 +1107,13 @@ namespace NachoDB.Impl
                 return key.guid.CompareTo(data[i]);
             }
             
-            internal override void  insert(BtreeKey key, int i)
+            internal override void insert(BtreeKey key, int i)
             {
                 items[i] = key.node;
                 data[i] = key.key.guid;
             }
             
-            internal BtreePageOfGuid(Storage s):base(s, MAX_ITEMS)
+            internal BtreePageOfGuid(Storage s) : base(s, MAX_ITEMS)
             {
                 data = new Guid[MAX_ITEMS];
             }
@@ -1158,13 +1158,13 @@ namespace NachoDB.Impl
                 return key.dec.CompareTo(data[i]);
             }
             
-            internal override void  insert(BtreeKey key, int i)
+            internal override void insert(BtreeKey key, int i)
             {
                 items[i] = key.node;
                 data[i] = key.key.dec;
             }
             
-            internal BtreePageOfDecimal(Storage s):base(s, MAX_ITEMS)
+            internal BtreePageOfDecimal(Storage s) : base(s, MAX_ITEMS)
             {
                 data = new decimal[MAX_ITEMS];
             }
@@ -1209,13 +1209,13 @@ namespace NachoDB.Impl
                 return (int) key.ival - data[i].Oid;
             }
             
-            internal override void  insert(BtreeKey key, int i)
+            internal override void insert(BtreeKey key, int i)
             {
                 items[i] = key.node;
                 data[i] = (IPersistent) key.key.oval;
             }
             
-            internal BtreePageOfObject(Storage s):base(s, MAX_ITEMS)
+            internal BtreePageOfObject(Storage s) : base(s, MAX_ITEMS)
             {
                 data = s.CreateLink(MAX_ITEMS);
                 data.Length = MAX_ITEMS;
@@ -1266,7 +1266,7 @@ namespace NachoDB.Impl
                 return ((string) key.oval).CompareTo(data[i]);
             }
             
-            internal override void  insert(BtreeKey key, int i)
+            internal override void insert(BtreeKey key, int i)
             {
                 items[i] = key.node;
                 data[i] = (string) key.key.oval;
@@ -1331,7 +1331,7 @@ namespace NachoDB.Impl
             }
             
             
-            internal BtreePageOfString(Storage s):base(s, MAX_ITEMS)
+            internal BtreePageOfString(Storage s) : base(s, MAX_ITEMS)
             {
                 data = new string[MAX_ITEMS];
             }
@@ -1381,13 +1381,13 @@ namespace NachoDB.Impl
                 return ((IComparable) key.oval).CompareTo(((object[]) data)[i]);
             }
             
-            internal override void  insert(BtreeKey key, int i)
+            internal override void insert(BtreeKey key, int i)
             {
                 items[i] = key.node;
                 ((object[])data)[i] = key.key.oval;
             }
             
-            internal BtreePageOfRaw(Storage s):base(s, MAX_ITEMS)
+            internal BtreePageOfRaw(Storage s) : base(s, MAX_ITEMS)
             {
                 data = new object[MAX_ITEMS];
             }
