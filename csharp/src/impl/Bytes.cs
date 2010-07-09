@@ -3,10 +3,8 @@ namespace NachoDB.Impl
     using System;
     using System.Text;
     using NachoDB;
-	
-    //
+
     // Class for packing/unpacking data
-    //
     public class Bytes
     {
 #if USE_UNSAFE_CODE
@@ -34,7 +32,7 @@ namespace NachoDB.Impl
             }
         }
 
-        public unsafe static void  pack2(byte[] arr, int offs, short val)
+        public unsafe static void pack2(byte[] arr, int offs, short val)
         {
             fixed(byte* p = &arr[offs]) 
             {
@@ -42,7 +40,7 @@ namespace NachoDB.Impl
             }
         }
 
-        public unsafe static void  pack4(byte[] arr, int offs, int val)
+        public unsafe static void pack4(byte[] arr, int offs, int val)
         {
             fixed(byte* p = &arr[offs]) 
             {
@@ -50,7 +48,7 @@ namespace NachoDB.Impl
             }
         }
 
-        public unsafe static void  pack8(byte[] arr, int offs, long val)
+        public unsafe static void pack8(byte[] arr, int offs, long val)
         {
             fixed(byte* p = &arr[offs]) 
             {
@@ -91,7 +89,6 @@ namespace NachoDB.Impl
             pack4(arr, offs + 4, (int) val);
         }
 #endif
-
 
         public static float unpackF4(byte[] arr, int offs)
         {

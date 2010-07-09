@@ -58,7 +58,6 @@ namespace NachoDB.Impl
                 paramTypes);            
         }
 
-
         private void generatePackField(ILGenerator il, FieldInfo f, MethodInfo pack) 
         {
             il.Emit(OpCodes.Ldarg_3); // buf
@@ -96,7 +95,7 @@ namespace NachoDB.Impl
                     case ClassDescriptor.FieldType.tpBoolean: 
                         generatePackField(il, f, packBool);
                         continue;
-					
+
                     case ClassDescriptor.FieldType.tpShort: 
                     case ClassDescriptor.FieldType.tpUShort: 
                     case ClassDescriptor.FieldType.tpChar: 
@@ -108,20 +107,20 @@ namespace NachoDB.Impl
                     case ClassDescriptor.FieldType.tpUInt: 
                         generatePackField(il, f, packI4);
                         continue;
-					
+
                     case ClassDescriptor.FieldType.tpLong: 
                     case ClassDescriptor.FieldType.tpULong: 
                         generatePackField(il, f, packI8);
                         continue;
-					
+
                     case ClassDescriptor.FieldType.tpFloat: 
                         generatePackField(il, f, packF4);
                         continue;
-					
+
                     case ClassDescriptor.FieldType.tpDouble: 
                         generatePackField(il, f, packF8);
                         continue;
-					
+
                     case ClassDescriptor.FieldType.tpDecimal:
                         generatePackField(il, f, packDecimal);
                         continue;
@@ -133,7 +132,7 @@ namespace NachoDB.Impl
                     case ClassDescriptor.FieldType.tpDate: 
                         generatePackField(il, f, packDate);
                         continue;
-					
+
                     case ClassDescriptor.FieldType.tpString: 
                         generatePackField(il, f, packString);
                         continue;
@@ -156,7 +155,6 @@ namespace NachoDB.Impl
             il.Emit(OpCodes.Ret);
         }
 
- 
         private void generateUnpackMethod(ClassDescriptor desc, MethodBuilder builder)
         {
             ILGenerator il = builder.GetILGenerator();
@@ -187,7 +185,7 @@ namespace NachoDB.Impl
                             il.Emit(OpCodes.Add);
                             il.Emit(OpCodes.Stloc_1, offs);
                             continue;
-					
+
                         case ClassDescriptor.FieldType.tpShort: 
                         case ClassDescriptor.FieldType.tpUShort: 
                         case ClassDescriptor.FieldType.tpChar: 
@@ -206,7 +204,7 @@ namespace NachoDB.Impl
                             il.Emit(OpCodes.Add);
                             il.Emit(OpCodes.Stloc_1, offs);
                             continue;
-					
+
                         case ClassDescriptor.FieldType.tpLong: 
                         case ClassDescriptor.FieldType.tpULong: 
                         case ClassDescriptor.FieldType.tpDate: 
@@ -216,7 +214,7 @@ namespace NachoDB.Impl
                             il.Emit(OpCodes.Add);
                             il.Emit(OpCodes.Stloc_1, offs);
                             continue;
-					
+
                         case ClassDescriptor.FieldType.tpDecimal:
                         case ClassDescriptor.FieldType.tpGuid:
                             il.Emit(OpCodes.Ldloc_1, offs);
@@ -238,7 +236,6 @@ namespace NachoDB.Impl
                 }
                 else 
                 {
-
                     switch (fd.type)
                     {
                         case ClassDescriptor.FieldType.tpByte: 
@@ -277,7 +274,7 @@ namespace NachoDB.Impl
                             il.Emit(OpCodes.Add);
                             il.Emit(OpCodes.Stloc_1, offs);
                             continue;
-					
+
                         case ClassDescriptor.FieldType.tpShort: 
                             il.Emit(OpCodes.Ldloc_0, obj);
                             il.Emit(OpCodes.Ldarg_3); // body
@@ -317,7 +314,7 @@ namespace NachoDB.Impl
                             il.Emit(OpCodes.Add);
                             il.Emit(OpCodes.Stloc_1, offs);
                             continue;
-					
+
                         case ClassDescriptor.FieldType.tpLong: 
                         case ClassDescriptor.FieldType.tpULong: 
                             il.Emit(OpCodes.Ldloc_0, obj);
@@ -330,7 +327,7 @@ namespace NachoDB.Impl
                             il.Emit(OpCodes.Add);
                             il.Emit(OpCodes.Stloc_1, offs);
                             continue;
-					
+
                         case ClassDescriptor.FieldType.tpFloat: 
                             il.Emit(OpCodes.Ldloc_0, obj);
                             il.Emit(OpCodes.Ldarg_3); // body
@@ -342,7 +339,7 @@ namespace NachoDB.Impl
                             il.Emit(OpCodes.Add);
                             il.Emit(OpCodes.Stloc_1, offs);
                             continue;
-					
+
                         case ClassDescriptor.FieldType.tpDouble: 
                             il.Emit(OpCodes.Ldloc_0, obj);
                             il.Emit(OpCodes.Ldarg_3); // body
@@ -354,7 +351,7 @@ namespace NachoDB.Impl
                             il.Emit(OpCodes.Add);
                             il.Emit(OpCodes.Stloc_1, offs);
                             continue;
-					
+
                         case ClassDescriptor.FieldType.tpDecimal:
                             il.Emit(OpCodes.Ldloc_0, obj);
                             il.Emit(OpCodes.Ldarg_3); // body
@@ -390,7 +387,7 @@ namespace NachoDB.Impl
                             il.Emit(OpCodes.Add);
                             il.Emit(OpCodes.Stloc_1, offs);
                             continue;
-					
+
                         case ClassDescriptor.FieldType.tpString: 
                             il.Emit(OpCodes.Ldarg_3); // body
                             il.Emit(OpCodes.Ldloc_1, offs);

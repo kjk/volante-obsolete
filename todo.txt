@@ -28,3 +28,7 @@ C# specific:
  * maybe: can BtreePageOfX in AltBtree.cs be done with generics,
    for shorter code?
  * maybe: can we make Key class use generics, for simpler code?
+ * maybe: should Bytes.unpack* functions take offs as a ref and update it inside
+   the function. Would make the code shorter, not sure about perf impact.
+   Also, would have to modify CodeGenerator.cs
+

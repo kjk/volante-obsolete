@@ -310,7 +310,7 @@ namespace NachoDB.Impl
         internal const int pageBits = Page.pageSize * 8;
         internal const int inc = Page.pageSize / dbAllocationQuantum / 8;
 
-        internal static void  memset(Page pg, int offs, int pattern, int len)
+        internal static void memset(Page pg, int offs, int pattern, int len)
         {
             byte[] arr = pg.data;
             byte pat = (byte) pattern;
@@ -363,7 +363,7 @@ namespace NachoDB.Impl
             return false;
         }
 
-        internal void  reserveLocation(long pos, long size)
+        internal void reserveLocation(long pos, long size)
         {
             Location location = new Location();
             location.pos = pos;
@@ -372,7 +372,7 @@ namespace NachoDB.Impl
             reservedChain = location;
         }
 
-        internal void  commitLocation()
+        internal void commitLocation()
         {
             reservedChain = reservedChain.next;
         }
@@ -816,7 +816,7 @@ namespace NachoDB.Impl
             }
         }
 
-        internal void  free(long pos, long size)
+        internal void free(long pos, long size)
         {
             lock (objectCache) 
             {
@@ -966,7 +966,7 @@ namespace NachoDB.Impl
 
         public virtual void Open(IFile file, int pagePoolSize)
         {
-            lock(this)
+            lock (this)
             {
                 if (opened)
                 {
@@ -3310,10 +3310,12 @@ namespace NachoDB.Impl
         }
 
         // TODO: needs tests
+        //TODO: won't work for Open(IFile) method. Java code has the same problem
         public bool FileNoFlush
         {
             set
             {
+                noFlush = value;
                 if (opened)
                 {
                     pool.file.NoFlush = value;

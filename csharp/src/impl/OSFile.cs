@@ -4,7 +4,6 @@ namespace NachoDB.Impl
     using System.IO;
     using System.Runtime.InteropServices;
     using NachoDB;
-	
 
     public class OSFile : IFile
     {
@@ -16,13 +15,13 @@ namespace NachoDB.Impl
             file.Seek(pos, SeekOrigin.Begin);
             file.Write(buf, 0, buf.Length);
         }
-		
+
         public virtual int Read(long pos, byte[] buf)
         {
             file.Seek(pos, SeekOrigin.Begin);
             return file.Read(buf, 0, buf.Length);
         }
-		
+
         public virtual void  Sync()
         {
             file.Flush();
@@ -47,7 +46,7 @@ namespace NachoDB.Impl
         {
             file.Close();
         }
-		
+
         public virtual void Lock() 
         {
 #if !COMPACT_NET_FRAMEWORK 
@@ -67,7 +66,7 @@ namespace NachoDB.Impl
             file = new FileStream(filePath, FileMode.OpenOrCreate, 
                                   readOnly ? FileAccess.Read : FileAccess.ReadWrite);
         }
-		
+
         protected FileStream file;
         protected bool       noFlush;
     }

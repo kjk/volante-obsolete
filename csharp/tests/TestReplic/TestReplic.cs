@@ -45,7 +45,6 @@ public class TestReplic
             ReplicationMasterStorage db = 
                 StorageFactory.CreateReplicationMasterStorage(new string[]{"localhost:" + port},
                                                                        async ? asyncBufSize : 0);
-            // TODO: probably wrong, has to be done after Open()
             db.FileNoFlush = true;
             db.ReplicationAck = ack;
             db.Open("master.dbs", pagePoolSize);
@@ -79,7 +78,6 @@ public class TestReplic
         } else if ("slave" == args[0]) { 
             ReplicationSlaveStorage db = 
                 StorageFactory.CreateReplicationSlaveStorage(port); 
-            // TODO: probably wrong, has to be done after Open()
             db.FileNoFlush = true;
             db.ReplicationAck = ack;
             db.Open("slave.dbs", pagePoolSize);         

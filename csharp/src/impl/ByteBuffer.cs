@@ -2,7 +2,7 @@ namespace NachoDB.Impl
 {
     using System;
     using System.Text;
-	
+
     public class ByteBuffer
     {
         public void  extend(int size)
@@ -16,14 +16,14 @@ namespace NachoDB.Impl
             }
             used = size;
         }
-		
+
         public byte[] toArray()
         {
             byte[] result = new byte[used];
             Array.Copy(arr, 0, result, 0, used);
             return result;
         }
-		
+
         public int packI1(int offs, int val)
         {
             extend(offs+1);
@@ -44,42 +44,49 @@ namespace NachoDB.Impl
             Bytes.pack2(arr, offs, (short)val);
             return offs + 2;
         }
+
         public int packI4(int offs, int val)
         {
             extend(offs+4);
             Bytes.pack4(arr, offs, val);
             return offs + 4;
         }
+
         public int packI8(int offs, long val)
         {
             extend(offs+8);
             Bytes.pack8(arr, offs, val);
             return offs + 8;
         }
+
         public int packF4(int offs, float val)
         {
             extend(offs+4);
             Bytes.packF4(arr, offs, val);
             return offs + 4;
         }
+
         public int packF8(int offs, double val)
         {
             extend(offs+8);
             Bytes.packF8(arr, offs, val);
             return offs + 8;
         }
+
         public int packDecimal(int offs, decimal val)
         {
             extend(offs+16);
             Bytes.packDecimal(arr, offs, val);
             return offs + 16;
         }
+
         public int packGuid(int offs, Guid val)
         {
             extend(offs+16);
             Bytes.packGuid(arr, offs, val);
             return offs + 16;
         }
+
         public int packDate(int offs, DateTime val)
         {
             extend(offs+8);
@@ -126,7 +133,7 @@ namespace NachoDB.Impl
             arr = new byte[64];
             this.encoding = encoding;
         }
-		
+
         internal byte[]   arr;
         internal int      used;
         internal Encoding encoding;
