@@ -1,136 +1,102 @@
 #CSC=csc /debug+ /d:USE_GENERICS,SUPPORT_RAW_TYPE
 CSC=csc /d:SUPPORT_RAW_TYPE /debug+
 
-EXAMPLES=examples/IpCountry/bin/debug/IpCountry.exe examples/Guess/bin/debug/Guess.exe examples/PropGuess/bin/debug/Guess.exe tests/TestBackup/bin/debug/TestBackup.exe tests/TestBit/bin/debug/TestBit.exe tests/TestBlob/bin/debug/TestBlob.exe tests/TestCompoundIndex/bin/debug/TestCompoundIndex.exe tests/TestConcur/bin/debug/TestConcur.exe tests/TestEnumerator/bin/debug/TestEnumerator.exe tests/TestGC/bin/debug/TestGC.exe tests/TestIndex/bin/debug/TestIndex.exe tests/TestIndex2/bin/debug/TestIndex2.exe examples/TestLink/bin/debug/TestLink.exe tests/TestList/bin/debug/TestList.exe tests/TestR2/bin/debug/TestR2.exe tests/TestRaw/bin/debug/TestRaw.exe tests/TestRtree/bin/debug/TestRtree.exe examples/TestSOD/bin/debug/TestSOD.exe examples/TestSSD/bin/debug/TestSSD.exe tests/TestTimeSeries/bin/debug/TestTimeSeries.exe tests/TestTtree/bin/debug/TestTtree.exe tests/TestXML/bin/debug/TestXML.exe examples/TransparentGuess/bin/debug/Guess.exe tests/TestReplic/bin/debug/TestReplic.exe
+O=bin\rel
 
-LIBRARY=bin\\perstnet.dll
+EXAMPLES=$(O)\Guess.exe $(O)\IpCountry.exe $(O)\PropGuess.exe $(O)\TestLink.exe \
+	$(O)\TestSOD.exe $(O)\TestSSD.exe $(O)\TransparentGuess.exe
 
-all: library examples
+TESTS=$(O)\TestBackup.exe $(O)\TestBit.exe $(O)\TestBlob.exe $(O)\TestCompoundIndex.exe \
+	$(O)\TestConcur.exe $(O)\TestEnumerator.exe $(O)\TestGC.exe $(O)\TestIndex.exe \
+	$(O)\TestIndex2.exe $(O)\TestList.exe $(O)\TestR2.exe $(O)\TestRaw.exe  $(O)\TestRtree.exe \
+	$(O)\TestTimeSeries.exe $(O)\TestTtree.exe $(O)\TestXML.exe $(O)\TestReplic.exe
+
+LIBRARY=$(O)\NachoDB.dll
+
+all: tests examples
 
 library: $(LIBRARY)
 
 $(LIBRARY): src/*.cs src/impl/*.cs
-	-mkdir bin
-	$(CSC) /target:library /out:$(LIBRARY) src\\*.cs src\\impl\\*.cs
+	$(CSC) /target:library /out:$(LIBRARY) src\*.cs src\impl\*.cs
 
-examples: $(EXAMPLES)
+examples: $(O) $(LIBRARY) $(EXAMPLES)
 
-examples/IpCountry/bin/debug/IpCountry.exe: examples/IpCountry/IpCountry.cs $(LIBRARY)
-	-mkdir examples\IpCountry\bin\debug
-	copy $(LIBRARY) examples\IpCountry\bin\debug
-	$(CSC) /r:$(LIBRARY) /out:examples/IpCountry/bin/debug/IpCountry.exe IpCountry\\IpCountry.cs
+tests: $(O) $(LIBRARY) $(TESTS)
 
-examples/Guess/bin/debug/Guess.exe: examples/Guess/Guess.cs $(LIBRARY)
-	-mkdir Guess\bin\debug
-	copy $(LIBRARY) Guess\bin\debug
-	$(CSC) /r:$(LIBRARY) /out:examples/Guess/bin/debug/Guess.exe Guess\\Guess.cs
+$(O): force
+	@if not exist $(O) mkdir $(O)
 
-examples/PropGuess/bin/debug/Guess.exe: examples/PropGuess/Guess.cs $(LIBRARY)
-	-mkdir PropGuess\bin\debug
-	copy $(LIBRARY) PropGuess\bin\debug
-	$(CSC) /r:$(LIBRARY) /out:examples/PropGuess/bin/debug/Guess.exe PropGuess\\Guess.cs
+$(O)\TestBackup.exe: tests\TestBackup\TestBackup.cs
+	$(CSC) /r:$(LIBRARY) /out:$@ $**
 
-examples/TransparentGuess/bin/debug/Guess.exe: examples/TransparentGuess/Guess.cs $(LIBRARY)
-	-mkdir TransparentGuess\bin\debug
-	copy $(LIBRARY) TransparentGuess\bin\debug
-	$(CSC) /r:$(LIBRARY) /out:examples/TransparentGuess/bin/debug/Guess.exe TransparentGuess\\Guess.cs
+$(O)\TestBit.exe: tests\TestBit\TestBit.cs
+	$(CSC) /r:$(LIBRARY) /out:$@ $**
 
-tests/TestBackup/bin/debug/TestBackup.exe: TestBackup/TestBackup.cs $(LIBRARY)
-	-mkdir TestBackup\bin\debug
-	copy $(LIBRARY) TestBackup\bin\debug
-	$(CSC) /r:$(LIBRARY) /out:TestBackup/bin/debug/TestBackup.exe TestBackup\\TestBackup.cs
+$(O)\TestBlob.exe: tests\TestBlob\TestBlob.cs
+	$(CSC) /r:$(LIBRARY) /out:$@ $**
 
-tests/TestBit/bin/debug/TestBit.exe: TestBit/TestBit.cs $(LIBRARY)
-	-mkdir TestBit\bin\debug
-	copy $(LIBRARY) TestBit\bin\debug
-	$(CSC) /r:$(LIBRARY) /out:TestBit/bin/debug/TestBit.exe TestBit\\TestBit.cs
+$(O)\TestCompoundIndex.exe: tests\TestCompoundIndex\TestCompoundIndex.cs
+	$(CSC) /r:$(LIBRARY) /out:$@ $**
 
-tests/TestBlob/bin/debug/TestBlob.exe: TestBlob/TestBlob.cs $(LIBRARY)
-	-mkdir TestBlob\bin\debug
-	copy $(LIBRARY) TestBlob\bin\debug
-	$(CSC) /r:$(LIBRARY) /out:TestBlob/bin/debug/TestBlob.exe TestBlob\\TestBlob.cs
+$(O)\TestConcur.exe: tests\TestConcur\TestConcur.cs
+	$(CSC) /r:$(LIBRARY) /out:$@ $**
 
-tests/TestCompoundIndex/bin/debug/TestCompoundIndex.exe: TestCompoundIndex/TestCompoundIndex.cs $(LIBRARY)
-	-mkdir TestCompoundIndex\bin\debug
-	copy $(LIBRARY) TestCompoundIndex\bin\debug
-	$(CSC) /r:$(LIBRARY) /out:TestCompoundIndex/bin/debug/TestCompoundIndex.exe TestCompoundIndex\\TestCompoundIndex.cs
+$(O)\TestEnumerator.exe: tests\TestEnumerator\TestEnumerator.cs
+	$(CSC) /r:$(LIBRARY) /out:$@ $**
 
-tests/TestConcur/bin/debug/TestConcur.exe: TestConcur/TestConcur.cs $(LIBRARY)
-	-mkdir TestConcur\bin\debug
-	copy $(LIBRARY) TestConcur\bin\debug
-	$(CSC) /r:$(LIBRARY) /out:TestConcur/bin/debug/TestConcur.exe TestConcur\\TestConcur.cs
+$(O)\TestGC.exe: tests\TestGC\TestGC.cs
+	$(CSC) /r:$(LIBRARY) /out:$@ $**
 
-tests/TestEnumerator/bin/debug/TestEnumerator.exe: TestEnumerator/TestEnumerator.cs $(LIBRARY)
-	-mkdir TestEnumerator\bin\debug
-	copy $(LIBRARY) TestEnumerator\bin\debug
-	$(CSC) /r:$(LIBRARY) /out:TestEnumerator/bin/debug/TestEnumerator.exe TestEnumerator\\TestEnumerator.cs
+$(O)\TestIndex.exe: tests\TestIndex\TestIndex.cs
+	$(CSC) /r:$(LIBRARY) /out:$@ $**
 
-tests/TestGC/bin/debug/TestGC.exe: TestGC/TestGC.cs $(LIBRARY)
-	-mkdir TestGC\bin\debug
-	copy $(LIBRARY) TestGC\bin\debug
-	$(CSC) /r:$(LIBRARY) /out:TestGC/bin/debug/TestGC.exe TestGC\\TestGC.cs
+$(O)\TestIndex2.exe: tests\TestIndex2\TestIndex2.cs
+	$(CSC) /r:$(LIBRARY) /out:$@ $**
 
-tests/TestIndex/bin/debug/TestIndex.exe: TestIndex/TestIndex.cs $(LIBRARY)
-	-mkdir TestIndex\bin\debug
-	copy $(LIBRARY) TestIndex\bin\debug
-	$(CSC) /r:$(LIBRARY) /out:TestIndex/bin/debug/TestIndex.exe TestIndex\\TestIndex.cs
+$(O)\TestList.exe: tests\TestList\TestList.cs
+	$(CSC) /r:$(LIBRARY) /out:$@ $**
 
-tests/TestIndex2/bin/debug/TestIndex2.exe: TestIndex2/TestIndex2.cs $(LIBRARY)
-	-mkdir TestIndex2\bin\debug
-	copy $(LIBRARY) TestIndex2\bin\debug
-	$(CSC) /r:$(LIBRARY) /out:TestIndex2/bin/debug/TestIndex2.exe TestIndex2\\TestIndex2.cs
+$(O)\TestR2.exe: tests\TestR2\TestR2.cs
+	$(CSC) /r:$(LIBRARY) /out:$@ $**
 
-examples/TestLink/bin/debug/TestLink.exe: examples/TestLink/TestLink.cs $(LIBRARY)
-	-mkdir TestLink\bin\debug
-	copy $(LIBRARY) TestLink\bin\debug
-	$(CSC) /r:$(LIBRARY) /out:examples/TestLink/bin/debug/TestLink.exe TestLink\\TestLink.cs
+$(O)\TestRaw.exe: tests\TestRaw\TestRaw.cs
+	$(CSC) /r:$(LIBRARY) /out:$@ $**
 
-tests/TestList/bin/debug/TestList.exe: TestList/TestList.cs $(LIBRARY)
-	-mkdir TestList\bin\debug
-	copy $(LIBRARY) TestList\bin\debug
-	$(CSC) /r:$(LIBRARY) /out:TestList/bin/debug/TestList.exe TestList\\TestList.cs
+$(O)\TestRtree.exe: tests\TestRtree\TestRtree.cs
+	$(CSC) /r:$(LIBRARY) /out:$@ $**
 
-tests/TestR2/bin/debug/TestR2.exe: TestR2/TestR2.cs $(LIBRARY)
-	-mkdir TestR2\bin\debug
-	copy $(LIBRARY) TestR2\bin\debug
-	$(CSC) /r:$(LIBRARY) /out:TestR2/bin/debug/TestR2.exe TestR2\\TestR2.cs
+$(O)\TestTimeSeries.exe: tests\TestTimeSeries\TestTimeSeries.cs
+	$(CSC) /r:$(LIBRARY) /out:$@ $**
 
-tests/TestRaw/bin/debug/TestRaw.exe: TestRaw/TestRaw.cs $(LIBRARY)
-	-mkdir TestRaw\bin\debug
-	copy $(LIBRARY) TestRaw\bin\debug
-	$(CSC) /r:$(LIBRARY) /out:TestRaw/bin/debug/TestRaw.exe TestRaw\\TestRaw.cs
+$(O)\TestTtree.exe: tests\TestTtree\TestTtree.cs
+	$(CSC) /r:$(LIBRARY) /out:$@ $**
 
-tests/TestRtree/bin/debug/TestRtree.exe: TestRtree/TestRtree.cs $(LIBRARY)
-	-mkdir TestRtree\bin\debug
-	copy $(LIBRARY) TestRtree\bin\debug
-	$(CSC) /r:$(LIBRARY) /out:TestRtree/bin/debug/TestRtree.exe TestRtree\\TestRtree.cs
+$(O)\TestXML.exe: tests\TestXML\TestXML.cs
+	$(CSC) /r:$(LIBRARY) /out:$@ $**
 
-examples/TestSOD/bin/debug/TestSOD.exe: TestSOD/TestSOD.cs $(LIBRARY)
-	-mkdir TestSOD\bin\debug
-	copy $(LIBRARY) TestSOD\bin\debug
-	$(CSC) /r:$(LIBRARY) /out:TestSOD/bin/debug/TestSOD.exe TestSOD\\TestSOD.cs
+$(O)\TestReplic.exe: tests\TestReplic\TestReplic.cs
+	$(CSC) /r:$(LIBRARY) /out:$@ $**
 
-examples/TestSSD/bin/debug/TestSSD.exe: examples/TestSSD/TestSSD.cs $(LIBRARY)
-	-mkdir TestSSD\bin\debug
-	copy $(LIBRARY) TestSSD\bin\debug
-	$(CSC) /r:$(LIBRARY) /out:examples/TestSSD/bin/debug/TestSSD.exe TestSSD\\TestSSD.cs
+$(O)\Guess.exe: examples\Guess\Guess.cs
+	$(CSC) /r:$(LIBRARY) /out:$@ $**
 
-tests/TestTimeSeries/bin/debug/TestTimeSeries.exe: TestTimeSeries/TestTimeSeries.cs $(LIBRARY)
-	-mkdir TestTimeSeries\bin\debug
-	copy $(LIBRARY) TestTimeSeries\bin\debug
-	$(CSC) /r:$(LIBRARY) /out:TestTimeSeries/bin/debug/TestTimeSeries.exe TestTimeSeries\\TestTimeSeries.cs
+$(O)\IpCountry.exe: examples\IpCountry\IpCountry.cs
+	$(CSC) /r:$(LIBRARY) /out:$@ $**
 
-tests/TestTtree/bin/debug/TestTtree.exe: TestTtree/TestTtree.cs $(LIBRARY)
-	-mkdir TestTtree\bin\debug
-	copy $(LIBRARY) TestTtree\bin\debug
-	$(CSC) /r:$(LIBRARY) /out:TestTtree/bin/debug/TestTtree.exe TestTtree\\TestTtree.cs
+$(O)\PropGuess.exe: examples\PropGuess\Guess.cs
+	$(CSC) /r:$(LIBRARY) /out:$@ $**
 
-tests/TestXML/bin/debug/TestXML.exe: TestXML/TestXML.cs $(LIBRARY)
-	-mkdir TestXML\bin\debug
-	copy $(LIBRARY) TestXML\bin\debug
-	$(CSC) /r:$(LIBRARY) /out:TestXML/bin/debug/TestXML.exe TestXML\\TestXML.cs
+$(O)\TestLink.exe: examples\TestLink\TestLink.cs
+	$(CSC) /r:$(LIBRARY) /out:$@ $**
 
-tests/TestReplic/bin/debug/TestReplic.exe: TestReplic/TestReplic.cs $(LIBRARY)
-	-mkdir TestReplic\bin\debug
-	copy $(LIBRARY) TestReplic\bin\debug
-	$(CSC) /r:$(LIBRARY) /out:TestReplic/bin/debug/TestReplic.exe TestReplic\\TestReplic.cs
+$(O)\TestSOD.exe: TestSOD\TestSOD.cs
+	$(CSC) /r:$(LIBRARY) /out:$@ $**
+
+$(O)\TestSSD.exe: examples\TestSSD\TestSSD.cs
+	$(CSC) /r:$(LIBRARY) /out:$@ $**
+
+$(O)\TransparentGuess.exe: examples\TransparentGuess\Guess.cs
+	$(CSC) /r:$(LIBRARY) /out:$@ $**
+
+force: ;

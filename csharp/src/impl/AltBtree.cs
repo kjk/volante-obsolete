@@ -2349,7 +2349,7 @@ namespace NachoDB.Impl
                 }
             }
             
-            protected internal void  gotoNextItem(BtreePage pg, int pos)
+            protected internal void gotoNextItem(BtreePage pg, int pos)
             {
                 if (order == IterationOrder.AscentOrder)
                 {
