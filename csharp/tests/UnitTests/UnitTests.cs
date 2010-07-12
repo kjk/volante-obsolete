@@ -39,7 +39,7 @@ public class Record : Persistent
     public long intKey;
 }
 
-class StringInt : Persistent
+public class StringInt : Persistent
 {
     public string s;
     public int no;
