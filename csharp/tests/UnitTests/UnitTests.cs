@@ -56,7 +56,7 @@ class StringInt : Persistent
 public class UnitTest1
 {
 #if USE_GENERICS
-    public static void CheckStrings(Index<string,int> root, string[] strs)
+    public static void CheckStrings(Index<string,StringInt> root, string[] strs)
 #else
     public static void CheckStrings(Index root, string[] strs)
 #endif
