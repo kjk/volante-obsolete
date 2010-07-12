@@ -80,7 +80,7 @@ public class UnitTest1
         Storage db = StorageFactory.CreateStorage();
         db.Open(dbName);
 #if USE_GENERICS
-        Index<string,int> root = (Index<string,StringInt>)db.Root;
+        Index<string,StringInt> root = (Index<string,StringInt>)db.Root;
 #else
         Index root = (Index)db.Root;
 #endif
