@@ -39,7 +39,7 @@ NACHODB=$(OUTDIR)/NachoDB.dll
 
 TESTS_NAMES=TestBackup TestBit TestBlob TestCompoundIndex TestConcur TestEnumerator\
 	TestGC TestIndex TestIndex2 TestList TestR2 TestRaw TestReplic TestRtree\
-	TestTimeSeries TestTtree TestXML
+	TestTimeSeries TestTtree TestXML UnitTests
 TESTS = $(patsubst %, $(OUTDIR)/%.exe, ${TESTS_NAMES})
 
 EXAMPLES_NAMES=Guess IpCountry PropGuess TestLink TestSOD TestSSD TransparentGuess
@@ -114,6 +114,9 @@ $(OUTDIR)/TestTtree.exe: tests/TestTtree/TestTtree.cs
 	$(CSC) -t:exe -r:$(NACHODB) -out:$@ $<
 
 $(OUTDIR)/TestXML.exe: tests/TestXML/TestXML.cs
+	$(CSC) -t:exe -r:$(NACHODB) -out:$@ $<
+
+$(OUTDIR)/UnitTests.exe: tests/UnitTests/UnitTests.cs
 	$(CSC) -t:exe -r:$(NACHODB) -out:$@ $<
 
 $(OUTDIR)/Guess.exe: examples/Guess/Guess.cs
