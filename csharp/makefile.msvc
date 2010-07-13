@@ -1,7 +1,6 @@
 # nmake -f makefile.msvc
 # Arguments:
 # CFG=[dbg|rel] (default: dbg)
-# GENERICS=[yes|no] (default: no)
 # OMIT_XML=[yes|no] - default: no
 # OMIT_REPLICATION=[yes|no] - default: no
 
@@ -16,11 +15,6 @@ O=bin\$(CFG)
 
 !if "$(CFG)"=="rel"
 CSC_FLAGS=$(CSC_FLAGS) /optimize+
-!endif
-
-!if "$(GENERICS)"=="yes"
-CSC_FLAGS=$(CSC_FLAGS) /d:USE_GENERICS
-O=$(O)-generics
 !endif
 
 !if "$(OMIT_XML)"=="yes"

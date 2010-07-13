@@ -13,7 +13,6 @@ namespace NachoDB.Impl
             unique = true;
         }
 
-
         public override bool Contains(T o) 
         {
             Key key = new Key(o);
@@ -81,7 +80,7 @@ namespace NachoDB.Impl
             {
                 return true;
             }
-            ISet<T> s = o as ISet<T>;
+            NachoDB.ISet<T> s = o as NachoDB.ISet<T>;
             if (s == null) 
             {
                 return false;
