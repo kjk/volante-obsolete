@@ -8,11 +8,7 @@ class SpatialObject : Persistent
 }
 
 public class TestRtree : Persistent { 
-#if USE_GENERICS
     SpatialIndex<SpatialObject> index;
-#else
-    SpatialIndex index;
-#endif
 
     const int nObjectsInTree = 1000;
     const int nIterations = 100000;
@@ -22,15 +18,11 @@ public class TestRtree : Persistent {
         SpatialObject so;
         Rectangle r;
         DateTime start = DateTime.Now;
-	db.Open("testrtree.dbs");
+        db.Open("testrtree.dbs");
         TestRtree root = (TestRtree)db.Root;
         if (root == null) { 
             root = new TestRtree();
-#if USE_GENERICS
             root.index = db.CreateSpatialIndex<SpatialObject>();
-#else
-            root.index = db.CreateSpatialIndex();
-#endif
             db.Root = root;
         }
 
@@ -40,19 +32,10 @@ public class TestRtree : Persistent {
             int j = i % nObjectsInTree;
             if (i >= nObjectsInTree) { 
                 r = rectangles[j];
-#if USE_GENERICS
                 SpatialObject[] sos = root.index.Get(r);
                 SpatialObject   po = null;
-#else
-                IPersistent[] sos = root.index.Get(r);
-                IPersistent po = null;
-#endif
                 for (int k = 0; k < sos.Length; k++) { 
-#if USE_GENERICS
                     so = sos[k];
-#else
-                    so = (SpatialObject)sos[k];
-#endif
                     if (r.Equals(so.rect)) { 
                         po = so;
                     } else { 

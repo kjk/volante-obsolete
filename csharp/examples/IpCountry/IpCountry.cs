@@ -10,13 +10,8 @@ public class IpCountry
     const int PagePoolSize = 32*1024*1024;
 
     class Root : Persistent { 
-#if USE_GENERICS
         internal Index<string,Country> countries;
         internal PatriciaTrie<Country> trie;
-#else
-        internal Index        countries;
-        internal PatriciaTrie trie;
-#endif
     }
 
     class Country : Persistent { 
@@ -35,13 +30,8 @@ public class IpCountry
         Root root = (Root)db.Root;
         if (root == null) { 
             root = new Root();
-#if USE_GENERICS
             root.countries = db.CreateIndex<string,Country>(true);
             root.trie = db.CreatePatriciaTrie<Country>();
-#else
-            root.countries = db.CreateIndex(typeof(string), true);
-            root.trie = db.CreatePatriciaTrie();
-#endif
             loadCountries(root.countries);
             db.Root = root;
         }
@@ -51,11 +41,7 @@ public class IpCountry
 
         string ip;
         while ((ip = Console.ReadLine()) != null) { 
-#if USE_GENERICS
             Country country = root.trie.FindBestMatch(PatriciaTrieKey.FromIpAddress(ip));
-#else
-            Country country = (Country)root.trie.FindBestMatch(PatriciaTrieKey.FromIpAddress(ip));
-#endif
             if (country != null) { 
                 Console.WriteLine(ip + "->" + country.name);
             }
@@ -89,19 +75,11 @@ public class IpCountry
         }
     }
 
-#if USE_GENERICS
     static void addCountry(Index<string,Country> countries, string country, string iso) { 
-#else
-    static void addCountry(Index countries, string country, string iso) { 
-#endif
         countries[iso] = new Country(country);
     }
 
-#if USE_GENERICS
     static void loadCountries(Index<string,Country> countries) { 
-#else
-    static void loadCountries(Index countries) { 
-#endif
         addCountry(countries, "Burundi", "BI");
         addCountry(countries, "Central African Republic", "CF");
         addCountry(countries, "Chad", "TD");

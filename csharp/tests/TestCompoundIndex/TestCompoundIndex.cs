@@ -24,15 +24,9 @@ public class TestCompoundIndex
         } 
         db.Open("testcidx.dbs", pagePoolSize);
 
-#if USE_GENERICS
         MultiFieldIndex<Record> root = (MultiFieldIndex<Record>)db.Root;
         if (root == null) { 
             root = db.CreateFieldIndex<Record>(new string[]{"intKey", "strKey"}, true);
-#else
-        FieldIndex root = (FieldIndex)db.Root;
-        if (root == null) { 
-            root = db.CreateFieldIndex(typeof(Record), new string[]{"intKey", "strKey"}, true);
-#endif
             db.Root = root;
         }
         DateTime start = DateTime.Now;
@@ -55,11 +49,7 @@ public class TestCompoundIndex
             key = (3141592621L*key + 2718281829L) % 1000000007L;
             int intKey = (int)((ulong)key >> 32);            
             String strKey = Convert.ToString((int)key);
-#if USE_GENERICS
             Record rec = root.Get(new Key(new Object[]{intKey, strKey}));
-#else
-            Record rec = (Record)root.Get(new Key(new Object[]{intKey, strKey}));
-#endif
             Debug.Assert(rec != null && rec.intKey == intKey && rec.strKey.Equals(strKey));
             if (intKey < minKey) { 
                 minKey = intKey;
@@ -104,11 +94,7 @@ public class TestCompoundIndex
             key = (3141592621L*key + 2718281829L) % 1000000007L;
             int intKey = (int)((ulong)key >> 32);            
             String strKey = Convert.ToString((int)key);
-#if USE_GENERICS
             Record rec = root.Get(new Key(new Object[]{intKey, strKey}));
-#else
-            Record rec = (Record)root.Get(new Key(new Object[]{intKey, strKey}));
-#endif
             Debug.Assert(rec != null && rec.intKey == intKey && rec.strKey.Equals(strKey));
             Debug.Assert(root.Contains(rec));
             root.Remove(rec);

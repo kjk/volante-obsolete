@@ -15,13 +15,8 @@ public class TestEnumerator
 
     class Indices : Persistent 
     {
-#if USE_GENERICS
         internal Index<string,Record> strIndex;
         internal Index<long,Record> intIndex;
-#else
-        internal Index strIndex;
-        internal Index intIndex;
-#endif
     }
 
     static public void Main(string[] args) 
@@ -44,24 +39,13 @@ public class TestEnumerator
         if (root == null) 
         { 
             root = new Indices();
-#if USE_GENERICS
             root.strIndex = db.CreateIndex<string,Record>(false);
             root.intIndex = db.CreateIndex<long,Record>(false);
-#else
-            root.strIndex = db.CreateIndex(typeof(string), false);
-            root.intIndex = db.CreateIndex(typeof(long), false);
-#endif
             db.Root = root;
         }
-#if USE_GENERICS
         Index<long,Record>   intIndex = root.intIndex;
         Index<string,Record> strIndex = root.strIndex;
         Record[] records;
-#else
-        Index intIndex = root.intIndex;
-        Index strIndex = root.strIndex;
-        IPersistent[] records;
-#endif
         DateTime start = DateTime.Now;
         long key = 1999;
         int i, j;

@@ -55,20 +55,12 @@ public class StringInt : Persistent
 
 public class UnitTest1
 {
-#if USE_GENERICS
     public static void CheckStrings(Index<string,StringInt> root, string[] strs)
-#else
-    public static void CheckStrings(Index root, string[] strs)
-#endif
     {
         int no = 1;
         foreach (string s in strs)
         {
-#if USE_GENERICS
             StringInt o = root[s];
-#else
-            StringInt o = (StringInt)root[s];
-#endif
             UnitTests.AssertThat(o.no == no++);
         }
     }
@@ -79,17 +71,9 @@ public class UnitTest1
         UnitTests.SafeDeleteFile(dbName);
         Storage db = StorageFactory.CreateStorage();
         db.Open(dbName);
-#if USE_GENERICS
         Index<string,StringInt> root = (Index<string,StringInt>)db.Root;
-#else
-        Index root = (Index)db.Root;
-#endif
         UnitTests.AssertThat(null == root);
-#if USE_GENERICS
         root = db.CreateIndex<string,StringInt>(true);
-#else
-        root = db.CreateIndex(typeof(string), true);
-#endif
         db.Root = root;
 
         int no = 1;
@@ -105,11 +89,7 @@ public class UnitTest1
 
         db = StorageFactory.CreateStorage();
         db.Open(dbName);
-#if USE_GENERICS
         root = (Index<string,StringInt>)db.Root;
-#else
-        root = (Index)db.Root;
-#endif
         UnitTests.AssertThat(null != root);
         CheckStrings(root, strs);
         db.Close();
@@ -120,11 +100,7 @@ public class UnitTest2
 {
     public class Root : Persistent
     {
-#if USE_GENERICS
         public Index<string, Record> strIndex;
-#else
-        public Index strIndex;
-#endif
     }
     
     public static void Run()
@@ -138,11 +114,7 @@ public class UnitTest2
         Root root = (Root)db.Root;
         UnitTests.AssertThat(null == root);
         root = new Root();
-#if USE_GENERICS
         root.strIndex = db.CreateIndex<string,Record>(true);
-#else
-        root.strIndex = db.CreateIndex(typeof(String), true);
-#endif
         db.Root = root;        
         int no = 0;
         string[] strs = new string[] { "one", "two", "three", "four" };

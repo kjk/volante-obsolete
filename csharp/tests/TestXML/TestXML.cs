@@ -18,15 +18,9 @@ public class TestXML
 
     class Root : Persistent
     {
-#if USE_GENERICS
         internal Index<string,Record>    strIndex;
         internal FieldIndex<long,Record> intIndex;
         internal MultiFieldIndex<Record> compoundIndex;
-#else
-        internal Index strIndex;
-        internal FieldIndex intIndex;
-        internal FieldIndex compoundIndex;
-#endif
         internal Point      point;
     }
 
@@ -43,28 +37,16 @@ public class TestXML
         if (root == null)
         {
             root = new Root();
-#if USE_GENERICS
             root.strIndex = db.CreateIndex<string,Record>(true);
             root.intIndex = db.CreateFieldIndex<long,Record>("intKey", true);
             root.compoundIndex = db.CreateFieldIndex<Record>(new string[]{"strKey", "intKey"}, true);
-#else
-            root.strIndex = db.CreateIndex(typeof(System.String), true);
-            root.intIndex = db.CreateFieldIndex(typeof(Record), "intKey", true);
-            root.compoundIndex = db.CreateFieldIndex(typeof(Record), new String[]{"strKey", "intKey"}, true);
-#endif
             root.point.x = 1;
             root.point.y = 2;
             db.Root = root;
         }
-#if USE_GENERICS
         FieldIndex<long,Record> intIndex = root.intIndex;
         MultiFieldIndex<Record> compoundIndex = root.compoundIndex;
         Index<string,Record> strIndex = root.strIndex;
-#else
-        FieldIndex intIndex = root.intIndex;
-        FieldIndex compoundIndex = root.compoundIndex;
-        Index strIndex = root.strIndex;
-#endif
         
         DateTime start = DateTime.Now;
         long key = 1999;
@@ -109,15 +91,9 @@ public class TestXML
         {
             key = (3141592621L * key + 2718281829L) % 1000000007L;
             String strKey = System.Convert.ToString(key);
-#if USE_GENERICS
             Record rec1 = intIndex[key];
             Record rec2 = strIndex[strKey];
             Record rec3 = compoundIndex.Get(new Key(strKey, key));
-#else
-            Record rec1 = (Record) intIndex.Get(new Key(key));
-            Record rec2 = (Record) strIndex.Get(new Key(strKey));
-            Record rec3 = (Record)compoundIndex.Get(new Key(strKey, key));
-#endif
             Debug.Assert(rec1 != null);
             Debug.Assert(rec1 == rec2);
             Debug.Assert(rec1 == rec3);

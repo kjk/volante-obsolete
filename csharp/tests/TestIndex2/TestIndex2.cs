@@ -11,16 +11,10 @@ public class Record : Persistent
 
 public class Root : Persistent
 {
-#if USE_GENERICS
     public SortedCollection<string,Record> strIndex;
     public SortedCollection<long,Record>   intIndex;
-#else
-    public SortedCollection strIndex;
-    public SortedCollection intIndex;
-#endif
 }
 
-#if USE_GENERICS
 public class IntRecordComparator : PersistentComparator<long,Record> 
 {
     public override int CompareMembers(Record m1, Record m2) 
@@ -35,24 +29,7 @@ public class IntRecordComparator : PersistentComparator<long,Record>
         return diff < 0 ? -1 : diff == 0 ? 0 : 1;
     }
 }
-#else
-public class IntRecordComparator : PersistentComparator 
-{
-    public override int CompareMembers(IPersistent m1, IPersistent m2) 
-    {
-        long diff = ((Record)m1).intKey - ((Record)m2).intKey;
-        return diff < 0 ? -1 : diff == 0 ? 0 : 1;
-    }
 
-    public override int CompareMemberWithKey(IPersistent mbr, object key) 
-    {
-        long diff = ((Record)mbr).intKey - (long)key;
-        return diff < 0 ? -1 : diff == 0 ? 0 : 1;
-    }
-}
-#endif
-
-#if USE_GENERICS
 public class StrRecordComparator : PersistentComparator<string,Record> 
 {
     public override int CompareMembers(Record m1, Record m2) 
@@ -65,20 +42,6 @@ public class StrRecordComparator : PersistentComparator<string,Record>
         return mbr.strKey.CompareTo(key);
     }
 }
-#else
-public class StrRecordComparator : PersistentComparator 
-{
-    public override int CompareMembers(IPersistent m1, IPersistent m2) 
-    {
-        return ((Record)m1).strKey.CompareTo(((Record)m2).strKey);
-    }
-
-    public override int CompareMemberWithKey(IPersistent mbr, object key) 
-    {
-        return ((Record)mbr).strKey.CompareTo((string)key);
-    }
-}
-#endif
 
 public class TestIndex
 {
@@ -95,22 +58,12 @@ public class TestIndex
         if (root == null)
         {
             root = new Root();
-#if USE_GENERICS
             root.strIndex = db.CreateSortedCollection<string,Record>(new StrRecordComparator(), true);
             root.intIndex = db.CreateSortedCollection<long,Record>(new IntRecordComparator(), true);
-#else
-            root.strIndex = db.CreateSortedCollection(new StrRecordComparator(), true);
-            root.intIndex = db.CreateSortedCollection(new IntRecordComparator(), true);
-#endif
             db.Root = root;
         }
-#if USE_GENERICS
         SortedCollection<long,Record> intIndex = root.intIndex;
         SortedCollection<string,Record> strIndex = root.strIndex;
-#else
-        SortedCollection intIndex = root.intIndex;
-        SortedCollection strIndex = root.strIndex;
-#endif
         DateTime start = DateTime.Now;
         long key = 1999;
         for (i = 0; i < nRecords; i++)
@@ -129,13 +82,8 @@ public class TestIndex
         for (i = 0; i < nRecords; i++)
         {
             key = (3141592621L * key + 2718281829L) % 1000000007L;
-#if USE_GENERICS
             Record rec1 = intIndex[key];
             Record rec2 = strIndex[Convert.ToString(key)];
-#else
-            Record rec1 = (Record) intIndex[key];
-            Record rec2 = (Record) strIndex[Convert.ToString(key)];
-#endif
             Debug.Assert(rec1 != null && rec1 == rec2);
         }     
         System.Console.WriteLine("Elapsed time for performing " + nRecords * 2 + " index searches: " + (DateTime.Now - start));
@@ -176,11 +124,7 @@ public class TestIndex
         for (i = 0; i < nRecords; i++)
         {
             key = (3141592621L * key + 2718281829L) % 1000000007L;
-#if USE_GENERICS
             Record rec = intIndex[key];
-#else
-            Record rec = (Record) intIndex[key];
-#endif
             intIndex.Remove(rec);
             strIndex.Remove(rec);
             rec.Deallocate();

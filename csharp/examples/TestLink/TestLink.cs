@@ -6,22 +6,14 @@ class Detail : Persistent
     internal String name;
     internal String color;
     internal double weight;
-#if USE_GENERICS
     internal Link<Order> orders;
-#else
-    internal Link   orders;
-#endif
 }
 
 class Supplier : Persistent 
 { 
     internal String name;
     internal String address;
-#if USE_GENERICS
     internal Link<Order> orders;
-#else
-    internal Link   orders;
-#endif
 }
 
 class Order : Persistent 
@@ -34,13 +26,8 @@ class Order : Persistent
 
 class Root : Persistent 
 {
-#if USE_GENERICS
     internal FieldIndex<string,Detail> details;
     internal FieldIndex<string,Supplier> suppliers;
-#else
-    internal FieldIndex  details;
-    internal FieldIndex  suppliers;
-#endif
 }
 
 public class TestLink
@@ -87,13 +74,8 @@ public class TestLink
         
         if (root == null) { 
             root = new Root();
-#if USE_GENERICS
             root.details = db.CreateFieldIndex<string,Detail>("name", true);
             root.suppliers = db.CreateFieldIndex<string,Supplier>("name", true);
-#else
-            root.details = db.CreateFieldIndex(typeof(Detail), "name", true);
-            root.suppliers = db.CreateFieldIndex(typeof(Supplier), "name", true);
-#endif
             db.Root = root;
         }
         while (true) { 
@@ -119,11 +101,7 @@ public class TestLink
                 supplier = new Supplier();
                 supplier.name = input("Supplier name: ");
                 supplier.address = input("Supplier address: ");
-#if USE_GENERICS
                 supplier.orders = db.CreateLink<Order>();
-#else
-                supplier.orders = db.CreateLink();
-#endif
                 root.suppliers.Put(supplier);
                 break;
               case 2:
@@ -131,31 +109,19 @@ public class TestLink
                 detail.name = input("Detail name: ");
                 detail.weight = inputReal("Detail weight: ");
                 detail.color = input("Detail color: ");
-#if USE_GENERICS
                 detail.orders = db.CreateLink<Order>();
-#else
-                detail.orders = db.CreateLink();
-#endif
                 root.details.Put(detail);
                 break;
               case 3:
                 order = new Order();
                 name = input("Supplier name: ");
-#if USE_GENERICS
                 order.supplier = root.suppliers[name];
-#else
-                order.supplier = (Supplier)root.suppliers[name];
-#endif
                 if (order.supplier == null) {
                     Console.WriteLine("No such supplier");
                     continue;
                 }
                 name = input("Detail name: ");
-#if USE_GENERICS
                 order.detail = root.details[name];
-#else
-                order.detail = (Detail)root.details[name];
-#endif
                 if (order.detail == null) {
                     Console.WriteLine("No such detail");
                     continue;
@@ -169,11 +135,7 @@ public class TestLink
                 break;
               case 4:
                 name = input("Supplier name prefix: ");
-#if USE_GENERICS
                 suppliers = root.suppliers.Get(new Key(name), new Key(name + (char)255, false));
-#else
-                suppliers = (Supplier[])root.suppliers.Get(new Key(name), new Key(name + (char)255, false));
-#endif
                 if (suppliers.Length == 0) {
                     Console.WriteLine("No such suppliers found");
                 } else {
@@ -184,11 +146,7 @@ public class TestLink
                 continue;
               case 5:
                 name = input("Detail name prefix: ");
-#if USE_GENERICS
                 details = root.details.Get(new Key(name), new Key(name + (char)255, false));
-#else
-                details = (Detail[])root.details.Get(new Key(name), new Key(name + (char)255, false));
-#endif
                 if (details.Length == 0) {
                     Console.WriteLine("No such details found");
                 } else {
@@ -199,11 +157,7 @@ public class TestLink
                 continue;
               case 6:
                 name = input("Detail name: ");
-#if USE_GENERICS
                 detail = (Detail)root.details[name];
-#else
-                detail = (Detail)root.details[name];
-#endif
                 if (detail == null) { 
                     Console.WriteLine("No such detail");
                 } else {
@@ -214,11 +168,7 @@ public class TestLink
                 continue;
               case 7:
                 name = input("Supplier name: ");
-#if USE_GENERICS
                 supplier = (Supplier)root.suppliers[name];
-#else
-                supplier = (Supplier)root.suppliers[name];
-#endif
                 if (supplier == null) { 
                     Console.WriteLine("No such supplier");
                 } else {

@@ -10,11 +10,7 @@ public class TestR2 : Persistent
         public RectangleR2 rect;
     }
     
-#if USE_GENERICS
     SpatialIndexR2<SpatialObject> index;
-#else
-    SpatialIndexR2 index;
-#endif
 
     const int nObjectsInTree = 1000;
     const int nIterations = 100000;
@@ -34,11 +30,7 @@ public class TestR2 : Persistent
         if (root == null) 
         { 
             root = new TestR2();
-#if USE_GENERICS
             root.index = db.CreateSpatialIndexR2<SpatialObject>();
-#else
-            root.index = db.CreateSpatialIndexR2();
-#endif
             db.Root = root;
         }
 
@@ -50,21 +42,12 @@ public class TestR2 : Persistent
             if (i >= nObjectsInTree) 
             { 
                 r = rectangles[j];
-#if USE_GENERICS
                 SpatialObject[] sos = root.index.Get(r);
                 SpatialObject   po = null;
-#else
-                IPersistent[] sos = root.index.Get(r);
-                IPersistent po = null;
-#endif
                 int n = 0;
                 for (int k = 0; k < sos.Length; k++) 
                 { 
-#if USE_GENERICS
                     so = sos[k];
-#else
-                    so = (SpatialObject)sos[k];
-#endif
                     if (r.Equals(so.rect)) 
                     { 
                         po = so;

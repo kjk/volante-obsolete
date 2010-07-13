@@ -23,49 +23,11 @@ public class TestTimeSeries
         }
     }
     
-#if USE_GENERICS
     public const int N_ELEMS_PER_BLOCK = 100;
-#else
-    public class QuoteBlock : TimeSeriesBlock 
-    {
-        private Quote[] quotes;
-        
-        public const int N_ELEMS_PER_BLOCK = 100;
-
-        public override TimeSeriesTick this[int i] 
-        {
-            get 
-            {
-                return quotes[i];
-            }
-            set 
-            {
-                quotes[i] = (Quote)value;
-            }
-        }
-
-        public override Array Ticks 
-        {
-            get 
-            {
-                return quotes;
-            }
-        }
-
-        public QuoteBlock() 
-        {
-            quotes = new Quote[N_ELEMS_PER_BLOCK];
-        }
-    }
-#endif
 
     class Stock : Persistent { 
         public string     name;
-#if USE_GENERICS
         public TimeSeries<Quote> quotes;
-#else
-        public TimeSeries quotes;
-#endif
     }
 
     const int nElements = 1000000;
@@ -77,7 +39,6 @@ public class TestTimeSeries
 
         Storage db = StorageFactory.CreateStorage();
         db.Open("testts.dbs", pagePoolSize);
-#if USE_GENERICS
         FieldIndex<string,Stock> stocks = (FieldIndex<string,Stock>)db.Root;
         if (stocks == null) { 
             stocks = db.CreateFieldIndex<string,Stock>("name", true);
@@ -89,19 +50,6 @@ public class TestTimeSeries
         } else { 
             stock = stocks["BORL"];
         }
-#else
-        FieldIndex stocks = (FieldIndex)db.Root;
-        if (stocks == null) { 
-            stocks = db.CreateFieldIndex(typeof(Stock), "name", true);
-            stock = new Stock();
-            stock.name = "BORL";
-            stock.quotes = db.CreateTimeSeries(typeof(QuoteBlock), QuoteBlock.N_ELEMS_PER_BLOCK*TICKS_PER_SECOND*2);
-            stocks.Put(stock);
-            db.Root = stocks;
-        } else { 
-            stock = (Stock)stocks["BORL"];
-        }
-#endif
         Random rand = new Random(2004);
         DateTime start = DateTime.Now;
         int time = getSeconds(start) - nElements;

@@ -11,13 +11,8 @@ class PObject : Persistent
 
 class StorageRoot : Persistent {
     internal PObject list;
-#if USE_GENERICS
     internal Index<string,PObject> strIndex;
     internal Index<long,PObject>   intIndex;
-#else
-    internal Index   strIndex;
-    internal Index   intIndex;
-#endif
 }
 
 public class TestGC { 
@@ -45,13 +40,8 @@ public class TestGC {
         db.Open("testgc.dbs");
         db.GcThreshold = 1000000;
         StorageRoot root = new StorageRoot();
-#if USE_GENERICS
         Index<string,PObject> strIndex = root.strIndex = db.CreateIndex<string,PObject>(true);
         Index<long,PObject> intIndex = root.intIndex = db.CreateIndex<long,PObject>(true);
-#else
-        Index strIndex = root.strIndex = db.CreateIndex(typeof(String), true);
-        Index intIndex = root.intIndex = db.CreateIndex(typeof(long), true);
-#endif
         db.Root = root;
         long insKey = 1999;
         long remKey = 1999;

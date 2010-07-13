@@ -6,33 +6,20 @@ public class Supplier : Persistent
 {
     public String name;
     public String location;
-#if USE_GENERICS
     public Relation<Order,Supplier> orders;
-#else
-    public Relation orders;
-#endif
 }
 
 public class Detail : Persistent 
 {
     public String id;
     public float  weight;
-#if USE_GENERICS
     public Relation<Order,Detail> orders;
-#else
-    public Relation orders;
-#endif
 }
 
 public class Order : Persistent 
 { 
-#if USE_GENERICS
     public Relation<Order,Supplier> supplier;
     public Relation<Order,Detail> detail;
-#else
-    public Relation supplier;
-    public Relation detail;
-#endif
     public int      quantity;
     public long     price;
 
@@ -48,13 +35,8 @@ public class Order : Persistent
 
 public class TestSOD : Persistent 
 {
-#if USE_GENERICS
     public FieldIndex<string,Supplier> supplierName;
     public FieldIndex<string,Detail>   detailId;
-#else
-    public FieldIndex supplierName;
-    public FieldIndex detailId;
-#endif
 
     static void skip(String prompt) 
     {
@@ -112,13 +94,8 @@ public class TestSOD : Persistent
         Detail     detail;
         Order      order;
         Order[]    orders;
-#if USE_GENERICS
         Projection<Detail,Order> d2o = new Projection<Detail,Order>("orders");
         Projection<Supplier,Order> s2o = new Projection<Supplier,Order>("orders");
-#else
-        Projection d2o = new Projection(typeof(Detail), "orders");
-        Projection s2o = new Projection(typeof(Supplier), "orders");
-#endif
         int        i;
 
         db.Open("testsod.dbs");
@@ -127,13 +104,8 @@ public class TestSOD : Persistent
         if (root == null) 
         { 
             root = new TestSOD();
-#if USE_GENERICS
             root.supplierName = db.CreateFieldIndex<string,Supplier>("name", true);
             root.detailId = db.CreateFieldIndex<string,Detail>("id", true);
-#else
-            root.supplierName = db.CreateFieldIndex(typeof(Supplier), "name", true);
-            root.detailId = db.CreateFieldIndex(typeof(Detail), "id", true);
-#endif
             db.Root = root;
         }
         while (true) 
@@ -156,11 +128,7 @@ public class TestSOD : Persistent
                         supplier = new Supplier();
                         supplier.name = input("Supplier name: ");
                         supplier.location = input("Supplier location: ");
-#if USE_GENERICS
                         supplier.orders = db.CreateRelation<Order,Supplier>(supplier);
-#else
-                        supplier.orders = db.CreateRelation(supplier);
-#endif
                         root.supplierName.Put(supplier);
                         db.Commit();
                         continue;
@@ -168,30 +136,18 @@ public class TestSOD : Persistent
                         detail = new Detail();
                         detail.id = input("Detail id: ");
                         detail.weight = (float)inputDouble("Detail weight: ");
-#if USE_GENERICS
                         detail.orders = db.CreateRelation<Order,Detail>(detail);
-#else
-                        detail.orders = db.CreateRelation(detail);
-#endif
                         root.detailId.Put(detail);
                         db.Commit();
                         continue;
                     case 3:
-#if USE_GENERICS
                         supplier = root.supplierName[input("Supplier name: ")];
-#else
-                        supplier = (Supplier)root.supplierName[input("Supplier name: ")];
-#endif
                         if (supplier == null) 
                         { 
                             Console.WriteLine("No such supplier!");
                             break;
                         }
-#if USE_GENERICS
                         detail = root.detailId[input("Detail ID: ")];
-#else
-                        detail = (Detail)root.detailId[input("Detail ID: ")];
-#endif
                         if (detail == null) 
                         { 
                             Console.WriteLine("No such detail!");
@@ -232,11 +188,7 @@ public class TestSOD : Persistent
                         }
                         break;
                     case 7:
-#if USE_GENERICS
                         supplier = root.supplierName[input("Supplier name: ")];
-#else
-                        supplier = (Supplier)root.supplierName[input("Supplier name: ")];
-#endif
                         if (supplier == null) 
                         { 
                             Console.WriteLine("No such supplier!");
@@ -254,22 +206,13 @@ public class TestSOD : Persistent
                         s2o.Reset();
                         s2o.Project(root.supplierName.StartsWith(input("Supplier name prefix: ")));
                         s2o.Join(d2o);
-#if USE_GENERICS
                         orders = s2o.ToArray();
-#else
-                        orders = (Order[])s2o.ToArray(typeof(Order));
-#endif
                         Array.Sort(orders, 0, orders.Length, Order.quantityComparer);
                         for (i = 0; i < orders.Length; i++) 
                         { 
                             order = orders[i];
-#if USE_GENERICS
                             supplier = order.supplier.Owner;
                             detail = order.detail.Owner;
-#else
-                            supplier = (Supplier)order.supplier.Owner;
-                            detail = (Detail)order.detail.Owner;
-#endif
                             Console.WriteLine("Detail ID: " + detail.id + ", supplier name: " 
                                 + supplier.name + ", quantity: " + order.quantity);
                         }
