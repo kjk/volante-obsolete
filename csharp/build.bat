@@ -8,6 +8,7 @@ IF ERRORLEVEL 1 GOTO NEEDSVS
 
 :BUILD
 nmake -f makefile.msvc
+@rem nmake -f makefile.msvc library GENERICS=yes
 goto END
 
 :NEEDSVS

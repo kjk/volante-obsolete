@@ -9,7 +9,7 @@ namespace NachoDB.Impl
     using NachoDB;
     
 #if USE_GENERICS
-    class AltPersistentSet<T> : AltBtree<T,T>, ISet<T> where T:class,IPersistent
+    class AltPersistentSet<T> : AltBtree<T,T>, NachoDB.ISet<T> where T:class,IPersistent
 #else
     class AltPersistentSet : AltBtree, ISet
 #endif
