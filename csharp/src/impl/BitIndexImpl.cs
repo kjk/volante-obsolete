@@ -1,21 +1,13 @@
 namespace NachoDB.Impl
 {
     using System;
-#if USE_GENERICS
-    using System.Collections.Generic;
-#else
     using System.Collections;
-#endif
+    using System.Collections.Generic;
     using System.Diagnostics;
     using NachoDB;
 
-#if USE_GENERICS
     class BitIndexImpl<T> : Btree<IPersistent,T>, BitIndex<T> where T:class,IPersistent
-#else
-    class BitIndexImpl : Btree, BitIndex 
-#endif
     { 
-    
         class Key 
         { 
             internal int key;
@@ -33,11 +25,7 @@ namespace NachoDB.Impl
         {
         }
 
-#if USE_GENERICS
         public int this[T obj] 
-#else
-        public int this[IPersistent obj] 
-#endif
         {
             get 
             {
@@ -49,30 +37,17 @@ namespace NachoDB.Impl
             }
         } 
          
-#if USE_GENERICS
         public int Get(T obj) 
-#else
-        public int Get(IPersistent obj) 
-#endif
         {
             StorageImpl db = (StorageImpl)Storage;
             if (root == 0) 
             { 
                 throw new StorageError(StorageError.ErrorCode.KEY_NOT_FOUND);
             } 
-#if USE_GENERICS
             return BitIndexPage.find(db, root, obj.Oid, height);
-#else
-            return BitIndexPage.find(db, root, obj.Oid, height);
-#endif
         }
- 
 
-#if USE_GENERICS
         public void Put(T obj, int mask) 
-#else
-        public void Put(IPersistent obj, int mask) 
-#endif
         {
             StorageImpl db = (StorageImpl)Storage;
             if (db == null) 
@@ -103,11 +78,7 @@ namespace NachoDB.Impl
             Modify();
         }
 
-#if USE_GENERICS
         public override bool Remove(T obj) 
-#else
-        public bool Remove(IPersistent obj) 
-#endif
         {
             StorageImpl db = (StorageImpl)Storage;
             if (db == null) 
@@ -144,44 +115,30 @@ namespace NachoDB.Impl
             Modify();
             return true;
         }
-    
 
-#if USE_GENERICS
-        public override IEnumerator<T> GetEnumerator() 
-#else
-        public override IEnumerator GetEnumerator() 
-#endif
+        IEnumerator IEnumerable.GetEnumerator()
         {
             return GetEnumerator(0, 0);
         }
 
-#if USE_GENERICS
+        public override IEnumerator<T> GetEnumerator() 
+        {
+            return GetEnumerator(0, 0);
+        }
+
         public IEnumerator<T> GetEnumerator(int setBits, int clearBits) 
-#else
-        public IEnumerator GetEnumerator(int setBits, int clearBits) 
-#endif
         {
             return new BitIndexIterator(this, setBits, clearBits);
         }
 
-#if USE_GENERICS
         public IEnumerable<T> Select(int setBits, int clearBits) 
-#else
-        public IEnumerable Select(int setBits, int clearBits) 
-#endif
         {
             return new BitIndexIterator(this, setBits, clearBits);
         }
     
-#if USE_GENERICS    
         class BitIndexIterator : IEnumerator<T>, IEnumerable<T>
         { 
             internal BitIndexIterator(BitIndexImpl<T> index, int setBits, int clearBits) 
-#else
-        class BitIndexIterator : IEnumerator, IEnumerable 
-        { 
-            internal BitIndexIterator(BitIndexImpl index, int setBits, int clearBits) 
-#endif
             { 
                 sp = 0;
                 counter = index.updateCounter;
@@ -221,20 +178,17 @@ namespace NachoDB.Impl
                 }
             }
         
-#if USE_GENERICS    
             public IEnumerator<T> GetEnumerator() 
-#else
-            public IEnumerator GetEnumerator() 
-#endif
             {
                 return this;
             }
 
-#if USE_GENERICS    
+            IEnumerator IEnumerable.GetEnumerator()
+            {
+                return this;
+            }
+
             public virtual T Current
-#else
-            public virtual object Current
-#endif
             {
                 get 
                 {
@@ -246,14 +200,17 @@ namespace NachoDB.Impl
                     Page pg = db.getPage(pageStack[sp-1]);
                     IPersistent curr = db.lookupObject(BitIndexPage.getItem(pg, BitIndexPage.maxItems-pos), null);
                     db.pool.unfix(pg);
-#if USE_GENERICS    
                     return (T)curr;
-#else
-                    return curr;
-#endif
                 }
             }
 
+            object IEnumerator.Current
+            {
+                get
+                {
+                    return Current;
+                }
+            }
 
             public void Dispose() {}
 
@@ -309,13 +266,8 @@ namespace NachoDB.Impl
                 db.pool.unfix(pg);
                 return false;
             }
-
  
-#if USE_GENERICS    
             BitIndexImpl<T> index;
-#else
-            BitIndexImpl    index;
-#endif
             StorageImpl     db;
             int[]           pageStack;
             int[]           posStack;
@@ -324,7 +276,6 @@ namespace NachoDB.Impl
             int             clearBits;
             int             counter;
         }
-
      
         class BitIndexPage : BtreePage 
         { 
@@ -530,7 +481,6 @@ namespace NachoDB.Impl
                     }
                 }
             }
-
     
             internal static BtreeResult handlePageUnderflow(StorageImpl db, Page pg, int r, int height)
             {

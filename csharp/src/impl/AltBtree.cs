@@ -4,92 +4,18 @@ namespace NachoDB.Impl
     using System.Collections;
     using System.Diagnostics;
     using NachoDB;
-#if USE_GENERICS
     using System.Collections.Generic;
     using Link=Link<IPersistent>;
-#endif
 
     
-#if USE_GENERICS
     class AltBtree<K,V> : PersistentCollection<V>, Index<K,V> where V:class, IPersistent
-#else
-    class AltBtree : PersistentCollection, Index
-#endif
     {
         public Type KeyType
         {
             get
             {
-#if USE_GENERICS
                 return typeof(K);
-#else
-                switch (type)
-                {                   
-                    case ClassDescriptor.FieldType.tpBoolean: 
-                        return typeof(bool);
-                    
-                    case ClassDescriptor.FieldType.tpByte: 
-                        return typeof(byte);
-                    
-                    case ClassDescriptor.FieldType.tpSByte: 
-                        return typeof(sbyte);
-                    
-                    case ClassDescriptor.FieldType.tpChar: 
-                        return typeof(char);
-                    
-                    case ClassDescriptor.FieldType.tpShort: 
-                        return typeof(short);
-                    
-                    case ClassDescriptor.FieldType.tpUShort: 
-                        return typeof(ushort);
-                    
-                    case ClassDescriptor.FieldType.tpInt: 
-                    case ClassDescriptor.FieldType.tpOid: 
-                        return typeof(int);
-                    
-                    case ClassDescriptor.FieldType.tpUInt: 
-                        return typeof(uint);
-                    
-                    case ClassDescriptor.FieldType.tpLong: 
-                        return typeof(long);
-                    
-                    case ClassDescriptor.FieldType.tpULong: 
-                        return typeof(ulong);
-                    
-                    case ClassDescriptor.FieldType.tpFloat: 
-                        return typeof(float);
-                    
-                    case ClassDescriptor.FieldType.tpDouble: 
-                        return typeof(double);
-                    
-                    case ClassDescriptor.FieldType.tpString: 
-                        return typeof(string);
-                    
-                    case ClassDescriptor.FieldType.tpDate: 
-                        return typeof(DateTime);
-                    
-                    case ClassDescriptor.FieldType.tpObject: 
-                        return typeof(IPersistent);
-                    
-                    case ClassDescriptor.FieldType.tpRaw: 
-                        return typeof(IComparable);
-                    
-                    case ClassDescriptor.FieldType.tpGuid: 
-                        return typeof(Guid);
-                    
-                    case ClassDescriptor.FieldType.tpDecimal: 
-                        return typeof(decimal);
-                    
-                    case ClassDescriptor.FieldType.tpEnum: 
-                        return typeof(Enum);
-                    
-                    default: 
-                        return null;
-                    
-                }
-#endif
-            }
-            
+            }            
         }
         internal int height;
         internal ClassDescriptor.FieldType type;
@@ -104,14 +30,12 @@ namespace NachoDB.Impl
         {
         }
         
-#if USE_GENERICS
         public override void OnLoad()
         {
              if (type != ClassDescriptor.getTypeCode(typeof(K))) {
                 throw new StorageError(StorageError.ErrorCode.INCOMPATIBLE_KEY_TYPE, typeof(K));
             }
         }
-#endif
 
         internal class BtreeKey
         {
@@ -1410,19 +1334,11 @@ namespace NachoDB.Impl
             return elemType;
         }
         
-#if USE_GENERICS
         internal AltBtree(bool unique)
         {
             type = checkType(typeof(K));
             this.unique = unique;
         }
-#else
-        internal AltBtree(Type cls, bool unique)
-        {
-            type = checkType(cls);
-            this.unique = unique;
-        }
-#endif
         
         internal AltBtree(ClassDescriptor.FieldType type, bool unique)
         {
@@ -1448,11 +1364,7 @@ namespace NachoDB.Impl
             }
         }
 
-#if USE_GENERICS
         public V this[K key] 
-#else
-        public IPersistent this[object key] 
-#endif
         {
             get 
             {
@@ -1464,18 +1376,13 @@ namespace NachoDB.Impl
             }
         } 
         
-#if USE_GENERICS
         public V[] this[K from, K till] 
-#else
-        public IPersistent[] this[object from, object till] 
-#endif
         {
             get 
             {
                 return Get(from, till);
             }
         }
-
 
         internal virtual Key checkKey(Key key)
         {
@@ -1499,11 +1406,7 @@ namespace NachoDB.Impl
             return key;
         }
         
-#if USE_GENERICS
         public virtual V Get(Key key)
-#else
-        public virtual IPersistent Get(Key key)
-#endif
         {
             key = checkKey(key);
             if (root != null)
@@ -1520,35 +1423,21 @@ namespace NachoDB.Impl
                 }
                 else
                 {
-#if USE_GENERICS
                     return (V) list[0];
-#else
-                    return (IPersistent) list[0];
-#endif
                 }
             }
             return null;
         }
 
-#if USE_GENERICS
         public virtual V Get(K key) 
-#else
-        public virtual IPersistent Get(object key) 
-#endif
         {
             return Get(KeyBuilder.getKeyFromObject(key));
         }
 
 
-#if USE_GENERICS
         internal static V[] emptySelection = new V[0];
         
         public virtual V[] PrefixSearch(string key)
-#else
-        internal static IPersistent[] emptySelection = new IPersistent[0];
-        
-        public virtual IPersistent[] PrefixSearch(string key)
-#endif
         {
             if (ClassDescriptor.FieldType.tpString != type)
             {
@@ -1560,21 +1449,13 @@ namespace NachoDB.Impl
                 ((BtreePageOfString) root).prefixSearch(key, height, list);
                 if (list.Count != 0)
                 {
-#if USE_GENERICS
                     return (V[]) list.ToArray(typeof(V));
-#else
-                    return (IPersistent[]) list.ToArray(typeof(IPersistent));
-#endif
                 }
             }
             return emptySelection;
         }
         
-#if USE_GENERICS
         public virtual V[] Get(Key from, Key till)
-#else
-        public virtual IPersistent[] Get(Key from, Key till)
-#endif
         {
             if (root != null)
             {
@@ -1582,65 +1463,38 @@ namespace NachoDB.Impl
                 root.find(checkKey(from), checkKey(till), height, list);
                 if (list.Count != 0)
                 {
-#if USE_GENERICS
                     return (V[]) list.ToArray(typeof(V));
-#else
-                    return (IPersistent[]) list.ToArray(typeof(IPersistent));
-#endif
                 }
             }
             return emptySelection;
         }
         
-#if USE_GENERICS
         public virtual V[] Get(K from, K till)
-#else
-        public virtual IPersistent[] Get(object from, object till)
-#endif
         {
             return Get(KeyBuilder.getKeyFromObject(from), KeyBuilder.getKeyFromObject(till));
         }
          
-#if USE_GENERICS
         public virtual bool Put(Key key, V obj)
-#else
-        public virtual bool Put(Key key, IPersistent obj)
-#endif
         {
             return insert(key, obj, false) == null;
         }
         
-#if USE_GENERICS
         public virtual bool Put(K key, V obj)
-#else
-        public virtual bool Put(object key, IPersistent obj)
-#endif
         {
             return Put(KeyBuilder.getKeyFromObject(key), obj);
         }
 
-#if USE_GENERICS
         public virtual V Set(Key key, V obj)
         {
             return (V)insert(key, obj, true);
         }
-#else
-        public virtual IPersistent Set(Key key, IPersistent obj)
-        {
-            return insert(key, obj, true);
-        }
-#endif
         
-#if USE_GENERICS
         public virtual V Set(K key, V obj)
-#else
-        public virtual IPersistent Set(object key, IPersistent obj)
-#endif
         {
             return Set(KeyBuilder.getKeyFromObject(key), obj);
         }
 
-        internal void  allocateRootPage(BtreeKey ins)
+        internal void allocateRootPage(BtreeKey ins)
         {
             Storage s = Storage;
             BtreePage newRoot = null;
@@ -1749,20 +1603,12 @@ namespace NachoDB.Impl
             return null;
         }
         
-#if USE_GENERICS
-        public virtual void  Remove(Key key, V obj)
-#else
-        public virtual void  Remove(Key key, IPersistent obj)
-#endif
+        public virtual void Remove(Key key, V obj)
         {
             Remove(new BtreeKey(checkKey(key), obj));
         }
         
-#if USE_GENERICS
-        public virtual void  Remove(K key, V obj)
-#else
-        public virtual void  Remove(object key, IPersistent obj)
-#endif
+        public virtual void Remove(K key, V obj)
         {
             Remove(new BtreeKey(KeyBuilder.getKeyFromObject(key), obj));    
         }
@@ -1797,11 +1643,7 @@ namespace NachoDB.Impl
             Modify();
         }
         
-#if USE_GENERICS
         public virtual V Remove(Key key)
-#else
-        public virtual IPersistent Remove(Key key)
-#endif
         {
             if (!unique)
             {
@@ -1809,42 +1651,25 @@ namespace NachoDB.Impl
             }
             BtreeKey rk = new BtreeKey(checkKey(key), null);
             Remove(rk);
-#if USE_GENERICS
             return (V)rk.oldNode;
-#else
-            return rk.oldNode;
-#endif
         }
         
-#if USE_GENERICS
         public virtual V RemoveKey(K key)
-#else
-        public virtual IPersistent Remove(object key)
-#endif
         {
             return Remove(KeyBuilder.getKeyFromObject(key));
         }
         
-#if USE_GENERICS
         public virtual V[] GetPrefix(string prefix)
-#else
-        public virtual IPersistent[] GetPrefix(string prefix)
-#endif
         {
             return Get(new Key(prefix, true), new Key(prefix + Char.MaxValue, false));
         }
-        
         
         public virtual int Size()
         {
             return nElems;
         }
         
-#if USE_GENERICS
         public override void Clear() 
-#else
-        public void Clear() 
-#endif
         {
             if (root != null)
             {
@@ -1857,7 +1682,6 @@ namespace NachoDB.Impl
             }
         }
         
-#if USE_GENERICS
         public virtual V[] ToArray()
         {
             V[] arr = new V[nElems];
@@ -1867,17 +1691,6 @@ namespace NachoDB.Impl
             }
             return (V[])arr;
         }
-#else
-        public virtual IPersistent[] ToArray()
-        {
-            IPersistent[] arr = new IPersistent[nElems];
-            if (root != null)
-            {
-                root.traverseForward(height, arr, 0);
-            }
-            return arr;
-        }
-#endif
         
         public virtual Array ToArray(Type elemType)
         {
@@ -1898,17 +1711,9 @@ namespace NachoDB.Impl
             base.Deallocate();
         }
         
-#if USE_GENERICS
         class BtreeEnumerator : IEnumerator<V>
-#else
-        class BtreeEnumerator : IEnumerator 
-#endif
         {
-#if USE_GENERICS
             internal BtreeEnumerator(AltBtree<K,V> tree) 
-#else
-            internal BtreeEnumerator(AltBtree tree) 
-#endif
             { 
                 this.tree = tree;
                 Reset();
@@ -1988,11 +1793,7 @@ namespace NachoDB.Impl
                 return false;
             }
 
-#if USE_GENERICS
             public virtual V Current
-#else
-            public virtual object Current
-#endif
             {
                 get 
                 {
@@ -2000,14 +1801,16 @@ namespace NachoDB.Impl
                     { 
                         throw new InvalidOperationException();
                     }
-#if USE_GENERICS
                     return (V)curr;
-#else
-                    return curr;
-#endif
                 }
             }
-            
+            object IEnumerator.Current
+            {
+                get
+                {
+                    return Current;
+                }
+            }
             protected BtreePage[] pageStack;
             protected int[] posStack;
             protected int sp;
@@ -2015,20 +1818,12 @@ namespace NachoDB.Impl
             protected int counter;
             protected IPersistent curr;
             protected bool hasCurrent;
-#if USE_GENERICS
             protected AltBtree<K,V> tree;
-#else
-            protected AltBtree tree;
-#endif
         }
         
         class BtreeDictionaryEnumerator : BtreeEnumerator, IDictionaryEnumerator
         {
-#if USE_GENERICS
             internal BtreeDictionaryEnumerator(AltBtree<K,V> tree) 
-#else
-            internal BtreeDictionaryEnumerator(AltBtree tree) 
-#endif
                 : base(tree) 
             {   
             }
@@ -2039,11 +1834,7 @@ namespace NachoDB.Impl
                 key = pg.getKeyValue(pos);
             }
 
-#if USE_GENERICS
             public new virtual object Current 
-#else
-            public override object Current 
-#endif
             {
                 get 
                 {
@@ -2091,13 +1882,14 @@ namespace NachoDB.Impl
         }
         
         
-#if USE_GENERICS
         public override IEnumerator<V> GetEnumerator() 
-#else
-        public override IEnumerator GetEnumerator() 
-#endif
         {
             return new BtreeEnumerator(this);
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return (IEnumerator)new BtreeEnumerator(this);
         }
         
         public IDictionaryEnumerator GetDictionaryEnumerator() 
@@ -2105,17 +1897,9 @@ namespace NachoDB.Impl
             return new BtreeDictionaryEnumerator(this);
         }
         
-#if USE_GENERICS        
         class BtreeSelectionIterator : IEnumerator<V>, IEnumerable<V>
-#else
-        class BtreeSelectionIterator : IEnumerator, IEnumerable 
-#endif
         { 
-#if USE_GENERICS        
             internal BtreeSelectionIterator(AltBtree<K,V> tree, Key from, Key till, IterationOrder order) 
-#else
-            internal BtreeSelectionIterator(AltBtree tree, Key from, Key till, IterationOrder order) 
-#endif
             { 
                 this.from = from;
                 this.till = till;
@@ -2124,11 +1908,12 @@ namespace NachoDB.Impl
                 Reset();
             }
 
-#if USE_GENERICS        
             public IEnumerator<V> GetEnumerator() 
-#else
-            public IEnumerator GetEnumerator() 
-#endif
+            {
+                return this;
+            }
+
+            IEnumerator IEnumerable.GetEnumerator()
             {
                 return this;
             }
@@ -2329,11 +2114,7 @@ namespace NachoDB.Impl
                 curr = pg.items[pos];
             }
             
-#if USE_GENERICS        
             public virtual V Current 
-#else
-            public virtual object Current 
-#endif
             {
                 get 
                 {
@@ -2341,11 +2122,15 @@ namespace NachoDB.Impl
                     { 
                         throw new InvalidOperationException();
                     }
-#if USE_GENERICS        
                     return (V)curr;
-#else
-                    return curr;
-#endif
+                }
+            }
+
+            object IEnumerator.Current
+            {
+                get
+                {
+                    return Current;
                 }
             }
             
@@ -2428,20 +2213,12 @@ namespace NachoDB.Impl
             protected int counter;
             protected bool hasCurrent;
             protected IPersistent curr;
-#if USE_GENERICS
             protected AltBtree<K,V> tree;
-#else
-            protected AltBtree tree;
-#endif
         }
         
         class BtreeDictionarySelectionIterator : BtreeSelectionIterator, IDictionaryEnumerator 
         { 
-#if USE_GENERICS
             internal BtreeDictionarySelectionIterator(AltBtree<K,V> tree, Key from, Key till, IterationOrder order) 
-#else
-            internal BtreeDictionarySelectionIterator(AltBtree tree, Key from, Key till, IterationOrder order) 
-#endif
                 : base(tree, from, till, order)
             {}
                
@@ -2451,11 +2228,7 @@ namespace NachoDB.Impl
                 key = pg.getKeyValue(pos);
             }
              
-#if USE_GENERICS        
             public new virtual object Current 
-#else
-            public override object Current 
-#endif
             {
                 get 
                 {
@@ -2502,104 +2275,57 @@ namespace NachoDB.Impl
             protected object key;
         }
         
-#if USE_GENERICS        
         public IEnumerator<V> GetEnumerator(Key from, Key till, IterationOrder order) 
-#else
-        public IEnumerator GetEnumerator(Key from, Key till, IterationOrder order) 
-#endif
         {
             return Range(from, till, order).GetEnumerator();
         }
 
-#if USE_GENERICS        
         public IEnumerator<V> GetEnumerator(K from, K till, IterationOrder order) 
-#else
-        public IEnumerator GetEnumerator(object from, object till, IterationOrder order) 
-#endif
         {
             return Range(from, till, order).GetEnumerator();
         }
 
-#if USE_GENERICS        
         public IEnumerator<V> GetEnumerator(Key from, Key till) 
-#else
-        public IEnumerator GetEnumerator(Key from, Key till) 
-#endif
         {
             return Range(from, till).GetEnumerator();
         }
 
-#if USE_GENERICS        
         public IEnumerator<V> GetEnumerator(K from, K till) 
-#else
-        public IEnumerator GetEnumerator(object from, object till) 
-#endif
         {
             return Range(from, till).GetEnumerator();
         }
 
-#if USE_GENERICS        
         public IEnumerator<V> GetEnumerator(string prefix) 
-#else
-        public IEnumerator GetEnumerator(string prefix) 
-#endif
         {
             return StartsWith(prefix).GetEnumerator();
         }
 
-#if USE_GENERICS        
         public virtual IEnumerable<V> Range(Key from, Key till, IterationOrder order) 
         { 
             return new BtreeSelectionIterator(this, checkKey(from), checkKey(till), order);
         }
-#else
-        public virtual IEnumerable Range(Key from, Key till, IterationOrder order) 
-        { 
-            return new BtreeSelectionIterator(this, checkKey(from), checkKey(till), order);
-        }
-#endif
 
-#if USE_GENERICS        
         public virtual IEnumerable<V> Range(Key from, Key till) 
-#else
-        public virtual IEnumerable Range(Key from, Key till) 
-#endif
         { 
             return Range(from, till, IterationOrder.AscentOrder);
         }
             
-#if USE_GENERICS        
         public IEnumerable<V> Range(K from, K till, IterationOrder order) 
-#else
-        public IEnumerable Range(object from, object till, IterationOrder order) 
-#endif
         { 
             return Range(KeyBuilder.getKeyFromObject(from), KeyBuilder.getKeyFromObject(till), order);
         }
 
-#if USE_GENERICS        
         public IEnumerable<V> Range(K from, K till) 
-#else
-        public IEnumerable Range(object from, object till) 
-#endif
         { 
             return Range(KeyBuilder.getKeyFromObject(from), KeyBuilder.getKeyFromObject(till), IterationOrder.AscentOrder);
         }
  
-#if USE_GENERICS
         public IEnumerable<V> Reverse()
-#else
-        public IEnumerable Reverse()
-#endif
         { 
             return new BtreeSelectionIterator(this, null, null, IterationOrder.DescentOrder);
         }
 
-#if USE_GENERICS        
         public IEnumerable<V> StartsWith(string prefix) 
-#else
-        public IEnumerable StartsWith(string prefix) 
-#endif
         { 
             return Range(new Key(prefix), new Key(prefix + Char.MaxValue, false), IterationOrder.AscentOrder);
         }

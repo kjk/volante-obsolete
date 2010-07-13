@@ -31,7 +31,7 @@
     <BaseAddress>285212672</BaseAddress>
     <CheckForOverflowUnderflow>false</CheckForOverflowUnderflow>
     <ConfigurationOverrideFile />
-    <DefineConstants>SUPPORT_RAW_TYPE</DefineConstants>
+    <DefineConstants>SUPPORT_RAW_TYPE;USE_GENERICS</DefineConstants>
     <DocumentationFile>doc\perst.xml</DocumentationFile>
     <DebugSymbols>true</DebugSymbols>
     <FileAlignment>4096</FileAlignment>
@@ -52,7 +52,7 @@
     <BaseAddress>285212672</BaseAddress>
     <CheckForOverflowUnderflow>false</CheckForOverflowUnderflow>
     <ConfigurationOverrideFile />
-    <DefineConstants>SUPPORT_RAW_TYPE</DefineConstants>
+    <DefineConstants>SUPPORT_RAW_TYPE;USE_GENERICS</DefineConstants>
     <DocumentationFile />
     <DebugSymbols>false</DebugSymbols>
     <FileAlignment>4096</FileAlignment>
