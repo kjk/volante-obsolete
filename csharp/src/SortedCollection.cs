@@ -1,11 +1,8 @@
 namespace NachoDB 
 { 
     using System;
-#if USE_GENERICS
-    using System.Collections.Generic;
-#else
     using System.Collections;
-#endif
+    using System.Collections.Generic;
 
     /// <summary>
     /// Range boundary kind
@@ -25,30 +22,18 @@ namespace NachoDB
     /// can cause trashing and so very bad performance. Unlike other index structures SortedCollection
     /// doesn't store values of keys and so search in the collection requires fetching of its members.
     /// </summary>
-#if USE_GENERICS
     public interface SortedCollection<K,V> : IPersistent, IResource, ICollection<V> where V:class,IPersistent
-#else
-    public interface SortedCollection : IPersistent, IResource, ICollection
-#endif
     { 
         /// <summary> Access element by key
         /// </summary>
-#if USE_GENERICS
         V this[K key] 
-#else
-        IPersistent this[object key] 
-#endif
         {
             get;
         }       
 
         /// <summary> Access elements by key range
         /// </summary>
-#if USE_GENERICS
         V[] this[K low, K high] 
-#else
-        IPersistent[] this[object low, object high] 
-#endif
         {
             get;
         }       
@@ -62,11 +47,7 @@ namespace NachoDB
         /// one objects in the collection with specified value of the key.  
         /// </exception>
         ///
-#if USE_GENERICS
         V Get(K key);
-#else
-        IPersistent Get(object key);
-#endif
 
         /// <summary>
         /// Get members which key value belongs to the specified range.
@@ -77,11 +58,7 @@ namespace NachoDB
         /// <param name="till"> inclusive high boundary</param>
         /// <returns> array of objects which keys belongs to the specified interval, ordered by key value</returns>
         ///
-#if USE_GENERICS
         V[] Get(K from, K till);
-#else
-        IPersistent[] Get(object from, object till);
-#endif
 
         /// <summary>
         /// Get members which key value belongs to the specified range.
@@ -93,38 +70,7 @@ namespace NachoDB
         /// <param name="till"> high boundary</param>
         /// <param name="tillKind"> kind of high boundary</param>
         /// <returns> array of objects which keys belongs to the specified interval, ordered by key value</returns>
-#if USE_GENERICS
         V[] Get(K from, BoundaryKind fromKind, K till, BoundaryKind tillKind);
-#else
-        IPersistent[] Get(object from, BoundaryKind fromKind, object till, BoundaryKind tillKind);
-#endif
-
-#if !USE_GENERICS
-        /// <summary>
-        /// Add new member to collection
-        /// </summary>
-        /// <param name="obj"> new member</param>
-        void Add(IPersistent obj);
-#endif
- 
-#if !USE_GENERICS
-       /// <summary>
-        /// Check if collections contains specified member
-        /// </summary>
-        /// <returns> <code>true</code> if specified member belongs to the collection</returns>
-        ///
-        bool       Contains(IPersistent member);
-#endif
-
-#if !USE_GENERICS
-        /// <summary>
-        /// Remove member from collection
-        /// </summary>
-        /// <param name="obj"> member to be removed</param>
-        /// <returns><code>true</code> if member was successfully removed or <code>false</code> if member is not found</returns>
-        ///
-        bool       Remove(IPersistent obj);
-#endif
 
         /// <summary>
         /// Get number of objects in the collection
@@ -132,25 +78,13 @@ namespace NachoDB
         /// <returns> number of objects in the collection</returns>
         ///
         int        Size();
-    
-#if !USE_GENERICS
-        /// <summary>
-        /// Remove all objects from the collection
-        /// </summary>
-        ///
-        void       Clear();
-#endif
 
         /// <summary>
         /// Get all objects in the index as array ordered by index key.
         /// </summary>
         /// <returns> array of objects in the index ordered by key value</returns>
         ///
-#if USE_GENERICS
         V[] ToArray();
-#else
-        IPersistent[] ToArray();
-#endif
 
         /// <summary> Get all objects in the index as array of specified type orderd by index key
         /// </summary>
@@ -166,11 +100,7 @@ namespace NachoDB
         /// <param name="till"> inclusive high boundary</param>
         /// <returns> selection iterator</returns>
         ///
-#if USE_GENERICS
         IEnumerator<V> GetEnumerator(K from, K till);
-#else
-        IEnumerator GetEnumerator(object from, object till);
-#endif
 
         /// <summary>
         /// Get iterator for traversing collection members  with key belonging to the specified range. 
@@ -181,11 +111,7 @@ namespace NachoDB
         /// <param name="tillKind"> kind of till boundary</param>
         /// <returns> selection iterator</returns>
         ///
-#if USE_GENERICS
         IEnumerator<V> GetEnumerator(K from, BoundaryKind fromKind, K till, BoundaryKind tillKind);
-#else
-        IEnumerator GetEnumerator(object from, BoundaryKind fromKind, object till, BoundaryKind tillKind);
-#endif
 
         /// <summary>
         /// Get enumerable set of collection members with key belonging to the specified range. 
@@ -194,11 +120,7 @@ namespace NachoDB
         /// <param name="till"> inclusive high boundary</param>
         /// <returns>  enumerable set</returns>
         ///
-#if USE_GENERICS
         IEnumerable<V> Range(K from, K till);
-#else
-        IEnumerable Range(object from, object till);
-#endif
 
         /// <summary>
         /// Get enumerable set of collection members with key belonging to the specified range. 
@@ -209,21 +131,13 @@ namespace NachoDB
         /// <param name="tillKind"> kind of till boundary</param>
         /// <returns> enumerable set</returns>
         ///
-#if USE_GENERICS
         IEnumerable<V> Range(K from, BoundaryKind fromKind, K till, BoundaryKind tillKind);
-#else
-        IEnumerable Range(object from, BoundaryKind fromKind, object till, BoundaryKind tillKind);
-#endif
 
         /// <summary>
         /// Get comparator used in this collection
         /// </summary>
         /// <returns> collection comparator</returns>
         ///
-#if USE_GENERICS
         PersistentComparator<K,V> GetComparator();
-#else
-        PersistentComparator GetComparator();
-#endif
     }
 }
