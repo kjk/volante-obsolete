@@ -1,13 +1,10 @@
 namespace NachoDB
 {
     using System;
-#if USE_GENERICS
     using System.Collections.Generic;
-#else
     using System.Collections;
-#endif
     using System.Reflection;
-	
+
     /// <summary> Interface of indexed field. 
     /// Index is used to provide fast access to the object by the value of indexed field. 
     /// Objects in the index are stored ordered by the value of indexed field. 
@@ -79,20 +76,7 @@ namespace NachoDB
         /// </param>
         /// <exception cref="NachoDB.StorageError"><code>StorageError(StorageError.ErrorCode.INCOMPATIBLE_KEY_TYPE)</code> 
         /// is thrown when indexed field has type other than <code>int</code> or <code>long</code></exception>
-#if USE_GENERICS
         void Append(V obj);
-#else
-        void Append(IPersistent obj);
-#endif
-
-#if !USE_GENERICS
-        /// <summary> Remove object from the index
-        /// </summary>
-        /// <param name="obj">object removed from the index. Object should contain indexed field. 
-        /// </param>
-        /// <returns><code>true</code> if member was successfully removed or <code>false</code> if member is not found</returns>
-        bool Remove(IPersistent obj);
-#endif
 
         /// <summary> Remove object with specified key from the unique index.
         /// </summary>
@@ -103,11 +87,7 @@ namespace NachoDB
         /// or StorageError(StorageError.ErrorCode.KEY_NOT_UNIQUE) if index is not unique.
         /// 
         /// </exception>
-#if USE_GENERICS
         V Remove(Key key);
-#else
-        IPersistent Remove(Key key);
-#endif
 
         /// <summary> Remove object with specified key from the unique index.
         /// </summary>
@@ -118,11 +98,7 @@ namespace NachoDB
         /// or StorageError(StorageError.ErrorCode.KEY_NOT_UNIQUE) if index is not unique.
         /// 
         /// </exception>
-#if USE_GENERICS
         V RemoveKey(K key);
-#else
-        IPersistent Remove(object key);
-#endif
 
         /// <summary>
         /// Get class obejct objects which can be inserted in this index
@@ -139,11 +115,7 @@ namespace NachoDB
 
     /// <summary> Interface of multifield index. 
     /// </summary>
-#if USE_GENERICS
     public interface MultiFieldIndex<V> : FieldIndex<object[],V> where V:class,IPersistent
-#else
-    public interface MultiFieldIndex : FieldIndex
-#endif
     {
         /// <summary>
         /// Get fields used as a key
