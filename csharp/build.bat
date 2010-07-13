@@ -7,8 +7,7 @@ call "%ProgramFiles(x86)%\Microsoft Visual Studio 10.0\Common7\Tools\vsvars32.ba
 IF ERRORLEVEL 1 GOTO NEEDSVS
 
 :BUILD
-nmake -f makefile.msvc
-@rem nmake -f makefile.msvc library GENERICS=yes
+nmake -f makefile.msvc library GENERICS=yes
 goto END
 
 :NEEDSVS
