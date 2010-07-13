@@ -1,17 +1,11 @@
 namespace NachoDB.Impl
 {
     using System;
-#if USE_GENERICS
-    using System.Collections.Generic;
-#endif
     using System.Collections;
+    using System.Collections.Generic;
     using NachoDB;
 
-#if USE_GENERICS
     class RtreeR2<T> : PersistentCollection<T>, SpatialIndexR2<T> where T : class, IPersistent
-#else
-    class RtreeR2 : PersistentCollection, SpatialIndexR2
-#endif
     {
         private int         height;
         private int         n;
@@ -29,11 +23,7 @@ namespace NachoDB.Impl
             }
         }
 
-#if USE_GENERICS
         public void Put(RectangleR2 r, T obj) 
-#else
-        public void Put(RectangleR2 r, IPersistent obj) 
-#endif
         {
             if (root == null) 
             { 
@@ -59,11 +49,7 @@ namespace NachoDB.Impl
             return n;
         }
 
-#if USE_GENERICS
         public void Remove(RectangleR2 r, T obj) 
-#else
-        public void Remove(RectangleR2 r, IPersistent obj) 
-#endif
         {
             if (root == null) 
             { 
@@ -103,22 +89,14 @@ namespace NachoDB.Impl
             Modify();
         }
     
-#if USE_GENERICS
         public T[] Get(RectangleR2 r) 
-#else
-        public IPersistent[] Get(RectangleR2 r) 
-#endif
         {
             ArrayList result = new ArrayList();
             if (root != null) 
             { 
                 root.find(r, result, height);
             }
-#if USE_GENERICS
             return (T[])result.ToArray(typeof(T));
-#else
-            return (IPersistent[])result.ToArray(typeof(IPersistent));
-#endif
         }
 
         public RectangleR2 WrappingRectangle
@@ -131,11 +109,7 @@ namespace NachoDB.Impl
             }
         }
 
-#if USE_GENERICS
         public override void Clear() 
-#else
-        public void Clear() 
-#endif
         {
             if (root != null) 
             { 
@@ -154,22 +128,19 @@ namespace NachoDB.Impl
             base.Deallocate();
         }
 
-#if USE_GENERICS
         public IEnumerable<T> Overlaps(RectangleR2 r) 
-#else
-        public IEnumerable Overlaps(RectangleR2 r) 
-#endif
         { 
             return new RtreeIterator(this, r);
         }
 
-#if USE_GENERICS
         public override IEnumerator<T> GetEnumerator() 
-#else
-        public override IEnumerator GetEnumerator() 
-#endif
         {
             return Overlaps(WrappingRectangle).GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
         }
 
         public IDictionaryEnumerator GetDictionaryEnumerator(RectangleR2 r) 
@@ -182,15 +153,9 @@ namespace NachoDB.Impl
             return GetDictionaryEnumerator(WrappingRectangle);
         }
 
-#if USE_GENERICS
         class RtreeIterator: IEnumerator<T>, IEnumerable<T>
         {
             internal RtreeIterator(RtreeR2<T> tree, RectangleR2 r) 
-#else
-        class RtreeIterator: IEnumerator, IEnumerable 
-        {
-            internal RtreeIterator(RtreeR2 tree, RectangleR2 r) 
-#endif
             { 
                 counter = tree.updateCounter;
                 height = tree.height;
@@ -205,13 +170,14 @@ namespace NachoDB.Impl
                 Reset();
             }
 
-#if USE_GENERICS
             public IEnumerator<T> GetEnumerator()
-#else
-            public IEnumerator GetEnumerator()
-#endif
             {
                 return this;
+            }
+
+            IEnumerator IEnumerable.GetEnumerator()
+            {
+                return GetEnumerator();
             }
 
             public void Reset()
@@ -244,11 +210,7 @@ namespace NachoDB.Impl
                 }
             }
 
-#if USE_GENERICS
             public virtual T Current 
-#else
-            public virtual object Current 
-#endif
             {
                 get 
                 {
@@ -256,11 +218,15 @@ namespace NachoDB.Impl
                     { 
                         throw new InvalidOperationException();
                     }
-#if USE_GENERICS
                     return (T)page.branch[pos];
-#else
-                    return page.branch[pos];
-#endif
+                }
+            }
+
+            object IEnumerator.Current
+            {
+                get
+                {
+                    return Current;
                 }
             }
 
@@ -280,8 +246,7 @@ namespace NachoDB.Impl
                 }
                 return false;
             }
-              
- 
+
             private bool gotoNextItem(int sp) 
             {
                 RtreeR2Page pg = pageStack[sp];
@@ -308,33 +273,29 @@ namespace NachoDB.Impl
             protected int           pos;
             protected bool          hasNext;
             protected RtreeR2Page   page;
-#if USE_GENERICS
             protected RtreeR2<T>    tree;
-#else
-            protected RtreeR2       tree;
-#endif
             protected RectangleR2   r;
         }
 
         class RtreeEntryIterator: RtreeIterator, IDictionaryEnumerator 
         {
-#if USE_GENERICS
             internal RtreeEntryIterator(RtreeR2<T> tree, RectangleR2 r) 
-#else
-            internal RtreeEntryIterator(RtreeR2 tree, RectangleR2 r) 
-#endif
                 : base(tree, r)
             {}
 
-#if USE_GENERICS
             public new virtual object Current 
-#else
-            public override object Current 
-#endif
             {
                 get 
                 {
                     return Entry;
+                }
+            }
+
+            object IEnumerator.Current
+            {
+                get
+                {
+                    return Current;
                 }
             }
 
