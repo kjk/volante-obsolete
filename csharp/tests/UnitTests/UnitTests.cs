@@ -65,11 +65,12 @@ public class UnitTest1
         }
     }
 
-    public static void Run()
+    public static void Run(bool useAltBtree)
     {
         string dbName = @"testblob.dbs";
         UnitTests.SafeDeleteFile(dbName);
         Storage db = StorageFactory.CreateStorage();
+        db.AlternativeBtree = useAltBtree;
         db.Open(dbName);
         Index<string,StringInt> root = (Index<string,StringInt>)db.Root;
         UnitTests.AssertThat(null == root);
@@ -103,13 +104,13 @@ public class UnitTest2
         public Index<string, Record> strIndex;
     }
     
-    public static void Run()
+    public static void Run(bool useAltBtree)
     {
         string dbName = @"testidx.dbs";
         UnitTests.SafeDeleteFile(dbName);
         
         Storage db = StorageFactory.CreateStorage();
-        db.AlternativeBtree = true;
+        db.AlternativeBtree = useAltBtree;
         db.Open(dbName);
         Root root = (Root)db.Root;
         UnitTests.AssertThat(null == root);
@@ -278,8 +279,10 @@ public class UnitTestsRunner
         UnitTestXml.Run(false);
         //TODO: this test fails
         //UnitTestXml.Run(true);
-        UnitTest1.Run();
-        UnitTest2.Run();
+        UnitTest1.Run(false);
+        UnitTest1.Run(true);
+        UnitTest2.Run(false);
+        UnitTest2.Run(true);
         Console.WriteLine(String.Format("Failed {0} out of {1} tests", UnitTests.FailedTests, UnitTests.TotalTests));
     }
 }
