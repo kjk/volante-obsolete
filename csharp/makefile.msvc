@@ -14,6 +14,10 @@ CFG=dbg
 
 O=bin\$(CFG)
 
+!if "$(CFG)"=="rel"
+CSC_FLAGS=$(CSC_FLAGS) /optimize+
+!endif
+
 !if "$(GENERICS)"=="yes"
 CSC_FLAGS=$(CSC_FLAGS) /d:USE_GENERICS
 O=$(O)-generics
