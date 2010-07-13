@@ -234,11 +234,5 @@ namespace NachoDB
         { 
             return new L2ListEnumerator(this);
         }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
-
     }
 }
