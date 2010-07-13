@@ -13,22 +13,8 @@ namespace NachoDB
     /// (each boundary can be specified or unspecified and can be inclusive or exclusive)
     /// Key should be of scalar, String, DateTime or peristent object type.
     /// </summary>
-#if USE_GENERICS
     public interface FieldIndex<K,V> : GenericIndex<K,V> where V:class,IPersistent
-#else
-    public interface FieldIndex : GenericIndex
-#endif
     {
-#if !USE_GENERICS
-        /// <summary> 
-        /// Check if index contains specified object
-        /// </summary>
-        /// <param name="obj">object to be searched in the index. Object should contain indexed field. 
-        /// </param>
-        /// <returns><code>true</code> if object is present in the index, <code>false</code> otherwise
-        /// </returns>
-        bool Contains(IPersistent obj);
-#endif
 
         /// <summary> Put new object in the index. 
         /// </summary>
@@ -40,11 +26,7 @@ namespace NachoDB
         /// of the key in the index. 
         /// 
         /// </returns>
-#if USE_GENERICS
         bool Put(V obj);
-#else
-        bool Put(IPersistent obj);
-#endif
 
         /// <summary>
         /// Associate new object with the key specified by object field value. 
@@ -57,11 +39,7 @@ namespace NachoDB
         /// </param>
         /// <returns>object previously associated with this key, <code>null</code> if there was no such object
         /// </returns>
-#if USE_GENERICS
         V Set(V obj);
-#else
-        IPersistent Set(IPersistent obj);
-#endif
 
         /// <summary>
         /// Assign to the integer indexed field unique autoicremented value and 
