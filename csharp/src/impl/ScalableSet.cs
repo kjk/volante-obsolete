@@ -1,29 +1,18 @@
 using System;
-#if USE_GENERICS
-using System.Collections.Generic;
-#else
 using System.Collections;
-#endif
+using System.Collections.Generic;
 
 namespace NachoDB.Impl
 {
-#if USE_GENERICS
     class ScalableSet<T> : PersistentCollection<T>, ISet<T> where T:class,IPersistent
     { 
         Link<T> link;
         ISet<T> pset;
-#else
-    class ScalableSet : PersistentCollection, ISet 
-    { 
-        Link link;
-        ISet pset;
-#endif
         const int BTREE_THRESHOLD = 128;
 
         internal ScalableSet(StorageImpl storage, int initialSize) 
             : base(storage)
         {
-#if USE_GENERICS
             if (initialSize <= BTREE_THRESHOLD) 
             { 
                 link = storage.CreateLink<T>(initialSize);
@@ -32,16 +21,6 @@ namespace NachoDB.Impl
             { 
                 pset = storage.CreateSet<T>();
             }
-#else
-            if (initialSize <= BTREE_THRESHOLD) 
-            { 
-                link = storage.CreateLink(initialSize);
-            } 
-            else 
-            { 
-                pset = storage.CreateSet();
-            }
-#endif
         }
 
         ScalableSet() {}
@@ -54,11 +33,7 @@ namespace NachoDB.Impl
             }
         }
 
-#if USE_GENERICS
         public override void Clear() 
-#else
-        public void Clear() 
-#endif
         { 
             if (link != null) 
             { 
@@ -71,20 +46,12 @@ namespace NachoDB.Impl
             }
         }
 
-#if USE_GENERICS
         public override bool Contains(T o) 
-#else
-        public bool Contains(IPersistent o) 
-#endif
         {
             return link != null ? link.Contains(o) : pset.Contains(o);
         }
     
-#if USE_GENERICS
         public T[] ToArray() 
-#else
-        public IPersistent[] ToArray() 
-#endif
         { 
             return link != null ? link.ToArray() : pset.ToArray();
         }
@@ -94,20 +61,17 @@ namespace NachoDB.Impl
             return link != null ? link.ToArray(elemType) : pset.ToArray(elemType);
         }
 
-#if USE_GENERICS
         public override IEnumerator<T> GetEnumerator() 
-#else
-        public override IEnumerator GetEnumerator() 
-#endif
         { 
             return link != null ? link.GetEnumerator() : pset.GetEnumerator();
         }
 
-#if USE_GENERICS
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
         public override void Add(T o) 
-#else
-        public void Add(IPersistent o) 
-#endif
         { 
             if (link != null) 
             { 
@@ -117,18 +81,10 @@ namespace NachoDB.Impl
                 }
                 if (link.Count == BTREE_THRESHOLD) 
                 { 
-#if USE_GENERICS
                     pset = Storage.CreateSet<T>();
-#else
-                    pset = Storage.CreateSet();
-#endif
                     for (int i = 0, n = link.Count; i < n; i++) 
                     { 
-#if USE_GENERICS
                         pset.Add(link[i]);
-#else
-                        pset.Add(link.GetRaw(i));
-#endif
                     }
                     link = null;
                     Modify();
@@ -146,11 +102,7 @@ namespace NachoDB.Impl
             }
         }
 
-#if USE_GENERICS
         public override bool Remove(T o) 
-#else
-        public bool Remove(IPersistent o) 
-#endif
         { 
             if (link != null) 
             {  
@@ -169,8 +121,6 @@ namespace NachoDB.Impl
             }
         }
     
-    
-#if USE_GENERICS
         public bool ContainsAll(ICollection<T> c) 
         { 
             foreach (T o in c) 
@@ -182,22 +132,7 @@ namespace NachoDB.Impl
             }
             return true;
         }
-#else
-        public bool ContainsAll(ICollection c)  
-        { 
-            foreach (IPersistent o in c) 
-            {
-                if (!Contains(o)) 
-                {
-                    return false;
-                }
-            }
-            return true;
-        }
-#endif
-
     
-#if USE_GENERICS
         public bool AddAll(ICollection<T> c) 
         {
             bool modified = false;
@@ -211,24 +146,7 @@ namespace NachoDB.Impl
             }
             return modified;
         }
-#else
-        public bool AddAll(ICollection c) 
-        {
-            bool modified = false;
-            foreach (IPersistent o in c) 
-            {
-                if (!Contains(o)) 
-                {
-                    modified = true;
-                    Add(o);
-                }
-            }
-            return modified;
-        }
-#endif
 
- 
-#if USE_GENERICS
         public bool RemoveAll(ICollection<T> c) 
         {
             bool modified = false;
@@ -238,17 +156,6 @@ namespace NachoDB.Impl
             }
             return modified;
         }
-#else
-        public bool RemoveAll(ICollection c) 
-        {
-            bool modified = false;
-            foreach (IPersistent o in c) 
-            {
-                modified |= Remove(o);
-            }
-            return modified;
-        }
-#endif
 
         public override  bool Equals(object o) 
         {
@@ -256,11 +163,7 @@ namespace NachoDB.Impl
             {
                 return true;
             }
-#if USE_GENERICS
             ISet<T> s = o as ISet<T>;
-#else
-            ISet s = o as ISet;
-#endif
             if (s == null) 
             {
                 return false;
