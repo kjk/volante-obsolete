@@ -1,23 +1,14 @@
 namespace NachoDB.Impl
 {
     using System;
-#if USE_GENERICS
     using System.Collections.Generic;
-#else
     using System.Collections;
-#endif
     using System.Reflection;
     using System.Diagnostics;
     using NachoDB;
 	
-#if USE_GENERICS
     class TimeSeriesImpl<T> : PersistentResource, TimeSeries<T> where T:TimeSeriesTick
-#else
-    class TimeSeriesImpl : PersistentCollection, TimeSeries
-#endif
-
     { 
-#if USE_GENERICS
         public virtual bool IsSynchronized 
         {
             get 
@@ -96,14 +87,8 @@ namespace NachoDB.Impl
 
             TimeSeriesBlock() {}
         }
-#endif
 
-
-#if USE_GENERICS
         public void Add(T tick) 
-#else
-        public void Add(TimeSeriesTick tick) 
-#endif
         { 
             long time = tick.Time;
             foreach (TimeSeriesBlock block in index.Range(time - maxBlockTimeInterval, time, IterationOrder.DescentOrder)) {
@@ -113,17 +98,9 @@ namespace NachoDB.Impl
             addNewBlock(tick);
         }
 
-#if USE_GENERICS
         class TimeSeriesEnumerator : IEnumerator<T>, IEnumerable<T>
-#else
-        class TimeSeriesEnumerator : IEnumerator, IEnumerable 
-#endif
         { 
-#if USE_GENERICS
             internal TimeSeriesEnumerator(IEnumerator<TimeSeriesBlock> blockIterator, long from, long till) 
-#else
-            internal TimeSeriesEnumerator(IEnumerator blockIterator, long from, long till) 
-#endif
             { 
                 this.till = till;
                 this.from = from;
@@ -131,24 +108,18 @@ namespace NachoDB.Impl
                 Reset();
             }
 
-#if USE_GENERICS
             public IEnumerator<T> GetEnumerator() 
-#else
-            public IEnumerator GetEnumerator() 
-#endif
             { 
                 return this;
+            }
+
+            IEnumerator IEnumerable.GetEnumerator()
+            {
+                return GetEnumerator();
             }
         
             public void Reset()
             {
-#if !USE_GENERICS
-                if (resetNeeded) 
-                {
-                    blockIterator.Reset();
-                }
-                resetNeeded = true;
-#endif
                 hasCurrent = false;
                 pos = -1;
                 while (blockIterator.MoveNext()) 
@@ -212,11 +183,7 @@ namespace NachoDB.Impl
                 return true;
             }
 
-#if USE_GENERICS
             public virtual T Current 
-#else
-            public virtual object Current 
-#endif
             {
                 get 
                 {
@@ -228,12 +195,15 @@ namespace NachoDB.Impl
                 }
             }
 
-#if USE_GENERICS
+            object IEnumerator.Current
+            {
+                get
+                {
+                    return Current;
+                }
+            }
+
             private IEnumerator<TimeSeriesBlock> blockIterator;
-#else
-            private IEnumerator     blockIterator;
-            private bool            resetNeeded;
-#endif
             private bool            hasCurrent;
             private TimeSeriesBlock currBlock;
             private int             pos;
@@ -242,17 +212,9 @@ namespace NachoDB.Impl
         }
                 
             
-#if USE_GENERICS
         class TimeSeriesReverseEnumerator : IEnumerator<T>, IEnumerable<T>
-#else
-        class TimeSeriesReverseEnumerator : IEnumerator, IEnumerable
-#endif
         { 
-#if USE_GENERICS
             internal TimeSeriesReverseEnumerator(IEnumerator<TimeSeriesBlock> blockIterator, long from, long till) 
-#else
-            internal TimeSeriesReverseEnumerator(IEnumerator blockIterator, long from, long till) 
-#endif
             { 
                 this.till = till;
                 this.from = from;
@@ -260,24 +222,18 @@ namespace NachoDB.Impl
                 Reset();
             }
 
-#if USE_GENERICS
             public IEnumerator<T> GetEnumerator() 
-#else
-            public IEnumerator GetEnumerator() 
-#endif
             { 
                 return this;
             }
 
+            IEnumerator IEnumerable.GetEnumerator()
+            {
+                return GetEnumerator();
+            }
+
             public void Reset()
             {
-#if !USE_GENERICS
-                if (resetNeeded) 
-                {
-                    blockIterator.Reset();
-                }
-                resetNeeded = true;
-#endif
                 hasCurrent = false;
                 pos = -1;
                 while (blockIterator.MoveNext()) 
@@ -341,11 +297,7 @@ namespace NachoDB.Impl
                 return true;
             }
 
-#if USE_GENERICS
             public virtual T Current 
-#else
-            public virtual object Current 
-#endif
             {
                 get 
                 {
@@ -357,12 +309,15 @@ namespace NachoDB.Impl
                 }
             }
 
-#if USE_GENERICS
+            object IEnumerator.Current
+            {
+                get
+                {
+                    return Current;
+                }
+            }
+
             private IEnumerator<TimeSeriesBlock> blockIterator;
-#else
-            private IEnumerator     blockIterator;
-            private bool            resetNeeded;
-#endif
             private bool            hasCurrent;
             private TimeSeriesBlock currBlock;
             private int             pos;
@@ -371,98 +326,61 @@ namespace NachoDB.Impl
         }
                 
                             
-#if USE_GENERICS
         public IEnumerator<T> GetEnumerator() 
-#else
-        public override IEnumerator GetEnumerator() 
-#endif
         { 
             return iterator(0, Int64.MaxValue, IterationOrder.AscentOrder).GetEnumerator();
         }
 
-#if USE_GENERICS
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
         public IEnumerator<T> GetEnumerator(DateTime from, DateTime till) 
-#else
-        public IEnumerator GetEnumerator(DateTime from, DateTime till) 
-#endif
         {
             return iterator(from.Ticks, till.Ticks, IterationOrder.AscentOrder).GetEnumerator();
         }
 
-#if USE_GENERICS
         public IEnumerator<T> GetEnumerator(DateTime from, DateTime till, IterationOrder order) 
-#else
-        public IEnumerator GetEnumerator(DateTime from, DateTime till, IterationOrder order) 
-#endif
         {
             return iterator(from.Ticks, till.Ticks, order).GetEnumerator();
         }
 
-#if USE_GENERICS
         public IEnumerator<T> GetEnumerator(IterationOrder order) 
-#else
-        public IEnumerator GetEnumerator(IterationOrder order) 
-#endif
         {
             return iterator(0, Int64.MaxValue, order).GetEnumerator();
         }
 
-#if USE_GENERICS
         public IEnumerable<T> Range(DateTime from, DateTime till) 
-#else
-        public IEnumerable Range(DateTime from, DateTime till) 
-#endif
         {
             return iterator(from.Ticks, till.Ticks, IterationOrder.AscentOrder);
         }
 
-#if USE_GENERICS
         public IEnumerable<T> Range(DateTime from, DateTime till, IterationOrder order) 
-#else
-        public IEnumerable Range(DateTime from, DateTime till, IterationOrder order) 
-#endif
         {
             return iterator(from.Ticks, till.Ticks, order);
         }
 
-#if USE_GENERICS
         public IEnumerable<T> Range(IterationOrder order) 
-#else
-        public IEnumerable Range(IterationOrder order) 
-#endif
         {
             return iterator(0, Int64.MaxValue, order);
         }
 
-#if USE_GENERICS
         public IEnumerable<T> Till(DateTime till) 
-#else
-        public IEnumerable Till(DateTime till) 
-#endif
         { 
             return iterator(0, till.Ticks, IterationOrder.DescentOrder);
         }
 
-#if USE_GENERICS
         public IEnumerable<T> From(DateTime from) 
-#else
-        public IEnumerable From(DateTime from) 
-#endif
         { 
             return iterator(from.Ticks, Int64.MaxValue, IterationOrder.AscentOrder);
         }
 
-#if USE_GENERICS
         public IEnumerable<T> Reverse() 
-#else
-        public IEnumerable Reverse() 
-#endif
         { 
             return iterator(0, Int64.MaxValue, IterationOrder.DescentOrder);
         }
 
-
-#if USE_GENERICS
         private IEnumerable<T> iterator(long from, long till, IterationOrder order) 
         { 
             IEnumerator<TimeSeriesBlock> enumerator = index.GetEnumerator(from - maxBlockTimeInterval, till, order);
@@ -470,15 +388,6 @@ namespace NachoDB.Impl
                 ? (IEnumerable<T>)new TimeSeriesEnumerator(enumerator, from, till)
                 : (IEnumerable<T>)new TimeSeriesReverseEnumerator(enumerator, from, till);
         }
-#else
-        private IEnumerable iterator(long from, long till, IterationOrder order) 
-        { 
-            IEnumerator enumerator = index.GetEnumerator(from - maxBlockTimeInterval, till, order);
-            return order == IterationOrder.AscentOrder
-                ? (IEnumerable)new TimeSeriesEnumerator(enumerator, from, till)
-                : (IEnumerable)new TimeSeriesReverseEnumerator(enumerator, from, till);
-        }
-#endif
 
         public DateTime FirstTime 
         {
@@ -504,11 +413,7 @@ namespace NachoDB.Impl
             }
         }
 
-#if USE_GENERICS
         public int Count 
-#else
-        public override int Count 
-#endif
         {
             get 
             {
@@ -520,12 +425,8 @@ namespace NachoDB.Impl
                 return n;
             }
         }
-       
-#if USE_GENERICS
+
         public T this[DateTime timestamp]     
-#else
-        public TimeSeriesTick this[DateTime timestamp]     
-#endif
         {
             get 
             {
@@ -584,11 +485,8 @@ namespace NachoDB.Impl
         private int remove(long from, long till)
         {
             int nRemoved = 0;
-#if USE_GENERICS
             IEnumerator<TimeSeriesBlock> blockIterator = index.GetEnumerator(from - maxBlockTimeInterval, till);
-#else
-            IEnumerator blockIterator = index.GetEnumerator(from - maxBlockTimeInterval, till);
-#endif
+
             while (blockIterator.MoveNext()) 
             {
                 TimeSeriesBlock block = (TimeSeriesBlock)blockIterator.Current;
@@ -616,11 +514,7 @@ namespace NachoDB.Impl
                 { 
                     index.Remove(block.timestamp, block);
                     block.Deallocate();
-#if USE_GENERICS
                     blockIterator = index.GetEnumerator(from - maxBlockTimeInterval, till);
-#else
-                    blockIterator.Reset();
-#endif
                 } 
                 else if (l != r) 
                 { 
@@ -629,11 +523,7 @@ namespace NachoDB.Impl
                         index.Remove(block.timestamp, block);
                         block.timestamp = block[r].Time;
                         index.Put(block.timestamp, block);
-#if USE_GENERICS
                         blockIterator = index.GetEnumerator(from - maxBlockTimeInterval, till);
-#else
-                        blockIterator.Reset();
-#endif
                     }
                     Array.Copy(block.Ticks, r, block.Ticks, l, n-r);
                     block.used = l + n - r;
@@ -643,30 +533,16 @@ namespace NachoDB.Impl
             return nRemoved;        
         }
 
-#if USE_GENERICS
         private void addNewBlock(T t)
         {
             TimeSeriesBlock block = new TimeSeriesBlock(blockSize);
-#else
-        private void addNewBlock(TimeSeriesTick t)
-        {
-            TimeSeriesBlock block = (TimeSeriesBlock)blockConstructor.Invoke(ClassDescriptor.noArgs);
-            if (block == null) 
-            {
-                throw new StorageError(StorageError.ErrorCode.CONSTRUCTOR_FAILURE);
-            }
-#endif
             block.timestamp = t.Time;
             block.used = 1;
             block[0] = t;
             index.Put(block.timestamp, block);
         }
 
-#if USE_GENERICS
         private void insertInBlock(TimeSeriesBlock block, T tick)
-#else
-        private void insertInBlock(TimeSeriesBlock block, TimeSeriesTick tick)
-#endif
         {
             long t = tick.Time;
             int i, n = block.used;
@@ -719,36 +595,12 @@ namespace NachoDB.Impl
             block.Modify();
         }
 
-#if USE_GENERICS
         internal TimeSeriesImpl(Storage storage, int blockSize, long maxBlockTimeInterval) 
         {
             this.blockSize = blockSize;
             this.maxBlockTimeInterval = maxBlockTimeInterval;
             index = storage.CreateIndex<long,TimeSeriesBlock>(true);
         }
-#else
-        private void lookupConstructor(Type cls)
-        {
-            blockConstructor = cls.GetConstructor(BindingFlags.Instance|BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic|BindingFlags.DeclaredOnly, null, ClassDescriptor.defaultConstructorProfile, null);
-            if (blockConstructor == null) 
-            { 
-                throw new StorageError(StorageError.ErrorCode.DESCRIPTOR_FAILURE, cls);
-            }
-        }
-
-        internal TimeSeriesImpl(Storage storage, Type blockClass, long maxBlockTimeInterval) 
-        {
-            lookupConstructor(blockClass);
-            this.maxBlockTimeInterval = maxBlockTimeInterval;
-            blockClassName = ClassDescriptor.getTypeName(blockClass);
-            index = storage.CreateIndex(typeof(long), true);
-        }
-
-        public override void OnLoad() 
-        {  
-            lookupConstructor(ClassDescriptor.lookup(Storage, blockClassName));
-        }
-#endif
         internal TimeSeriesImpl() {}
    
         public override void Deallocate() 
@@ -761,17 +613,9 @@ namespace NachoDB.Impl
             base.Deallocate();
         }
 
-#if USE_GENERICS
         private Index<long,TimeSeriesBlock> index;
         private long                        maxBlockTimeInterval;        
         private int                         blockSize;
-#else
-        private Index  index;
-        private long   maxBlockTimeInterval;        
-        private string blockClassName;
-        [NonSerialized()]
-        private ConstructorInfo blockConstructor;
-#endif
     }
 }
  
