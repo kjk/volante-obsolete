@@ -26,10 +26,9 @@ namespace NachoDB.Impl
             internal FieldInfo       field;
             [NonSerialized()]
             internal bool            recursiveLoading;
-#if USE_GENERICS
             [NonSerialized()]
             internal MethodInfo constructor;
-#endif
+
             public bool equals(FieldDescriptor fd) 
             { 
                 return fieldName.Equals(fd.fieldName) 
@@ -190,7 +189,7 @@ namespace NachoDB.Impl
                 throw new StorageError(StorageError.ErrorCode.CONSTRUCTOR_FAILURE, cls, x);
             }
         }
-		
+
 #if COMPACT_NET_FRAMEWORK
         internal void generateSerializer() {}
 #else
@@ -213,10 +212,8 @@ namespace NachoDB.Impl
                     case FieldType.tpArrayOfObject:
                     case FieldType.tpArrayOfEnum:
                     case FieldType.tpArrayOfRaw:
-#if USE_GENERICS
                     case FieldType.tpLink:
                     case FieldType.tpArrayOfOid:
-#endif
     
                         return;
                     default:
@@ -237,7 +234,6 @@ namespace NachoDB.Impl
         }
 #endif
 
-#if USE_GENERICS
         MethodInfo GetConstructor(FieldInfo f, string name)
         { 
             MethodInfo mi = typeof(StorageImpl).GetMethod(name, BindingFlags.Instance|BindingFlags.NonPublic|BindingFlags.DeclaredOnly);
@@ -245,11 +241,9 @@ namespace NachoDB.Impl
             //TODO: verify it's MakeGenericMethod
             return mi.MakeGenericMethod(f.FieldType.GetGenericArguments());
         }
-#endif
 
         internal static String getTypeName(Type t)
         {
-#if USE_GENERICS
             // TODO: was t.HasGenericArguments
             // Verify it's really ContainsGenericParameters
             if (t.ContainsGenericParameters)
@@ -268,7 +262,6 @@ namespace NachoDB.Impl
                 buf.Append(']');
                 return buf.ToString();
             }
-#endif
             return t.FullName;
         }
 
@@ -313,7 +306,6 @@ namespace NachoDB.Impl
                             } 
                             break;
 #endif
-#if USE_GENERICS
                         case FieldType.tpArrayOfOid:
                             fd.constructor = GetConstructor(f, "ConstructArray");
                             hasReferences = true;
@@ -322,10 +314,7 @@ namespace NachoDB.Impl
                             fd.constructor = GetConstructor(f, "ConstructLink");
                             hasReferences = true;
                             break;
-#else
-                        case FieldType.tpArrayOfOid:
-                        case FieldType.tpLink:
-#endif
+
                         case FieldType.tpArrayOfObject:
                         case FieldType.tpObject:
                             hasReferences = true;
@@ -512,7 +501,7 @@ namespace NachoDB.Impl
                         return cls;
                     }
                 }
-#if USE_GENERICS
+
                 int p = name.IndexOf('=');
                 if (p >= 0)
                 { 
@@ -553,7 +542,6 @@ namespace NachoDB.Impl
                         }
                     }
                 }
-#endif
 
 #if COMPACT_NET_FRAMEWORK
                 foreach (Assembly ass in StorageImpl.assemblies) 
@@ -611,7 +599,7 @@ namespace NachoDB.Impl
                 {
                     fd.recursiveLoading = true;
                 }                
-#if USE_GENERICS
+
                 switch (fd.type)
                 {
                 case FieldType.tpArrayOfOid:
@@ -623,8 +611,8 @@ namespace NachoDB.Impl
                 default:
                     break;
                 }
-#endif
             }
+
             defaultConstructor = cls.GetConstructor(BindingFlags.Instance|BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic|BindingFlags.DeclaredOnly, null, defaultConstructorProfile, null);
             if (defaultConstructor == null && !typeof(ValueType).IsAssignableFrom(cls)) 
             { 
