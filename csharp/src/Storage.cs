@@ -125,7 +125,6 @@ namespace NachoDB
         /// <param name="stream">output stream to which backup is done</param>
         void Backup( System.IO.Stream stream);
 
-#if USE_GENERICS
         /// <summary> Create new index. K parameter specifies key type, V - associated object type.
         /// </summary>
         /// </param>
@@ -137,23 +136,7 @@ namespace NachoDB
         /// specified key type is not supported by implementation.
         /// </exception>
         Index<K,V> CreateIndex<K,V>(bool unique) where V:class,IPersistent;
-#else
-        /// <summary> Create new index
-        /// </summary>
-        /// <param name="type">type of the index key (you should path here <code>String.class</code>, 
-        /// <code>int.class</code>, ...)
-        /// </param>
-        /// <param name="unique">whether index is unique (duplicate value of keys are not allowed)
-        /// </param>
-        /// <returns>persistent object implementing index
-        /// </returns>
-        /// <exception cref="NachoDB.StorageError">StorageError(StorageError.ErrorCode.UNSUPPORTED_INDEX_TYPE) exception if 
-        /// specified key type is not supported by implementation.
-        /// </exception>
-        Index CreateIndex(Type type, bool unique);
-#endif
 
-#if USE_GENERICS
         /// <summary> Create new thick index (index with large number of duplicated keys).
         /// K parameter specifies key type, V - associated object type.
         /// </summary>
@@ -164,21 +147,7 @@ namespace NachoDB
         /// specified key type is not supported by implementation.
         /// </exception>
         Index<K,V> CreateThickIndex<K,V>() where V:class,IPersistent;
-#else
-        /// <summary> Create new thick index (index with large number of duplicated keys)
-        /// </summary>
-        /// <param name="type">type of the index key (you should path here <code>String.class</code>, 
-        /// <code>int.class</code>, ...)
-        /// </param>
-        /// <returns>persistent object implementing thick index
-        /// </returns>
-        /// <exception cref="NachoDB.StorageError">StorageError(StorageError.ErrorCode.UNSUPPORTED_INDEX_TYPE) exception if 
-        /// specified key type is not supported by implementation.
-        /// </exception>
-        Index CreateThickIndex(Type type);
-#endif
 
-#if USE_GENERICS
         /// <summary> 
         /// Create new field index
         /// K parameter specifies key type, V - associated object type.
@@ -193,25 +162,7 @@ namespace NachoDB
         /// StorageError(StorageError.UNSUPPORTED_INDEX_TYPE) exception if type of specified field is not supported by implementation
         /// </exception>
         FieldIndex<K,V> CreateFieldIndex<K,V>(string fieldName, bool unique) where V:class,IPersistent;
-#else
-        /// <summary> 
-        /// Create new field index
-        /// </summary>
-        /// <param name="type">objects of which type (or derived from which type) will be included in the index
-        /// </param>
-        /// <param name="fieldName">name of the index field. Field with such name should be present in specified class <code>type</code>
-        /// </param>
-        /// <param name="unique">whether index is unique (duplicate value of keys are not allowed)
-        /// </param>
-        /// <returns>persistent object implementing field index
-        /// </returns>
-        /// <exception cref="NachoDB.StorageError">StorageError(StorageError.INDEXED_FIELD_NOT_FOUND) if there is no such field in specified class,
-        /// StorageError(StorageError.UNSUPPORTED_INDEX_TYPE) exception if type of specified field is not supported by implementation
-        /// </exception>
-        FieldIndex CreateFieldIndex(Type type, string fieldName, bool unique);
-#endif
 
-#if USE_GENERICS
         /// <summary> 
         /// Create new multi-field index
         /// </summary>
@@ -225,34 +176,13 @@ namespace NachoDB
         /// StorageError(StorageError.UNSUPPORTED_INDEX_TYPE) exception if type of specified field is not supported by implementation
         /// </exception>
         MultiFieldIndex<V> CreateFieldIndex<V>(string[] fieldNames, bool unique) where V:class,IPersistent;
-#else
-        /// <summary> 
-        /// Create new multi-field index
-        /// </summary>
-        /// <param name="type">objects of which type (or derived from which type) will be included in the index
-        /// </param>
-        /// <param name="fieldNames">array of names of the fields. Field with such name should be present in specified class <code>type</code>
-        /// </param>
-        /// <param name="unique">whether index is unique (duplicate value of keys are not allowed)
-        /// </param>
-        /// <returns>persistent object implementing field index
-        /// </returns>
-        /// <exception cref="NachoDB.StorageError">StorageError(StorageError.INDEXED_FIELD_NOT_FOUND) if there is no such field in specified class,
-        /// StorageError(StorageError.UNSUPPORTED_INDEX_TYPE) exception if type of specified field is not supported by implementation
-        /// </exception>
-        MultiFieldIndex CreateFieldIndex(Type type, string[] fieldNames, bool unique);
-#endif
 
         /// <summary>
         /// Create new bit index. Bit index is used to select object 
         /// with specified set of (boolean) properties.
         /// </summary>
         /// <returns>persistent object implementing bit index</returns>
-#if USE_GENERICS
         BitIndex<T> CreateBitIndex<T>() where T:class,IPersistent;
-#else
-        BitIndex CreateBitIndex();
-#endif
 
         /// <summary>
         /// Create new spatial index with integer coordinates
@@ -260,11 +190,7 @@ namespace NachoDB
         /// <returns>
         /// persistent object implementing spatial index
         /// </returns>
-#if USE_GENERICS
         SpatialIndex<T> CreateSpatialIndex<T>() where T:class,IPersistent;
-#else
-        SpatialIndex CreateSpatialIndex();
-#endif
 
         /// <summary>
         /// Create new R2 spatial index
@@ -272,11 +198,7 @@ namespace NachoDB
         /// <returns>
         /// persistent object implementing spatial index
         /// </returns>
-#if USE_GENERICS
         SpatialIndexR2<T> CreateSpatialIndexR2<T>() where T:class,IPersistent;
-#else
-        SpatialIndexR2 CreateSpatialIndexR2();
-#endif
 
         /// <summary>
         /// Create new sorted collection with specified comparator
@@ -284,11 +206,7 @@ namespace NachoDB
         /// <param name="comparator">comparator class specifying order in the collection</param>
         /// <param name="unique"> whether collection is unique (members with the same key value are not allowed)</param>
         /// <returns> persistent object implementing sorted collection</returns>
-#if USE_GENERICS
         SortedCollection<K,V> CreateSortedCollection<K,V>(PersistentComparator<K,V> comparator, bool unique) where V:class,IPersistent;
-#else
-        SortedCollection CreateSortedCollection(PersistentComparator comparator, bool unique);
-#endif
 
         /// <summary>
         /// Create new sorted collection. Members of this collections should implement 
@@ -297,11 +215,7 @@ namespace NachoDB
         /// </summary>
         /// <param name="unique"> whether collection is unique (members with the same key value are not allowed)</param>
         /// <returns> persistent object implementing sorted collection</returns>
-#if USE_GENERICS
         SortedCollection<K,V> CreateSortedCollection<K,V>(bool unique) where V:class,IPersistent,IComparable<K>,IComparable<V>;
-#else
-        SortedCollection CreateSortedCollection(bool unique);
-#endif
 
         /// <summary>
         /// Create new object set
@@ -309,32 +223,20 @@ namespace NachoDB
         /// <returns>
         /// empty set of persistent objects
         /// </returns>
-#if USE_GENERICS
         ISet<T> CreateSet<T>() where T:class,IPersistent;
-#else
-        ISet CreateSet();
-#endif
 
         /// <summary> Create one-to-many link.
         /// </summary>
         /// <returns>new empty link, new members can be added to the link later.
         /// </returns>
-#if USE_GENERICS
         Link<T> CreateLink<T>() where T:class,IPersistent;
-#else
-        Link CreateLink();
-#endif
 
         /// <summary> Create one-to-many link with specified initial size.
         /// </summary>
         /// <param name="intialSize">initial size of the array</param>
         /// <returns>new link with specified size
         /// </returns>
-#if USE_GENERICS
         Link<T> CreateLink<T>(int initialSize) where T:class,IPersistent;
-#else
-        Link CreateLink(int initialSize);
-#endif
 
         /// <summary>  Create new scalable set references to persistent objects.
         /// This container can effciently store small number of references as well 
@@ -344,11 +246,7 @@ namespace NachoDB
         /// </summary>
         /// <returns>new empty set, new members can be added to the set later.
         /// </returns>
-#if USE_GENERICS
         ISet<T> CreateScalableSet<T>() where T:class,IPersistent;
-#else
-        ISet CreateScalableSet();
-#endif
 
         /// <summary>  Create new scalable set references to persistent objects.
         /// This container can effciently store small number of references as well 
@@ -359,11 +257,7 @@ namespace NachoDB
         /// <param name="intialSize">initial size of the sety</param>
         /// <returns>new empty set, new members can be added to the set later.
         /// </returns>
-#if USE_GENERICS
         ISet<T> CreateScalableSet<T>(int initialSize) where T:class,IPersistent;
-#else
-        ISet CreateScalableSet(int initialSize);
-#endif
 
         /// <summary> Create dynamcially extended array of reference to persistent objects.
         /// It is inteded to be used in classes using virtual properties to 
@@ -371,11 +265,7 @@ namespace NachoDB
         /// </summary>
         /// <returns>new empty array, new members can be added to the array later.
         /// </returns>
-#if USE_GENERICS
         PArray<T> CreateArray<T>() where T:class,IPersistent;
-#else
-        PArray CreateArray();
-#endif
 
         /// <summary> Create dynamcially extended array of reference to persistent objects.
         /// It is inteded to be used in classes using virtual properties to 
@@ -384,11 +274,7 @@ namespace NachoDB
         /// <param name="intialSize">initially allocated size of the array</param>
         /// <returns>new empty array, new members can be added to the array later.
         /// </returns>
-#if USE_GENERICS
         PArray<T> CreateArray<T>(int initialSize) where T:class,IPersistent;
-#else
-        PArray CreateArray(int initialSize);
-#endif
 
         /// <summary> Create relation object. Unlike link which represent embedded relation and stored
         /// inside owner object, this Relation object is standalone persisitent object
@@ -399,11 +285,7 @@ namespace NachoDB
         /// <returns>object representing empty relation (relation with specified owner and no members), 
         /// new members can be added to the link later.
         /// </returns>
-#if USE_GENERICS
         Relation<M,O> CreateRelation<M,O>(O owner) where M:class,IPersistent where O:class,IPersistent;
-#else
-        Relation CreateRelation(IPersistent owner);
-#endif
 
         /// <summary>
         /// Create new BLOB. Create object for storing large binary data.
@@ -411,7 +293,6 @@ namespace NachoDB
         /// <returns>empty BLOB</returns>
         Blob CreateBlob();
 
-#if USE_GENERICS
         /// <summary>
         /// Create new time series object. 
         /// </summary>
@@ -432,28 +313,6 @@ namespace NachoDB
         /// </param>
         /// <returns>new empty time series</returns>
         TimeSeries<T> CreateTimeSeries<T>(int blockSize, long maxBlockTimeInterval) where T:TimeSeriesTick;
-#else
-        /// <summary>
-        /// Create new time series object. 
-        /// </summary>
-        /// <param name="blockClass">class derived from TimeSeriesBlock</param>
-        /// <param name="maxBlockTimeInterval">maximal difference in system ticks (100 nanoseconds) between timestamps 
-        /// of the first and the last elements in a block. 
-        /// If value of this parameter is too small, then most blocks will contains less elements 
-        /// than preallocated. 
-        /// If it is too large, then searching of block will be inefficient, because index search 
-        /// will select a lot of extra blocks which do not contain any element from the 
-        /// specified range.
-        /// Usually the value of this parameter should be set as
-        /// (number of elements in block)*(tick interval)*2. 
-        /// Coefficient 2 here is used to compencate possible holes in time series.
-        /// For example, if we collect stocks data, we will have data only for working hours.
-        /// If number of element in block is 100, time series period is 1 day, then
-        /// value of maxBlockTimeInterval can be set as 100*(24*60*60*10000000L)*2
-        /// </param>
-        /// <returns>new empty time series</returns>
-        TimeSeries CreateTimeSeries(Type blockClass, long maxBlockTimeInterval);
-#endif
 
         /// <summary>
         /// Create PATRICIA trie (Practical Algorithm To Retrieve Information Coded In Alphanumeric)
@@ -466,13 +325,8 @@ namespace NachoDB
         /// to other structures such as hashtables when memory space is of concern.
         /// </summary>
         /// <returns>created PATRICIA trie</returns>
-#if USE_GENERICS
         PatriciaTrie<T> CreatePatriciaTrie<T>() where T:class,IPersistent;
-#else
-        PatriciaTrie CreatePatriciaTrie();
-#endif
 
-#if USE_GENERICS
         /// <summary>
         /// Create new generic set of objects
         /// </summary>
@@ -512,7 +366,6 @@ namespace NachoDB
         /// array of IPersistent references
         /// </returns>
         PArray<IPersistent> CreateArray(int initialSize);
-#endif
 
         /// <summary> Commit transaction (if needed) and close the storage
         /// </summary>
