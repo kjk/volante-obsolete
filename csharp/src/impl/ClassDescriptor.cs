@@ -244,9 +244,7 @@ namespace NachoDB.Impl
 
         internal static String getTypeName(Type t)
         {
-            // TODO: was t.HasGenericArguments
-            // Verify it's really ContainsGenericParameters
-            if (t.ContainsGenericParameters)
+            if (t.IsGenericType)
             { 
                 Type[] genericArgs = t.GetGenericArguments();
                 t = t.GetGenericTypeDefinition();
