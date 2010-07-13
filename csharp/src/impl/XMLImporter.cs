@@ -46,11 +46,11 @@ namespace NachoDB.Impl
                     throwException("Element name expected");
                 }
                 System.String elemName = scanner.Identifier;
-                if (elemName.StartsWith("Perst.Impl.Btree") 
-                    || elemName.StartsWith("Perst.Impl.BitIndexImpl")
-                    || elemName.StartsWith("Perst.Impl.PersistentSet") 
-                    || elemName.StartsWith("Perst.Impl.BtreeFieldIndex") 
-                    || elemName.StartsWith("Perst.Impl.BtreeMultiFieldIndex"))
+                if (elemName.StartsWith("NachoDB.Impl.Btree") 
+                    || elemName.StartsWith("NachoDB.Impl.BitIndexImpl")
+                    || elemName.StartsWith("NachoDB.Impl.PersistentSet") 
+                    || elemName.StartsWith("NachoDB.Impl.BtreeFieldIndex") 
+                    || elemName.StartsWith("NachoDB.Impl.BtreeMultiFieldIndex"))
                 {
                     createIndex(elemName);
                 }
@@ -585,7 +585,7 @@ namespace NachoDB.Impl
             {
                 if (type == null)
                 {
-                    if (indexType.StartsWith("Perst.Impl.PersistentSet")) 
+                    if (indexType.StartsWith("NachoDB.Impl.PersistentSet")) 
                     { 
 #if !USE_GENERICS
                         btree = new PersistentSet();
@@ -598,7 +598,7 @@ namespace NachoDB.Impl
                 } 
                 else 
                 {
-                    if (indexType.StartsWith("org.garret.perst.impl.BitIndexImpl")) 
+                    if (indexType.StartsWith("NachoDB.impl.BitIndexImpl")) 
                     { 
 #if !USE_GENERICS
                         btree = new BitIndexImpl();
