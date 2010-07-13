@@ -931,7 +931,7 @@ namespace NachoDB.Impl
             {
                 Open(file, pagePoolSize);
             } 
-            catch (StorageError ex) 
+            catch (StorageError) 
             {
                 file.Close();            
                 throw;
@@ -959,7 +959,7 @@ namespace NachoDB.Impl
             {
                 Open(file, pagePoolSize);
             } 
-            catch (StorageError ex) 
+            catch (StorageError) 
             {
                 file.Close();            
                 throw;

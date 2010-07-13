@@ -59,7 +59,7 @@ namespace NachoDB.Impl
             socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             for (int j = 0; j < MaxConnectionAttempts; j++) 
             { 
-                foreach (IPAddress ip in Dns.Resolve(host).AddressList) 
+                foreach (IPAddress ip in Dns.GetHostEntry(host).AddressList) 
                 { 
                     try 
                     {

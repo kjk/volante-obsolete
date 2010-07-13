@@ -8,7 +8,7 @@ namespace NachoDB.Impl
     public class OSFile : IFile
     {
         [DllImport("kernel32.dll", SetLastError=true)] 
-        static extern int FlushFileBuffers(int hFile); 
+        static extern bool FlushFileBuffers(IntPtr hFile); 
 
         public virtual void Write(long pos, byte[] buf)
         {
@@ -27,11 +27,7 @@ namespace NachoDB.Impl
             file.Flush();
 #if !COMPACT_NET_FRAMEWORK 
             if (!noFlush) { 
-#if USE_GENERICS
-                FlushFileBuffers(file.SafeFileHandle.DangerousGetHandle().ToInt32());
-#else
-                FlushFileBuffers(file.Handle.ToInt32());
-#endif
+                FlushFileBuffers(file.SafeFileHandle.DangerousGetHandle());
             }
 #endif
         }
