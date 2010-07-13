@@ -1,28 +1,16 @@
 namespace NachoDB
 {
     using System;
-#if USE_GENERICS
-    using System.Collections.Generic;
-#else
     using System.Collections;
-#endif
+    using System.Collections.Generic;
 
     /// <summary>
     /// Double linked list.
     /// </summary>
-#if USE_GENERICS
     public class L2List<T> : PersistentCollection<T> where T:L2ListElem<T>
-#else
-    public class L2List : PersistentCollection
-#endif
     { 
-#if USE_GENERICS
         T head;
         T tail;
-#else
-        L2ListElem head;
-        L2ListElem tail;
-#endif
         
         private int nElems;
         private int updateCounter;
@@ -32,11 +20,7 @@ namespace NachoDB
         /// </summary>
         /// <returns>list head element or null if list is empty
         /// </returns>>
-#if USE_GENERICS
         public T Head 
-#else
-        public L2ListElem Head 
-#endif
         {
             get 
             {
@@ -49,11 +33,7 @@ namespace NachoDB
         /// </summary>
         /// <returns>list tail element or null if list is empty
         /// </returns>
-#if USE_GENERICS
         public T Tail 
-#else
-        public L2ListElem Tail 
-#endif
         { 
             get 
             { 
@@ -61,15 +41,9 @@ namespace NachoDB
             }
         }
 
-#if USE_GENERICS
         public override bool Contains(T obj) 
         {
             foreach (T o in this) 
-#else
-        public bool Contains(L2ListElem obj) 
-        {
-            foreach (L2ListElem o in this) 
-#endif        
             { 
                 if (o == obj) 
                 {
@@ -82,11 +56,7 @@ namespace NachoDB
         /// <summary>
         /// Make list empty. 
         /// </summary>
-#if USE_GENERICS
         public override void Clear() 
-#else
-        public void Clear() 
-#endif
         { 
             lock (this) 
             {
@@ -100,11 +70,7 @@ namespace NachoDB
         /// <summary>
         /// Insert element at the beginning of the list
         /// </summary>
-#if USE_GENERICS
         public void Prepend(T elem) 
-#else
-        public void Prepend(L2ListElem elem) 
-#endif
         { 
             lock (this) 
             { 
@@ -130,11 +96,7 @@ namespace NachoDB
         /// <summary>
         /// Insert element at the end of the list
         /// </summary>
-#if USE_GENERICS
         public void Append(T elem) 
-#else
-        public void Append(L2ListElem elem) 
-#endif
         { 
             lock (this) 
             { 
@@ -160,11 +122,7 @@ namespace NachoDB
         /// <summary>
         /// Remove element from the list
         /// </summary>
-#if USE_GENERICS
         public override bool Remove(T elem) 
-#else
-        public bool Remove(L2ListElem elem) 
-#endif
         { 
             lock (this) 
             { 
@@ -198,11 +156,7 @@ namespace NachoDB
         /// <summary>
         /// Add element to the list
         /// </summary>
-#if USE_GENERICS
         public override void Add(T elem) 
-#else
-        public void Add(L2ListElem elem) 
-#endif
         { 
             Append(elem);
         }
@@ -215,27 +169,14 @@ namespace NachoDB
             }
         }
         
-#if USE_GENERICS
         class L2ListEnumerator : IEnumerator<T>
         {
             private T          curr;
             private int        counter;
             private L2List<T>  list;
             private bool       head;
-#else
-        class L2ListEnumerator : IEnumerator
-        {
-            private L2ListElem curr;
-            private int        counter;
-            private L2List     list;
-            private bool       head;
-#endif
 
-#if USE_GENERICS
             internal L2ListEnumerator(L2List<T> list) 
-#else
-            internal L2ListEnumerator(L2List list) 
-#endif
             { 
                 this.list = list;
                 Reset();
@@ -248,11 +189,7 @@ namespace NachoDB
                 head = true;
             }
 
-#if USE_GENERICS
             public T Current
-#else
-            public object Current
-#endif
             { 
                 get 
                 { 
@@ -261,6 +198,14 @@ namespace NachoDB
                         throw new InvalidOperationException();
                     }
                     return curr;
+                }
+            }
+
+            object IEnumerator.Current
+            {
+                get
+                {
+                    return Current;
                 }
             }
 
@@ -284,15 +229,16 @@ namespace NachoDB
                 return curr != null;
             }
         }
-            
-        
-#if USE_GENERICS
+
         public override IEnumerator<T> GetEnumerator() 
-#else
-        public override IEnumerator GetEnumerator() 
-#endif
         { 
             return new L2ListEnumerator(this);
         }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
     }
 }

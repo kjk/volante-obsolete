@@ -1,20 +1,13 @@
 using System;
-#if USE_GENERICS
-using System.Collections.Generic;
-#else
 using System.Collections;
-#endif
+using System.Collections.Generic;
 
 namespace NachoDB
 {
     /// <summary>
     /// Base class for all persistent collections
     /// </summary>
-#if USE_GENERICS
     public abstract class PersistentCollection<T> : PersistentResource, ICollection<T> where T:class,IPersistent
-#else
-    public abstract class PersistentCollection : PersistentResource, ICollection
-#endif
     {
         public PersistentCollection()
         {
@@ -25,11 +18,12 @@ namespace NachoDB
         {
         }
 
-#if USE_GENERICS
         public abstract IEnumerator<T> GetEnumerator();
-#else
-        public abstract IEnumerator GetEnumerator();
-#endif
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
         
         public abstract int Count 
         { 
@@ -52,11 +46,7 @@ namespace NachoDB
             }
         }
 
-#if USE_GENERICS
         public virtual void CopyTo(T[] dst, int i) 
-#else
-        public virtual void CopyTo(Array dst, int i) 
-#endif
         {
             foreach (object o in this) 
             { 
@@ -64,7 +54,6 @@ namespace NachoDB
             }
         }
 
-#if USE_GENERICS
         public virtual void Add(T obj)
         {
             throw new InvalidOperationException("Add is not supported");
@@ -96,6 +85,5 @@ namespace NachoDB
         {        
             throw new InvalidOperationException("Remove is not supported");
         }
-#endif
     }
 }
