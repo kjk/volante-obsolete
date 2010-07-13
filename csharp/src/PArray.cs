@@ -1,7 +1,7 @@
 namespace NachoDB
 {
     using System;
-	
+
     /// <summary>
     /// Common interface for all PArrays
     /// </summary> 
@@ -37,11 +37,7 @@ namespace NachoDB
     /// C# array here, instead you should use PArray class.
     /// PArray is created by Storage.createArray method
     /// </summary>
-#if USE_GENERICS
     public interface PArray<T> : GenericPArray, Link<T> where T:class,IPersistent
-#else
-    public interface PArray : GenericPArray, Link
-#endif
     {
     }
 }
