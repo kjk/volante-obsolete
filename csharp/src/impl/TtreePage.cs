@@ -1,35 +1,20 @@
 using System;
-#if USE_GENERICS
-using System.Collections.Generic;
-#else
 using System.Collections;
-#endif
+using System.Collections.Generic;
 
 namespace NachoDB.Impl 
 {
 
-#if USE_GENERICS
     class TtreePage<K,V> : Persistent where V:class,IPersistent  
-#else
-    class TtreePage : Persistent  
-#endif
     { 
         const int maxItems = (Page.pageSize-ObjectHeader.Sizeof-4*5)/4;
         const int minItems = maxItems - 2; // minimal number of items in internal node
 
-#if USE_GENERICS
         TtreePage<K,V> left;
         TtreePage<K,V> right;
         int            balance;
         int            nItems;
         V[]            item;
-#else
-        TtreePage      left;
-        TtreePage      right;
-        int            balance;
-        int            nItems;
-        IPersistent[]  item;
-#endif
 
         public override bool RecursiveLoading() 
         {
@@ -38,43 +23,21 @@ namespace NachoDB.Impl
 
         TtreePage() {}
 
-#if USE_GENERICS
         internal TtreePage(V mbr) 
         { 
             nItems = 1;
             item = new V[maxItems];
             item[0] = mbr;
         }
-#else
-        internal TtreePage(IPersistent mbr) 
-        { 
-            nItems = 1;
-            item = new IPersistent[maxItems];
-            item[0] = mbr;
-        }
-#endif
 
-#if USE_GENERICS
         V loadItem(int i) 
         { 
             V mbr = item[i];
             mbr.Load();
             return mbr;
         }
-#else
-        IPersistent loadItem(int i) 
-        { 
-            IPersistent mbr = item[i];
-            mbr.Load();
-            return mbr;
-        }
-#endif
 
-#if USE_GENERICS
         internal bool find(PersistentComparator<K,V> comparator, K minValue, BoundaryKind minBoundary, K maxValue, BoundaryKind maxBoundary, List<V> selection)
-#else
-        internal bool find(PersistentComparator comparator, object minValue, BoundaryKind minBoundary, object maxValue, BoundaryKind maxBoundary, ArrayList selection)
-#endif
         { 
             int l, r, m, n;
             Load();
@@ -143,11 +106,7 @@ namespace NachoDB.Impl
             return true;
         }
     
-#if USE_GENERICS
         internal bool contains(PersistentComparator<K,V> comparator, V mbr)
-#else
-        internal bool contains(PersistentComparator comparator, IPersistent mbr)
-#endif
         { 
             int l, r, m, n;
             Load();
@@ -224,17 +183,10 @@ namespace NachoDB.Impl
         internal const int OVERFLOW   = 3;
         internal const int UNDERFLOW  = 4;
 
-#if USE_GENERICS
         internal int insert(PersistentComparator<K,V> comparator, V mbr, bool unique, ref TtreePage<K,V> pgRef) 
         { 
             TtreePage<K,V> pg, lp, rp;
             V reinsertItem;
-#else
-        internal int insert(PersistentComparator comparator, IPersistent mbr, bool unique, ref TtreePage pgRef) 
-        { 
-            TtreePage pg, lp, rp;
-            IPersistent reinsertItem;
-#endif
             Load();
             int n = nItems;
             int diff = comparator.CompareMembers(mbr, loadItem(0));
@@ -256,11 +208,7 @@ namespace NachoDB.Impl
                 if (left == null) 
                 { 
                     Modify();
-#if USE_GENERICS
                     left = new TtreePage<K,V>(mbr);
-#else
-                    left = new TtreePage(mbr);
-#endif
                 } 
                 else 
                 {
@@ -333,11 +281,7 @@ namespace NachoDB.Impl
                 if (right == null) 
                 { 
                     Modify();
-#if USE_GENERICS
                     right = new TtreePage<K,V>(mbr);
-#else
-                    right = new TtreePage(mbr);
-#endif
                 } 
                 else 
                 { 
@@ -445,15 +389,9 @@ namespace NachoDB.Impl
             }
         }
        
-#if USE_GENERICS
         internal int balanceLeftBranch(ref TtreePage<K,V> pgRef) 
         {
             TtreePage<K,V> lp, rp;
-#else
-        internal int balanceLeftBranch(ref TtreePage pgRef) 
-        {
-            TtreePage lp, rp;
-#endif
             if (balance < 0) 
             { 
                 balance = 0;
@@ -506,15 +444,9 @@ namespace NachoDB.Impl
             }
         }
 
-#if USE_GENERICS
         internal int balanceRightBranch(ref TtreePage<K,V> pgRef) 
         {
             TtreePage<K,V> lp, rp;
-#else
-        internal int balanceRightBranch(ref TtreePage pgRef) 
-        {
-            TtreePage lp, rp;
-#endif
             if (balance > 0) 
             { 
                 balance = 0;
@@ -567,15 +499,9 @@ namespace NachoDB.Impl
             }
         }
     
-#if USE_GENERICS
         internal int remove(PersistentComparator<K,V> comparator, V mbr, ref TtreePage<K,V> pgRef)
         {
             TtreePage<K,V> pg, next, prev;
-#else
-        internal int remove(PersistentComparator comparator, IPersistent mbr, ref TtreePage pgRef)
-        {
-            TtreePage pg, next, prev;
-#endif
             Load();
             int n = nItems;
             int diff = comparator.CompareMembers(mbr, loadItem(0));
