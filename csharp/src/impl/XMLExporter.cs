@@ -42,7 +42,6 @@ namespace NachoDB.Impl
                                 int typeOid = ObjectHeader.getType(obj, 0);
                                 ClassDescriptor desc = storage.findClassDescriptor(typeOid);
                                 string name = desc.name;
-#if USE_GENERICS
                                 if (typeof(Btree).IsAssignableFrom(desc.cls)) 
                                 {
                                     Type t = desc.cls.GetGenericTypeDefinition();
@@ -63,24 +62,6 @@ namespace NachoDB.Impl
                                         exportMultiFieldIndex(oid, obj, name);
                                     }
                                 }
-#else
-                                if (desc.cls == typeof(Btree) || desc.cls == typeof(BitIndexImpl)) 
-                                {
-                                    exportIndex(oid, obj, name);
-                                }
-                                else if (desc.cls == typeof(PersistentSet))
-                                {
-                                    exportSet(oid, obj, name);
-                                }
-                                else if (desc.cls == typeof(BtreeFieldIndex))
-                                {
-                                    exportFieldIndex(oid, obj, name);
-                                }
-                                else if (desc.cls == typeof(BtreeMultiFieldIndex))
-                                {
-                                    exportMultiFieldIndex(oid, obj, name);
-                                }
-#endif
                                 else
                                 {
                                     String className = exportIdentifier(desc.name);
@@ -101,13 +82,11 @@ namespace NachoDB.Impl
         internal String exportIdentifier(String name) 
         { 
             name = name.Replace('+', '-');
-#if USE_GENERICS
             name = name.Replace("`", ".1");
             name = name.Replace(",", ".2");
             name = name.Replace("[", ".3");
             name = name.Replace("]", ".4");
             name = name.Replace("=", ".5");
-#endif
             return name;
         }
 
