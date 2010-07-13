@@ -127,12 +127,11 @@ namespace NachoDB
 
         /// <summary> Create new index. K parameter specifies key type, V - associated object type.
         /// </summary>
-        /// </param>
         /// <param name="unique">whether index is unique (duplicate value of keys are not allowed)
         /// </param>
         /// <returns>persistent object implementing index
         /// </returns>
-        /// <exception cref="Perst.StorageError">StorageError(StorageError.ErrorCode.UNSUPPORTED_INDEX_TYPE) exception if 
+        /// <exception cref="NachoDB.StorageError">StorageError(StorageError.ErrorCode.UNSUPPORTED_INDEX_TYPE) exception if 
         /// specified key type is not supported by implementation.
         /// </exception>
         Index<K,V> CreateIndex<K,V>(bool unique) where V:class,IPersistent;
@@ -140,10 +139,9 @@ namespace NachoDB
         /// <summary> Create new thick index (index with large number of duplicated keys).
         /// K parameter specifies key type, V - associated object type.
         /// </summary>
-        /// </param>
         /// <returns>persistent object implementing thick index
         /// </returns>
-        /// <exception cref="Perst.StorageError">StorageError(StorageError.ErrorCode.UNSUPPORTED_INDEX_TYPE) exception if 
+        /// <exception cref="NachoDB.StorageError">StorageError(StorageError.ErrorCode.UNSUPPORTED_INDEX_TYPE) exception if 
         /// specified key type is not supported by implementation.
         /// </exception>
         Index<K,V> CreateThickIndex<K,V>() where V:class,IPersistent;
@@ -158,7 +156,7 @@ namespace NachoDB
         /// </param>
         /// <returns>persistent object implementing field index
         /// </returns>
-        /// <exception cref="Perst.StorageError">StorageError(StorageError.INDEXED_FIELD_NOT_FOUND) if there is no such field in specified class,
+        /// <exception cref="NachoDB.StorageError">StorageError(StorageError.INDEXED_FIELD_NOT_FOUND) if there is no such field in specified class,
         /// StorageError(StorageError.UNSUPPORTED_INDEX_TYPE) exception if type of specified field is not supported by implementation
         /// </exception>
         FieldIndex<K,V> CreateFieldIndex<K,V>(string fieldName, bool unique) where V:class,IPersistent;
@@ -172,7 +170,7 @@ namespace NachoDB
         /// </param>
         /// <returns>persistent object implementing field index
         /// </returns>
-        /// <exception cref="Perst.StorageError">StorageError(StorageError.INDEXED_FIELD_NOT_FOUND) if there is no such field in specified class,
+        /// <exception cref="NachoDB.StorageError">StorageError(StorageError.INDEXED_FIELD_NOT_FOUND) if there is no such field in specified class,
         /// StorageError(StorageError.UNSUPPORTED_INDEX_TYPE) exception if type of specified field is not supported by implementation
         /// </exception>
         MultiFieldIndex<V> CreateFieldIndex<V>(string[] fieldNames, bool unique) where V:class,IPersistent;
@@ -352,6 +350,7 @@ namespace NachoDB
         /// </returns>
         Link<IPersistent> CreateLink(int initialSize);
 
+        /// <summary>
         /// Create new generic array of reference
         /// </summary>
         /// <returns>
@@ -359,6 +358,7 @@ namespace NachoDB
         /// </returns>
         PArray<IPersistent> CreateArray();
 
+        /// <summary>
         /// Create new generic array of reference
         /// </summary>
         /// <param name="initialSize">Initial array size</param>
