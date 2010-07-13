@@ -1,19 +1,13 @@
 namespace NachoDB.Impl
 {
     using System;
-#if USE_GENERICS
     using System.Collections.Generic;
-#endif
     using System.Collections;
     using System.Reflection;
     using System.Diagnostics;
     using NachoDB;
     
-#if USE_GENERICS
     class AltBtreeFieldIndex<K,V> : AltBtree<K,V>, FieldIndex<K,V> where V:class, IPersistent
-#else
-    class AltBtreeFieldIndex : AltBtree, FieldIndex
-#endif
     {
         internal String className;
         internal String fieldName;
@@ -47,11 +41,9 @@ namespace NachoDB.Impl
                 mbrType = fld.FieldType;
                 mbr = fld;
             }
-#if USE_GENERICS
             if (mbrType != typeof(K)) { 
                 throw new StorageError(StorageError.ErrorCode.INCOMPATIBLE_KEY_TYPE, mbrType);
             }    
-#endif
         }
 
         public Type IndexedClass 
@@ -73,24 +65,16 @@ namespace NachoDB.Impl
         public override void OnLoad()
         {
             cls = ClassDescriptor.lookup(Storage, className);
-#if USE_GENERICS
             if (cls != typeof(V)) 
             {
                 throw new StorageError(StorageError.ErrorCode.INCOMPATIBLE_VALUE_TYPE, mbrType);
             }
-#endif
             lookupField(fieldName);
         }
         
-#if USE_GENERICS
         internal AltBtreeFieldIndex(String fieldName, bool unique) 
         {
             this.cls = typeof(K);
-#else
-        internal AltBtreeFieldIndex(Type cls, String fieldName, bool unique) 
-        {
-            this.cls = cls;
-#endif
             this.unique = unique;
             this.fieldName = fieldName;
             this.className = ClassDescriptor.getTypeName(cls);
@@ -168,30 +152,17 @@ namespace NachoDB.Impl
             return key;
         }
         
-        
-#if USE_GENERICS
         public bool Put(V obj) 
-#else
-        public bool Put(IPersistent obj) 
-#endif
         {
             return base.Put(extractKey(obj), obj);
         }
 
-#if USE_GENERICS
         public V Set(V obj) 
-#else
-        public IPersistent Set(IPersistent obj) 
-#endif
         {
             return base.Set(extractKey(obj), obj);
         }
 
-#if USE_GENERICS
         public override bool Remove(V obj) 
-#else
-        public bool Remove(IPersistent obj) 
-#endif
         {
             try 
             { 
@@ -208,11 +179,7 @@ namespace NachoDB.Impl
             return true;
         }
         
-#if USE_GENERICS
         public override bool Contains(V obj) 
-#else
-        public bool Contains(IPersistent obj) 
-#endif
         {
             Key key = extractKey(obj);
             if (unique) 
@@ -221,11 +188,7 @@ namespace NachoDB.Impl
             } 
             else 
             { 
-#if USE_GENERICS
                 V[] mbrs = Get(key, key);
-#else
-                IPersistent[] mbrs = Get(key, key);
-#endif
                 for (int i = 0; i < mbrs.Length; i++) 
                 { 
                     if (mbrs[i] == obj) 
@@ -237,11 +200,7 @@ namespace NachoDB.Impl
             }
         }
 
-#if USE_GENERICS
         public void Append(V obj) 
-#else
-        public void Append(IPersistent obj) 
-#endif
         {
             lock (this) 
             { 
@@ -273,27 +232,5 @@ namespace NachoDB.Impl
                 base.insert(key, obj, false);
             }
         }
-
-#if !USE_GENERICS
-        public override IPersistent[] Get(Key from, Key till)
-        {
-            ArrayList list = new ArrayList();
-            if (root != null)
-            {
-                root.find(checkKey(from), checkKey(till), height, list);
-            }
-            return (IPersistent[]) list.ToArray(cls);
-        }
-
-        public override IPersistent[] ToArray() 
-        {
-            IPersistent[] arr = (IPersistent[])Array.CreateInstance(cls, nElems);
-            if (root != null) 
-            { 
-                root.traverseForward(height, arr, 0);
-            }
-            return arr;
-        }
-#endif
     }
 }
