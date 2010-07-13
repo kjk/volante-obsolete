@@ -1783,11 +1783,10 @@ namespace NachoDB.Impl
                     int align = (int)(newFileSize - recOffs);
                     memset(page, 0, align, (byte)0);
                     stream.Write(page, 0, align);
-                }        
+                }
             }
-        }   
+        }
                 
-#if USE_GENERICS
         public Index<K,V> CreateIndex<K,V>(bool unique) where V:class,IPersistent
         {
             lock (this)
@@ -1989,175 +1988,7 @@ namespace NachoDB.Impl
         {
             return CreateArray<IPersistent>(initialSize);
         }
-#else
-        public Index CreateIndex(System.Type keyType, bool unique)
-        {
-            lock (this)
-            {
-                ensureOpened();
 
-                Index index = alternativeBtree 
-                    ? (Index)new AltBtree(keyType, unique)
-                    : (Index)new Btree(keyType, unique);
-                index.AssignOid(this, 0, false);
-                return index;
-            }
-        }
-
-        public Index CreateThickIndex(Type keyType)
-        {
-            lock (this)
-            {
-                ensureOpened();
-
-                return new ThickIndex(keyType, this);
-            }
-        }
-        
-        public BitIndex CreateBitIndex() 
-        {
-            lock (this)
-            {
-                ensureOpened();
-
-                BitIndex index = new BitIndexImpl();
-                index.AssignOid(this, 0, false);
-                return index;
-            }
-        }
-
-        public SpatialIndex CreateSpatialIndex() 
-        {
-            lock (this)
-            {
-                ensureOpened();
-
-                Rtree index = new Rtree();
-                index.AssignOid(this, 0, false);
-                return index;
-            }
-        }
-
-        public SpatialIndexR2 CreateSpatialIndexR2() 
-        {
-            lock (this)
-            {
-                ensureOpened();
-
-                RtreeR2 index = new RtreeR2();
-                index.AssignOid(this, 0, false);
-                return index;
-            }
-        }
-
-        public SortedCollection CreateSortedCollection(PersistentComparator comparator, bool unique) 
-        {
-            ensureOpened();      
-            return new Ttree(comparator, unique);
-        }
-
-        public SortedCollection CreateSortedCollection(bool unique) 
-        {
-            ensureOpened();
-            return new Ttree(new DefaultPersistentComparator(), unique);
-        }
-
-        public ISet CreateSet() 
-        {
-            lock (this)
-            {
-                ensureOpened();
-                ISet s = alternativeBtree 
-                    ? (ISet)new AltPersistentSet()
-                    : (ISet)new PersistentSet();
-                s.AssignOid(this, 0, false);
-                return s;
-            }
-        }
-
-        public ISet CreateScalableSet() 
-        {
-            return CreateScalableSet(8);
-        }
-
-        public ISet CreateScalableSet(int initialSize) 
-        {
-            lock (this)
-            {
-                ensureOpened();
-                return new ScalableSet(this, initialSize);
-            }
-        }
-
-        public FieldIndex CreateFieldIndex(System.Type type, String fieldName, bool unique)
-        {
-            lock (this)
-            {
-                ensureOpened();
-                FieldIndex index = alternativeBtree
-                    ? (FieldIndex)new AltBtreeFieldIndex(type, fieldName, unique)
-                    : (FieldIndex)new BtreeFieldIndex(type, fieldName, unique);
-                index.AssignOid(this, 0, false);
-                return index;
-            }
-        }
-
-        public MultiFieldIndex CreateFieldIndex(System.Type type, String[] fieldNames, bool unique)
-        {
-            lock (this)
-            {
-                ensureOpened();
-#if COMPACT_NET_FRAMEWORK
-                if (alternativeBtree) 
-                {
-                    throw new  StorageError(StorageError.ErrorCode.UNSUPPORTED_INDEX_TYPE);
-                }
-                MultiFieldIndex index = new BtreeMultiFieldIndex(type, fieldNames, unique);
-#else
-                MultiFieldIndex index = alternativeBtree
-                    ? (MultiFieldIndex)new AltBtreeMultiFieldIndex(type, fieldNames, unique)
-                    : (MultiFieldIndex)new BtreeMultiFieldIndex(type, fieldNames, unique);
-#endif
-                index.AssignOid(this, 0, false);
-                return index;
-            }
-        }
-
-        public Link CreateLink()
-        {
-            return CreateLink(8);
-        }
-
-        public Link CreateLink(int initialSize)
-        {
-            return new LinkImpl(initialSize);
-        }
-
-        public PArray CreateArray()
-        {
-            return CreateArray(8);
-        }
-
-        public PArray CreateArray(int initialSize)
-        {
-            return new PArrayImpl(this, initialSize);
-        }
-
-        public Relation CreateRelation(IPersistent owner)
-        {
-            return new RelationImpl(owner);
-        }
-
-        public TimeSeries CreateTimeSeries(Type blockClass, long maxBlockTimeInterval)
-        {
-            return new TimeSeriesImpl(this, blockClass, maxBlockTimeInterval);
-        }
-        
-        public PatriciaTrie CreatePatriciaTrie()
-        {
-            return new PTrie();
-        }
-#endif
         public Blob CreateBlob() 
         {
             return new BlobImpl(Page.pageSize - ObjectHeader.Sizeof - 16);
@@ -2230,11 +2061,7 @@ namespace NachoDB.Impl
 
         internal Btree createBtreeStub(byte[] data, int offs) 
         { 
-#if USE_GENERICS
             return new Btree<int,IPersistent>(data, ObjectHeader.Sizeof + offs);
-#else            
-            return new Btree(data, ObjectHeader.Sizeof + offs);
-#endif
         }
 
         private void mark()
@@ -4311,11 +4138,7 @@ namespace NachoDB.Impl
                                 arr[j] = new PersistentStub(this, elemOid);
                             }
                         }
-#if USE_GENERICS
                         val = fd.constructor.Invoke(this, new object[]{arr, po});
-#else
-                        val = new LinkImpl(arr, po);
-#endif
                     }
                     break;
 
@@ -4334,11 +4157,7 @@ namespace NachoDB.Impl
                             arr[j] = Bytes.unpack4(body, offs);
                             offs += 4;
                         }
-#if USE_GENERICS
                         val = fd.constructor.Invoke(this, new object[]{arr, po});
-#else
-                        val = new PArrayImpl(this, arr, po);
-#endif
                     }
                     break;
             }
