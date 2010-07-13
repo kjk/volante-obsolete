@@ -1,18 +1,11 @@
 namespace NachoDB.Impl
 {
     using System;
-#if USE_GENERICS
-using System.Collections.Generic;
-#else
-using System.Collections;
-#endif
+    using System.Collections;
+    using System.Collections.Generic;
     using NachoDB;
 	
-#if USE_GENERICS
     public class PArrayImpl<T> : PArray<T> where T:class,IPersistent
-#else
-    public class PArrayImpl : PArray
-#endif
     {
         private void Modify() 
         {
@@ -46,7 +39,6 @@ using System.Collections;
             }
         }
 
-#if USE_GENERICS
         public bool IsReadOnly 
         {
             get
@@ -54,13 +46,8 @@ using System.Collections;
                 return false;
             }
         }
-#endif
 
-#if USE_GENERICS
         public void CopyTo(T[] dst, int i) 
-#else
-        public void CopyTo(Array dst, int i) 
-#endif
         {
             Array.Copy(arr, 0, dst, i, used);
         }
@@ -93,11 +80,7 @@ using System.Collections;
             }
         }        
 
-#if USE_GENERICS
         public virtual T this[int i] 
-#else
-        public virtual IPersistent this[int i] 
-#endif
         {
              get
              {
@@ -110,11 +93,7 @@ using System.Collections;
              }
         }    
    
-#if USE_GENERICS
         public virtual T Get(int i)
-#else
-        public virtual IPersistent Get(int i)
-#endif
         {
             if (i < 0 || i >= used)
             {
@@ -141,11 +120,7 @@ using System.Collections;
             return arr[i];
         }
 		
-#if USE_GENERICS
         public virtual void Set(int i, T obj)
-#else
-        public virtual void Set(int i, IPersistent obj)
-#endif
         {
             if (i < 0 || i >= used)
             {
@@ -155,11 +130,7 @@ using System.Collections;
             Modify();
         }
 		
-#if USE_GENERICS
         public bool Remove(T obj) 
-#else
-        public bool Remove(IPersistent obj) 
-#endif
         {
             int i = IndexOf(obj);
             if (i >= 0) 
@@ -170,12 +141,10 @@ using System.Collections;
             return false;
         }
 
-#if USE_GENERICS
         public virtual void RemoveAt(int i)
         { 
             Remove(i);
         }
-#endif
 
         public virtual void Remove(int i)
         {
@@ -200,11 +169,7 @@ using System.Collections;
             Modify();
         }
 		
-#if USE_GENERICS
         public virtual void Insert(int i, T obj)
-#else
-        public virtual void Insert(int i, IPersistent obj)
-#endif
         {
             if (i < 0 || i > used)
             {
@@ -216,30 +181,18 @@ using System.Collections;
             used += 1;
         }
 		
-#if USE_GENERICS
         public virtual void Add(T obj)
-#else
-        public virtual void Add(IPersistent obj)
-#endif
         {
             reserveSpace(1);
             arr[used++] = storage.MakePersistent(obj);
         }
 		
-#if USE_GENERICS
         public virtual void AddAll(T[] a)
-#else
-        public virtual void AddAll(IPersistent[] a)
-#endif
         {
             AddAll(a, 0, a.Length);
         }
 		
-#if USE_GENERICS
         public virtual void AddAll(T[] a, int from, int length)
-#else
-        public virtual void AddAll(IPersistent[] a, int from, int length)
-#endif
         {
             int i, j;
             reserveSpace(length);
@@ -250,7 +203,6 @@ using System.Collections;
             used = j;
         }
 		
-#if USE_GENERICS
         public virtual void AddAll(Link<T> link)
         {
             int n = link.Length;
@@ -270,42 +222,15 @@ using System.Collections;
             }
             used += n;
         }
-#else
-        public virtual void AddAll(Link link)
-        {
-            int n = link.Length;
-            reserveSpace(n);
-            if (link is PArray) 
-            {
-                PArray src = (PArray)link; 
-                for (int i = 0, j = used; i < n; i++, j++)
-                {
-                    arr[j] = src.GetOid(i);
-                }
-            } else {
-                for (int i = 0, j = used; i < n; i++, j++)
-                {
-                    arr[j] = storage.MakePersistent(link.GetRaw(i));
-                }
-            }
-            used += n;
-        }
-#endif
 		
         public virtual Array ToRawArray()
         {
             return arr;
         }
 
-#if USE_GENERICS
         public virtual T[] ToArray()
         {
             T[] a = new T[used];
-#else
-        public virtual IPersistent[] ToArray()
-        {
-            IPersistent[] a = new IPersistent[used];
-#endif
             for (int i = used; --i >= 0; )
             {
                 a[i] = loadElem(i);
@@ -323,20 +248,12 @@ using System.Collections;
             return a;
         }
 		
-#if USE_GENERICS
         public virtual bool Contains(T obj)
-#else
-        public virtual bool Contains(IPersistent obj)
-#endif
         {
             return IndexOf(obj) >= 0;
         }
 		
-#if USE_GENERICS
         public virtual int IndexOf(T obj)
-#else
-        public virtual int IndexOf(IPersistent obj)
-#endif
         {
             int oid = obj == null ? 0 : ((IPersistent)obj).Oid;
             for (int i = used; --i >= 0;) 
@@ -349,11 +266,7 @@ using System.Collections;
             return - 1;
         }
 		
-#if USE_GENERICS
         public virtual bool ContainsElement(int i, T obj) 
-#else
-        public virtual bool ContainsElement(int i, IPersistent obj) 
-#endif
         {
             int oid = arr[i];
             return (obj == null && oid == 0) || (obj != null && obj.Oid == oid);
@@ -366,11 +279,8 @@ using System.Collections;
             Modify();
         }
 		
-#if USE_GENERICS
-        class ArrayEnumerator : IEnumerator<T> { 
-#else
-        class ArrayEnumerator : IEnumerator { 
-#endif
+        class ArrayEnumerator : IEnumerator<T>
+        {
             public void Dispose() {}
 
             public bool MoveNext() 
@@ -382,15 +292,19 @@ using System.Collections;
                 return false;
             }
 
-#if USE_GENERICS
             public T Current
-#else
-            public object Current
-#endif
             {
                 get 
                 {
                     return arr[i];
+                }
+            }
+
+            object IEnumerator.Current
+            {
+                get
+                {
+                    return Current;
                 }
             }
 
@@ -399,30 +313,24 @@ using System.Collections;
                 i = -1;
             }
 
-#if USE_GENERICS
-            internal ArrayEnumerator(PArray<T> arr) { 
-#else
-            internal ArrayEnumerator(PArray arr) { 
-#endif
+            internal ArrayEnumerator(PArray<T> arr)
+            {
                 this.arr = arr;
                 i = -1;
             }
 
             private int    i;
-#if USE_GENERICS
             private PArray<T> arr;
-#else
-            private PArray arr;
-#endif
         }      
 
-#if USE_GENERICS
         public IEnumerator<T> GetEnumerator() 
-#else
-        public IEnumerator GetEnumerator() 
-#endif
         { 
             return new ArrayEnumerator(this);
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
         }
 
         public void Pin() 
@@ -433,17 +341,10 @@ using System.Collections;
         { 
         }
 
-#if USE_GENERICS
         private T loadElem(int i)
         {
             return (T)storage.lookupObject(arr[i], null);
         }
-#else
-        private IPersistent loadElem(int i)
-        {
-            return storage.lookupObject(arr[i], null);
-        }
-#endif
 		
         public void SetOwner(IPersistent owner)
         { 
