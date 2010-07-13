@@ -198,7 +198,7 @@ namespace NachoDB.Impl
     }
 
     /// <summary>
-    /// Exception thrown by <see cref="Perst.Impl.CNetMonitor"/> when threading rules
+    /// Exception thrown by <see cref="NachoDB.Impl.CNetMonitor"/> when threading rules
     /// are violated (usually due to an operation being
     /// invoked on a monitor not owned by the current thread).
     /// </summary>

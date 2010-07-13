@@ -15,7 +15,7 @@ namespace NachoDB.Impl
             classMap = new Hashtable();
         }
 
-        public virtual void  importDatabase()
+        public virtual void importDatabase()
         {
             if (scanner.scan() != XMLScanner.Token.LT || scanner.scan() != XMLScanner.Token.IDENT || !scanner.Identifier.Equals("database"))
             {
@@ -46,11 +46,11 @@ namespace NachoDB.Impl
                     throwException("Element name expected");
                 }
                 System.String elemName = scanner.Identifier;
-                if (elemName.StartsWith("Perst.Impl.Btree") 
-                    || elemName.StartsWith("Perst.Impl.BitIndexImpl")
-                    || elemName.StartsWith("Perst.Impl.PersistentSet") 
-                    || elemName.StartsWith("Perst.Impl.BtreeFieldIndex") 
-                    || elemName.StartsWith("Perst.Impl.BtreeMultiFieldIndex"))
+                if (elemName.StartsWith("NachoDB.Impl.Btree")
+                    || elemName.StartsWith("NachoDB.Impl.BitIndexImpl")
+                    || elemName.StartsWith("NachoDB.Impl.PersistentSet") 
+                    || elemName.StartsWith("NachoDB.Impl.BtreeFieldIndex") 
+                    || elemName.StartsWith("NachoDB.Impl.BtreeMultiFieldIndex"))
                 {
                     createIndex(elemName);
                 }
@@ -573,7 +573,7 @@ namespace NachoDB.Impl
             {
                 if (type == null)
                 {
-                    if (indexType.StartsWith("Perst.Impl.PersistentSet")) 
+                    if (indexType.StartsWith("NachoDB.Impl.PersistentSet")) 
                     { 
                     } 
                     else 
@@ -583,7 +583,7 @@ namespace NachoDB.Impl
                 } 
                 else 
                 {
-                    if (indexType.StartsWith("org.garret.perst.impl.BitIndexImpl")) 
+                    if (indexType.StartsWith("NachoDB.impl.BitIndexImpl")) 
                     { 
                     } 
                     else 
@@ -1765,7 +1765,7 @@ namespace NachoDB.Impl
                 return ch;
             }
 
-            internal void  unget(int ch)
+            internal void unget(int ch)
             {
                 if (ch == '\n')
                 {

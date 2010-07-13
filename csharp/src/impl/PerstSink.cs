@@ -23,7 +23,7 @@ namespace NachoDB.Impl
         public IMessage SyncProcessMessage(IMessage call) 
         {
             IMethodMessage invocation = (IMethodMessage)call;
-            if (invocation.TypeName != "Perst.PersistentContext") 
+            if (invocation.TypeName != "NachoDB.PersistentContext") 
             { 
                 target.Load();
                 if (invocation.MethodName == "FieldSetter") 

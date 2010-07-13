@@ -160,6 +160,7 @@ namespace NachoDB.Impl
 
         public override void OnLoad()
         {
+
              if (type != ClassDescriptor.getTypeCode(typeof(K))) {
                  throw new StorageError(StorageError.ErrorCode.INCOMPATIBLE_KEY_TYPE, typeof(K));
             }

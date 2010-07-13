@@ -115,7 +115,7 @@ namespace NachoDB.Impl
             btree.export(this);
             writer.Write(" </" + name + ">\n");
         }
-		
+
         internal void  exportFieldIndex(int oid, byte[] data, string name)
         {
             Btree btree = createBtree(oid, data);
@@ -128,7 +128,7 @@ namespace NachoDB.Impl
             btree.export(this);
             writer.Write(" </" + name + ">\n");
         }
-		
+
         internal void exportMultiFieldIndex(int oid, byte[] data, string name) 
         { 
             Btree btree = createBtree(oid, data);
@@ -164,35 +164,35 @@ namespace NachoDB.Impl
                 case ClassDescriptor.FieldType.tpBoolean: 
                     writer.Write(body[offs++] != 0?"1":"0");
                     break;
-				
+
                 case ClassDescriptor.FieldType.tpByte: 
                     writer.Write(System.Convert.ToString((byte) body[offs++]));
                     break;
-				
+
                 case ClassDescriptor.FieldType.tpSByte: 
                     writer.Write(System.Convert.ToString((sbyte) body[offs++]));
                     break;
-				
+
                 case ClassDescriptor.FieldType.tpChar: 
                     writer.Write(System.Convert.ToString((ushort)Bytes.unpack2(body, offs)));
                     offs += 2;
                     break;
-				
+
                 case ClassDescriptor.FieldType.tpShort: 
                     writer.Write(System.Convert.ToString((ushort)Bytes.unpack2(body, offs)));
                     offs += 2;
                     break;
-				
+
                 case ClassDescriptor.FieldType.tpUShort: 
                     writer.Write(System.Convert.ToString((ushort)Bytes.unpack2(body, offs)));
                     offs += 2;
                     break;
-				
+
                 case ClassDescriptor.FieldType.tpInt: 
                     writer.Write(System.Convert.ToString(Bytes.unpack4(body, offs)));
                     offs += 4;
                     break;
-				
+
                 case ClassDescriptor.FieldType.tpUInt: 
                 case ClassDescriptor.FieldType.tpObject:  
                 case ClassDescriptor.FieldType.tpOid:  
@@ -200,27 +200,27 @@ namespace NachoDB.Impl
                     writer.Write(System.Convert.ToString((uint)Bytes.unpack4(body, offs)));
                     offs += 4;
                     break;
-				
+
                 case ClassDescriptor.FieldType.tpLong: 
                     writer.Write(System.Convert.ToString(Bytes.unpack8(body, offs)));
                     offs += 8;
                     break;
-				
+
                 case ClassDescriptor.FieldType.tpULong: 
                     writer.Write(System.Convert.ToString((ulong)Bytes.unpack8(body, offs)));
                     offs += 8;
                     break;
-				
+
                 case ClassDescriptor.FieldType.tpFloat: 
                     writer.Write(System.Convert.ToString(Bytes.unpackF4(body, offs)));
                     offs += 4;
                     break;
-				
+
                 case ClassDescriptor.FieldType.tpDouble: 
                     writer.Write(System.Convert.ToString(Bytes.unpackF8(body, offs)));
                     offs += 8;
                     break;
-				
+
                 case ClassDescriptor.FieldType.tpGuid:
                     writer.Write(Bytes.unpackGuid(body, offs).ToString());
                     offs += 16;
@@ -238,7 +238,7 @@ namespace NachoDB.Impl
                         offs += 2;
                     }
                     break;
-				
+
                 case ClassDescriptor.FieldType.tpArrayOfByte:
                     for (int i = 0; i < size; i++) 
                     { 
@@ -298,7 +298,7 @@ namespace NachoDB.Impl
             }
             writer.Write("/>\n");
         }
-		
+
         internal void  indentation(int indent)
         {
             while (--indent >= 0)
@@ -306,7 +306,7 @@ namespace NachoDB.Impl
                 writer.Write(' ');
             }
         }
-		
+
         internal void  exportChar(char ch)
         {
             switch (ch)
@@ -314,26 +314,26 @@ namespace NachoDB.Impl
                 case '<': 
                     writer.Write("&lt;");
                     break;
-				
+
                 case '>': 
                     writer.Write("&gt;");
                     break;
-				
+
                 case '&': 
                     writer.Write("&amp;");
                     break;
-				
+
                 case '"': 
                     writer.Write("&quot;");
                     break;
-				
+
                 default: 
                     writer.Write(ch);
                     break;
-				
+
             }
         }
-		
+
         internal int exportString(byte[] body, int offs)
         {
             int len = Bytes.unpack4(body, offs);
@@ -430,7 +430,7 @@ namespace NachoDB.Impl
         internal int exportObject(ClassDescriptor desc, byte[] body, int offs, int indent)
         {
             ClassDescriptor.FieldDescriptor[] all = desc.allFields;
-			
+
             for (int i = 0, n = all.Length; i < n; i++)
             {
                 ClassDescriptor.FieldDescriptor fd = all[i];
@@ -443,35 +443,35 @@ namespace NachoDB.Impl
                     case ClassDescriptor.FieldType.tpBoolean: 
                         writer.Write(body[offs++] != 0?"1":"0");
                         break;
-					
+
                     case ClassDescriptor.FieldType.tpByte: 
                         writer.Write(System.Convert.ToString((byte) body[offs++]));
                         break;
-					
+
                     case ClassDescriptor.FieldType.tpSByte: 
                         writer.Write(System.Convert.ToString((sbyte) body[offs++]));
                         break;
-					
+
                     case ClassDescriptor.FieldType.tpChar: 
                         writer.Write(System.Convert.ToString((ushort)Bytes.unpack2(body, offs)));
                         offs += 2;
                         break;
-					
+
                     case ClassDescriptor.FieldType.tpShort: 
                         writer.Write(System.Convert.ToString((ushort)Bytes.unpack2(body, offs)));
                         offs += 2;
                         break;
-					
+
                     case ClassDescriptor.FieldType.tpUShort: 
                         writer.Write(System.Convert.ToString((ushort)Bytes.unpack2(body, offs)));
                         offs += 2;
                         break;
-					
+
                     case ClassDescriptor.FieldType.tpInt: 
                         writer.Write(System.Convert.ToString(Bytes.unpack4(body, offs)));
                         offs += 4;
                         break;
-					
+
                     case ClassDescriptor.FieldType.tpEnum:
                         writer.Write(Enum.ToObject(f.FieldType, Bytes.unpack4(body, offs)));
                         offs += 4;
@@ -481,27 +481,27 @@ namespace NachoDB.Impl
                         writer.Write(System.Convert.ToString((uint)Bytes.unpack4(body, offs)));
                         offs += 4;
                         break;
-					
+
                     case ClassDescriptor.FieldType.tpLong: 
                         writer.Write(System.Convert.ToString(Bytes.unpack8(body, offs)));
                         offs += 8;
                         break;
-					
+
                     case ClassDescriptor.FieldType.tpULong: 
                         writer.Write(System.Convert.ToString((ulong)Bytes.unpack8(body, offs)));
                         offs += 8;
                         break;
-					
+
                     case ClassDescriptor.FieldType.tpFloat: 
                         writer.Write(System.Convert.ToString(Bytes.unpackF4(body, offs)));
                         offs += 4;
                         break;
-				
+
                     case ClassDescriptor.FieldType.tpDouble: 
                         writer.Write(System.Convert.ToString(Bytes.unpackF8(body, offs)));
                         offs += 8;
                         break;
-				
+
                     case ClassDescriptor.FieldType.tpGuid:
                         writer.Write("\"" + Bytes.unpackGuid(body, offs) + "\"");
                         offs += 16;
@@ -515,7 +515,7 @@ namespace NachoDB.Impl
                     case ClassDescriptor.FieldType.tpString: 
                         offs = exportString(body, offs);
                         break;
-					
+
                     case ClassDescriptor.FieldType.tpDate: 
                     {
                         long msec = Bytes.unpack8(body, offs);
@@ -530,7 +530,7 @@ namespace NachoDB.Impl
                         }
                         break;
                     }
-					
+
                     case ClassDescriptor.FieldType.tpObject: 
                     case ClassDescriptor.FieldType.tpOid: 
                         exportRef(Bytes.unpack4(body, offs));
@@ -542,7 +542,7 @@ namespace NachoDB.Impl
                         offs = exportObject(fd.valueDesc, body, offs, indent + 1);
                         indentation(indent);
                         break;
-					
+
 #if SUPPORT_RAW_TYPE
                     case ClassDescriptor.FieldType.tpRaw: 
 #endif
@@ -550,7 +550,7 @@ namespace NachoDB.Impl
                     case ClassDescriptor.FieldType.tpArrayOfSByte: 
                         offs = exportBinary(body, offs);
                         break;
-					
+
                     case ClassDescriptor.FieldType.tpArrayOfBoolean: 
                     {
                         int len = Bytes.unpack4(body, offs);
@@ -571,7 +571,7 @@ namespace NachoDB.Impl
                         }
                         break;
                     }
-					
+
                     case ClassDescriptor.FieldType.tpArrayOfChar: 
                     {
                         int len = Bytes.unpack4(body, offs);
@@ -593,7 +593,7 @@ namespace NachoDB.Impl
                         }
                         break;
                     }
-					
+
                     case ClassDescriptor.FieldType.tpArrayOfShort: 
                     {
                         int len = Bytes.unpack4(body, offs);
@@ -615,7 +615,7 @@ namespace NachoDB.Impl
                         }
                         break;
                     }
-					
+
                     case ClassDescriptor.FieldType.tpArrayOfUShort: 
                     {
                         int len = Bytes.unpack4(body, offs);
@@ -637,7 +637,7 @@ namespace NachoDB.Impl
                         }
                         break;
                     }
-					
+
                     case ClassDescriptor.FieldType.tpArrayOfInt: 
                     {
                         int len = Bytes.unpack4(body, offs);
@@ -659,7 +659,7 @@ namespace NachoDB.Impl
                         }
                         break;
                     }
-					
+
                     case ClassDescriptor.FieldType.tpArrayOfEnum: 
                     {
                         int len = Bytes.unpack4(body, offs);
@@ -704,7 +704,7 @@ namespace NachoDB.Impl
                         }
                         break;
                     }
-					
+
                     case ClassDescriptor.FieldType.tpArrayOfLong: 
                     {
                         int len = Bytes.unpack4(body, offs);
@@ -726,7 +726,7 @@ namespace NachoDB.Impl
                         }
                         break;
                     }
-					
+
                     case ClassDescriptor.FieldType.tpArrayOfULong: 
                     {
                         int len = Bytes.unpack4(body, offs);
@@ -748,7 +748,7 @@ namespace NachoDB.Impl
                         }
                         break;
                     }
-					
+
                     case ClassDescriptor.FieldType.tpArrayOfFloat: 
                     {
                         int len = Bytes.unpack4(body, offs);
@@ -770,7 +770,7 @@ namespace NachoDB.Impl
                         }
                         break;
                     }
-					
+
                     case ClassDescriptor.FieldType.tpArrayOfDouble: 
                     {
                         int len = Bytes.unpack4(body, offs);
@@ -792,7 +792,7 @@ namespace NachoDB.Impl
                         }
                         break;
                     }
-					
+
                     case ClassDescriptor.FieldType.tpArrayOfDate: 
                     {
                         int len = Bytes.unpack4(body, offs);
@@ -813,7 +813,7 @@ namespace NachoDB.Impl
                         }
                         break;
                     }
-					
+
                     case ClassDescriptor.FieldType.tpArrayOfGuid: 
                     {
                         int len = Bytes.unpack4(body, offs);
@@ -876,7 +876,7 @@ namespace NachoDB.Impl
                         }
                         break;
                     }
-					
+
                     case ClassDescriptor.FieldType.tpLink: 
                     case ClassDescriptor.FieldType.tpArrayOfObject: 
                     case ClassDescriptor.FieldType.tpArrayOfOid: 
@@ -905,7 +905,7 @@ namespace NachoDB.Impl
                         }
                         break;
                     }
-					
+
                     case ClassDescriptor.FieldType.tpArrayOfValue: 
                     {
                         int len = Bytes.unpack4(body, offs);

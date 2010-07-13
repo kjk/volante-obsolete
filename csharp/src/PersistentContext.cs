@@ -4,7 +4,7 @@ namespace NachoDB
     using System.Runtime.InteropServices;
     using System.ComponentModel;
     using System.Diagnostics;
-	
+
     /// <summary>Base class for context bound object with provided
     /// transparent persistence. Objects derived from this class and marked with
     /// TransparentPresistence attribute automatically on demand load their 

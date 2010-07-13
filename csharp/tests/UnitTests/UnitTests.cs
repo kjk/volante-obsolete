@@ -188,10 +188,96 @@ public class UnitTest2
 
 }
 
+public class UnitTestXml
+{
+    class Record : Persistent
+    {
+        internal String strKey;
+        internal long   intKey;
+        internal double realKey;
+    }
+
+    class Root : Persistent
+    {
+        internal Index<string,Record>    strIndex;
+        internal FieldIndex<long,Record> intIndex;
+    }
+
+    internal static int pagePoolSize = 32 * 1024 * 1024;
+
+    public static void Run(bool useAltBtree)
+    {
+        string dbName = @"testxml.dbs";
+        UnitTests.SafeDeleteFile(dbName);
+        Storage db = StorageFactory.CreateStorage();
+        db.AlternativeBtree = useAltBtree;
+        db.Open(dbName, pagePoolSize);
+        Root root = (Root)db.Root;
+        UnitTests.AssertThat(null == root);
+        root = new Root();
+        root.strIndex = db.CreateIndex<string,Record>(true);
+        root.intIndex = db.CreateFieldIndex<long,Record>("intKey", true);
+        db.Root = root;
+        DateTime start = DateTime.Now;
+        long key = 1999;
+        Index<string,Record> strIndex = root.strIndex;
+        FieldIndex<long,Record> intIndex = root.intIndex;
+        int i, nRecords=100;
+        for (i = 0; i < nRecords; i++)
+        {
+            Record rec = new Record();
+            key = (3141592621L * key + 2718281829L) % 1000000007L;
+            rec.intKey = key;
+            rec.strKey = System.Convert.ToString(key);
+            rec.realKey = (double)key;
+            strIndex.Put(new Key(rec.strKey), rec);
+            intIndex.Put(rec);
+        }
+        db.Commit();
+
+        System.IO.StreamWriter writer = new System.IO.StreamWriter("test.xml");
+        db.ExportXML(writer);
+        writer.Close();
+        db.Close();
+
+        UnitTests.SafeDeleteFile(dbName);
+        db.Open(dbName, pagePoolSize);
+        System.IO.StreamReader reader = new System.IO.StreamReader("test.xml");
+        db.ImportXML(reader);
+        reader.Close();
+
+        root = (Root)db.Root;
+        strIndex = root.strIndex;
+        intIndex = root.intIndex;
+
+        key = 1999;
+        for (i = 0; i < nRecords; i++)
+        {
+            key = (3141592621L * key + 2718281829L) % 1000000007L;
+            String strKey = System.Convert.ToString(key);
+            Record rec1 = strIndex[strKey];
+            Record rec2 = intIndex[key];
+            //Record rec3 = compoundIndex.Get(new Key(strKey, key));
+            UnitTests.AssertThat(rec1 != null);
+            UnitTests.AssertThat(rec1 == rec2);
+            UnitTests.AssertThat(rec1.intKey == key);
+            UnitTests.AssertThat(rec1.realKey == (double)key);
+            UnitTests.AssertThat(strKey.Equals(rec1.strKey));
+            /*
+            Debug.Assert(rec1 == rec3);
+            */
+        }
+        db.Close();
+    }
+}
+
 public class UnitTestsRunner
 { 
     public static void Main(string[] args) 
     {
+        UnitTestXml.Run(false);
+        //TODO: this test fails
+        //UnitTestXml.Run(true);
         UnitTest1.Run();
         UnitTest2.Run();
         Console.WriteLine(String.Format("Failed {0} out of {1} tests", UnitTests.FailedTests, UnitTests.TotalTests));
