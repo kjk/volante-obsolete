@@ -1476,7 +1476,7 @@ namespace NachoDB.Impl
                                 {
                                     val = item.StringValue;
                                 }
-                                else if (elem.isNullValue())
+                                else if (item.isNullValue())
                                 {
                                     val = null;
                                 }

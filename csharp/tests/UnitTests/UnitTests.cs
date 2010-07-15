@@ -206,9 +206,10 @@ public class UnitTestXml
 
     internal static int pagePoolSize = 32 * 1024 * 1024;
 
-    public static void Run(bool useAltBtree)
+    public static void Run(int nRecords, bool useAltBtree)
     {
         string dbName = @"testxml.dbs";
+        string xmlName = useAltBtree ? @"testalt.xml" : @"test.xml";
         UnitTests.SafeDeleteFile(dbName);
         Storage db = StorageFactory.CreateStorage();
         db.AlternativeBtree = useAltBtree;
@@ -223,7 +224,7 @@ public class UnitTestXml
         long key = 1999;
         Index<string,Record> strIndex = root.strIndex;
         FieldIndex<long,Record> intIndex = root.intIndex;
-        int i, nRecords=100;
+        int i;
         for (i = 0; i < nRecords; i++)
         {
             Record rec = new Record();
@@ -236,14 +237,14 @@ public class UnitTestXml
         }
         db.Commit();
 
-        System.IO.StreamWriter writer = new System.IO.StreamWriter("test.xml");
+        System.IO.StreamWriter writer = new System.IO.StreamWriter(xmlName);
         db.ExportXML(writer);
         writer.Close();
         db.Close();
 
         UnitTests.SafeDeleteFile(dbName);
         db.Open(dbName, pagePoolSize);
-        System.IO.StreamReader reader = new System.IO.StreamReader("test.xml");
+        System.IO.StreamReader reader = new System.IO.StreamReader(xmlName);
         db.ImportXML(reader);
         reader.Close();
 
@@ -276,9 +277,8 @@ public class UnitTestsRunner
 { 
     public static void Main(string[] args) 
     {
-        UnitTestXml.Run(false);
-        //TODO: this test fails
-        //UnitTestXml.Run(true);
+        UnitTestXml.Run(100, false);
+        UnitTestXml.Run(100, true);
         UnitTest1.Run(false);
         UnitTest1.Run(true);
         UnitTest2.Run(false);

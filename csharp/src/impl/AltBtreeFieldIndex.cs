@@ -74,7 +74,7 @@ namespace NachoDB.Impl
         
         internal AltBtreeFieldIndex(String fieldName, bool unique) 
         {
-            this.cls = typeof(K);
+            this.cls = typeof(V);
             this.unique = unique;
             this.fieldName = fieldName;
             this.className = ClassDescriptor.getTypeName(cls);
