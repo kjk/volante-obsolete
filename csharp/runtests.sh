@@ -2,6 +2,7 @@
 # First argument is the name of bin directory where the executables are
 
 rm *.dbs
+mono ${1}/UnitTests.exe
 mono ${1}/TestIndex.exe
 rm *.dbs
 mono ${1}/TestIndex.exe altbtree
