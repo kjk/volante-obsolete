@@ -7,8 +7,10 @@ namespace NachoDB.Impl
 
     public class OSFile : IFile
     {
-        [DllImport("kernel32.dll", SetLastError=true)] 
-        static extern bool FlushFileBuffers(IntPtr hFile); 
+        [DllImport("kernel32.dll", SetLastError=true)]
+        // TODO: this seems more correct but doesn't work in mono
+        //static extern bool FlushFileBuffers(IntPtr hFile); 
+        static extern bool FlushFileBuffers(int hFile); 
 
         public virtual void Write(long pos, byte[] buf)
         {
@@ -26,8 +28,12 @@ namespace NachoDB.Impl
         {
             file.Flush();
 #if !COMPACT_NET_FRAMEWORK 
-            if (!noFlush) { 
-                FlushFileBuffers(file.SafeFileHandle.DangerousGetHandle());
+            if (!noFlush) {
+                // TODO: this seems more correct but doesn't work in mono
+                //FlushFileBuffers(file.SafeFileHandle.DangerousGetHandle());
+                // TODO: this uses deprecated API but I can't get SafeFileHandle
+                // to work in mono
+                FlushFileBuffers(file.Handle.ToInt32());
             }
 #endif
         }
