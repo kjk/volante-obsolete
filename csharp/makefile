@@ -1,11 +1,10 @@
 # Makefile for building NachoDB
 # Valid options:
 # CFG=[rel|dbg] - default: rel
-# GENERICS=[yes|no] - default: no
 # OMIT_XML=[yes|no] - default: no
 # OMIT_REPLICATION=[yes|no] - default: no
 
-CSC=mcs
+CSC=gmcs
 
 CSC_FLAGS =-debug+ -d:SUPPORT_RAW_TYPE
 
@@ -14,12 +13,6 @@ CFG=rel
 endif
 
 OUTDIR=bin/$(CFG)
-
-ifeq ($(GENERICS),yes)
-CSC=gmcs
-CSC_FLAGS += -d:USE_GENERICS
-OUTDIR:=$(OUTDIR)-generics
-endif
 
 ifeq ($(OMIT_XML),yes)
 CSC_FLAGS += -d:OMIT_XML
