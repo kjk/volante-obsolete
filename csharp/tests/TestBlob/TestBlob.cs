@@ -3,14 +3,33 @@ using NachoDB;
 using System.IO;
 
 public class TestBlob 
-{ 
+{
+    public static string FindSrcImplDirectory()
+    {
+        string dir = Path.Combine("src", "impl");
+        if (Directory.Exists(dir))
+        {
+            return dir;
+        }
+        dir = Path.Combine("..", dir);
+        dir = Path.Combine("..", dir);
+        dir = Path.Combine("..", dir);
+        dir = Path.Combine("..", dir);
+        if (Directory.Exists(dir))
+        {
+            return dir;
+        }
+        return null;
+    }
+
     public static void Main(string[] args) 
     { 
         Storage db = StorageFactory.CreateStorage();
         db.Open("testblob.dbs");
         byte[] buf = new byte[1024];
         int rc;
-        string[] files = Directory.GetFiles(@"src\impl", "*.cs");
+        string dir = FindSrcImplDirectory();
+        string[] files = Directory.GetFiles(dir, "*.cs");
         Index<string,Blob> root = (Index<string,Blob>)db.Root;
         if (root == null) 
         { 
