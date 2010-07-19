@@ -147,6 +147,12 @@ def extractPt(pel):
         ec = int(attrs["ec"].value)
     return Pt(visit, pos, len, fid, sl, sc, el, ec)
 
+def dump_types(types):
+    for t in types:
+        print("%s %.2f%% (%d out of %d)" % (t.name, t.get_coverage(), t.coverageCovered, t.coverageTotal))
+        for m in t.methods:
+            print("  %s (%d)" % (m.name,m.bodysize))
+
 def main():
     if len(sys.argv) != 3:
         usage_and_exit()
@@ -180,12 +186,9 @@ def main():
 
     for v in assemblies.values():
         v.set_types(types)
-        print("%03d : %s %.2f%%" % (v.id, v.name, v.get_coverage()))
+        print("%03d : %s %.2f%% (%d out of %d)" % (v.id, v.name, v.get_coverage(), v.coverageCovered, v.coverageTotal))
+        dump_types(v.types)
 
-    #for t in types:
-    #    print("%s %.2f%% (%d out of %d)" % (t.name,t.get_coverage(),t.coverageCovered,t.coverageTotal))
-    #    for m in t.methods:
-    #        print("  %s (%d)" % (m.name,m.bodysize))
 
 if __name__ == "__main__":
     main()
