@@ -6,3 +6,4 @@ csharp/test.xml
 csharp/doc/perst.xml
 *.psess
 *.vsp
+partcover.driver.log

@@ -3,6 +3,7 @@
 # CFG=[dbg|rel] (default: dbg)
 # OMIT_XML=[yes|no] - default: no
 # OMIT_REPLICATION=[yes|no] - default: no
+# FOR_PARTCOVER=[yes|no] - default: no
 
 CSC=csc
 CSC_FLAGS=/debug+ /d:SUPPORT_RAW_TYPE
@@ -27,6 +28,13 @@ CSC_FLAGS=$(CSC_FLAGS) /d:OMIT_REPLICATION
 O=$(O)-norepl
 !endif
 
+!if "$(FOR_PARTCOVER)"=="yes"
+# PartCover doesn't support 64bit, so force building as x86 so
+# we can do code coverage with PartCover under 64-bit OS as well
+CSC_FLAGS=$(CSC_FLAGS) /platform:x86
+O=$(O)-cov
+!endif
+
 EXAMPLES=$(O)\Guess.exe $(O)\IpCountry.exe $(O)\PropGuess.exe $(O)\TestLink.exe \
 	$(O)\TestSOD.exe $(O)\TestSSD.exe $(O)\TransparentGuess.exe
 
@@ -48,6 +56,9 @@ $(LIBRARY): src/*.cs src/impl/*.cs
 examples: $(O) $(LIBRARY) $(EXAMPLES)
 
 tests: $(O) $(LIBRARY) $(TESTS)
+
+clean: force
+	rmdir /s /q $(O)
 
 $(O): force
 	@if not exist $(O) mkdir $(O)
