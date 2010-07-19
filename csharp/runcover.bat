@@ -15,6 +15,19 @@ nmake -f makefile.msvc FOR_PARTCOVER=yes CFG=rel
 IF ERRORLEVEL 1 GOTO BUILDFAILED
 
 PartCover --target %O%\UnitTests.exe --include [NachoDB]* --include [UnitTests]* --output %O%\partcover.xml
+IF ERRORLEVEL 1 GOTO PARTCOVERFAILED
+
+python partcover-to-html.py %O%\partcover.xml %O%\partcoverwww
+IF ERRORLEVEL 1 GOTO PARTCOVERTOHTMLFAILED
+
+goto END
+
+:PARTCOVERTOHTMLFAILED
+echo partcover-to-html.py failed
+goto END
+
+:PARTCOVERFAILED
+echo PartCover failed
 goto END
 
 :BUILDFAILED
