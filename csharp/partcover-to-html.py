@@ -1,5 +1,7 @@
+import cgi
 import os
 import os.path
+import shutil
 import sys
 from xml.dom.minidom import parse
 
@@ -11,6 +13,7 @@ class File(object):
     def __init__(self, id, url):
         self.id = id
         self.url = url
+        self.html_file_name = None
 
 class Assembly(object):
     def __init__(self, id, name, module, domain, domainIdx):
@@ -153,6 +156,82 @@ def dump_types(types):
         for m in t.methods:
             print("  %s (%d)" % (m.name,m.bodysize))
 
+def dump_assemblies(assemblies, types):
+    for v in assemblies.values():
+        v.set_types(types)
+        print("%03d : %s %.2f%% (%d out of %d)" % (v.id, v.name, v.get_coverage(), v.coverageCovered, v.coverageTotal))
+        dump_types(v.types)
+
+def html_name_from_path(path):
+    parts = path.split("\\")
+    if "impl" in path:
+        s = parts[-2] + "_" + parts[-1]
+        s = s.replace(".", "_")
+    else:
+        s = parts[-1].replace(".", "_")
+    s = s + ".html"
+    return s.lower()
+
+def is_empty_line(l):
+    return 0 == len(l.strip())
+
+def csharp_to_html(pathin, pathout, file_name):
+    fin = open(pathin, "r")
+    fout = open(pathout, "w")
+    fout.write("""
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type=text/css> 
+pre,code {font-size:9pt; font:Consolas,Monaco,"Courier New","DejaVu Sans Mono","Bitstream Vera Sans Mono",monospace;}
+</style>
+</head>
+<body>
+""")
+
+    fout.write("""<pre><a href="index.html">Home</a> : %s</pre>""" % file_name)
+    lines = []
+    for l in fin:
+        lines.append(l)
+
+    # write out line numbers
+    fout.write("""
+<table cellpadding="0" cellspacing="0">
+<tbody>
+  <tr>
+  <td style="margin:0px; vertical-align:top">
+  <pre>""")
+    for n in range(len(lines)):
+        tmp = n + 1
+        fout.write("<span>%d</span>\n" % tmp)
+    fout.write("""
+  </pre>
+  </td>
+""")
+
+    # content
+    fout.write("""
+  <td  style="margin:0px; padding-left:8px; vertical-align:top" width="100%">
+  <pre>""")
+    lineno = 1
+    for l in lines:
+        if is_empty_line(l):
+            fout.write("""<div class="line" id="l%d"><br></div>""" % lineno)
+        else:
+            l = cgi.escape(l)
+            fout.write("""<div class="line" id="l%d">%s</div>""" % (lineno, l))
+        lineno += 1
+    fout.write("""
+  </pre>
+  </td>
+  </tr>
+</tbody>
+</table>
+""")
+    fout.write("</body>\n</html>")
+    fout.close()
+    fin.close()
+
 def main():
     if len(sys.argv) != 3:
         usage_and_exit()
@@ -162,8 +241,10 @@ def main():
         print("File '%s' doesn't exists" % partcover_file)
         print("")
         usage_and_exit()
-    if not os.path.exists(html_out_dir):
-        os.makedirs(html_out_dir)
+    if os.path.exists(html_out_dir):
+        shutil.rmtree(html_out_dir)
+    os.makedirs(html_out_dir)
+
     dom = parse(partcover_file)
 
     files = {}
@@ -181,14 +262,20 @@ def main():
         types.append(extractType(el))
     types.sort(lambda x,y: cmp(x.name.lower(), y.name.lower()))
 
-    for v in files.values():
-        print("%03d : %s" % (v.id, v.url))
+    #for v in files.values():
+    #    print("%03d : %s" % (v.id, v.url))
 
-    for v in assemblies.values():
-        v.set_types(types)
-        print("%03d : %s %.2f%% (%d out of %d)" % (v.id, v.name, v.get_coverage(), v.coverageCovered, v.coverageTotal))
-        dump_types(v.types)
+    #dump_assemblies(assemblies, types)
 
+    for f in sorted(files.values()):
+        html_name = html_name_from_path(f.url)
+        f.html_file_name = html_name
+        print("%s => %s" % (f.url, html_name))
+        html_path = os.path.join(html_out_dir, html_name)
+        src_path = f.url.split("nachodb")[-1][1:]
+        print(src_path)
+        csharp_to_html(f.url, html_path, src_path)
+        break
 
 if __name__ == "__main__":
     main()
