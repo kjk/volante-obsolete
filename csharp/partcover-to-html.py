@@ -51,8 +51,15 @@ class Assembly(object):
             self._calc_coverage(types)
         return self.coverage
 
+g_type_id = 0
+def next_type_id():
+    global g_type_id
+    g_type_id += 1
+    return g_type_id
+
 class Type(object):
     def __init__(self, asmref, name, flags, methods):
+        self.id = next_type_id()
         self.asmref = asmref
         self.name = name
         self.flags = flags
@@ -64,9 +71,8 @@ class Type(object):
         total = 0
         covered = 0
         for m in self.methods:
-            total += m.bodysize
-            for pt in m.pts:
-                covered += pt.len
+            total += m.coverageTotal
+            covered += m.coverageCovered
         self.coverageTotal = total
         self.coverageCovered = covered
         if 0 == total:
@@ -85,6 +91,28 @@ class Method(object):
         self.flags = flags
         self.iflags = iflags
         self.pts = pts
+        self._calc_coverage()
+
+    def full_name(self):
+        parts = self.sig.split(" ", 1)
+        if len(parts) == 2:
+            return parts[0] + " " + self.name + parts[1].strip()
+        return self.name
+
+    def _calc_coverage(self):
+        covered = 0
+        total = self.bodysize
+        for pt in self.pts:
+            covered += pt.len
+        self.coverageTotal = total
+        self.coverageCovered = covered
+        if 0 == total:
+            self.coverage = float(100)
+        else:
+            self.coverage = (float(covered) * 100.0) / float(total)
+
+    def get_coverage(self):
+        return self.coverage
 
 class Pt(object):
     def __init__(self, visit, pos, len, fid, sl, sc, el, ec):
@@ -232,6 +260,64 @@ pre,code {font-size:9pt; font:Consolas,Monaco,"Courier New","DejaVu Sans Mono","
     fout.close()
     fin.close()
 
+# @files is 
+def gen_html_for_files(files, html_out_dir):
+    for f in sorted(files):
+        html_name = html_name_from_path(f.url)
+        f.html_file_name = html_name
+        print("%s => %s" % (f.url, html_name))
+        html_path = os.path.join(html_out_dir, html_name)
+        src_path = f.url.split("nachodb")[-1][1:]
+        print(src_path)
+        csharp_to_html(f.url, html_path, src_path)
+        break
+
+# @types is an array of Type objects
+# @files is a dict mapping file id to File object
+def gen_html_for_types(types, files, html_out_dir, html_file_name):
+    html_path = os.path.join(html_out_dir, html_file_name)
+    fo = open(html_path, "w")
+    fo.write("""<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<style type=text/css> 
+.typename { font-weight: bold; }
+.perc { color: red; }
+</style>
+
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
+
+<script type="text/javascript">
+function toggleVisibility(id) {
+  var el = $('#'+id);
+  var val = el.css("display");
+  if (val == "none") {
+    el.css("display", "block");
+  } else {
+    el.css("display", "none");
+  }
+  return false;
+}
+
+</script>
+
+</head>
+<body>
+<h1>Code coverage report for NachoDB</h1>
+""")
+    for type in types:
+        fo.write("""<span class="typename"><a href="#" onclick="return toggleVisibility('cls%d');">%s</a></span>
+<span class="perc">%.2f%%</span>:<br/>""" % (type.id, type.name, type.get_coverage()))
+        fo.write("""<span id="cls%d" style="display:none">""" % type.id)
+        fo.write("<ul>\n")
+        for m in type.methods:
+            fo.write("""<li>%s <span class="perc">%.2f%%</span></li>\n""" % (m.full_name(), m.get_coverage()))
+        fo.write("</ul>\n")
+        fo.write("</span>")
+    fo.write("</body></html>")
+    fo.close()
+
 def main():
     if len(sys.argv) != 3:
         usage_and_exit()
@@ -267,15 +353,8 @@ def main():
 
     #dump_assemblies(assemblies, types)
 
-    for f in sorted(files.values()):
-        html_name = html_name_from_path(f.url)
-        f.html_file_name = html_name
-        print("%s => %s" % (f.url, html_name))
-        html_path = os.path.join(html_out_dir, html_name)
-        src_path = f.url.split("nachodb")[-1][1:]
-        print(src_path)
-        csharp_to_html(f.url, html_path, src_path)
-        break
+    gen_html_for_files(files.values(), html_out_dir)
+    gen_html_for_types(types, files, html_out_dir, "index.html")
 
 if __name__ == "__main__":
     main()
