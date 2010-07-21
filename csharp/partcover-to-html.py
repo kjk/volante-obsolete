@@ -9,11 +9,49 @@ def usage_and_exit():
     print("Usage: partcover-to-html.py PARTCOVER_FILE.XML HTML_OUT_DIR")
     sys.exit(1)
 
+def append_point(line_info, line, pt):
+    if not line_info.has_key(line):
+        line_info[line] = [pt]
+        return
+    if pt in line_info[line]: return
+    line_info[line].append(pt)
+    
 class File(object):
     def __init__(self, id, url):
         self.id = id
         self.url = url
         self.html_file_name = None
+        self.line_info = {}
+
+    def calc_line_info(self, types):
+        li = self.line_info
+        for type in types:
+            for method in type.methods:
+                for pt in method.pts:
+                    if pt.fid != self.id: continue
+                    if pt.sl == pt.el:
+                        append_point(li, pt.sl, [pt.sc, pt.ec])
+                        continue
+                    l = pt.sl
+                    li[l] = [[pt.sc, -1]]
+                    l += 1
+                    while l < pt.el:
+                        li[l] = None # means the whole line
+                        l += 1
+                    append_point(li, l, [0, pt.ec])
+
+        for lno in li.keys():
+            if None is li[lno]: continue
+            li[lno].sort(lambda x,y: cmp(x[0],y[0]))
+            arr = li[lno]
+            prev = arr[0]
+            for el in arr[1:]:
+                if el[0] < prev[1]:
+                    print("%s:%d" % (self.url, lno))
+                    print(str(arr))
+                    print("found overlap: %s, %s" % (str(prev), str(el)))
+                    sys.exit(1)
+                prev = el
 
 class Assembly(object):
     def __init__(self, id, name, module, domain, domainIdx):
@@ -209,8 +247,13 @@ def html_name_from_path(path):
 def is_empty_line(l):
     return 0 == len(l.strip())
 
-def csharp_to_html(pathin, pathout, file_name):
-    fin = open(pathin, "r")
+def annotate_line(l, line_info):
+    if None == line_info: return """<span class="c">%s</span>""" % l
+    # TODO: annotate just parts indicated by line_info
+    return """<span class="c">%s</span>""" % l
+
+def csharp_to_html(file, pathout, file_name):
+    fin = open(file.url, "r")
     fout = open(pathout, "w")
     fout.write("""
 <html>
@@ -218,6 +261,7 @@ def csharp_to_html(pathin, pathout, file_name):
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <style type=text/css> 
 pre,code {font-size:9pt; font:Consolas,Monaco,"Courier New","DejaVu Sans Mono","Bitstream Vera Sans Mono",monospace;}
+.c { background-color: #96EBA6; }
 </style>
 </head>
 <body>
@@ -225,8 +269,10 @@ pre,code {font-size:9pt; font:Consolas,Monaco,"Courier New","DejaVu Sans Mono","
 
     fout.write("""<pre><a href="index.html">Home</a> : %s</pre>""" % file_name)
     lines = []
+    lno = 1
     for l in fin:
         lines.append(l)
+        lno += 1
 
     # write out line numbers
     fout.write("""
@@ -248,12 +294,18 @@ pre,code {font-size:9pt; font:Consolas,Monaco,"Courier New","DejaVu Sans Mono","
   <td  style="margin:0px; padding-left:8px; vertical-align:top" width="100%">
   <pre>""")
     lineno = 1
+    li = file.line_info
     for l in lines:
         if is_empty_line(l):
             fout.write("""<div class="line" id="l%d"><br></div>""" % lineno)
         else:
             l = cgi.escape(l)
-            fout.write("""<div class="line" id="l%d">%s</div>""" % (lineno, l))
+            if li.has_key(lineno):
+                # TODO: need to take escaping into account when annotating
+                l = annotate_line(l, li[lineno])
+                fout.write("""<div class="line" id="l%d">%s</div>""" % (lineno, l))
+            else:
+                fout.write("""<div class="line" id="l%d">%s</div>""" % (lineno, l))
         lineno += 1
     fout.write("""
   </pre>
@@ -275,7 +327,7 @@ def gen_html_for_files(files, html_out_dir):
         html_path = os.path.join(html_out_dir, html_name)
         src_path = f.url.split("nachodb")[-1][1:]
         print(src_path)
-        csharp_to_html(f.url, html_path, src_path)
+        csharp_to_html(f, html_path, src_path)
 
 # @types is an array of Type objects
 # @files is a dict mapping file id to File object
@@ -322,6 +374,7 @@ function toggleVisibility(id) {
                 fo.write("""<li>%s <span class="perc">%.2f%%</span></li>\n""" % (m.full_name(), m.get_coverage()))
             else:
                 file = files[fid]
+                # a hack heuristic to align at the beginning of the function
                 if lineno > 2:
                     lineno -= 2
                 fo.write("""<li><a href="%s#l%d">%s</a> <span class="perc">%.2f%%</span></li>\n""" % (file.html_file_name, lineno, m.full_name(), m.get_coverage()))
@@ -365,6 +418,8 @@ def main():
 
     #dump_assemblies(assemblies, types)
 
+    for file in files.values():
+        file.calc_line_info(types)
     gen_html_for_files(files.values(), html_out_dir)
     gen_html_for_types(types, files, html_out_dir, "index.html")
 
