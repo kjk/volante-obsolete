@@ -264,10 +264,27 @@ def dump_assemblies(assemblies, types):
 def is_empty_line(l):
     return 0 == len(l.strip())
 
+# @line_info is an array of [start_pos, end_pos] arrays indicating
+# fragments that need to be annotated with code coverage information
 def annotate_line(l, line_info):
-    if None == line_info: return """<span class="c">%s</span>""" % l
-    # TODO: annotate just parts indicated by line_info
-    return """<span class="c">%s</span>""" % l
+    if None == line_info: return """<span class="c">%s</span>""" % cgi.escape(l)
+    lastPos = 0
+    res = []
+    for el in line_info:
+        start = el[0] - 1
+        end = el[1]
+        if -1 == end:
+            end = len(l) - 1
+        else:
+            end -= 1
+        if lastPos != start:
+            res.append(cgi.escape(l[lastPos:start]))
+        lastPos = end
+        s = """<span class="c">%s</span>""" % cgi.escape(l[start:end])
+        res.append(s)
+    if lastPos != len(s):
+        res.append(cgi.escape(l[lastPos:]))
+    return  "".join(res)
 
 def csharp_to_html(file, pathout, file_name):
     fin = open(file.url, "r")
@@ -316,12 +333,12 @@ pre,code {font-size:9pt; font:Consolas,Monaco,"Courier New","DejaVu Sans Mono","
         if is_empty_line(l):
             fout.write("""<div class="line" id="l%d"><br></div>""" % lineno)
         else:
-            l = cgi.escape(l)
             if li.has_key(lineno):
                 # TODO: need to take escaping into account when annotating
                 l = annotate_line(l, li[lineno])
                 fout.write("""<div class="line" id="l%d">%s</div>""" % (lineno, l))
             else:
+                l = cgi.escape(l)
                 fout.write("""<div class="line" id="l%d">%s</div>""" % (lineno, l))
         lineno += 1
     fout.write("""
