@@ -99,6 +99,12 @@ class Method(object):
             return parts[0] + " " + self.name + parts[1].strip()
         return self.name
 
+    def get_file_line(self):
+        for pt in self.pts:
+            if pt.fid != None:
+                return (pt.fid, pt.sl)
+        return (None, None)
+
     def _calc_coverage(self):
         covered = 0
         total = self.bodysize
@@ -270,7 +276,6 @@ def gen_html_for_files(files, html_out_dir):
         src_path = f.url.split("nachodb")[-1][1:]
         print(src_path)
         csharp_to_html(f.url, html_path, src_path)
-        break
 
 # @types is an array of Type objects
 # @files is a dict mapping file id to File object
@@ -312,7 +317,14 @@ function toggleVisibility(id) {
         fo.write("""<span id="cls%d" style="display:none">""" % type.id)
         fo.write("<ul>\n")
         for m in type.methods:
-            fo.write("""<li>%s <span class="perc">%.2f%%</span></li>\n""" % (m.full_name(), m.get_coverage()))
+            (fid, lineno) = m.get_file_line()
+            if fid == None:
+                fo.write("""<li>%s <span class="perc">%.2f%%</span></li>\n""" % (m.full_name(), m.get_coverage()))
+            else:
+                file = files[fid]
+                if lineno > 2:
+                    lineno -= 2
+                fo.write("""<li><a href="%s#l%d">%s</a> <span class="perc">%.2f%%</span></li>\n""" % (file.html_file_name, lineno, m.full_name(), m.get_coverage()))
         fo.write("</ul>\n")
         fo.write("</span>")
     fo.write("</body></html>")
