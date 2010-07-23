@@ -376,6 +376,8 @@ def gen_html_for_files(files, outdir):
         print(src_path)
         csharp_to_html(f, html_path, src_path)
 
+# @types is an array of types
+# @files is a dict mapping file id to File object
 def gen_index_html_for_types(fo, types, files):
     for type in types:
         fo.write("""<span class="typename"><a href="#" onclick="return toggleVisibility('cls%d');">%s</a></span>
@@ -431,15 +433,44 @@ function toggleVisibility(id) {
   return false;
 }
 
+function sortByName() {
+  $("#tdByName").css("display", "block");
+  $("#tdByCov").css("display", "none");
+  $("#sortNameLink").html("name");
+  $("#sortCovLink").html('<a href="#" onclick="return sortByCov();">coverage</a>');
+  return false;
+}
+
+function sortByCov() {
+  $("#tdByName").css("display", "none");
+  $("#tdByCov").css("display", "block");
+  $("#sortNameLink").html('<a href="#" onclick="return sortByName();">name</a>');
+  $("#sortCovLink").html("coverage");
+  return false;
+}
+
+$(document).ready(function(){
+  sortByName();
+});
+
 </script>
 
 </head>
 <body>
 <h1>Code coverage report for NachoDB</h1>
 """)
-    fo.write("<table><tr><td valign=top>")
+    fo.write("""Sort classes by: <span id="sortNameLink"><a href="#" onclick="return sortByName();">name</a></span>,
+ <span id="sortCovLink"><a href="#" onclick="return sortByCov();">coverage</a></span>""")
+    fo.write("""<table><tr><td id="tdByName" valign=top>""")
     gen_index_html_for_types(fo, types, files)
-    fo.write("</td><td valign=top>")
+    fo.write("</td>")
+
+    fo.write("""<td id="tdByCov" valign=top>""")
+    types.sort(lambda x,y: cmp(x.coverage, y.coverage))
+    gen_index_html_for_types(fo, types, files)
+    fo.write("</td>")
+
+    fo.write("<td valign=top>")
     gen_index_html_for_files(fo, files.values())
     fo.write("</td></table>")
 
