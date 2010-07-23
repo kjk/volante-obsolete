@@ -14,8 +14,8 @@ For both Java and C#:
  * ambitious: add integrated, small full-text search (maybe port FTS 
    from SQliteSharp but store indexes in NachoDB)
  * add code-coverate to build system
- * write tests to provie 100% code coverage
- * maybe: consistently name interface
+ * write tests to provide 100% code coverage
+ * maybe: consistent naming of interfaces
  * StrongHashTable, WeakHashTable and LruObjectCache could be simplifed by 
    adding findEntry() and removeFoundEntry() functions. Also, instead of using
    custom hashtable, maybe a built-in hash would do (needs benchmarks)
