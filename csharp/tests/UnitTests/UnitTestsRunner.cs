@@ -5,6 +5,8 @@ public class UnitTestsRunner
 {
     public static void Main(string[] args)
     {
+        TestRtree.Run(100);
+
         UnitTests.SafeDeleteFile(TestRaw.dbName);
         TestRaw.Run();
         TestRaw.Run();

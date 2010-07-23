@@ -90,7 +90,7 @@ $(OUTDIR)/TestRaw.exe: tests/TestRaw/TestRaw.cs tests/Tests.cs
 $(OUTDIR)/TestReplic.exe: tests/TestReplic/TestReplic.cs
 	$(CSC) $(CSC_FLAGS) -t:exe -r:$(NACHODB) -out:$@ $<
 
-$(OUTDIR)/TestRtree.exe: tests/TestRtree/TestRtree.cs
+$(OUTDIR)/TestRtree.exe: tests/TestRtree/TestRtree.cs tests/Tests.cs
 	$(CSC) $(CSC_FLAGS) -t:exe -r:$(NACHODB) -out:$@ $<
 
 $(OUTDIR)/TestTimeSeries.exe: tests/TestTimeSeries/TestTimeSeries.cs
