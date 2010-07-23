@@ -42,7 +42,7 @@ TESTS=$(O)\TestBackup.exe $(O)\TestBit.exe $(O)\TestBlob.exe $(O)\TestCompoundIn
 	$(O)\TestConcur.exe $(O)\TestEnumerator.exe $(O)\TestGC.exe $(O)\TestIndex.exe \
 	$(O)\TestIndex2.exe $(O)\TestList.exe $(O)\TestR2.exe $(O)\TestRaw.exe  $(O)\TestRtree.exe \
 	$(O)\TestTimeSeries.exe $(O)\TestTtree.exe $(O)\TestXML.exe $(O)\TestReplic.exe \
-	$(O)\UnitTests.exe
+	$(O)\UnitTestsRunner.exe
 
 LIBRARY=$(O)\NachoDB.dll
 
@@ -114,7 +114,7 @@ $(O)\TestXML.exe: tests\TestXML\TestXML.cs
 $(O)\TestReplic.exe: tests\TestReplic\TestReplic.cs
 	$(CSC) $(CSC_FLAGS) /r:$(LIBRARY) /out:$@ $**
 
-$(O)\UnitTests.exe: tests\UnitTests\UnitTests.cs
+$(O)\UnitTestsRunner.exe: tests\UnitTests\UnitTests.cs tests\UnitTests\UnitTestsRunner.cs
 	$(CSC) $(CSC_FLAGS) /r:$(LIBRARY) /out:$@ $**
 
 $(O)\Guess.exe: examples\Guess\Guess.cs

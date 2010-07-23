@@ -50,7 +50,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestList", "tests\TestList\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestReplic", "tests\TestReplic\TestReplic.csproj", "{3DC0BBA0-DC69-457C-9E19-5A9A5811B743}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTests", "tests\UnitTests\UnitTests.csproj", "{964D66AF-CDBD-406D-9C8C-1E53C4D0CD12}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTestsRunner", "tests\UnitTests\UnitTestsRunner.csproj", "{964D66AF-CDBD-406D-9C8C-1E53C4D0CD12}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
