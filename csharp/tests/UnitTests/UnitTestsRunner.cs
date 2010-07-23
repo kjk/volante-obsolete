@@ -6,6 +6,8 @@ public class UnitTestsRunner
     public static void Main(string[] args)
     {
         UnitTestBit.Run(100);
+        UnitTests.SafeDeleteFile(UnitTestBlob.dbName);
+        UnitTestBlob.Run();
         UnitTestBlob.Run();
         UnitTestXml.Run(100, false);
         UnitTestXml.Run(100, true);
