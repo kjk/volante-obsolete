@@ -57,7 +57,7 @@ $(OUTDIR)/TestBackup.exe: tests/TestBackup/TestBackup.cs
 $(OUTDIR)/TestBit.exe: tests/TestBit/TestBit.cs tests/UnitTests/UnitTests.cs
 	$(CSC) $(CSC_FLAGS) -t:exe -r:$(NACHODB) -out:$@ $<
 
-$(OUTDIR)/TestBlob.exe: tests/TestBlob/TestBlob.cs
+$(OUTDIR)/TestBlob.exe: tests/TestBlob/TestBlob.cs tests/UnitTests/UnitTests.cs
 	$(CSC) $(CSC_FLAGS) -t:exe -r:$(NACHODB) -out:$@ $<
 
 $(OUTDIR)/TestCompoundIndex.exe: tests/TestCompoundIndex/TestCompoundIndex.cs

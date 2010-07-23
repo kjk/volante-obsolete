@@ -81,6 +81,7 @@
     <Compile Include="TestBlob.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="UnitTests.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
