@@ -1867,10 +1867,9 @@ namespace NachoDB
             Debug.Assert(i == nElements);
             Console.WriteLine("Elapsed time for extracting " + nElements + " quotes: " 
                                + (DateTime.Now - start));
-                     
+
             Debug.Assert(stock.quotes.Count == nElements);
-            
-            
+
             long from = getTicks(time+1000);
             int count = 1000;
             start = DateTime.Now;
@@ -1889,14 +1888,14 @@ namespace NachoDB
                                + (DateTime.Now - start));
 
             Debug.Assert(stock.quotes.Count == 0);
-            
+
             db.Close();
         }
 
         const long TICKS_PER_SECOND = 10000000L;
 
         static DateTime baseDate = new DateTime(1970, 1, 1);
-        
+
         static int getSeconds(DateTime dt) 
         {
             return (int)((dt.Ticks - baseDate.Ticks) / TICKS_PER_SECOND);
@@ -1916,15 +1915,15 @@ namespace NachoDB
             public String first;
             public String last;
         }
-        
+
         class Person : Persistent 
         { 
             public String firstName;
             public String lastName;
             public int    age;
-        
+
             private Person() {}
-        
+
             public Person(String firstName, String lastName, int age) 
             { 
                 this.firstName = firstName;
@@ -1932,12 +1931,12 @@ namespace NachoDB
                 this.age = age; 
             }
         }
-        
+
         class PersonList : Persistent 
         {
             public SortedCollection<Name,Person> list;
         }
-        
+
         class NameComparator : PersistentComparator<Name,Person>
         { 
             public override int CompareMembers(Person p1, Person p2) 
@@ -1949,7 +1948,7 @@ namespace NachoDB
                 }
                 return p1.lastName.CompareTo(p2.lastName);
             }
-        
+
             public override int CompareMemberWithKey(Person p, Name name) 
             { 
                 int diff = p.firstName.CompareTo(name.first);
@@ -1996,7 +1995,7 @@ namespace NachoDB
             db.Commit();
             Console.WriteLine("Elapsed time for inserting " + nRecords + " records: " 
                 + (DateTime.Now - start) + " milliseconds");
-            
+
             start = DateTime.Now;
             key = 1999;
             for (i = 0; i < nRecords; i++) 
@@ -2016,7 +2015,7 @@ namespace NachoDB
             }
             Console.WriteLine("Elapsed time for performing " + nRecords + " index searches: " 
                 + (DateTime.Now - start) + " milliseconds");
-            
+
             start = DateTime.Now;
             Name nm = new Name();
             nm.first = nm.last = "";

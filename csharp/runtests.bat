@@ -12,7 +12,6 @@ set O=bin\dbg
 %O%\TestIndex2
 %O%\TestEnumerator
 
-del *.dbs
 %O%\TestCompoundIndex
 %O%\TestRtree
 %O%\TestR2
