@@ -3,70 +3,69 @@ using System.Collections;
 using NachoDB;
 using System.Diagnostics;
 
-[Flags]
-public enum Options 
+public class UnitTestBit
 {
-    CLASS_A           = 0x00000001,
-    CLASS_B           = 0x00000002,
-    CLASS_C           = 0x00000004,
-    CLASS_D           = 0x00000008,
+    [Flags]
+    public enum Options 
+    {
+        CLASS_A           = 0x00000001,
+        CLASS_B           = 0x00000002,
+        CLASS_C           = 0x00000004,
+        CLASS_D           = 0x00000008,
 
-    UNIVERAL          = 0x00000010,
-    SEDAN             = 0x00000020,
-    HATCHBACK         = 0x00000040,
-    MINIWAN           = 0x00000080,
+        UNIVERAL          = 0x00000010,
+        SEDAN             = 0x00000020,
+        HATCHBACK         = 0x00000040,
+        MINIWAN           = 0x00000080,
 
-    AIR_COND          = 0x00000100,
-    CLIMANT_CONTROL   = 0x00000200,
-    SEAT_HEATING      = 0x00000400,
-    MIRROR_HEATING    = 0x00000800,
+        AIR_COND          = 0x00000100,
+        CLIMANT_CONTROL   = 0x00000200,
+        SEAT_HEATING      = 0x00000400,
+        MIRROR_HEATING    = 0x00000800,
 
-    ABS               = 0x00001000,
-    ESP               = 0x00002000,
-    EBD               = 0x00004000,
-    TC                = 0x00008000,
+        ABS               = 0x00001000,
+        ESP               = 0x00002000,
+        EBD               = 0x00004000,
+        TC                = 0x00008000,
 
-    FWD               = 0x00010000,
-    REAR_DRIVE        = 0x00020000,
-    FRONT_DRIVE       = 0x00040000,
+        FWD               = 0x00010000,
+        REAR_DRIVE        = 0x00020000,
+        FRONT_DRIVE       = 0x00040000,
 
-    GPS_NAVIGATION    = 0x00100000,
-    CD_RADIO          = 0x00200000,
-    CASSETTE_RADIO    = 0x00400000,
-    LEATHER           = 0x00800000,
+        GPS_NAVIGATION    = 0x00100000,
+        CD_RADIO          = 0x00200000,
+        CASSETTE_RADIO    = 0x00400000,
+        LEATHER           = 0x00800000,
 
-    XEON_LIGHTS       = 0x01000000,
-    LOW_PROFILE_TIRES = 0x02000000,
-    AUTOMATIC         = 0x04000000,
+        XEON_LIGHTS       = 0x01000000,
+        LOW_PROFILE_TIRES = 0x02000000,
+        AUTOMATIC         = 0x04000000,
 
-    DISEL             = 0x10000000,
-    TURBO             = 0x20000000,
-    GASOLINE          = 0x40000000,
-}
+        DISEL             = 0x10000000,
+        TURBO             = 0x20000000,
+        GASOLINE          = 0x40000000,
+    }
 
-class Car : Persistent 
-{ 
-    internal int     hps;
-    internal int     maxSpeed;
-    internal int     timeTo100;
-    internal Options options;
-    internal string  model;
-    internal string  vendor;
-    internal string  specification;
-}
+    class Car : Persistent 
+    { 
+        internal int     hps;
+        internal int     maxSpeed;
+        internal int     timeTo100;
+        internal Options options;
+        internal string  model;
+        internal string  vendor;
+        internal string  specification;
+    }
 
-class Catalogue : Persistent {
-    internal FieldIndex<string,Car> modelIndex;
-    internal BitIndex<Car>          optionIndex;
-}
+    class Catalogue : Persistent {
+        internal FieldIndex<string,Car> modelIndex;
+        internal BitIndex<Car>          optionIndex;
+    }
 
-public class TestBit 
-{ 
-    const int nRecords = 1000000;
-    static int pagePoolSize = 48*1024*1024;
-
-    static public void Main(string[] args) 
-    {    
+    public static void Run(int nRecords)
+    {
+        int pagePoolSize = 48*1024*1024;
+        
         Storage db = StorageFactory.CreateStorage();
         db.Open("testbit.dbs", pagePoolSize);
 
@@ -130,5 +129,13 @@ public class TestBit
             + (DateTime.Now - start));
 
         db.Close();
+    }
+}
+
+public class TestBit 
+{ 
+    static public void Main(string[] args) 
+    {
+        UnitTestBit.Run(1000000);
     }
 }

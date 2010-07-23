@@ -17,7 +17,7 @@ IF ERRORLEVEL 1 GOTO BUILDFAILED
 PartCover --target %O%\UnitTests.exe --include [NachoDB]* --include [UnitTests]* --output %O%\partcover.xml
 IF ERRORLEVEL 1 GOTO PARTCOVERFAILED
 
-python partcover-to-html.py %O%\partcover.xml %O%\partcoverwww
+python partcover-to-html.py %O%\partcover.xml cov
 IF ERRORLEVEL 1 GOTO PARTCOVERTOHTMLFAILED
 
 goto END
