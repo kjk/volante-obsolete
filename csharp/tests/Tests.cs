@@ -3,6 +3,7 @@ namespace NachoDB
     using System;
     using System.Diagnostics;
     using System.IO;
+    using System.Threading;
 
     public class UnitTests
     {
@@ -516,18 +517,19 @@ namespace NachoDB
         }
     }
 
-    public class TestCompoundIndex 
+    public class TestCompoundIndex
     {
-        const int pagePoolSize = 32*1024*1024;
+        const int pagePoolSize = 32 * 1024 * 1024;
 
-        class Record : Persistent { 
+        class Record : Persistent
+        {
             internal String strKey;
-            internal int    intKey;
+            internal int intKey;
         }
 
         public static void Run(bool altBtree, int nRecords)
         {
-            string dbName = "testcidx.dbs";   
+            string dbName = "testcidx.dbs";
             int i;
             UnitTests.SafeDeleteFile(dbName);
             Storage db = StorageFactory.CreateStorage();
@@ -535,18 +537,20 @@ namespace NachoDB
             db.Open(dbName, pagePoolSize);
 
             MultiFieldIndex<Record> root = (MultiFieldIndex<Record>)db.Root;
-            if (root == null) { 
-                root = db.CreateFieldIndex<Record>(new string[]{"intKey", "strKey"}, true);
+            if (root == null)
+            {
+                root = db.CreateFieldIndex<Record>(new string[] { "intKey", "strKey" }, true);
                 db.Root = root;
             }
             DateTime start = DateTime.Now;
             long key = 1999;
-            for (i = 0; i < nRecords; i++) { 
+            for (i = 0; i < nRecords; i++)
+            {
                 Record rec = new Record();
-                key = (3141592621L*key + 2718281829L) % 1000000007L;
+                key = (3141592621L * key + 2718281829L) % 1000000007L;
                 rec.intKey = (int)((ulong)key >> 32);
                 rec.strKey = Convert.ToString((int)key);
-                root.Put(rec);                
+                root.Put(rec);
             }
             db.Commit();
             Console.WriteLine("Elapsed time for inserting " + nRecords + " records: " + (DateTime.Now - start));
@@ -555,16 +559,19 @@ namespace NachoDB
             key = 1999;
             int minKey = Int32.MaxValue;
             int maxKey = Int32.MinValue;
-            for (i = 0; i < nRecords; i++) { 
-                key = (3141592621L*key + 2718281829L) % 1000000007L;
-                int intKey = (int)((ulong)key >> 32);            
+            for (i = 0; i < nRecords; i++)
+            {
+                key = (3141592621L * key + 2718281829L) % 1000000007L;
+                int intKey = (int)((ulong)key >> 32);
                 String strKey = Convert.ToString((int)key);
-                Record rec = root.Get(new Key(new Object[]{intKey, strKey}));
+                Record rec = root.Get(new Key(new Object[] { intKey, strKey }));
                 Debug.Assert(rec != null && rec.intKey == intKey && rec.strKey.Equals(strKey));
-                if (intKey < minKey) { 
+                if (intKey < minKey)
+                {
                     minKey = intKey;
                 }
-                if (intKey > maxKey) { 
+                if (intKey > maxKey)
+                {
                     maxKey = intKey;
                 }
             }
@@ -574,9 +581,9 @@ namespace NachoDB
             int n = 0;
             string prevStr = "";
             int prevInt = minKey;
-            foreach (Record rec in root.Range(new Key(minKey, ""), 
-                                              new Key(maxKey+1, "???"), 
-                                              IterationOrder.AscentOrder)) 
+            foreach (Record rec in root.Range(new Key(minKey, ""),
+                                              new Key(maxKey + 1, "???"),
+                                              IterationOrder.AscentOrder))
             {
                 Debug.Assert(rec.intKey > prevInt || rec.intKey == prevInt && rec.strKey.CompareTo(prevStr) > 0);
                 prevStr = rec.strKey;
@@ -586,9 +593,9 @@ namespace NachoDB
             Debug.Assert(n == nRecords);
 
             n = 0;
-            prevInt = maxKey+1;
-            foreach (Record rec in root.Range(new Key(minKey, "", false), 
-                                              new Key(maxKey+1, "???", false), 
+            prevInt = maxKey + 1;
+            foreach (Record rec in root.Range(new Key(minKey, "", false),
+                                              new Key(maxKey + 1, "???", false),
                                               IterationOrder.DescentOrder))
             {
                 Debug.Assert(rec.intKey < prevInt || rec.intKey == prevInt && rec.strKey.CompareTo(prevStr) < 0);
@@ -597,14 +604,15 @@ namespace NachoDB
                 n += 1;
             }
             Debug.Assert(n == nRecords);
-            Console.WriteLine("Elapsed time for iterating through " + (nRecords*2) + " records: " + (DateTime.Now - start));
+            Console.WriteLine("Elapsed time for iterating through " + (nRecords * 2) + " records: " + (DateTime.Now - start));
             start = DateTime.Now;
             key = 1999;
-            for (i = 0; i < nRecords; i++) { 
-                key = (3141592621L*key + 2718281829L) % 1000000007L;
-                int intKey = (int)((ulong)key >> 32);            
+            for (i = 0; i < nRecords; i++)
+            {
+                key = (3141592621L * key + 2718281829L) % 1000000007L;
+                int intKey = (int)((ulong)key >> 32);
                 String strKey = Convert.ToString((int)key);
-                Record rec = root.Get(new Key(new Object[]{intKey, strKey}));
+                Record rec = root.Get(new Key(new Object[] { intKey, strKey }));
                 Debug.Assert(rec != null && rec.intKey == intKey && rec.strKey.Equals(strKey));
                 Debug.Assert(root.Contains(rec));
                 root.Remove(rec);
@@ -615,6 +623,115 @@ namespace NachoDB
             Console.WriteLine("Elapsed time for deleting " + nRecords + " records: " + (DateTime.Now - start));
             db.Close();
         }
+    }
+
+    public class TestConcur 
+    {
+        class L2List : PersistentResource 
+        {
+            internal L2Elem head;
+        }
+        
+        class L2Elem : Persistent { 
+            internal L2Elem next;
+            internal L2Elem prev;
+            internal int    count;
+        
+            public override bool RecursiveLoading() { 
+                return false;
+            }
+        
+            internal void unlink() { 
+                next.prev = prev;
+                prev.next = next;
+                next.Store();
+                prev.Store();
+            }
+        
+            internal void linkAfter(L2Elem elem) {         
+                elem.next.prev = this;
+                next = elem.next;
+                elem.next = this;
+                prev = elem;
+                Store();
+                next.Store();
+                prev.Store();
+            }
+        }
+
+        const int nIterations = 100;
+        const int nThreads = 4;
+        static int nElements = 0;
+
+        static Storage db;
+#if COMPACT_NET_FRAMEWORK
+        static int nFinishedThreads;
+#endif
+        public static void run()
+        { 
+            L2List list = (L2List)db.Root;
+            for (int i = 0; i < nIterations; i++) { 
+                long sum = 0, n = 0;
+                list.SharedLock();
+                L2Elem head = list.head; 
+                L2Elem elem = head;
+                do { 
+                    elem.Load();
+                    sum += elem.count;
+                    n += 1;
+                } while ((elem = elem.next) != head);
+                Debug.Assert(n == nElements && sum == (long)nElements*(nElements-1)/2);
+                list.Unlock();
+                list.ExclusiveLock();
+                L2Elem last = list.head.prev;
+                last.unlink();
+                last.linkAfter(list.head);
+                list.Unlock();
+            }
+#if COMPACT_NET_FRAMEWORK
+            lock (typeof(TestConcur)) 
+            {
+                if (++nFinishedThreads == nThreads) 
+                {
+                    db.Close();
+                }
+            }
+#endif
+        }
+
+        public static void Run(int nEls) 
+        {
+            string dbName = "testconcur.dbs";
+            UnitTests.SafeDeleteFile(dbName);
+            TestConcur.nElements = nEls;
+
+            db = StorageFactory.CreateStorage();
+            db.Open(dbName);
+            L2List list = (L2List)db.Root;
+            if (list == null) { 
+                list = new L2List();
+                list.head = new L2Elem();
+                list.head.next = list.head.prev = list.head;
+                db.Root = list;
+                for (int i = 1; i < nElements; i++) { 
+                    L2Elem elem = new L2Elem();
+                    elem.count = i;
+                    elem.linkAfter(list.head); 
+                }
+            }
+            Thread[] threads = new Thread[nThreads];
+            for (int i = 0; i < nThreads; i++) { 
+                threads[i] = new Thread(new ThreadStart(run));
+                threads[i].Start();
+            }
+#if !COMPACT_NET_FRAMEWORK
+            for (int i = 0; i < nThreads; i++) 
+            { 
+                threads[i].Join();
+            }
+#endif
+            db.Close();
+        }    
     }
 
 }

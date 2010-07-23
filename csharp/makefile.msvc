@@ -75,7 +75,7 @@ $(O)\TestBlob.exe: tests\TestBlob\TestBlob.cs tests\Tests.cs
 $(O)\TestCompoundIndex.exe: tests\TestCompoundIndex\TestCompoundIndex.cs tests\Tests.cs
 	$(CSC) $(CSC_FLAGS) /r:$(LIBRARY) /out:$@ $**
 
-$(O)\TestConcur.exe: tests\TestConcur\TestConcur.cs
+$(O)\TestConcur.exe: tests\TestConcur\TestConcur.cs tests\Tests.cs
 	$(CSC) $(CSC_FLAGS) /r:$(LIBRARY) /out:$@ $**
 
 $(O)\TestEnumerator.exe: tests\TestEnumerator\TestEnumerator.cs
