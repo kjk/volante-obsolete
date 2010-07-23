@@ -66,7 +66,7 @@ $(O): force
 $(O)\TestBackup.exe: tests\TestBackup\TestBackup.cs
 	$(CSC) $(CSC_FLAGS) /r:$(LIBRARY) /out:$@ $**
 
-$(O)\TestBit.exe: tests\TestBit\TestBit.cs
+$(O)\TestBit.exe: tests\TestBit\TestBit.cs tests\UnitTests\UnitTests.cs
 	$(CSC) $(CSC_FLAGS) /r:$(LIBRARY) /out:$@ $**
 
 $(O)\TestBlob.exe: tests\TestBlob\TestBlob.cs

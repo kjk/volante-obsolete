@@ -54,7 +54,7 @@ $(NACHODB): src/*.cs src/impl/*.cs
 $(OUTDIR)/TestBackup.exe: tests/TestBackup/TestBackup.cs
 	$(CSC) $(CSC_FLAGS) -t:exe -r:$(NACHODB) -out:$@ $<
 
-$(OUTDIR)/TestBit.exe: tests/TestBit/TestBit.cs
+$(OUTDIR)/TestBit.exe: tests/TestBit/TestBit.cs tests/UnitTests/UnitTests.cs
 	$(CSC) $(CSC_FLAGS) -t:exe -r:$(NACHODB) -out:$@ $<
 
 $(OUTDIR)/TestBlob.exe: tests/TestBlob/TestBlob.cs

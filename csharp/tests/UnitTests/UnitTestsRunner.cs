@@ -5,6 +5,7 @@ public class UnitTestsRunner
 {
     public static void Main(string[] args)
     {
+        UnitTestBit.Run(100);
         UnitTestXml.Run(100, false);
         UnitTestXml.Run(100, true);
         UnitTest1.Run(false);
