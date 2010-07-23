@@ -81,7 +81,7 @@ $(O)\TestConcur.exe: tests\TestConcur\TestConcur.cs tests\Tests.cs
 $(O)\TestEnumerator.exe: tests\TestEnumerator\TestEnumerator.cs tests\Tests.cs
 	$(CSC) $(CSC_FLAGS) /r:$(LIBRARY) /out:$@ $**
 
-$(O)\TestGC.exe: tests\TestGC\TestGC.cs
+$(O)\TestGC.exe: tests\TestGC\TestGC.cs tests\Tests.cs
 	$(CSC) $(CSC_FLAGS) /r:$(LIBRARY) /out:$@ $**
 
 $(O)\TestIndex.exe: tests\TestIndex\TestIndex.cs

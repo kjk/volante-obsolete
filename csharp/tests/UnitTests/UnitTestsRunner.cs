@@ -5,6 +5,9 @@ public class UnitTestsRunner
 {
     public static void Main(string[] args)
     {
+        TestGC.Run(100, false, false);
+        TestGC.Run(100, true, false);
+        TestGC.Run(100, true, true);
         TestEnumerator.Run(100, false);
         TestEnumerator.Run(100, true);
         TestConcur.Run(100);

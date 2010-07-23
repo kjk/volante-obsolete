@@ -78,6 +78,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\Tests.cs">
+      <Link>Tests.cs</Link>
+    </Compile>
     <Compile Include="TestGC.cs">
       <SubType>Code</SubType>
     </Compile>
