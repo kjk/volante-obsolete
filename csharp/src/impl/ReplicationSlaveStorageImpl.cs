@@ -145,7 +145,6 @@ namespace NachoDB.Impl
         public void run() 
         { 
             byte[] buf = new byte[Page.pageSize+PAGE_DATA_OFFSET];
-            byte[] page = new byte[Page.pageSize];
 
             while (listening) 
             { 

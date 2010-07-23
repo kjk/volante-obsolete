@@ -379,7 +379,6 @@ namespace NachoDB
             root.modelIndex = db.CreateFieldIndex<string,Car>("model", true);
             db.Root = root;
 
-            BitIndex<Car> index = root.optionIndex;
             DateTime start = DateTime.Now;
             long rnd = 1999;
             int i, n;        
@@ -1292,7 +1291,6 @@ namespace NachoDB
             Debug.Assert(i == nRecords);
             System.Console.WriteLine("Elapsed time for iteration through " + (nRecords * 2) + " records: " + (DateTime.Now - start));
 
-            Hashtable map = db.GetMemoryDump();
             Console.WriteLine("Memory usage");
             start = DateTime.Now;
             foreach (MemoryUsage usage in db.GetMemoryDump().Values) 
@@ -1424,7 +1422,6 @@ namespace NachoDB
             Debug.Assert(i == nRecords);
             System.Console.WriteLine("Elapsed time for iteration through " + (nRecords * 2) + " records: " + (DateTime.Now - start));
 
-            Hashtable map = db.GetMemoryDump();
             Console.WriteLine("Memory usage");
             start = DateTime.Now;
             foreach (MemoryUsage usage in db.GetMemoryDump().Values) 
@@ -1662,7 +1659,7 @@ namespace NachoDB
             db.Open(dbName);
             TestRaw root = (TestRaw)db.Root;
             if (root == null) 
-            { 
+            {
                 root = new TestRaw();
                 L1List list = null;
                 for (int i = 0; i < nListMembers; i++) 
@@ -1677,7 +1674,7 @@ namespace NachoDB
                 }
                 db.Root = root;
                 Console.WriteLine("Initialization of database completed");
-            } 
+            }
             L1List elem = root.list;
             for (int i = nListMembers; --i >= 0;) 
             { 
@@ -1690,6 +1687,10 @@ namespace NachoDB
             }
             Console.WriteLine("Database is OK");
             db.Close();
+            // shutup the compiler about TestRaw.nil not being used
+            UnitTests.AssertThat(root.nil == null);
+            root.nil = 3;
+            UnitTests.AssertThat(root.nil != null);
         }
     }
 
