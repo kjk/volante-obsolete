@@ -84,6 +84,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\Tests.cs">
+      <Link>Tests.cs</Link>
+    </Compile>
     <Compile Include="TestXML.cs">
       <SubType>Code</SubType>
     </Compile>

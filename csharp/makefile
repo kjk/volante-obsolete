@@ -99,7 +99,7 @@ $(OUTDIR)/TestTimeSeries.exe: tests/TestTimeSeries/TestTimeSeries.cs
 $(OUTDIR)/TestTtree.exe: tests/TestTtree/TestTtree.cs
 	$(CSC) $(CSC_FLAGS) -t:exe -r:$(NACHODB) -out:$@ $<
 
-$(OUTDIR)/TestXML.exe: tests/TestXML/TestXML.cs
+$(OUTDIR)/TestXML.exe: tests/TestXML/TestXML.cs tests/Tests.cs
 	$(CSC) $(CSC_FLAGS) -t:exe -r:$(NACHODB) -out:$@ $<
 
 $(OUTDIR)/UnitTestsRunner.exe: tests/UnitTests/UnitTestsRunner.cs tests/Tests.cs

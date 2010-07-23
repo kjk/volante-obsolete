@@ -108,7 +108,7 @@ $(O)\TestTimeSeries.exe: tests\TestTimeSeries\TestTimeSeries.cs
 $(O)\TestTtree.exe: tests\TestTtree\TestTtree.cs
 	$(CSC) $(CSC_FLAGS) /r:$(LIBRARY) /out:$@ $**
 
-$(O)\TestXML.exe: tests\TestXML\TestXML.cs
+$(O)\TestXML.exe: tests\TestXML\TestXML.cs tests\Tests.cs
 	$(CSC) $(CSC_FLAGS) /r:$(LIBRARY) /out:$@ $**
 
 $(O)\TestReplic.exe: tests\TestReplic\TestReplic.cs
