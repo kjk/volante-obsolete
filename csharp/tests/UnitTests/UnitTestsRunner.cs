@@ -5,6 +5,8 @@ public class UnitTestsRunner
 {
     public static void Main(string[] args)
     {
+        TestCompoundIndex.Run(false, 100);
+        TestCompoundIndex.Run(true, 100);
         TestBit.Run(100);
         UnitTests.SafeDeleteFile(TestBlob.dbName);
         TestBlob.Run();

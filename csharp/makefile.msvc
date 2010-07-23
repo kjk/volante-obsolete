@@ -72,7 +72,7 @@ $(O)\TestBit.exe: tests\TestBit\TestBit.cs tests\Tests.cs
 $(O)\TestBlob.exe: tests\TestBlob\TestBlob.cs tests\Tests.cs
 	$(CSC) $(CSC_FLAGS) /r:$(LIBRARY) /out:$@ $**
 
-$(O)\TestCompoundIndex.exe: tests\TestCompoundIndex\TestCompoundIndex.cs
+$(O)\TestCompoundIndex.exe: tests\TestCompoundIndex\TestCompoundIndex.cs tests\Tests.cs
 	$(CSC) $(CSC_FLAGS) /r:$(LIBRARY) /out:$@ $**
 
 $(O)\TestConcur.exe: tests\TestConcur\TestConcur.cs
