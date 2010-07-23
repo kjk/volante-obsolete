@@ -4108,7 +4108,6 @@ namespace NachoDB.Impl
                     {
                         Type elemType = fd.field.FieldType.GetElementType();
                         Array arr = Array.CreateInstance(elemType, len);
-                        ClassDescriptor valueDesc = fd.valueDesc;
                         for (int j = 0; j < len; j++) 
                         { 
                             object elem;

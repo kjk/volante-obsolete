@@ -182,11 +182,12 @@ namespace NachoDB.Impl
         { 
             int           i;
             List<V>       list;
-            Ttree<K,V>    tree;
+            //Ttree<K,V>    tree;
 
-            internal TtreeEnumerator(Ttree<K,V> tree, List<V> list) 
+            //internal TtreeEnumerator(Ttree<K,V> tree, List<V> list) 
+            internal TtreeEnumerator(List<V> list) 
             { 
-                this.tree = tree;
+                //this.tree = tree;
                 this.list = list;
                 i = -1;
             }
@@ -268,10 +269,11 @@ namespace NachoDB.Impl
         { 
             List<V> list = new List<V>();
             if (root != null) 
-            { 
+            {
                 root.find(comparator, from, fromKind, till, tillKind, list);
-            }            
-            return new TtreeEnumerator(this, list);
+            }
+            //return new TtreeEnumerator(this, list);
+            return new TtreeEnumerator(list);
         }
     }
 }

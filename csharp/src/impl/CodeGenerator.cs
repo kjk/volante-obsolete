@@ -436,8 +436,9 @@ namespace NachoDB.Impl
             Type serializerInterface = typeof(GeneratedSerializer);
             serializerType.AddInterfaceImplementation(serializerInterface);
             //Add a constructor
-            ConstructorBuilder constructor =
-                serializerType.DefineDefaultConstructor(MethodAttributes.Public);
+            //TODO: wasn't used, figure out if was needed
+            //ConstructorBuilder constructor =
+            //    serializerType.DefineDefaultConstructor(MethodAttributes.Public);
 
             MethodInfo packInterface = serializerInterface.GetMethod("pack");
             MethodBuilder packBuilder = GetBuilder(serializerType, packInterface);
@@ -476,8 +477,9 @@ namespace NachoDB.Impl
             wrapperType.AddInterfaceImplementation(typeof(PersistentWrapper));
 
             //Add a constructor
-            ConstructorBuilder constructor =
-                wrapperType.DefineDefaultConstructor(MethodAttributes.Public);
+            //TODO: wasn't used, figure out if was needed
+            //ConstructorBuilder constructor =
+            //    wrapperType.DefineDefaultConstructor(MethodAttributes.Public);
 
             PropertyInfo[] properties = type.GetProperties(BindingFlags.Public|BindingFlags.NonPublic|BindingFlags.Instance);
             for (int i = 0; i < properties.Length; i++) 
@@ -610,8 +612,6 @@ namespace NachoDB.Impl
         private MethodInfo getStorage = typeof(IPersistent).GetProperty("Storage").GetGetMethod();
         private MethodInfo getByOid = typeof(Storage).GetMethod("GetObjectByOID");
         private MethodInfo makePersistent = typeof(Storage).GetMethod("MakePersistent");
-
-        private int[] arrayOfInt = new int[0];
 
         private ModuleBuilder dynamicModule;
         private int           counter;
