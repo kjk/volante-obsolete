@@ -5,6 +5,8 @@ public class UnitTestsRunner
 {
     public static void Main(string[] args)
     {
+        TestEnumerator.Run(100, false);
+        TestEnumerator.Run(100, true);
         TestConcur.Run(100);
         TestCompoundIndex.Run(false, 100);
         TestCompoundIndex.Run(true, 100);

@@ -66,7 +66,7 @@ $(OUTDIR)/TestCompoundIndex.exe: tests/TestCompoundIndex/TestCompoundIndex.cs te
 $(OUTDIR)/TestConcur.exe: tests/TestConcur/TestConcur.cs tests/Tests.cs
 	$(CSC) $(CSC_FLAGS) -t:exe -r:$(NACHODB) -out:$@ $<
 
-$(OUTDIR)/TestEnumerator.exe: tests/TestEnumerator/TestEnumerator.cs
+$(OUTDIR)/TestEnumerator.exe: tests/TestEnumerator/TestEnumerator.cs tests/Tests.cs
 	$(CSC) $(CSC_FLAGS) -t:exe -r:$(NACHODB) -out:$@ $<
 
 $(OUTDIR)/TestGC.exe: tests/TestGC/TestGC.cs

@@ -20,7 +20,6 @@ del *.dbs
 %O%\TestEnumerator
 
 del *.dbs
-%O%\TestEnumerator altbtree
 %O%\TestCompoundIndex
 %O%\TestRtree
 %O%\TestR2
