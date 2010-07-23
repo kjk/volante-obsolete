@@ -52,79 +52,79 @@ $(NACHODB): src/*.cs src/impl/*.cs
 	$(CSC) $(CSC_FLAGS) -t:library -out:$(NACHODB) src/*.cs src/impl/*.cs
 
 $(OUTDIR)/TestBackup.exe: tests/TestBackup/TestBackup.cs
-	$(CSC) $(CSC_FLAGS) -t:exe -r:$(NACHODB) -out:$@ $<
+	$(CSC) $(CSC_FLAGS) -t:exe -r:$(NACHODB) -out:$@ $^
 
 $(OUTDIR)/TestBit.exe: tests/TestBit/TestBit.cs tests/Tests.cs
-	$(CSC) $(CSC_FLAGS) -t:exe -r:$(NACHODB) -out:$@ $<
+	$(CSC) $(CSC_FLAGS) -t:exe -r:$(NACHODB) -out:$@ $^
 
 $(OUTDIR)/TestBlob.exe: tests/TestBlob/TestBlob.cs tests/Tests.cs
-	$(CSC) $(CSC_FLAGS) -t:exe -r:$(NACHODB) -out:$@ $<
+	$(CSC) $(CSC_FLAGS) -t:exe -r:$(NACHODB) -out:$@ $^
 
 $(OUTDIR)/TestCompoundIndex.exe: tests/TestCompoundIndex/TestCompoundIndex.cs tests/Tests.cs
-	$(CSC) $(CSC_FLAGS) -t:exe -r:$(NACHODB) -out:$@ $<
+	$(CSC) $(CSC_FLAGS) -t:exe -r:$(NACHODB) -out:$@ $^
 
 $(OUTDIR)/TestConcur.exe: tests/TestConcur/TestConcur.cs tests/Tests.cs
-	$(CSC) $(CSC_FLAGS) -t:exe -r:$(NACHODB) -out:$@ $<
+	$(CSC) $(CSC_FLAGS) -t:exe -r:$(NACHODB) -out:$@ $^
 
 $(OUTDIR)/TestEnumerator.exe: tests/TestEnumerator/TestEnumerator.cs tests/Tests.cs
-	$(CSC) $(CSC_FLAGS) -t:exe -r:$(NACHODB) -out:$@ $<
+	$(CSC) $(CSC_FLAGS) -t:exe -r:$(NACHODB) -out:$@ $^
 
 $(OUTDIR)/TestGC.exe: tests/TestGC/TestGC.cs tests/Tests.cs
-	$(CSC) $(CSC_FLAGS) -t:exe -r:$(NACHODB) -out:$@ $<
+	$(CSC) $(CSC_FLAGS) -t:exe -r:$(NACHODB) -out:$@ $^
 
 $(OUTDIR)/TestIndex.exe: tests/TestIndex/TestIndex.cs tests/Tests.cs
-	$(CSC) $(CSC_FLAGS) -t:exe -r:$(NACHODB) -out:$@ $<
+	$(CSC) $(CSC_FLAGS) -t:exe -r:$(NACHODB) -out:$@ $^
 
 $(OUTDIR)/TestIndex2.exe: tests/TestIndex2/TestIndex2.cs tests/Tests.cs
-	$(CSC) $(CSC_FLAGS) -t:exe -r:$(NACHODB) -out:$@ $<
+	$(CSC) $(CSC_FLAGS) -t:exe -r:$(NACHODB) -out:$@ $^
 
 $(OUTDIR)/TestList.exe: tests/TestList/TestList.cs tests/Tests.cs
-	$(CSC) $(CSC_FLAGS) -t:exe -r:$(NACHODB) -out:$@ $<
+	$(CSC) $(CSC_FLAGS) -t:exe -r:$(NACHODB) -out:$@ $^
 
 $(OUTDIR)/TestR2.exe: tests/TestR2/TestR2.cs tests/Tests.cs
-	$(CSC) $(CSC_FLAGS) -t:exe -r:$(NACHODB) -out:$@ $<
+	$(CSC) $(CSC_FLAGS) -t:exe -r:$(NACHODB) -out:$@ $^
 
 $(OUTDIR)/TestRaw.exe: tests/TestRaw/TestRaw.cs tests/Tests.cs
-	$(CSC) $(CSC_FLAGS) -t:exe -r:$(NACHODB) -out:$@ $<
+	$(CSC) $(CSC_FLAGS) -t:exe -r:$(NACHODB) -out:$@ $^
 
 $(OUTDIR)/TestReplic.exe: tests/TestReplic/TestReplic.cs
-	$(CSC) $(CSC_FLAGS) -t:exe -r:$(NACHODB) -out:$@ $<
+	$(CSC) $(CSC_FLAGS) -t:exe -r:$(NACHODB) -out:$@ $^
 
 $(OUTDIR)/TestRtree.exe: tests/TestRtree/TestRtree.cs tests/Tests.cs
-	$(CSC) $(CSC_FLAGS) -t:exe -r:$(NACHODB) -out:$@ $<
+	$(CSC) $(CSC_FLAGS) -t:exe -r:$(NACHODB) -out:$@ $^
 
 $(OUTDIR)/TestTimeSeries.exe: tests/TestTimeSeries/TestTimeSeries.cs tests/Tests.cs
-	$(CSC) $(CSC_FLAGS) -t:exe -r:$(NACHODB) -out:$@ $<
+	$(CSC) $(CSC_FLAGS) -t:exe -r:$(NACHODB) -out:$@ $^
 
 $(OUTDIR)/TestTtree.exe: tests/TestTtree/TestTtree.cs tests/Tests.cs
-	$(CSC) $(CSC_FLAGS) -t:exe -r:$(NACHODB) -out:$@ $<
+	$(CSC) $(CSC_FLAGS) -t:exe -r:$(NACHODB) -out:$@ $^
 
 $(OUTDIR)/TestXML.exe: tests/TestXML/TestXML.cs tests/Tests.cs
-	$(CSC) $(CSC_FLAGS) -t:exe -r:$(NACHODB) -out:$@ $<
+	$(CSC) $(CSC_FLAGS) -t:exe -r:$(NACHODB) -out:$@ $^
 
 $(OUTDIR)/UnitTestsRunner.exe: tests/UnitTests/UnitTestsRunner.cs tests/Tests.cs
-	$(CSC) $(CSC_FLAGS) -t:exe -r:$(NACHODB) -out:$@ $<
+	$(CSC) $(CSC_FLAGS) -t:exe -r:$(NACHODB) -out:$@ $^
 
 $(OUTDIR)/Guess.exe: examples/Guess/Guess.cs
-	$(CSC) $(CSC_FLAGS) -t:exe -r:$(NACHODB) -out:$@ $<
+	$(CSC) $(CSC_FLAGS) -t:exe -r:$(NACHODB) -out:$@ $^
 
 $(OUTDIR)/IpCountry.exe: examples/IpCountry/IpCountry.cs
-	$(CSC) $(CSC_FLAGS) -t:exe -r:$(NACHODB) -out:$@ $<
+	$(CSC) $(CSC_FLAGS) -t:exe -r:$(NACHODB) -out:$@ $^
 
 $(OUTDIR)/PropGuess.exe: examples/PropGuess/Guess.cs
-	$(CSC) $(CSC_FLAGS) -t:exe -r:$(NACHODB) -out:$@ $<
+	$(CSC) $(CSC_FLAGS) -t:exe -r:$(NACHODB) -out:$@ $^
 
 $(OUTDIR)/TestLink.exe: examples/TestLink/TestLink.cs
-	$(CSC) $(CSC_FLAGS) -t:exe -r:$(NACHODB) -out:$@ $<
+	$(CSC) $(CSC_FLAGS) -t:exe -r:$(NACHODB) -out:$@ $^
 
 $(OUTDIR)/TestSOD.exe: examples/TestSOD/TestSOD.cs
-	$(CSC) $(CSC_FLAGS) -t:exe -r:$(NACHODB) -out:$@ $<
+	$(CSC) $(CSC_FLAGS) -t:exe -r:$(NACHODB) -out:$@ $^
 
 $(OUTDIR)/TestSSD.exe: examples/TestSSD/TestSSD.cs
-	$(CSC) $(CSC_FLAGS) -t:exe -r:$(NACHODB) -out:$@ $<
+	$(CSC) $(CSC_FLAGS) -t:exe -r:$(NACHODB) -out:$@ $^
 
 $(OUTDIR)/TransparentGuess.exe: examples/TransparentGuess/Guess.cs
-	$(CSC) $(CSC_FLAGS) -t:exe -r:$(NACHODB) -out:$@ $<
+	$(CSC) $(CSC_FLAGS) -t:exe -r:$(NACHODB) -out:$@ $^
 
 clean:
 	rm -rf bin
