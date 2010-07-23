@@ -8,4 +8,3 @@ public class TestTimeSeriesRunner
         TestTimeSeries.Run(1000000);
     }
 }
-

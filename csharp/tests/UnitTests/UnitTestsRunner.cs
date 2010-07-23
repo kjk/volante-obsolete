@@ -5,6 +5,8 @@ public class UnitTestsRunner
 {
     public static void Main(string[] args)
     {
+        TestTtree.Run(100);
+
         TestTimeSeries.Run(100);
         TestRtree.Run(100);
 
