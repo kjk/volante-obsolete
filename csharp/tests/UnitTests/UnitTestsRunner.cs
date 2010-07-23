@@ -5,6 +5,8 @@ public class UnitTestsRunner
 {
     public static void Main(string[] args)
     {
+        TestIndex2.Run(100);
+
         TestIndex.Run(100, false, false, false);
         TestIndex.Run(100, true, false, false);
         TestIndex.Run(100, true, false, true);

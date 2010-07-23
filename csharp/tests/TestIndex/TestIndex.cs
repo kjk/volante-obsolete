@@ -32,3 +32,4 @@ public class TestIndexRunner
         TestIndex.Run(100000, altBtree, inmemory, serializableTransaction);
     }    
 }
+    

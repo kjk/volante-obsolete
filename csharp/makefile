@@ -75,7 +75,7 @@ $(OUTDIR)/TestGC.exe: tests/TestGC/TestGC.cs tests/Tests.cs
 $(OUTDIR)/TestIndex.exe: tests/TestIndex/TestIndex.cs tests/Tests.cs
 	$(CSC) $(CSC_FLAGS) -t:exe -r:$(NACHODB) -out:$@ $<
 
-$(OUTDIR)/TestIndex2.exe: tests/TestIndex2/TestIndex2.cs
+$(OUTDIR)/TestIndex2.exe: tests/TestIndex2/TestIndex2.cs tests/Tests.cs
 	$(CSC) $(CSC_FLAGS) -t:exe -r:$(NACHODB) -out:$@ $<
 
 $(OUTDIR)/TestList.exe: tests/TestList/TestList.cs
