@@ -102,7 +102,7 @@ $(O)\TestRaw.exe: tests\TestRaw\TestRaw.cs tests\Tests.cs
 $(O)\TestRtree.exe: tests\TestRtree\TestRtree.cs tests\Tests.cs
 	$(CSC) $(CSC_FLAGS) /r:$(LIBRARY) /out:$@ $**
 
-$(O)\TestTimeSeries.exe: tests\TestTimeSeries\TestTimeSeries.cs
+$(O)\TestTimeSeries.exe: tests\TestTimeSeries\TestTimeSeries.cs tests\Tests.cs
 	$(CSC) $(CSC_FLAGS) /r:$(LIBRARY) /out:$@ $**
 
 $(O)\TestTtree.exe: tests\TestTtree\TestTtree.cs
