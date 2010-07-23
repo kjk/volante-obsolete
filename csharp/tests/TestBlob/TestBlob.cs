@@ -1,12 +1,12 @@
 using System;
 using NachoDB;
 
-public class TestBlob
+public class TestBlobRunner
 {
     public static void Main(string[] args)
     {
-        UnitTests.SafeDeleteFile(UnitTestBlob.dbName);
-        UnitTestBlob.Run();
-        UnitTestBlob.Run();
+        UnitTests.SafeDeleteFile(TestBlob.dbName);
+        TestBlob.Run();
+        TestBlob.Run();
     }
 }

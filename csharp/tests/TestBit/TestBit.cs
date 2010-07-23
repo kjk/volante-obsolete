@@ -1,11 +1,10 @@
 using System;
 using NachoDB;
 
-public class TestBit 
+public class TestBitRunner
 { 
     static public void Main(string[] args) 
     {
-        UnitTestBit.Run(1000000);
+        TestBit.Run(1000000);
     }
 }
-

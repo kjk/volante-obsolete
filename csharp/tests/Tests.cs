@@ -57,7 +57,7 @@ namespace NachoDB
         }
     }
 
-    public class UnitTest1
+    public class Test1
     {
         public static void CheckStrings(Index<string, StringInt> root, string[] strs)
         {
@@ -101,7 +101,7 @@ namespace NachoDB
         }
     }
 
-    public class UnitTest2
+    public class Test2
     {
         public class Root : Persistent
         {
@@ -193,7 +193,7 @@ namespace NachoDB
 
     }
 
-    public class UnitTestXml
+    public class TestXml
     {
         class Record : Persistent
         {
@@ -277,7 +277,7 @@ namespace NachoDB
         }
     }
 
-    public class UnitTestBit
+    public class TestBit
     {
         [Flags]
         public enum Options 
@@ -407,7 +407,7 @@ namespace NachoDB
         }
     }
 
-    public class UnitTestBlob 
+    public class TestBlob 
     {
         public static string FindSrcImplDirectory()
         {

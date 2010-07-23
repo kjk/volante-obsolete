@@ -78,10 +78,12 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\Tests.cs">
+      <Link>Tests.cs</Link>
+    </Compile>
     <Compile Include="TestBit.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="UnitTests.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

@@ -54,10 +54,10 @@ $(NACHODB): src/*.cs src/impl/*.cs
 $(OUTDIR)/TestBackup.exe: tests/TestBackup/TestBackup.cs
 	$(CSC) $(CSC_FLAGS) -t:exe -r:$(NACHODB) -out:$@ $<
 
-$(OUTDIR)/TestBit.exe: tests/TestBit/TestBit.cs tests/UnitTests/UnitTests.cs
+$(OUTDIR)/TestBit.exe: tests/TestBit/TestBit.cs tests/Tests.cs
 	$(CSC) $(CSC_FLAGS) -t:exe -r:$(NACHODB) -out:$@ $<
 
-$(OUTDIR)/TestBlob.exe: tests/TestBlob/TestBlob.cs tests/UnitTests/UnitTests.cs
+$(OUTDIR)/TestBlob.exe: tests/TestBlob/TestBlob.cs tests/Tests.cs
 	$(CSC) $(CSC_FLAGS) -t:exe -r:$(NACHODB) -out:$@ $<
 
 $(OUTDIR)/TestCompoundIndex.exe: tests/TestCompoundIndex/TestCompoundIndex.cs
@@ -102,7 +102,7 @@ $(OUTDIR)/TestTtree.exe: tests/TestTtree/TestTtree.cs
 $(OUTDIR)/TestXML.exe: tests/TestXML/TestXML.cs
 	$(CSC) $(CSC_FLAGS) -t:exe -r:$(NACHODB) -out:$@ $<
 
-$(OUTDIR)/UnitTestsRunner.exe: tests/UnitTests/UnitTests.cs tests/UnitTests/UnitTestsRunner.cs
+$(OUTDIR)/UnitTestsRunner.exe: tests/UnitTests/UnitTestsRunner.cs tests/Tests.cs
 	$(CSC) $(CSC_FLAGS) -t:exe -r:$(NACHODB) -out:$@ $<
 
 $(OUTDIR)/Guess.exe: examples/Guess/Guess.cs
