@@ -391,6 +391,11 @@ namespace NachoDB
                 rnd = (3141592621L*rnd + 2718281829L) % 1000000007L;
                 Options options = (Options)rnd;
                 Car car = new Car();
+                car.hps = i;
+                car.maxSpeed = car.hps * 10;
+                car.timeTo100 = 12;
+                car.vendor = "Toyota";
+                car.specification = "unknown";
                 car.model = Convert.ToString(rnd);
                 car.options = options;
                 root.modelIndex.Put(car);
