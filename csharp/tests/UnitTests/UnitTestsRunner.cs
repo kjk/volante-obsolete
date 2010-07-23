@@ -5,6 +5,10 @@ public class UnitTestsRunner
 {
     public static void Main(string[] args)
     {
+        UnitTests.SafeDeleteFile(TestRaw.dbName);
+        TestRaw.Run();
+        TestRaw.Run();
+
         TestR2.Run(1000, false);
         TestR2.Run(1000, true);
 

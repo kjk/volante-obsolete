@@ -81,10 +81,10 @@ $(OUTDIR)/TestIndex2.exe: tests/TestIndex2/TestIndex2.cs tests/Tests.cs
 $(OUTDIR)/TestList.exe: tests/TestList/TestList.cs tests/Tests.cs
 	$(CSC) $(CSC_FLAGS) -t:exe -r:$(NACHODB) -out:$@ $<
 
-$(OUTDIR)/TestR2.exe: tests/TestR2/TestR2.cs
+$(OUTDIR)/TestR2.exe: tests/TestR2/TestR2.cs tests/Tests.cs
 	$(CSC) $(CSC_FLAGS) -t:exe -r:$(NACHODB) -out:$@ $<
 
-$(OUTDIR)/TestRaw.exe: tests/TestRaw/TestRaw.cs
+$(OUTDIR)/TestRaw.exe: tests/TestRaw/TestRaw.cs tests/Tests.cs
 	$(CSC) $(CSC_FLAGS) -t:exe -r:$(NACHODB) -out:$@ $<
 
 $(OUTDIR)/TestReplic.exe: tests/TestReplic/TestReplic.cs
