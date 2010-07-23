@@ -2,7 +2,6 @@ set save_path=%path%
 set path=bin;%path%
 set O=bin\dbg
 
-del *.dbs
 %O%\UnitTestsRunner
 
 %O%\TestIndex

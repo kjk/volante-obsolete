@@ -90,7 +90,7 @@ $(O)\TestIndex.exe: tests\TestIndex\TestIndex.cs tests\Tests.cs
 $(O)\TestIndex2.exe: tests\TestIndex2\TestIndex2.cs tests\Tests.cs
 	$(CSC) $(CSC_FLAGS) /r:$(LIBRARY) /out:$@ $**
 
-$(O)\TestList.exe: tests\TestList\TestList.cs
+$(O)\TestList.exe: tests\TestList\TestList.cs tests\Tests.cs
 	$(CSC) $(CSC_FLAGS) /r:$(LIBRARY) /out:$@ $**
 
 $(O)\TestR2.exe: tests\TestR2\TestR2.cs
