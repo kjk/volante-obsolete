@@ -84,7 +84,7 @@ $(O)\TestEnumerator.exe: tests\TestEnumerator\TestEnumerator.cs tests\Tests.cs
 $(O)\TestGC.exe: tests\TestGC\TestGC.cs tests\Tests.cs
 	$(CSC) $(CSC_FLAGS) /r:$(LIBRARY) /out:$@ $**
 
-$(O)\TestIndex.exe: tests\TestIndex\TestIndex.cs
+$(O)\TestIndex.exe: tests\TestIndex\TestIndex.cs tests\Tests.cs
 	$(CSC) $(CSC_FLAGS) /r:$(LIBRARY) /out:$@ $**
 
 $(O)\TestIndex2.exe: tests\TestIndex2\TestIndex2.cs

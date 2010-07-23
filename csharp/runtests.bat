@@ -5,17 +5,11 @@ set O=bin\dbg
 del *.dbs
 %O%\UnitTestsRunner
 
-del *.dbs
 %O%\TestIndex
-
-del *.dbs
 %O%\TestIndex altbtree
-
-del *.dbs
 %O%\TestIndex altbtree serializable
-
-del *.dbs
 %O%\TestIndex inmemory
+
 %O%\TestIndex2
 %O%\TestEnumerator
 
