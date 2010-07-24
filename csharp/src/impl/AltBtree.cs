@@ -1929,9 +1929,6 @@ namespace NachoDB.Impl
                 }
                 BtreePage page = tree.root;
                 int h = tree.height;
-                this.from = from;
-                this.till = till;
-                this.order = order;
                 
                 pageStack = new BtreePage[h];
                 posStack = new int[h];
