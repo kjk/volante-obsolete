@@ -195,6 +195,7 @@ namespace NachoDB
 
     }
 
+#if !OMIT_XML
     public class TestXml
     {
         class Record : Persistent
@@ -303,6 +304,7 @@ namespace NachoDB
             //System.Console.WriteLine("Elapsed time for performing " + nRecords * 2 + " index searches: " + (DateTime.Now - start));
         }
     }
+#endif
 
     public class TestBit
     {

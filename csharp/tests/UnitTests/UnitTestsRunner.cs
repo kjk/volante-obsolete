@@ -38,8 +38,11 @@ public class UnitTestsRunner
         UnitTests.SafeDeleteFile(TestBlob.dbName);
         TestBlob.Run();
         TestBlob.Run();
+#if !OMIT_XML
         TestXml.Run(100, false);
         TestXml.Run(100, true);
+#endif
+
         Test1.Run(false);
         Test1.Run(true);
         Test2.Run(false);

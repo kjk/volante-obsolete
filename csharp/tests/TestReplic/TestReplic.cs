@@ -2,6 +2,16 @@ using System;
 using NachoDB;
 using System.Diagnostics;
 
+#if OMIT_REPLICATION
+public class TestReplic 
+{ 
+    static public void Main(string[] args)
+    {
+        Console.WriteLine("Replication not present in this build");
+    }
+    
+}
+#else
 public class TestReplic 
 { 
     class Record : Persistent { 
@@ -15,11 +25,13 @@ public class TestReplic
     const int asyncBufSize = 1024*1024;
     const int pagePoolSize = 32*1024*1024;
 
-    private static void usage() { 
-        Console.WriteLine("Usage: java TestReplic (master|slave) [port] [-async] [-ack]");
+    private static void usage()
+    { 
+        Console.WriteLine("Usage: TestReplic (master|slave) [port] [-async] [-ack]");
     }
 
-    static public void Main(string[] args) {    
+    static public void Main(string[] args)
+    {    
         int i;
         if (args.Length < 1) {
             usage();
@@ -104,3 +116,5 @@ public class TestReplic
         }
     }
 }
+#endif
+

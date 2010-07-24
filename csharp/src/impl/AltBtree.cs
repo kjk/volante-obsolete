@@ -7,7 +7,6 @@ namespace NachoDB.Impl
     using System.Collections.Generic;
     using Link=Link<IPersistent>;
 
-    
     class AltBtree<K,V> : PersistentCollection<V>, Index<K,V> where V:class, IPersistent
     {
         public Type KeyType

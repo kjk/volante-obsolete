@@ -113,7 +113,9 @@ namespace NachoDB.Impl
 
     interface Btree : IPersistent {
         int  markTree();
+#if !OMIT_XML
         void export(XMLExporter exporter);
+#endif
         int  insert(Key key, IPersistent obj, bool overwrite);
         ClassDescriptor.FieldType FieldType {get;}
         ClassDescriptor.FieldType[] FieldTypes {get;}
@@ -332,7 +334,7 @@ namespace NachoDB.Impl
             }
             return emptySelection;
         }
-		
+
         public V[] PrefixSearch(string key) 
         { 
             if (ClassDescriptor.FieldType.tpString != type) 
@@ -422,17 +424,17 @@ namespace NachoDB.Impl
             Modify();
             return 0;
         }
-		
-        public virtual void  Remove(Key key, V obj)
+
+        public virtual void Remove(Key key, V obj)
         {
             remove(new BtreeKey(checkKey(key), obj.Oid));
         }
-		
-        public virtual void  Remove(K key, V obj)
+
+        public virtual void Remove(K key, V obj)
         {
             remove(new BtreeKey(KeyBuilder.getKeyFromObject(key), obj.Oid));    
         }
- 		
+ 
         internal virtual void remove(BtreeKey rem)
         {
             StorageImpl db = (StorageImpl) Storage;
@@ -476,7 +478,7 @@ namespace NachoDB.Impl
             updateCounter += 1;
             Modify();
         }
-		
+
         public virtual V Remove(Key key)
         {
             if (!unique)
@@ -487,7 +489,7 @@ namespace NachoDB.Impl
             StorageImpl db = (StorageImpl)Storage;
             remove(rk);
             return (V)db.lookupObject(rk.oldOid, null);
-        }		
+        }
             
         public virtual V RemoveKey(K key)
         {
@@ -498,7 +500,7 @@ namespace NachoDB.Impl
         {
             return nElems;
         }
-		
+
         public override void Clear() 
         {
             if (root != 0)
@@ -511,7 +513,7 @@ namespace NachoDB.Impl
                 Modify();
             }
         }
-		
+
         public virtual V[] ToArray()
         {
             V[] arr = new V[nElems];
@@ -521,7 +523,7 @@ namespace NachoDB.Impl
             }
             return arr;
         }
-		
+
         public virtual Array ToArray(Type elemType)
         {
             Array arr = Array.CreateInstance(elemType, nElems);
@@ -531,7 +533,7 @@ namespace NachoDB.Impl
             }
             return arr;
         }
-		
+
         public override void Deallocate()
         {
             if (root != 0)
@@ -548,7 +550,7 @@ namespace NachoDB.Impl
             {
                 BtreePage.exportPage((StorageImpl) Storage, exporter, root, type, height);
             }
-        }		
+        }
 #endif
 
         public int markTree() 
@@ -567,24 +569,24 @@ namespace NachoDB.Impl
         {
             int offs = BtreePage.firstKeyOffs + pos*ClassDescriptor.Sizeof[(int)type];
             byte[] data = pg.data;
-			
+
             switch (type)
             {
                 case ClassDescriptor.FieldType.tpBoolean: 
                     return data[offs] != 0;
-				
+
                 case ClassDescriptor.FieldType.tpSByte: 
                     return (sbyte)data[offs];
                    
                 case ClassDescriptor.FieldType.tpByte: 
                     return data[offs];
- 				
+ 
                 case ClassDescriptor.FieldType.tpShort: 
                     return Bytes.unpack2(data, offs);
 
                 case ClassDescriptor.FieldType.tpUShort: 
                     return (ushort)Bytes.unpack2(data, offs);
-				
+
                 case ClassDescriptor.FieldType.tpChar: 
                     return (char) Bytes.unpack2(data, offs);
 
@@ -600,7 +602,7 @@ namespace NachoDB.Impl
                 case ClassDescriptor.FieldType.tpOid: 
                 case ClassDescriptor.FieldType.tpObject: 
                     return db.lookupObject(Bytes.unpack4(data, offs), null);
- 				
+ 
                 case ClassDescriptor.FieldType.tpLong: 
                     return Bytes.unpack8(data, offs);
 
@@ -609,7 +611,7 @@ namespace NachoDB.Impl
 
                 case ClassDescriptor.FieldType.tpULong: 
                     return (ulong)Bytes.unpack8(data, offs);
- 				
+ 
                 case ClassDescriptor.FieldType.tpFloat: 
                     return Bytes.unpackF4(data, offs);
 
@@ -895,7 +897,6 @@ namespace NachoDB.Impl
                 BtreePage.getKeyStrOffs(pg, i) + BtreePage.firstKeyOffs, 
                 BtreePage.getKeyStrSize(pg, i));
         }
-
 
         class BtreeSelectionIterator : IEnumerator<V>, IEnumerable<V>
         { 
@@ -1701,7 +1702,6 @@ namespace NachoDB.Impl
                 db.pool.unfix(pg);
             }
             
- 
             protected StorageImpl     db;
             protected int[]           pageStack;
             protected int[]           posStack;
