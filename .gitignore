@@ -3,6 +3,7 @@
 *bin/
 *obj/
 csharp/test.xml
+csharp/testalt.xml
 csharp/doc/perst.xml
 *.psess
 *.vsp

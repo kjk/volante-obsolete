@@ -42,8 +42,11 @@ tests: nachodb $(TESTS)
 
 examples: nachodb $(EXAMPLES)
 
-runtests: force
+runtests: tests force
 	./runtests.sh $(OUTDIR)
+
+runtestslong: tests force
+	./runtestslong.sh $(OUTDIR)
 
 $(OUTDIR):
 	@mkdir -p $(OUTDIR)
