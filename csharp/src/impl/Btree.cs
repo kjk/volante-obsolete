@@ -162,7 +162,6 @@ namespace NachoDB.Impl
 
         public override void OnLoad()
         {
-
              if (type != ClassDescriptor.getTypeCode(typeof(K))) {
                  throw new StorageError(StorageError.ErrorCode.INCOMPATIBLE_KEY_TYPE, typeof(K));
             }
@@ -1717,7 +1716,6 @@ namespace NachoDB.Impl
             protected int             updateCounter;
         }
 
-
         class BtreeDictionarySelectionIterator : BtreeSelectionIterator, IDictionaryEnumerator 
         { 
             internal BtreeDictionarySelectionIterator(Btree<K,V> tree, Key from, Key till, IterationOrder order) 
@@ -1785,7 +1783,6 @@ namespace NachoDB.Impl
             protected object key;
         }
 
-  
         public IEnumerator<V> GetEnumerator(Key from, Key till, IterationOrder order) 
         {
             return Range(from, till, order).GetEnumerator();
