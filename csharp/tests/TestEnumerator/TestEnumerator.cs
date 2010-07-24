@@ -5,8 +5,14 @@ public class TestEnumeratorRunner
 {
     static public void Main(string[] args) 
     {
-        TestEnumerator.Run(1000, false);
-        TestEnumerator.Run(1000, true);
+        int n = 1000;
+        for (int i = 0; i < args.Length; i++) 
+        {
+            Int32.TryParse(args[i], out n);
+        }
+
+        TestEnumerator.Run(n, false);
+        TestEnumerator.Run(n, true);
     }
 }
 

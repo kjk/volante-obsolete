@@ -10,23 +10,23 @@ set O=bin\dbg
 %O%\TestIndex inmemory
 
 %O%\TestIndex2
-%O%\TestEnumerator 200
+%O%\TestEnumerator 1000
 
 %O%\TestCompoundIndex
-%O%\TestRtree 20000
-%O%\TestR2 20000
+%O%\TestRtree 100000
+%O%\TestR2 1000000
 %O%\TestTtree
 %O%\TestRaw
-%O%\TestGC 20000
-%O%\TestGC 20000 background
-%O%\TestGC 20000 background altbtree
+%O%\TestGC 1000000
+%O%\TestGC 1000000 background
+%O%\TestGC 1000000 background altbtree
 %O%\TestConcur
-%O%\TestXML 20000
+%O%\TestXML 100000
 %O%\TestBackup
 %O%\TestBlob
 %O%\TestTimeSeries
-%O%\TestBit 20000
-%O%\TestList 100000
+%O%\TestBit 100000
+%O%\TestList 1000000
 
 start %O%\TestReplic master
 %O%\TestReplic slave

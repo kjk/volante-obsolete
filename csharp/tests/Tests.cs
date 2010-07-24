@@ -488,13 +488,13 @@ namespace NachoDB
                     fin.Close();
                     bout.Close();   
                 }
-                Console.WriteLine("Database is initialized");
             } 
             foreach (string file in files) 
             {
                 byte[] buf2 = new byte[1024];
                 Blob blob = root[file];
-                if (blob == null) 
+                UnitTests.AssertThat(blob == null);
+                if (blob == null)
                 {
                     Console.WriteLine("File " + file + " not found in database");
                     continue;
@@ -519,7 +519,6 @@ namespace NachoDB
                 fin.Close();
                 bin.Close();
             }            
-            Console.WriteLine("Verification completed");
             db.Close();
         }
     }

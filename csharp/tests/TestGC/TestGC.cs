@@ -7,6 +7,7 @@ public class TestGcRunner
     {
         bool altBtree = false;
         bool backgroundGc = false;
+        int iterations = 100000;
 
         for (int i = 0; i < args.Length; i++) 
         { 
@@ -17,13 +18,17 @@ public class TestGcRunner
             else if ("background" == args[i]) 
             {
                 backgroundGc = true;
-            } 
-            else 
-            { 
+            }
+            else if (Int32.TryParse(args[i], out iterations))
+            {
+                // do nothing
+            }
+            else
+            {
                 Console.WriteLine("Unrecognized option: " + args[i]);
             }
         }
-        TestGC.Run(100000, altBtree, backgroundGc);
+        TestGC.Run(iterations, altBtree, backgroundGc);
     }
 }
 
