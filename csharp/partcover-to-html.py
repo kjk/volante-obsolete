@@ -382,7 +382,7 @@ def gen_index_html_for_types(fo, types, files):
     for type in types:
         fo.write("""<span class="typename"><a href="#" onclick="return toggleVisibility('cls%d');">%s</a></span>
 <span class="perc">%.2f%%</span>:<br/>""" % (type.id, type.name, type.get_coverage()))
-        fo.write("""<span id="cls%d" style="display:none">""" % type.id)
+        fo.write("""<span class="cls%d" style="display:none">""" % type.id)
         fo.write("<ul>\n")
         for m in type.methods:
             (fid, lineno) = m.get_file_line()
@@ -422,14 +422,20 @@ def gen_index_html(types, files, outdir, html_file_name):
 <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
 
 <script type="text/javascript">
-function toggleVisibility(id) {
-  var el = $('#'+id);
-  var val = el.css("display");
-  if (val == "none") {
-    el.css("display", "block");
-  } else {
-    el.css("display", "none");
-  }
+
+function toggleVisibilityHelper(el) {
+}
+
+function toggleVisibility(cls) {
+  $('.'+cls).each(function(idx) {
+    var el = $(this);
+    var val = el.css("display");
+    if (val == "none") {
+      el.css("display", "block");
+    } else {
+      el.css("display", "none");
+    }
+  });
   return false;
 }
 
