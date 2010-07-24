@@ -1,5 +1,5 @@
 set save_path=%path%
-set path=bin;%path%;..\..\yepi\partcover
+set path=bin;%path%;..\thirdparty\partcover
 
 call "%ProgramFiles%\Microsoft Visual Studio 10.0\Common7\Tools\vsvars32.bat"
 IF ERRORLEVEL 1 GOTO TRYX86
