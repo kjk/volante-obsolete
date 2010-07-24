@@ -493,7 +493,7 @@ namespace NachoDB
             {
                 byte[] buf2 = new byte[1024];
                 Blob blob = root[file];
-                UnitTests.AssertThat(blob == null);
+                UnitTests.AssertThat(blob != null);
                 if (blob == null)
                 {
                     Console.WriteLine("File " + file + " not found in database");
@@ -504,12 +504,14 @@ namespace NachoDB
                 while ((rc = fin.Read(buf, 0, buf.Length)) > 0) 
                 { 
                     int rc2 = bin.Read(buf2, 0, buf2.Length);
+                    UnitTests.AssertThat(rc == rc2);
                     if (rc != rc2) 
                     {
                         Console.WriteLine("Different file size: " + rc + " .vs. " + rc2);
                         break;
                     }
                     while (--rc >= 0 && buf[rc] == buf2[rc]);
+                    UnitTests.AssertThat(rc < 0);
                     if (rc >= 0) 
                     { 
                         Console.WriteLine("Content of the files is different: " + buf[rc] + " .vs. " + buf2[rc]);
