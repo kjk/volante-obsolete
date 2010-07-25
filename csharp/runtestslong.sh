@@ -3,6 +3,7 @@
 # Runs all tests in th elong form
 # First argument is the name of bin directory where the executables are
 
+rm -rf *.dbs
 mono ${1}/UnitTestsRunner.exe
 
 mono ${1}/TestIndex.exe
