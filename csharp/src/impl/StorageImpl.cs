@@ -2959,8 +2959,7 @@ namespace NachoDB.Impl
             }
 #if !COMPACT_NET_FRAMEWORK
             if (codeGenerationThread != null)
-            {   
-                codeGenerationThread.Abort();
+            {
                 codeGenerationThread.Join();
                 codeGenerationThread = null;
             }               
