@@ -34,7 +34,7 @@ public interface IPersistent extends java.io.Externalizable {
     public boolean isPersistent();
 
     /**
-     * Explicitely make object peristent. Usually objects are made persistent
+     * Explicitely make object persistent. Usually objects are made persistent
      * implicitlely using "persistency on reachability apporach", but this
      * method allows to do it explicitly 
      * @param storage storage in which object should be stored
@@ -69,7 +69,7 @@ public interface IPersistent extends java.io.Externalizable {
 
     /**
      * Specified whether object should be automatically loaded when it is referenced
-     * by other loaded peristent object. Default implementation of this method
+     * by other loaded persistent object. Default implementation of this method
      * returns <code>true</code> making all cluster of referenced objects loaded together. 
      * To avoid main memory overflow you should stop recursive loading of all objects
      * from the database to main memory by redefining this method in some classes and returing

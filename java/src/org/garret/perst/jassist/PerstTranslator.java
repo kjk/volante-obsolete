@@ -262,7 +262,7 @@ public class PerstTranslator implements Translator {
                 } else { 
                     if (!isPersistent(base.getName())) { 
                         throw new NotFoundException("Base class " + base.getName()
-                                                    + " was not declared as peristent");
+                                                    + " was not declared as persistent");
                     } 
                     cons.setBody("super($0);");
                     cc.addConstructor(cons);

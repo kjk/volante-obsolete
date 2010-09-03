@@ -191,7 +191,7 @@ public interface Storage {
     public void rollbackThreadTransaction();
 
     /**
-     * Create new peristent set
+     * Create new persistent set
      * @return persistent object implementing set
      */
     public IPersistentSet createSet();
@@ -404,7 +404,7 @@ public interface Storage {
     public IPersistent getObjectByOID(int oid);
 
     /**
-     * Explicitely make object peristent. Usually objects are made persistent
+     * Explicitely make object persistent. Usually objects are made persistent
      * implicitlely using "persistency on reachability apporach", but this
      * method allows to do it explicitly. If object is already persistent, execution of
      * this method has no effect.

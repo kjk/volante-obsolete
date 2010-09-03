@@ -10,13 +10,13 @@ import java.lang.reflect.Field;
  * It is possible to select object using exact value of the key or 
  * select set of objects which key belongs to the specified interval 
  * (each boundary can be specified or unspecified and can be inclusive or exclusive)
- * Key should be of scalar, String, java.util.Date or peristent object type.
+ * Key should be of scalar, String, java.util.Date or persistent object type.
  */
 public interface FieldIndex extends GenericIndex { 
     /**
      * Put new object in the index. 
      * @param obj object to be inserted in index. Object should contain indexed field. 
-     * Object can be not yet peristent, in this case
+     * Object can be not yet persistent, in this case
      * its forced to become persistent by assigning OID to it.
      * @return <code>true</code> if object is successfully inserted in the index, 
      * <code>false</code> if index was declared as unique and there is already object with such value
@@ -29,7 +29,7 @@ public interface FieldIndex extends GenericIndex {
      * If there is already object with such key in the index, 
      * then it will be removed from the index and new value associated with this key.
      * @param obj object to be inserted in index. Object should contain indexed field. 
-     * Object can be not yet peristent, in this case
+     * Object can be not yet persistent, in this case
      * its forced to become persistent by assigning OID to it.
      * @return object previously associated with this key, <code>null</code> if there was no such object
      */
@@ -42,7 +42,7 @@ public interface FieldIndex extends GenericIndex {
      * of integer (<code>int</code> or <code>long</code>) type.
      * This field is assigned unique value (which will not be reused while 
      * this index exists) and object is marked as modified.
-     * Object can be not yet peristent, in this case
+     * Object can be not yet persistent, in this case
      * its forced to become persistent by assigning OID to it.
      * @exception StorageError(StorageError.INCOMPATIBLE_KEY_TYPE) when indexed field
      * has type other than <code>int</code> or <code>long</code>

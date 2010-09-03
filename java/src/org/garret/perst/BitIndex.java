@@ -22,7 +22,7 @@ public interface BitIndex extends IPersistent, IResource {
     /**
      * Put new object in the index. If such objct already exists in index, then its
      * mask will be rewritten 
-     * @param obj object to be placed in the index. Object can be not yet peristent, in this case
+     * @param obj object to be placed in the index. Object can be not yet persistent, in this case
      * its forced to become persistent by assigning OID to it.
      * @param mask bit mask associated with this objects
      */

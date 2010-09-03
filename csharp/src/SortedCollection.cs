@@ -20,7 +20,7 @@ namespace NachoDB
     /// The SortedCollection is efficient container of objects for in-memory databases.
     /// For databases which size is significatly larger than size of page pool, operation with SortedList
     /// can cause trashing and so very bad performance. Unlike other index structures SortedCollection
-    /// doesn't store values of keys and so search in the collection requires fetching of its members.
+    /// doesn't store values of keys and so search in the collection requires fetching all of its members.
     /// </summary>
     public interface SortedCollection<K,V> : IPersistent, IResource, ICollection<V> where V:class,IPersistent
     { 
@@ -42,7 +42,7 @@ namespace NachoDB
         /// Get member with specified key.
         /// </summary>
         /// <param name="key"> specified key. It should match with type of the index and should be inclusive.</param>
-        /// <returns> object with this value of the key or <code>null</code> if key nmot found</returns>
+        /// <returns> object with this value of the key or <code>null</code> if key not found</returns>
         /// <exception cref="NachoDB.StorageError">StorageError(StorageError.KEY_NOT_UNIQUE) exception if there are more than 
         /// one objects in the collection with specified value of the key.  
         /// </exception>
