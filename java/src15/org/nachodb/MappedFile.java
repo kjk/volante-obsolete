@@ -1,9 +1,9 @@
-package org.garret.perst;
+package org.nachodb;
 
 import java.io.*;
 import java.nio.*;
 import java.nio.channels.*;
-import org.garret.perst.impl.OSFile;
+import org.nachodb.impl.OSFile;
 
 /**
  * Class using NIO mapping file on virtual mapping.

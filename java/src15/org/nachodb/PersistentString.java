@@ -1,4 +1,4 @@
-package org.garret.perst;
+package org.nachodb;
 
 /**
  * Class encapsulating native Java string. java.lang.String is not persistent object

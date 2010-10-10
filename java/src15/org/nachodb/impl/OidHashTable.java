@@ -1,5 +1,5 @@
-package org.garret.perst.impl;
-import  org.garret.perst.IPersistent;
+package org.nachodb.impl;
+import  org.nachodb.IPersistent;
 
 public interface OidHashTable { 
     boolean     remove(int oid);

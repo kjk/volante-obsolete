@@ -1,5 +1,5 @@
-package org.garret.perst;
-import org.garret.perst.impl.*;
+package org.nachodb;
+import org.nachodb.impl.*;
 
 /**
  * Storage factory

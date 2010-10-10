@@ -1,5 +1,5 @@
-package org.garret.perst;
-import  org.garret.perst.*;
+package org.nachodb;
+import  org.nachodb.*;
 import  java.util.*;
 
 public abstract class PersistentCollection<T> extends PersistentResource implements Collection<T>

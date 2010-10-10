@@ -1,9 +1,9 @@
-package org.garret.perst.impl;
+package org.nachodb.impl;
 
 import java.io.*;
 import java.net.*;
 
-import org.garret.perst.*;
+import org.nachodb.*;
 
 /**
  * File performing asynchronous replication of changed pages to specified slave nodes.

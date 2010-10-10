@@ -1,5 +1,5 @@
-package org.garret.perst;
-import  org.garret.perst.impl.ClassDescriptor;
+package org.nachodb;
+import  org.nachodb.impl.ClassDescriptor;
 
 /**
  * Class for specifying key value (needed to access obejct by key usig index)

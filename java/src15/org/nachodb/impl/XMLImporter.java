@@ -1,6 +1,6 @@
-package org.garret.perst.impl;
+package org.nachodb.impl;
 
-import org.garret.perst.*;
+import org.nachodb.*;
 import java.io.*;
 import java.util.HashMap;
 import java.util.Locale;
@@ -48,10 +48,10 @@ public class XMLImporter {
                 throwException("Element name expected");
             }
             String elemName = scanner.getIdentifier();
-            if (elemName.equals("org.garret.perst.impl.Btree") 
-                || elemName.equals("org.garret.perst.impl.PersistentSet") 
-                || elemName.equals("org.garret.perst.impl.BtreeFieldIndex") 
-                || elemName.equals("org.garret.perst.impl.BtreeMultiFieldIndex")) 
+            if (elemName.equals("org.nachodb.impl.Btree")
+                || elemName.equals("org.nachodb.impl.PersistentSet")
+                || elemName.equals("org.nachodb.impl.BtreeFieldIndex")
+                || elemName.equals("org.nachodb.impl.BtreeMultiFieldIndex"))
             { 
                 createIndex(elemName);
             } else { 
@@ -443,13 +443,13 @@ public class XMLImporter {
             }
         } else { 
             if (type == null) { 
-                if (indexType.equals("org.garret.perst.impl.PersistentSet")) { 
+                if (indexType.equals("org.nachodb.impl.PersistentSet")) {
                     btree = new PersistentSet();
                 } else { 
                     throwException("Key type is not specified for index");
                 }
             } else { 
-                if (indexType.equals("org.garret.perst.impl.BitIndexImpl")) { 
+                if (indexType.equals("org.nachodb.impl.BitIndexImpl")) { 
                     btree = new BitIndexImpl();
                 } else { 
                     btree = new Btree(mapType(type), unique);
