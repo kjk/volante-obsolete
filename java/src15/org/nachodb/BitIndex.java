@@ -4,7 +4,7 @@ import java.util.*;
 
 /**
  * Interface of bit index.
- * Bit index allows to effiicently search object with specified 
+ * Bit index allows to efficiently search object with specified 
  * set of properties. Each object has associated mask of 32 bites. 
  * Meaning of bits is application dependent. Usually each bit stands for
  * some binary or boolean property, for example "sex", but it is possible to 
@@ -20,7 +20,7 @@ public interface BitIndex<T extends IPersistent> extends IPersistent, IResource,
     public int get(T obj);
 
     /**
-     * Put new object in the index. If such objct already exists in index, then its
+     * Put new object in the index. If such object already exists in index, then its
      * mask will be rewritten 
      * @param obj object placed in the index. Object can be not yet persistent, in this case
      * its forced to become persistent by assigning OID to it.

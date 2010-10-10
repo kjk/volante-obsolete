@@ -151,7 +151,7 @@ public class BlobImpl extends PersistentResource implements Blob {
     }
 
     /**
-     * Get input stream. InputStream.availabel method can be used to get BLOB size
+     * Get input stream. InputStream.available method can be used to get BLOB size
      * @return input stream with BLOB data
      */
     public java.io.InputStream getInputStream() { 
@@ -160,7 +160,7 @@ public class BlobImpl extends PersistentResource implements Blob {
 
     /**
      * Get output stream to append data to the BLOB.
-     * @return output srteam 
+     * @return output stream
      */
     public java.io.OutputStream getOutputStream() { 
         return new BlobOutputStream(this, true);
@@ -169,8 +169,8 @@ public class BlobImpl extends PersistentResource implements Blob {
    /**
      * Get output stream to append data to the BLOB.
      * @param multisession whether BLOB allows further appends of data or closing 
-     * this output streat means that BLOB will not be changed any more. 
-     * @return output srteam 
+     * this output stream means that BLOB will not be changed any more. 
+     * @return output stream 
      */
     public java.io.OutputStream getOutputStream(boolean multisession) { 
         return new BlobOutputStream(this, multisession);
