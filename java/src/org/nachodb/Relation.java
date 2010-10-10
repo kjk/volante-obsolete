@@ -1,4 +1,4 @@
-package org.garret.perst;
+package org.nachodb;
 
 /**
  * Class representing relation between owner and members

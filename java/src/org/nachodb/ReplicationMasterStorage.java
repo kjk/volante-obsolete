@@ -1,4 +1,4 @@
-package org.garret.perst;
+package org.nachodb;
 
 /**
  * Storage performing replication of changed pages to specified slave nodes.

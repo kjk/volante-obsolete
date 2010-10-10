@@ -1,4 +1,4 @@
-package org.garret.perst.impl;
+package org.nachodb.impl;
 
 public class GenericSort { 
     static void sort(GenericSortArray arr) { 

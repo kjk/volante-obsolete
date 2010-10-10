@@ -1,5 +1,5 @@
-package org.garret.perst.impl;
-import  org.garret.perst.*;
+package org.nachodb.impl;
+import  org.nachodb.*;
 import  java.lang.reflect.*;
 import  java.util.*;
 
@@ -118,7 +118,7 @@ public final class ClassDescriptor extends Persistent {
         if (reflectionProvider == null) { 
             try {
                 Class.forName("sun.misc.Unsafe");
-                String cls = "org.garret.perst.impl.sun14.Sun14ReflectionProvider";
+                String cls = "org.nachodb.impl.sun14.Sun14ReflectionProvider";
                 reflectionProvider = (ReflectionProvider)Class.forName(cls).newInstance();
             } catch (Exception x) { 
                 reflectionProvider = new StandardReflectionProvider();

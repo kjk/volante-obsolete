@@ -1,4 +1,4 @@
-package org.garret.perst;
+package org.nachodb;
 
 /**
  * Exception raised by <code>Assert</code> class when assertion was failed.

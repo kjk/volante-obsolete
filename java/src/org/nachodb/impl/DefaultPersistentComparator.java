@@ -1,6 +1,6 @@
-package org.garret.perst.impl;
+package org.nachodb.impl;
 
-import org.garret.perst.*;
+import org.nachodb.*;
 
 public class DefaultPersistentComparator extends PersistentComparator { 
     public int compareMembers(IPersistent m1, IPersistent m2) {

@@ -1,4 +1,4 @@
-package org.garret.perst;
+package org.nachodb;
 
 /**
  * R2 rectangle class. This class is used in spatial index.

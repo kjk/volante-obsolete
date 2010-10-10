@@ -4,19 +4,19 @@
  * To change the template for this generated file go to
  * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
  */
-package org.garret.perst.aspectj;
+package org.nachodb.aspectj;
 
 /**
  * @author Patrick Morris-Suzuki
  *
  */
 
-import org.garret.perst.*;
+import org.nachodb.*;
 
 privileged public aspect PersistenceAspect {
     declare parents: AutoPersist extends IPersistent;
 
-    pointcut notPerstCode(): !within(org.garret.perst.*) && !within(org.garret.perst.impl.*) && !within(org.garret.perst.aspectj.*);
+    pointcut notPerstCode(): !within(org.nachodb.*) && !within(org.nachodb.impl.*) && !within(org.nachodb.aspectj.*);
     
     pointcut persistentMethod(): 
         execution(!static * ((Persistent+ && !Persistent) || (AutoPersist+ && !(StrictAutoPersist+) && !AutoPersist)).*(..))

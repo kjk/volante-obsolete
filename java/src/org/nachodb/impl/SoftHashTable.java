@@ -1,4 +1,4 @@
-package org.garret.perst.impl;
+package org.nachodb.impl;
 import  java.lang.ref.*;
 
 public class SoftHashTable extends WeakHashTable { 

@@ -1,7 +1,7 @@
 /*
  * Created on Feb 08, 2004
  */
-package org.garret.perst.aspectj;
+package org.nachodb.aspectj;
 
 /**
  * Base interface for all classes automatically treated as persistent capable which needs

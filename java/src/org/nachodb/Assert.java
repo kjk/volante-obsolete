@@ -1,11 +1,11 @@
-package org.garret.perst;
+package org.nachodb;
 
 /** Class for checking program invariants. Analog of C <code>assert()</code>
  *  macro. The Java compiler doesn't provide information about compiled
  *  file and line number, so the place of assertion failure can be located only
  *  by analyzing the stack trace of the thrown AssertionFailed exception.
  *
- * @see org.garret.perst.AssertionFailed
+ * @see org.nachodb.AssertionFailed
  */
 public class Assert { 
     /** Check specified condition and raise <code>AssertionFailed</code>

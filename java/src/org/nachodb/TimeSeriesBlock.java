@@ -1,4 +1,4 @@
-package org.garret.perst;
+package org.nachodb;
 
 /**
  * Abstract base class for time series block.

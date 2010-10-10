@@ -1,4 +1,4 @@
-package org.garret.perst.impl;
+package org.nachodb.impl;
 
 public interface FastSerializable { 
     int pack(ByteBuffer buf, int offs, String encoding);    

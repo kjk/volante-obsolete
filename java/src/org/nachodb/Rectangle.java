@@ -1,4 +1,4 @@
-package org.garret.perst;
+package org.nachodb;
 
 /**
  * Rectangle with integer cooordinates. This class is used in spatial index.

@@ -1,9 +1,9 @@
-package org.garret.perst.impl;
+package org.nachodb.impl;
 
 import java.io.*;
 import java.util.Date;
 import java.lang.reflect.Field;
-import org.garret.perst.Assert;
+import org.nachodb.Assert;
 
 public class XMLExporter { 
     public XMLExporter(StorageImpl storage, Writer writer) { 
@@ -33,9 +33,9 @@ public class XMLExporter {
                             int typeOid = ObjectHeader.getType(obj, 0);                
                             ClassDescriptor desc = storage.findClassDescriptor(typeOid);
                             if (desc.cls == Btree.class) { 
-                                exportIndex(oid, obj, "org.garret.perst.impl.Btree");
+                                exportIndex(oid, obj, "org.nachodb.impl.Btree");
                             } else if (desc.cls == BitIndexImpl.class) { 
-                                exportIndex(oid, obj, "org.garret.perst.impl.BitIndexImpl");
+                                exportIndex(oid, obj, "org.nachodb.impl.BitIndexImpl");
                             } else if (desc.cls == PersistentSet.class) { 
                                 exportSet(oid, obj);
                             } else if (desc.cls == BtreeFieldIndex.class) { 
@@ -66,9 +66,9 @@ public class XMLExporter {
     { 
         Btree btree = new Btree(data, ObjectHeader.sizeof);
         storage.assignOid(btree, oid);
-        writer.write(" <org.garret.perst.impl.PersistentSet id=\"" + oid + "\">\n");
+        writer.write(" <org.nachodb.impl.PersistentSet id=\"" + oid + "\">\n");
         btree.export(this);
-        writer.write(" </org.garret.perst.impl.PersistentSet>\n");
+        writer.write(" </org.nachodb.impl.PersistentSet>\n");
     }
 
     final void exportIndex(int oid, byte[] data, String name) throws IOException 
@@ -85,21 +85,21 @@ public class XMLExporter {
     { 
         Btree btree = new Btree(data, ObjectHeader.sizeof);
         storage.assignOid(btree, oid);
-        writer.write(" <org.garret.perst.impl.BtreeFieldIndex id=\"" + oid + "\" unique=\"" + (btree.unique ? '1' : '0') 
+        writer.write(" <org.nachodb.impl.BtreeFieldIndex id=\"" + oid + "\" unique=\"" + (btree.unique ? '1' : '0')
                      + "\" class=");
         int offs = exportString(data, Btree.sizeof);
         writer.write(" field=");
         offs = exportString(data, offs);
         writer.write(" autoinc=\"" + Bytes.unpack8(data, offs) + "\">\n");
         btree.export(this);
-        writer.write(" </org.garret.perst.impl.BtreeFieldIndex>\n");
+        writer.write(" </org.nachodb.impl.BtreeFieldIndex>\n");
     }
 
     final void exportMultiFieldIndex(int oid,  byte[] data) throws IOException
     { 
         Btree btree = new Btree(data, ObjectHeader.sizeof);
         storage.assignOid(btree, oid);
-        writer.write(" <org.garret.perst.impl.BtreeMultiFieldIndex id=\"" + oid + "\" unique=\"" + (btree.unique ? '1' : '0') 
+        writer.write(" <org.nachodb.impl.BtreeMultiFieldIndex id=\"" + oid + "\" unique=\"" + (btree.unique ? '1' : '0')
                      + "\" class=");
         int offs = exportString(data, Btree.sizeof);
         int nFields = Bytes.unpack4(data, offs);
@@ -118,7 +118,7 @@ public class XMLExporter {
         }
         btree.export(this); 
         compoundKeyTypes = null;
-        writer.write(" </org.garret.perst.impl.BtreeMultiFieldIndex>\n");
+        writer.write(" </org.nachodb.impl.BtreeMultiFieldIndex>\n");
     }
 
     final int exportKey(byte[] body, int offs, int size, int type) throws IOException

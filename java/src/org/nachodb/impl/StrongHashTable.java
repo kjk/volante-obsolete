@@ -1,5 +1,5 @@
-package org.garret.perst.impl;
-import  org.garret.perst.*;
+package org.nachodb.impl;
+import  org.nachodb.*;
 
 public class StrongHashTable implements OidHashTable { 
     Entry table[];

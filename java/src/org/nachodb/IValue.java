@@ -1,4 +1,4 @@
-package org.garret.perst;
+package org.nachodb;
 
 /**
  * Interface of objects stored as value. Value objects are stored inside the persistent object to which they are belong

@@ -1,4 +1,4 @@
-package org.garret.perst.jassist;
+package org.nachodb.jassist;
 
 import javassist.*;
 import javassist.expr.*;
@@ -13,7 +13,7 @@ import javassist.expr.*;
  * Example of usage:
  * <pre>
  * package com.mycompany.mypackage;
- * import org.garret.perst.jassist.PerstTranslator;
+ * import org.nachodb.jassist.PerstTranslator;
  * import javassist.*;
  * public class MyApp { 
  *     public static void main(String[] args) { 
@@ -35,7 +35,7 @@ public class PerstTranslator implements Translator {
                 || (pattern.endsWith("*") 
                     && className.startsWith(pattern.substring(0, pattern.length()-1))
                     && !className.endsWith("LoadFactory")
-                    && !className.startsWith("org.garret.perst")))
+                    && !className.startsWith("org.nachodb")))
             {
                 return true;
             }
@@ -45,7 +45,7 @@ public class PerstTranslator implements Translator {
 
     /**
      * Create Perst translator which made all classes persistent capable 
-     * (excluding <code>java.*</code> and <code>org.garret.perst.*</code> 
+     * (excluding <code>java.*</code> and <code>org.nachodb.*</code>
      * packages)
      */
     public PerstTranslator() { 
@@ -61,13 +61,13 @@ public class PerstTranslator implements Translator {
     }
 
     public void start(ClassPool pool) throws NotFoundException { 
-        persistent = pool.get("org.garret.perst.Persistent");
-        persistentInterface = pool.get("org.garret.perst.IPersistent");
-        factory = pool.get("org.garret.perst.impl.LoadFactory");
+        persistent = pool.get("org.nachodb.Persistent");
+        persistentInterface = pool.get("org.nachodb.IPersistent");
+        factory = pool.get("org.nachodb.impl.LoadFactory");
         object = pool.get("java.lang.Object");
         isRecursive = persistent.getDeclaredMethod("recursiveLoading"); 
-        constructorParams = new CtClass[]{pool.get("org.garret.perst.impl.ClassDescriptor")};
-        serializable = pool.get("org.garret.perst.impl.FastSerializable");
+        constructorParams = new CtClass[]{pool.get("org.nachodb.impl.ClassDescriptor")};
+        serializable = pool.get("org.nachodb.impl.FastSerializable");
         pack = serializable.getDeclaredMethod("pack");
         unpack = serializable.getDeclaredMethod("unpack");
         create = factory.getDeclaredMethod("create");
@@ -95,7 +95,7 @@ public class PerstTranslator implements Translator {
                         size += 4;
                     }
                 } else if (type.getName().equals("java.lang.String")) {
-                    sb.append("+org.garret.perst.impl.Bytes#sizeof(");
+                    sb.append("+org.nachodb.impl.Bytes#sizeof(");
                     sb.append(f.getName());
                     sb.append(",$3)");
                 } else { 
@@ -119,7 +119,7 @@ public class PerstTranslator implements Translator {
                     sb.append(name);
                     sb.append("?1:0);");
                 } else if (type == CtClass.charType) { 
-                    sb.append("org.garret.perst.impl.Bytes#pack2($1.arr,$2,(short)");
+                    sb.append("org.nachodb.impl.Bytes#pack2($1.arr,$2,(short)");
                     sb.append(name);
                     sb.append(");$2+=2;");
                 } else if (type == CtClass.byteType) { 
@@ -127,27 +127,27 @@ public class PerstTranslator implements Translator {
                     sb.append(name);
                     sb.append(";");
                 } else if (type == CtClass.shortType) { 
-                    sb.append("org.garret.perst.impl.Bytes#pack2($1.arr,$2,");
+                    sb.append("org.nachodb.impl.Bytes#pack2($1.arr,$2,");
                     sb.append(name);
                     sb.append(");$2+=2;");
                 } else if (type == CtClass.intType) { 
-                    sb.append("org.garret.perst.impl.Bytes#pack4($1.arr,$2,");
+                    sb.append("org.nachodb.impl.Bytes#pack4($1.arr,$2,");
                     sb.append(name);
                     sb.append(");$2+=4;");
                 } else if (type == CtClass.longType) { 
-                    sb.append("org.garret.perst.impl.Bytes#pack8($1.arr,$2,");
+                    sb.append("org.nachodb.impl.Bytes#pack8($1.arr,$2,");
                     sb.append(name);
                     sb.append(");$2+=8;");
                 } else if (type == CtClass.doubleType) { 
-                    sb.append("org.garret.perst.impl.Bytes#packF8($1.arr,$2,");
+                    sb.append("org.nachodb.impl.Bytes#packF8($1.arr,$2,");
                     sb.append(name);
                     sb.append(");$2+=8;");
                 } else if (type == CtClass.floatType) { 
-                    sb.append("org.garret.perst.impl.Bytes#packF4($1.arr,$2,");
+                    sb.append("org.nachodb.impl.Bytes#packF4($1.arr,$2,");
                     sb.append(name);
                     sb.append(");$2+=4;");
                } else { 
-                    sb.append("$2=org.garret.perst.impl.Bytes#packStr($1.arr,$2,");
+                    sb.append("$2=org.nachodb.impl.Bytes#packStr($1.arr,$2,");
                     sb.append(name);
                     sb.append(",$3);");
                 }
@@ -170,21 +170,21 @@ public class PerstTranslator implements Translator {
                 if (type == CtClass.booleanType) { 
                     sb.append("$1[$2++]!=0;");
                 } else if (type == CtClass.charType) { 
-                    sb.append("(char)org.garret.perst.impl.Bytes#unpack2($1,$2);$2+=2;");
+                    sb.append("(char)org.nachodb.impl.Bytes#unpack2($1,$2);$2+=2;");
                 } else if (type == CtClass.byteType) { 
                     sb.append("$1[$2++];");
                 } else if (type == CtClass.shortType) { 
-                    sb.append("org.garret.perst.impl.Bytes#unpack2($1,$2);$2+=2;");
+                    sb.append("org.nachodb.impl.Bytes#unpack2($1,$2);$2+=2;");
                 } else if (type == CtClass.intType) { 
-                    sb.append("org.garret.perst.impl.Bytes#unpack4($1,$2);$2+=4;");
+                    sb.append("org.nachodb.impl.Bytes#unpack4($1,$2);$2+=4;");
                 } else if (type == CtClass.longType) { 
-                    sb.append("org.garret.perst.impl.Bytes#unpack8($1,$2);$2+=8;");
+                    sb.append("org.nachodb.impl.Bytes#unpack8($1,$2);$2+=8;");
                 } else if (type == CtClass.doubleType) { 
-                    sb.append("org.garret.perst.impl.Bytes#unpackF8($1,$2);$2+=8;");
+                    sb.append("org.nachodb.impl.Bytes#unpackF8($1,$2);$2+=8;");
                 } else if (type == CtClass.floatType) { 
-                    sb.append("org.garret.perst.impl.Bytes#unpackF4($1,$2);$2+=4;");
+                    sb.append("org.nachodb.impl.Bytes#unpackF4($1,$2);$2+=4;");
                } else { 
-                    sb.append("org.garret.perst.impl.Bytes#unpackStr($1,$2,$3);$2+=org.garret.perst.impl.Bytes#sizeof($1,$2);");
+                    sb.append("org.nachodb.impl.Bytes#unpackStr($1,$2,$3);$2+=org.nachodb.impl.Bytes#sizeof($1,$2);");
                 }
             }
         }
@@ -287,7 +287,7 @@ public class PerstTranslator implements Translator {
             } else { 
                 preprocessMethods(cc, 
                                   cc.subtypeOf(persistent) && cc != persistent, 
-                                  !className.startsWith("org.garret.perst")); 
+                                  !className.startsWith("org.nachodb")); 
             }
         } catch(Exception x) { x.printStackTrace(); }
     }

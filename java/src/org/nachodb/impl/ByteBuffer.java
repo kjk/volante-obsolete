@@ -1,7 +1,7 @@
-package org.garret.perst.impl;
+package org.nachodb.impl;
 
 import java.io.UnsupportedEncodingException;
-import org.garret.perst.StorageError;
+import org.nachodb.StorageError;
 
 public class ByteBuffer {
     public final void extend(int size) {  
