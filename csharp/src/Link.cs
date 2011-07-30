@@ -53,8 +53,8 @@ namespace NachoDB
     }
 
     /// <summary> Interface for one-to-many relation. There are two types of relations:
-    /// embedded (when references to the relarted obejcts are stored in lreation
-    /// owner obejct itself) and stanalone (when relation is separate object, which contains
+    /// embedded (when references to the relarted objects are stored in lreation
+    /// owner object itself) and standalone (when relation is separate object, which contains
     /// the reference to the relation owner and relation members). Both kinds of relations
     /// implements Link interface. Embedded relation is created by Storage.createLink method
     /// and standalone relation is represented by Relation persistent class created by

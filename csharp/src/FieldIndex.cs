@@ -79,7 +79,7 @@ namespace NachoDB
         V RemoveKey(K key);
 
         /// <summary>
-        /// Get class obejct objects which can be inserted in this index
+        /// Get class object objects which can be inserted in this index
         /// </summary>
         /// <returns>class specified in Storage.createFielIndex method</returns>
         Type IndexedClass{get;}

@@ -4,7 +4,7 @@ namespace NachoDB
     using ClassDescriptor = NachoDB.Impl.ClassDescriptor;
     using FieldType = NachoDB.Impl.ClassDescriptor.FieldType;
 
-    /// <summary> Class for specifying key value (neededd to access obejct by key usig index)
+    /// <summary> Class for specifying key value (neededd to access object by key usig index)
     /// </summary>
     public class Key
     {
