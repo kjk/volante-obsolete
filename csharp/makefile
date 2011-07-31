@@ -6,7 +6,7 @@
 
 CSC=gmcs
 
-CSC_FLAGS =-debug+ -d:SUPPORT_RAW_TYPE
+CSC_FLAGS =-debug+ -d:SUPPORT_RAW_TYPE -d:MONO
 
 ifeq ($(CFG),)
 CFG=rel

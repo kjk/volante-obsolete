@@ -28,6 +28,7 @@ namespace Volante.Impl
         {
             file.Flush();
 #if !COMPACT_NET_FRAMEWORK 
+#if !MONO
             if (!noFlush) {
                 // TODO: this seems more correct but doesn't work in mono
                 //FlushFileBuffers(file.SafeFileHandle.DangerousGetHandle());
@@ -35,6 +36,7 @@ namespace Volante.Impl
                 // to work in mono
                 FlushFileBuffers(file.Handle.ToInt32());
             }
+#endif
 #endif
         }
 
