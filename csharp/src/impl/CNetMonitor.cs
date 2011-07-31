@@ -1,7 +1,7 @@
 using System;
 using System.Threading;
 
-namespace NachoDB.Impl  
+namespace Volante.Impl  
 {
     /// <summary>
     /// Enhanced alternative to the <see cref="T:System.Threading.Monitor"/> class.  Provides a mechanism that synchronizes access to objects.
@@ -198,7 +198,7 @@ namespace NachoDB.Impl
     }
 
     /// <summary>
-    /// Exception thrown by <see cref="NachoDB.Impl.CNetMonitor"/> when threading rules
+    /// Exception thrown by <see cref="Volante.Impl.CNetMonitor"/> when threading rules
     /// are violated (usually due to an operation being
     /// invoked on a monitor not owned by the current thread).
     /// </summary>

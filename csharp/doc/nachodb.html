@@ -1,6 +1,6 @@
 <HTML>
 <HEAD>
-<TITLE>NachoDB - Simple, Fast, Convenient Object Oriented Database</TITLE>
+<TITLE>Volante - Simple, Fast, Convenient Object Oriented Database</TITLE>
 <UL>
 <LI> <A HREF = "#introduction">Introduction</A>
 
@@ -19,7 +19,7 @@
   <LI> <A HREF = "#remoting">Using .Net remoting API</A>
   <LI> <A HREF = "#props">Using virtual properties</A>
   </UL>
-<LI> <A HREF = "#implementation">NachoDB implementation issues</A>
+<LI> <A HREF = "#implementation">Volante implementation issues</A>
   <UL>
   <LI> <A HREF = "#memory">Memory allocation</A>
   <LI> <A HREF = "#logless">Logless transactions</A>
@@ -37,24 +37,24 @@
 <HR>
 <H2><A NAME = "introduction">Introduction</A></H2>
 
-NachoDB is very simple object oriented embedded database. It is easy to use and
+Volante is very simple object oriented embedded database. It is easy to use and
 provide high performance. It is intended to be used in applications which needs to deal with persistent 
 data in more sophisticated way than load/store object tree provided but standard serialization mechanism.
-Although NachoDB is very simple, it provides fault tolerant support (ACID transactions) 
+Although Volante is very simple, it provides fault tolerant support (ACID transactions) 
 and concurrent access to the database.<P> 
 
-The main advantage of NachoDB is tight integration with programming language.
-There is no gap between database and application data models - NachoDB directly stores language objects.
+The main advantage of Volante is tight integration with programming language.
+There is no gap between database and application data models - Volante directly stores language objects.
 So there is no need in packing/unpacking code, which has to be written for traditional relational databases. 
-Also NachoDB (unlike many other OODBMS) requires no special compiler or preprocessor. And still it is able to 
+Also Volante (unlike many other OODBMS) requires no special compiler or preprocessor. And still it is able to 
 provide high level of transparency.<P>
 
 <H2> <A NAME = "features">Features</A></H2>
-Lets now describe key features of NachoDB architecture. 
+Lets now describe key features of Volante architecture. 
 
 <H3> <A NAME = "pbs">Persistency by reachability</A></H3>
 
-NachoDB is implementing <I>persistency by reachability</I> approach. Object of any class derived from 
+Volante is implementing <I>persistency by reachability</I> approach. Object of any class derived from 
 <code>Persistent</code> base class is considered as persistent capable. It is automatically made
 persistent and stored in the storage when it is referenced from some other persistent object and
 <code>store</code> method of that object was invoked. So there is no need (but it is possible) to explicitly 
@@ -66,8 +66,8 @@ either by traversing by references from another persistent objects, either using
 <code>Link</code> or <code>Relation</code>). Unlike many other OODBMS, there can be only one root in the storage.
 If you need to have several named roots, you should create <code>Index</code> object and use it as root object.<P>
 
-NachoDB requires that each persistent capable class should be derived from <code>Persistent</code> class.
-It makes not possible to store "foreign" classes in the storage. This is the cost of easy use of NachoDB and lack
+Volante requires that each persistent capable class should be derived from <code>Persistent</code> class.
+It makes not possible to store "foreign" classes in the storage. This is the cost of easy use of Volante and lack
 of any specialized preprocessors or compilers. Also components of persistent capable object are restricted to have 
 the following types:
 
@@ -97,7 +97,7 @@ Links are created using <code>Storage.createLink</code> method.
 
 Unfortunately it is not possible to detect if object is changed or not without saving old state of the object
 and performing field-by-field comparison with new state of the object. But overhead of such solution 
-(both space and CPU) is very high. In NachoDB it is responsibility of programmer to save object in the storage.
+(both space and CPU) is very high. In Volante it is responsibility of programmer to save object in the storage.
 It can be done by <code>Persistent.store</code> method. or <code>Persistent.modify</code> methods.<P>
 
 <code>Persistent.store</code> method writes object in the storage as well
@@ -116,13 +116,13 @@ be stored only once at the end.<P>
 
 <H3> <A NAME = "load">Semitransparent object loading</A></H3>
 
-NachoDB is not using any special compiler or preprocessor. And since C# doesn't provide
+Volante is not using any special compiler or preprocessor. And since C# doesn't provide
 runtime behavior reflection (changing behavior of object at runtime), it is not possible to implement completely
 transparent persistence (when there are no differences between access to transient and persistent objects).
-Instead of it NachoDB propose transparent behavior in most cases with some exceptions.<P>
+Instead of it Volante propose transparent behavior in most cases with some exceptions.<P>
 
 <code>IPersistent</code> interface declares <code>recursiveLoading</code> method. Default implementation of 
-this method in <code>Persistent</code> class always returns <code>true</code>. In this case NachoDB 
+this method in <code>Persistent</code> class always returns <code>true</code>. In this case Volante 
 will recursively load any object referenced from target object when target object is loaded. 
 So it cause implicit loading of all cluster of referenced objects from storage to main memory.
 It is similar with how serialization mechanism works.<P>
@@ -138,7 +138,7 @@ Also it is important to notice that containers (<code>Link, Relation, Index</cod
 performed through methods of the container class, programmer will never notice it - container methods will always
 return loaded object(s).<P>
 
-NachoDB is using default constructor (constructor without parameters) to create object loaded from the storage. 
+Volante is using default constructor (constructor without parameters) to create object loaded from the storage. 
 It means the following things:
 <OL>
 <LI>All persistent capable classes should have default constructor (or have no constructor at all, in this case
@@ -161,16 +161,16 @@ calling <code>Persistent.load</code> method.<P>
 
 <H3> <A NAME = "scheme">Automatic scheme evaluation</A></H3>
 
-NachoDB supports lazy automatic scheme evaluation. When class format is changed, 
-NachoDB perform conversion of loaded object to new format. If this object is modified, 
+Volante supports lazy automatic scheme evaluation. When class format is changed, 
+Volante perform conversion of loaded object to new format. If this object is modified, 
 it will be stored in new format. So object is converted to the new format on demand.
-NachoDB is able to handle the following scheme changes:
+Volante is able to handle the following scheme changes:
 
 <OL>
 <LI>Compatible change of scalar type (change which could not cause data truncation).
 For example it is possible to change <code>int</code> type to <code>long</code> or 
 <code>int</code> to <code>float</code>. But changing type from <code>int</code> to
-<code>short</code> is not possible. More precisely, NachoDB is able to perform any conversion
+<code>short</code> is not possible. More precisely, Volante is able to perform any conversion
 which is supported by Java reflection mechanism (field type XXX can be changed to YYY
 if <code>java.lang.reflect.Field.setXXX</code> method can be applied to the component with type YYY).
 <LI>Reordering components within class or moving component to base or derived class.
@@ -179,8 +179,8 @@ if <code>java.lang.reflect.Field.setXXX</code> method can be applied to the comp
 </OL><P>
 
 All other schema modifications (such as renaming fields, incompatible change of field type)
-could not be handled by NachoDB automatic schema modification mechanism. 
-In this case you can use NachoDB XML export/import mechanism. Database can be 
+could not be handled by Volante automatic schema modification mechanism. 
+In this case you can use Volante XML export/import mechanism. Database can be 
 exported to XML format using <code>Storage.exportXML</code> method, 
 then recreated with new class definitions and  after it saved data can be imported using 
 <code>Storage.importXML</code> method.<P>
@@ -190,7 +190,7 @@ then recreated with new class definitions and  after it saved data can be import
 
 CSharp references provides a way to implement one-to-one relation between objects.
 But in many cases one-to-many and many-to-many relations are needed. 
-NachoDB provides <code>Link</code> interface to deal with relations of such kind.
+Volante provides <code>Link</code> interface to deal with relations of such kind.
 This interface allows to add/delete/inspect members of the relation.
 Members of the relation can be accessed by index or be extracted as array of objects.<P>
 
@@ -216,14 +216,14 @@ So relation between two classes A and B can be implemented in the following way:
 Usually objects are accessed by traversing from one object to another using references or links.
 But it is frequently needed to locate object by key. In .NET <code>Hashtable</code> class
 can be used for it. In databases usually more sophisticated search is required. 
-I do not want to implement in NachoDB complete SQL language, because it immediately makes DBMS huge and slow.
+I do not want to implement in Volante complete SQL language, because it immediately makes DBMS huge and slow.
 But in most cases application is performing only very simple queries using exact match or key range.
-This is done in NachoDB by <code>Index</code> and <code>IndexField</code> interfaces. First interface is used
+This is done in Volante by <code>Index</code> and <code>IndexField</code> interfaces. First interface is used
 for independent specification key and associated value. <code>IndexField</code> interface allows to index objects
 using one of the fields of this object (key field).<P>
 
 
-Indices are created in NachoDB using <code>Storage.createIndex</code> or <code>Storage.createFieldIndex</code> methods. 
+Indices are created in Volante using <code>Storage.createIndex</code> or <code>Storage.createFieldIndex</code> methods. 
 There can be several index implementations
 but right now only one implementation based on B+Tree is provided (because B+Tree is the most efficient structure
 for disk based databases). Methods of <code>Index</code> and <code>FieldIndex</code> interface allows to add, remove and 
@@ -259,7 +259,7 @@ You can use index in <code>foreach</code> construction to iterate through all in
 If you need set of persistent objects you should use <code>Storage.createSet</code> method.
 Set is implemented using B+Tree where object OID is used as a key.<P> 
 
-NachoDB also support spatial indices (<code>org.garret.perst.SpatialIndex</code>) and generic indices with
+Volante also support spatial indices (<code>org.garret.perst.SpatialIndex</code>) and generic indices with
 user defined comparator (<code>org.garret.perst.SortedCollection</code>). 
 Spatial index is implemented using Guttman's R-Tree with quadratic split algorithm.
 It allows efficient search of R2 objects. Sorted collection provides almost the same methods
@@ -267,7 +267,7 @@ as <code>FieldIndex</code> but it uses user defined comparator to compare collec
 Sorted collection is implemented using T-Tree and is especially efficient for main-memory
 databases.</P>
 
-The table below summarize information about all indeices supported by NachoDB:
+The table below summarize information about all indeices supported by Volante:
 
 <TABLE border>
 <TR><TH>Interface</TH><TH>Description</TH><TH>Key type</TH><TH>Implementation</TH><TH>Created by</TH></TH>
@@ -339,24 +339,24 @@ The table below summarize information about all indeices supported by NachoDB:
 
 <H3> <A NAME = "projection">Projection</A></H3>
 
-Using NachoDB indices programmer can easily implement most of simple SQL queries, like:
+Using Volante indices programmer can easily implement most of simple SQL queries, like:
 
 <pre>
     select * from T where x=?;
 </pre>
 
-NachoDB relations can be used to implement simple joins, 
+Volante relations can be used to implement simple joins, 
 like the following SQL query fetching all order to the particular vendor:
 
 <pre>
     select * from O Order, V Vendor where O.vendorID = V.id AND V.name='ABC';
 </pre>
 
-In NachoDB it is possible to select first vendor using index search and ten traverse 
+In Volante it is possible to select first vendor using index search and ten traverse 
 correspondent relation to locate all orders to this vendor.<P>
 
 But sometimes it is needed to implement more complex queries.
-It is also possible in NachoDB without need to write query in some special 
+It is also possible in Volante without need to write query in some special 
 (non-procedural) language. Class <code>Projection</code> is use to combine results
 of several simple operations (such index search). Lets start explanation of this class with an 
 example. Consider that we need to know all order for the detail with name started with 'D1' 
@@ -369,7 +369,7 @@ SQL statement which perform this query is the following:
 </pre>
 
 
-And now how it can be done in NachoDB. Consider that we have indices for 
+And now how it can be done in Volante. Consider that we have indices for 
 details and vendors:
 
 <pre>
@@ -422,9 +422,9 @@ we need to sort orders by price field, it can be done with the following stateme
 
 <H3> <A NAME = "transaction">Transaction model</A></H3>
 
-NachoDB preserve consistency of the data in case of system or application failure. 
+Volante preserve consistency of the data in case of system or application failure. 
 Transaction mechanism is used to implement all-or-nothing database update. 
-Transaction in NachoDB are started implicitly when update operation is first time performed 
+Transaction in Volante are started implicitly when update operation is first time performed 
 and finished explicitly by <code>commit, rollback</code> or <code>close</code> methods.<P>
 
 Commit of transaction cause synchronous write of changed pages to the disk.
@@ -434,16 +434,16 @@ more than 100 writes in random places. As far as transaction usually consists of
 it leads to average performance about 10 transaction commits per second.<P>
 
 Performance can be greatly increased if you minimize number of commits (larger transactions).
-NachoDB is using shadow mechanism for transaction implementation. When object is changed first time
+Volante is using shadow mechanism for transaction implementation. When object is changed first time
 during transaction, shadow of the object is created and original object is kept unchanged. If 
 object is updated multiple times during transaction, shadow is create only once. 
-Because of using shows, NachoDB do not need transaction log file. So in NachoDB
+Because of using shows, Volante do not need transaction log file. So in Volante
 long transaction can not cause transaction log overflow as in most of other DBMSes.
-Quite the contrary, if you do not call commit at all, NachoDB works as DBMS without transaction
+Quite the contrary, if you do not call commit at all, Volante works as DBMS without transaction
 support, adding almost no overhead of supporting transactions.<P>
 
 The only drawback of long transactions is possibility to loose a lot of changes in case of fault.
-NachoDB will preserve consistency of the database, but all changes made since list commit will be lost.<P> 
+Volante will preserve consistency of the database, but all changes made since list commit will be lost.<P> 
 
 
 <H2> <A NAME = "transparent">Transparent API's</A></H2>
@@ -458,7 +458,7 @@ system, but also any system based on <i>metaobject protocol</i>: protocol of con
 behavior of the object. For example it is possible to implement transparent interface to object
 oriented database using this API.<p>
 
-NachoDB includes two classes PersistentContext and TransparentPersistenceAttrribute
+Volante includes two classes PersistentContext and TransparentPersistenceAttrribute
 which are used to provide transparent persistence for C# objects using .Net remoting API. 
 If application class is derived from PersistentContext and marked with TransparentPersistence 
 attribute, it will automatically load on demand its content from the database and 
@@ -473,11 +473,11 @@ But there are two significant restrictions on using remoting API:
 is about 100 times slower than normal method invocation).
 </UL><P>
 
-<code>TransparentGuess</code> example illustrates using of this NachoDB transparent API.<p>
+<code>TransparentGuess</code> example illustrates using of this Volante transparent API.<p>
 
 <H3><A NAME = "props">Using virtual properties</A></H3>
 
-Yet another attempt to build transparent API to NachoDB without using special
+Yet another attempt to build transparent API to Volante without using special
 preprocessor (enhancer) is based on the idea of using virtual properties.
 Unlike Java, C# provides property mechanism which allows to encapsulate 
 representation of object component. Idea originally proposed by 
@@ -502,7 +502,7 @@ except default. And this default constructor should not do something else except
 initialization of transient components, because this constructor will be invoked each time 
 object is loaded from the storage.
 <LI>It is not possible to have arrays of references. You have to use 
-<code>NachoDB.PArray</code> class instead.
+<code>Volante.PArray</code> class instead.
 <LI>Generation of wrapper classes is not cheap operations, so if there are many classes
 in your applications, then it can take significant time during database open.
 <LI>This mechanism will not work in Compact.Net framework 
@@ -526,9 +526,9 @@ class Node:IPersistent {
 </pre>
 
 Please notice that you should extend IPersistent interface.
-In this case NachoDB will derive generated wrapper class from
-<code>NachoDB.Persistent</code> class (or from <code>NachoDB.PersistentResource</code> class 
-if specified interface extends <code>NachoDB.IResource</code> interface).
+In this case Volante will derive generated wrapper class from
+<code>Volante.Persistent</code> class (or from <code>Volante.PersistentResource</code> class 
+if specified interface extends <code>Volante.IResource</code> interface).
 Wrapper class will implement specified interface and contains correspondent fields:
 
 <pre>
@@ -585,27 +585,27 @@ garbage collector will remove from memory all persistent objects which are not r
 from some program variables. That is why it is highly recommended to use LRU object cache
 to increase performance (it is used by default).<p>
 
-<code>PropGuess</code> example illustrates using of this NachoDB transparent API.<p>
+<code>PropGuess</code> example illustrates using of this Volante transparent API.<p>
 
 
-<H2> <A NAME = "implementation">NachoDB implementation issues</A></H2>
+<H2> <A NAME = "implementation">Volante implementation issues</A></H2>
 
-Below is more detailed description of NachoDB implementation.
+Below is more detailed description of Volante implementation.
 This section can be skipped if you are not interested in the details of implementation:<P>
 
 
 <H3> <A NAME = "memory">Memory allocation</A></H3>
 
-Memory allocation is performed in NachoDB by bitmap. Memory is allocated in
-chunks called allocation quantum. In current version of NachoDB size of
+Memory allocation is performed in Volante by bitmap. Memory is allocated in
+chunks called allocation quantum. In current version of Volante size of
 allocation quantum is 64 byte. It means that size of all allocated objects is
 aligned on 64 byte boundary. Each 64 byte of database memory is represented by
-one bit in the bitmap. To locate hole of requested size in bitmap, NachoDB
+one bit in the bitmap. To locate hole of requested size in bitmap, Volante
 sequentially searches bitmap pages for correspondent number of successive
-cleared bits. NachoDB use three arrays indexed by bitmap byte, which
+cleared bits. Volante use three arrays indexed by bitmap byte, which
 makes possible fast calculation of hole offset and size within the byte.<P>
 
-NachoDB performs cyclic scanning of bitmap pages. It keeps identifier
+Volante performs cyclic scanning of bitmap pages. It keeps identifier
 of current bitmap page and current position within the page. Each time
 when allocation request arrives, scanning of the bitmap starts from the
 current position.
@@ -632,7 +632,7 @@ Only after reaching the end of the bitmap, scanning restarts from the beginning
 searching for holes in previously allocated memory.<P>
 
 
-To reduce number of bitmap pages scans, NachoDB associates descriptor with
+To reduce number of bitmap pages scans, Volante associates descriptor with
 each page, which is used to remember maximal size of the hole on the page.
 Calculation of maximal hole size is performed in the following way:
 if object of size <I>M</I> can not be allocated from this bitmap pages,
@@ -644,34 +644,34 @@ is reset when some object is deallocated within this bitmap page.<P>
 
 Some database objects
 (like hash table pages) should be aligned on page boundary
-to provide more efficient access. NachoDB memory  allocator checks requested
+to provide more efficient access. Volante memory  allocator checks requested
 size and if it is aligned on page boundary, then address of
 allocated memory segment is also aligned on page boundary. Search of free hole
-will be done faster in this case, because NachoDB increases step of current
+will be done faster in this case, because Volante increases step of current
 position increment according to the value of alignment.<P>
 
-To be able to deallocate memory used by object, NachoDB needs to keep
+To be able to deallocate memory used by object, Volante needs to keep
 somewhere
-information about object size. NachoDB memory allocator deals with two types
+information about object size. Volante memory allocator deals with two types
 of objects - normal table records and page objects.
 All table records are prepended by record header, which contains
 record size and pointer of L2-list linking all records in the table.
 So size of the table record object can be extracted from record header.
 Page objects always occupies the whole database page are are allocated at
 the positions aligned on page boundary. Page objects has no headers.
-NachoDB distinguish page objects
+Volante distinguish page objects
 with normal object by using special marker in object index.<P>
 
 
 <H3> <A NAME = "logless">Shadow transaction mechanism</A></H3>
 
-Each record (object) in NachoDB has unique identifier (OID).
+Each record (object) in Volante has unique identifier (OID).
 Object identifiers
 are used to implement references between objects. To locate object by
 reference, its OID is used as index in array of object offsets within the file.
 This array is called <I>object index</I> and element of this array -
 <I>object handle</I>. These are two copies of object
-indices in NachoDB, one of which is current and other - shadow.
+indices in Volante, one of which is current and other - shadow.
 Header of database contains pointers to both object indices and indicator
 which index is current at this moment.<P>
 
@@ -680,18 +680,18 @@ When object is modified first time, it is cloned
 changed to point to newly created object copy. And shadow index still
 contains handle which points to the original version of the object.
 All changes are done with the object copy, leaving original object unchanged.
-NachoDB marks in special bitmap page of the object index, which contains
+Volante marks in special bitmap page of the object index, which contains
 modified object handle.<P>
 
-When transaction is committed, NachoDB first checks if size of object index
+When transaction is committed, Volante first checks if size of object index
 was increased during current transaction. If so, it also reallocates shadow
-copy of object index. Then NachoDB frees memory for all "old objects",
+copy of object index. Then Volante frees memory for all "old objects",
 i.e. objects which was cloned within transaction. Memory can not be
 deallocated before commit, because we wants to preserve consistent
 state of the database by keeping cloned object unchanged.
 If we deallocate memory immediately after cloning, new object can be
 allocated at the place of cloned object and we loose
-consistency. As far as memory deallocation is done in NachoDB by bitmap
+consistency. As far as memory deallocation is done in Volante by bitmap
 using the same transaction mechanism as for normal database objects,
 deallocation of object space will require clearing some bits in bitmap page,
 which also should be cloned before modification. Cloning bitmap page will
@@ -704,16 +704,16 @@ not cloned before). So when transaction is committed, we only clear bits in
 bitmap pages and no more requests for allocation memory can be generated at
 this moment.<P>
 
-After deallocation of old copies, NachoDB flushes all modified pages on disk
-to synchronize content of the memory and disk file. After that NachoDB
+After deallocation of old copies, Volante flushes all modified pages on disk
+to synchronize content of the memory and disk file. After that Volante
 changes current object index indicator in database
 header to switch roles of the object indices. Now object index, which was
-current becomes shadow, and shadow index becomes current. Then NachoDB again
+current becomes shadow, and shadow index becomes current. Then Volante again
 flushes modified page (i.e. page with database header) on disk, transferring
 database to new consistent state.
-After that NachoDB copies all modified handles from new object index
+After that Volante copies all modified handles from new object index
 to object index which was previously shadow and now becomes current.
-At this moment contents of both indices is synchronized and NachoDB is ready
+At this moment contents of both indices is synchronized and Volante is ready
 to start new transaction.<P>
 
 Bitmap of modified object index pages is used to minimize time of committing
@@ -729,13 +729,13 @@ before the start of current transaction.<P>
 Allocation of object handles is done by free handles list. Header of the list
 is also shadowed and two instances of list headers are stored in database
 header. Switch between them is done in the same way as switch of
-object indices. When there are no more free elements in the list, NachoDB
+object indices. When there are no more free elements in the list, Volante
 allocates handles from the unused part of new index. When there is no
 more space in the index, it is reallocated. Object index is the only
 entity in database whose is not cloned on modification. Instead of this
 two copies of object index are always used.<P>
 
-There are some predefined OID values in NachoDB. OID <I>0</I> is reserved
+There are some predefined OID values in Volante. OID <I>0</I> is reserved
 as invalid object identifier. OID starting from <I>1</I> are reserved for bitmap pages.
 Number of bitmap pages depends on database maximum virtual space.
 For one terabyte virtual space, 8 Kb page size and 64 byte allocation quantum,
@@ -743,11 +743,11 @@ For one terabyte virtual space, 8 Kb page size and 64 byte allocation quantum,
 bitmap. Bitmap pages are allocated on demand, when database size is extended.
 So OID of first users object will be 0x8002.<P>
 
-Recovery procedure is trivial in NachoDB. There are two instances of
+Recovery procedure is trivial in Volante. There are two instances of
 object index, one of which is current and another corresponds to
-consistent database state. When database is opened, NachoDB checks database
+consistent database state. When database is opened, Volante checks database
 header to detect if database was normally closed. If not
-(<code>dirty</code> flag is set in database header), then NachoDB performs
+(<code>dirty</code> flag is set in database header), then Volante performs
 database recovery. Recovery is very similar to rollback of transaction.
 Indicator of current index in database object header is used to
 determine index corresponding to consistent database state and object handles
@@ -762,19 +762,19 @@ Fast recovery procedure reduces "out-of-service" time of application.<P>
 
 <H2> <A NAME = "where">Where to use</A></H2>
 
-NachoDB is simple and fast embedded database engine. 
+Volante is simple and fast embedded database engine. 
 If your applications need embedded database engine and do not need to execute complex SQL queries, 
 and the only thing you need is to be able to store/fetch/locate object in the database using navigation 
-through references or indexed search by key, then NachoDB is what you need. It will provide much better performance
+through references or indexed search by key, then Volante is what you need. It will provide much better performance
 than relational database and other (more sophisticated) object oriented database.<P>
 
-The table below summarize <B>pro</B> features of NachoDB:<P>
+The table below summarize <B>pro</B> features of Volante:<P>
 
 <OL>
 <LI>Tight and transparent integration with programming language
 <LI>No gap in database and application data model
 <LI>Easy to use
-<LI>Minimal requirements (NachoDB dll is around 250Kb and can be configured to use minimal amount of memory and disk)
+<LI>Minimal requirements (Volante dll is around 250Kb and can be configured to use minimal amount of memory and disk)
 <LI>High performance (no overheads of communication, locking and parsing and executing queries)
 <LI>Fault tolerance (transaction support)
 <LI>Fast recovery after a crash
@@ -783,7 +783,7 @@ to define or tune any database parameters. Such situation like transaction log o
 </OL>
 
 Certainly nothing in this world can have only positive features.
-No <B>contra</B> list which contains features lacking in NachoDB:
+No <B>contra</B> list which contains features lacking in Volante:
 
 <OL>
 <LI>No procedural query language
@@ -794,12 +794,12 @@ No <B>contra</B> list which contains features lacking in NachoDB:
 
 <H2> <A NAME = "quick">Quick start</A></H2>
 
-You can build NachoDB using Microsoft Visual .NET solution file.
-Template of NachoDB application is the following:
+You can build Volante using Microsoft Visual .NET solution file.
+Template of Volante application is the following:
 
 <PRE>
 
-using NachoDB;
+using Volante;
 
 public class YourPersistentClass : Persistent {
     int    x;
@@ -858,7 +858,7 @@ public class YourApplication {
 }
 </PRE><P>
 
-You can also look at NachoDB examples:<P>
+You can also look at Volante examples:<P>
 
 <DL>
 <DT>Guess.cs
@@ -882,7 +882,7 @@ performance.
 <DT>TestList.cs
 <DD>Test of handling very large list of linked objects using virtual proxy API
 <DT>TestSSD.java
-<DD>Supplier-Shipment-Detail example. This example illustrates how joins can be implemented in NachoDB.
+<DD>Supplier-Shipment-Detail example. This example illustrates how joins can be implemented in Volante.
 <DT>TestSOD.java
 <DD>Supplier-Order-Detail example. This example illustrates alternative apporach for 
 implementing many-to-many relations based on using Projection class.
@@ -897,7 +897,7 @@ implementing many-to-many relations based on using Projection class.
 <DT>TestRaw.cs
 <DD>Test of using CSharp serialization mechanism for storing in database alien objects
 <DT>TestBlob.java
-<DD>Test of handling large binary objects in NachoDB
+<DD>Test of handling large binary objects in Volante
 <DT>TestTimeSeries.java
 <DD>Test and example of handling time series data
 <DT>TestXML.cs
@@ -909,7 +909,7 @@ implementing many-to-many relations based on using Projection class.
 <DT>TestGC.cs
 <DD>Test implicit memory deallocation (garbage collction) in DyBASE.
 <DT>TestReplic.cs
-<DD>Test of NachoDB replication mechanism. 
+<DD>Test of Volante replication mechanism. 
 performance.
 </DL><P>
 
@@ -918,10 +918,10 @@ script.<P>
 
 <H2><A NAME = "tuning">Tuning</A></H2>
 
-This sections contains several hints how to adjust NachoDB parameters and increase database performance.<P>
+This sections contains several hints how to adjust Volante parameters and increase database performance.<P>
 
 Speed of accessing data at the disk is several times slower than speed of access data in main memory. 
-That is why caching of data is the key to increase database performance. NachoDB is using 
+That is why caching of data is the key to increase database performance. Volante is using 
 pool of pages to optimize access to the disk. Page pool size can be specified in <code>Storage.open</code>
 method (by default it is 4Mb). Usually increasing page pool leads to better performance. But you should 
 notice the following things:
@@ -950,14 +950,14 @@ objects are also pinned in memory and object is unpacked only once. It is import
 that amount of used main memory will be greater than database size: all objects will be present in memory in packed
 (inside the page containing the object) and in unpacked (referenced from object cached) form.<P>
 
-In some applications (for example for mobile devices) persistency is not needed. But such NachoDB container classes
+In some applications (for example for mobile devices) persistency is not needed. But such Volante container classes
 as Link, Index, FieldIndex, SpatialIndex still can be used by application. In this case you can use
 <code>NullFile</code> implementation of <code>IFile</code> interface together
 with <code>Storage.INFINITE_PAGE_POOL</code> to create transient in-memory database. Data in this case will never be 
 written on the disk.<P> 
 
 There are some constants defined in <code>StorageImpl</code> class which has influence on
-initial and maximal database size. If you want to change them, you will have to rebuild NachoDB.
+initial and maximal database size. If you want to change them, you will have to rebuild Volante.
 Below is detailed description of this parameters:<P>
 
 <TABLE BORDER>
@@ -982,21 +982,21 @@ of existed holes in memory allocation bitmap.
 
 
 <TR><TD><code>dbObjectCacheInitSize</code></TD><TD>1319</TD>
-<TD>Size of object cache. NachoDB needs this cache to check if object with such OID already 
+<TD>Size of object cache. Volante needs this cache to check if object with such OID already 
 present in memory. This cache uses weak references to allow garbage collector to do it work. 
 When some threshold of filling cache is reached, cached is reallocated by doubling its size.
 Once again increasing this parameter can save some number of cache reallocations.
 </TD></TR>
 </TABLE><P>
 
-Now some hints how to increase NachoDB performance and reduce size of used main memory.
+Now some hints how to increase Volante performance and reduce size of used main memory.
 If you database performs a lot of updates of persistent data, then the main limiting factor is speed 
 of writing changes to the disk. Especially synchronous write to the disk performed by commit.
 If you will do commit after each update, then average speed will be about 10 updates per second 
 (this estimation is based on the assumption than average disk access time is about 10msec and
 each transaction commit usually requires writing about 10 pages in random places in the file).
 But it is possible to dramatically increase update performance if you group several updates in 
-one transactions. NachoDB is creating shadow of the object when it is
+one transactions. Volante is creating shadow of the object when it is
 first time updated inside transaction. If object will be updated once in N transactions, 
 then N shadows will be created. If object will be updated N times inside one transaction, then
 shadow will be created only once. It explains advantage of having one large transaction.<P>
@@ -1082,7 +1082,7 @@ constructor of the class.
 
 <dt><i>How to defined constructors for persistent objects?</i></dt>
 <dd>
-The normal default constructor of a class is always used by NachoDB when 
+The normal default constructor of a class is always used by Volante when 
 loading objects.
 This implies that when one needs to create attributes that are to remain 
 one has to either:
@@ -1099,7 +1099,7 @@ called when an object is retrieved from the db.
 </dd><p>
 
 <dt><i>When redefinition of recursiveLoading method is needed?</i></dt>
-<dd>By default NachoDB recursively load all referenced objects.
+<dd>By default Volante recursively load all referenced objects.
 So once you access some persistent object, the complete closure of persistent objects,
 directly or indirectly reachable from this object by references, is loaded.
 So in theory loading of root object can cause loading of all objects in the database.
@@ -1108,10 +1108,10 @@ it will cause memory exhaustion), then you should stop recursion by redefinition
 <code>recursiveLoading</code> method in some classes. You should explicitly load all object referenced
 from object with disabled recursive loading. 
 <P>
-But really situation is better. It is important to notice that all NachoDB collection classes
+But really situation is better. It is important to notice that all Volante collection classes
 always load their members on demand. It means that once you have reference for example to FielIndex, 
 only header of this collection object will be loaded and members will be loaded on demand. 
-It is true for all other NachoDB collections: Link, Relation, Index, SortedCollection, PersistentSet. 
+It is true for all other Volante collections: Link, Relation, Index, SortedCollection, PersistentSet. 
 As far as persistent objects in database are usually accessible through collections, in 
 most cases explicit loading of persistent objects is not needed. But be careful: if in addition 
 to placing all your objects in some index, you also link them for example in L2-List, then
@@ -1120,9 +1120,9 @@ fetching single object will cause loading of all other objects from this collect
 
 <dt><i>How to store classes not derived from Persistent?</i></dt>
 <dd>
-NachoDB allows to store transient objects using standard Java serialization mechanism. 
+Volante allows to store transient objects using standard Java serialization mechanism. 
 To enable this feature, you should set <code>Storage.setProperty("perst.serialize.transient.objects")</code>. 
-NachoDB will correctly handle reference to persistent object from serialized transient objects. 
+Volante will correctly handle reference to persistent object from serialized transient objects. 
 But it is important to notice, that identity of saved transient objects is not preserved. 
 If there was transient object O referenced from persistent objects P1 and P2, then when
 objects P1 and P2 are stored, instance of O object will be serialized both in P1 and P2 record. 
@@ -1142,10 +1142,10 @@ arrives (application or system crash or just power fault), then all uncommitted 
 
 <dt><i>How to deallocate objects?</i></dt>
 <dd>
-NachoDB doesn't automatically exclude deleted object from any indices containing
+Volante doesn't automatically exclude deleted object from any indices containing
 this object. So it is responsibility of programmer to remove object
 from all indices before it is deallocated.<BR>
-NachoDB also doesn't remove any object referenced from removed object.
+Volante also doesn't remove any object referenced from removed object.
 If it is needed - programmer should do it himself.<BR>
 Explicit deletion of object can cause two problems:
 <UL>
@@ -1153,9 +1153,9 @@ Explicit deletion of object can cause two problems:
 <LI>Garbage in the database (unreferenced objects).
 </UL>
 First problem is most critical and can cause database data corruption.
-To prevent this problem it is strongly recommended to use NachoDB garbage collector
+To prevent this problem it is strongly recommended to use Volante garbage collector
 instead of explicit memory deallocation. If it is not possible (due to performance 
-or some other reasons), it still can be used for debugging, since NachoDB GC is able to detect 
+or some other reasons), it still can be used for debugging, since Volante GC is able to detect 
 both problems: it will throw <code>StorageError(StorageError.ErrorCode.INVALID_OID)</code> exception
 if reference to the deleted object is found and return non zero number of collected objects
 if there is garbage in the database. 
@@ -1163,7 +1163,7 @@ if there is garbage in the database.
 <dt><i>Why applicsation normally working in single-threaded mode got
 assertion failures or some other exceptions if database is updated by mode than one thread?</i></dt>
 <dd>
-NachoDB doesn't synchronize itself access
+Volante doesn't synchronize itself access
 of application to the persistent objects. It is responsibility of
 application to set proper lock to avoid concurrent access to the same
 object. So just using beginThreadTransaction and endThreadTransaction
@@ -1175,7 +1175,7 @@ So the following alternatives are possible:
 mutual exclusion of each thread. So thread lock mutex, do some
 operations with database, commit transaction and unlock mutex.
 3. Use per-thread transactions in EXCLUSIVE_TRANSACTION mode.
-This approach is similar to 2), but NachoDB will provide exclusion of
+This approach is similar to 2), but Volante will provide exclusion of
 threads itself.
 4. Use per-thread transactions in SERIALIZABLE_TRANSACTION mode +
 objet level locking + alternative B-Tree implementation.

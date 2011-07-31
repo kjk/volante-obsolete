@@ -1,6 +1,6 @@
 --- Release version 1.00 ??.??.????
 
-1. Renamed Perst to NachoDB
+1. Renamed Perst to Volante
 2. Fixes when using USE_GENERICS define
 3. Added OMIT_XML and OMIT_REPLICATION defines for building smaller dll by excluding those features
 4. Wrote Unix/Mac makefile and test runner (using mono)

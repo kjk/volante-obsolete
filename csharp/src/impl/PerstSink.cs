@@ -2,7 +2,7 @@ using System;
 using System.Reflection;
 using System.Runtime.Remoting.Messaging;
 
-namespace NachoDB.Impl
+namespace Volante.Impl
 {
     public class PerstSink : IMessageSink 
     {
@@ -23,7 +23,7 @@ namespace NachoDB.Impl
         public IMessage SyncProcessMessage(IMessage call) 
         {
             IMethodMessage invocation = (IMethodMessage)call;
-            if (invocation.TypeName != "NachoDB.PersistentContext") 
+            if (invocation.TypeName != "Volante.PersistentContext") 
             { 
                 target.Load();
                 if (invocation.MethodName == "FieldSetter") 

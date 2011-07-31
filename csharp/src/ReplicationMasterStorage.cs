@@ -1,4 +1,4 @@
-namespace NachoDB
+namespace Volante
 {
     /// <summary>
     /// Storage performing replication of changed pages to specified slave nodes.

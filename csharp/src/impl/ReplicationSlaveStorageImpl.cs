@@ -1,11 +1,11 @@
 #if !OMIT_REPLICATION
-namespace NachoDB.Impl
+namespace Volante.Impl
 {
     using System;
     using System.Net;
     using System.Net.Sockets;
     using System.Threading;
-    using NachoDB;
+    using Volante;
     
     public class ReplicationSlaveStorageImpl : StorageImpl, ReplicationSlaveStorage
     { 

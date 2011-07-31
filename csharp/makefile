@@ -1,4 +1,4 @@
-# Makefile for building NachoDB
+# Makefile for building Volante
 # Valid options:
 # CFG=[rel|dbg] - default: rel
 # OMIT_XML=[yes|no] - default: no
@@ -24,7 +24,7 @@ CSC_FLAGS += -D:OMIT_REPLICATION
 OUTDIR:=$(OUTDIR)-norepl
 endif
 
-NACHODB=$(OUTDIR)/NachoDB.dll
+NACHODB=$(OUTDIR)/Volante.dll
 
 TESTS_NAMES=TestBackup TestBit TestBlob TestCompoundIndex TestConcur TestEnumerator\
 	TestGC TestIndex TestIndex2 TestList TestR2 TestRaw TestReplic TestRtree\
@@ -34,9 +34,9 @@ TESTS = $(patsubst %, $(OUTDIR)/%.exe, ${TESTS_NAMES})
 EXAMPLES_NAMES=Guess IpCountry PropGuess TestLink TestSOD TestSSD TransparentGuess
 EXAMPLES = $(patsubst %, $(OUTDIR)/%.exe, ${EXAMPLES_NAMES})
 
-all: nachodb tests examples
+all: volante tests examples
 
-nachodb: $(OUTDIR) $(NACHODB)
+volante: $(OUTDIR) $(NACHODB)
 
 tests: nachodb $(TESTS)
 

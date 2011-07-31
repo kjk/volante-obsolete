@@ -14,7 +14,7 @@ set O=bin\rel-cov
 nmake -f makefile.msvc FOR_PARTCOVER=yes CFG=rel
 IF ERRORLEVEL 1 GOTO BUILDFAILED
 
-PartCover --target %O%\UnitTestsRunner.exe --include [NachoDB]* --include [UnitTests]* --output %O%\partcover.xml
+PartCover --target %O%\UnitTestsRunner.exe --include [Volante]* --include [UnitTests]* --output %O%\partcover.xml
 IF ERRORLEVEL 1 GOTO PARTCOVERFAILED
 
 python partcover-to-html.py %O%\partcover.xml cov

@@ -1,4 +1,4 @@
-namespace NachoDB
+namespace Volante
 {
     using System;
     using System.Collections.Generic;
@@ -52,7 +52,7 @@ namespace NachoDB
         /// Object can be not yet peristent, in this case
         /// its forced to become persistent by assigning OID to it.
         /// </param>
-        /// <exception cref="NachoDB.StorageError"><code>StorageError(StorageError.ErrorCode.INCOMPATIBLE_KEY_TYPE)</code> 
+        /// <exception cref="Volante.StorageError"><code>StorageError(StorageError.ErrorCode.INCOMPATIBLE_KEY_TYPE)</code> 
         /// is thrown when indexed field has type other than <code>int</code> or <code>long</code></exception>
         void Append(V obj);
 
@@ -61,7 +61,7 @@ namespace NachoDB
         /// <param name="key">wrapper of removed key
         /// </param>
         /// <returns>removed object</returns>
-        /// <exception cref="NachoDB.StorageError">StorageError(StorageError.ErrorCode.KEY_NOT_FOUND) exception if there is no such key in the index,
+        /// <exception cref="Volante.StorageError">StorageError(StorageError.ErrorCode.KEY_NOT_FOUND) exception if there is no such key in the index,
         /// or StorageError(StorageError.ErrorCode.KEY_NOT_UNIQUE) if index is not unique.
         /// 
         /// </exception>
@@ -72,7 +72,7 @@ namespace NachoDB
         /// <param name="key">value of removed key
         /// </param>
         /// <returns>removed object</returns>
-        /// <exception cref="NachoDB.StorageError">StorageError(StorageError.ErrorCode.KEY_NOT_FOUND) exception if there is no such key in the index,
+        /// <exception cref="Volante.StorageError">StorageError(StorageError.ErrorCode.KEY_NOT_FOUND) exception if there is no such key in the index,
         /// or StorageError(StorageError.ErrorCode.KEY_NOT_UNIQUE) if index is not unique.
         /// 
         /// </exception>

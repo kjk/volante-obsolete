@@ -1,4 +1,4 @@
-namespace NachoDB
+namespace Volante
 {
     using System;
     using System.Collections;
@@ -36,7 +36,7 @@ namespace NachoDB
         /// </param>
         /// <param name="obj">object removed from the index
         /// </param>
-        /// <exception  cref="NachoDB.StorageError">StorageError(StorageError.KEY_NOT_FOUND) exception 
+        /// <exception  cref="Volante.StorageError">StorageError(StorageError.KEY_NOT_FOUND) exception 
         /// if there is no such key in the index
         /// </exception>
         void Remove(RectangleR2 r, T obj);

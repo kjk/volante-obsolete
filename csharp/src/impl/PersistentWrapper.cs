@@ -1,4 +1,4 @@
-namespace NachoDB.Impl
+namespace Volante.Impl
 {
     public interface PersistentWrapper 
     {

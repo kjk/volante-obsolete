@@ -1,10 +1,10 @@
 using System;
-using NachoDB.Impl;
+using Volante.Impl;
 using System.Runtime.Remoting.Contexts;
 using System.Runtime.Remoting.Messaging;
 using System.Runtime.Remoting.Activation;
   
-namespace NachoDB
+namespace Volante
 {
     /// <summary>
     /// Attribute providing transparent persistency for context bound objects.

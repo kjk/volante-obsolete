@@ -1,10 +1,10 @@
-namespace NachoDB.Impl
+namespace Volante.Impl
 {
     using System;
     using System.Collections;
-    using NachoDB;
+    using Volante;
     using System.Diagnostics;
-    using Link = NachoDB.Link<IPersistent>;
+    using Link = Volante.Link<IPersistent>;
 
     class RtreePage : Persistent 
     {

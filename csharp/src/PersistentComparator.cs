@@ -1,4 +1,4 @@
-namespace NachoDB
+namespace Volante
 {
     /// <summary> Base class for persistent comparator used in SortedCollection class
     /// </summary>

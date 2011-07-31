@@ -1,11 +1,11 @@
-namespace NachoDB.Impl        
+namespace Volante.Impl        
 {
     using System;
     using System.Collections.Generic;
     using System.Collections;
-    using NachoDB;
+    using Volante;
     
-    class AltPersistentSet<T> : AltBtree<T,T>, NachoDB.ISet<T> where T:class,IPersistent
+    class AltPersistentSet<T> : AltBtree<T,T>, Volante.ISet<T> where T:class,IPersistent
     {
         public AltPersistentSet() 
         { 
@@ -80,7 +80,7 @@ namespace NachoDB.Impl
             {
                 return true;
             }
-            NachoDB.ISet<T> s = o as NachoDB.ISet<T>;
+            Volante.ISet<T> s = o as Volante.ISet<T>;
             if (s == null) 
             {
                 return false;

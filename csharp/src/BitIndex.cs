@@ -1,4 +1,4 @@
-namespace NachoDB
+namespace Volante
 {
     using System;
     using System.Collections.Generic;
@@ -19,7 +19,7 @@ namespace NachoDB
         /// </summary>
         /// <param name="obj">object which properties are requested</param>
         /// <returns>bit mask associated with this objects</returns>
-        /// <exception cref="NachoDB.StorageError">StorageError(StorageError.ErrorCode.KEY_NOT_FOUND) exception if there is no such object in the index
+        /// <exception cref="Volante.StorageError">StorageError(StorageError.ErrorCode.KEY_NOT_FOUND) exception if there is no such object in the index
         /// </exception>
         int Get(T obj);
 

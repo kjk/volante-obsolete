@@ -1,4 +1,4 @@
-namespace NachoDB
+namespace Volante
 {
     using System;
     using System.Collections;
@@ -43,7 +43,7 @@ namespace NachoDB
         /// </param>
         /// <returns>object with this value of the key or <code>null</code> if key not found
         /// </returns>
-        /// <exception cref="NachoDB.StorageError">StorageError(StorageError.ErrorCode.KEY_NOT_UNIQUE) exception if there are more than 
+        /// <exception cref="Volante.StorageError">StorageError(StorageError.ErrorCode.KEY_NOT_UNIQUE) exception if there are more than 
         /// one objects in the index with specified value of the key.
         /// 
         /// </exception>
@@ -55,7 +55,7 @@ namespace NachoDB
         /// </param>
         /// <returns>object with this value of the key or <code>null</code> if key not found
         /// </returns>
-        /// <exception cref="NachoDB.StorageError">StorageError(StorageError.ErrorCode.KEY_NOT_UNIQUE) exception if there are more than 
+        /// <exception cref="Volante.StorageError">StorageError(StorageError.ErrorCode.KEY_NOT_UNIQUE) exception if there are more than 
         /// one objects in the index with specified value of the key.
         /// 
         /// </exception>

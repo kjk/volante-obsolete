@@ -1,11 +1,11 @@
 #if !OMIT_REPLICATION
-namespace NachoDB.Impl
+namespace Volante.Impl
 {
     using System;
     using System.Threading;
     using System.Net;
     using System.Net.Sockets;
-    using NachoDB;
+    using Volante;
 
     /// <summary>
     /// File performing asynchronous replication of changed pages to specified slave nodes.

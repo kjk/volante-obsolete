@@ -1,4 +1,4 @@
-namespace NachoDB
+namespace Volante
 {    
     /// <summary>
 	/// Interface to store/fetch large binary objects

@@ -1,11 +1,11 @@
-namespace NachoDB.Impl
+namespace Volante.Impl
 {
     using System;
     using System.Collections;
     using System.Collections.Generic;
     using System.Reflection;
     using System.Diagnostics;
-    using NachoDB;
+    using Volante;
 
     class BtreeMultiFieldIndex<V>:Btree<object[],V>, MultiFieldIndex<V> where V:class,IPersistent
     {

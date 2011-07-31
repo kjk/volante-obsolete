@@ -1,6 +1,6 @@
-namespace NachoDB.Impl
+namespace Volante.Impl
 {
-    using NachoDB;
+    using Volante;
     using System.Text;
 
     public interface GeneratedSerializer

@@ -1,7 +1,7 @@
-namespace NachoDB.Impl
+namespace Volante.Impl
 {
     using System;
-    using NachoDB;
+    using Volante;
 
     public class DefaultPersistentComparator<K,V> : PersistentComparator<K,V> where V:class,IPersistent,IComparable<V>,IComparable<K> 
     { 

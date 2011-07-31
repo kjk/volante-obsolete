@@ -2,7 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace NachoDB.Impl
+namespace Volante.Impl
 {
     class ScalableSet<T> : PersistentCollection<T>, ISet<T> where T:class,IPersistent
     { 

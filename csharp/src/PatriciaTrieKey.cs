@@ -2,7 +2,7 @@ using System;
 using System.Net;
 using System.Diagnostics;
 
-namespace NachoDB
+namespace Volante
 {
     /// Convert different type of keys to 64-bit long value used in PATRICIA trie 
     /// (Practical Algorithm To Retrieve Information Coded In Alphanumeric)

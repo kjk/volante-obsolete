@@ -1,4 +1,4 @@
-namespace NachoDB 
+namespace Volante 
 { 
     using System;
     using System.Collections;
@@ -43,7 +43,7 @@ namespace NachoDB
         /// </summary>
         /// <param name="key"> specified key. It should match with type of the index and should be inclusive.</param>
         /// <returns> object with this value of the key or <code>null</code> if key not found</returns>
-        /// <exception cref="NachoDB.StorageError">StorageError(StorageError.KEY_NOT_UNIQUE) exception if there are more than 
+        /// <exception cref="Volante.StorageError">StorageError(StorageError.KEY_NOT_UNIQUE) exception if there are more than 
         /// one objects in the collection with specified value of the key.  
         /// </exception>
         ///

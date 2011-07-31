@@ -1,8 +1,8 @@
-namespace NachoDB.Impl
+namespace Volante.Impl
 {
     using System;
     using System.Text;
-    using NachoDB;
+    using Volante;
 
     // Class for packing/unpacking data
     public class Bytes

@@ -1,7 +1,7 @@
-namespace NachoDB.Impl        
+namespace Volante.Impl        
 {
     using System;
-    using NachoDB;
+    using Volante;
     using System.Diagnostics;
 	
     class PagePool

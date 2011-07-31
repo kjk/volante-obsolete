@@ -1,9 +1,9 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using NachoDB;
+using Volante;
 
-namespace NachoDB.Impl
+namespace Volante.Impl
 {
     class PTrie<T> : PersistentCollection<T>, PatriciaTrie<T>  where T:class, IPersistent 
     { 

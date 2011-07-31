@@ -44,7 +44,7 @@ TESTS=$(O)\TestBackup.exe $(O)\TestBit.exe $(O)\TestBlob.exe $(O)\TestCompoundIn
 	$(O)\TestTimeSeries.exe $(O)\TestTtree.exe $(O)\TestXML.exe $(O)\TestReplic.exe \
 	$(O)\UnitTestsRunner.exe
 
-LIBRARY=$(O)\NachoDB.dll
+LIBRARY=$(O)\Volante.dll
 
 all: tests examples
 

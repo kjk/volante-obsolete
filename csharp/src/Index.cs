@@ -1,4 +1,4 @@
-namespace NachoDB
+namespace Volante
 {
     using System;
     using System.Collections;
@@ -71,7 +71,7 @@ namespace NachoDB
         /// </param>
         /// <param name="obj">object removed from the index
         /// </param>
-        /// <exception cref="NachoDB.StorageError">StorageError(StorageError.ErrorCode.KEY_NOT_FOUND) exception if there is no such key in the index
+        /// <exception cref="Volante.StorageError">StorageError(StorageError.ErrorCode.KEY_NOT_FOUND) exception if there is no such key in the index
         /// 
         /// </exception>
         void  Remove(Key key, V obj);
@@ -82,7 +82,7 @@ namespace NachoDB
         /// </param>
         /// <param name="obj">object removed from the index
         /// </param>
-        /// <exception cref="NachoDB.StorageError">StorageError(StorageError.ErrorCode.KEY_NOT_FOUND) exception if there is no such key in the index
+        /// <exception cref="Volante.StorageError">StorageError(StorageError.ErrorCode.KEY_NOT_FOUND) exception if there is no such key in the index
         /// 
         /// </exception>
         void  Remove(K key, V obj);
@@ -92,7 +92,7 @@ namespace NachoDB
         /// <param name="key">wrapper of removed key
         /// </param>
         /// <returns>removed object</returns>
-        /// <exception cref="NachoDB.StorageError">StorageError(StorageError.ErrorCode.KEY_NOT_FOUND) exception if there is no such key in the index,
+        /// <exception cref="Volante.StorageError">StorageError(StorageError.ErrorCode.KEY_NOT_FOUND) exception if there is no such key in the index,
         /// or StorageError(StorageError.ErrorCode.KEY_NOT_UNIQUE) if index is not unique.
         /// 
         /// </exception>
@@ -103,7 +103,7 @@ namespace NachoDB
         /// <param name="key">value of removed key
         /// </param>
         /// <returns>removed object</returns>
-        /// <exception cref="NachoDB.StorageError">StorageError(StorageError.ErrorCode.KEY_NOT_FOUND) exception if there is no such key in the index,
+        /// <exception cref="Volante.StorageError">StorageError(StorageError.ErrorCode.KEY_NOT_FOUND) exception if there is no such key in the index,
         /// or StorageError(StorageError.ErrorCode.KEY_NOV_UNIQUE) if index is not unique.
         /// 
         /// </exception>

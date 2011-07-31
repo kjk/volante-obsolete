@@ -1,7 +1,7 @@
 #if !OMIT_REPLICATION
-namespace NachoDB.Impl    
+namespace Volante.Impl    
 {
-    using NachoDB;
+    using Volante;
 
     public class ReplicationMasterStorageImpl : StorageImpl, ReplicationMasterStorage
     { 

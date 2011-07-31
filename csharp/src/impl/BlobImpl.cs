@@ -1,8 +1,8 @@
-namespace NachoDB.Impl
+namespace Volante.Impl
 {
     using System;
     using System.IO;
-    using NachoDB;
+    using Volante;
 
 
     public class BlobImpl : PersistentResource, Blob 

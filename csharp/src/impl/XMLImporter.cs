@@ -1,10 +1,10 @@
 #if !OMIT_XML
-namespace NachoDB.Impl
+namespace Volante.Impl
 {
     using System;
     using System.Collections;
     using System.Reflection;
-    using NachoDB;
+    using Volante;
 
     public class XMLImporter
     {
@@ -46,11 +46,11 @@ namespace NachoDB.Impl
                     throwException("Element name expected");
                 }
                 System.String elemName = scanner.Identifier;
-                if (elemName.StartsWith("NachoDB.Impl.Btree")
-                    || elemName.StartsWith("NachoDB.Impl.BitIndexImpl")
-                    || elemName.StartsWith("NachoDB.Impl.PersistentSet") 
-                    || elemName.StartsWith("NachoDB.Impl.BtreeFieldIndex") 
-                    || elemName.StartsWith("NachoDB.Impl.BtreeMultiFieldIndex"))
+                if (elemName.StartsWith("Volante.Impl.Btree")
+                    || elemName.StartsWith("Volante.Impl.BitIndexImpl")
+                    || elemName.StartsWith("Volante.Impl.PersistentSet") 
+                    || elemName.StartsWith("Volante.Impl.BtreeFieldIndex") 
+                    || elemName.StartsWith("Volante.Impl.BtreeMultiFieldIndex"))
                 {
                     createIndex(elemName);
                 }
@@ -573,7 +573,7 @@ namespace NachoDB.Impl
             {
                 if (type == null)
                 {
-                    if (indexType.StartsWith("NachoDB.Impl.PersistentSet")) 
+                    if (indexType.StartsWith("Volante.Impl.PersistentSet")) 
                     { 
                     } 
                     else 
@@ -583,7 +583,7 @@ namespace NachoDB.Impl
                 } 
                 else 
                 {
-                    if (indexType.StartsWith("NachoDB.impl.BitIndexImpl")) 
+                    if (indexType.StartsWith("Volante.impl.BitIndexImpl")) 
                     { 
                     } 
                     else 

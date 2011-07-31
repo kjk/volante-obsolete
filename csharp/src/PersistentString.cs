@@ -1,4 +1,4 @@
-namespace NachoDB
+namespace Volante
 {
 	/// <summary>
 	/// Class encapsulating native .Net string. System.String is not persistent object

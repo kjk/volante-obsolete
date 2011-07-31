@@ -1,4 +1,4 @@
-namespace NachoDB.Impl    
+namespace Volante.Impl    
 {
     using System;
     using System.Collections;
@@ -6,7 +6,7 @@ namespace NachoDB.Impl
     using System.Threading;
     using System.Diagnostics;
     using System.Text;
-    using NachoDB;
+    using Volante;
 
     public class StorageImpl : Storage
     {

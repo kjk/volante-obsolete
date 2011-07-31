@@ -1,6 +1,6 @@
 using System;
 
-namespace NachoDB
+namespace Volante
 {
     /// <summary>
     /// Listener of database events. Programmer should derive his own subclass and register

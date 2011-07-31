@@ -2,7 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace NachoDB.Impl 
+namespace Volante.Impl 
 {
 
     class TtreePage<K,V> : Persistent where V:class,IPersistent  

@@ -1,9 +1,9 @@
-namespace NachoDB.Impl
+namespace Volante.Impl
 {
     using System;
     using System.Collections;
     using System.Collections.Generic;
-    using NachoDB;
+    using Volante;
 
     class RtreeR2<T> : PersistentCollection<T>, SpatialIndexR2<T> where T : class, IPersistent
     {

@@ -1,9 +1,9 @@
-namespace NachoDB.Impl
+namespace Volante.Impl
 {
     using System;
     using System.Collections;
     using System.Collections.Generic;
-    using NachoDB;
+    using Volante;
 
     public class LinkImpl<T> : Link<T> where T:class,IPersistent
     {

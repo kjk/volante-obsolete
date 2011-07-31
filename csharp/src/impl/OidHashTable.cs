@@ -1,6 +1,6 @@
-namespace NachoDB.Impl
+namespace Volante.Impl
 {
-    using NachoDB;
+    using Volante;
 
     public interface OidHashTable { 
         bool        remove(int oid);

@@ -463,7 +463,7 @@ $(document).ready(function(){
 
 </head>
 <body>
-<h1>Code coverage report for NachoDB</h1>
+<h1>Code coverage report for Volante</h1>
 """)
     fo.write("""Sort classes by: <span id="sortNameLink"><a href="#" onclick="return sortByName();">name</a></span>,
  <span id="sortCovLink"><a href="#" onclick="return sortByCov();">coverage</a></span>""")

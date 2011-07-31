@@ -1,4 +1,4 @@
-namespace NachoDB
+namespace Volante
 {
     /// <summary>
     /// Storage reciving modified pages from replication master and 

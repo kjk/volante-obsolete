@@ -1,11 +1,11 @@
 #if !OMIT_XML
-namespace NachoDB.Impl
+namespace Volante.Impl
 {
     using System;
     using System.Reflection;
     using System.Diagnostics;
     using System.Text;
-    using NachoDB;
+    using Volante;
 
     public class XMLExporter
     {

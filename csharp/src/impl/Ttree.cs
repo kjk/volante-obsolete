@@ -1,9 +1,9 @@
-namespace NachoDB.Impl
+namespace Volante.Impl
 {
     using System;
     using System.Collections;
     using System.Collections.Generic;
-    using NachoDB;
+    using Volante;
 
     class Ttree<K,V> : PersistentCollection<V>, SortedCollection<K,V> where V : class, IPersistent
     {

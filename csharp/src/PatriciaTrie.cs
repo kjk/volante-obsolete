@@ -2,7 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace NachoDB
+namespace Volante
 {
     /// <summary> 
     /// PATRICIA trie (Practical Algorithm To Retrieve Information Coded In Alphanumeric).

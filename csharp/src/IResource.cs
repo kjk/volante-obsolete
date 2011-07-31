@@ -1,4 +1,4 @@
-namespace NachoDB
+namespace Volante
 {
     ///<summary>
     /// Interface of object supporting locking

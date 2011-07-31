@@ -1,4 +1,4 @@
-namespace NachoDB
+namespace Volante
 {
     /// <summary> Interface of file.
     /// Prorgemmer can provide its own impleentation of this interface, adding such features

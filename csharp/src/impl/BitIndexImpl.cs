@@ -1,10 +1,10 @@
-namespace NachoDB.Impl
+namespace Volante.Impl
 {
     using System;
     using System.Collections;
     using System.Collections.Generic;
     using System.Diagnostics;
-    using NachoDB;
+    using Volante;
 
     class BitIndexImpl<T> : Btree<IPersistent,T>, BitIndex<T> where T:class,IPersistent
     { 

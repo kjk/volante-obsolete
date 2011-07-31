@@ -1,6 +1,6 @@
 using System;
 
-namespace NachoDB
+namespace Volante
 {
     /// <summary>
     /// Information about memory usage for the correspondent class. 

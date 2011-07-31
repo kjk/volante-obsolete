@@ -1,9 +1,9 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using NachoDB;
+using Volante;
 
-namespace NachoDB.Impl
+namespace Volante.Impl
 {
     class ThickIndex<K,V> : PersistentCollection<V>, Index<K,V> where V:class,IPersistent
     { 

@@ -1,8 +1,8 @@
-namespace NachoDB
+namespace Volante
 {
     using System;
-    using ClassDescriptor = NachoDB.Impl.ClassDescriptor;
-    using FieldType = NachoDB.Impl.ClassDescriptor.FieldType;
+    using ClassDescriptor = Volante.Impl.ClassDescriptor;
+    using FieldType = Volante.Impl.ClassDescriptor.FieldType;
 
     /// <summary> Class for specifying key value (neededd to access object by key usig index)
     /// </summary>

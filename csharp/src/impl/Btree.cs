@@ -1,10 +1,10 @@
-namespace NachoDB.Impl
+namespace Volante.Impl
 {
     using System;
     using System.Collections;
     using System.Collections.Generic;
     using System.Diagnostics;
-    using NachoDB;
+    using Volante;
 
     enum BtreeResult {
         Done,
@@ -389,7 +389,7 @@ namespace NachoDB.Impl
             StorageImpl db = (StorageImpl) Storage;
             if (db == null) 
             { 
-                throw new StorageError(NachoDB.StorageError.ErrorCode.DELETED_OBJECT);
+                throw new StorageError(Volante.StorageError.ErrorCode.DELETED_OBJECT);
             }
             if (!obj.IsPersistent())
             {
@@ -439,7 +439,7 @@ namespace NachoDB.Impl
             StorageImpl db = (StorageImpl) Storage;
             if (db == null) 
             { 
-                throw new StorageError(NachoDB.StorageError.ErrorCode.DELETED_OBJECT);
+                throw new StorageError(Volante.StorageError.ErrorCode.DELETED_OBJECT);
             }
             if (root == 0)
             {
@@ -745,7 +745,7 @@ namespace NachoDB.Impl
                 db = (StorageImpl)tree.Storage;
                 if (db == null) 
                 { 
-                    throw new StorageError(NachoDB.StorageError.ErrorCode.DELETED_OBJECT);
+                    throw new StorageError(Volante.StorageError.ErrorCode.DELETED_OBJECT);
                 }
                 sp = 0;
                 int height = tree.height;
@@ -936,7 +936,7 @@ namespace NachoDB.Impl
                 db = (StorageImpl)tree.Storage;
                 if (db == null) 
                 { 
-                    throw new StorageError(NachoDB.StorageError.ErrorCode.DELETED_OBJECT);
+                    throw new StorageError(Volante.StorageError.ErrorCode.DELETED_OBJECT);
                 }
                 pageStack = new int[height];
                 posStack = new int[height];
