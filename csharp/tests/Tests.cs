@@ -6,7 +6,7 @@ namespace Volante
     using System.IO;
     using System.Threading;
 
-    public class UnitTests
+    public class Tests
     {
         internal static int totalTests = 0;
         internal static int failedTests = 0;
@@ -67,19 +67,19 @@ namespace Volante
             foreach (string s in strs)
             {
                 StringInt o = root[s];
-                UnitTests.AssertThat(o.no == no++);
+                Tests.AssertThat(o.no == no++);
             }
         }
 
         public static void Run(bool useAltBtree)
         {
             string dbName = @"testblob.dbs";
-            UnitTests.SafeDeleteFile(dbName);
+            Tests.SafeDeleteFile(dbName);
             Storage db = StorageFactory.CreateStorage();
             db.AlternativeBtree = useAltBtree;
             db.Open(dbName);
             Index<string, StringInt> root = (Index<string, StringInt>)db.Root;
-            UnitTests.AssertThat(null == root);
+            Tests.AssertThat(null == root);
             root = db.CreateIndex<string, StringInt>(true);
             db.Root = root;
 
@@ -97,7 +97,7 @@ namespace Volante
             db = StorageFactory.CreateStorage();
             db.Open(dbName);
             root = (Index<string, StringInt>)db.Root;
-            UnitTests.AssertThat(null != root);
+            Tests.AssertThat(null != root);
             CheckStrings(root, strs);
             db.Close();
         }
@@ -113,13 +113,13 @@ namespace Volante
         public static void Run(bool useAltBtree)
         {
             string dbName = @"testidx.dbs";
-            UnitTests.SafeDeleteFile(dbName);
+            Tests.SafeDeleteFile(dbName);
 
             Storage db = StorageFactory.CreateStorage();
             db.AlternativeBtree = useAltBtree;
             db.Open(dbName);
             Root root = (Root)db.Root;
-            UnitTests.AssertThat(null == root);
+            Tests.AssertThat(null == root);
             root = new Root();
             root.strIndex = db.CreateIndex<string, Record>(true);
             db.Root = root;
@@ -145,7 +145,7 @@ namespace Volante
                     n = r.intKey;
                     string expectedStr = strs[n];
                     string s = r.strKey;
-                    UnitTests.AssertThat(s == expectedStr);
+                    Tests.AssertThat(s == expectedStr);
 
                     if (n == 0)
                     {
@@ -160,8 +160,8 @@ namespace Volante
             {
                 gotException = true;
             }
-            UnitTests.AssertThat(gotException);
-            UnitTests.AssertThat(n == 0);
+            Tests.AssertThat(gotException);
+            Tests.AssertThat(n == 0);
 
             // Test that modyfing an index while traversing it throws an exception
             // Tests AltBtree.BtreeSelectionIterator
@@ -176,7 +176,7 @@ namespace Volante
                     n = r.intKey;
                     string expectedStr = strs[n];
                     string s = r.strKey;
-                    UnitTests.AssertThat(s == expectedStr);
+                    Tests.AssertThat(s == expectedStr);
 
                     Record o = new Record();
                     o.strKey = "six";
@@ -188,7 +188,7 @@ namespace Volante
             {
                 gotException = true;
             }
-            UnitTests.AssertThat(gotException);
+            Tests.AssertThat(gotException);
 
             db.Close();
         }
@@ -225,8 +225,8 @@ namespace Volante
         {
             string dbName1 = @"testxml1.dbs";
             string dbName2 = @"testxml2.dbs";
-            UnitTests.SafeDeleteFile(dbName1);
-            UnitTests.SafeDeleteFile(dbName2);
+            Tests.SafeDeleteFile(dbName1);
+            Tests.SafeDeleteFile(dbName2);
 
             string xmlName = useAltBtree ? @"testalt.xml" : @"test.xml";
             Storage db = StorageFactory.CreateStorage();
@@ -234,7 +234,7 @@ namespace Volante
             db.Open(dbName1, pagePoolSize);
 
             Root root = (Root)db.Root;
-            UnitTests.AssertThat(null == root);
+            Tests.AssertThat(null == root);
             root = new Root();
             root.strIndex = db.CreateIndex<string, Record>(true);
             root.intIndex = db.CreateFieldIndex<long, Record>("intKey", true);
@@ -282,7 +282,7 @@ namespace Volante
             strIndex = root.strIndex;
             intIndex = root.intIndex;
             compoundIndex = root.compoundIndex;
-            UnitTests.AssertThat(root.point.x == 1 && root.point.y == 2);
+            Tests.AssertThat(root.point.x == 1 && root.point.y == 2);
 
             //start = DateTime.Now;
             key = 1999;
@@ -293,12 +293,12 @@ namespace Volante
                 Record rec1 = strIndex[strKey];
                 Record rec2 = intIndex[key];
                 Record rec3 = compoundIndex.Get(new Key(strKey, key));
-                UnitTests.AssertThat(rec1 != null);
-                UnitTests.AssertThat(rec1 == rec2);
-                UnitTests.AssertThat(rec1 == rec3);
-                UnitTests.AssertThat(rec1.intKey == key);
-                UnitTests.AssertThat(rec1.realKey == (double)key);
-                UnitTests.AssertThat(strKey.Equals(rec1.strKey));
+                Tests.AssertThat(rec1 != null);
+                Tests.AssertThat(rec1 == rec2);
+                Tests.AssertThat(rec1 == rec3);
+                Tests.AssertThat(rec1.intKey == key);
+                Tests.AssertThat(rec1.realKey == (double)key);
+                Tests.AssertThat(strKey.Equals(rec1.strKey));
             }
             db.Close();
             //System.Console.WriteLine("Elapsed time for performing " + nRecords * 2 + " index searches: " + (DateTime.Now - start));
@@ -370,12 +370,12 @@ namespace Volante
             int pagePoolSize = 48*1024*1024;
             string dbName = "testbit.dbs";
             
-            UnitTests.SafeDeleteFile(dbName);
+            Tests.SafeDeleteFile(dbName);
             Storage db = StorageFactory.CreateStorage();
             db.Open(dbName, pagePoolSize);
 
             Catalogue root = (Catalogue)db.Root;
-            UnitTests.AssertThat(root == null);
+            Tests.AssertThat(root == null);
             root = new Catalogue();
             root.optionIndex = db.CreateBitIndex<Car>();
             root.modelIndex = db.CreateFieldIndex<string,Car>("model", true);
@@ -493,7 +493,7 @@ namespace Volante
             {
                 byte[] buf2 = new byte[1024];
                 Blob blob = root[file];
-                UnitTests.AssertThat(blob != null);
+                Tests.AssertThat(blob != null);
                 if (blob == null)
                 {
                     Console.WriteLine("File " + file + " not found in database");
@@ -504,14 +504,14 @@ namespace Volante
                 while ((rc = fin.Read(buf, 0, buf.Length)) > 0) 
                 { 
                     int rc2 = bin.Read(buf2, 0, buf2.Length);
-                    UnitTests.AssertThat(rc == rc2);
+                    Tests.AssertThat(rc == rc2);
                     if (rc != rc2) 
                     {
                         Console.WriteLine("Different file size: " + rc + " .vs. " + rc2);
                         break;
                     }
                     while (--rc >= 0 && buf[rc] == buf2[rc]);
-                    UnitTests.AssertThat(rc < 0);
+                    Tests.AssertThat(rc < 0);
                     if (rc >= 0) 
                     { 
                         Console.WriteLine("Content of the files is different: " + buf[rc] + " .vs. " + buf2[rc]);
@@ -539,7 +539,7 @@ namespace Volante
         {
             string dbName = "testcidx.dbs";
             int i;
-            UnitTests.SafeDeleteFile(dbName);
+            Tests.SafeDeleteFile(dbName);
             Storage db = StorageFactory.CreateStorage();
             db.AlternativeBtree = altBtree;
             db.Open(dbName, pagePoolSize);
@@ -710,7 +710,7 @@ namespace Volante
         public static void Run(int nEls) 
         {
             string dbName = "testconcur.dbs";
-            UnitTests.SafeDeleteFile(dbName);
+            Tests.SafeDeleteFile(dbName);
             TestConcur.nElements = nEls;
 
             db = StorageFactory.CreateStorage();
@@ -761,7 +761,7 @@ namespace Volante
         static public void Run(int nRecords, bool altBtree)
         {
             string dbName = "testenum.dbs";
-            UnitTests.SafeDeleteFile(dbName);
+            Tests.SafeDeleteFile(dbName);
 
             Storage db = StorageFactory.CreateStorage();
             db.AlternativeBtree = altBtree;
@@ -1143,7 +1143,7 @@ namespace Volante
         static public void Run(int nIterations, bool altBtree, bool backgroundGc)
         {
             string dbName = "testgc.dbs";
-            UnitTests.SafeDeleteFile(dbName);
+            Tests.SafeDeleteFile(dbName);
 
             Storage db = StorageFactory.CreateStorage();
             db.AlternativeBtree = altBtree;
@@ -1186,137 +1186,6 @@ namespace Volante
         }
     }
 
-    public class TestIndex
-    {
-        public class Record : Persistent
-        {
-            public string strKey;
-            public long intKey;
-        }
-
-        public class Root : Persistent
-        {
-            public Index<string,Record> strIndex;
-            public Index<long,Record>   intIndex;
-        }
-
-        internal static int pagePoolSize = 32 * 1024 * 1024;
-
-        static public void Run(int nRecords, bool altBtree, bool inmemory, bool serializableTransaction)
-        {
-            int i;
-            string dbName = "testidx.dbs";
-            UnitTests.SafeDeleteFile(dbName);
-
-            Storage db = StorageFactory.CreateStorage();
-            if (altBtree || serializableTransaction)
-            {
-                db.AlternativeBtree = true;
-            }
-            if (inmemory)
-            {
-                pagePoolSize = 0;
-            }
-            db.Open(dbName, pagePoolSize);
-
-            if (serializableTransaction) 
-            { 
-                db.BeginThreadTransaction(TransactionMode.Serializable);
-            }
-
-            Root root = (Root) db.Root;
-            if (root == null)
-            {
-                root = new Root();
-                root.strIndex = db.CreateIndex<string,Record>(true);
-                root.intIndex = db.CreateIndex<long,Record>(true);
-                db.Root = root;
-            }
-            Index<string,Record> strIndex = root.strIndex;
-            Index<long,Record> intIndex = root.intIndex;
-            DateTime start = DateTime.Now;
-            long key = 1999;
-            for (i = 0; i < nRecords; i++)
-            {
-                Record rec = new Record();
-                key = (3141592621L * key + 2718281829L) % 1000000007L;
-                rec.intKey = key;
-                rec.strKey = System.Convert.ToString(key);
-                intIndex[rec.intKey] = rec;
-                strIndex[rec.strKey] = rec;
-                if (i % 100000 == 0) 
-                { 
-                    db.Commit();
-                    Console.Write("Iteration " + i + "\r");
-                }
-            }
-
-            if (serializableTransaction) 
-            { 
-                db.EndThreadTransaction();
-                db.BeginThreadTransaction(TransactionMode.Serializable);
-            } 
-            else 
-            {
-                db.Commit();
-            }
-            System.Console.WriteLine("Elapsed time for inserting " + nRecords + " records: " + (DateTime.Now - start));
-
-            start = System.DateTime.Now;
-            key = 1999;
-            for (i = 0; i < nRecords; i++)
-            {
-                key = (3141592621L * key + 2718281829L) % 1000000007L;
-                Record rec1 = intIndex[key];
-                Record rec2 = strIndex[Convert.ToString(key)];
-                Debug.Assert(rec1 != null && rec1 == rec2);
-            }     
-            System.Console.WriteLine("Elapsed time for performing " + nRecords * 2 + " index searches: " + (DateTime.Now - start));
-
-            start = System.DateTime.Now;
-            key = Int64.MinValue;
-            i = 0;
-            foreach (Record rec in intIndex) 
-            {
-                Debug.Assert(rec.intKey >= key);
-                key = rec.intKey;
-                i += 1;
-            }
-            Debug.Assert(i == nRecords);
-            i = 0;
-            String strKey = "";
-            foreach (Record rec in strIndex) 
-            {
-                Debug.Assert(rec.strKey.CompareTo(strKey) >= 0);
-                strKey = rec.strKey;
-                i += 1;
-            }
-            Debug.Assert(i == nRecords);
-            System.Console.WriteLine("Elapsed time for iteration through " + (nRecords * 2) + " records: " + (DateTime.Now - start));
-
-            Console.WriteLine("Memory usage");
-            start = DateTime.Now;
-            foreach (MemoryUsage usage in db.GetMemoryDump().Values) 
-            { 
-                Console.WriteLine(" " + usage.type.Name + ": instances=" + usage.nInstances + ", total size=" + usage.totalSize + ", allocated size=" + usage.allocatedSize);
-            }
-            Console.WriteLine("Elapsed time for memory dump: " + (DateTime.Now - start));
-
-            start = System.DateTime.Now;
-            key = 1999;
-            for (i = 0; i < nRecords; i++)
-            {
-                key = (3141592621L * key + 2718281829L) % 1000000007L;
-                Record rec = intIndex.Get(key);
-                Record removed = intIndex.RemoveKey(key);
-                Debug.Assert(removed == rec);
-                strIndex.Remove(new Key(System.Convert.ToString(key)), rec);
-                rec.Deallocate();
-            }
-            System.Console.WriteLine("Elapsed time for deleting " + nRecords + " records: " + (DateTime.Now - start));
-            db.Close();
-        }
-    }
 
     public class TestIndex2
     {
@@ -1365,14 +1234,14 @@ namespace Volante
         static public void Run(int nRecords)
         {
             string dbName = "testidx2.dbs";
-            UnitTests.SafeDeleteFile(dbName);
+            Tests.SafeDeleteFile(dbName);
 
             int i;
             Storage db = StorageFactory.CreateStorage();
             db.Open(dbName, pagePoolSize);
 
             Root root = (Root) db.Root;
-            UnitTests.AssertThat(root == null);
+            Tests.AssertThat(root == null);
             root = new Root();
             root.strIndex = db.CreateSortedCollection<string,Record>(new StrRecordComparator(), true);
             root.intIndex = db.CreateSortedCollection<long,Record>(new IntRecordComparator(), true);
@@ -1466,7 +1335,7 @@ namespace Volante
         static public void Run(int totalnumber)
         {
             string dbName = "LinkedList.dbs";
-            UnitTests.SafeDeleteFile(dbName);
+            Tests.SafeDeleteFile(dbName);
 
             Storage db = StorageFactory.CreateStorage();
 
@@ -1546,7 +1415,7 @@ namespace Volante
         public static void Run(int nIterations, bool noflush)
         {
             string dbName = "testr2.dbs";
-            UnitTests.SafeDeleteFile(dbName);
+            Tests.SafeDeleteFile(dbName);
 
             Storage db = StorageFactory.CreateStorage();
             SpatialObject so;
@@ -1691,9 +1560,9 @@ namespace Volante
             Console.WriteLine("Database is OK");
             db.Close();
             // shutup the compiler about TestRaw.nil not being used
-            UnitTests.AssertThat(root.nil == null);
+            Tests.AssertThat(root.nil == null);
             root.nil = 3;
-            UnitTests.AssertThat(root.nil != null);
+            Tests.AssertThat(root.nil != null);
         }
     }
 
@@ -1711,7 +1580,7 @@ namespace Volante
         public static void Run(int nIterations)
         {
             string dbName = "testrtree.dbs";
-            UnitTests.SafeDeleteFile(dbName);
+            Tests.SafeDeleteFile(dbName);
 
             Storage db = StorageFactory.CreateStorage();
             SpatialObject so;
@@ -1820,7 +1689,7 @@ namespace Volante
             int i;
 
             string dbName = "testts.dbs";
-            UnitTests.SafeDeleteFile(dbName);
+            Tests.SafeDeleteFile(dbName);
 
             Storage db = StorageFactory.CreateStorage();
             db.Open(dbName, pagePoolSize);
@@ -1969,7 +1838,7 @@ namespace Volante
         static public void Run(int nRecords) 
         {
             string dbName = "testtree.dbs";
-            UnitTests.SafeDeleteFile(dbName);
+            Tests.SafeDeleteFile(dbName);
 
             Storage db = StorageFactory.CreateStorage();
 

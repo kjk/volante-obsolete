@@ -39,10 +39,10 @@ EXAMPLES=$(O)\Guess.exe $(O)\IpCountry.exe $(O)\PropGuess.exe $(O)\TestLink.exe 
 	$(O)\TestSOD.exe $(O)\TestSSD.exe $(O)\TransparentGuess.exe
 
 TESTS=$(O)\TestBackup.exe $(O)\TestBit.exe $(O)\TestBlob.exe $(O)\TestCompoundIndex.exe \
-	$(O)\TestConcur.exe $(O)\TestEnumerator.exe $(O)\TestGC.exe $(O)\TestIndex.exe \
+	$(O)\TestConcur.exe $(O)\TestEnumerator.exe $(O)\TestGC.exe \
 	$(O)\TestIndex2.exe $(O)\TestList.exe $(O)\TestR2.exe $(O)\TestRaw.exe  $(O)\TestRtree.exe \
 	$(O)\TestTimeSeries.exe $(O)\TestTtree.exe $(O)\TestXML.exe $(O)\TestReplic.exe \
-	$(O)\UnitTestsRunner.exe
+	$(O)\Tests.exe
 
 LIBRARY=$(O)\Volante.dll
 
@@ -84,9 +84,6 @@ $(O)\TestEnumerator.exe: tests\TestEnumerator\TestEnumerator.cs tests\Tests.cs
 $(O)\TestGC.exe: tests\TestGC\TestGC.cs tests\Tests.cs
 	$(CSC) $(CSC_FLAGS) /r:$(LIBRARY) /out:$@ $**
 
-$(O)\TestIndex.exe: tests\TestIndex\TestIndex.cs tests\Tests.cs
-	$(CSC) $(CSC_FLAGS) /r:$(LIBRARY) /out:$@ $**
-
 $(O)\TestIndex2.exe: tests\TestIndex2\TestIndex2.cs tests\Tests.cs
 	$(CSC) $(CSC_FLAGS) /r:$(LIBRARY) /out:$@ $**
 
@@ -114,7 +111,7 @@ $(O)\TestXML.exe: tests\TestXML\TestXML.cs tests\Tests.cs
 $(O)\TestReplic.exe: tests\TestReplic\TestReplic.cs
 	$(CSC) $(CSC_FLAGS) /r:$(LIBRARY) /out:$@ $**
 
-$(O)\UnitTestsRunner.exe: tests\UnitTests\UnitTestsRunner.cs tests\Tests.cs
+$(O)\Tests.exe: tests\Tests\TestsMain.cs tests\Tests\TestIndex.cs tests\Tests.cs
 	$(CSC) $(CSC_FLAGS) /r:$(LIBRARY) /out:$@ $**
 
 $(O)\Guess.exe: examples\Guess\Guess.cs

@@ -5,7 +5,7 @@ public class TestBlobRunner
 {
     public static void Main(string[] args)
     {
-        UnitTests.SafeDeleteFile(TestBlob.dbName);
+        Tests.SafeDeleteFile(TestBlob.dbName);
         TestBlob.Run();
         TestBlob.Run();
     }

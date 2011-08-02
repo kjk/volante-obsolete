@@ -2,12 +2,7 @@ set save_path=%path%
 set path=bin;%path%
 set O=bin\dbg
 
-%O%\UnitTestsRunner
-
-%O%\TestIndex
-%O%\TestIndex altbtree
-%O%\TestIndex altbtree serializable
-%O%\TestIndex inmemory
+%O%\Tests -fast
 
 %O%\TestIndex2
 %O%\TestEnumerator 200
