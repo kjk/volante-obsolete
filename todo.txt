@@ -7,8 +7,8 @@ For both Java and C#:
  * write a basic web page and host either on blog.kowalczyk.info or nachodb.org
  * auto-generate docs and put them on web page
  * better test framework (steal ideas from sqlite?)
- * write docs on how to work on NachoDB codebase
- * write docs on how to use NachoDB in your own code
+ * write docs on how to work on Volante codebase
+ * write docs on how to use Volante in your own code
  * write even more tests
  * make releases and push them to my s3, link from a webpage
  * ambitious: add integrated, small full-text search (maybe port FTS 
@@ -22,7 +22,7 @@ For both Java and C#:
 
 Java specific:
  * test with other jvms (e.g. http://jamvm.sourceforge.net/)
- * change namespace to nachodb.org
+ * change namespace to volante.org
  * Unix makefile and 
  * maybe: write ant makefile (to make it easy to run from eclipse)
 
