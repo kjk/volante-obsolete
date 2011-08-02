@@ -1,7 +1,7 @@
 using System;
 using Volante;
 
-public class UnitTestsRunner
+public class TestsMain
 {
     public static void Main(string[] args)
     {
