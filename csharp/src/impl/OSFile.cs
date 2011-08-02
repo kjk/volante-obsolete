@@ -7,11 +7,13 @@ namespace Volante.Impl
 
     public class OSFile : IFile
     {
-        [DllImport("kernel32.dll", SetLastError=true)]
-        // TODO: this seems more correct but doesn't work in mono
-        //static extern bool FlushFileBuffers(IntPtr hFile); 
-        static extern bool FlushFileBuffers(int hFile); 
-
+#if !MONO && !CF && !SILVERLIGHT
+#if NET_4_0
+        [System.Security.SecuritySafeCritical]
+#endif
+        [DllImport("kernel32.dll", SetLastError = true)]
+        static extern int FlushFileBuffers(Microsoft.Win32.SafeHandles.SafeFileHandle fileHandle);
+#endif
         public virtual void Write(long pos, byte[] buf)
         {
             file.Seek(pos, SeekOrigin.Begin);
@@ -24,22 +26,19 @@ namespace Volante.Impl
             return file.Read(buf, 0, buf.Length);
         }
 
-        public virtual void  Sync()
+#if NET_4_0
+        [System.Security.SecuritySafeCritical]
+#endif
+        public virtual void Sync()
         {
             file.Flush();
-#if !COMPACT_NET_FRAMEWORK 
-#if !MONO
+#if !CF && !MONO && !SILVERLIGHT
             if (!noFlush) {
-                // TODO: this seems more correct but doesn't work in mono
-                //FlushFileBuffers(file.SafeFileHandle.DangerousGetHandle());
-                // TODO: this uses deprecated API but I can't get SafeFileHandle
-                // to work in mono
-                FlushFileBuffers(file.Handle.ToInt32());
+                FlushFileBuffers(file.SafeFileHandle);
             }
 #endif
-#endif
         }
-™
+
         public bool NoFlush
         {
             get { return this.noFlush; }
@@ -53,7 +52,7 @@ namespace Volante.Impl
 
         public virtual void Lock() 
         {
-#if !COMPACT_NET_FRAMEWORK 
+#if !CF 
             file.Lock(0, long.MaxValue);
 #endif
         }

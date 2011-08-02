@@ -23,7 +23,7 @@ namespace Volante
 
         public static PatriciaTrieKey FromIpAddress(IPAddress addr) 
         { 
-#if COMPACT_NET_FRAMEWORK
+#if CF
             ulong mask = (ulong)addr.Address;
             return new PatriciaTrieKey(mask, 64);
 #else

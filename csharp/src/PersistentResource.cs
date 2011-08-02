@@ -8,7 +8,7 @@ namespace Volante
     /// </summary>
     public class PersistentResource : Persistent, IResource 
     {
-#if COMPACT_NET_FRAMEWORK
+#if CF
         class WaitContext 
         {
             internal AutoResetEvent evt;

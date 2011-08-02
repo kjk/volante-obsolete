@@ -3,7 +3,7 @@ namespace Volante
     using System;
     using System.Runtime.InteropServices;
     using System.Diagnostics;
-#if !COMPACT_NET_FRAMEWORK
+#if !CF
     using System.ComponentModel;
 #endif
 
@@ -11,7 +11,7 @@ namespace Volante
     /// </summary>
     public class Persistent : IPersistent
     {
-#if !COMPACT_NET_FRAMEWORK
+#if !CF
         [Browsable(false)]
 #endif
         public virtual int Oid
@@ -22,7 +22,7 @@ namespace Volante
             }
         }
 
-#if !COMPACT_NET_FRAMEWORK
+#if !CF
         [Browsable(false)]
 #endif
         public virtual Storage Storage

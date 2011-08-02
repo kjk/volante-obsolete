@@ -46,7 +46,7 @@ namespace Volante
         /// </summary>
         void ExclusiveLock();
 
-#if !COMPACT_NET_FRAMEWORK
+#if !CF
         /// <summary>
         /// Lock persistent object in shared mode. Other threads will be able to set their
         /// shared locks on this objects, but not exclusive lock can be set until this lock is released.

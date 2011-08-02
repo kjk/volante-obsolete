@@ -12,7 +12,7 @@ namespace Volante.Impl
     {
         public const int DEFAULT_PAGE_POOL_SIZE = 4*1024*1024;
 
-#if COMPACT_NET_FRAMEWORK
+#if CF
         static StorageImpl() 
         {
             assemblies = new System.Collections.ArrayList();
@@ -1000,7 +1000,7 @@ namespace Volante.Impl
                 nBlockedTransactions = 0;
                 nCommittedTransactions = 0;
                 scheduledCommitTime = Int64.MaxValue;
-#if COMPACT_NET_FRAMEWORK
+#if CF
                 transactionMonitor = new CNetMonitor();
 #else
                 transactionMonitor = new object();
@@ -1211,7 +1211,7 @@ namespace Volante.Impl
             {
                 descList = null;
             }
-#if !COMPACT_NET_FRAMEWORK
+#if !CF
             if (enableCodeGeneration) 
             { 
                 codeGenerationThread = new Thread(new ThreadStart(generateSerializers));
@@ -1531,7 +1531,7 @@ namespace Volante.Impl
             }
         }
 
-#if COMPACT_NET_FRAMEWORK
+#if CF
         class PositionComparer : System.Collections.IComparer 
         {
             public int Compare(object o1, object o2) 
@@ -1676,7 +1676,7 @@ namespace Volante.Impl
         
                 long pageOffs = (long)(nIndexPages*2 + 1)*Page.pageSize;
                 long recOffs = (long)(nPagedObjects + nIndexPages*2 + 1)*Page.pageSize;
-#if COMPACT_NET_FRAMEWORK
+#if CF
                 Array.Sort(index, oids, 0, nObjects, new PositionComparer());
 #else
                 Array.Sort(index, oids);
@@ -1903,7 +1903,7 @@ namespace Volante.Impl
             {
                 ensureOpened();
 
-#if COMPACT_NET_FRAMEWORK
+#if CF
                 if (alternativeBtree) 
                 {
                     throw new StorageError(StorageError.ErrorCode.UNSUPPORTED_INDEX_TYPE);
@@ -2187,7 +2187,7 @@ namespace Volante.Impl
             return nDeallocated;
         }
     
-#if !COMPACT_NET_FRAMEWORK
+#if !CF
         public void backgroundGcThread() 
         { 
             while (true) 
@@ -2243,7 +2243,7 @@ namespace Volante.Impl
                     return 0;
                 }
                 gcActive = true;
-#if !COMPACT_NET_FRAMEWORK
+#if !CF
                 if (backgroundGc) 
                 { 
                     if (gcThread == null) 
@@ -2641,7 +2641,7 @@ namespace Volante.Impl
             EndThreadTransaction(Int32.MaxValue);
         }
 
-#if COMPACT_NET_FRAMEWORK
+#if CF
         public void RegisterAssembly(System.Reflection.Assembly assembly) 
         {
             assemblies.Add(assembly);
@@ -2957,7 +2957,7 @@ namespace Volante.Impl
                 Commit();
                 opened = false;
             }
-#if !COMPACT_NET_FRAMEWORK
+#if !CF
             if (codeGenerationThread != null)
             {
                 codeGenerationThread.Join();
@@ -4909,7 +4909,7 @@ namespace Volante.Impl
         
         internal bool enableCodeGeneration = true;
 
-#if COMPACT_NET_FRAMEWORK
+#if CF
         internal static ArrayList assemblies;
         CNetMonitor transactionMonitor;
 #else

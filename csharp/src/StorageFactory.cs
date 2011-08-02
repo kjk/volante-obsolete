@@ -14,15 +14,14 @@ namespace Volante
         /// </param>
         public static Storage CreateStorage()
         {
-#if COMPACT_NET_FRAMEWORK
+#if CF
             return new StorageImpl(System.Reflection.Assembly.GetCallingAssembly());
 #else
             return new StorageImpl();
 #endif
         }
 
-#if !COMPACT_NET_FRAMEWORK
-#if !OMIT_REPLICATION
+#if !CF && !OMIT_REPLICATION
         /// <summary>
         /// Create new instance of the master node of replicated storage
         /// </summary>
@@ -50,7 +49,6 @@ namespace Volante
         {
             return new ReplicationSlaveStorageImpl(port);
         }
-#endif
 #endif
     }	
 }

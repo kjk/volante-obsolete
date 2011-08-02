@@ -672,7 +672,7 @@ namespace Volante
         static int nElements = 0;
 
         static Storage db;
-#if COMPACT_NET_FRAMEWORK
+#if CF
         static int nFinishedThreads;
 #endif
         public static void run()
@@ -696,7 +696,7 @@ namespace Volante
                 last.linkAfter(list.head);
                 list.Unlock();
             }
-#if COMPACT_NET_FRAMEWORK
+#if CF
             lock (typeof(TestConcur)) 
             {
                 if (++nFinishedThreads == nThreads) 
@@ -732,7 +732,7 @@ namespace Volante
                 threads[i] = new Thread(new ThreadStart(run));
                 threads[i].Start();
             }
-#if !COMPACT_NET_FRAMEWORK
+#if !CF
             for (int i = 0; i < nThreads; i++) 
             { 
                 threads[i].Join();

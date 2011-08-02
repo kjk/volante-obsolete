@@ -289,7 +289,7 @@ namespace Volante.Impl
         {
             try 
             { 
-#if COMPACT_NET_FRAMEWORK
+#if CF
                 return (ClassDescriptor.FieldType)ClassDescriptor.parseEnum(typeof(ClassDescriptor.FieldType), signature);
 #else
                 return (ClassDescriptor.FieldType)Enum.Parse(typeof(ClassDescriptor.FieldType), signature);
@@ -839,7 +839,7 @@ namespace Volante.Impl
                             {
                                 try 
                                 {
-#if COMPACT_NET_FRAMEWORK
+#if CF
                                     Bytes.pack4(buf.arr, offs, (int)ClassDescriptor.parseEnum(f.FieldType, elem.StringValue));
 #else
                                     Bytes.pack4(buf.arr, offs, (int)Enum.Parse(f.FieldType, elem.StringValue));
@@ -1185,7 +1185,7 @@ namespace Volante.Impl
                                 {
                                     try 
                                     {
-#if COMPACT_NET_FRAMEWORK
+#if CF
                                         Bytes.pack4(buf.arr, offs, (int)ClassDescriptor.parseEnum(elemType, item.StringValue));
 #else
                                         Bytes.pack4(buf.arr, offs, (int)Enum.Parse(elemType, item.StringValue));

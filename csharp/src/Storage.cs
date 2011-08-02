@@ -543,9 +543,9 @@ namespace Volante
         /// </summary>
         ClassLoader Loader {get; set;}
 
-#if COMPACT_NET_FRAMEWORK
+#if CF
         /// <summary>
-        /// Compact.NET framework doesn;t allow to get list of assemblies loaded
+        /// Compact.NET framework doesn't allow to get list of assemblies loaded
         /// in application domain. Without it I do not know how to locate
         /// class from foreign assembly by name. 
         /// Assembly which creates Storare is automatically registered.

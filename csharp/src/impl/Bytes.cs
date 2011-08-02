@@ -97,7 +97,7 @@ namespace Volante.Impl
 
         public static double unpackF8(byte[] arr, int offs)
         {
-#if COMPACT_NET_FRAMEWORK 
+#if CF 
             return BitConverter.ToDouble(BitConverter.GetBytes(unpack8(arr, offs)), 0);
 #else
             return BitConverter.Int64BitsToDouble(unpack8(arr, offs));
@@ -163,7 +163,7 @@ namespace Volante.Impl
  
         public static void packF8(byte[] arr, int offs, double val)
         {
-#if COMPACT_NET_FRAMEWORK 
+#if CF 
             pack8(arr, offs, BitConverter.ToInt64(BitConverter.GetBytes(val), 0));
 #else
             pack8(arr, offs, BitConverter.DoubleToInt64Bits(val));

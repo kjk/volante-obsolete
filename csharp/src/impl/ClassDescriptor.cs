@@ -148,7 +148,7 @@ namespace Volante.Impl
         internal static Type[] defaultConstructorProfile = new Type[0];
         internal static object[] noArgs = new object[0];
 
-#if COMPACT_NET_FRAMEWORK
+#if CF
         static internal object parseEnum(Type type, String value) 
         {
             foreach (FieldInfo fi in type.GetFields()) 
@@ -190,7 +190,7 @@ namespace Volante.Impl
             }
         }
 
-#if COMPACT_NET_FRAMEWORK
+#if CF
         internal void generateSerializer() {}
 #else
         private static CodeGenerator serializerGenerator = CodeGenerator.Instance;
@@ -277,7 +277,7 @@ namespace Volante.Impl
                 buildFieldList(storage, superclass, list);
             }
             System.Reflection.FieldInfo[] flds = cls.GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.DeclaredOnly);
-#if !COMPACT_NET_FRAMEWORK 
+#if !CF 
             bool isWrapper = typeof(PersistentWrapper).IsAssignableFrom(cls);
 #endif
             bool hasTransparentAttribute = cls.GetCustomAttributes(typeof(TransparentPersistenceAttribute), true).Length != 0;
@@ -295,7 +295,7 @@ namespace Volante.Impl
                     FieldType type = getTypeCode(fieldType);
                     switch (type) 
                     {
-#if !COMPACT_NET_FRAMEWORK 
+#if !CF 
                         case FieldType.tpInt:
                             if (isWrapper && isObjectProperty(cls, f)) 
                             {
@@ -541,7 +541,7 @@ namespace Volante.Impl
                     }
                 }
 
-#if COMPACT_NET_FRAMEWORK
+#if CF
                 foreach (Assembly ass in StorageImpl.assemblies) 
 #else
                 foreach (Assembly ass in AppDomain.CurrentDomain.GetAssemblies()) 
@@ -564,7 +564,7 @@ namespace Volante.Impl
                         }
                     }
                 }
-#if !COMPACT_NET_FRAMEWORK
+#if !CF
                 if (cls == null && name.EndsWith("Wrapper")) 
                 {
                     Type originalType = lookup(storage, name.Substring(0, name.Length-7));

@@ -319,7 +319,7 @@ namespace Volante.Impl
             unfix(pg);
         }
 		
-#if COMPACT_NET_FRAMEWORK
+#if CF
         class PageComparator : System.Collections.IComparer 
         {
             public int Compare(object o1, object o2) 
@@ -337,7 +337,7 @@ namespace Volante.Impl
             lock (this)
             {
                 flushing = true;
-#if COMPACT_NET_FRAMEWORK
+#if CF
                 Array.Sort(dirtyPages, 0, nDirtyPages, pageComparator);
 #else
                 Array.Sort(dirtyPages, 0, nDirtyPages);
