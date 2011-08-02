@@ -3,20 +3,20 @@ namespace Volante.Impl
     using System;
     using Volante;
     using System.Diagnostics;
-	
+    
     class BtreeKey
     {
         internal Key key;
         internal int oid;
         internal int oldOid;
-		
+        
         internal BtreeKey(Key key, int oid)
         {
             this.key = key;
             this.oid = oid;
         }
-		
-        internal void  getStr(Page pg, int i)
+        
+        internal void getStr(Page pg, int i)
         {
             int len = BtreePage.getKeyStrSize(pg, i);
             int offs = BtreePage.firstKeyOffs + BtreePage.getKeyStrOffs(pg, i);
@@ -28,7 +28,7 @@ namespace Volante.Impl
             }
             key = new Key(sval);
         }
-		
+        
         internal void getByteArray(Page pg, int i) 
         { 
             int len = BtreePage.getKeyStrSize(pg, i);
@@ -37,36 +37,35 @@ namespace Volante.Impl
             Array.Copy(pg.data, offs, bval, 0, len);
             key = new Key(bval);
         }
-		
-        internal void  extract(Page pg, int offs, ClassDescriptor.FieldType type)
+        
+        internal void extract(Page pg, int offs, ClassDescriptor.FieldType type)
         {
             byte[] data = pg.data;
-			
+            
             switch (type)
             {
                 case ClassDescriptor.FieldType.tpBoolean: 
                     key = new Key(data[offs] != 0);
                     break;
-				
+                
                 case ClassDescriptor.FieldType.tpSByte: 
                     key = new Key((sbyte)data[offs]);
                     break;
                 case ClassDescriptor.FieldType.tpByte: 
                     key = new Key(data[offs]);
                     break;
-				
+                
                 case ClassDescriptor.FieldType.tpShort: 
                     key = new Key(Bytes.unpack2(data, offs));
                     break;
                 case ClassDescriptor.FieldType.tpUShort: 
                     key = new Key((ushort)Bytes.unpack2(data, offs));
                     break;
-				
-				
+
                 case ClassDescriptor.FieldType.tpChar: 
                     key = new Key((char) Bytes.unpack2(data, offs));
                     break;
-				
+                
                 case ClassDescriptor.FieldType.tpInt: 
                     key = new Key(Bytes.unpack4(data, offs));
                     break;
@@ -76,7 +75,7 @@ namespace Volante.Impl
                 case ClassDescriptor.FieldType.tpOid: 
                     key = new Key((uint)Bytes.unpack4(data, offs));
                     break;
-				
+                
                 case ClassDescriptor.FieldType.tpLong: 
                     key = new Key(Bytes.unpack8(data, offs));
                     break;
@@ -84,11 +83,11 @@ namespace Volante.Impl
                 case ClassDescriptor.FieldType.tpULong: 
                     key = new Key((ulong)Bytes.unpack8(data, offs));
                     break;
-				
+                
                 case ClassDescriptor.FieldType.tpFloat: 
                     key = new Key(Bytes.unpackF4(data, offs));
                     break;
-				
+                
                 case ClassDescriptor.FieldType.tpDouble: 
                     key = new Key(Bytes.unpackF8(data, offs));
                     break;
@@ -104,11 +103,11 @@ namespace Volante.Impl
                 default: 
                     Debug.Assert(false, "Invalid type");
                     break;
-				
+                
             }
         }
-		
-        internal void  pack(Page pg, int i)
+        
+        internal void pack(Page pg, int i)
         {
             byte[] dst = pg.data;
             switch (key.type)
@@ -118,13 +117,13 @@ namespace Volante.Impl
                 case ClassDescriptor.FieldType.tpByte: 
                     dst[BtreePage.firstKeyOffs + i] = (byte) key.ival;
                     break;
-				
+                
                 case ClassDescriptor.FieldType.tpShort: 
                 case ClassDescriptor.FieldType.tpUShort: 
                 case ClassDescriptor.FieldType.tpChar: 
                     Bytes.pack2(dst, BtreePage.firstKeyOffs + i * 2, (short) key.ival);
                     break;
-				
+                
                 case ClassDescriptor.FieldType.tpInt: 
                 case ClassDescriptor.FieldType.tpUInt: 
                 case ClassDescriptor.FieldType.tpEnum: 
@@ -132,21 +131,21 @@ namespace Volante.Impl
                 case ClassDescriptor.FieldType.tpOid: 
                     Bytes.pack4(dst, BtreePage.firstKeyOffs + i * 4, key.ival);
                     break;
-				
+                
                 case ClassDescriptor.FieldType.tpLong: 
                 case ClassDescriptor.FieldType.tpULong: 
                 case ClassDescriptor.FieldType.tpDate: 
                     Bytes.pack8(dst, BtreePage.firstKeyOffs + i * 8, key.lval);
                     break;
-				
+                
                 case ClassDescriptor.FieldType.tpFloat: 
                     Bytes.packF4(dst, BtreePage.firstKeyOffs + i * 4, (float)key.dval);
                     break;
-				
+                
                 case ClassDescriptor.FieldType.tpDouble: 
                     Bytes.packF8(dst, BtreePage.firstKeyOffs + i * 8, key.dval);
                     break;
-				
+                
                 case ClassDescriptor.FieldType.tpDecimal:
                     Bytes.packDecimal(dst, BtreePage.firstKeyOffs + i * 16, key.dec);
                     break;
@@ -159,7 +158,7 @@ namespace Volante.Impl
                 default: 
                     Debug.Assert(false, "Invalid type");
                     break;
-				
+                
             }
             Bytes.pack4(dst, BtreePage.firstKeyOffs + (BtreePage.maxItems - i - 1) * 4, oid);
         }

@@ -855,8 +855,7 @@ namespace Volante.Impl
             internal ulong[] data;
             
             const int MAX_ITEMS = BTREE_PAGE_SIZE / (4 + 8);
-            
-            
+
             internal override Key getKey(int i)
             {
                 return new Key(data[i]);
@@ -895,7 +894,7 @@ namespace Volante.Impl
         
         class BtreePageOfFloat : BtreePage
         {
-            override internal Array Data
+            internal override Array Data
             {
                 get
                 {

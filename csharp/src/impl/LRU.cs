@@ -13,13 +13,13 @@ namespace Volante.Impl
             next = prev = this;
         }
 
-        internal void  unlink()
+        internal void unlink()
         {
             next.prev = prev;
             prev.next = next;
         }
 
-        internal void  link(LRU node)
+        internal void link(LRU node)
         {
             node.next = next;
             node.prev = this;

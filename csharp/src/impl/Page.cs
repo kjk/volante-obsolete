@@ -3,7 +3,7 @@ namespace Volante.Impl
     using System;
     using Volante;
 	
-    class Page:LRU, IComparable
+    class Page : LRU, IComparable
     {
         internal Page collisionChain;
         internal int accessCount;
@@ -17,7 +17,7 @@ namespace Volante.Impl
         internal const int psWait  = 0x04; // other thread(s) wait load operation completion
 		
         internal const int pageBits = 12;
-        internal const int pageSize = 1 << pageBits;
+        internal const int pageSize = 1 << pageBits; // 4kB
 		
         public virtual int CompareTo(Object o)
         {

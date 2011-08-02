@@ -39,7 +39,7 @@ namespace Volante.Impl
 #endif
 #endif
         }
-
+™
         public bool NoFlush
         {
             get { return this.noFlush; }
