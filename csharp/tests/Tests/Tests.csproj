@@ -82,6 +82,7 @@
       <Link>Tests.cs</Link>
     </Compile>
     <Compile Include="TestIndex.cs" />
+    <Compile Include="TestIndex2.cs" />
     <Compile Include="TestsMain.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

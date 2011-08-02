@@ -4,7 +4,6 @@ set O=bin\dbg
 
 %O%\Tests -fast
 
-%O%\TestIndex2
 %O%\TestEnumerator 200
 
 %O%\TestCompoundIndex

@@ -8,6 +8,7 @@ public class TestsMain
     const int CountsIdxSlow = 1;
     static int CountsIdx = CountsIdxFast;
     static int[] DefaultCounts = new int[2] { 100, 100000 };
+
     static Dictionary<string, int[]> IterCounts =
         new Dictionary<string, int[]>
         {
@@ -43,11 +44,18 @@ public class TestsMain
         TestIndex.Run(count, false, true, false);
     }
 
+    static void RunIndex2Tests()
+    {
+        int count = GetIterCount("TestIndex2");
+        TestIndex2.Run(count);
+    }
+
     public static void Main(string[] args)
     {
         ParseCmdLineArgs(args);
 
         RunIndexTests();
+        RunIndex2Tests();
 
         TestTtree.Run(100);
 
@@ -63,8 +71,6 @@ public class TestsMain
         TestR2.Run(1000, true);
 
         TestList.Run(1000);
-
-        TestIndex2.Run(100);
 
         TestGC.Run(100, false, false);
         TestGC.Run(100, true, false);
