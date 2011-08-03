@@ -76,7 +76,7 @@ namespace Volante
         IEnumerable<T> Range(IterationOrder order);
 
         /// <summary>
-        /// Get forward iterator for time series elements belonging to the specified range
+        /// Get iterator for time series elements belonging to the specified range
         /// </summary>
         /// <param name="from">inclusive time of the begging of interval</param>
         /// <param name="till">inclusive time of the ending of interval</param>
