@@ -58,6 +58,13 @@ public class TestsMain
         TestEnumerator.Run(count, true);
     }
 
+    static void RunCompoundIndexTests()
+    {
+        int count = GetIterCount("TestCompoundIndex");
+        TestCompoundIndex.Run(false, count);
+        TestCompoundIndex.Run(true, count);
+    }
+
     public static void Main(string[] args)
     {
         ParseCmdLineArgs(args);
@@ -67,6 +74,7 @@ public class TestsMain
         RunIndexTests();
         RunIndex2Tests();
         RunEnumeratorTests();
+        RunCompoundIndexTests();
 
         TestTtree.Run(100);
 
@@ -89,8 +97,6 @@ public class TestsMain
         TestEnumerator.Run(100, false);
         TestEnumerator.Run(100, true);
         TestConcur.Run(100);
-        TestCompoundIndex.Run(false, 100);
-        TestCompoundIndex.Run(true, 100);
         TestBit.Run(100);
         Tests.SafeDeleteFile(TestBlob.dbName);
         TestBlob.Run();

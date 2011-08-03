@@ -1,10 +1,9 @@
-@rem set save_path=%path%
-@rem set path=bin;%path%
-@rem set O=bin\dbg
+@set save_path=%path%
+@set path=bin;%path%
+@set O=bin\dbg
 
 %O%\Tests -fast
 
-%O%\TestCompoundIndex
 %O%\TestRtree 20000
 %O%\TestR2 20000
 %O%\TestTtree
@@ -23,5 +22,4 @@
 @rem start %O%\TestReplic master
 @rem %O%\TestReplic slave
 
-@rem set path=%save_path%
-
+@set path=%save_path%
