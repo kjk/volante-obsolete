@@ -6,27 +6,61 @@ namespace Volante
     using System.IO;
     using System.Threading;
 
-    public class Tests
+    public class TestResult
     {
-        internal static int totalTests = 0;
-        internal static int failedTests = 0;
+        public bool Ok;
+        public string TestName;
+        public int Count;
+        public TimeSpan ExecutionTime;
 
-        public static int TotalTests
+        public override string ToString()
         {
-            get { return totalTests; }
+            if (Ok)
+                return String.Format("{0} OK, {1} ms, n = {2}", TestName, ExecutionTime.Milliseconds, Count);
+            else
+                return String.Format("{0} FAILED", TestName);
         }
 
-        public static int FailedTests
+        public void Print()
         {
-            get { return failedTests; }
+            System.Console.WriteLine(ToString());
+        }
+    }
+
+    public class Tests
+    {
+        internal static int TotalTests = 0;
+        internal static int FailedTests = 0;
+        internal static int CurrAssertsCount = 0;
+        internal static int CurrAssertsFailed = 0;
+
+        static void ResetAssertsCount()
+        {
+            CurrAssertsCount = 0;
+            CurrAssertsFailed = 0;
+        }
+
+        public static void Assert(bool cond)
+        {
+            AssertThat(cond);
         }
 
         public static void AssertThat(bool cond)
         {
-            totalTests += 1;
+            CurrAssertsCount += 1;
             if (cond) return;
-            failedTests += 1;
+            CurrAssertsFailed += 1;
             // TODO: record callstacks of all failed exceptions
+        }
+
+        public static bool FinalizeTest()
+        {
+            TotalTests += 1;
+            if (CurrAssertsFailed > 0)
+                FailedTests += 1;
+            bool ok = CurrAssertsFailed == 0;
+            ResetAssertsCount();
+            return ok;
         }
 
         public static void SafeDeleteFile(string path)

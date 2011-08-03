@@ -45,10 +45,14 @@ public class TestsMain
     static void RunIndexTests()
     {
         int n = GetIterCount("TestIndex");
-        TestIndex.Run(n, false, false, false);
-        TestIndex.Run(n, true, false, false);
-        TestIndex.Run(n, true, false, true);
-        TestIndex.Run(n, false, true, false);
+        var r = TestIndex.Run(n, false, false, false);
+        r.Print();
+        r = TestIndex.Run(n, true, false, false);
+        r.Print();
+        r = TestIndex.Run(n, true, false, true);
+        r.Print();
+        r = TestIndex.Run(n, false, true, false);
+        r.Print();
     }
 
     static void RunIndex2Tests()

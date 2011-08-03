@@ -1,7 +1,16 @@
 namespace Volante
 {
     using System;
-    using System.Diagnostics;
+    using System.Collections;
+
+    public class TestResultIndex : TestResult
+    {
+        public TimeSpan InsertingTime;
+        public TimeSpan IndexSearchTime;
+        public TimeSpan IterationTime;
+        public TimeSpan RemovalTime;
+        public ICollection MemoryUsage; // values are of MemoryUsage type
+    }
 
     public class TestIndex
     {
@@ -19,27 +28,30 @@ namespace Volante
 
         internal static int pagePoolSize = 32 * 1024 * 1024;
 
-        static public void Run(int nRecords, bool altBtree, bool inmemory, bool serializableTransaction)
+        static public TestResultIndex Run(int nRecords, bool altBtree, bool inMemory, bool serializableTransaction)
         {
             int i;
             string dbName = "testidx.dbs";
             Tests.SafeDeleteFile(dbName);
 
+            var res = new TestResultIndex()
+            {
+                Count = nRecords,
+                TestName = String.Format("TestIndex(altBtree={0},inMemory={1},serializable={2}", altBtree, inMemory, serializableTransaction)
+            };
+            var tStart = DateTime.Now;
+
             Storage db = StorageFactory.CreateStorage();
             if (altBtree || serializableTransaction)
-            {
                 db.AlternativeBtree = true;
-            }
-            if (inmemory)
-            {
+
+            if (inMemory)
                 pagePoolSize = 0;
-            }
+
             db.Open(dbName, pagePoolSize);
 
             if (serializableTransaction)
-            {
                 db.BeginThreadTransaction(TransactionMode.Serializable);
-            }
 
             Root root = (Root)db.Root;
             if (root == null)
@@ -64,7 +76,6 @@ namespace Volante
                 if (i % 100000 == 0)
                 {
                     db.Commit();
-                    Console.Write("Iteration " + i + "\r");
                 }
             }
 
@@ -77,61 +88,58 @@ namespace Volante
             {
                 db.Commit();
             }
-            System.Console.WriteLine("Elapsed time for inserting " + nRecords + " records: " + (DateTime.Now - start));
 
+            res.InsertingTime = DateTime.Now - start;
             start = System.DateTime.Now;
+
             key = 1999;
             for (i = 0; i < nRecords; i++)
             {
                 key = (3141592621L * key + 2718281829L) % 1000000007L;
                 Record rec1 = intIndex[key];
                 Record rec2 = strIndex[Convert.ToString(key)];
-                Debug.Assert(rec1 != null && rec1 == rec2);
+                Tests.Assert(rec1 != null && rec1 == rec2);
             }
-            System.Console.WriteLine("Elapsed time for performing " + nRecords * 2 + " index searches: " + (DateTime.Now - start));
-
+            res.IndexSearchTime = DateTime.Now - start;
             start = System.DateTime.Now;
+
             key = Int64.MinValue;
             i = 0;
             foreach (Record rec in intIndex)
             {
-                Debug.Assert(rec.intKey >= key);
+                Tests.Assert(rec.intKey >= key);
                 key = rec.intKey;
                 i += 1;
             }
-            Debug.Assert(i == nRecords);
-            i = 0;
+            Tests.Assert(i == nRecords);
+
             String strKey = "";
+            i = 0;
             foreach (Record rec in strIndex)
             {
-                Debug.Assert(rec.strKey.CompareTo(strKey) >= 0);
+                Tests.Assert(rec.strKey.CompareTo(strKey) >= 0);
                 strKey = rec.strKey;
                 i += 1;
             }
-            Debug.Assert(i == nRecords);
-            System.Console.WriteLine("Elapsed time for iteration through " + (nRecords * 2) + " records: " + (DateTime.Now - start));
-
-            Console.WriteLine("Memory usage");
-            start = DateTime.Now;
-            foreach (MemoryUsage usage in db.GetMemoryDump().Values)
-            {
-                Console.WriteLine(" " + usage.type.Name + ": instances=" + usage.nInstances + ", total size=" + usage.totalSize + ", allocated size=" + usage.allocatedSize);
-            }
-            Console.WriteLine("Elapsed time for memory dump: " + (DateTime.Now - start));
-
+            Tests.Assert(i == nRecords);
+            res.IterationTime = DateTime.Now - start;
             start = System.DateTime.Now;
+
             key = 1999;
             for (i = 0; i < nRecords; i++)
             {
                 key = (3141592621L * key + 2718281829L) % 1000000007L;
                 Record rec = intIndex.Get(key);
                 Record removed = intIndex.RemoveKey(key);
-                Debug.Assert(removed == rec);
+                Tests.Assert(removed == rec);
                 strIndex.Remove(new Key(System.Convert.ToString(key)), rec);
                 rec.Deallocate();
             }
-            System.Console.WriteLine("Elapsed time for deleting " + nRecords + " records: " + (DateTime.Now - start));
+            res.RemovalTime = DateTime.Now - start;
             db.Close();
+            res.ExecutionTime = DateTime.Now - tStart;
+            res.Ok = Tests.FinalizeTest();
+            return res;
         }
     }
 

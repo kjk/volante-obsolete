@@ -78,9 +78,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\Tests.cs">
-      <Link>Tests.cs</Link>
-    </Compile>
     <Compile Include="TestBackup.cs" />
     <Compile Include="TestBit.cs" />
     <Compile Include="TestBlob.cs" />
@@ -94,6 +91,7 @@
     <Compile Include="TestR2.cs" />
     <Compile Include="TestRaw.cs" />
     <Compile Include="TestRtree.cs" />
+    <Compile Include="Tests.cs" />
     <Compile Include="TestsMain.cs" />
     <Compile Include="TestTimeSeries.cs" />
     <Compile Include="TestTtree.cs" />
