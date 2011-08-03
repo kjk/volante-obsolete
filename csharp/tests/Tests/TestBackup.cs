@@ -46,7 +46,9 @@ namespace Volante
                 TestName = "TestBackup"
             };
 
+            DateTime tStart = DateTime.Now;
             DateTime start = DateTime.Now;
+
             Storage db = StorageFactory.CreateStorage();
             db.Open(DbName1, pagePoolSize);
             Root root = (Root)db.Root;
@@ -110,7 +112,7 @@ namespace Volante
                 Tests.Assert(strKey.Equals(rec1.strKey));
             }
             db.Close();
-            res.ExecutionTime = DateTime.Now - start;
+            res.ExecutionTime = DateTime.Now - tStart;
             res.Ok = Tests.FinalizeTest();
             return res;
         }

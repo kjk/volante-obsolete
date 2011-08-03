@@ -1,7 +1,13 @@
 namespace Volante
 {
     using System;
-    using System.Diagnostics;
+
+    public class TestBitResult : TestResult
+    {
+        public TimeSpan InsertTime;
+        public TimeSpan SearchTime;
+        public TimeSpan RemoveTime;
+    }
 
     public class TestBit
     {
@@ -63,12 +69,20 @@ namespace Volante
             internal BitIndex<Car> optionIndex;
         }
 
-        public static void Run(int nRecords)
+        public static TestBitResult Run(int nRecords)
         {
+            var res = new TestBitResult()
+            {
+                Count = nRecords,
+                TestName = "TestBit"
+            };
+
             int pagePoolSize = 48 * 1024 * 1024;
             string dbName = "testbit.dbs";
-
             Tests.SafeDeleteFile(dbName);
+
+            DateTime tStart = DateTime.Now;
+            DateTime start = DateTime.Now;
             Storage db = StorageFactory.CreateStorage();
             db.Open(dbName, pagePoolSize);
 
@@ -79,7 +93,6 @@ namespace Volante
             root.modelIndex = db.CreateFieldIndex<string, Car>("model", true);
             db.Root = root;
 
-            DateTime start = DateTime.Now;
             long rnd = 1999;
             int i, n;
 
@@ -105,21 +118,18 @@ namespace Volante
                     n += 1;
                 }
             }
-            Console.WriteLine("Elapsed time for inserting " + nRecords + " records: "
-                + (DateTime.Now - start));
+            res.InsertTime = DateTime.Now - start;
 
             start = DateTime.Now;
             i = 0;
             foreach (Car car in root.optionIndex.Select((int)selectedOptions, (int)unselectedOptions))
             {
-                Debug.Assert((car.options & selectedOptions) == selectedOptions);
-                Debug.Assert((car.options & unselectedOptions) == 0);
+                Tests.Assert((car.options & selectedOptions) == selectedOptions);
+                Tests.Assert((car.options & unselectedOptions) == 0);
                 i += 1;
             }
-            Console.WriteLine("Number of selected cars: " + i);
-            Debug.Assert(i == n);
-            Console.WriteLine("Elapsed time for bit search through " + nRecords + " records: "
-                + (DateTime.Now - start));
+            Tests.Assert(i == n);
+            res.SearchTime = DateTime.Now - start;
 
             start = DateTime.Now;
             i = 0;
@@ -129,12 +139,13 @@ namespace Volante
                 car.Deallocate();
                 i += 1;
             }
-            Debug.Assert(i == nRecords);
+            Tests.Assert(i == nRecords);
             root.optionIndex.Clear();
-            Console.WriteLine("Elapsed time for removing " + nRecords + " records: "
-                + (DateTime.Now - start));
-
+            res.RemoveTime = DateTime.Now - start;
             db.Close();
+            res.ExecutionTime = DateTime.Now - tStart;
+            res.Ok = Tests.FinalizeTest();
+            return res;
         }
     }
 }

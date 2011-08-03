@@ -111,7 +111,8 @@ public class TestsMain
     static void RunBitTests()
     {
         int n = GetIterCount("TestBit");
-        TestBit.Run(n);
+        var r = TestBit.Run(n);
+        r.Print();
     }
 
     static void RunBlobTests()

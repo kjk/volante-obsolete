@@ -5,10 +5,10 @@ namespace Volante
 
     public class TestResultIndex : TestResult
     {
-        public TimeSpan InsertingTime;
+        public TimeSpan InsertTime;
         public TimeSpan IndexSearchTime;
         public TimeSpan IterationTime;
-        public TimeSpan RemovalTime;
+        public TimeSpan RemoveTime;
         public ICollection MemoryUsage; // values are of MemoryUsage type
     }
 
@@ -89,7 +89,7 @@ namespace Volante
                 db.Commit();
             }
 
-            res.InsertingTime = DateTime.Now - start;
+            res.InsertTime = DateTime.Now - start;
             start = System.DateTime.Now;
 
             key = 1999;
@@ -135,8 +135,9 @@ namespace Volante
                 strIndex.Remove(new Key(System.Convert.ToString(key)), rec);
                 rec.Deallocate();
             }
-            res.RemovalTime = DateTime.Now - start;
+            res.RemoveTime = DateTime.Now - start;
             db.Close();
+
             res.ExecutionTime = DateTime.Now - tStart;
             res.Ok = Tests.FinalizeTest();
             return res;
