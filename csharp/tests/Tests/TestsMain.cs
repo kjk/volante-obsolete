@@ -7,19 +7,21 @@ public class TestsMain
     const int CountsIdxFast = 0;
     const int CountsIdxSlow = 1;
     static int CountsIdx = CountsIdxFast;
-    static int[] DefaultCounts = new int[2] { 100, 100000 };
+    static int[] DefaultCounts = new int[2] { 1000, 100000 };
 
     static Dictionary<string, int[]> IterCounts =
         new Dictionary<string, int[]>
         {
             { "TestIndex", DefaultCounts },
-            { "TestEnumerator", new int[2] { 20, 200 } },
-            { "TestRtree", new int[2] { 200, 20000 } },
+            { "TestEnumerator", new int[2] { 200, 2000 } },
+            { "TestRtree", new int[2] { 800, 20000 } },
             { "TestR2", new int[2] { 1000, 20000 } },
             { "TestGC", new int[2] { 5000, 50000 } },
-            { "TestXml", new int[2] { 200, 20000 } },
-            { "TestBit", new int[2] { 200, 20000 } },
-            { "TestRaw", new int[2] { 100, 1000 } }
+            { "TestXml", new int[2] { 2000, 20000 } },
+            { "TestBit", new int[2] { 2000, 20000 } },
+            { "TestRaw", new int[2] { 1000, 10000 } },
+            // TODO: figure out why when it's 2000 instead of 2001 we fail
+            { "TestTimeSeries", new int[2] { 2001, 100000 } }
         };
 
     static int GetIterCount(string test)

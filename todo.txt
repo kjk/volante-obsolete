@@ -32,6 +32,7 @@ C# specific:
    the function. Would make the code shorter, not sure about perf impact.
    Also, would have to modify CodeGenerator.cs
  * make db.GetMemoryDump() of more specific type than Hashtable?
+ * switch to OpenCover (https://github.com/sawilde/opencover)
 
 Java specific:
  * test with other jvms (e.g. http://jamvm.sourceforge.net/)
