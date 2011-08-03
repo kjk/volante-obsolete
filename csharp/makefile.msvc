@@ -46,8 +46,7 @@ TESTS_SRC = $(TS)\TestsMain.cs $(TS)\TestIndex.cs $(TS)\TestIndex2.cs \
 	$(TS)\TestBit.cs $(TS)\TestBlob.cs $(TS)\TestConcur.cs \
 	$(TS)\TestGC.cs $(TS)\TestList.cs $(TS)\TestR2.cs $(TS)\TestRaw.cs \
 	$(TS)\TestRtree.cs $(TS)\TestTimeSeries.cs $(TS)\TestTtree.cs \
-	$(TS)\TestXml.cs \
-	tests\Tests.cs
+	$(TS)\TestXml.cs $(TS)\Tests.cs
 
 LIBRARY=$(O)\Volante.dll
 
