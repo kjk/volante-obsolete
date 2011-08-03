@@ -543,7 +543,7 @@ namespace Volante.Impl
                         indentation(indent);
                         break;
 
-#if SUPPORT_RAW_TYPE
+#if !OMIT_RAW_TYPE
                     case ClassDescriptor.FieldType.tpRaw: 
 #endif
                     case ClassDescriptor.FieldType.tpArrayOfByte: 
@@ -929,7 +929,7 @@ namespace Volante.Impl
                         }
                         break;
                     }
-#if SUPPORT_RAW_TYPE
+#if !OMIT_RAW_TYPE
                     case ClassDescriptor.FieldType.tpArrayOfRaw: 
                     {
                         int len = Bytes.unpack4(body, offs);

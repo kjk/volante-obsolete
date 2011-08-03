@@ -434,7 +434,7 @@ namespace Volante.Impl
             }
             else
             {
-#if SUPPORT_RAW_TYPE
+#if !OMIT_RAW_TYPE
                 if (serializeNonPersistentObjects || c == typeof(object) || c == typeof(IComparable)) 
                 {
                     type = FieldType.tpRaw;

@@ -3,10 +3,11 @@
 # CFG=[rel|dbg] - default: rel
 # OMIT_XML=[yes|no] - default: no
 # OMIT_REPLICATION=[yes|no] - default: no
+# OMIT_RAW_TYPE=[yes|no] - default: no
 
 CSC=gmcs
 
-CSC_FLAGS =-debug+ -d:SUPPORT_RAW_TYPE -d:MONO
+CSC_FLAGS =-debug+ -d:MONO
 
 ifeq ($(CFG),)
 CFG=rel
@@ -20,8 +21,13 @@ O:=$(O)-noxml
 endif
 
 ifeq ($(OMIT_REPLICATION),yes)
-CSC_FLAGS += -D:OMIT_REPLICATION
+CSC_FLAGS += -d:OMIT_REPLICATION
 O:=$(O)-norepl
+endif
+
+ifeq ($(OMIT_RAW_TYPE),yes)
+CSC_FLAGS += -d:OMIT_RAW_TYPE
+o:=$(O)-noraw
 endif
 
 VOLANTE=$(O)/Volante.dll

@@ -1078,7 +1078,7 @@ namespace Volante.Impl
                         offs = packObject(elem, fd.valueDesc, offs, buf);
                         continue;
 
-#if SUPPORT_RAW_TYPE
+#if !OMIT_RAW_TYPE
                     case ClassDescriptor.FieldType.tpRaw: 
 #endif
                     case ClassDescriptor.FieldType.tpArrayOfByte: 
@@ -1543,7 +1543,7 @@ namespace Volante.Impl
                         }
                         continue;
 
-#if SUPPORT_RAW_TYPE
+#if !OMIT_RAW_TYPE
                     case ClassDescriptor.FieldType.tpArrayOfRaw: 
                         if (elem == null || elem.isNullValue())
                         {

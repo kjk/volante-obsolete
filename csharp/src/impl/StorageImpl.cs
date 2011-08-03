@@ -1014,7 +1014,7 @@ namespace Volante.Impl
                 classDescMap = new Hashtable();
                 descList = null;
 
-#if SUPPORT_RAW_TYPE
+#if !OMIT_RAW_TYPE
                 objectFormatter = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
 #endif                
                 header = new Header();
@@ -2464,7 +2464,7 @@ namespace Volante.Impl
                     case ClassDescriptor.FieldType.tpValue:
                         offs = markObject(obj, offs, fd.valueDesc);
                         continue;
-#if SUPPORT_RAW_TYPE
+#if !OMIT_RAW_TYPE
                     case ClassDescriptor.FieldType.tpRaw:
                     {
                         int len = Bytes.unpack4(obj, offs);
@@ -2578,7 +2578,7 @@ namespace Volante.Impl
                         }
                         continue;
                     }
-#if SUPPORT_RAW_TYPE
+#if !OMIT_RAW_TYPE
                     case ClassDescriptor.FieldType.tpArrayOfRaw:
                     {
                         int len = Bytes.unpack4(obj, offs);
@@ -3420,7 +3420,7 @@ namespace Volante.Impl
                     break;
                 case ClassDescriptor.FieldType.tpValue:
                     return unpackObject(null, fd.valueDesc, false, body, offs, null);
-#if SUPPORT_RAW_TYPE
+#if !OMIT_RAW_TYPE
                 case ClassDescriptor.FieldType.tpRaw:
 #endif
                 case ClassDescriptor.FieldType.tpArrayOfByte:
@@ -3505,7 +3505,7 @@ namespace Volante.Impl
                         }
                     }
                     break;
-#if SUPPORT_RAW_TYPE
+#if !OMIT_RAW_TYPE
                 case ClassDescriptor.FieldType.tpArrayOfRaw:
                     len = Bytes.unpack4(body, offs);
                     offs += 4;
@@ -3530,8 +3530,8 @@ namespace Volante.Impl
             }                 
             return offs;
         }
-               
-#if SUPPORT_RAW_TYPE
+
+#if !OMIT_RAW_TYPE
         private int unpackRawValue(byte[] body, int offs, out object val, bool recursiveLoading) 
         {
             int len = Bytes.unpack4(body, offs);
@@ -3730,7 +3730,7 @@ namespace Volante.Impl
                     offs = unpackObject(val, fd.valueDesc, recursiveLoading, body, offs, po);
                     break;
 
-#if SUPPORT_RAW_TYPE
+#if !OMIT_RAW_TYPE
                 case ClassDescriptor.FieldType.tpRaw: 
                     offs = unpackRawValue(body, offs, out val, recursiveLoading);
                     break;
@@ -4095,7 +4095,7 @@ namespace Volante.Impl
                     }
                     break;
 
-#if SUPPORT_RAW_TYPE
+#if !OMIT_RAW_TYPE
                 case ClassDescriptor.FieldType.tpArrayOfRaw:
                     len = Bytes.unpack4(body, offs);
                     offs += 4;
@@ -4191,9 +4191,9 @@ namespace Volante.Impl
                 offs = packField(buf, offs, fd.field.GetValue(obj), fd, fd.type, po);
             }
             return offs;
-        }            
-    
-#if SUPPORT_RAW_TYPE
+        }
+
+#if !OMIT_RAW_TYPE
         public int packRawValue(ByteBuffer buf, int offs, object val)
         {
             if (val == null)
@@ -4377,8 +4377,8 @@ namespace Volante.Impl
                     return packObject(val, fd.valueDesc, offs, buf, po);
                 case ClassDescriptor.FieldType.tpObject: 
                     return buf.packI4(offs, swizzle((IPersistent)val));
- 
-#if SUPPORT_RAW_TYPE
+
+#if !OMIT_RAW_TYPE
                 case ClassDescriptor.FieldType.tpRaw:
                     offs = packRawValue(buf, offs, val);
                     break;
@@ -4795,7 +4795,7 @@ namespace Volante.Impl
                         }
                     }
                     break;
-#if SUPPORT_RAW_TYPE
+#if !OMIT_RAW_TYPE
                 case ClassDescriptor.FieldType.tpArrayOfRaw: 
                     if (val == null)
                     {
@@ -4923,7 +4923,7 @@ namespace Volante.Impl
         long      scheduledCommitTime;
         PersistentResource transactionLock;
 
-#if SUPPORT_RAW_TYPE
+#if !OMIT_RAW_TYPE
         internal System.Runtime.Serialization.Formatters.Binary.BinaryFormatter objectFormatter;
 #endif	
         internal int currIndex; // copy of header.root, used to allow read access to the database 

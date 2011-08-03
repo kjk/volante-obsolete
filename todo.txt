@@ -21,7 +21,6 @@ For both Java and C#:
    custom hashtable, maybe a built-in hash would do (needs benchmarks)
 
 C# specific:
- * use OMIT_RAW_TYPE instead of SUPPORT_RAW_TYPE
  * fix TestTimeSeries assert
  * make TestBlob verify both before closing and after closing database
  * add Silverligth target and test with Silverlight
