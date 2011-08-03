@@ -117,9 +117,8 @@ public class TestsMain
 
     static void RunBlobTests()
     {
-        Tests.SafeDeleteFile(TestBlob.dbName);
-        TestBlob.Run();
-        TestBlob.Run();
+        var r = TestBlob.Run();
+        r.Print();
     }
 
     static void RunTimeSeriesTests()

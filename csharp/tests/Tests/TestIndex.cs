@@ -3,7 +3,7 @@ namespace Volante
     using System;
     using System.Collections;
 
-    public class TestResultIndex : TestResult
+    public class TestIndexResult : TestResult
     {
         public TimeSpan InsertTime;
         public TimeSpan IndexSearchTime;
@@ -28,13 +28,13 @@ namespace Volante
 
         internal static int pagePoolSize = 32 * 1024 * 1024;
 
-        static public TestResultIndex Run(int nRecords, bool altBtree, bool inMemory, bool serializableTransaction)
+        static public TestIndexResult Run(int nRecords, bool altBtree, bool inMemory, bool serializableTransaction)
         {
             int i;
             string dbName = "testidx.dbs";
             Tests.SafeDeleteFile(dbName);
 
-            var res = new TestResultIndex()
+            var res = new TestIndexResult()
             {
                 Count = nRecords,
                 TestName = String.Format("TestIndex(altBtree={0},inMemory={1},serializable={2}", altBtree, inMemory, serializableTransaction)

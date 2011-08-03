@@ -3,7 +3,7 @@ namespace Volante
     using System;
     using System.IO;
 
-    public class TestResultBackup : TestResult
+    public class TestBackupResult : TestResult
     {
         public TimeSpan InsertTime;
         public TimeSpan BackupTime;
@@ -36,11 +36,11 @@ namespace Volante
             Tests.SafeDeleteFile(DbName2);
         }
 
-        static public TestResultBackup Run(int nRecords)
+        static public TestBackupResult Run(int nRecords)
         {
             int i;
 
-            var res = new TestResultBackup()
+            var res = new TestBackupResult()
             {
                 Count = nRecords,
                 TestName = "TestBackup"
