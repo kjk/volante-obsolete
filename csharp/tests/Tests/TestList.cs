@@ -1,7 +1,14 @@
 namespace Volante
 {
     using System;
-    using System.Diagnostics;
+
+    public class TestListResult : TestResult
+    {
+        public TimeSpan InsertTime;
+        public TimeSpan TraverseReadTime;
+        public TimeSpan TraverseModifyTime;
+        public TimeSpan InsertTime4;
+    }
 
     public class TestList
     {
@@ -20,71 +27,58 @@ namespace Volante
             }
         }
 
-        static public void Run(int totalnumber)
+        static public TestListResult Run(int totalNumber)
         {
-            string dbName = "LinkedList.dbs";
+            var res = new TestListResult()
+            {
+                Count = totalNumber,
+                TestName = "TestList"
+            };
+
+            string dbName = "linkedlist.dbs";
             Tests.SafeDeleteFile(dbName);
 
+            var tStart = DateTime.Now;
+            var start = DateTime.Now;
+
             Storage db = StorageFactory.CreateStorage();
-
             db.Open(dbName, 10 * 1024 * 1024, "LinkedList"); // 10M cache
-
             db.Root = db.CreateClass(typeof(LinkNode));
             LinkNode header = (LinkNode)db.Root;
             LinkNode current;
-
-            /****************************** insert section *******************************/
-
             current = header;
-            // Now I will insert totalnumber node objects to the list tail
-            DateTime t1 = DateTime.Now;
-            for (int i = 0; i < totalnumber; i++)
+            for (int i = 0; i < totalNumber; i++)
             {
-                if (i % 10000 == 0)
-                    Console.Write("\r" + (i * 100L / totalnumber).ToString() + "% finished");
                 current.Next = (LinkNode)db.CreateClass(typeof(LinkNode));
                 current = current.Next;
                 current.Number = i;
             }
-            DateTime t2 = DateTime.Now;
-            Console.WriteLine("\r Insert Time: " + (t2 - t1).TotalSeconds);
+            res.InsertTime = DateTime.Now - start;
 
-            /****************************** traverse read ********************************/
-
+            start = DateTime.Now;
             int number = 0; // A variable used to validate the data in list
             current = header;
-            t1 = DateTime.Now;
             while (current.Next != null) // Traverse the whole list in the database
             {
-                if (number % 10000 == 0)
-                    Console.Write("\r" + (number * 100L / totalnumber).ToString() + "% finished");
                 current = current.Next;
-                if (current.Number != number++) // Validate node's value
-                    throw new Exception("error number");
+                Tests.Assert(current.Number == number++);
             }
-            t2 = DateTime.Now;
-            Console.WriteLine("\r Traverse Read Time: " + (t2 - t1).TotalSeconds);
-            Console.WriteLine("TotalNumber = " + number);
+            res.TraverseReadTime = DateTime.Now - start;
 
-            /****************************** traverse modify *******************************/
-
+            start = DateTime.Now;
             number = 0;
             current = header;
-            t1 = DateTime.Now;
             while (current.Next != null) // Traverse the whole list in the database
             {
-                if (number % 10000 == 0)
-                    Console.Write("\r" + (number * 100L / totalnumber).ToString() + "% finished");
                 current = current.Next;
-                if (current.Number != number++) // Validate node's value
-                    throw new Exception("error number");
+                Tests.Assert(current.Number == number++);
                 current.Number = -current.Number;
             }
-            t2 = DateTime.Now;
-            Console.WriteLine("\r Traverse Modify Time: " + (t2 - t1).TotalSeconds);
-            Console.WriteLine("TotalNumber = " + number);
-
+            res.TraverseModifyTime = DateTime.Now - start;
             db.Close();
+            res.ExecutionTime = DateTime.Now - tStart;
+            res.Ok = Tests.FinalizeTest();
+            return res;
         }
 
     }

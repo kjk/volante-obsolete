@@ -2,7 +2,14 @@ namespace Volante
 {
 #if !OMIT_XML
     using System;
-    using System.Diagnostics;
+
+    public class TestXmlResult : TestResult
+    {
+        public TimeSpan InsertTime;
+        public TimeSpan ExportTime;
+        public TimeSpan ImportTime;
+        public TimeSpan IndexSearchTime;
+    }
 
     public class TestXml
     {
@@ -29,20 +36,29 @@ namespace Volante
 
         internal static int pagePoolSize = 32 * 1024 * 1024;
 
-        public static void Run(int nRecords, bool useAltBtree)
+        public static TestXmlResult Run(int nRecords, bool useAltBtree)
         {
+            var res = new TestXmlResult()
+            {
+                Count = nRecords,
+                TestName = String.Format("TestXml(altBtree={0})", useAltBtree)
+            };
+
             string dbName1 = @"testxml1.dbs";
             string dbName2 = @"testxml2.dbs";
             Tests.SafeDeleteFile(dbName1);
             Tests.SafeDeleteFile(dbName2);
 
             string xmlName = useAltBtree ? @"testalt.xml" : @"test.xml";
+
+            DateTime tStart = DateTime.Now;
+            DateTime start = DateTime.Now;
             Storage db = StorageFactory.CreateStorage();
             db.AlternativeBtree = useAltBtree;
             db.Open(dbName1, pagePoolSize);
 
             Root root = (Root)db.Root;
-            Tests.AssertThat(null == root);
+            Tests.Assert(null == root);
             root = new Root();
             root.strIndex = db.CreateIndex<string, Record>(true);
             root.intIndex = db.CreateFieldIndex<long, Record>("intKey", true);
@@ -51,7 +67,6 @@ namespace Volante
             root.point.y = 2;
             db.Root = root;
 
-            //DateTime start = DateTime.Now;
             Index<string, Record> strIndex = root.strIndex;
             FieldIndex<long, Record> intIndex = root.intIndex;
             MultiFieldIndex<Record> compoundIndex = root.compoundIndex;
@@ -70,29 +85,30 @@ namespace Volante
                 compoundIndex.Put(rec);
             }
             db.Commit();
-            //System.Console.WriteLine("Elapsed time for inserting " + nRecords + " records: " + (DateTime.Now - start));
+            res.InsertTime = DateTime.Now - start;
 
-            // start = DateTime.Now
+            start = DateTime.Now;
             System.IO.StreamWriter writer = new System.IO.StreamWriter(xmlName);
             db.ExportXML(writer);
             writer.Close();
             db.Close();
-            //System.Console.WriteLine("Elapsed time for XML export: " + (DateTime.Now - start));
+            res.ExportTime = DateTime.Now - start;
 
-            //start = DateTime.Now;
+            start = DateTime.Now;
             db.Open(dbName2, pagePoolSize);
             System.IO.StreamReader reader = new System.IO.StreamReader(xmlName);
             db.ImportXML(reader);
             reader.Close();
-            //System.Console.WriteLine("Elapsed time for XML import: " + (DateTime.Now - start));
+            res.ImportTime = DateTime.Now - start;
+
+            start = DateTime.Now;
 
             root = (Root)db.Root;
             strIndex = root.strIndex;
             intIndex = root.intIndex;
             compoundIndex = root.compoundIndex;
-            Tests.AssertThat(root.point.x == 1 && root.point.y == 2);
+            Tests.Assert(root.point.x == 1 && root.point.y == 2);
 
-            //start = DateTime.Now;
             key = 1999;
             for (i = 0; i < nRecords; i++)
             {
@@ -101,15 +117,19 @@ namespace Volante
                 Record rec1 = strIndex[strKey];
                 Record rec2 = intIndex[key];
                 Record rec3 = compoundIndex.Get(new Key(strKey, key));
-                Tests.AssertThat(rec1 != null);
-                Tests.AssertThat(rec1 == rec2);
-                Tests.AssertThat(rec1 == rec3);
-                Tests.AssertThat(rec1.intKey == key);
-                Tests.AssertThat(rec1.realKey == (double)key);
-                Tests.AssertThat(strKey.Equals(rec1.strKey));
+                Tests.Assert(rec1 != null);
+                Tests.Assert(rec1 == rec2);
+                Tests.Assert(rec1 == rec3);
+                Tests.Assert(rec1.intKey == key);
+                Tests.Assert(rec1.realKey == (double)key);
+                Tests.Assert(strKey.Equals(rec1.strKey));
             }
+            res.IndexSearchTime = DateTime.Now - start;
             db.Close();
-            //System.Console.WriteLine("Elapsed time for performing " + nRecords * 2 + " index searches: " + (DateTime.Now - start));
+
+            res.ExecutionTime = DateTime.Now - tStart;
+            res.Ok = Tests.FinalizeTest();
+            return res;
         }
     }
 #endif

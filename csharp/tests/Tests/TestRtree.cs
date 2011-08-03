@@ -1,9 +1,11 @@
 namespace Volante
 {
     using System;
-    using System.Diagnostics;
 
-    /* for TestRtree */
+    public class TestRtreeResult : TestResult
+    {
+    }
+
     class SpatialObject : Persistent
     {
         public Rectangle rect;
@@ -15,23 +17,27 @@ namespace Volante
 
         const int nObjectsInTree = 1000;
 
-        public static void Run(int nIterations)
+        public static TestRtreeResult Run(int nIterations)
         {
+            var res = new TestRtreeResult()
+            {
+                Count = nIterations,
+                TestName = "TestRtree"
+            };
+
             string dbName = "testrtree.dbs";
             Tests.SafeDeleteFile(dbName);
 
+            DateTime tStart = DateTime.Now;
             Storage db = StorageFactory.CreateStorage();
             SpatialObject so;
             Rectangle r;
-            DateTime start = DateTime.Now;
             db.Open(dbName);
             TestRtree root = (TestRtree)db.Root;
-            if (root == null)
-            {
-                root = new TestRtree();
-                root.index = db.CreateSpatialIndex<SpatialObject>();
-                db.Root = root;
-            }
+            Tests.Assert(root == null);
+            root = new TestRtree();
+            root.index = db.CreateSpatialIndex<SpatialObject>();
+            db.Root = root;
 
             Rectangle[] rectangles = new Rectangle[nObjectsInTree];
             long key = 1999;
@@ -52,10 +58,10 @@ namespace Volante
                         }
                         else
                         {
-                            Debug.Assert(r.Intersects(so.rect));
+                            Tests.Assert(r.Intersects(so.rect));
                         }
                     }
-                    Debug.Assert(po != null);
+                    Tests.Assert(po != null);
 
                     int n = 0;
                     for (int k = 0; k < nObjectsInTree; k++)
@@ -65,14 +71,14 @@ namespace Volante
                             n += 1;
                         }
                     }
-                    Debug.Assert(n == sos.Length);
+                    Tests.Assert(n == sos.Length);
 
                     n = 0;
                     foreach (SpatialObject o in root.index.Overlaps(r))
                     {
-                        Debug.Assert(o == sos[n++]);
+                        Tests.Assert(o == sos[n++]);
                     }
-                    Debug.Assert(n == sos.Length);
+                    Tests.Assert(n == sos.Length);
 
                     root.index.Remove(r, po);
                     po.Deallocate();
@@ -91,14 +97,15 @@ namespace Volante
 
                 if (i % 100 == 0)
                 {
-                    Console.Write("Iteration " + i + "\r");
                     db.Commit();
                 }
             }
             root.index.Clear();
-            Console.WriteLine();
-            Console.WriteLine("Elapsed time " + (DateTime.Now - start));
             db.Close();
+
+            res.ExecutionTime = DateTime.Now - tStart;
+            res.Ok = Tests.FinalizeTest();
+            return res;
         }
     }
 }

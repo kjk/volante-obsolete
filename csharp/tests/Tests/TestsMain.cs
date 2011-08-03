@@ -15,8 +15,8 @@ public class TestsMain
             { "TestIndex", DefaultCounts },
             { "TestEnumerator", new int[2] { 20, 200 } },
             { "TestRtree", new int[2] { 200, 20000 } },
-            { "TestR2", new int[2] { 200, 20000 } },
-            { "TestGC", new int[2] { 200, 20000 } },
+            { "TestR2", new int[2] { 1000, 20000 } },
+            { "TestGC", new int[2] { 5000, 50000 } },
             { "TestXml", new int[2] { 200, 20000 } },
             { "TestBit", new int[2] { 200, 20000 } },
             { "TestRaw", new int[2] { 100, 1000 } }
@@ -42,7 +42,64 @@ public class TestsMain
         }
     }
 
-    static void RunIndexTests()
+    static void RunTestBackup()
+    {
+        int n = GetIterCount("TestBackup");
+        TestBackup.Init();
+        var r = TestBackup.Run(n);
+        r.Print();
+    }
+
+    static void RunTestBit()
+    {
+        int n = GetIterCount("TestBit");
+        var r = TestBit.Run(n);
+        r.Print();
+    }
+
+    static void RunTestBlob()
+    {
+        var r = TestBlob.Run();
+        r.Print();
+    }
+
+    static void RunTestCompoundIndex()
+    {
+        int n = GetIterCount("TestCompoundIndex");
+        var r = TestCompoundIndex.Run(n, false);
+        r.Print();
+        r = TestCompoundIndex.Run(n, true);
+        r.Print();
+    }
+
+    static void RunTestConcur()
+    {
+        int n = GetIterCount("TestConcur");
+        var r = TestConcur.Run(n);
+        r.Print();
+    }
+
+    static void RunTestEnumerator()
+    {
+        int n = GetIterCount("TestEnumerator");
+        var r = TestEnumerator.Run(n, false);
+        r.Print();
+        r = TestEnumerator.Run(n, true);
+        r.Print();
+    }
+
+    static void RunTestGc()
+    {
+        int n = GetIterCount("TestGc");
+        var r = TestGC.Run(n, false, false);
+        r.Print();
+        r = TestGC.Run(n, true, false);
+        r.Print();
+        r = TestGC.Run(n, true, true);
+        r.Print();
+    }
+
+    static void RunTestIndex()
     {
         int n = GetIterCount("TestIndex");
         var r = TestIndex.Run(n, false, false, false);
@@ -55,106 +112,68 @@ public class TestsMain
         r.Print();
     }
 
-    static void RunIndex2Tests()
+    static void RunTestIndex2()
     {
         int n = GetIterCount("TestIndex2");
-        TestIndex2.Run(n);
+        var r = TestIndex2.Run(n);
+        r.Print();
     }
 
-    static void RunEnumeratorTests()
+    static void RunTestList()
     {
-        int n = GetIterCount("TestEnumerator");
-        TestEnumerator.Run(n, false);
-        TestEnumerator.Run(n, true);
+        int n = GetIterCount("TestList");
+        var r = TestList.Run(n);
+        r.Print();
     }
 
-    static void RunCompoundIndexTests()
-    {
-        int n = GetIterCount("TestCompoundIndex");
-        TestCompoundIndex.Run(n, false);
-        TestCompoundIndex.Run(n, true);
-    }
-
-    static void RunRtreeTests()
-    {
-        int n = GetIterCount("TestRtree");
-        TestRtree.Run(n);
-    }
-
-    static void RunR2Tests()
+    static void RunTestR2()
     {
         int n = GetIterCount("TestR2");
-        TestR2.Run(n, false);
-        TestR2.Run(n, true);
+        var r = TestR2.Run(n, false);
+        r.Print();
+        r = TestR2.Run(n, true);
+        r.Print();
     }
 
-    static void RunTtreeTests()
-    {
-        int n = GetIterCount("TestTtree");
-        TestTtree.Run(n);
-    }
-
-    static void RunRawTests()
+    static void RunTestRaw()
     {
         int n = GetIterCount("TestRaw");
         Tests.SafeDeleteFile(TestRaw.dbName);
-        TestRaw.Run(n);
-        TestRaw.Run(n);
-    }
-
-    static void RunListTests()
-    {
-        int n = GetIterCount("TestList");
-        TestList.Run(n);
-    }
-
-    static void RunBitTests()
-    {
-        int n = GetIterCount("TestBit");
-        var r = TestBit.Run(n);
+        var r = TestRaw.Run(n);
+        r.Print();
+        r = TestRaw.Run(n);
         r.Print();
     }
 
-    static void RunBlobTests()
+    static void RunTestRtree()
     {
-        var r = TestBlob.Run();
+        int n = GetIterCount("TestRtree");
+        var r = TestRtree.Run(n);
         r.Print();
     }
 
-    static void RunTimeSeriesTests()
+    static void RunTestTimeSeries()
     {
         int n = GetIterCount("TestTimeSeries");
-        TestTimeSeries.Run(n);
-    }
-
-    static void RunGcTests()
-    {
-        int n = GetIterCount("TestGc");
-        TestGC.Run(n, false, false);
-        TestGC.Run(n, true, false);
-        TestGC.Run(n, true, true);
-    }
-
-    static void RunConcurTests()
-    {
-        int n = GetIterCount("TestConcur");
-        TestConcur.Run(n);
-    }
-
-    static void RunBackupTest()
-    {
-        int n = GetIterCount("TestBackup");
-        TestBackup.Init();
-        var r = TestBackup.Run(n);
+        var r = TestTimeSeries.Run(n);
         r.Print();
     }
 
-    static void RunXmlTests()
+    static void RunTestTtree()
+    {
+        int n = GetIterCount("TestTtree");
+        var r = TestTtree.Run(n);
+        r.Print();
+    }
+
+    static void RunTestXml()
     {
 #if !OMIT_XML
         int n = GetIterCount("TestXml");
-        TestXml.Run(n, false);
-        TestXml.Run(n, true);
+        var r = TestXml.Run(n, false);
+        r.Print();
+        r = TestXml.Run(n, true);
+        r.Print();
 #endif
     }
 
@@ -164,26 +183,23 @@ public class TestsMain
 
         var tStart = DateTime.Now;
 
-        RunIndexTests();
-        RunIndex2Tests();
-        RunEnumeratorTests();
-        RunCompoundIndexTests();
-        RunTtreeTests();
-        //TODO: fix TestTimeSeries assert
-        //RunTimeSeriesTests();
-        RunRtreeTests();
-        RunR2Tests();
-        RunRawTests();
-        RunListTests();
+        RunTestBackup();
+        RunTestBit();
+        RunTestBlob();
+        RunTestCompoundIndex();
+        RunTestConcur();
+        RunTestEnumerator();
+        RunTestGc();
+        RunTestIndex();
+        RunTestIndex2();
+        RunTestList();
+        RunTestR2();
 
-        RunGcTests();
-        RunConcurTests();
-
-        RunBitTests();
-        RunBlobTests();
-        RunXmlTests();
-
-        RunBackupTest();
+        RunTestRaw();
+        RunTestRtree();
+        RunTestTtree();
+        RunTestTimeSeries();
+        RunTestXml();
 
         Test1.Run(false);
         Test1.Run(true);

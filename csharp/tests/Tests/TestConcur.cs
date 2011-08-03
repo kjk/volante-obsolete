@@ -1,8 +1,13 @@
 namespace Volante
 {
     using System;
-    using System.Diagnostics;
     using System.Threading;
+
+    public class TestConcurResult : TestResult
+    {
+        public TimeSpan InsertTime;
+        public TimeSpan AccessTime;
+    }
 
     public class TestConcur
     {
@@ -65,7 +70,7 @@ namespace Volante
                     sum += elem.count;
                     n += 1;
                 } while ((elem = elem.next) != head);
-                Debug.Assert(n == nElements && sum == (long)nElements * (nElements - 1) / 2);
+                Tests.Assert(n == nElements && sum == (long)nElements * (nElements - 1) / 2);
                 list.Unlock();
                 list.ExclusiveLock();
                 L2Elem last = list.head.prev;
@@ -84,28 +89,38 @@ namespace Volante
 #endif
         }
 
-        public static void Run(int nEls)
+        public static TestConcurResult Run(int nEls)
         {
+            var res = new TestConcurResult
+            {
+                Count = nEls,
+                TestName = "TestConcur"
+            };
+
             string dbName = "testconcur.dbs";
             Tests.SafeDeleteFile(dbName);
             TestConcur.nElements = nEls;
 
+            var tStart = DateTime.Now;
+            var start = DateTime.Now;
+
             db = StorageFactory.CreateStorage();
             db.Open(dbName);
             L2List list = (L2List)db.Root;
-            if (list == null)
+            Tests.Assert(list == null);
+            list = new L2List();
+            list.head = new L2Elem();
+            list.head.next = list.head.prev = list.head;
+            db.Root = list;
+            for (int i = 1; i < nElements; i++)
             {
-                list = new L2List();
-                list.head = new L2Elem();
-                list.head.next = list.head.prev = list.head;
-                db.Root = list;
-                for (int i = 1; i < nElements; i++)
-                {
-                    L2Elem elem = new L2Elem();
-                    elem.count = i;
-                    elem.linkAfter(list.head);
-                }
+                L2Elem elem = new L2Elem();
+                elem.count = i;
+                elem.linkAfter(list.head);
             }
+            res.InsertTime = DateTime.Now - start;
+
+            start = DateTime.Now;
             Thread[] threads = new Thread[nThreads];
             for (int i = 0; i < nThreads; i++)
             {
@@ -119,6 +134,11 @@ namespace Volante
             }
 #endif
             db.Close();
+            res.AccessTime = DateTime.Now - start;
+
+            res.ExecutionTime = DateTime.Now - tStart;
+            res.Ok = Tests.FinalizeTest();
+            return res;
         }
     }
 

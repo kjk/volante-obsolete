@@ -1,7 +1,14 @@
 namespace Volante
 {
     using System;
-    using System.Diagnostics;
+
+    public class TestCompoundResult : TestResult
+    {
+        public TimeSpan InsertTime;
+        public TimeSpan IndexSearchTime;
+        public TimeSpan IterationTime;
+        public TimeSpan RemoveTime;
+    }
 
     public class TestCompoundIndex
     {
@@ -13,22 +20,29 @@ namespace Volante
             internal int intKey;
         }
 
-        public static void Run(int nRecords, bool altBtree)
+        public static TestCompoundResult Run(int nRecords, bool altBtree)
         {
-            string dbName = "testcidx.dbs";
             int i;
+            string dbName = "testcidx.dbs";
+            var res = new TestCompoundResult()
+            {
+                Count = nRecords,
+                TestName = String.Format("TestCompoundResult(altBtree={0})", altBtree)
+            };
             Tests.SafeDeleteFile(dbName);
+
+            DateTime tStart = DateTime.Now;
+            DateTime start = DateTime.Now;
+
             Storage db = StorageFactory.CreateStorage();
             db.AlternativeBtree = altBtree;
             db.Open(dbName, pagePoolSize);
-
             MultiFieldIndex<Record> root = (MultiFieldIndex<Record>)db.Root;
             if (root == null)
             {
                 root = db.CreateFieldIndex<Record>(new string[] { "intKey", "strKey" }, true);
                 db.Root = root;
             }
-            DateTime start = DateTime.Now;
             long key = 1999;
             for (i = 0; i < nRecords; i++)
             {
@@ -39,7 +53,7 @@ namespace Volante
                 root.Put(rec);
             }
             db.Commit();
-            Console.WriteLine("Elapsed time for inserting " + nRecords + " records: " + (DateTime.Now - start));
+            res.InsertTime = DateTime.Now - start;
 
             start = DateTime.Now;
             key = 1999;
@@ -51,7 +65,7 @@ namespace Volante
                 int intKey = (int)((ulong)key >> 32);
                 String strKey = Convert.ToString((int)key);
                 Record rec = root.Get(new Key(new Object[] { intKey, strKey }));
-                Debug.Assert(rec != null && rec.intKey == intKey && rec.strKey.Equals(strKey));
+                Tests.Assert(rec != null && rec.intKey == intKey && rec.strKey.Equals(strKey));
                 if (intKey < minKey)
                 {
                     minKey = intKey;
@@ -61,7 +75,7 @@ namespace Volante
                     maxKey = intKey;
                 }
             }
-            Console.WriteLine("Elapsed time for performing " + nRecords + " index searches: " + (DateTime.Now - start));
+            res.IndexSearchTime = DateTime.Now - start;
 
             start = DateTime.Now;
             int n = 0;
@@ -71,12 +85,12 @@ namespace Volante
                                               new Key(maxKey + 1, "???"),
                                               IterationOrder.AscentOrder))
             {
-                Debug.Assert(rec.intKey > prevInt || rec.intKey == prevInt && rec.strKey.CompareTo(prevStr) > 0);
+                Tests.Assert(rec.intKey > prevInt || rec.intKey == prevInt && rec.strKey.CompareTo(prevStr) > 0);
                 prevStr = rec.strKey;
                 prevInt = rec.intKey;
                 n += 1;
             }
-            Debug.Assert(n == nRecords);
+            Tests.Assert(n == nRecords);
 
             n = 0;
             prevInt = maxKey + 1;
@@ -84,13 +98,13 @@ namespace Volante
                                               new Key(maxKey + 1, "???", false),
                                               IterationOrder.DescentOrder))
             {
-                Debug.Assert(rec.intKey < prevInt || rec.intKey == prevInt && rec.strKey.CompareTo(prevStr) < 0);
+                Tests.Assert(rec.intKey < prevInt || rec.intKey == prevInt && rec.strKey.CompareTo(prevStr) < 0);
                 prevStr = rec.strKey;
                 prevInt = rec.intKey;
                 n += 1;
             }
-            Debug.Assert(n == nRecords);
-            Console.WriteLine("Elapsed time for iterating through " + (nRecords * 2) + " records: " + (DateTime.Now - start));
+            Tests.Assert(n == nRecords);
+            res.IterationTime = DateTime.Now - start;
             start = DateTime.Now;
             key = 1999;
             for (i = 0; i < nRecords; i++)
@@ -99,15 +113,19 @@ namespace Volante
                 int intKey = (int)((ulong)key >> 32);
                 String strKey = Convert.ToString((int)key);
                 Record rec = root.Get(new Key(new Object[] { intKey, strKey }));
-                Debug.Assert(rec != null && rec.intKey == intKey && rec.strKey.Equals(strKey));
-                Debug.Assert(root.Contains(rec));
+                Tests.Assert(rec != null && rec.intKey == intKey && rec.strKey.Equals(strKey));
+                Tests.Assert(root.Contains(rec));
                 root.Remove(rec);
                 rec.Deallocate();
             }
-            Debug.Assert(!root.GetEnumerator().MoveNext());
-            Debug.Assert(!root.Reverse().GetEnumerator().MoveNext());
-            Console.WriteLine("Elapsed time for deleting " + nRecords + " records: " + (DateTime.Now - start));
+            Tests.Assert(!root.GetEnumerator().MoveNext());
+            Tests.Assert(!root.Reverse().GetEnumerator().MoveNext());
+            res.RemoveTime = DateTime.Now - start;
             db.Close();
+
+            res.ExecutionTime = DateTime.Now - tStart;
+            res.Ok = Tests.FinalizeTest();
+            return res;
         }
     }
 

@@ -97,9 +97,6 @@
     <Compile Include="TestTtree.cs" />
     <Compile Include="TestXml.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <Content Include="todo.txt" />
-  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PreBuildEvent />

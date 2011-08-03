@@ -72,17 +72,17 @@ namespace Volante
             {
                 byte[] buf2 = new byte[1024];
                 Blob blob = root[file];
-                Tests.AssertThat(blob != null);
+                Tests.Assert(blob != null);
                 Stream bin = blob.GetStream();
                 FileStream fin = new FileStream(file, FileMode.Open, FileAccess.Read);
                 while ((rc = fin.Read(buf, 0, buf.Length)) > 0)
                 {
                     int rc2 = bin.Read(buf2, 0, buf2.Length);
-                    Tests.AssertThat(rc == rc2);
+                    Tests.Assert(rc == rc2);
                     if (rc != rc2)
                         break;
                     while (--rc >= 0 && buf[rc] == buf2[rc]) ;
-                    Tests.AssertThat(rc < 0);
+                    Tests.Assert(rc < 0);
                     if (rc >= 0)
                         break;
                 }

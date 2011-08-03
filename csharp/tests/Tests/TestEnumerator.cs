@@ -1,7 +1,12 @@
 namespace Volante
 {
     using System;
-    using System.Diagnostics;
+
+    public class TestEnumeratorResult : TestResult
+    {
+        public TimeSpan InsertTime;
+        public TimeSpan IterationTime;
+    }
 
     public class TestEnumerator
     {
@@ -19,30 +24,35 @@ namespace Volante
             internal Index<long, Record> intIndex;
         }
 
-        static public void Run(int nRecords, bool altBtree)
+        static public TestEnumeratorResult Run(int nRecords, bool altBtree)
         {
+            var res = new TestEnumeratorResult()
+            {
+                Count = nRecords,
+                TestName = String.Format("TestEnumerator(altBtree={0})", altBtree)
+            };
+
             string dbName = "testenum.dbs";
             Tests.SafeDeleteFile(dbName);
 
+            var tStart = DateTime.Now;
+            var start = DateTime.Now;
+
             Storage db = StorageFactory.CreateStorage();
             db.AlternativeBtree = altBtree;
-
             db.Open(dbName, pagePoolSize);
             Indices root = (Indices)db.Root;
-            if (root == null)
-            {
-                root = new Indices();
-                root.strIndex = db.CreateIndex<string, Record>(false);
-                root.intIndex = db.CreateIndex<long, Record>(false);
-                db.Root = root;
-            }
+            Tests.Assert(root == null);
+            root = new Indices();
+            root.strIndex = db.CreateIndex<string, Record>(false);
+            root.intIndex = db.CreateIndex<long, Record>(false);
+            db.Root = root;
             Index<long, Record> intIndex = root.intIndex;
             Index<string, Record> strIndex = root.strIndex;
             Record[] records;
-            DateTime start = DateTime.Now;
+
             long key = 1999;
             int i, j;
-
             for (i = 0; i < nRecords; i++)
             {
                 Record rec = new Record();
@@ -56,7 +66,7 @@ namespace Volante
                 }
             }
             db.Commit();
-            Console.WriteLine("Elapsed time for inserting " + nRecords + " records: " + (DateTime.Now - start));
+            res.InsertTime = DateTime.Now - start;
 
             start = DateTime.Now;
             key = 1999;
@@ -78,310 +88,310 @@ namespace Volante
                 j = 0;
                 foreach (Record rec in intIndex.Range(fromInclusive, tillInclusive, IterationOrder.AscentOrder))
                 {
-                    Debug.Assert(rec == records[j++]);
+                    Tests.Assert(rec == records[j++]);
                 }
-                Debug.Assert(j == records.Length);
+                Tests.Assert(j == records.Length);
 
                 records = intIndex.Get(fromInclusive, tillExclusive);
                 j = 0;
                 foreach (Record rec in intIndex.Range(fromInclusive, tillExclusive, IterationOrder.AscentOrder))
                 {
-                    Debug.Assert(rec == records[j++]);
+                    Tests.Assert(rec == records[j++]);
                 }
-                Debug.Assert(j == records.Length);
+                Tests.Assert(j == records.Length);
 
                 records = intIndex.Get(fromExclusive, tillInclusive);
                 j = 0;
                 foreach (Record rec in intIndex.Range(fromExclusive, tillInclusive, IterationOrder.AscentOrder))
                 {
-                    Debug.Assert(rec == records[j++]);
+                    Tests.Assert(rec == records[j++]);
                 }
-                Debug.Assert(j == records.Length);
+                Tests.Assert(j == records.Length);
 
                 records = intIndex.Get(fromExclusive, tillExclusive);
                 j = 0;
                 foreach (Record rec in intIndex.Range(fromExclusive, tillExclusive, IterationOrder.AscentOrder))
                 {
-                    Debug.Assert(rec == records[j++]);
+                    Tests.Assert(rec == records[j++]);
                 }
-                Debug.Assert(j == records.Length);
+                Tests.Assert(j == records.Length);
 
                 records = intIndex.Get(fromInclusive, null);
                 j = 0;
                 foreach (Record rec in intIndex.Range(fromInclusive, null, IterationOrder.AscentOrder))
                 {
-                    Debug.Assert(rec == records[j++]);
+                    Tests.Assert(rec == records[j++]);
                 }
-                Debug.Assert(j == records.Length);
+                Tests.Assert(j == records.Length);
 
                 records = intIndex.Get(fromExclusive, null);
                 j = 0;
                 foreach (Record rec in intIndex.Range(fromExclusive, null, IterationOrder.AscentOrder))
                 {
-                    Debug.Assert(rec == records[j++]);
+                    Tests.Assert(rec == records[j++]);
                 }
-                Debug.Assert(j == records.Length);
+                Tests.Assert(j == records.Length);
 
                 records = intIndex.Get(null, tillInclusive);
                 j = 0;
                 foreach (Record rec in intIndex.Range(null, tillInclusive, IterationOrder.AscentOrder))
                 {
-                    Debug.Assert(rec == records[j++]);
+                    Tests.Assert(rec == records[j++]);
                 }
-                Debug.Assert(j == records.Length);
+                Tests.Assert(j == records.Length);
 
                 records = intIndex.Get(null, tillExclusive);
                 j = 0;
                 foreach (Record rec in intIndex.Range(null, tillExclusive, IterationOrder.AscentOrder))
                 {
-                    Debug.Assert(rec == records[j++]);
+                    Tests.Assert(rec == records[j++]);
                 }
-                Debug.Assert(j == records.Length);
+                Tests.Assert(j == records.Length);
 
                 records = intIndex.ToArray();
                 j = 0;
                 foreach (Record rec in intIndex)
                 {
-                    Debug.Assert(rec == records[j++]);
+                    Tests.Assert(rec == records[j++]);
                 }
-                Debug.Assert(j == records.Length);
+                Tests.Assert(j == records.Length);
 
                 // int key descent order
                 records = intIndex.Get(fromInclusive, tillInclusive);
                 j = records.Length;
                 foreach (Record rec in intIndex.Range(fromInclusive, tillInclusive, IterationOrder.DescentOrder))
                 {
-                    Debug.Assert(rec == records[--j]);
+                    Tests.Assert(rec == records[--j]);
                 }
-                Debug.Assert(j == 0);
+                Tests.Assert(j == 0);
 
                 records = intIndex.Get(fromInclusive, tillExclusive);
                 j = records.Length;
                 foreach (Record rec in intIndex.Range(fromInclusive, tillExclusive, IterationOrder.DescentOrder))
                 {
-                    Debug.Assert(rec == records[--j]);
+                    Tests.Assert(rec == records[--j]);
                 }
-                Debug.Assert(j == 0);
+                Tests.Assert(j == 0);
 
                 records = intIndex.Get(fromExclusive, tillInclusive);
                 j = records.Length;
                 foreach (Record rec in intIndex.Range(fromExclusive, tillInclusive, IterationOrder.DescentOrder))
                 {
-                    Debug.Assert(rec == records[--j]);
+                    Tests.Assert(rec == records[--j]);
                 }
-                Debug.Assert(j == 0);
+                Tests.Assert(j == 0);
 
                 records = intIndex.Get(fromExclusive, tillExclusive);
                 j = records.Length;
                 foreach (Record rec in intIndex.Range(fromExclusive, tillExclusive, IterationOrder.DescentOrder))
                 {
-                    Debug.Assert(rec == records[--j]);
+                    Tests.Assert(rec == records[--j]);
                 }
-                Debug.Assert(j == 0);
+                Tests.Assert(j == 0);
 
                 records = intIndex.Get(fromInclusive, null);
                 j = records.Length;
                 foreach (Record rec in intIndex.Range(fromInclusive, null, IterationOrder.DescentOrder))
                 {
-                    Debug.Assert(rec == records[--j]);
+                    Tests.Assert(rec == records[--j]);
                 }
-                Debug.Assert(j == 0);
+                Tests.Assert(j == 0);
 
                 records = intIndex.Get(fromExclusive, null);
                 j = records.Length;
                 foreach (Record rec in intIndex.Range(fromExclusive, null, IterationOrder.DescentOrder))
                 {
-                    Debug.Assert(rec == records[--j]);
+                    Tests.Assert(rec == records[--j]);
                 }
-                Debug.Assert(j == 0);
+                Tests.Assert(j == 0);
 
                 records = intIndex.Get(null, tillInclusive);
                 j = records.Length;
                 foreach (Record rec in intIndex.Range(null, tillInclusive, IterationOrder.DescentOrder))
                 {
-                    Debug.Assert(rec == records[--j]);
+                    Tests.Assert(rec == records[--j]);
                 }
-                Debug.Assert(j == 0);
+                Tests.Assert(j == 0);
 
                 records = intIndex.Get(null, tillExclusive);
                 j = records.Length;
                 foreach (Record rec in intIndex.Range(null, tillExclusive, IterationOrder.DescentOrder))
                 {
-                    Debug.Assert(rec == records[--j]);
+                    Tests.Assert(rec == records[--j]);
                 }
-                Debug.Assert(j == 0);
+                Tests.Assert(j == 0);
 
                 records = intIndex.ToArray();
                 j = records.Length;
                 foreach (Record rec in intIndex.Reverse())
                 {
-                    Debug.Assert(rec == records[--j]);
+                    Tests.Assert(rec == records[--j]);
                 }
-                Debug.Assert(j == 0);
+                Tests.Assert(j == 0);
 
                 // str key ascent order
                 records = strIndex.Get(fromInclusiveStr, tillInclusiveStr);
                 j = 0;
                 foreach (Record rec in strIndex.Range(fromInclusiveStr, tillInclusiveStr, IterationOrder.AscentOrder))
                 {
-                    Debug.Assert(rec == records[j++]);
+                    Tests.Assert(rec == records[j++]);
                 }
-                Debug.Assert(j == records.Length);
+                Tests.Assert(j == records.Length);
 
                 records = strIndex.Get(fromInclusiveStr, tillExclusiveStr);
                 j = 0;
                 foreach (Record rec in strIndex.Range(fromInclusiveStr, tillExclusiveStr, IterationOrder.AscentOrder))
                 {
-                    Debug.Assert(rec == records[j++]);
+                    Tests.Assert(rec == records[j++]);
                 }
-                Debug.Assert(j == records.Length);
+                Tests.Assert(j == records.Length);
 
                 records = strIndex.Get(fromExclusiveStr, tillInclusiveStr);
                 j = 0;
                 foreach (Record rec in strIndex.Range(fromExclusiveStr, tillInclusiveStr, IterationOrder.AscentOrder))
                 {
-                    Debug.Assert(rec == records[j++]);
+                    Tests.Assert(rec == records[j++]);
                 }
-                Debug.Assert(j == records.Length);
+                Tests.Assert(j == records.Length);
 
                 records = strIndex.Get(fromExclusiveStr, tillExclusiveStr);
                 j = 0;
                 foreach (Record rec in strIndex.Range(fromExclusiveStr, tillExclusiveStr, IterationOrder.AscentOrder))
                 {
-                    Debug.Assert(rec == records[j++]);
+                    Tests.Assert(rec == records[j++]);
                 }
-                Debug.Assert(j == records.Length);
+                Tests.Assert(j == records.Length);
 
                 records = strIndex.Get(fromInclusiveStr, null);
                 j = 0;
                 foreach (Record rec in strIndex.Range(fromInclusiveStr, null, IterationOrder.AscentOrder))
                 {
-                    Debug.Assert(rec == records[j++]);
+                    Tests.Assert(rec == records[j++]);
                 }
-                Debug.Assert(j == records.Length);
+                Tests.Assert(j == records.Length);
 
                 records = strIndex.Get(fromExclusiveStr, null);
                 j = 0;
                 foreach (Record rec in strIndex.Range(fromExclusiveStr, null, IterationOrder.AscentOrder))
                 {
-                    Debug.Assert(rec == records[j++]);
+                    Tests.Assert(rec == records[j++]);
                 }
-                Debug.Assert(j == records.Length);
+                Tests.Assert(j == records.Length);
 
                 records = strIndex.Get(null, tillInclusiveStr);
                 j = 0;
                 foreach (Record rec in strIndex.Range(null, tillInclusiveStr, IterationOrder.AscentOrder))
                 {
-                    Debug.Assert(rec == records[j++]);
+                    Tests.Assert(rec == records[j++]);
                 }
-                Debug.Assert(j == records.Length);
+                Tests.Assert(j == records.Length);
 
                 records = strIndex.Get(null, tillExclusiveStr);
                 j = 0;
                 foreach (Record rec in strIndex.Range(null, tillExclusiveStr, IterationOrder.AscentOrder))
                 {
-                    Debug.Assert(rec == records[j++]);
+                    Tests.Assert(rec == records[j++]);
                 }
-                Debug.Assert(j == records.Length);
+                Tests.Assert(j == records.Length);
 
                 records = strIndex.ToArray();
                 j = 0;
                 foreach (Record rec in strIndex)
                 {
-                    Debug.Assert(rec == records[j++]);
+                    Tests.Assert(rec == records[j++]);
                 }
-                Debug.Assert(j == records.Length);
+                Tests.Assert(j == records.Length);
 
                 // str key descent order
                 records = strIndex.Get(fromInclusiveStr, tillInclusiveStr);
                 j = records.Length;
                 foreach (Record rec in strIndex.Range(fromInclusiveStr, tillInclusiveStr, IterationOrder.DescentOrder))
                 {
-                    Debug.Assert(rec == records[--j]);
+                    Tests.Assert(rec == records[--j]);
                 }
-                Debug.Assert(j == 0);
+                Tests.Assert(j == 0);
 
                 records = strIndex.Get(fromInclusiveStr, tillExclusiveStr);
                 j = records.Length;
                 foreach (Record rec in strIndex.Range(fromInclusiveStr, tillExclusiveStr, IterationOrder.DescentOrder))
                 {
-                    Debug.Assert(rec == records[--j]);
+                    Tests.Assert(rec == records[--j]);
                 }
-                Debug.Assert(j == 0);
+                Tests.Assert(j == 0);
 
                 records = strIndex.Get(fromExclusiveStr, tillInclusiveStr);
                 j = records.Length;
                 foreach (Record rec in strIndex.Range(fromExclusiveStr, tillInclusiveStr, IterationOrder.DescentOrder))
                 {
-                    Debug.Assert(rec == records[--j]);
+                    Tests.Assert(rec == records[--j]);
                 }
-                Debug.Assert(j == 0);
+                Tests.Assert(j == 0);
 
                 records = strIndex.Get(fromExclusiveStr, tillExclusiveStr);
                 j = records.Length;
                 foreach (Record rec in strIndex.Range(fromExclusiveStr, tillExclusiveStr, IterationOrder.DescentOrder))
                 {
-                    Debug.Assert(rec == records[--j]);
+                    Tests.Assert(rec == records[--j]);
                 }
-                Debug.Assert(j == 0);
+                Tests.Assert(j == 0);
 
                 records = strIndex.Get(fromInclusiveStr, null);
                 j = records.Length;
                 foreach (Record rec in strIndex.Range(fromInclusiveStr, null, IterationOrder.DescentOrder))
                 {
-                    Debug.Assert(rec == records[--j]);
+                    Tests.Assert(rec == records[--j]);
                 }
-                Debug.Assert(j == 0);
+                Tests.Assert(j == 0);
 
                 records = strIndex.Get(fromExclusiveStr, null);
                 j = records.Length;
                 foreach (Record rec in strIndex.Range(fromExclusiveStr, null, IterationOrder.DescentOrder))
                 {
-                    Debug.Assert(rec == records[--j]);
+                    Tests.Assert(rec == records[--j]);
                 }
-                Debug.Assert(j == 0);
+                Tests.Assert(j == 0);
 
                 records = strIndex.Get(null, tillInclusiveStr);
                 j = records.Length;
                 foreach (Record rec in strIndex.Range(null, tillInclusiveStr, IterationOrder.DescentOrder))
                 {
-                    Debug.Assert(rec == records[--j]);
+                    Tests.Assert(rec == records[--j]);
                 }
-                Debug.Assert(j == 0);
+                Tests.Assert(j == 0);
 
                 records = strIndex.Get(null, tillExclusiveStr);
                 j = records.Length;
                 foreach (Record rec in strIndex.Range(null, tillExclusiveStr, IterationOrder.DescentOrder))
                 {
-                    Debug.Assert(rec == records[--j]);
+                    Tests.Assert(rec == records[--j]);
                 }
-                Debug.Assert(j == 0);
+                Tests.Assert(j == 0);
 
                 records = strIndex.ToArray();
                 j = records.Length;
                 foreach (Record rec in strIndex.Reverse())
                 {
-                    Debug.Assert(rec == records[--j]);
+                    Tests.Assert(rec == records[--j]);
                 }
-                Debug.Assert(j == 0);
+                Tests.Assert(j == 0);
 
-                if (i % 100 == 0)
-                {
-                    Console.Write("Iteration " + i + "\n");
-                }
             }
-            Console.WriteLine("\nElapsed time for performing " + nRecords * 36 + " index range searches: " + (DateTime.Now - start));
+            res.IterationTime = DateTime.Now - start;
 
             strIndex.Clear();
             intIndex.Clear();
 
-            Debug.Assert(!strIndex.GetEnumerator().MoveNext());
-            Debug.Assert(!intIndex.GetEnumerator().MoveNext());
-            Debug.Assert(!strIndex.Reverse().GetEnumerator().MoveNext());
-            Debug.Assert(!intIndex.Reverse().GetEnumerator().MoveNext());
+            Tests.Assert(!strIndex.GetEnumerator().MoveNext());
+            Tests.Assert(!intIndex.GetEnumerator().MoveNext());
+            Tests.Assert(!strIndex.Reverse().GetEnumerator().MoveNext());
+            Tests.Assert(!intIndex.Reverse().GetEnumerator().MoveNext());
             db.Commit();
             db.Gc();
             db.Close();
+
+            res.ExecutionTime = DateTime.Now - tStart;
+            res.Ok = Tests.FinalizeTest();
+            return res;
         }
     }
 

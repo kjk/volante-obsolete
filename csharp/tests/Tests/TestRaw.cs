@@ -1,8 +1,13 @@
 namespace Volante
 {
     using System;
-    using System.Diagnostics;
     using System.Collections;
+
+    public class TestRawResult : TestResult
+    {
+        public TimeSpan InsertTime;
+        public TimeSpan TraverseTime;
+    }
 
     [Serializable()]
     class L1List
@@ -25,9 +30,18 @@ namespace Volante
 
         static public string dbName = "testraw.dbs";
 
-        public static void Run(int nListMembers)
+        public static TestRawResult Run(int nListMembers)
         {
+            var res = new TestRawResult()
+            {
+                Count = nListMembers,
+                TestName = "TestRaw"
+            };
+
             int nHashMembers = nListMembers * 10;
+
+            var tStart = DateTime.Now;
+            var start = DateTime.Now;
 
             Storage db = StorageFactory.CreateStorage();
             db.SerializeTransientObjects = true;
@@ -48,24 +62,30 @@ namespace Volante
                     root.map["key-" + i] = "value-" + i;
                 }
                 db.Root = root;
-                Console.WriteLine("Initialization of database completed");
+                res.InsertTime = DateTime.Now - start;
             }
+
+            start = DateTime.Now;
             L1List elem = root.list;
             for (int i = nListMembers; --i >= 0; )
             {
-                Debug.Assert(elem.obj.Equals(i));
+                Tests.Assert(elem.obj.Equals(i));
                 elem = elem.next;
             }
             for (int i = nHashMembers; --i >= 0; )
             {
-                Debug.Assert(root.map["key-" + i].Equals("value-" + i));
+                Tests.Assert(root.map["key-" + i].Equals("value-" + i));
             }
-            Console.WriteLine("Database is OK");
+            res.TraverseTime = DateTime.Now - start;
             db.Close();
             // shutup the compiler about TestRaw.nil not being used
-            Tests.AssertThat(root.nil == null);
+            Tests.Assert(root.nil == null);
             root.nil = 3;
-            Tests.AssertThat(root.nil != null);
+            Tests.Assert(root.nil != null);
+
+            res.ExecutionTime = DateTime.Now - tStart;
+            res.Ok = Tests.FinalizeTest();
+            return res;
         }
     }
 

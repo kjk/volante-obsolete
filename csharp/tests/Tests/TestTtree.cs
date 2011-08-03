@@ -1,7 +1,13 @@
 namespace Volante
 {
     using System;
-    using System.Diagnostics;
+
+    public class TestTtreeResult : TestResult
+    {
+        public TimeSpan InsertTime;
+        public TimeSpan IndexSearchTime;
+        public TimeSpan RemoveTime;
+    }
 
     public class TestTtree
     {
@@ -57,25 +63,29 @@ namespace Volante
 
         const int pagePoolSize = 32 * 1024 * 1024;
 
-        static public void Run(int nRecords)
+        static public TestTtreeResult Run(int nRecords)
         {
+            int i;
+            var res = new TestTtreeResult()
+            {
+                Count = nRecords,
+                TestName = "TestTtree"
+            };
+
             string dbName = "testtree.dbs";
             Tests.SafeDeleteFile(dbName);
 
+            DateTime tStart = DateTime.Now;
+            DateTime start = DateTime.Now;
             Storage db = StorageFactory.CreateStorage();
-
             db.Open(dbName, pagePoolSize);
             PersonList root = (PersonList)db.Root;
-            if (root == null)
-            {
-                root = new PersonList();
-                root.list = db.CreateSortedCollection<Name, Person>(new NameComparator(), true);
-                db.Root = root;
-            }
+            Tests.Assert(root == null);
+            root = new PersonList();
+            root.list = db.CreateSortedCollection<Name, Person>(new NameComparator(), true);
+            db.Root = root;
             SortedCollection<Name, Person> list = root.list;
             long key = 1999;
-            int i;
-            DateTime start = DateTime.Now;
             for (i = 0; i < nRecords; i++)
             {
                 key = (3141592621L * key + 2718281829L) % 1000000007L;
@@ -88,8 +98,7 @@ namespace Volante
                 list.Add(p);
             }
             db.Commit();
-            Console.WriteLine("Elapsed time for inserting " + nRecords + " records: "
-                + (DateTime.Now - start) + " milliseconds");
+            res.InsertTime = DateTime.Now - start;
 
             start = DateTime.Now;
             key = 1999;
@@ -104,12 +113,11 @@ namespace Volante
                 name.last = str.Substring(m);
 
                 Person p = list[name];
-                Debug.Assert(p != null);
-                Debug.Assert(list.Contains(p));
-                Debug.Assert(p.age == age);
+                Tests.Assert(p != null);
+                Tests.Assert(list.Contains(p));
+                Tests.Assert(p.age == age);
             }
-            Console.WriteLine("Elapsed time for performing " + nRecords + " index searches: "
-                + (DateTime.Now - start) + " milliseconds");
+            res.IndexSearchTime = DateTime.Now - start;
 
             start = DateTime.Now;
             Name nm = new Name();
@@ -118,17 +126,19 @@ namespace Volante
             i = 0;
             foreach (Person p in list)
             {
-                Debug.Assert(comparator.CompareMemberWithKey(p, nm) > 0);
+                Tests.Assert(comparator.CompareMemberWithKey(p, nm) > 0);
                 nm.first = p.firstName;
                 nm.last = p.lastName;
                 list.Remove(p);
                 i += 1;
             }
-            Debug.Assert(i == nRecords);
-            Console.WriteLine("Elapsed time for removing " + nRecords + " records: "
-                + (DateTime.Now - start) + " milliseconds");
-            Debug.Assert(list.Count == 0);
+            Tests.Assert(i == nRecords);
+            res.RemoveTime = DateTime.Now - start;
+            Tests.Assert(list.Count == 0);
             db.Close();
+            res.ExecutionTime = DateTime.Now - tStart;
+            res.Ok = Tests.FinalizeTest();
+            return res;
         }
     }
 }

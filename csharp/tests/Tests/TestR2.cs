@@ -1,7 +1,10 @@
 namespace Volante
 {
     using System;
-    using System.Diagnostics;
+
+    public class TestR2Result : TestResult
+    {
+    }
 
     public class TestR2 : Persistent
     {
@@ -14,16 +17,23 @@ namespace Volante
 
         const int nObjectsInTree = 1000;
 
-        public static void Run(int nIterations, bool noflush)
+        public static TestR2Result Run(int nIterations, bool noFlush)
         {
+            var res = new TestR2Result()
+            {
+                Count = nIterations,
+                TestName = String.Format("TestR2(noFlush={0})", noFlush)
+            };
+
             string dbName = "testr2.dbs";
             Tests.SafeDeleteFile(dbName);
 
+            DateTime tStart = DateTime.Now;
+            DateTime start = DateTime.Now;
             Storage db = StorageFactory.CreateStorage();
             SpatialObject so;
             RectangleR2 r;
-            DateTime start = DateTime.Now;
-            db.FileNoFlush = noflush;
+            db.FileNoFlush = noFlush;
             db.Open(dbName);
             TestR2 root = (TestR2)db.Root;
             if (root == null)
@@ -53,10 +63,10 @@ namespace Volante
                         }
                         else
                         {
-                            Debug.Assert(r.Intersects(so.rect));
+                            Tests.Assert(r.Intersects(so.rect));
                         }
                     }
-                    Debug.Assert(po != null);
+                    Tests.Assert(po != null);
                     for (int k = 0; k < nObjectsInTree; k++)
                     {
                         if (r.Intersects(rectangles[k]))
@@ -64,14 +74,14 @@ namespace Volante
                             n += 1;
                         }
                     }
-                    Debug.Assert(n == sos.Length);
+                    Tests.Assert(n == sos.Length);
 
                     n = 0;
                     foreach (SpatialObject o in root.index.Overlaps(r))
                     {
-                        Debug.Assert(o == sos[n++]);
+                        Tests.Assert(o == sos[n++]);
                     }
-                    Debug.Assert(n == sos.Length);
+                    Tests.Assert(n == sos.Length);
 
                     root.index.Remove(r, po);
                     po.Deallocate();
@@ -90,14 +100,15 @@ namespace Volante
 
                 if (i % 100 == 0)
                 {
-                    Console.Write("Iteration " + i + "\r");
                     db.Commit();
                 }
             }
             root.index.Clear();
-            Console.WriteLine();
-            Console.WriteLine("Elapsed time " + (DateTime.Now - start));
             db.Close();
+
+            res.ExecutionTime = DateTime.Now - tStart;
+            res.Ok = Tests.FinalizeTest();
+            return res;
         }
     }
 

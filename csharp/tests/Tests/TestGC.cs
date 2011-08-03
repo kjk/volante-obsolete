@@ -1,7 +1,10 @@
 namespace Volante
 {
     using System;
-    using System.Diagnostics;
+
+    public class TestGCResult : TestResult
+    {
+    }
 
     public class TestGC
     {
@@ -21,15 +24,22 @@ namespace Volante
 
         const int nObjectsInTree = 10000;
 
-        static public void Run(int nIterations, bool altBtree, bool backgroundGc)
+        static public TestGCResult Run(int nIterations, bool altBtree, bool backgroundGc)
         {
+            var res = new TestGCResult()
+            {
+                Count = nIterations,
+                TestName = String.Format("TestGC(altBtree={0}, bakcgroundGC={1}", altBtree, backgroundGc)
+            };
+
             string dbName = "testgc.dbs";
             Tests.SafeDeleteFile(dbName);
+            var tStart = DateTime.Now;
+            var start = DateTime.Now;
 
             Storage db = StorageFactory.CreateStorage();
             db.AlternativeBtree = altBtree;
             db.BackgroundGc = backgroundGc;
-
             db.Open(dbName);
             db.GcThreshold = 1000000;
             StorageRoot root = new StorageRoot();
@@ -56,7 +66,7 @@ namespace Volante
                 strIndex[obj.strKey] = obj;
                 if (i > 0)
                 {
-                    Debug.Assert(root.list.intKey == i - 1);
+                    Tests.Assert(root.list.intKey == i - 1);
                 }
                 root.list = new PObject();
                 root.list.intKey = i;
@@ -64,10 +74,12 @@ namespace Volante
                 if (i % 1000 == 0)
                 {
                     db.Commit();
-                    Console.Write("Iteration " + i + "\r");
                 }
             }
             db.Close();
+            res.ExecutionTime = DateTime.Now - tStart;
+            res.Ok = Tests.FinalizeTest();
+            return res;
         }
     }
 

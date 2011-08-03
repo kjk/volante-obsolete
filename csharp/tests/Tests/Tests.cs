@@ -42,11 +42,6 @@ namespace Volante
 
         public static void Assert(bool cond)
         {
-            AssertThat(cond);
-        }
-
-        public static void AssertThat(bool cond)
-        {
             CurrAssertsCount += 1;
             if (cond) return;
             CurrAssertsFailed += 1;
@@ -101,7 +96,7 @@ namespace Volante
             foreach (string s in strs)
             {
                 StringInt o = root[s];
-                Tests.AssertThat(o.no == no++);
+                Tests.Assert(o.no == no++);
             }
         }
 
@@ -113,7 +108,7 @@ namespace Volante
             db.AlternativeBtree = useAltBtree;
             db.Open(dbName);
             Index<string, StringInt> root = (Index<string, StringInt>)db.Root;
-            Tests.AssertThat(null == root);
+            Tests.Assert(null == root);
             root = db.CreateIndex<string, StringInt>(true);
             db.Root = root;
 
@@ -131,7 +126,7 @@ namespace Volante
             db = StorageFactory.CreateStorage();
             db.Open(dbName);
             root = (Index<string, StringInt>)db.Root;
-            Tests.AssertThat(null != root);
+            Tests.Assert(null != root);
             CheckStrings(root, strs);
             db.Close();
         }
@@ -153,7 +148,7 @@ namespace Volante
             db.AlternativeBtree = useAltBtree;
             db.Open(dbName);
             Root root = (Root)db.Root;
-            Tests.AssertThat(null == root);
+            Tests.Assert(null == root);
             root = new Root();
             root.strIndex = db.CreateIndex<string, Record>(true);
             db.Root = root;
@@ -179,7 +174,7 @@ namespace Volante
                     n = r.intKey;
                     string expectedStr = strs[n];
                     string s = r.strKey;
-                    Tests.AssertThat(s == expectedStr);
+                    Tests.Assert(s == expectedStr);
 
                     if (n == 0)
                     {
@@ -194,8 +189,8 @@ namespace Volante
             {
                 gotException = true;
             }
-            Tests.AssertThat(gotException);
-            Tests.AssertThat(n == 0);
+            Tests.Assert(gotException);
+            Tests.Assert(n == 0);
 
             // Test that modyfing an index while traversing it throws an exception
             // Tests AltBtree.BtreeSelectionIterator
@@ -210,7 +205,7 @@ namespace Volante
                     n = r.intKey;
                     string expectedStr = strs[n];
                     string s = r.strKey;
-                    Tests.AssertThat(s == expectedStr);
+                    Tests.Assert(s == expectedStr);
 
                     Record o = new Record();
                     o.strKey = "six";
@@ -222,7 +217,7 @@ namespace Volante
             {
                 gotException = true;
             }
-            Tests.AssertThat(gotException);
+            Tests.Assert(gotException);
 
             db.Close();
         }
