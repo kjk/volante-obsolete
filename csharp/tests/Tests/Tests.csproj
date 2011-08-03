@@ -81,9 +81,23 @@
     <Compile Include="..\Tests.cs">
       <Link>Tests.cs</Link>
     </Compile>
+    <Compile Include="TestBackup.cs" />
+    <Compile Include="TestBit.cs" />
+    <Compile Include="TestBlob.cs" />
+    <Compile Include="TestCompoundIndex.cs" />
+    <Compile Include="TestConcur.cs" />
+    <Compile Include="TestEnumerator.cs" />
+    <Compile Include="TestGC.cs" />
     <Compile Include="TestIndex.cs" />
     <Compile Include="TestIndex2.cs" />
+    <Compile Include="TestList.cs" />
+    <Compile Include="TestR2.cs" />
+    <Compile Include="TestRaw.cs" />
+    <Compile Include="TestRtree.cs" />
     <Compile Include="TestsMain.cs" />
+    <Compile Include="TestTimeSeries.cs" />
+    <Compile Include="TestTtree.cs" />
+    <Compile Include="TestXml.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

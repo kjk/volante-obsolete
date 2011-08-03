@@ -12,7 +12,8 @@ public class TestsMain
     static Dictionary<string, int[]> IterCounts =
         new Dictionary<string, int[]>
         {
-            { "TestIndex", DefaultCounts }
+            { "TestIndex", DefaultCounts },
+            { "TestEnumerator", new int[2] { 20, 200 } }
         };
 
     static int GetIterCount(string test)
@@ -50,12 +51,22 @@ public class TestsMain
         TestIndex2.Run(count);
     }
 
+    static void RunEnumeratorTests()
+    {
+        int count = GetIterCount("TestEnumerator");
+        TestEnumerator.Run(count, false);
+        TestEnumerator.Run(count, true);
+    }
+
     public static void Main(string[] args)
     {
         ParseCmdLineArgs(args);
 
+        var tStart = DateTime.Now;
+
         RunIndexTests();
         RunIndex2Tests();
+        RunEnumeratorTests();
 
         TestTtree.Run(100);
 
@@ -93,6 +104,9 @@ public class TestsMain
         Test1.Run(true);
         Test2.Run(false);
         Test2.Run(true);
+
+        var tEnd = DateTime.Now;
+
         if (0 == Tests.FailedTests)
         {
             Console.WriteLine(String.Format("OK! All {0} tests passed", Tests.TotalTests));
@@ -101,6 +115,8 @@ public class TestsMain
         {
             Console.WriteLine(String.Format("FAIL! Failed {0} out of {1} tests", Tests.FailedTests, Tests.TotalTests));
         }
+        var t = tEnd - tStart;
+        Console.WriteLine(String.Format("Running time: {0} ms", t.Milliseconds));
     }
 }
 

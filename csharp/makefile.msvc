@@ -39,11 +39,16 @@ EXAMPLES=$(O)\Guess.exe $(O)\IpCountry.exe $(O)\PropGuess.exe $(O)\TestLink.exe 
 	$(O)\TestSOD.exe $(O)\TestSSD.exe $(O)\TransparentGuess.exe
 
 TESTS=$(O)\TestBackup.exe $(O)\TestBit.exe $(O)\TestBlob.exe \
-	$(O)\TestCompoundIndex.exe $(O)\TestConcur.exe $(O)\TestEnumerator.exe \
+	$(O)\TestCompoundIndex.exe $(O)\TestConcur.exe \
 	$(O)\TestGC.exe $(O)\TestList.exe $(O)\TestR2.exe $(O)\TestRaw.exe  \
 	$(O)\TestRtree.exe $(O)\TestTimeSeries.exe $(O)\TestTtree.exe \
 	$(O)\TestXML.exe $(O)\TestReplic.exe \
 	$(O)\Tests.exe
+
+TS = tests\Tests
+TESTS_SRC = $(TS)\TestsMain.cs $(TS)\TestIndex.cs $(TS)\TestIndex2.cs \
+	$(TS)\TestEnumerator.cs \
+	tests\Tests.cs
 
 LIBRARY=$(O)\Volante.dll
 
@@ -63,6 +68,9 @@ clean: force
 
 $(O): force
 	@if not exist $(O) mkdir $(O)
+
+$(O)\Tests.exe: $(TESTS_SRC)
+	$(CSC) $(CSC_FLAGS) /r:$(LIBRARY) /out:$@ $**
 
 $(O)\TestBackup.exe: tests\TestBackup\TestBackup.cs
 	$(CSC) $(CSC_FLAGS) /r:$(LIBRARY) /out:$@ $**
@@ -107,9 +115,6 @@ $(O)\TestXML.exe: tests\TestXML\TestXML.cs tests\Tests.cs
 	$(CSC) $(CSC_FLAGS) /r:$(LIBRARY) /out:$@ $**
 
 $(O)\TestReplic.exe: tests\TestReplic\TestReplic.cs
-	$(CSC) $(CSC_FLAGS) /r:$(LIBRARY) /out:$@ $**
-
-$(O)\Tests.exe: tests\Tests\TestsMain.cs tests\Tests\TestIndex.cs tests\Tests.cs
 	$(CSC) $(CSC_FLAGS) /r:$(LIBRARY) /out:$@ $**
 
 $(O)\Guess.exe: examples\Guess\Guess.cs

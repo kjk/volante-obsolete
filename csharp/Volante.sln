@@ -18,8 +18,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestTtree", "tests\TestTtre
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestCompoundIndex", "tests\TestCompoundIndex\TestCompoundIndex.csproj", "{86D21BDF-92FB-424D-8C25-5D3AC5F61F47}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestEnumerator", "tests\TestEnumerator\TestEnumerator.csproj", "{778F806F-1012-46BF-890E-3A73D4EC076C}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Volante", "Volante.csproj", "{1FF2E6AE-B540-4EA9-BD18-5F077EE61291}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Guess", "examples\Guess\Guess.csproj", "{6082AFF2-5525-4957-8741-5F63D35D5EEB}"
@@ -92,10 +90,6 @@ Global
 		{86D21BDF-92FB-424D-8C25-5D3AC5F61F47}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{86D21BDF-92FB-424D-8C25-5D3AC5F61F47}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{86D21BDF-92FB-424D-8C25-5D3AC5F61F47}.Release|Any CPU.Build.0 = Release|Any CPU
-		{778F806F-1012-46BF-890E-3A73D4EC076C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{778F806F-1012-46BF-890E-3A73D4EC076C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{778F806F-1012-46BF-890E-3A73D4EC076C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{778F806F-1012-46BF-890E-3A73D4EC076C}.Release|Any CPU.Build.0 = Release|Any CPU
 		{1FF2E6AE-B540-4EA9-BD18-5F077EE61291}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{1FF2E6AE-B540-4EA9-BD18-5F077EE61291}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1FF2E6AE-B540-4EA9-BD18-5F077EE61291}.Release|Any CPU.ActiveCfg = Release|Any CPU
