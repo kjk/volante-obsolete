@@ -45,10 +45,10 @@ tests: volante $(TESTS)
 examples: volante $(EXAMPLES)
 
 runtests: tests force
-	./runtests.sh $(O)
+	cd $(O); mono Tests.exe -fast
 
 runtestsslow: tests force
-	./runtestslong.sh $(O)
+	cd $(O); mono Tests.exe -slow
 
 $(O):
 	@mkdir -p $(O)

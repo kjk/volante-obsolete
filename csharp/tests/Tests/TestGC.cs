@@ -35,7 +35,6 @@ namespace Volante
             string dbName = "testgc.dbs";
             Tests.SafeDeleteFile(dbName);
             var tStart = DateTime.Now;
-            var start = DateTime.Now;
 
             Storage db = StorageFactory.CreateStorage();
             db.AlternativeBtree = altBtree;

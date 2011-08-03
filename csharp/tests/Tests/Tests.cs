@@ -16,7 +16,7 @@ namespace Volante
         public override string ToString()
         {
             if (Ok)
-                return String.Format("{0} OK, {1} ms, n = {2}", TestName, ExecutionTime.Milliseconds, Count);
+                return String.Format("{0} OK, {1} ms, n = {2}", TestName, (int)ExecutionTime.TotalMilliseconds, Count);
             else
                 return String.Format("{0} FAILED", TestName);
         }

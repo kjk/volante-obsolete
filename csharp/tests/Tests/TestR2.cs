@@ -29,7 +29,6 @@ namespace Volante
             Tests.SafeDeleteFile(dbName);
 
             DateTime tStart = DateTime.Now;
-            DateTime start = DateTime.Now;
             Storage db = StorageFactory.CreateStorage();
             SpatialObject so;
             RectangleR2 r;

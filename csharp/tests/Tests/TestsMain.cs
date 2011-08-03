@@ -217,7 +217,7 @@ public class TestsMain
             Console.WriteLine(String.Format("FAIL! Failed {0} out of {1} tests", Tests.FailedTests, Tests.TotalTests));
         }
         var t = tEnd - tStart;
-        Console.WriteLine(String.Format("Running time: {0} ms", t.Milliseconds));
+        Console.WriteLine(String.Format("Running time: {0} ms", (int)t.TotalMilliseconds));
     }
 }
 
