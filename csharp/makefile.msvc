@@ -38,7 +38,7 @@ O=$(O)-cov
 EXAMPLES=$(O)\Guess.exe $(O)\IpCountry.exe $(O)\PropGuess.exe $(O)\TestLink.exe \
 	$(O)\TestSOD.exe $(O)\TestSSD.exe $(O)\TransparentGuess.exe
 
-TESTS=$(O)\TestBackup.exe $(O)\TestReplic.exe $(O)\Tests.exe
+TESTS=$(O)\TestReplic.exe $(O)\Tests.exe
 
 TS = tests\Tests
 TESTS_SRC = $(TS)\TestsMain.cs $(TS)\TestIndex.cs $(TS)\TestIndex2.cs \
@@ -69,48 +69,6 @@ $(O): force
 	@if not exist $(O) mkdir $(O)
 
 $(O)\Tests.exe: $(TESTS_SRC)
-	$(CSC) $(CSC_FLAGS) /r:$(LIBRARY) /out:$@ $**
-
-$(O)\TestBackup.exe: tests\TestBackup\TestBackup.cs
-	$(CSC) $(CSC_FLAGS) /r:$(LIBRARY) /out:$@ $**
-
-$(O)\TestBit.exe: tests\TestBit\TestBit.cs tests\Tests.cs
-	$(CSC) $(CSC_FLAGS) /r:$(LIBRARY) /out:$@ $**
-
-$(O)\TestBlob.exe: tests\TestBlob\TestBlob.cs tests\Tests.cs
-	$(CSC) $(CSC_FLAGS) /r:$(LIBRARY) /out:$@ $**
-
-$(O)\TestCompoundIndex.exe: tests\TestCompoundIndex\TestCompoundIndex.cs tests\Tests.cs
-	$(CSC) $(CSC_FLAGS) /r:$(LIBRARY) /out:$@ $**
-
-$(O)\TestConcur.exe: tests\TestConcur\TestConcur.cs tests\Tests.cs
-	$(CSC) $(CSC_FLAGS) /r:$(LIBRARY) /out:$@ $**
-
-$(O)\TestEnumerator.exe: tests\TestEnumerator\TestEnumerator.cs tests\Tests.cs
-	$(CSC) $(CSC_FLAGS) /r:$(LIBRARY) /out:$@ $**
-
-$(O)\TestGC.exe: tests\TestGC\TestGC.cs tests\Tests.cs
-	$(CSC) $(CSC_FLAGS) /r:$(LIBRARY) /out:$@ $**
-
-$(O)\TestList.exe: tests\TestList\TestList.cs tests\Tests.cs
-	$(CSC) $(CSC_FLAGS) /r:$(LIBRARY) /out:$@ $**
-
-$(O)\TestR2.exe: tests\TestR2\TestR2.cs tests\Tests.cs
-	$(CSC) $(CSC_FLAGS) /r:$(LIBRARY) /out:$@ $**
-
-$(O)\TestRaw.exe: tests\TestRaw\TestRaw.cs tests\Tests.cs
-	$(CSC) $(CSC_FLAGS) /r:$(LIBRARY) /out:$@ $**
-
-$(O)\TestRtree.exe: tests\TestRtree\TestRtree.cs tests\Tests.cs
-	$(CSC) $(CSC_FLAGS) /r:$(LIBRARY) /out:$@ $**
-
-$(O)\TestTimeSeries.exe: tests\TestTimeSeries\TestTimeSeries.cs tests\Tests.cs
-	$(CSC) $(CSC_FLAGS) /r:$(LIBRARY) /out:$@ $**
-
-$(O)\TestTtree.exe: tests\TestTtree\TestTtree.cs tests\Tests.cs
-	$(CSC) $(CSC_FLAGS) /r:$(LIBRARY) /out:$@ $**
-
-$(O)\TestXML.exe: tests\TestXML\TestXML.cs tests\Tests.cs
 	$(CSC) $(CSC_FLAGS) /r:$(LIBRARY) /out:$@ $**
 
 $(O)\TestReplic.exe: tests\TestReplic\TestReplic.cs

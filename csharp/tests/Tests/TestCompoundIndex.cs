@@ -13,7 +13,7 @@ namespace Volante
             internal int intKey;
         }
 
-        public static void Run(bool altBtree, int nRecords)
+        public static void Run(int nRecords, bool altBtree)
         {
             string dbName = "testcidx.dbs";
             int i;

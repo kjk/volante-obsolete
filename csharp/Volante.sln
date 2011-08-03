@@ -8,8 +8,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Volante", "Volante.csproj",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Guess", "examples\Guess\Guess.csproj", "{6082AFF2-5525-4957-8741-5F63D35D5EEB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestBackup", "tests\TestBackup\TestBackup.csproj", "{51C11273-2861-4088-8391-15785E7D210D}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestSOD", "examples\TestSOD\TestSOD.csproj", "{A56330C0-2CFA-4D48-B5C7-98F9F2CEFCD4}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TransparentGuess", "examples\TransparentGuess\TransparentGuess.csproj", "{EC8C0B52-E7C1-4F40-A058-A8F8E9948B02}"
@@ -46,10 +44,6 @@ Global
 		{6082AFF2-5525-4957-8741-5F63D35D5EEB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6082AFF2-5525-4957-8741-5F63D35D5EEB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6082AFF2-5525-4957-8741-5F63D35D5EEB}.Release|Any CPU.Build.0 = Release|Any CPU
-		{51C11273-2861-4088-8391-15785E7D210D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{51C11273-2861-4088-8391-15785E7D210D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{51C11273-2861-4088-8391-15785E7D210D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{51C11273-2861-4088-8391-15785E7D210D}.Release|Any CPU.Build.0 = Release|Any CPU
 		{A56330C0-2CFA-4D48-B5C7-98F9F2CEFCD4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{A56330C0-2CFA-4D48-B5C7-98F9F2CEFCD4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A56330C0-2CFA-4D48-B5C7-98F9F2CEFCD4}.Release|Any CPU.ActiveCfg = Release|Any CPU

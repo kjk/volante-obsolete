@@ -67,8 +67,8 @@ public class TestsMain
     static void RunCompoundIndexTests()
     {
         int n = GetIterCount("TestCompoundIndex");
-        TestCompoundIndex.Run(false, n);
-        TestCompoundIndex.Run(true, n);
+        TestCompoundIndex.Run(n, false);
+        TestCompoundIndex.Run(n, true);
     }
 
     static void RunRtreeTests()
@@ -87,7 +87,7 @@ public class TestsMain
     static void RunTtreeTests()
     {
         int n = GetIterCount("TestTtree");
-        TestRtree.Run(n);
+        TestTtree.Run(n);
     }
 
     static void RunRawTests()
@@ -137,6 +137,13 @@ public class TestsMain
         TestConcur.Run(n);
     }
 
+    static void RunBackupTest()
+    {
+        int n = GetIterCount("TestBackup");
+        TestBackup.Init();
+        TestBackup.Run(n);
+    }
+
     static void RunXmlTests()
     {
 #if !OMIT_XML
@@ -170,6 +177,9 @@ public class TestsMain
         RunBitTests();
         RunBlobTests();
         RunXmlTests();
+
+        RunBackupTest();
+
         Test1.Run(false);
         Test1.Run(true);
         Test2.Run(false);

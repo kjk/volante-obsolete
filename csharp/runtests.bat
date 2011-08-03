@@ -4,8 +4,6 @@
 
 %O%\Tests -fast
 
-%O%\TestBackup
-
 @rem start %O%\TestReplic master
 @rem %O%\TestReplic slave
 
