@@ -1,8 +1,13 @@
 namespace Volante
 {
     using System;
-    using System.Diagnostics;
     using System.IO;
+
+    public class TestResultBackup : TestResult
+    {
+        public TimeSpan InsertTime;
+        public TimeSpan BackupTime;
+    }
 
     public class TestBackup
     {
@@ -31,11 +36,18 @@ namespace Volante
             Tests.SafeDeleteFile(DbName2);
         }
 
-        static public void Run(int nRecords)
+        static public TestResultBackup Run(int nRecords)
         {
             int i;
-            Storage db = StorageFactory.CreateStorage();
 
+            var res = new TestResultBackup()
+            {
+                Count = nRecords,
+                TestName = "TestBackup"
+            };
+
+            DateTime start = DateTime.Now;
+            Storage db = StorageFactory.CreateStorage();
             db.Open(DbName1, pagePoolSize);
             Root root = (Root)db.Root;
             if (root == null)
@@ -49,7 +61,6 @@ namespace Volante
             FieldIndex<long, Record> intIndex = root.intIndex;
             MultiFieldIndex<Record> compoundIndex = root.compoundIndex;
             Index<string, Record> strIndex = root.strIndex;
-            DateTime start = DateTime.Now;
             long key = 1999;
             for (i = 0; i < nRecords; i++)
             {
@@ -63,23 +74,25 @@ namespace Volante
                 compoundIndex.Put(rec);
             }
             db.Commit();
-            System.Console.WriteLine("Elapsed time for inserting " + nRecords + " records: " + (DateTime.Now - start));
+            Tests.Assert(intIndex.Count == nRecords);
+            Tests.Assert(strIndex.Count == nRecords);
+            Tests.Assert(compoundIndex.Count == nRecords);
+            res.InsertTime = DateTime.Now - start;
 
             start = DateTime.Now;
             System.IO.FileStream stream = new System.IO.FileStream(DbName2, FileMode.Create, FileAccess.Write);
             db.Backup(stream);
             stream.Close();
-            System.Console.WriteLine("Elapsed time for backup completion: " + (DateTime.Now - start));
-
             db.Close();
-            db.Open(DbName2, pagePoolSize);
+            res.BackupTime = DateTime.Now - start;
 
+            start = DateTime.Now;
+            db.Open(DbName2, pagePoolSize);
             root = (Root)db.Root;
             intIndex = root.intIndex;
             strIndex = root.strIndex;
             compoundIndex = root.compoundIndex;
 
-            start = DateTime.Now;
             key = 1999;
             for (i = 0; i < nRecords; i++)
             {
@@ -89,15 +102,17 @@ namespace Volante
                 Record rec2 = strIndex.Get(strKey);
                 Record rec3 = compoundIndex.Get(new Key(strKey, key));
 
-                Debug.Assert(rec1 != null);
-                Debug.Assert(rec1 == rec2);
-                Debug.Assert(rec1 == rec3);
-                Debug.Assert(rec1.intKey == key);
-                Debug.Assert(rec1.realKey == (double)key);
-                Debug.Assert(strKey.Equals(rec1.strKey));
+                Tests.Assert(rec1 != null);
+                Tests.Assert(rec1 == rec2);
+                Tests.Assert(rec1 == rec3);
+                Tests.Assert(rec1.intKey == key);
+                Tests.Assert(rec1.realKey == (double)key);
+                Tests.Assert(strKey.Equals(rec1.strKey));
             }
-            System.Console.WriteLine("Elapsed time for performing " + nRecords * 2 + " index searches: " + (DateTime.Now - start));
             db.Close();
+            res.ExecutionTime = DateTime.Now - start;
+            res.Ok = Tests.FinalizeTest();
+            return res;
         }
     }
 }

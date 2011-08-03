@@ -145,7 +145,8 @@ public class TestsMain
     {
         int n = GetIterCount("TestBackup");
         TestBackup.Init();
-        TestBackup.Run(n);
+        var r = TestBackup.Run(n);
+        r.Print();
     }
 
     static void RunXmlTests()
