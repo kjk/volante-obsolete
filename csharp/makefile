@@ -27,7 +27,7 @@ endif
 
 ifeq ($(OMIT_RAW_TYPE),yes)
 CSC_FLAGS += -d:OMIT_RAW_TYPE
-o:=$(O)-noraw
+O:=$(O)-noraw
 endif
 
 VOLANTE=$(O)/Volante.dll

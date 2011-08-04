@@ -29,9 +29,14 @@ CSC_FLAGS=$(CSC_FLAGS) /d:OMIT_REPLICATION
 O=$(O)-norepl
 !endif
 
-!if "$(OMIT_RAWTYPE)"=="yes"
-CSC_FLAGS=$(CSC_FLAGS) /d:OMIT_RAWTYPE
+!if "$(OMIT_RAW_TYPE)"=="yes"
+CSC_FLAGS=$(CSC_FLAGS) /d:OMIT_RAW_TYPE
 O=$(O)-noraw
+!endif
+
+!if "$(OMIT_ALL)"=="yes"
+CSC_FLAGS=$(CSC_FLAGS) /d:OMIT_RAW_TYPE /d:OMIT_REPLICATION /d:OMIT_XML
+O=$(O)-noall
 !endif
 
 !if "$(FOR_PARTCOVER)"=="yes"
