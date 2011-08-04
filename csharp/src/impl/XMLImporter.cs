@@ -1078,9 +1078,7 @@ namespace Volante.Impl
                         offs = packObject(elem, fd.valueDesc, offs, buf);
                         continue;
 
-#if !OMIT_RAW_TYPE
                     case ClassDescriptor.FieldType.tpRaw: 
-#endif
                     case ClassDescriptor.FieldType.tpArrayOfByte: 
                     case ClassDescriptor.FieldType.tpArrayOfSByte: 
                         offs = importBinary(elem, offs, buf, fieldName);
@@ -1543,7 +1541,6 @@ namespace Volante.Impl
                         }
                         continue;
 
-#if !OMIT_RAW_TYPE
                     case ClassDescriptor.FieldType.tpArrayOfRaw: 
                         if (elem == null || elem.isNullValue())
                         {
@@ -1564,7 +1561,6 @@ namespace Volante.Impl
                             }
                         }
                         continue;
-#endif		
                 }
             }
             return offs;

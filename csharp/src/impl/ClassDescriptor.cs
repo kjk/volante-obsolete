@@ -434,7 +434,6 @@ namespace Volante.Impl
             }
             else
             {
-#if !OMIT_RAW_TYPE
                 if (serializeNonPersistentObjects || c == typeof(object) || c == typeof(IComparable)) 
                 {
                     type = FieldType.tpRaw;
@@ -443,17 +442,14 @@ namespace Volante.Impl
                 { 
                     throw new StorageError(StorageError.ErrorCode.UNSUPPORTED_TYPE, c);
                 }
-#else
-                throw new StorageError(StorageError.ErrorCode.UNSUPPORTED_TYPE, c);
-#endif
             }
             return type;
         }
-		
+
         internal ClassDescriptor()
         {
         }
-		
+
         internal ClassDescriptor(StorageImpl storage, Type cls)
         {
             this.cls = cls;

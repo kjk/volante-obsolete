@@ -543,9 +543,7 @@ namespace Volante.Impl
                         indentation(indent);
                         break;
 
-#if !OMIT_RAW_TYPE
                     case ClassDescriptor.FieldType.tpRaw: 
-#endif
                     case ClassDescriptor.FieldType.tpArrayOfByte: 
                     case ClassDescriptor.FieldType.tpArrayOfSByte: 
                         offs = exportBinary(body, offs);
@@ -929,7 +927,7 @@ namespace Volante.Impl
                         }
                         break;
                     }
-#if !OMIT_RAW_TYPE
+
                     case ClassDescriptor.FieldType.tpArrayOfRaw: 
                     {
                         int len = Bytes.unpack4(body, offs);
@@ -952,7 +950,6 @@ namespace Volante.Impl
                         }
                         break;
                     }
-#endif
                 }
                 writer.Write("</" + fieldName + ">\n");
             }

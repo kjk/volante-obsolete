@@ -1014,9 +1014,8 @@ namespace Volante.Impl
                 classDescMap = new Hashtable();
                 descList = null;
 
-#if !OMIT_RAW_TYPE
                 objectFormatter = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
-#endif                
+
                 header = new Header();
                 byte[] buf = new byte[Header.Sizeof];
                 int rc = file.Read(0, buf);
@@ -2464,7 +2463,6 @@ namespace Volante.Impl
                     case ClassDescriptor.FieldType.tpValue:
                         offs = markObject(obj, offs, fd.valueDesc);
                         continue;
-#if !OMIT_RAW_TYPE
                     case ClassDescriptor.FieldType.tpRaw:
                     {
                         int len = Bytes.unpack4(obj, offs);
@@ -2484,7 +2482,6 @@ namespace Volante.Impl
                         }
                         continue;
                     }
-#endif
                     case ClassDescriptor.FieldType.tpArrayOfByte:
                     case ClassDescriptor.FieldType.tpArrayOfSByte:
                     case ClassDescriptor.FieldType.tpArrayOfBoolean:
@@ -2578,7 +2575,6 @@ namespace Volante.Impl
                         }
                         continue;
                     }
-#if !OMIT_RAW_TYPE
                     case ClassDescriptor.FieldType.tpArrayOfRaw:
                     {
                         int len = Bytes.unpack4(obj, offs);
@@ -2603,7 +2599,6 @@ namespace Volante.Impl
                         }
                         continue;
                     }
-#endif
                 }
             }
             return offs;
@@ -3420,9 +3415,7 @@ namespace Volante.Impl
                     break;
                 case ClassDescriptor.FieldType.tpValue:
                     return unpackObject(null, fd.valueDesc, false, body, offs, null);
-#if !OMIT_RAW_TYPE
                 case ClassDescriptor.FieldType.tpRaw:
-#endif
                 case ClassDescriptor.FieldType.tpArrayOfByte:
                 case ClassDescriptor.FieldType.tpArrayOfSByte:
                 case ClassDescriptor.FieldType.tpArrayOfBoolean:
@@ -3505,7 +3498,6 @@ namespace Volante.Impl
                         }
                     }
                     break;
-#if !OMIT_RAW_TYPE
                 case ClassDescriptor.FieldType.tpArrayOfRaw:
                     len = Bytes.unpack4(body, offs);
                     offs += 4;
@@ -3526,12 +3518,10 @@ namespace Volante.Impl
                         }
                     }
                     break;
-#endif
-            }                 
+            }
             return offs;
         }
 
-#if !OMIT_RAW_TYPE
         private int unpackRawValue(byte[] body, int offs, out object val, bool recursiveLoading) 
         {
             int len = Bytes.unpack4(body, offs);
@@ -3618,11 +3608,9 @@ namespace Volante.Impl
             }    
             return offs;
         }
-#endif
 
         public int unpackField(byte[] body, int offs, bool recursiveLoading, ref object val, ClassDescriptor.FieldDescriptor fd, ClassDescriptor.FieldType type, IPersistent po)
-
-        { 
+        {
             int len;
             switch (type)
             {
@@ -3730,11 +3718,10 @@ namespace Volante.Impl
                     offs = unpackObject(val, fd.valueDesc, recursiveLoading, body, offs, po);
                     break;
 
-#if !OMIT_RAW_TYPE
                 case ClassDescriptor.FieldType.tpRaw: 
                     offs = unpackRawValue(body, offs, out val, recursiveLoading);
                     break;
-#endif
+
                 case ClassDescriptor.FieldType.tpArrayOfByte: 
                     len = Bytes.unpack4(body, offs);
                     offs += 4;
@@ -4095,7 +4082,6 @@ namespace Volante.Impl
                     }
                     break;
 
-#if !OMIT_RAW_TYPE
                 case ClassDescriptor.FieldType.tpArrayOfRaw:
                     len = Bytes.unpack4(body, offs);
                     offs += 4;
@@ -4116,7 +4102,7 @@ namespace Volante.Impl
                         val = arr;
                     }
                     break;
-#endif                    
+
                 case ClassDescriptor.FieldType.tpLink: 
                     len = Bytes.unpack4(body, offs);
                     offs += 4;
@@ -4193,7 +4179,6 @@ namespace Volante.Impl
             return offs;
         }
 
-#if !OMIT_RAW_TYPE
         public int packRawValue(ByteBuffer buf, int offs, object val)
         {
             if (val == null)
@@ -4333,7 +4318,6 @@ namespace Volante.Impl
             }
             return offs;
         }
-#endif
 
         public int packField(ByteBuffer buf, int offs, object val, ClassDescriptor.FieldDescriptor fd, ClassDescriptor.FieldType type, IPersistent po)
         {
@@ -4377,12 +4361,9 @@ namespace Volante.Impl
                     return packObject(val, fd.valueDesc, offs, buf, po);
                 case ClassDescriptor.FieldType.tpObject: 
                     return buf.packI4(offs, swizzle((IPersistent)val));
-
-#if !OMIT_RAW_TYPE
                 case ClassDescriptor.FieldType.tpRaw:
                     offs = packRawValue(buf, offs, val);
                     break;
-#endif
                 case ClassDescriptor.FieldType.tpArrayOfByte: 
                     if (val == null)
                     {
@@ -4795,7 +4776,6 @@ namespace Volante.Impl
                         }
                     }
                     break;
-#if !OMIT_RAW_TYPE
                 case ClassDescriptor.FieldType.tpArrayOfRaw: 
                     if (val == null)
                     {
@@ -4816,7 +4796,6 @@ namespace Volante.Impl
                         }
                     }
                     break;
-#endif
                 case ClassDescriptor.FieldType.tpLink: 
                     if (val == null)
                     {
@@ -4923,9 +4902,7 @@ namespace Volante.Impl
         long      scheduledCommitTime;
         PersistentResource transactionLock;
 
-#if !OMIT_RAW_TYPE
         internal System.Runtime.Serialization.Formatters.Binary.BinaryFormatter objectFormatter;
-#endif	
         internal int currIndex; // copy of header.root, used to allow read access to the database 
         // during transaction commit
         internal long usedSize; // total size of allocated objects since the beginning of the session

@@ -3,7 +3,7 @@
 # CFG=[rel|dbg] - default: rel
 # OMIT_XML=[yes|no] - default: no
 # OMIT_REPLICATION=[yes|no] - default: no
-# OMIT_RAW_TYPE=[yes|no] - default: no
+# OMIT_ALL=[yes|no] - default: no
 
 CSC=gmcs
 
@@ -25,8 +25,8 @@ CSC_FLAGS += -d:OMIT_REPLICATION
 O:=$(O)-norepl
 endif
 
-ifeq ($(OMIT_RAW_TYPE),yes)
-CSC_FLAGS += -d:OMIT_RAW_TYPE
+ifeq ($(OMIT_ALL),yes)
+CSC_FLAGS += -d:OMIT_REPLICATION -d:OMIT_XML
 O:=$(O)-noraw
 endif
 
