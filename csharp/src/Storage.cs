@@ -2,6 +2,7 @@ namespace Volante
 {
     using System;
     using System.Collections;
+    using System.Collections.Generic;
     using System.Text;
 
     public enum TransactionMode
@@ -641,7 +642,7 @@ namespace Volante
         /// by this method, it means that there is garbage in the database. You can explicitly invoke
         /// garbage collector in this case.</p> 
         /// </summary>
-        Hashtable GetMemoryDump();
+        Dictionary<Type, MemoryUsage> GetMemoryDump();
 
         /// <summary>
         /// Get total size of all allocated objects in the database

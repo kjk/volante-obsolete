@@ -2,6 +2,7 @@ namespace Volante.Impl
 {
     using System;
     using System.Collections;
+    using System.Collections.Generic;
     using System.Reflection;
     using System.Threading;
     using System.Diagnostics;
@@ -2261,7 +2262,7 @@ namespace Volante.Impl
             }
         }
 
-        public Hashtable GetMemoryDump() 
+        public Dictionary<Type, MemoryUsage> GetMemoryDump() 
         { 
             lock (this) 
             { 
@@ -2278,7 +2279,7 @@ namespace Volante.Impl
                     greyBitmap = new int[bitmapSize];
                     blackBitmap = new int[bitmapSize];
                     int rootOid = header.root[currIndex].rootObject;
-                    Hashtable map = new Hashtable();
+                    var map = new Dictionary<Type, MemoryUsage>();
 
                     if (rootOid != 0) 
                     { 
@@ -2320,9 +2321,10 @@ namespace Volante.Impl
                                                     indexUsage.allocatedSize += (long)nPages*Page.pageSize + alignedSize;
                                                 } 
                                                 else 
-                                                { 
-                                                    MemoryUsage usage = (MemoryUsage)map[desc.cls];
-                                                    if (usage == null) 
+                                                {
+                                                    MemoryUsage usage;
+                                                    var ok = map.TryGetValue(desc.cls, out usage);
+                                                    if (!ok) 
                                                     { 
                                                         usage = new MemoryUsage(desc.cls);
                                                         map[desc.cls] = usage;

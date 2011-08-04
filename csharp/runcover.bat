@@ -1,5 +1,5 @@
-set save_path=%path%
-set path=bin;%path%;..\thirdparty\partcover
+@set save_path=%path%
+@set path=bin;%path%;..\thirdparty\partcover
 
 call "%ProgramFiles%\Microsoft Visual Studio 10.0\Common7\Tools\vsvars32.bat"
 IF ERRORLEVEL 1 GOTO TRYX86
@@ -14,7 +14,7 @@ set O=bin\rel-cov
 nmake -f makefile.msvc FOR_PARTCOVER=yes CFG=rel
 IF ERRORLEVEL 1 GOTO BUILDFAILED
 
-PartCover --target %O%\UnitTestsRunner.exe --include [Volante]* --include [UnitTests]* --output %O%\partcover.xml
+PartCover --target %O%\Tests.exe --include [Volante]* --include [Tests]* --output %O%\partcover.xml
 IF ERRORLEVEL 1 GOTO PARTCOVERFAILED
 
 python partcover-to-html.py %O%\partcover.xml cov
@@ -39,6 +39,6 @@ echo Visual Studio 2010 doesn't seem to be installed
 goto END
 
 :END
-set path=%save_path%
+@set path=%save_path%
 
 
