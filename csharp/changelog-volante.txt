@@ -1,4 +1,4 @@
---- Release version 1.00 ??.??.????
+--- Release version 0.9 ??.??.????
 
 1. Renamed Perst to Volante
 2. Fixes when using USE_GENERICS define
@@ -12,3 +12,4 @@
 9. Fix Storage.FileNoFlush so that it works also before database is opened,
    as per docs.
 10. Converted Storage.CacheKind property from a string to Storage.CacheType enum
+11. Converted a few Hashtable to Dictionary<>
