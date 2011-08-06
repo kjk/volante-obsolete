@@ -65,7 +65,7 @@ namespace Volante
         /// <param name="rect">Selected rectangle</param>
         /// <returns>enumerable collection for objects which enveloping rectangle overlaps with specified rectangle
         /// </returns>
-        IEnumerable<T> Overlaps(Rectangle r);
+        IEnumerable<T> Overlaps(Rectangle rect);
 
         /// <summary>
         /// Get dictionary enumerator for objects located in the selected rectangle
@@ -73,7 +73,7 @@ namespace Volante
         /// <param name="rect">Selected rectangle</param>
         /// <returns>dictionary enumerator for objects which enveloping rectangle overlaps with specified rectangle
         /// </returns>
-        IDictionaryEnumerator GetDictionaryEnumerator(Rectangle r);
+        IDictionaryEnumerator GetDictionaryEnumerator(Rectangle rect);
 
         /// <summary>
         /// Get dictionary enumerator for all objects in the index

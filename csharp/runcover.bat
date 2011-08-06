@@ -1,5 +1,5 @@
 @set save_path=%path%
-@set path=bin;%path%;..\thirdparty\partcover
+@set path=..\thirdparty\partcover;%path%
 
 call "%ProgramFiles%\Microsoft Visual Studio 10.0\Common7\Tools\vsvars32.bat"
 IF ERRORLEVEL 1 GOTO TRYX86
@@ -10,15 +10,17 @@ call "%ProgramFiles(x86)%\Microsoft Visual Studio 10.0\Common7\Tools\vsvars32.ba
 IF ERRORLEVEL 1 GOTO NEEDSVS
 
 :BUILD
-set O=bin\rel-cov
-nmake -f makefile.msvc FOR_PARTCOVER=yes CFG=rel
-IF ERRORLEVEL 1 GOTO BUILDFAILED
+devenv Volante.sln /Project tests\Tests\Tests.csproj /ProjectConfig Partcover /Rebuild
+@IF ERRORLEVEL 1 GOTO FAILEDCOMPILE
 
-PartCover --target %O%\Tests.exe --include [Volante]* --include [Tests]* --output %O%\partcover.xml
-IF ERRORLEVEL 1 GOTO PARTCOVERFAILED
+@set O=tests\Tests\bin\Partcover
+@cd %O%
+..\..\..\..\..\thirdparty\partcover\PartCover --target Tests.exe --include [Volante]* --include [Tests]* --output partcover.xml
+@IF ERRORLEVEL 1 GOTO PARTCOVERFAILED
+@cd ..\..\..\..
 
 python partcover-to-html.py %O%\partcover.xml cov
-IF ERRORLEVEL 1 GOTO PARTCOVERTOHTMLFAILED
+@IF ERRORLEVEL 1 GOTO PARTCOVERTOHTMLFAILED
 
 goto END
 
@@ -35,7 +37,7 @@ echo Build failed
 goto END
 
 :NEEDSVS
-echo Visual Studio 2010 doesn't seem to be installed
+@echo Visual Studio 2010 doesn't seem to be installed
 goto END
 
 :END

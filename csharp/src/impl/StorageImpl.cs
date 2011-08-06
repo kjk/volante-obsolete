@@ -1564,8 +1564,9 @@ namespace Volante.Impl
 
         internal Type getWrapper(Type original) 
         {
-            Type wrapper = (Type)wrapperHash[original];
-            if (wrapper == null) 
+            Type wrapper;
+            bool ok = wrapperHash.TryGetValue(original, out wrapper);
+            if (!ok) 
             { 
                 wrapper = CodeGenerator.Instance.CreateWrapper(original);
                 wrapperHash[original] = wrapper;
@@ -4896,7 +4897,7 @@ namespace Volante.Impl
 #else
         internal Thread codeGenerationThread;        
         object    transactionMonitor;
-        Hashtable wrapperHash = new Hashtable();
+        Dictionary<Type,Type> wrapperHash = new Dictionary<Type,Type>();
 #endif
         int       nNestedTransactions;
         int       nBlockedTransactions;

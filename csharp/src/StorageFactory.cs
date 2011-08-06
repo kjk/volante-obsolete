@@ -9,9 +9,6 @@ namespace Volante
     {
         /// <summary> Create new instance of the storage
         /// </summary>
-        /// <param name="new">instance of the storage (unopened,you should explicitely invoke open method)
-        /// 
-        /// </param>
         public static Storage CreateStorage()
         {
 #if CF

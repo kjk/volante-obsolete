@@ -157,7 +157,6 @@ namespace Volante
         /// Low boundary can be inclusive or exclusive.</param>
         /// <param name="till">High boundary. If <code>null</code> then high boundary is not specified.
         /// High boundary can be inclusive or exclusive.</param>
-        /// <param name="order"><code>IterationOrder.AscentOrder</code> or <code>IterationOrder.DescentOrder</code></param>
         /// <returns>selection iterator</returns>
         ///
         IEnumerator<V> GetEnumerator(Key from, Key till);
@@ -170,9 +169,7 @@ namespace Volante
         /// Low boundary can be inclusive or exclusive.</param>
         /// <param name="till">High boundary. If <code>null</code> then high boundary is not specified.
         /// High boundary can be inclusive or exclusive.</param>
-        /// <param name="order"><code>IterationOrder.AscentOrder</code> or <code>IterationOrder.DescentOrder</code></param>
         /// <returns>selection iterator</returns>
-        ///
         IEnumerator<V> GetEnumerator(K from, K till);
 
         /// <summary>

@@ -6,6 +6,8 @@ namespace Volante
     /// </summary>
     public class StorageError:System.ApplicationException
     {
+        /// <summary> Get exception error code (see definitions above)
+        /// </summary>
         public virtual ErrorCode Code
         {
             get
@@ -49,9 +51,6 @@ namespace Volante
         }
 
         private static System.String[] messageText = new System.String[]{"Storage not opened", "Storage already opened", "File access error", "Key not unique", "Key not found", "Database schema was changed for", "Unsupported type", "Unsupported index type", "Incompatible key type", "Incompatible value type", "Not enough space", "Database file is corrupted", "Failed to instantiate the object of", "Failed to build descriptor for", "Stub object is accessed", "Invalid object reference", "Access to the deleted object", "Object access violation", "Failed to locate", "Ambiguity definition of class", "Could not find indexed field","No such property","Bad property value"};
-
-        /// <summary> Get exception error code (see definitions above)
-        /// </summary>
 
         /// <summary> Get original exception if StorageError excepotion was thrown as the result 
         /// of catching some other exception within Storage implementation. 

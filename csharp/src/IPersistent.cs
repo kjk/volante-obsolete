@@ -27,9 +27,8 @@ namespace Volante
         /// 
         /// <summary> Check if object is stub and has to be loaded from the database
         /// </summary>
-        /// <param name="return"><code>true</code> if object has to be loaded from the database
-        /// 
-        /// </param>
+        /// <returns><code>true</code> if object has to be loaded from the database
+        /// </returns>
         bool IsRaw();
 
         /// <summary> Check if object is persistent 

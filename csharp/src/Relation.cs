@@ -52,29 +52,21 @@ namespace Volante
         public abstract void  Pin();
 
         public abstract void  Unpin();
- 
+
+        /// <summary> Get or set relation owner
+        /// </summary>
         public virtual O Owner
         {
-            /// <summary> Get relation owner
-            /// </summary>
-            /// <returns>owner of the relation
-            /// 
-            /// </returns>
             get
             {
                 return owner;
             }
-			
-            /// <summary> Set relation owner
-            /// </summary>
-            /// <param name="owner">new owner of the relation
-            /// 
-            /// </param>
+
             set
             {
                 this.owner = value;
                 Modify();
-            }			
+            }
         }
 
         /// <summary> Relation constructor. Creates empty relation with specified owner and no members. 

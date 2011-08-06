@@ -110,7 +110,7 @@ namespace Volante.Impl
             }
             return new PersistentStub(storage, arr[i]);
         }
-		
+
         public virtual int GetOid(int i)
         {
             if (i < 0 || i >= used)
@@ -119,7 +119,7 @@ namespace Volante.Impl
             }
             return arr[i];
         }
-		
+
         public virtual void Set(int i, T obj)
         {
             if (i < 0 || i >= used)
@@ -129,7 +129,7 @@ namespace Volante.Impl
             arr[i] = storage.MakePersistent(obj);
             Modify();
         }
-		
+
         public bool Remove(T obj) 
         {
             int i = IndexOf(obj);
@@ -157,7 +157,7 @@ namespace Volante.Impl
             arr[used] = 0;
             Modify();
         }
-		
+
         internal void reserveSpace(int len)
         {
             if (used + len > arr.Length)
@@ -168,7 +168,7 @@ namespace Volante.Impl
             }
             Modify();
         }
-		
+
         public virtual void Insert(int i, T obj)
         {
             if (i < 0 || i > used)
@@ -180,18 +180,18 @@ namespace Volante.Impl
             arr[i] = storage.MakePersistent(obj);
             used += 1;
         }
-		
+
         public virtual void Add(T obj)
         {
             reserveSpace(1);
             arr[used++] = storage.MakePersistent(obj);
         }
-		
+
         public virtual void AddAll(T[] a)
         {
             AddAll(a, 0, a.Length);
         }
-		
+
         public virtual void AddAll(T[] a, int from, int length)
         {
             int i, j;
@@ -202,7 +202,7 @@ namespace Volante.Impl
             }
             used = j;
         }
-		
+
         public virtual void AddAll(Link<T> link)
         {
             int n = link.Length;
@@ -222,7 +222,7 @@ namespace Volante.Impl
             }
             used += n;
         }
-		
+
         public virtual Array ToRawArray()
         {
             return arr;
@@ -237,7 +237,7 @@ namespace Volante.Impl
             }
             return a;
         }
-		
+
         public virtual Array ToArray(Type elemType)
         {
             Array a = Array.CreateInstance(elemType, used);
@@ -247,12 +247,12 @@ namespace Volante.Impl
             }
             return a;
         }
-		
+
         public virtual bool Contains(T obj)
         {
             return IndexOf(obj) >= 0;
         }
-		
+
         public virtual int IndexOf(T obj)
         {
             int oid = obj == null ? 0 : ((IPersistent)obj).Oid;
@@ -265,7 +265,7 @@ namespace Volante.Impl
             }
             return - 1;
         }
-		
+
         public virtual bool ContainsElement(int i, T obj) 
         {
             int oid = arr[i];
@@ -278,7 +278,7 @@ namespace Volante.Impl
             used = 0;
             Modify();
         }
-		
+
         class ArrayEnumerator : IEnumerator<T>
         {
             public void Dispose() {}
@@ -345,7 +345,7 @@ namespace Volante.Impl
         {
             return (T)storage.lookupObject(arr[i], null);
         }
-		
+
         public void SetOwner(IPersistent owner)
         { 
              this.owner = owner;
@@ -354,13 +354,13 @@ namespace Volante.Impl
         internal PArrayImpl()
         {
         }
-		
+
         internal PArrayImpl(StorageImpl storage, int initSize)
         {
             this.storage = storage;
             arr = new int[initSize];
         }
-		
+
         internal PArrayImpl(StorageImpl storage, int[] oids, IPersistent owner)
         {
             this.storage = storage;
@@ -368,11 +368,11 @@ namespace Volante.Impl
             arr = oids;
             used = oids.Length;
         }
-		
+
         int[]       arr;
         int         used;
         StorageImpl storage;
         [NonSerialized()]
-        IPersistent owner;        
+        IPersistent owner;
     }
 }

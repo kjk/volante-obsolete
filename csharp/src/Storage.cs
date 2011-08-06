@@ -50,7 +50,7 @@ namespace Volante
         /// Previous reference to the root object is rewritten but old root is not automatically deallocated.
         /// </summary>
         IPersistent Root {get; set;}
-      
+
         /// <summary> Open the storage
         /// </summary>
         /// <param name="filePath">path to the database file
@@ -104,12 +104,6 @@ namespace Volante
         /// <code>false</code> otherwise
         /// </returns>        
         bool IsOpened();
-
-        /// <summary> Set new storage root object.
-        /// </summary>
-        /// <param name="root">object to become new storage root. If it is not persistent yet, it is made
-        /// persistent and stored in the storage
-        /// </param>
 
         /// <summary> Commit changes done by the last transaction. Transaction is started implcitlely with forst update
         /// opertation.
@@ -232,7 +226,7 @@ namespace Volante
 
         /// <summary> Create one-to-many link with specified initial size.
         /// </summary>
-        /// <param name="intialSize">initial size of the array</param>
+        /// <param name="initialSize">initial size of the array</param>
         /// <returns>new link with specified size
         /// </returns>
         Link<T> CreateLink<T>(int initialSize) where T:class,IPersistent;
@@ -253,7 +247,7 @@ namespace Volante
         /// Link class is used to store set members. When number of members exceed 
         /// some threshold, PersistentSet (based on B-Tree) is used instead.
         /// </summary>
-        /// <param name="intialSize">initial size of the sety</param>
+        /// <param name="initialSize">initial size of the sety</param>
         /// <returns>new empty set, new members can be added to the set later.
         /// </returns>
         ISet<T> CreateScalableSet<T>(int initialSize) where T:class,IPersistent;
@@ -270,7 +264,7 @@ namespace Volante
         /// It is inteded to be used in classes using virtual properties to 
         /// access components of persistent objects.  
         /// </summary>
-        /// <param name="intialSize">initially allocated size of the array</param>
+        /// <param name="initialSize">initially allocated size of the array</param>
         /// <returns>new empty array, new members can be added to the array later.
         /// </returns>
         PArray<T> CreateArray<T>(int initialSize) where T:class,IPersistent;
