@@ -459,7 +459,7 @@ namespace Volante.Impl
         
         class BtreePageOfByte : BtreePage
         {
-            override internal Array Data
+            internal override Array Data
             {
                 get
                 {
@@ -467,12 +467,11 @@ namespace Volante.Impl
                 }
                 
             }
-            
+
             protected byte[] data;
-            
+
             const int MAX_ITEMS = BTREE_PAGE_SIZE / (4 + 1);
-            
-            
+
             internal override object getKeyValue(int i)
             {
                 return data[i];
@@ -511,7 +510,7 @@ namespace Volante.Impl
         
         class BtreePageOfSByte : BtreePage
         {
-            override internal Array Data
+            internal override Array Data
             {
                 get
                 {
@@ -589,7 +588,7 @@ namespace Volante.Impl
         
         class BtreePageOfShort : BtreePage
         {
-            override internal Array Data
+            internal override Array Data
             {
                 get
                 {
@@ -640,7 +639,7 @@ namespace Volante.Impl
         
         class BtreePageOfUShort : BtreePage
         {
-            override internal Array Data
+            internal override Array Data
             {
                 get
                 {
@@ -691,7 +690,7 @@ namespace Volante.Impl
         
         class BtreePageOfInt : BtreePage
         {
-            override internal Array Data
+            internal override Array Data
             {
                 get
                 {
@@ -742,7 +741,7 @@ namespace Volante.Impl
         
         class BtreePageOfUInt : BtreePage
         {
-            override internal Array Data
+            internal override Array Data
             {
                 get
                 {
@@ -793,7 +792,7 @@ namespace Volante.Impl
         
         class BtreePageOfLong : BtreePage
         {
-            override internal Array Data
+            internal override Array Data
             {
                 get
                 {
@@ -844,7 +843,7 @@ namespace Volante.Impl
         
         class BtreePageOfULong : BtreePage
         {
-            override internal Array Data
+            internal override Array Data
             {
                 get
                 {
@@ -945,7 +944,7 @@ namespace Volante.Impl
         
         class BtreePageOfDouble : BtreePage
         {
-            override internal Array Data
+            internal override Array Data
             {
                 get
                 {
@@ -996,7 +995,7 @@ namespace Volante.Impl
         
         class BtreePageOfGuid : BtreePage
         {
-            override internal Array Data
+            internal override Array Data
             {
                 get
                 {
@@ -1047,7 +1046,7 @@ namespace Volante.Impl
         
         class BtreePageOfDecimal : BtreePage
         {
-            override internal Array Data
+            internal override Array Data
             {
                 get
                 {
@@ -1098,7 +1097,7 @@ namespace Volante.Impl
         
         class BtreePageOfObject : BtreePage
         {
-            override internal Array Data
+            internal override Array Data
             {
                 get
                 {
@@ -1150,7 +1149,7 @@ namespace Volante.Impl
         
         class BtreePageOfString : BtreePage
         {
-            override internal Array Data
+            internal override Array Data
             {
                 get
                 {
@@ -1265,7 +1264,7 @@ namespace Volante.Impl
         
         class BtreePageOfRaw : BtreePage
         {
-            override internal Array Data
+            internal override Array Data
             {
                 get
                 {

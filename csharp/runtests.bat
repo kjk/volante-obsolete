@@ -19,10 +19,11 @@ Tests.exe -fast
 @goto END
 
 :FAILEDCOMPILE
-echo "Compilcation failed"
-goto END
+@echo "Compilcation failed"
+@goto END
 
 :NEEDSVS
-echo Visual Studio 2010 doesn't seem to be installed
+@echo Visual Studio 2010 doesn't seem to be installed
+@goto END
 
 :END
