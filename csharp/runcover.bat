@@ -14,20 +14,20 @@ devenv Volante.sln /Rebuild Release /Project Tests
 @cd %O%
 
 ..\..\..\thirdparty\opencover\OpenCover.Console -target:Tests.exe -register:user -filter:+[Volante*]* -output:opencover.xml >opencover.out.txt
-@IF ERRORLEVEL 1 GOTO PARTCOVERFAILED
+@IF ERRORLEVEL 1 GOTO OPENCOVERFAILED
 @cd ..\..
 
 python opencover-to-html.py %O%\opencover.xml cov
-@IF ERRORLEVEL 1 GOTO PARTCOVERTOHTMLFAILED
+@IF ERRORLEVEL 1 GOTO OPENCOVERTOHTMLFAILED
 
 goto END
 
 :PARTCOVERTOHTMLFAILED
-echo partcover-to-html.py failed
+echo opencover-to-html.py failed
 goto END
 
-:PARTCOVERFAILED
-echo PartCover failed
+:OPENCOVERFAILED
+echo OpenCover failed
 goto END
 
 :BUILDFAILED
