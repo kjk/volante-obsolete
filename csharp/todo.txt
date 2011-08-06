@@ -6,5 +6,6 @@ Things to do for c# version:
 * write docs
 * silverlight and wp7 versions
 * make a 0.9 release
+* change Hashtables to Dictionary<> (e.g. classDescMap, resolvedTypes in StorageImpl.cs)
 
 Done:

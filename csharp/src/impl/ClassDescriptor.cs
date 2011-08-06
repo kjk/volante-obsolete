@@ -621,17 +621,17 @@ namespace Volante.Impl
 
         internal void resolve() 
         {
-            if (!resolved) 
-            { 
-                StorageImpl classStorage = (StorageImpl)Storage;
-                ClassDescriptor desc = new ClassDescriptor(classStorage, cls);
-                resolved = true;
-                if (!desc.equals(this)) 
-                { 
-                    classStorage.registerClassDescriptor(desc);
-                }
+            if (resolved)
+                return;
+
+            StorageImpl classStorage = (StorageImpl)Storage;
+            ClassDescriptor desc = new ClassDescriptor(classStorage, cls);
+            resolved = true;
+            if (!desc.equals(this)) 
+            {
+                classStorage.registerClassDescriptor(desc);
             }
-        }            
+        }
 
         public override bool RecursiveLoading()
         {
