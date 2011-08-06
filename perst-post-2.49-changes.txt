@@ -1,10 +1,8 @@
-Changes made in Perst after 2.49 (from which NachoDB derives).
+Changes made in Perst after 2.49 (from which Volante derives).
 It would be nice to add those features as well.
 
 This list is bassed on http://www.garret.ru/news.html and
 http://en.wikipedia.org/wiki/Perst
-
-Items on this list are good features to be added to nupe.
 
 2.50 (2005-01-25)
 * Change Perst license. Starting from this version Perst it is necessary to buy
@@ -14,7 +12,7 @@ Items on this list are good features to be added to nupe.
 2.51 (2005-02-07)
 * Integrate JSQL - make it possible to select collection members using SQL-like queries
 * Support remove() method for Btree and AltBtree selection iterators (Java version)
-* Fix bug in fetching classes with privite fields declared in base classes (.Net version)
+* Fix bug in fetching classes with private fields declared in base classes (.Net version)
 
 2.52 (2005-02-07)
 * Add Database class emulating object-relational database on top of Perst 
@@ -23,7 +21,7 @@ Items on this list are good features to be added to nupe.
 * Fix problems with handling null values of enum fields in JDK 1.5 version.
 * Support concurrent iterators (recover iterator state instead of throwing
   ConcurrentModificationException if underlying collection is modified outside
-  iterator) dd Database class emulating object-relational database on top of Perst
+  iterator)
 * Support generics for the latest release of Visual Studion 2005 (Perst.NET)
 
 2.54 (2005-03-03)
