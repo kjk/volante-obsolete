@@ -1,266 +1,108 @@
---- Release version 1.01 21.22.2003 -------------------------------------
-Initial release
-
---- Release version 1.02 25.02.2003 -------------------------------------
-1. Support value types
-2. Add FieldIndex interface
-3. Fix bug in unique index support
-
---- Release version 1.03 03.03.2003 -------------------------------------
-1. Fix bug in LinkImpl constructor
-2. Make it possible to call IPersistent.deallocate multiple times.
-
---- Release version 1.04 12.03.2003 -------------------------------------
-1. Fix bug in rollback method
-2. Add IPersistent.onLoad method
-3. Fix bugs in BtreeFieldIndex
-4. Add TestLink example
-
---- Release version 1.05 04.04.2003 -------------------------------------
-1. Add optional garbage collection
-
---- Release version 1.06 09.04.2003 -------------------------------------
-1. Add object level locking
-
---- Release version 1.07 18.04.2003 -------------------------------------
-1. Add Persistent.modify method, allowing to mark object as dirty. 
-Object will be automatically saved during transaction commit.
-2. Add index iterator.
-3. Add spatial index.
-
-
---- Release version 1.08 22.04.2003 -------------------------------------
-1. Implement more sophisticated iterators for index search  
-2. Fix bug in R-Tree
- 
---- Release version 1.09 06.05.2003 -------------------------------------
-1. Fix bug in packing array of strings. 
-
---- Release version 1.10 28.05.2003 -------------------------------------
-1. Add Storage.isOpened() method
-2. Change store() with modify() in Btree implementation
-
---- Release version 1.11 09.06.2003 -------------------------------------
-1. Add methods for database import/export in XML format. 
-
---- Release version 1.12 18.06.2003 -------------------------------------
-1. Fix bug in Btree (replacing existed values in scalar index)
-2. Using CSharp serialization mechanism to store in database alien objects
-
---- Release version 1.13 04.07.2003 -------------------------------------
-1. Make it possible to provide user specific implementation of PERST file interface. 
-For example it can be used to work with flash card or encrypted files.
-
---- Release version 1.14 09.07.2003 -------------------------------------
-1. Add Storage.getObjectByOID method
-2. Add autoincremented field support: FieldIndex.append method
-
---- Release version 1.15 16.07.2003 -------------------------------------
-
-1. Add Index.GetDicitionaryEnumerator() method which makes it possible to access both key and value.
-
---- Release version 1.16 23.07.2003 -------------------------------------
-
-1. Fix bug in index iterator (iterating through empty index)
-
---- Release version 1.17 01.08.2003 -------------------------------------
-
-1. Store weak references in modified object list to make it possible to GC to reclaim these objects
-2. Support sets of persistent objects (Storage.createSet method)
-
---- Release version 1.18 19.09.2003 -------------------------------------
-
-1. Add enumeration and indexation methods to Link interface. 
-
---- Release version 1.19 24.09.2003 -------------------------------------
-
-1. Provide new implementation of modified object list. Old implementation introduced in 
-version 1.17 and based on weak reference in finalize method in Persistent class
-can cause loose of modifications if weak reference is cleared by GC, but finalize
-method is not invoked before transaction commit.
-
---- Release version 1.20 02.10.2003 -------------------------------------
-
-1. Add FieldIndex.contains method
-2. Port to Visual Studio 2003
-3. Support of Compact .Net framework
-4. Conditional compilation of code supporting raw binary type
-(System.Runtime.Serialization.Formatters.Binary.BinaryFormatter class in not supported in Compact.Net framework)
-5. Replace '+' in C# identifiers during XML export
-
---- Release version 1.21 08.10.2003 -------------------------------------
-
-1. Support of main-memory databases. 
-
---- Release version 1.22 17.10.2003 -------------------------------------
-
-1. Add SortedCollection container class
-2. Fix bugs in main-memory database support
-3. Fix bug with lost modifications
-
---- Release version 2.01 23.10.2003 -------------------------------------
-
-1. Automatic scheme evaluation support.
-Attention: database format is incompatible with version 1.22!
-2. New implementation of modified object list
-3. Make it possible to tune most of database parameters using Storage.setProperty/Storage.setProperties methods
-
-
---- Release version 2.02 07.11.2003 -------------------------------------
-
-1. Support indices for byte arrays
-2. Support compound indices
-3. Fix bug un unpacking arrays of enums.
-
---- Release version 2.03 19.11.2003 -------------------------------------
-
-1. Add IPersistent.invalidate method. Transaction rollback will now invalidate all modified objects.
-2. Support per-thread transactions (Storage.beginTransaction and Storage.endTranasction methods)
-3. Yet another attempt to eliminate modification list and handle modified object using weak references.
-4. Rename all public Perst methods according to C# naming convention.
-
---- Release version 2.04 26.11.2003 -------------------------------------
-1. Derive ISet from IPersistent and IResource interfaces
-
---- Release version 2.05 28.11.2003 -------------------------------------
-
-1. Make it possible to profile storage memory using Storage.getMemoryDump() method 
-
---- Release version 2.06 11.12.2003 -------------------------------------
-
-1. Make it possible to index properties
-2. Fix bug in packing char fields.
-3. Support of decimal and Guid types
-
---- Release version 2.07 14.12.2003 -------------------------------------
-
-1. Fix critical bug in object index relocation algorithm
-2. Fix bug in recovery procedure
-
---- Release version 2.08 20.12.2003 -------------------------------------
-
-1. Add Blob class
-
---- Release version 2.09 23.12.2003 -------------------------------------
-1. Fix bug in Link.insert method
-2. Add ClassLoader interface and Storage.Loader property
-
---- Release version 2.10 30.12.2003 -------------------------------------
-1. Fix bug in XML import
-
---- Release version 2.11 07.01.2004 -------------------------------------
-1. Add Storage.backup method which can be used for online backups and database compactification
-2. Add support of time series
-3. Fix bugs in unpacking arrays of values
-
---- Release version 2.12 12.01.2004 -------------------------------------
-1. Dynamically generate packing/unpacking code for persistent objects. 
-This feature works only for public classes with public members
-and not having components of the following types: value, 
-array of value, array of objects, arrays of enums.
-Also it is not supported in Compact.NET version. 
-Dynamic generation is automatically used when class meets described
-above criteria.
-
-
---- Release version 2.13 24.01.2004 -------------------------------------
-1. Fix bugs in dynamic packing/unpacking code generation algorithm
-2. Support persistency for MarshalByRef objects (add MarshalByRefPersistent class)
-
---- Release version 2.14 30.01.2004 -------------------------------------
-1. Fix bug in Guid pack method
-2. Fix bug in object modification mechanism which can cause deadlock.
-3. Make it possible to specify part of compound key in query
-
---- Release version 2.15 06.02.2004 -------------------------------------
-1. Fix bugs with unpacking fields of byte, sbyte, ushort and uint types.
-
---- Release version 2.16 10.02.2004 -------------------------------------
-1. Fix bug in Persistent.invalidate method
-
---- Release version 2.17 26.02.2004 -------------------------------------
-1. Fix bug in code checking when pack/unpack method generation is possible
-2. Add check for concurrent modifications in B-Tree iterator
-3. Add Projection class
-4. Add Index.getPrefix, Index.prefixIterator, FieldIndex.getPrefix and FieldIndex.prefixIterator methods
-5. Fix bugs in RelationImpl class
-
---- Release version 2.18 07.03.2004 -------------------------------------
-1. Add default comparer for SortedCollection class (expecting that members of collection 
-   implement Comparable interface)
-2. Fix bug in Index.Set method for non-unique indices
-3. Support of database file encryption 
-
---- Release version 2.19 18.03.2004 -------------------------------------
-1. Fix bug in file encyption
-2. Optimize class lookup algorithm
-3. Add perst.code.generation property which allows to enable or disable dynamic generation
-of pack/unpack methods.
-4. Generation of pack/unpack methods in background (by separate thread)
-
---- Release version 2.20 04.04.2004 -------------------------------------
-1. Add Link.Pin and Link.Unpin methods. Do not implicitely pin accessed Link elements.
-2. Change class descriptor loading algorithm to avoid stack overflow
-   in applications with large number of classes
-3. Detect bugs related with incorrect serialization of persistent object as raw or value type
-4. Fix bug in automatic scheme evalaution implementation.
-
---- Release version 2.21 16.04.2004 -------------------------------------
-1. Add Index.KeyType, FieldIndex.IndexedClass and FieldIndex.KeyFields properties
-2. Add Index.PrefixSearch method which can be used to locate keys which are prefixes of the specified word.
-
---- Release version 2.22 10.04.2004 -------------------------------------
-1. Fix bug in dbTimeSeries class
-2. Implement reallocatable bitmap (now database size is not limited by dbDatabaseOffsetBits constant)
-
---- Release version 2.23 09.05.2004 -------------------------------------
-1. Make StorageImpl.swizzle and StorageImpl.unswizzle method protected to be allow
-their redefinition in derived class.
-2. Fix problem with parsing ulong literals in XMLImport
-
---- Release version 2.24 17.05.2004 -------------------------------------
-1. Index.Remove(Key), Index.Set(Key,IPersistent), FieldIndex.Remove(Key) and FieldIndex.Set(IPersistent)
-methods now return reference to the removed/replaced object.
-
---- Release version 2.25 28.05.2004 -------------------------------------
-1. Optimized version of T-Tree algorithm
-
---- Release version 2.26 07.06.2004 -------------------------------------
-1. Fix bug in FieldIndex.remove(Key) introduced in version 2.24
-
---- Release version 2.27 15.06.2004 -------------------------------------
-1. Add handling of Decimal and Guid types to Btree.getKeyFromObject() method 
-2. Fix bug in XMLExporter.exportBinary
-3. Change R-Tree and rectangle implementation to calculate rectangles area using long type
-
---- Release version 2.28 28.06.2004 -------------------------------------
-1. Add PersistentContext and TransparentPersistenceAttrribute classes to provide
-transparent persistence for C# objects using .Net remoting API. If application
-class is derived from PersistentContext and marked with TransparentPersistence attribute, 
-it will automatically load on demand its content from the database and automatically store
-content if the object is modified. But remoting API can handle only public members of the class
-and also cause significant performance overhead (invocation of method through remoting API
-is about 100 times slower than normal method invocation)
-
---- Release version 2.29 05.07.2004 -------------------------------------
-1. Make it possible to use Storage.Gc() for verification of consistency of database.
-Now this method returns number of deallocated (garbage objects) and detects dangling references in
-the database. 
-2. Add SpatialIndexR2 and RectangleR2 classes for spatial objects with floating point coordinates.
-Also new spatial index is more efficient for large collections (it doesn't pin all its pages in memory).
-SpatialIndexR2 class provides iterator to accessed overlaped object one-by-one.
-3. Add SpatialIndex.WrappingRectangle and  SpatialIndexR2.WrappingRectangle properties
-4. Add set method to Link.Length property.
-
---- Release version 2.30 15.07.2004 -------------------------------------
-1. Invoke Win32 FlushFileBuffers in addition to System.FileStream.Flush to 
-really flush changes to the disk. 
-2. Port to Mono compiler
-
---- Release version 2.31 06.08.2004 -------------------------------------
-1. Add L2List and L2ListElem classes
-2. Fix bug in importing/exporting of raw fields introduced in version 2.23
-3. Fix critical sycnhronization bug in writing modified objects to the disk
+--- Release version 2.49 09.01.2005 -------------------------------------
+1. Change implementation of Link to automatically set modified bit in contaning object.
+Now it is not necessary to explicitly call modify() for object which Link component is updated.
+
+--- Release version 2.48 03.01.2005 -------------------------------------
+1. Replication support. Now Perst supports master-slaves replication model.
+Single master node replicates changes to one or more slave nodes.
+It is possible to access database at slave nodes in read-only mode.
+Look at TestReplic example.
+
+--- Release version 2.47 28.12.2004 -------------------------------------
+1. Support C# 2.0 generics. When Perst.NET is build with USE_GENERICS defined, 
+all Perst collections will be provided as parameterized classes implementing
+System.Collections.Generic.ICollection<T>
+
+--- Release version 2.46 19.12.2004 -------------------------------------
+1. Add Storage.createThickIndex method for efficient support of indices with a lot of duplicate 
+   values of of the key
+2. Add Storage.createScalableSet method for efficient (space and speed) support of set of references 
+   small as well as large number of members
+3. Fix bugs in virtual proxy transparent API implementation
+
+--- Release version 2.45 16.12.2004 -------------------------------------
+1. Derive Index and FieldIndex interface from common base GenericIndex
+2. Add StreamFile 
+3. Make it possible to toggle "perst.file.noflush" property on the fly (not only before storage open).
+4. Fix bugs in virtual property based transparent API implementation
+5. Add PArray class to be used instead of array of references in virtual property based transparent API
+6. Change semantic of IPersistent.MakePersistent method, now it doesn't store transparent object
+in the storage, it just assigns OID and marks it as modified
+
+--- Release version 2.44 14.12.2004 -------------------------------------
+1. Implement yet another transparent API to the database based on virtual properties.
+Now it is possible to transparently load and modify persistent objects
+by accessing persistent object components through virtual properties. 
+It is not needed any more to explicitly invoke IPersistent.Modify method
+or redefine IPersistent.RecursiveLoading method. You only need to replace 
+components of your objects with definition of abstract properties. 
+Perst will automatically generate class which will provide implementations
+of these properties. You only have to use IStorage.CreateClass method to construct objects
+instead of direct invocation of constructors. See "PropGuess" sample.
+2. Add file locking to prevent modification of database file by more than one application
+
+--- Release version 2.43 10.12.2004 -------------------------------------
+1. Add BitIndex collection (allowing to select object by bit vector of boolean properties)
+
+--- Release version 2.42 06.12.2004 -------------------------------------
+1. Fix bug in range search implementation in T-Tree (SortedCollection)
+2. Make it possible to specify different range types (inclusive/exclusive) in SortedCollection search methods
+
+--- Release version 2.41 28.11.2004 -------------------------------------
+1. Fix bug in comparison of int keys in multifield index
+2. Fix problems with supporting more than 2^28 objects
+
+--- Release version 2.40 16.11.2004 -------------------------------------
+1. Add LRU object cache. Make it possible for user to selcet between "weak", "soft" and "lru"
+   cache implementation.
+2. Add PersistentString class to be able to store string in the database as independent object.
+3. Fix bug in Persistent.assignOid method introduced in version 2.39
+4. Fix bug in Link.indexOf method introduced in version 2.39
+5. Fix synchronization problem (deadlock) in background GC activation
+
+--- Release version 2.39 14.11.2004 -------------------------------------
+1. Fix problems with handling weak references and finalization
+2. Replace elements of Link with stubs after storing Link in the database
+   to avoid memory overflow caused by pinning objects in memory.
+3. Stop pack/unpack code generation thread in Storage.Close method
+4. Add Ttree.Deallocate method
+5. Support per-thread transactions for Compact.Net framework
+
+--- Release version 2.38 29.10.2004 -------------------------------------
+1. Fix bugs in XML import/export
+2. Fix check for invalid OID in Storage.getPos method 
+3. Change BLOB implementation to support work with very large BLOBs 
+(done by Mikhail Kotelnikov <mikhail@kotelnikov.com>)
+4. Fix bug with restoring autoincrement counter in XML import
+5. Add TimeSeries.Deallocate wethod
+6. Fix bug in backup with compactification (incorrect setting of bitmap end)
+
+--- Release version 2.37 10.10.2004 -------------------------------------
+1. Add PATRICIA Trie container
+2. Fix problem with generated pack/unpack functions introduced in 2.36 version
+
+--- Release version 2.36 07.10.2004 -------------------------------------
+1. Make it possible to specify encoding for storing string
+2. Add StorageListener class
+3. Fix compilation problem with Compact.Net framework and multifield alternative indices
+
+--- Release version 2.35 02.10.2004 -------------------------------------
+1. Fix problem with supporting compund keys in alternative implementation of B-Tree
+2. Fix bug (cuase inefficient execution) in TimeSeries.Contains method.
+
+--- Release version 2.34 16.09.2004 -------------------------------------
+1. Add "perst.file.noflush" property. When it is assigne true value, 
+Perst will not perform flush of file during transaction commit. It will greatly increase performance because
+eliminate synchronous write to the disk (when program has to wait until all changed
+are actually written to the disk). But it can cause database corruption in case of 
+OS or power failure (but abnormal termination of application itself should not cause
+the problem, because all data which were written to the file, but is not yet saved to the disk is 
+stored in OS file buffers and sooner or later them will be written to the disk)
+2. Fix possible problems with GC memory consistency verification for T-Tree and R-Tree classes
+
+--- Release version 2.33 27.08.2004 -------------------------------------
+1. Background garbage collection
+2. Add Storage.UsedSize and Storage.DatabaseSize properties
 
 --- Release version 2.32 21.08.2004 -------------------------------------
 1. Fix critical synchronization bug in writing modified objects to the disk
@@ -278,109 +120,261 @@ really flush changes to the disk.
    "perst.serialize.transient.objects" property was set or not
 7. Add Persistent OnStore method which is invoked before object is stored in the database
 
---- Release version 2.33 27.08.2004 -------------------------------------
-1. Background garbage collection
-2. Add Storage.UsedSize and Storage.DatabaseSize properties
+--- Release version 2.31 06.08.2004 -------------------------------------
+1. Add L2List and L2ListElem classes
+2. Fix bug in importing/exporting of raw fields introduced in version 2.23
+3. Fix critical sycnhronization bug in writing modified objects to the disk
 
---- Release version 2.34 16.09.2004 -------------------------------------
-1. Add "perst.file.noflush" property. When it is assigne true value, 
-Perst will not perform flush of file during transaction commit. It will greatly increase performance because
-eliminate synchronous write to the disk (when program has to wait until all changed
-are actually written to the disk). But it can cause database corruption in case of 
-OS or power failure (but abnormal termination of application itself should not cause
-the problem, because all data which were written to the file, but is not yet saved to the disk is 
-stored in OS file buffers and sooner or later them will be written to the disk)
-2. Fix possible problems with GC memory consistency verification for T-Tree and R-Tree classes
+--- Release version 2.30 15.07.2004 -------------------------------------
+1. Invoke Win32 FlushFileBuffers in addition to System.FileStream.Flush to 
+really flush changes to the disk. 
+2. Port to Mono compiler
+
+--- Release version 2.29 05.07.2004 -------------------------------------
+1. Make it possible to use Storage.Gc() for verification of consistency of database.
+Now this method returns number of deallocated (garbage objects) and detects dangling references in
+the database. 
+2. Add SpatialIndexR2 and RectangleR2 classes for spatial objects with floating point coordinates.
+Also new spatial index is more efficient for large collections (it doesn't pin all its pages in memory).
+SpatialIndexR2 class provides iterator to accessed overlaped object one-by-one.
+3. Add SpatialIndex.WrappingRectangle and  SpatialIndexR2.WrappingRectangle properties
+4. Add set method to Link.Length property.
+
+--- Release version 2.28 28.06.2004 -------------------------------------
+1. Add PersistentContext and TransparentPersistenceAttrribute classes to provide
+transparent persistence for C# objects using .Net remoting API. If application
+class is derived from PersistentContext and marked with TransparentPersistence attribute, 
+it will automatically load on demand its content from the database and automatically store
+content if the object is modified. But remoting API can handle only public members of the class
+and also cause significant performance overhead (invocation of method through remoting API
+is about 100 times slower than normal method invocation)
+
+--- Release version 2.27 15.06.2004 -------------------------------------
+1. Add handling of Decimal and Guid types to Btree.getKeyFromObject() method 
+2. Fix bug in XMLExporter.exportBinary
+3. Change R-Tree and rectangle implementation to calculate rectangles area using long type
+
+--- Release version 2.26 07.06.2004 -------------------------------------
+1. Fix bug in FieldIndex.remove(Key) introduced in version 2.24
+
+--- Release version 2.25 28.05.2004 -------------------------------------
+1. Optimized version of T-Tree algorithm
+
+--- Release version 2.24 17.05.2004 -------------------------------------
+1. Index.Remove(Key), Index.Set(Key,IPersistent), FieldIndex.Remove(Key) and FieldIndex.Set(IPersistent)
+methods now return reference to the removed/replaced object.
+
+--- Release version 2.23 09.05.2004 -------------------------------------
+1. Make StorageImpl.swizzle and StorageImpl.unswizzle method protected to be allow
+their redefinition in derived class.
+2. Fix problem with parsing ulong literals in XMLImport
+
+--- Release version 2.22 10.04.2004 -------------------------------------
+1. Fix bug in dbTimeSeries class
+2. Implement reallocatable bitmap (now database size is not limited by dbDatabaseOffsetBits constant)
+
+--- Release version 2.21 16.04.2004 -------------------------------------
+1. Add Index.KeyType, FieldIndex.IndexedClass and FieldIndex.KeyFields properties
+2. Add Index.PrefixSearch method which can be used to locate keys which are prefixes of the specified word.
+
+--- Release version 2.20 04.04.2004 -------------------------------------
+1. Add Link.Pin and Link.Unpin methods. Do not implicitely pin accessed Link elements.
+2. Change class descriptor loading algorithm to avoid stack overflow
+   in applications with large number of classes
+3. Detect bugs related with incorrect serialization of persistent object as raw or value type
+4. Fix bug in automatic scheme evalaution implementation.
+
+--- Release version 2.19 18.03.2004 -------------------------------------
+1. Fix bug in file encyption
+2. Optimize class lookup algorithm
+3. Add perst.code.generation property which allows to enable or disable dynamic generation
+of pack/unpack methods.
+4. Generation of pack/unpack methods in background (by separate thread)
+
+--- Release version 2.18 07.03.2004 -------------------------------------
+1. Add default comparer for SortedCollection class (expecting that members of collection 
+   implement Comparable interface)
+2. Fix bug in Index.Set method for non-unique indices
+3. Support of database file encryption 
+
+--- Release version 2.17 26.02.2004 -------------------------------------
+1. Fix bug in code checking when pack/unpack method generation is possible
+2. Add check for concurrent modifications in B-Tree iterator
+3. Add Projection class
+4. Add Index.getPrefix, Index.prefixIterator, FieldIndex.getPrefix and FieldIndex.prefixIterator methods
+5. Fix bugs in RelationImpl class
+
+--- Release version 2.16 10.02.2004 -------------------------------------
+1. Fix bug in Persistent.invalidate method
+
+--- Release version 2.15 06.02.2004 -------------------------------------
+1. Fix bugs with unpacking fields of byte, sbyte, ushort and uint types.
+
+--- Release version 2.14 30.01.2004 -------------------------------------
+1. Fix bug in Guid pack method
+2. Fix bug in object modification mechanism which can cause deadlock.
+3. Make it possible to specify part of compound key in query
+
+--- Release version 2.13 24.01.2004 -------------------------------------
+1. Fix bugs in dynamic packing/unpacking code generation algorithm
+2. Support persistency for MarshalByRef objects (add MarshalByRefPersistent class)
+
+--- Release version 2.12 12.01.2004 -------------------------------------
+1. Dynamically generate packing/unpacking code for persistent objects. 
+This feature works only for public classes with public members
+and not having components of the following types: value, 
+array of value, array of objects, arrays of enums.
+Also it is not supported in Compact.NET version. 
+Dynamic generation is automatically used when class meets described
+above criteria.
+
+--- Release version 2.11 07.01.2004 -------------------------------------
+1. Add Storage.backup method which can be used for online backups and database compactification
+2. Add support of time series
+3. Fix bugs in unpacking arrays of values
+
+--- Release version 2.10 30.12.2003 -------------------------------------
+1. Fix bug in XML import
+
+--- Release version 2.09 23.12.2003 -------------------------------------
+1. Fix bug in Link.insert method
+2. Add ClassLoader interface and Storage.Loader property
+
+--- Release version 2.08 20.12.2003 -------------------------------------
+
+1. Add Blob class
+
+--- Release version 2.07 14.12.2003 -------------------------------------
+
+1. Fix critical bug in object index relocation algorithm
+2. Fix bug in recovery procedure
+
+--- Release version 2.06 11.12.2003 -------------------------------------
+
+1. Make it possible to index properties
+2. Fix bug in packing char fields.
+3. Support of decimal and Guid types
+
+--- Release version 2.05 28.11.2003 -------------------------------------
+
+1. Make it possible to profile storage memory using Storage.getMemoryDump() method 
+
+--- Release version 2.04 26.11.2003 -------------------------------------
+1. Derive ISet from IPersistent and IResource interfaces
+
+--- Release version 2.03 19.11.2003 -------------------------------------
+
+1. Add IPersistent.invalidate method. Transaction rollback will now invalidate all modified objects.
+2. Support per-thread transactions (Storage.beginTransaction and Storage.endTranasction methods)
+3. Yet another attempt to eliminate modification list and handle modified object using weak references.
+4. Rename all public Perst methods according to C# naming convention.
+
+--- Release version 2.02 07.11.2003 -------------------------------------
+
+1. Support indices for byte arrays
+2. Support compound indices
+3. Fix bug un unpacking arrays of enums.
+
+--- Release version 2.01 23.10.2003 -------------------------------------
+
+1. Automatic scheme evaluation support.
+Attention: database format is incompatible with version 1.22!
+2. New implementation of modified object list
+3. Make it possible to tune most of database parameters using Storage.setProperty/Storage.setProperties methods
+
+--- Release version 1.22 17.10.2003 -------------------------------------
+
+1. Add SortedCollection container class
+2. Fix bugs in main-memory database support
+3. Fix bug with lost modifications
+
+--- Release version 1.21 08.10.2003 -------------------------------------
+1. Support of main-memory databases. 
+
+--- Release version 1.20 02.10.2003 -------------------------------------
+1. Add FieldIndex.contains method
+2. Port to Visual Studio 2003
+3. Support of Compact .Net framework
+4. Conditional compilation of code supporting raw binary type
+(System.Runtime.Serialization.Formatters.Binary.BinaryFormatter class in not supported in Compact.Net framework)
+5. Replace '+' in C# identifiers during XML export
+
+--- Release version 1.19 24.09.2003 -------------------------------------
+1. Provide new implementation of modified object list. Old implementation introduced in 
+version 1.17 and based on weak reference in finalize method in Persistent class
+can cause loose of modifications if weak reference is cleared by GC, but finalize
+method is not invoked before transaction commit.
+
+--- Release version 1.18 19.09.2003 -------------------------------------
+1. Add enumeration and indexation methods to Link interface. 
+
+--- Release version 1.17 01.08.2003 -------------------------------------
+1. Store weak references in modified object list to make it possible to GC to reclaim these objects
+2. Support sets of persistent objects (Storage.createSet method)
+
+--- Release version 1.16 23.07.2003 -------------------------------------
+1. Fix bug in index iterator (iterating through empty index)
+
+--- Release version 1.15 16.07.2003 -------------------------------------
+1. Add Index.GetDicitionaryEnumerator() method which makes it possible to access both key and value.
+
+--- Release version 1.14 09.07.2003 -------------------------------------
+1. Add Storage.getObjectByOID method
+2. Add autoincremented field support: FieldIndex.append method
+
+--- Release version 1.13 04.07.2003 -------------------------------------
+1. Make it possible to provide user specific implementation of PERST file interface. 
+For example it can be used to work with flash card or encrypted files.
+
+--- Release version 1.12 18.06.2003 -------------------------------------
+1. Fix bug in Btree (replacing existed values in scalar index)
+2. Using CSharp serialization mechanism to store in database alien objects
+
+--- Release version 1.11 09.06.2003 -------------------------------------
+1. Add methods for database import/export in XML format. 
+
+--- Release version 1.10 28.05.2003 -------------------------------------
+1. Add Storage.isOpened() method
+2. Change store() with modify() in Btree implementation
+
+--- Release version 1.09 06.05.2003 -------------------------------------
+1. Fix bug in packing array of strings. 
+
+--- Release version 1.08 22.04.2003 -------------------------------------
+1. Implement more sophisticated iterators for index search  
+2. Fix bug in R-Tree
+ 
+--- Release version 1.07 18.04.2003 -------------------------------------
+1. Add Persistent.modify method, allowing to mark object as dirty. 
+Object will be automatically saved during transaction commit.
+2. Add index iterator.
+3. Add spatial index.
+
+--- Release version 1.06 09.04.2003 -------------------------------------
+1. Add object level locking
+
+--- Release version 1.05 04.04.2003 -------------------------------------
+1. Add optional garbage collection
+
+--- Release version 1.04 12.03.2003 -------------------------------------
+1. Fix bug in rollback method
+2. Add IPersistent.onLoad method
+3. Fix bugs in BtreeFieldIndex
+4. Add TestLink example
+
+--- Release version 1.03 03.03.2003 -------------------------------------
+1. Fix bug in LinkImpl constructor
+2. Make it possible to call IPersistent.deallocate multiple times.
+
+--- Release version 1.02 25.02.2003 -------------------------------------
+1. Support value types
+2. Add FieldIndex interface
+3. Fix bug in unique index support
+
+--- Release version 1.01 21.22.2003 -------------------------------------
+Initial release
 
 
---- Release version 2.35 02.10.2004 -------------------------------------
-1. Fix problem with supporting compund keys in alternative implementation of B-Tree
-2. Fix bug (cuase inefficient execution) in TimeSeries.Contains method.
 
---- Release version 2.36 07.10.2004 -------------------------------------
-1. Make it possible to specify encoding for storing string
-2. Add StorageListener class
-3. Fix compilation problem with Compact.Net framework and multifield alternative indices
 
---- Release version 2.37 10.10.2004 -------------------------------------
-1. Add PATRICIA Trie container
-2. Fix problem with generated pack/unpack functions introduced in 2.36 version
 
---- Release version 2.38 29.10.2004 -------------------------------------
-1. Fix bugs in XML import/export
-2. Fix check for invalid OID in Storage.getPos method 
-3. Change BLOB implementation to support work with very large BLOBs 
-(done by Mikhail Kotelnikov <mikhail@kotelnikov.com>)
-4. Fix bug with restoring autoincrement counter in XML import
-5. Add TimeSeries.Deallocate wethod
-6. Fix bug in backup with compactification (incorrect setting of bitmap end)
-
---- Release version 2.39 14.11.2004 -------------------------------------
-1. Fix problems with handling weak references and finalization
-2. Replace elements of Link with stubs after storing Link in the database
-   to avoid memory overflow caused by pinning objects in memory.
-3. Stop pack/unpack code generation thread in Storage.Close method
-4. Add Ttree.Deallocate method
-5. Support per-thread transactions for Compact.Net framework
-
---- Release version 2.40 16.11.2004 -------------------------------------
-1. Add LRU object cache. Make it possible for user to selcet between "weak", "soft" and "lru"
-   cache implementation.
-2. Add PersistentString class to be able to store string in the database as independent object.
-3. Fix bug in Persistent.assignOid method introduced in version 2.39
-4. Fix bug in Link.indexOf method introduced in version 2.39
-5. Fix synchronization problem (deadlock) in background GC activation
-
---- Release version 2.41 28.11.2004 -------------------------------------
-1. Fix bug in comparison of int keys in multifield index
-2. Fix problems with supporting more than 2^28 objects
-
---- Release version 2.42 06.12.2004 -------------------------------------
-1. Fix bug in range search implementation in T-Tree (SortedCollection)
-2. Make it possible to specify different range types (inclusive/exclusive) in SortedCollection search methods
-
---- Release version 2.43 10.12.2004 -------------------------------------
-1. Add BitIndex collection (allowing to select object by bit vector of boolean properties)
-
---- Release version 2.44 14.12.2004 -------------------------------------
-1. Implement yet another transparent API to the database based on virtual properties.
-Now it is possible to transparently load and modify persistent objects
-by accessing persistent object components through virtual properties. 
-It is not needed any more to explicitly invoke IPersistent.Modify method
-or redefine IPersistent.RecursiveLoading method. You only need to replace 
-components of your objects with definition of abstract properties. 
-Perst will automatically generate class which will provide implementations
-of these properties. You only have to use IStorage.CreateClass method to construct objects
-instead of direct invocation of constructors. See "PropGuess" sample.
-2. Add file locking to prevent modification of database file by more than one application
-
---- Release version 2.45 16.12.2004 -------------------------------------
-1. Derive Index and FieldIndex interface from common base GenericIndex
-2. Add StreamFile 
-3. Make it possible to toggle "perst.file.noflush" property on the fly (not only before storage open).
-4. Fix bugs in virtual property based transparent API implementation
-5. Add PArray class to be used instead of array of references in virtual property based transparent API
-6. Change semantic of IPersistent.MakePersistent method, now it doesn't store transparent object
-in the storage, it just assigns OID and marks it as modified
-
---- Release version 2.46 19.12.2004 -------------------------------------
-1. Add Storage.createThickIndex method for efficient support of indices with a lot of duplicate 
-   values of of the key
-2. Add Storage.createScalableSet method for efficient (space and speed) support of set of references 
-   small as well as large number of members
-3. Fix bugs in virtual proxy transparent API implementation
-
---- Release version 2.47 28.12.2004 -------------------------------------
-1. Support C# 2.0 generics. When Perst.NET is build with USE_GENERICS defined, 
-all Perst collections will be provided as parameterized classes implementing
-System.Collections.Generic.ICollection<T>
-
---- Release version 2.48 03.01.2005 -------------------------------------
-1. Replication support. Now Perst supports master-slaves replication model.
-Single master node replicates changes to one or more slave nodes.
-It is possible to access database at slave nodes in read-only mode.
-Look at TestReplic example.
-
---- Release version 2.49 09.01.2005 -------------------------------------
-1. Change implementation of Link to automatically set modified bit in contaning object.
-Now it is not necessary to explicitly call modify() for object which Link component is updated.

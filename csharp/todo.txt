@@ -1,0 +1,10 @@
+Things to do for c# version:
+
+* benchmark altbtree vs. old btree and remove the old
+  if altbtree proves to be always faster
+* make a release script that builds and uploads .zip with the Volante.dll
+* write docs
+* silverlight and wp7 versions
+* make a 0.9 release
+
+Done:
