@@ -10,7 +10,7 @@ IF ERRORLEVEL 1 GOTO NEEDSVS
 devenv Volante.sln /Project tests\Tests\Tests.csproj /ProjectConfig Release /Rebuild
 IF ERRORLEVEL 1 GOTO FAILEDCOMPILE
 
-tests\Tests\bin\Release\Tests.exe -slow
+bin\Release\Tests.exe -slow
 
 @rem start %O%\TestReplic master
 @rem %O%\TestReplic slave
