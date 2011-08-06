@@ -7,10 +7,13 @@ namespace Volante
     /// <summary>
     /// Range boundary kind
     /// </summary>
-    public enum BoundaryKind { 
-         Exclusive = 0,
-         Inclusive = 1, 
-         None = -1 // open interval
+    public enum BoundaryKind {
+        /// <summary>exclusive interval</summary>
+        Exclusive = 0,
+        /// <summary>inclusive interval</summary>
+        Inclusive = 1,
+        /// <summary>open interval</summary>
+        None = -1
     }
 
     /// <summary>
