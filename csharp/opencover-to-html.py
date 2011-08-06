@@ -44,8 +44,8 @@ def append_point(line_info, line, pt):
     line_info[line].append(pt)
 
 class File(object):
-    def __init__(self, id, url):
-        self.id = id
+    def __init__(self, uid, url):
+        self.uid = uid
         self.url = url
         self.line_info = {}
         self._calc_names()
@@ -210,11 +210,15 @@ class Pt(object):
         self.el = el
         self.ec = ec
 
+
+#      <ModuleName>Volante</ModuleName>
+#      <Files>
+#        <File uid="1" fullPath="C:\kjk\src\volante\csharp\src\Persistent.cs" />
 def extractFile(el):
     attrs = el.attributes
-    id = int(attrs["id"].value)
-    url = attrs["url"].value
-    return File(id, url)
+    uid = int(attrs["uid"].value)
+    url = attrs["fullPath"].value
+    return File(uid, url)
 
 def extractAssembly(el):
     attrs = el.attributes
@@ -510,7 +514,7 @@ def main():
     files = {}
     for el in dom.getElementsByTagName("File"):
         v = extractFile(el)
-        files[v.id] = v
+        files[v.uid] = v
 
     assemblies = {}
     for el in dom.getElementsByTagName("Assembly"):

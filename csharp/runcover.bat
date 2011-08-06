@@ -7,16 +7,17 @@ call "%ProgramFiles(x86)%\Microsoft Visual Studio 10.0\Common7\Tools\vsvars32.ba
 IF ERRORLEVEL 1 GOTO NEEDSVS
 
 :BUILD
-devenv Volante.sln /Project tests\Tests\Tests.csproj /ProjectConfig Partcover /Rebuild
+devenv Volante.sln /Rebuild Release /Project Tests
 @IF ERRORLEVEL 1 GOTO FAILEDCOMPILE
 
-@set O=bin\Partcover
+@set O=bin\Release
 @cd %O%
-..\..\..\thirdparty\partcover\PartCover --target Tests.exe --include [Volante]* --include [Tests]* --output partcover.xml
+
+..\..\..\thirdparty\opencover\OpenCover.Console -target:Tests.exe -register:user -filter:+[Volante*]* -output:opencover.xml >opencover.out.txt
 @IF ERRORLEVEL 1 GOTO PARTCOVERFAILED
 @cd ..\..
 
-python partcover-to-html.py %O%\partcover.xml cov
+python opencover-to-html.py %O%\opencover.xml cov
 @IF ERRORLEVEL 1 GOTO PARTCOVERTOHTMLFAILED
 
 goto END
