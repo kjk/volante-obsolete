@@ -94,17 +94,16 @@ class File(object):
                     sys.exit(1)
                 prev = el
 
-class Assembly(object):
-    def __init__(self, id, name, module, domain, domainIdx):
-        self.id = id
-        self.name = name
-        self.module = module
-        self.domain = domain
-        self.domainIdx = domainIdx
-        self.types = []
+class Module(object):
+    def __init__(self, hash, fileName, moduleName):
+        self.hash = hash
+        self.fileName = fileName
+        self.moduleName = moduleName
         self.coverage = None
         self.coverageTotal = None
         self.coverageCovered = None
+        self.files = {}
+        self.classes = []
 
     def set_types(self, types):
         for t in types:
@@ -162,15 +161,13 @@ class Type(object):
     def get_coverage(self):
         return self.coverage
 
+    return Method(name, fileRef, pts)
+
 class Method(object):
-    def __init__(self, name, sig, bodysize, flags, iflags, pts):
+    def __init__(self, name, fileRef, pts):
         self.name = name
-        self.sig = sig
-        self.bodysize = bodysize
-        self.flags = flags
-        self.iflags = iflags
+        self.fileRef = fileRef
         self.pts = pts
-        self._calc_coverage()
 
     def full_name(self):
         parts = self.sig.split(" ", 1)
@@ -210,7 +207,6 @@ class Pt(object):
         self.el = el
         self.ec = ec
 
-
 #      <ModuleName>Volante</ModuleName>
 #      <Files>
 #        <File uid="1" fullPath="C:\kjk\src\volante\csharp\src\Persistent.cs" />
@@ -220,39 +216,14 @@ def extractFile(el):
     url = attrs["fullPath"].value
     return File(uid, url)
 
-def extractAssembly(el):
-    attrs = el.attributes
-    id = int(attrs["id"].value)
-    name = attrs["name"].value
-    module = attrs["module"].value
-    domain = attrs["domain"].value
-    domainIdx = int(attrs["domainIdx"].value)
-    return Assembly(id, name, module, domain, domainIdx)
+def extractFiles(parentEl):
+    files = {}
+    for el in parentEl.getElementsByTagName("File"):
+        v = extractFile(el)
+        files[v.uid] = v
+    return files
 
-def extractType(el):
-    attrs = el.attributes
-    asmref = int(attrs["asmref"].value)
-    name = attrs["name"].value
-    flags = int(attrs["flags"].value)
-    methods = []
-    for mel in el.getElementsByTagName("Method"):
-        v = extractMethod(mel)
-        methods.append(v)
-    return Type(asmref, name, flags, methods)
-
-def extractMethod(el):
-    attrs = el.attributes
-    name = attrs["name"].value
-    sig = attrs["sig"].value
-    bodysize = int(attrs["bodysize"].value)
-    flags = int(attrs["flags"].value)
-    iflags = int(attrs["iflags"].value)
-    pts = []
-    for pel in el.getElementsByTagName("pt"):
-        v = extractPt(pel)
-        pts.append(v)
-    return Method(name, sig, bodysize, flags, iflags, pts)
-
+#    <SequencePoint ordinal="0" offset="0" sl="136" sc="9" el="136" ec="40" vc="36164" uspid="1" />
 def extractPt(pel):
     attrs = pel.attributes
     visit = int(attrs["visit"].value)
@@ -266,6 +237,63 @@ def extractPt(pel):
         el = int(attrs["el"].value)
         ec = int(attrs["ec"].value)
     return Pt(visit, pos, len, fid, sl, sc, el, ec)
+
+"""
+<Method cyclomaticComplexity="1">
+  <MetadataToken>100663330</MetadataToken>
+  <Name>System.Void Volante.Persistent::.ctor()</Name>
+  <FileRef uid="1" />
+  <SequencePoints>
+    <SequencePoint ordinal="0" offset="0" sl="136" sc="9" el="136" ec="40" vc="36164" uspid="1" />
+    <SequencePoint ordinal="1" offset="6" sl="136" sc="42" el="136" ec="43" vc="36164" uspid="2" />
+  </SequencePoints>
+</Method>
+"""
+def extractMethod(el):
+    name = el.getElementsByTagName("Name")[0].value
+    fileRef = el.getElementsByTagName("FileRef")[0].attributes["uid"]
+    pts = []
+    for pel in el.getElementsByTagName("SequencePoint"):
+        v = extractPt(pel)
+        pts.append(v)
+    return Method(name, fileRef, pts)
+
+def extractMethods(parentEl):
+    methods = []
+    for mel in parentEl.getElementsByTagName("Method"):
+        v = extractMethod(mel)
+        methods.append(v)
+    return methods
+
+"""
+<Class>
+  <FullName>Volante.Persistent</FullName>
+  <Methods>
+    <Method ...>
+"""
+def extractClass(el):
+    name = el.getElementsByTagName("FullName")[0].value
+    methods = extractMethods(el)
+    return Type(name, methods)
+
+def extractClasses(parentEl):
+    classes = []
+    for el in parentEl.getElementsByTagName("Class"):
+        types.append(extractClass(el))
+    classes.sort(lambda x,y: cmp(x.name.lower(), y.name.lower()))
+    return classes
+
+#    <Module hash="A7-7A-5D-6E-B3-BB-BD-66-46-51-25-11-26-92-6D-2B-D7-4A-02-F4">
+#      <FullName>C:\kjk\src\volante\csharp\bin\Release\Volante.dll</FullName>
+#      <ModuleName>Volante</ModuleName>
+def extractModule(el):
+    attrs = el.attributes
+    hash = attrs["hash"].value)
+    fileName = el.getElementsByTagName["FullName"][0].value
+    moduleName = el.getElementsByTagName["ModuleName"][0].value
+    m = Module(hash, fileName, moduleName)
+    m.files = extractFiles(el)
+    m.classes = extractClasses(el)
 
 def dump_types(types):
     for t in types:
@@ -511,20 +539,10 @@ def main():
     shutil.copyfile(partcover_file, os.path.join(outdir, "partcover.xml"))
     dom = parse(partcover_file)
 
-    files = {}
-    for el in dom.getElementsByTagName("File"):
-        v = extractFile(el)
-        files[v.uid] = v
-
-    assemblies = {}
-    for el in dom.getElementsByTagName("Assembly"):
-        v = extractAssembly(el)
-        assemblies[v.id] = v
-
-    types = []
-    for el in dom.getElementsByTagName("Type"):
-        types.append(extractType(el))
-    types.sort(lambda x,y: cmp(x.name.lower(), y.name.lower()))
+    modules = []
+    for el in dom.getElementsByTagName("Module"):
+        v = extractModule(el)
+        modules.append(v)
 
     for file in files.values():
         file.calc_line_info(types)
