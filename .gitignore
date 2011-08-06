@@ -2,9 +2,11 @@
 *.dbs
 *bin/
 *obj/
+cov/
 csharp/test.xml
 csharp/testalt.xml
 csharp/doc/perst.xml
 *.psess
 *.vsp
 partcover.driver.log
+*.user

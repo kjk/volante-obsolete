@@ -1,6 +1,3 @@
-@set save_path=%path%
-@set path=..\thirdparty\partcover;%path%
-
 call "%ProgramFiles%\Microsoft Visual Studio 10.0\Common7\Tools\vsvars32.bat"
 IF ERRORLEVEL 1 GOTO TRYX86
 GOTO BUILD
@@ -13,11 +10,11 @@ IF ERRORLEVEL 1 GOTO NEEDSVS
 devenv Volante.sln /Project tests\Tests\Tests.csproj /ProjectConfig Partcover /Rebuild
 @IF ERRORLEVEL 1 GOTO FAILEDCOMPILE
 
-@set O=tests\Tests\bin\Partcover
+@set O=bin\Partcover
 @cd %O%
-..\..\..\..\..\thirdparty\partcover\PartCover --target Tests.exe --include [Volante]* --include [Tests]* --output partcover.xml
+..\..\..\thirdparty\partcover\PartCover --target Tests.exe --include [Volante]* --include [Tests]* --output partcover.xml
 @IF ERRORLEVEL 1 GOTO PARTCOVERFAILED
-@cd ..\..\..\..
+@cd ..\..
 
 python partcover-to-html.py %O%\partcover.xml cov
 @IF ERRORLEVEL 1 GOTO PARTCOVERTOHTMLFAILED
@@ -41,6 +38,3 @@ goto END
 goto END
 
 :END
-@set path=%save_path%
-
-

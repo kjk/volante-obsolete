@@ -14,7 +14,6 @@ namespace Volante
             {
                 return errorCode;
             }
-
         }
 
         public virtual Exception OriginalException

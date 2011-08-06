@@ -7,11 +7,11 @@ using System.Runtime.CompilerServices;
 
 // TODO: Review the values of the assembly attributes
 
-[assembly: AssemblyTitle("")]
-[assembly: AssemblyDescription("")]
-[assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("")]
-[assembly: AssemblyCopyright("")]
+[assembly: AssemblyTitle("Volante")]
+[assembly: AssemblyDescription("Object-Oriented database")]
+[assembly: AssemblyCompany("Krzysztof Kowalczyk")]
+[assembly: AssemblyProduct("Volante")]
+[assembly: AssemblyCopyright("Krzysztof Kowalczyk")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

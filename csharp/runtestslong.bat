@@ -1,34 +1,27 @@
-set save_path=%path%
-set path=bin;%path%
-set O=bin\dbg
+call "%ProgramFiles%\Microsoft Visual Studio 10.0\Common7\Tools\vsvars32.bat"
+IF ERRORLEVEL 1 GOTO TRYX86
+GOTO BUILD
 
-%O%\UnitTestsRunner
+:TRYX86
+call "%ProgramFiles(x86)%\Microsoft Visual Studio 10.0\Common7\Tools\vsvars32.bat"
+IF ERRORLEVEL 1 GOTO NEEDSVS
 
-%O%\TestIndex
-%O%\TestIndex altbtree
-%O%\TestIndex altbtree serializable
-%O%\TestIndex inmemory
+:BUILD
+devenv Volante.sln /Project tests\Tests\Tests.csproj /ProjectConfig Release /Rebuild
+IF ERRORLEVEL 1 GOTO FAILEDCOMPILE
 
-%O%\TestIndex2
-%O%\TestEnumerator 1000
+tests\Tests\bin\Release\Tests.exe -slow
 
-%O%\TestCompoundIndex
-%O%\TestRtree 100000
-%O%\TestR2 1000000
-%O%\TestTtree
-%O%\TestRaw
-%O%\TestGC 1000000
-%O%\TestGC 1000000 background
-%O%\TestGC 1000000 background altbtree
-%O%\TestConcur
-%O%\TestXML 100000
-%O%\TestBackup
-%O%\TestBlob
-%O%\TestTimeSeries
-%O%\TestBit 100000
-%O%\TestList 1000000
+@rem start %O%\TestReplic master
+@rem %O%\TestReplic slave
 
-start %O%\TestReplic master
-%O%\TestReplic slave
-set path=%save_path%
+goto END
 
+:FAILEDCOMPILE
+echo "Compilcation failed"
+goto END
+
+:NEEDSVS
+echo Visual Studio 2010 doesn't seem to be installed
+
+:END
