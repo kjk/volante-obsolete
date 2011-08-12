@@ -1,6 +1,69 @@
 using System;
-using Volante;
 using System.Collections.Generic;
+using System.IO;
+using Volante;
+
+public class TestResult
+{
+    public bool Ok;
+    public string TestName;
+    public int Count;
+    public TimeSpan ExecutionTime;
+
+    public override string ToString()
+    {
+        if (Ok)
+            return String.Format("{0} OK, {1} ms, n = {2}", TestName, (int)ExecutionTime.TotalMilliseconds, Count);
+        else
+            return String.Format("{0} FAILED", TestName);
+    }
+
+    public void Print()
+    {
+        System.Console.WriteLine(ToString());
+    }
+}
+
+public class Tests
+{
+    internal static int TotalTests = 0;
+    internal static int FailedTests = 0;
+    internal static int CurrAssertsCount = 0;
+    internal static int CurrAssertsFailed = 0;
+
+    static void ResetAssertsCount()
+    {
+        CurrAssertsCount = 0;
+        CurrAssertsFailed = 0;
+    }
+
+    public static void Assert(bool cond)
+    {
+        CurrAssertsCount += 1;
+        if (cond) return;
+        CurrAssertsFailed += 1;
+        // TODO: record callstacks of all failed exceptions
+    }
+
+    public static bool FinalizeTest()
+    {
+        TotalTests += 1;
+        if (CurrAssertsFailed > 0)
+            FailedTests += 1;
+        bool ok = CurrAssertsFailed == 0;
+        ResetAssertsCount();
+        return ok;
+    }
+
+    public static void SafeDeleteFile(string path)
+    {
+        try
+        {
+            File.Delete(path);
+        }
+        catch { }
+    }
+}
 
 public class TestsMain
 {
@@ -13,6 +76,8 @@ public class TestsMain
         new Dictionary<string, int[]>
         {
             { "TestIndex", DefaultCounts },
+            { "TestIndex3", new int[2] { 200, 10000 } },
+            { "TestIndex4", new int[2] { 200, 10000 } },
             { "TestEnumerator", new int[2] { 200, 2000 } },
             { "TestRtree", new int[2] { 800, 20000 } },
             { "TestR2", new int[2] { 1000, 20000 } },
@@ -121,6 +186,15 @@ public class TestsMain
         r.Print();
     }
 
+    static void RunTestIndex3()
+    {
+        int n = GetIterCount("TestIndex3");
+        var r = TestIndex3.Run(n, false);
+        r.Print();
+        r = TestIndex3.Run(n, true);
+        r.Print();
+    }
+
     static void RunTestList()
     {
         int n = GetIterCount("TestList");
@@ -151,6 +225,15 @@ public class TestsMain
     {
         int n = GetIterCount("TestRtree");
         var r = TestRtree.Run(n);
+        r.Print();
+    }
+
+    static void RunTestIndex4()
+    {
+        int n = GetIterCount("TestIndex4");
+        var r = TestIndex4.Run(n, false);
+        r.Print();
+        r = TestIndex4.Run(n, true);
         r.Print();
     }
 
@@ -194,6 +277,8 @@ public class TestsMain
         RunTestGc();
         RunTestIndex();
         RunTestIndex2();
+        RunTestIndex3();
+        RunTestIndex4();
         RunTestList();
         RunTestR2();
 
@@ -202,11 +287,6 @@ public class TestsMain
         RunTestTtree();
         RunTestTimeSeries();
         RunTestXml();
-
-        Test1.Run(false);
-        Test1.Run(true);
-        Test2.Run(false);
-        Test2.Run(true);
 
         var tEnd = DateTime.Now;
 
