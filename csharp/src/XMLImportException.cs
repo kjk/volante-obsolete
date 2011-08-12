@@ -1,10 +1,10 @@
 namespace Volante
 {
     using System;
-	
+
     /// <summary> Exception thrown during import of data from XML file in database
     /// </summary>
-    public class XMLImportException:ApplicationException
+    public class XMLImportException : ApplicationException
     {
         public virtual System.String MessageText
         {
@@ -12,7 +12,7 @@ namespace Volante
             {
                 return message;
             }
-			
+
         }
         public virtual int Line
         {
@@ -20,7 +20,7 @@ namespace Volante
             {
                 return line;
             }
-			
+
         }
         public virtual int Column
         {
@@ -28,18 +28,18 @@ namespace Volante
             {
                 return column;
             }
-			
+
         }
         public XMLImportException(int line, int column, String message)
-            :base("In line " + line + " column " + column + ": " + message)
+            : base("In line " + line + " column " + column + ": " + message)
         {
             this.line = line;
             this.column = column;
             this.message = message;
         }
-		
-        private int    line;
-        private int    column;
+
+        private int line;
+        private int column;
         private String message;
     }
 }

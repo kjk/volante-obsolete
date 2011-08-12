@@ -1,20 +1,20 @@
 namespace Volante
 {
-	/// <summary>
-	/// Class encapsulating native .Net string. System.String is not persistent object
-	/// so it can not be stored in Perst as independent persistent object. 
-	/// But sometimes it is needed. This class sole this problem providing implcit conversion
-	/// operator from System.String to PerisstentString.
-	/// Also PersistentString class is mutable, allowing to change it's values.
-	/// </summary>
-	public class PersistentString : PersistentResource
-	{
+    /// <summary>
+    /// Class encapsulating native .Net string. System.String is not persistent object
+    /// so it can not be stored in Perst as independent persistent object. 
+    /// But sometimes it is needed. This class sole this problem providing implcit conversion
+    /// operator from System.String to PerisstentString.
+    /// Also PersistentString class is mutable, allowing to change it's values.
+    /// </summary>
+    public class PersistentString : PersistentResource
+    {
         /// <summary>
         /// Consutrctor of perisstent string
         /// </summary>
         /// <param name="str">.Net string</param>
-		public PersistentString(string str)
-		{
+        public PersistentString(string str)
+        {
             this.str = str;
         }
 
@@ -22,7 +22,7 @@ namespace Volante
         /// Get .Net string
         /// </summary>
         /// <returns>.Net string</returns>
-        public override string ToString() 
+        public override string ToString()
         {
             return str;
         }
@@ -31,7 +31,7 @@ namespace Volante
         /// Append string to the current string value of PersistentString
         /// </summary>
         /// <param name="tail">appended string</param>
-        public void Append(string tail) 
+        public void Append(string tail)
         {
             Modify();
             str = str + tail;
@@ -46,12 +46,12 @@ namespace Volante
             Modify();
             this.str = str;
         }
-    
+
         /// <summary>
         /// Get current string value
         /// </summary>
         /// <returns>.Net string</returns>
-        public string Get() 
+        public string Get()
         {
             return str;
         }
@@ -61,7 +61,7 @@ namespace Volante
         /// </summary>
         /// <param name="str">.Net string</param>
         /// <returns>PersistentString</returns>
-        public static implicit operator PersistentString(string str) 
+        public static implicit operator PersistentString(string str)
         {
             return new PersistentString(str);
         }
@@ -71,11 +71,11 @@ namespace Volante
         /// </summary>
         /// <param name="str">PersistentString</param>
         /// <returns>.Net string</returns>
-        public static implicit operator string(PersistentString str) 
+        public static implicit operator string(PersistentString str)
         {
             return str.ToString();
         }
 
         private string str;
-	}
+    }
 }

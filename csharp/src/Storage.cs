@@ -6,7 +6,7 @@ namespace Volante
     using System.Text;
 
     public enum TransactionMode
-    { 
+    {
         /// <summary>
         /// Exclusive per-thread transaction: each thread accesses database in exclusive mode
         /// </summary>
@@ -49,7 +49,7 @@ namespace Volante
         /// in many other OODBMSes), you should create index and use it as root object.
         /// Previous reference to the root object is rewritten but old root is not automatically deallocated.
         /// </summary>
-        IPersistent Root {get; set;}
+        IPersistent Root { get; set; }
 
         /// <summary> Open the storage
         /// </summary>
@@ -61,13 +61,13 @@ namespace Volante
         /// in memory and cause swapping). If value of pagePoolSize is 0, then page pool will be
         /// unlimited - dynamically extended to conatins all database file pages.
         /// </param>
-        void  Open(String filePath, int pagePoolSize);
+        void Open(String filePath, int pagePoolSize);
 
         /// <summary> Open the storage with default page pool size
         /// </summary>
         /// <param name="filePath">path to the database file
         /// </param>
-        void  Open(String filePath);
+        void Open(String filePath);
 
         /// <summary> Open the storage
         /// </summary>
@@ -78,13 +78,13 @@ namespace Volante
         /// But larger page pool ussually leads to better performance (unless it could not fit
         /// in memory and cause swapping).
         /// </param>
-        void  Open(IFile file, int pagePoolSize);
+        void Open(IFile file, int pagePoolSize);
 
         /// <summary> Open the storage with default page pool size
         /// </summary>
         /// <param name="file">user specific implementation of IFile interface
         /// </param>
-        void  Open(IFile file);
+        void Open(IFile file);
 
         /// <summary> Open the encrypted storage
         /// </summary>
@@ -96,7 +96,7 @@ namespace Volante
         /// in memory and cause swapping).
         /// </param>
         /// <param name="cipherKey">cipher key</param>
-        void  Open(String filePath, int pagePoolSize, String cipherKey);
+        void Open(String filePath, int pagePoolSize, String cipherKey);
 
         /// <summary>Check if database is opened
         /// </summary>
@@ -108,17 +108,17 @@ namespace Volante
         /// <summary> Commit changes done by the last transaction. Transaction is started implcitlely with forst update
         /// opertation.
         /// </summary>
-        void  Commit();
+        void Commit();
 
         /// <summary> Rollback changes made by the last transaction
         /// </summary>
-        void  Rollback();
+        void Rollback();
 
         /// <summary>
         /// Backup current state of database
         /// </summary>
         /// <param name="stream">output stream to which backup is done</param>
-        void Backup( System.IO.Stream stream);
+        void Backup(System.IO.Stream stream);
 
         /// <summary> Create new index. K parameter specifies key type, V - associated object type.
         /// </summary>
@@ -129,7 +129,7 @@ namespace Volante
         /// <exception cref="Volante.StorageError">StorageError(StorageError.ErrorCode.UNSUPPORTED_INDEX_TYPE) exception if 
         /// specified key type is not supported by implementation.
         /// </exception>
-        Index<K,V> CreateIndex<K,V>(bool unique) where V:class,IPersistent;
+        Index<K, V> CreateIndex<K, V>(bool unique) where V : class,IPersistent;
 
         /// <summary> Create new thick index (index with large number of duplicated keys).
         /// K parameter specifies key type, V - associated object type.
@@ -139,7 +139,7 @@ namespace Volante
         /// <exception cref="Volante.StorageError">StorageError(StorageError.ErrorCode.UNSUPPORTED_INDEX_TYPE) exception if 
         /// specified key type is not supported by implementation.
         /// </exception>
-        Index<K,V> CreateThickIndex<K,V>() where V:class,IPersistent;
+        Index<K, V> CreateThickIndex<K, V>() where V : class,IPersistent;
 
         /// <summary> 
         /// Create new field index
@@ -154,7 +154,7 @@ namespace Volante
         /// <exception cref="Volante.StorageError">StorageError(StorageError.INDEXED_FIELD_NOT_FOUND) if there is no such field in specified class,
         /// StorageError(StorageError.UNSUPPORTED_INDEX_TYPE) exception if type of specified field is not supported by implementation
         /// </exception>
-        FieldIndex<K,V> CreateFieldIndex<K,V>(string fieldName, bool unique) where V:class,IPersistent;
+        FieldIndex<K, V> CreateFieldIndex<K, V>(string fieldName, bool unique) where V : class,IPersistent;
 
         /// <summary> 
         /// Create new multi-field index
@@ -168,14 +168,14 @@ namespace Volante
         /// <exception cref="Volante.StorageError">StorageError(StorageError.INDEXED_FIELD_NOT_FOUND) if there is no such field in specified class,
         /// StorageError(StorageError.UNSUPPORTED_INDEX_TYPE) exception if type of specified field is not supported by implementation
         /// </exception>
-        MultiFieldIndex<V> CreateFieldIndex<V>(string[] fieldNames, bool unique) where V:class,IPersistent;
+        MultiFieldIndex<V> CreateFieldIndex<V>(string[] fieldNames, bool unique) where V : class,IPersistent;
 
         /// <summary>
         /// Create new bit index. Bit index is used to select object 
         /// with specified set of (boolean) properties.
         /// </summary>
         /// <returns>persistent object implementing bit index</returns>
-        BitIndex<T> CreateBitIndex<T>() where T:class,IPersistent;
+        BitIndex<T> CreateBitIndex<T>() where T : class,IPersistent;
 
         /// <summary>
         /// Create new spatial index with integer coordinates
@@ -183,7 +183,7 @@ namespace Volante
         /// <returns>
         /// persistent object implementing spatial index
         /// </returns>
-        SpatialIndex<T> CreateSpatialIndex<T>() where T:class,IPersistent;
+        SpatialIndex<T> CreateSpatialIndex<T>() where T : class,IPersistent;
 
         /// <summary>
         /// Create new R2 spatial index
@@ -191,7 +191,7 @@ namespace Volante
         /// <returns>
         /// persistent object implementing spatial index
         /// </returns>
-        SpatialIndexR2<T> CreateSpatialIndexR2<T>() where T:class,IPersistent;
+        SpatialIndexR2<T> CreateSpatialIndexR2<T>() where T : class,IPersistent;
 
         /// <summary>
         /// Create new sorted collection with specified comparator
@@ -199,7 +199,7 @@ namespace Volante
         /// <param name="comparator">comparator class specifying order in the collection</param>
         /// <param name="unique"> whether collection is unique (members with the same key value are not allowed)</param>
         /// <returns> persistent object implementing sorted collection</returns>
-        SortedCollection<K,V> CreateSortedCollection<K,V>(PersistentComparator<K,V> comparator, bool unique) where V:class,IPersistent;
+        SortedCollection<K, V> CreateSortedCollection<K, V>(PersistentComparator<K, V> comparator, bool unique) where V : class,IPersistent;
 
         /// <summary>
         /// Create new sorted collection. Members of this collections should implement 
@@ -208,7 +208,7 @@ namespace Volante
         /// </summary>
         /// <param name="unique"> whether collection is unique (members with the same key value are not allowed)</param>
         /// <returns> persistent object implementing sorted collection</returns>
-        SortedCollection<K,V> CreateSortedCollection<K,V>(bool unique) where V:class,IPersistent,IComparable<K>,IComparable<V>;
+        SortedCollection<K, V> CreateSortedCollection<K, V>(bool unique) where V : class,IPersistent, IComparable<K>, IComparable<V>;
 
         /// <summary>
         /// Create new object set
@@ -216,20 +216,20 @@ namespace Volante
         /// <returns>
         /// empty set of persistent objects
         /// </returns>
-        ISet<T> CreateSet<T>() where T:class,IPersistent;
+        ISet<T> CreateSet<T>() where T : class,IPersistent;
 
         /// <summary> Create one-to-many link.
         /// </summary>
         /// <returns>new empty link, new members can be added to the link later.
         /// </returns>
-        Link<T> CreateLink<T>() where T:class,IPersistent;
+        Link<T> CreateLink<T>() where T : class,IPersistent;
 
         /// <summary> Create one-to-many link with specified initial size.
         /// </summary>
         /// <param name="initialSize">initial size of the array</param>
         /// <returns>new link with specified size
         /// </returns>
-        Link<T> CreateLink<T>(int initialSize) where T:class,IPersistent;
+        Link<T> CreateLink<T>(int initialSize) where T : class,IPersistent;
 
         /// <summary>  Create new scalable set references to persistent objects.
         /// This container can effciently store small number of references as well 
@@ -239,7 +239,7 @@ namespace Volante
         /// </summary>
         /// <returns>new empty set, new members can be added to the set later.
         /// </returns>
-        ISet<T> CreateScalableSet<T>() where T:class,IPersistent;
+        ISet<T> CreateScalableSet<T>() where T : class,IPersistent;
 
         /// <summary>  Create new scalable set references to persistent objects.
         /// This container can effciently store small number of references as well 
@@ -250,7 +250,7 @@ namespace Volante
         /// <param name="initialSize">initial size of the sety</param>
         /// <returns>new empty set, new members can be added to the set later.
         /// </returns>
-        ISet<T> CreateScalableSet<T>(int initialSize) where T:class,IPersistent;
+        ISet<T> CreateScalableSet<T>(int initialSize) where T : class,IPersistent;
 
         /// <summary> Create dynamcially extended array of reference to persistent objects.
         /// It is inteded to be used in classes using virtual properties to 
@@ -258,7 +258,7 @@ namespace Volante
         /// </summary>
         /// <returns>new empty array, new members can be added to the array later.
         /// </returns>
-        PArray<T> CreateArray<T>() where T:class,IPersistent;
+        PArray<T> CreateArray<T>() where T : class,IPersistent;
 
         /// <summary> Create dynamcially extended array of reference to persistent objects.
         /// It is inteded to be used in classes using virtual properties to 
@@ -267,7 +267,7 @@ namespace Volante
         /// <param name="initialSize">initially allocated size of the array</param>
         /// <returns>new empty array, new members can be added to the array later.
         /// </returns>
-        PArray<T> CreateArray<T>(int initialSize) where T:class,IPersistent;
+        PArray<T> CreateArray<T>(int initialSize) where T : class,IPersistent;
 
         /// <summary> Create relation object. Unlike link which represent embedded relation and stored
         /// inside owner object, this Relation object is standalone persisitent object
@@ -278,7 +278,9 @@ namespace Volante
         /// <returns>object representing empty relation (relation with specified owner and no members), 
         /// new members can be added to the link later.
         /// </returns>
-        Relation<M,O> CreateRelation<M,O>(O owner) where M:class,IPersistent where O:class,IPersistent;
+        Relation<M, O> CreateRelation<M, O>(O owner)
+            where M : class,IPersistent
+            where O : class,IPersistent;
 
         /// <summary>
         /// Create new BLOB. Create object for storing large binary data.
@@ -305,7 +307,7 @@ namespace Volante
         /// value of maxBlockTimeInterval can be set as 100*(24*60*60*10000000L)*2
         /// </param>
         /// <returns>new empty time series</returns>
-        TimeSeries<T> CreateTimeSeries<T>(int blockSize, long maxBlockTimeInterval) where T:TimeSeriesTick;
+        TimeSeries<T> CreateTimeSeries<T>(int blockSize, long maxBlockTimeInterval) where T : TimeSeriesTick;
 
         /// <summary>
         /// Create PATRICIA trie (Practical Algorithm To Retrieve Information Coded In Alphanumeric)
@@ -318,7 +320,7 @@ namespace Volante
         /// to other structures such as hashtables when memory space is of concern.
         /// </summary>
         /// <returns>created PATRICIA trie</returns>
-        PatriciaTrie<T> CreatePatriciaTrie<T>() where T:class,IPersistent;
+        PatriciaTrie<T> CreatePatriciaTrie<T>() where T : class,IPersistent;
 
         /// <summary>
         /// Create new generic set of objects
@@ -327,7 +329,7 @@ namespace Volante
         /// empty set of persistent objects
         /// </returns>
         ISet<IPersistent> CreateSet();
-        
+
         /// <summary>
         /// Create new generic link
         /// </summary>
@@ -364,7 +366,7 @@ namespace Volante
 
         /// <summary> Commit transaction (if needed) and close the storage
         /// </summary>
-        void  Close();
+        void Close();
 
         /// <summary>Explicit start of garbage collector
         /// </summary>
@@ -376,13 +378,13 @@ namespace Volante
         /// </summary>
         /// <param name="writer">writer for generated XML document
         /// </param>
-        void  ExportXML(System.IO.StreamWriter writer);
+        void ExportXML(System.IO.StreamWriter writer);
 
         /// <summary> Import data from XML file
         /// </summary>
         /// <param name="reader">XML document reader
         /// </param>
-        void  ImportXML(System.IO.StreamReader reader);
+        void ImportXML(System.IO.StreamReader reader);
 #endif
 
         /// <summary> 
@@ -431,11 +433,11 @@ namespace Volante
         /// initial size of database but reduce number of index reallocations.
         /// Default value: 1024
         /// </summary>
-        int  ObjectIndexInitSize { get; set; }
+        int ObjectIndexInitSize { get; set; }
 
         /// <summary>Set/get initial size of object cache. Default value: 1319
         /// </summary>
-        int  ObjectCacheInitSize { get; set; }
+        int ObjectCacheInitSize { get; set; }
 
         /// <summary>Set/get kind of object cache.
         /// If cache is CacheType.Strong none of the loaded persistent objects
@@ -536,7 +538,7 @@ namespace Volante
         /// loaded class descriptors. If class loader is not specified or
         /// it did find the class, then class will be searched in all active assemblies
         /// </summary>
-        ClassLoader Loader {get; set;}
+        ClassLoader Loader { get; set; }
 
 #if CF
         /// <summary>
@@ -585,7 +587,7 @@ namespace Volante
         /// <code>TransactionMode.ReplicationSlave</code> or <code>TransactionMode.Serializable</code>
         /// </param>
         void BeginThreadTransaction(TransactionMode mode);
-    
+
         /// <summary>
         /// End per-thread transaction started by beginThreadTransaction method.
         /// <ul>
@@ -617,7 +619,7 @@ namespace Volante
         /// and changhes will be committed to the database.
         /// </param>
         void EndThreadTransaction(int maxDelay);
-   
+
         /// <summary>
         /// Rollback per-thread transaction. It is safe to use this method only for exclusive transactions.
         /// In case of cooperative transactions, this method rollback results of all transactions.
@@ -641,24 +643,24 @@ namespace Volante
         /// <summary>
         /// Get total size of all allocated objects in the database
         /// </summary>
-        long UsedSize {get;}
+        long UsedSize { get; }
 
         /// <summary>
         /// Get size of the database
         /// </summary>
-        long DatabaseSize {get;}
+        long DatabaseSize { get; }
 
         // Internal methods
-        void  deallocateObject(IPersistent obj);
+        void deallocateObject(IPersistent obj);
 
-        void  storeObject(IPersistent obj);
+        void storeObject(IPersistent obj);
 
-        void  storeFinalizedObject(IPersistent obj);
+        void storeFinalizedObject(IPersistent obj);
 
-        void  loadObject(IPersistent obj);
+        void loadObject(IPersistent obj);
 
-        void  modifyObject(IPersistent obj);
+        void modifyObject(IPersistent obj);
 
-        void  lockObject(IPersistent obj);
+        void lockObject(IPersistent obj);
     }
 }

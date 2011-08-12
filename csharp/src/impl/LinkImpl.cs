@@ -5,49 +5,49 @@ namespace Volante.Impl
     using System.Collections.Generic;
     using Volante;
 
-    public class LinkImpl<T> : Link<T> where T:class,IPersistent
+    public class LinkImpl<T> : Link<T> where T : class,IPersistent
     {
-        private void Modify() 
+        private void Modify()
         {
-            if (owner != null) 
+            if (owner != null)
             {
                 owner.Modify();
             }
-        } 
-                
-         public int Count 
-        { 
-            get 
+        }
+
+        public int Count
+        {
+            get
             {
                 return used;
             }
         }
 
-        public bool IsSynchronized 
-        {
-            get 
-            {
-                return false;
-            }
-        }
-
-        public object SyncRoot 
-        {
-            get 
-            {
-                return null;
-            }
-        }
-
-        public bool IsReadOnly 
+        public bool IsSynchronized
         {
             get
             {
                 return false;
             }
         }
- 
-        public void CopyTo(T[] dst, int i) 
+
+        public object SyncRoot
+        {
+            get
+            {
+                return null;
+            }
+        }
+
+        public bool IsReadOnly
+        {
+            get
+            {
+                return false;
+            }
+        }
+
+        public void CopyTo(T[] dst, int i)
         {
             Array.Copy(arr, 0, dst, i, used);
         }
@@ -57,41 +57,41 @@ namespace Volante.Impl
             return used;
         }
 
-        public virtual int Length 
+        public virtual int Length
         {
-            get 
+            get
             {
                 return used;
             }
 
-            set 
+            set
             {
-                if (value < used) 
-                { 
+                if (value < used)
+                {
                     Array.Clear(arr, value, used);
                     Modify();
-                } 
-                else 
-                { 
-                    reserveSpace(value - used);            
+                }
+                else
+                {
+                    reserveSpace(value - used);
                 }
                 used = value;
             }
-        }        
+        }
 
-        public virtual T this[int i] 
+        public virtual T this[int i]
         {
-             get
-             {
-                 return Get(i);
-             }
-           
-             set 
-             { 
-                 Set(i, value);
-             }
-        }    
-   
+            get
+            {
+                return Get(i);
+            }
+
+            set
+            {
+                Set(i, value);
+            }
+        }
+
         public virtual T Get(int i)
         {
             if (i < 0 || i >= used)
@@ -120,11 +120,11 @@ namespace Volante.Impl
             Modify();
         }
 
-        public bool Remove(T obj) 
+        public bool Remove(T obj)
         {
             int i = IndexOf(obj);
-            if (i >= 0) 
-            { 
+            if (i >= 0)
+            {
                 Remove(i);
                 return true;
             }
@@ -152,13 +152,13 @@ namespace Volante.Impl
         {
             if (used + len > arr.Length)
             {
-                IPersistent[] newArr = new IPersistent[used + len > arr.Length * 2?used + len:arr.Length * 2];
+                IPersistent[] newArr = new IPersistent[used + len > arr.Length * 2 ? used + len : arr.Length * 2];
                 Array.Copy(arr, 0, newArr, 0, used);
                 arr = newArr;
             }
             Modify();
         }
-		
+
         public virtual void Insert(int i, T obj)
         {
             if (i < 0 || i > used)
@@ -170,25 +170,25 @@ namespace Volante.Impl
             arr[i] = obj;
             used += 1;
         }
-		
+
         public virtual void Add(T obj)
         {
             reserveSpace(1);
             arr[used++] = obj;
         }
-		
+
         public virtual void AddAll(T[] a)
         {
             AddAll(a, 0, a.Length);
         }
-		
+
         public virtual void AddAll(T[] a, int from, int length)
         {
             reserveSpace(length);
             Array.Copy(a, from, arr, used, length);
             used += length;
         }
-		
+
         public virtual void AddAll(Link<T> link)
         {
             int n = link.Length;
@@ -199,7 +199,7 @@ namespace Volante.Impl
             }
             used += n;
         }
-		
+
         public virtual Array ToRawArray()
         {
             return arr;
@@ -214,7 +214,7 @@ namespace Volante.Impl
             }
             return a;
         }
-		
+
         public virtual Array ToArray(Type elemType)
         {
             Array a = Array.CreateInstance(elemType, used);
@@ -224,40 +224,40 @@ namespace Volante.Impl
             }
             return a;
         }
-		
+
         public virtual bool Contains(T obj)
         {
             return IndexOf(obj) >= 0;
         }
-		
+
         public virtual int IndexOf(T obj)
         {
             int oid;
-            if (obj != null && (oid = obj.Oid) != 0) 
-            { 
-                for (int i = used; --i >= 0;) 
+            if (obj != null && (oid = obj.Oid) != 0)
+            {
+                for (int i = used; --i >= 0; )
                 {
                     IPersistent elem = arr[i];
-                    if (elem != null && elem.Oid == oid) 
-                    {
-                        return i;
-                    }
-                }
-            } 
-            else 
-            { 
-                for (int i = used; --i >= 0;) 
-                {
-                    if ((T)arr[i] == obj) 
+                    if (elem != null && elem.Oid == oid)
                     {
                         return i;
                     }
                 }
             }
-            return - 1;
+            else
+            {
+                for (int i = used; --i >= 0; )
+                {
+                    if ((T)arr[i] == obj)
+                    {
+                        return i;
+                    }
+                }
+            }
+            return -1;
         }
 
-        public virtual bool ContainsElement(int i, T obj) 
+        public virtual bool ContainsElement(int i, T obj)
         {
             IPersistent elem = arr[i];
             return (T)elem == obj || (elem != null && elem.Oid != 0 && elem.Oid == obj.Oid);
@@ -271,12 +271,13 @@ namespace Volante.Impl
         }
 
         class LinkEnumerator : IEnumerator<T>
-        { 
-            public void Dispose() {}
+        {
+            public void Dispose() { }
 
-            public bool MoveNext() 
+            public bool MoveNext()
             {
-                if (i+1 < link.Length) { 
+                if (i + 1 < link.Length)
+                {
                     i += 1;
                     return true;
                 }
@@ -285,7 +286,7 @@ namespace Volante.Impl
 
             public T Current
             {
-                get 
+                get
                 {
                     return link[i];
                 }
@@ -299,23 +300,23 @@ namespace Volante.Impl
                 }
             }
 
-            public void Reset() 
+            public void Reset()
             {
                 i = -1;
             }
 
-            internal LinkEnumerator(Link<T> link) 
+            internal LinkEnumerator(Link<T> link)
             {
                 this.link = link;
                 i = -1;
             }
 
-            private int  i;
+            private int i;
             private Link<T> link;
-        }      
+        }
 
-        public IEnumerator<T> GetEnumerator() 
-        { 
+        public IEnumerator<T> GetEnumerator()
+        {
             return new LinkEnumerator(this);
         }
 
@@ -324,21 +325,21 @@ namespace Volante.Impl
             return new LinkEnumerator(this);
         }
 
-        public void Pin() 
-        { 
-            for (int i = 0, n = used; i < n; i++) 
-            { 
+        public void Pin()
+        {
+            for (int i = 0, n = used; i < n; i++)
+            {
                 arr[i] = loadElem(i);
             }
         }
 
-        public void Unpin() 
-        { 
-            for (int i = 0, n = used; i < n; i++) 
-            { 
+        public void Unpin()
+        {
+            for (int i = 0, n = used; i < n; i++)
+            {
                 IPersistent elem = arr[i];
-                if (elem != null && !elem.IsRaw() && elem.IsPersistent()) 
-                { 
+                if (elem != null && !elem.IsRaw() && elem.IsPersistent())
+                {
                     arr[i] = new PersistentStub(elem.Storage, elem.Oid);
                 }
             }
@@ -349,35 +350,35 @@ namespace Volante.Impl
             IPersistent elem = arr[i];
             if (elem != null && elem.IsRaw())
             {
-                elem = ((StorageImpl) elem.Storage).lookupObject(elem.Oid, null);
+                elem = ((StorageImpl)elem.Storage).lookupObject(elem.Oid, null);
             }
             return (T)elem;
         }
-		
+
         public void SetOwner(IPersistent owner)
-        { 
-             this.owner = owner;
+        {
+            this.owner = owner;
         }
 
         internal LinkImpl()
         {
         }
-		
+
         internal LinkImpl(int initSize)
         {
             arr = new IPersistent[initSize];
         }
-		
+
         internal LinkImpl(IPersistent[] arr, IPersistent owner)
         {
             this.arr = arr;
             this.owner = owner;
             used = arr.Length;
         }
-		
+
         IPersistent[] arr;
-        int           used;
+        int used;
         [NonSerialized()]
-        IPersistent   owner;        
+        IPersistent owner;
     }
 }

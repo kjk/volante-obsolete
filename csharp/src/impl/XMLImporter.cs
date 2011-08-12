@@ -48,8 +48,8 @@ namespace Volante.Impl
                 System.String elemName = scanner.Identifier;
                 if (elemName.StartsWith("Volante.Impl.Btree")
                     || elemName.StartsWith("Volante.Impl.BitIndexImpl")
-                    || elemName.StartsWith("Volante.Impl.PersistentSet") 
-                    || elemName.StartsWith("Volante.Impl.BtreeFieldIndex") 
+                    || elemName.StartsWith("Volante.Impl.PersistentSet")
+                    || elemName.StartsWith("Volante.Impl.BtreeFieldIndex")
                     || elemName.StartsWith("Volante.Impl.BtreeMultiFieldIndex"))
                 {
                     createIndex(elemName);
@@ -135,19 +135,19 @@ namespace Volante.Impl
                 }
             }
 
-            private XMLElement   next;
-            private XMLElement   prev;
-            private String       name;
-            private Hashtable    siblings;
-            private Hashtable    attributes;
-            private String       svalue;
-            private long         ivalue;
-            private double       rvalue;
+            private XMLElement next;
+            private XMLElement prev;
+            private String name;
+            private Hashtable siblings;
+            private Hashtable attributes;
+            private String svalue;
+            private long ivalue;
+            private double rvalue;
             private XMLValueType valueType;
-            private int          counter;
+            private int counter;
 
-            enum XMLValueType 
-            { 
+            enum XMLValueType
+            {
                 NO_VALUE,
                 STRING_VALUE,
                 INT_VALUE,
@@ -161,13 +161,13 @@ namespace Volante.Impl
                 valueType = XMLValueType.NO_VALUE;
             }
 
-            internal void  addSibling(XMLElement elem)
+            internal void addSibling(XMLElement elem)
             {
                 if (siblings == null)
                 {
                     siblings = new Hashtable();
                 }
-                XMLElement head = (XMLElement) siblings[elem.name];
+                XMLElement head = (XMLElement)siblings[elem.name];
                 if (head != null)
                 {
                     elem.next = null;
@@ -184,7 +184,7 @@ namespace Volante.Impl
                 }
             }
 
-            internal void  addAttribute(System.String name, System.String val)
+            internal void addAttribute(System.String name, System.String val)
             {
                 if (attributes == null)
                 {
@@ -204,10 +204,10 @@ namespace Volante.Impl
 
             internal System.String getAttribute(System.String name)
             {
-                return attributes != null?(System.String) attributes[name]:null;
+                return attributes != null ? (System.String)attributes[name] : null;
             }
 
-            internal void  setNullValue()
+            internal void setNullValue()
             {
                 valueType = XMLValueType.NULL_VALUE;
             }
@@ -258,7 +258,7 @@ namespace Volante.Impl
             {
                 throwException("Attribute " + name + " should has integer value");
             }
-            return - 1;
+            return -1;
         }
 
         internal int mapId(int id)
@@ -287,31 +287,31 @@ namespace Volante.Impl
 
         internal ClassDescriptor.FieldType mapType(System.String signature)
         {
-            try 
-            { 
+            try
+            {
 #if CF
                 return (ClassDescriptor.FieldType)ClassDescriptor.parseEnum(typeof(ClassDescriptor.FieldType), signature);
 #else
                 return (ClassDescriptor.FieldType)Enum.Parse(typeof(ClassDescriptor.FieldType), signature);
 #endif
-            } 
-            catch (ArgumentException) 
+            }
+            catch (ArgumentException)
             {
                 throwException("Bad type");
                 return ClassDescriptor.FieldType.tpObject;
             }
         }
 
-        Key createCompoundKey(ClassDescriptor.FieldType[] types, String[] values) 
+        Key createCompoundKey(ClassDescriptor.FieldType[] types, String[] values)
         {
             ByteBuffer buf = new ByteBuffer(null);
             int dst = 0;
 
-            for (int i = 0; i < types.Length; i++) 
-            { 
+            for (int i = 0; i < types.Length; i++)
+            {
                 String val = values[i];
-                switch (types[i]) 
-                { 
+                switch (types[i])
+                {
                     case ClassDescriptor.FieldType.tpBoolean:
                         dst = buf.packBool(dst, Int32.Parse(val) != 0);
                         break;
@@ -361,11 +361,11 @@ namespace Volante.Impl
                         dst = buf.packF8(dst, Double.Parse(val));
                         break;
 
-                    case ClassDescriptor.FieldType.tpDecimal: 
+                    case ClassDescriptor.FieldType.tpDecimal:
                         dst = buf.packDecimal(dst, Decimal.Parse(val));
                         break;
 
-                    case ClassDescriptor.FieldType.tpGuid: 
+                    case ClassDescriptor.FieldType.tpGuid:
                         dst = buf.packGuid(dst, new Guid(val));
                         break;
 
@@ -377,9 +377,9 @@ namespace Volante.Impl
                         buf.extend(dst + 4 + (val.Length >> 1));
                         Bytes.pack4(buf.arr, dst, val.Length >> 1);
                         dst += 4;
-                        for (int j = 0, n = val.Length; j < n; j+=2) 
-                        { 
-                            buf.arr[dst++] = (byte)((getHexValue(val[j]) << 4) | getHexValue(val[j+1]));
+                        for (int j = 0, n = val.Length; j < n; j += 2)
+                        {
+                            buf.arr[dst++] = (byte)((getHexValue(val[j]) << 4) | getHexValue(val[j + 1]));
                         }
                         break;
                     default:
@@ -394,71 +394,71 @@ namespace Volante.Impl
         {
             switch (type)
             {
-                case ClassDescriptor.FieldType.tpBoolean: 
+                case ClassDescriptor.FieldType.tpBoolean:
                     return new Key(Int32.Parse(val) != 0);
 
-                case ClassDescriptor.FieldType.tpByte: 
+                case ClassDescriptor.FieldType.tpByte:
                     return new Key(Byte.Parse(val));
 
-                case ClassDescriptor.FieldType.tpSByte: 
+                case ClassDescriptor.FieldType.tpSByte:
                     return new Key(SByte.Parse(val));
 
-                case ClassDescriptor.FieldType.tpChar: 
+                case ClassDescriptor.FieldType.tpChar:
                     return new Key((char)Int32.Parse(val));
 
-                case ClassDescriptor.FieldType.tpShort: 
+                case ClassDescriptor.FieldType.tpShort:
                     return new Key(Int16.Parse(val));
 
-                case ClassDescriptor.FieldType.tpUShort: 
+                case ClassDescriptor.FieldType.tpUShort:
                     return new Key(UInt16.Parse(val));
 
-                case ClassDescriptor.FieldType.tpInt: 
+                case ClassDescriptor.FieldType.tpInt:
                     return new Key(Int32.Parse(val));
 
-                case ClassDescriptor.FieldType.tpUInt: 
+                case ClassDescriptor.FieldType.tpUInt:
                 case ClassDescriptor.FieldType.tpEnum:
                     return new Key(UInt32.Parse(val));
 
-                case ClassDescriptor.FieldType.tpOid: 
+                case ClassDescriptor.FieldType.tpOid:
                     return new Key(ClassDescriptor.FieldType.tpOid, mapId((int)UInt32.Parse(val)));
-                case ClassDescriptor.FieldType.tpObject: 
+                case ClassDescriptor.FieldType.tpObject:
                     return new Key(new PersistentStub(storage, mapId((int)UInt32.Parse(val))));
 
-                case ClassDescriptor.FieldType.tpLong: 
+                case ClassDescriptor.FieldType.tpLong:
                     return new Key(Int64.Parse(val));
 
-                case ClassDescriptor.FieldType.tpULong: 
+                case ClassDescriptor.FieldType.tpULong:
                     return new Key(UInt64.Parse(val));
 
-                case ClassDescriptor.FieldType.tpFloat: 
+                case ClassDescriptor.FieldType.tpFloat:
                     return new Key(Single.Parse(val));
 
-                case ClassDescriptor.FieldType.tpDouble: 
+                case ClassDescriptor.FieldType.tpDouble:
                     return new Key(Double.Parse(val));
 
-                case ClassDescriptor.FieldType.tpDecimal: 
+                case ClassDescriptor.FieldType.tpDecimal:
                     return new Key(Decimal.Parse(val));
 
-                case ClassDescriptor.FieldType.tpGuid: 
+                case ClassDescriptor.FieldType.tpGuid:
                     return new Key(new Guid(val));
 
-                case ClassDescriptor.FieldType.tpString: 
+                case ClassDescriptor.FieldType.tpString:
                     return new Key(val);
 
                 case ClassDescriptor.FieldType.tpArrayOfByte:
-                {
-                    byte[] buf = new byte[val.Length >> 1];
-                    for (int i = 0; i < buf.Length; i++) 
-                    { 
-                        buf[i] = (byte)((getHexValue(val[i*2]) << 4) | getHexValue(val[i*2+1]));
+                    {
+                        byte[] buf = new byte[val.Length >> 1];
+                        for (int i = 0; i < buf.Length; i++)
+                        {
+                            buf[i] = (byte)((getHexValue(val[i * 2]) << 4) | getHexValue(val[i * 2 + 1]));
+                        }
+                        return new Key(buf);
                     }
-                    return new Key(buf);
-                }
 
-                case ClassDescriptor.FieldType.tpDate: 
+                case ClassDescriptor.FieldType.tpDate:
                     return new Key(DateTime.Parse(val));
 
-                default: 
+                default:
                     throwException("Bad key type");
                     break;
 
@@ -471,10 +471,10 @@ namespace Volante.Impl
             return Int32.Parse(str);
         }
 
-        internal Type findClassByName(String className) 
+        internal Type findClassByName(String className)
         {
             Type type = (Type)classMap[className];
-            if (type == null) 
+            if (type == null)
             {
                 type = ClassDescriptor.lookup(storage, className);
                 classMap[className] = type;
@@ -482,16 +482,16 @@ namespace Volante.Impl
             return type;
         }
 
-        internal void  createIndex(String indexType)
+        internal void createIndex(String indexType)
         {
             XMLScanner.Token tkn;
             int oid = 0;
-            bool     unique = false;
-            String   className = null;
-            String   fieldName = null;
+            bool unique = false;
+            String className = null;
+            String fieldName = null;
             String[] fieldNames = null;
-            long     autoinc = 0;
-            String   type = null;
+            long autoinc = 0;
+            String type = null;
             while ((tkn = scanner.scan()) == XMLScanner.Token.IDENT)
             {
                 System.String attrName = scanner.Identifier;
@@ -523,18 +523,18 @@ namespace Volante.Impl
                 else if (attrName.StartsWith("field"))
                 {
                     int len = attrName.Length;
-                    if (len == 5) 
+                    if (len == 5)
                     {
                         fieldName = attrValue;
-                    } 
-                    else 
-                    { 
+                    }
+                    else
+                    {
                         int fieldNo = Int32.Parse(attrName.Substring(5));
-                        if (fieldNames == null || fieldNames.Length <= fieldNo) 
-                        { 
-                            String[] newFieldNames = new String[fieldNo+1];
-                            if (fieldNames != null) 
-                            { 
+                        if (fieldNames == null || fieldNames.Length <= fieldNo)
+                        {
+                            String[] newFieldNames = new String[fieldNo + 1];
+                            if (fieldNames != null)
+                            {
                                 Array.Copy(fieldNames, 0, newFieldNames, 0, fieldNames.Length);
                             }
                             fieldNames = newFieldNames;
@@ -556,14 +556,14 @@ namespace Volante.Impl
             if (className != null)
             {
                 Type cls = findClassByName(className);
-                if (fieldName != null) 
-                { 
-                    btree.init(cls, ClassDescriptor.FieldType.tpLast, new string[]{fieldName}, unique, autoinc);
-                } 
-                else if (fieldNames != null) 
-                { 
+                if (fieldName != null)
+                {
+                    btree.init(cls, ClassDescriptor.FieldType.tpLast, new string[] { fieldName }, unique, autoinc);
+                }
+                else if (fieldNames != null)
+                {
                     btree.init(cls, ClassDescriptor.FieldType.tpLast, fieldNames, unique, autoinc);
-                } 
+                }
                 else
                 {
                     throwException("Field name is not specified for field index");
@@ -573,21 +573,21 @@ namespace Volante.Impl
             {
                 if (type == null)
                 {
-                    if (indexType.StartsWith("Volante.Impl.PersistentSet")) 
-                    { 
-                    } 
-                    else 
+                    if (indexType.StartsWith("Volante.Impl.PersistentSet"))
+                    {
+                    }
+                    else
                     {
                         throwException("Key type is not specified for index");
                     }
-                } 
-                else 
+                }
+                else
                 {
-                    if (indexType.StartsWith("Volante.impl.BitIndexImpl")) 
-                    { 
-                    } 
-                    else 
-                    { 
+                    if (indexType.StartsWith("Volante.impl.BitIndexImpl"))
+                    {
+                    }
+                    else
+                    {
                         btree.init(null, mapType(type), null, unique, autoinc);
                     }
                 }
@@ -602,26 +602,26 @@ namespace Volante.Impl
                 }
                 XMLElement refElem = readElement("ref");
                 Key key;
-                if (fieldNames != null) 
-                { 
-                    String[] values = new String[fieldNames.Length];                
+                if (fieldNames != null)
+                {
+                    String[] values = new String[fieldNames.Length];
                     ClassDescriptor.FieldType[] types = btree.FieldTypes;
-                    for (int i = 0; i < values.Length; i++) 
-                    { 
-                        values[i] = getAttribute(refElem, "key"+i);
+                    for (int i = 0; i < values.Length; i++)
+                    {
+                        values[i] = getAttribute(refElem, "key" + i);
                     }
                     key = createCompoundKey(types, values);
-                } 
-                else 
-                { 
+                }
+                else
+                {
                     key = createKey(btree.FieldType, getAttribute(refElem, "key"));
                 }
                 IPersistent obj = new PersistentStub(storage, mapId(getIntAttribute(refElem, "id")));
                 btree.insert(key, obj, false);
             }
-            if (tkn != XMLScanner.Token.LTS 
-                || scanner.scan() != XMLScanner.Token.IDENT 
-                || !scanner.Identifier.Equals(indexType) 
+            if (tkn != XMLScanner.Token.LTS
+                || scanner.scan() != XMLScanner.Token.IDENT
+                || !scanner.Identifier.Equals(indexType)
                 || scanner.scan() != XMLScanner.Token.GT)
             {
                 throwException("Element is not closed");
@@ -635,10 +635,10 @@ namespace Volante.Impl
             long pos = storage.allocate(size, 0);
             storage.setPos(oid, pos | StorageImpl.dbModifiedFlag);
 
-            storage.pool.put(pos & ~ StorageImpl.dbFlagsMask, data, size);
+            storage.pool.put(pos & ~StorageImpl.dbFlagsMask, data, size);
         }
 
-        internal void  createObject(XMLElement elem)
+        internal void createObject(XMLElement elem)
         {
             ClassDescriptor desc = storage.getClassDescriptor(findClassByName(elem.Name));
             int oid = mapId(getIntAttribute(elem, "id"));
@@ -674,69 +674,69 @@ namespace Volante.Impl
             {
                 throwException("Bad hexadecimal constant");
             }
-            return - 1;
+            return -1;
         }
 
-        internal int importBinary(XMLElement elem, int offs, ByteBuffer buf, String fieldName) 
-        { 
-            if (elem == null || elem.isNullValue()) 
+        internal int importBinary(XMLElement elem, int offs, ByteBuffer buf, String fieldName)
+        {
+            if (elem == null || elem.isNullValue())
             {
                 buf.extend(offs + 4);
                 Bytes.pack4(buf.arr, offs, -1);
                 offs += 4;
-            } 
-            else if (elem.isStringValue()) 
+            }
+            else if (elem.isStringValue())
             {
                 String hexStr = elem.StringValue;
                 int len = hexStr.Length;
-                if (hexStr.StartsWith("#")) 
-                { 
-                    buf.extend(offs + 4 + len/2-1);
-                    Bytes.pack4(buf.arr, offs, -2-getHexValue(hexStr[1]));  
+                if (hexStr.StartsWith("#"))
+                {
+                    buf.extend(offs + 4 + len / 2 - 1);
+                    Bytes.pack4(buf.arr, offs, -2 - getHexValue(hexStr[1]));
                     offs += 4;
-                    for (int j = 2; j < len; j += 2) 
-                    { 
-                        buf.arr[offs++] = (byte)((getHexValue(hexStr[j]) << 4) | getHexValue(hexStr[j+1]));
-                    }
-                } 
-                else 
-                { 
-                    buf.extend(offs + 4 + len/2);
-                    Bytes.pack4(buf.arr, offs, len/2);
-                    offs += 4;
-                    for (int j = 0; j < len; j += 2) 
-                    { 
-                        buf.arr[offs++] = (byte)((getHexValue(hexStr[j]) << 4) | getHexValue(hexStr[j+1]));
+                    for (int j = 2; j < len; j += 2)
+                    {
+                        buf.arr[offs++] = (byte)((getHexValue(hexStr[j]) << 4) | getHexValue(hexStr[j + 1]));
                     }
                 }
-            } 
-            else 
-            { 
+                else
+                {
+                    buf.extend(offs + 4 + len / 2);
+                    Bytes.pack4(buf.arr, offs, len / 2);
+                    offs += 4;
+                    for (int j = 0; j < len; j += 2)
+                    {
+                        buf.arr[offs++] = (byte)((getHexValue(hexStr[j]) << 4) | getHexValue(hexStr[j + 1]));
+                    }
+                }
+            }
+            else
+            {
                 XMLElement refElem = elem.getSibling("ref");
-                if (refElem != null) 
-                { 
+                if (refElem != null)
+                {
                     buf.extend(offs + 4);
                     Bytes.pack4(buf.arr, offs, mapId(getIntAttribute(refElem, "id")));
                     offs += 4;
-                } 
-                else 
-                { 
+                }
+                else
+                {
                     XMLElement item = elem.getSibling("element");
-                    int len = (item == null) ? 0 : item.Counter; 
+                    int len = (item == null) ? 0 : item.Counter;
                     buf.extend(offs + 4 + len);
                     Bytes.pack4(buf.arr, offs, len);
                     offs += 4;
-                    while (--len >= 0) 
-                    { 
-                        if (item.isIntValue()) 
-                        { 
+                    while (--len >= 0)
+                    {
+                        if (item.isIntValue())
+                        {
                             buf.arr[offs] = (byte)item.IntValue;
-                        } 
-                        else if (item.isRealValue()) 
-                        { 
+                        }
+                        else if (item.isRealValue())
+                        {
                             buf.arr[offs] = (byte)item.RealValue;
-                        } 
-                        else 
+                        }
+                        else
                         {
                             throwException("Conversion for field " + fieldName + " is not possible");
                         }
@@ -756,22 +756,22 @@ namespace Volante.Impl
                 ClassDescriptor.FieldDescriptor fd = flds[i];
                 FieldInfo f = fd.field;
                 String fieldName = fd.fieldName;
-                XMLElement elem = (objElem != null)?objElem.getSibling(fieldName):null;
+                XMLElement elem = (objElem != null) ? objElem.getSibling(fieldName) : null;
 
                 switch (fd.type)
                 {
-                    case ClassDescriptor.FieldType.tpByte: 
-                    case ClassDescriptor.FieldType.tpSByte: 
+                    case ClassDescriptor.FieldType.tpByte:
+                    case ClassDescriptor.FieldType.tpSByte:
                         buf.extend(offs + 1);
                         if (elem != null)
                         {
                             if (elem.isIntValue())
                             {
-                                buf.arr[offs] = (byte) elem.IntValue;
+                                buf.arr[offs] = (byte)elem.IntValue;
                             }
                             else if (elem.isRealValue())
                             {
-                                buf.arr[offs] = (byte) elem.RealValue;
+                                buf.arr[offs] = (byte)elem.RealValue;
                             }
                             else
                             {
@@ -781,17 +781,17 @@ namespace Volante.Impl
                         offs += 1;
                         continue;
 
-                    case ClassDescriptor.FieldType.tpBoolean: 
+                    case ClassDescriptor.FieldType.tpBoolean:
                         buf.extend(offs + 1);
                         if (elem != null)
                         {
                             if (elem.isIntValue())
                             {
-                                buf.arr[offs] = (byte) (elem.IntValue != 0?1:0);
+                                buf.arr[offs] = (byte)(elem.IntValue != 0 ? 1 : 0);
                             }
                             else if (elem.isRealValue())
                             {
-                                buf.arr[offs] = (byte) (elem.RealValue != 0.0?1:0);
+                                buf.arr[offs] = (byte)(elem.RealValue != 0.0 ? 1 : 0);
                             }
                             else
                             {
@@ -801,19 +801,19 @@ namespace Volante.Impl
                         offs += 1;
                         continue;
 
-                    case ClassDescriptor.FieldType.tpShort: 
-                    case ClassDescriptor.FieldType.tpUShort: 
-                    case ClassDescriptor.FieldType.tpChar: 
+                    case ClassDescriptor.FieldType.tpShort:
+                    case ClassDescriptor.FieldType.tpUShort:
+                    case ClassDescriptor.FieldType.tpChar:
                         buf.extend(offs + 2);
                         if (elem != null)
                         {
                             if (elem.isIntValue())
                             {
-                                Bytes.pack2(buf.arr, offs, (short) elem.IntValue);
+                                Bytes.pack2(buf.arr, offs, (short)elem.IntValue);
                             }
                             else if (elem.isRealValue())
                             {
-                                Bytes.pack2(buf.arr, offs, (short) elem.RealValue);
+                                Bytes.pack2(buf.arr, offs, (short)elem.RealValue);
                             }
                             else
                             {
@@ -823,28 +823,28 @@ namespace Volante.Impl
                         offs += 2;
                         continue;
 
-                    case ClassDescriptor.FieldType.tpEnum: 
+                    case ClassDescriptor.FieldType.tpEnum:
                         buf.extend(offs + 4);
                         if (elem != null)
                         {
                             if (elem.isIntValue())
                             {
-                                Bytes.pack4(buf.arr, offs, (int) elem.IntValue);
+                                Bytes.pack4(buf.arr, offs, (int)elem.IntValue);
                             }
                             else if (elem.isRealValue())
                             {
-                                Bytes.pack4(buf.arr, offs, (int) elem.RealValue);
+                                Bytes.pack4(buf.arr, offs, (int)elem.RealValue);
                             }
-                            else if (elem.isStringValue()) 
+                            else if (elem.isStringValue())
                             {
-                                try 
+                                try
                                 {
 #if CF
                                     Bytes.pack4(buf.arr, offs, (int)ClassDescriptor.parseEnum(f.FieldType, elem.StringValue));
 #else
                                     Bytes.pack4(buf.arr, offs, (int)Enum.Parse(f.FieldType, elem.StringValue));
 #endif
-                                } 
+                                }
                                 catch (ArgumentException)
                                 {
                                     throwException("Invalid enum value");
@@ -858,18 +858,18 @@ namespace Volante.Impl
                         offs += 4;
                         continue;
 
-                    case ClassDescriptor.FieldType.tpInt: 
-                    case ClassDescriptor.FieldType.tpUInt: 
+                    case ClassDescriptor.FieldType.tpInt:
+                    case ClassDescriptor.FieldType.tpUInt:
                         buf.extend(offs + 4);
                         if (elem != null)
                         {
                             if (elem.isIntValue())
                             {
-                                Bytes.pack4(buf.arr, offs, (int) elem.IntValue);
+                                Bytes.pack4(buf.arr, offs, (int)elem.IntValue);
                             }
                             else if (elem.isRealValue())
                             {
-                                Bytes.pack4(buf.arr, offs, (int) elem.RealValue);
+                                Bytes.pack4(buf.arr, offs, (int)elem.RealValue);
                             }
                             else
                             {
@@ -879,8 +879,8 @@ namespace Volante.Impl
                         offs += 4;
                         continue;
 
-                    case ClassDescriptor.FieldType.tpLong: 
-                    case ClassDescriptor.FieldType.tpULong: 
+                    case ClassDescriptor.FieldType.tpLong:
+                    case ClassDescriptor.FieldType.tpULong:
                         buf.extend(offs + 8);
                         if (elem != null)
                         {
@@ -890,7 +890,7 @@ namespace Volante.Impl
                             }
                             else if (elem.isRealValue())
                             {
-                                Bytes.pack8(buf.arr, offs, (long) elem.RealValue);
+                                Bytes.pack8(buf.arr, offs, (long)elem.RealValue);
                             }
                             else
                             {
@@ -900,7 +900,7 @@ namespace Volante.Impl
                         offs += 8;
                         continue;
 
-                    case ClassDescriptor.FieldType.tpFloat: 
+                    case ClassDescriptor.FieldType.tpFloat:
                         buf.extend(offs + 4);
                         if (elem != null)
                         {
@@ -910,7 +910,7 @@ namespace Volante.Impl
                             }
                             else if (elem.isRealValue())
                             {
-                                Bytes.packF4(buf.arr, offs, (float) elem.RealValue);
+                                Bytes.packF4(buf.arr, offs, (float)elem.RealValue);
                             }
                             else
                             {
@@ -920,13 +920,13 @@ namespace Volante.Impl
                         offs += 4;
                         continue;
 
-                    case ClassDescriptor.FieldType.tpDouble: 
+                    case ClassDescriptor.FieldType.tpDouble:
                         buf.extend(offs + 8);
                         if (elem != null)
                         {
                             if (elem.isIntValue())
                             {
-                                Bytes.packF8(buf.arr, offs, (double) elem.IntValue);
+                                Bytes.packF8(buf.arr, offs, (double)elem.IntValue);
                             }
                             else if (elem.isRealValue())
                             {
@@ -940,7 +940,7 @@ namespace Volante.Impl
                         offs += 8;
                         continue;
 
-                    case ClassDescriptor.FieldType.tpDecimal: 
+                    case ClassDescriptor.FieldType.tpDecimal:
                         buf.extend(offs + 16);
                         if (elem != null)
                         {
@@ -955,11 +955,11 @@ namespace Volante.Impl
                             }
                             else if (elem.isStringValue())
                             {
-                                try 
-                                { 
+                                try
+                                {
                                     d = Decimal.Parse(elem.StringValue);
-                                } 
-                                catch (FormatException) 
+                                }
+                                catch (FormatException)
                                 {
                                     throwException("Invalid date");
                                 }
@@ -973,8 +973,8 @@ namespace Volante.Impl
                         }
                         offs += 16;
                         continue;
-  
-                    case ClassDescriptor.FieldType.tpGuid: 
+
+                    case ClassDescriptor.FieldType.tpGuid:
                         buf.extend(offs + 16);
                         if (elem != null)
                         {
@@ -991,8 +991,8 @@ namespace Volante.Impl
                         }
                         offs += 16;
                         continue;
-                    
-                    case ClassDescriptor.FieldType.tpDate: 
+
+                    case ClassDescriptor.FieldType.tpDate:
                         buf.extend(offs + 8);
                         if (elem != null)
                         {
@@ -1002,15 +1002,15 @@ namespace Volante.Impl
                             }
                             else if (elem.isNullValue())
                             {
-                                Bytes.pack8(buf.arr, offs, - 1);
+                                Bytes.pack8(buf.arr, offs, -1);
                             }
                             else if (elem.isStringValue())
                             {
-                                try 
-                                { 
+                                try
+                                {
                                     Bytes.packDate(buf.arr, offs, DateTime.Parse(elem.StringValue));
-                                } 
-                                catch (FormatException) 
+                                }
+                                catch (FormatException)
                                 {
                                     throwException("Invalid date");
                                 }
@@ -1023,7 +1023,7 @@ namespace Volante.Impl
                         offs += 8;
                         continue;
 
-                    case ClassDescriptor.FieldType.tpString: 
+                    case ClassDescriptor.FieldType.tpString:
                         if (elem != null)
                         {
                             System.String val = null;
@@ -1051,50 +1051,50 @@ namespace Volante.Impl
                             continue;
                         }
                         buf.extend(offs + 4);
-                        Bytes.pack4(buf.arr, offs, - 1);
+                        Bytes.pack4(buf.arr, offs, -1);
                         offs += 4;
                         continue;
 
-                    case ClassDescriptor.FieldType.tpOid: 
-                    case ClassDescriptor.FieldType.tpObject: 
-                    {
-                        int oid = 0;
-                        if (elem != null)
+                    case ClassDescriptor.FieldType.tpOid:
+                    case ClassDescriptor.FieldType.tpObject:
                         {
-                            XMLElement refElem = elem.getSibling("ref");
-                            if (refElem == null)
+                            int oid = 0;
+                            if (elem != null)
                             {
-                                throwException("<ref> element expected");
+                                XMLElement refElem = elem.getSibling("ref");
+                                if (refElem == null)
+                                {
+                                    throwException("<ref> element expected");
+                                }
+                                oid = mapId(getIntAttribute(refElem, "id"));
                             }
-                            oid = mapId(getIntAttribute(refElem, "id"));
+                            buf.extend(offs + 4);
+                            Bytes.pack4(buf.arr, offs, oid);
+                            offs += 4;
+                            continue;
                         }
-                        buf.extend(offs + 4);
-                        Bytes.pack4(buf.arr, offs, oid);
-                        offs += 4;
-                        continue;
-                    }
 
-                    case ClassDescriptor.FieldType.tpValue: 
+                    case ClassDescriptor.FieldType.tpValue:
                         offs = packObject(elem, fd.valueDesc, offs, buf);
                         continue;
 
-                    case ClassDescriptor.FieldType.tpRaw: 
-                    case ClassDescriptor.FieldType.tpArrayOfByte: 
-                    case ClassDescriptor.FieldType.tpArrayOfSByte: 
+                    case ClassDescriptor.FieldType.tpRaw:
+                    case ClassDescriptor.FieldType.tpArrayOfByte:
+                    case ClassDescriptor.FieldType.tpArrayOfSByte:
                         offs = importBinary(elem, offs, buf, fieldName);
                         continue;
 
-                    case ClassDescriptor.FieldType.tpArrayOfBoolean: 
+                    case ClassDescriptor.FieldType.tpArrayOfBoolean:
                         if (elem == null || elem.isNullValue())
                         {
                             buf.extend(offs + 4);
-                            Bytes.pack4(buf.arr, offs, - 1);
+                            Bytes.pack4(buf.arr, offs, -1);
                             offs += 4;
                         }
                         else
                         {
                             XMLElement item = elem.getSibling("element");
-                            int len = (item == null)?0:item.Counter;
+                            int len = (item == null) ? 0 : item.Counter;
                             buf.extend(offs + 4 + len);
                             Bytes.pack4(buf.arr, offs, len);
                             offs += 4;
@@ -1102,11 +1102,11 @@ namespace Volante.Impl
                             {
                                 if (item.isIntValue())
                                 {
-                                    buf.arr[offs] = (byte) (item.IntValue != 0?1:0);
+                                    buf.arr[offs] = (byte)(item.IntValue != 0 ? 1 : 0);
                                 }
                                 else if (item.isRealValue())
                                 {
-                                    buf.arr[offs] = (byte) (item.RealValue != 0.0?1:0);
+                                    buf.arr[offs] = (byte)(item.RealValue != 0.0 ? 1 : 0);
                                 }
                                 else
                                 {
@@ -1118,19 +1118,19 @@ namespace Volante.Impl
                         }
                         continue;
 
-                    case ClassDescriptor.FieldType.tpArrayOfChar: 
-                    case ClassDescriptor.FieldType.tpArrayOfShort: 
-                    case ClassDescriptor.FieldType.tpArrayOfUShort: 
+                    case ClassDescriptor.FieldType.tpArrayOfChar:
+                    case ClassDescriptor.FieldType.tpArrayOfShort:
+                    case ClassDescriptor.FieldType.tpArrayOfUShort:
                         if (elem == null || elem.isNullValue())
                         {
                             buf.extend(offs + 4);
-                            Bytes.pack4(buf.arr, offs, - 1);
+                            Bytes.pack4(buf.arr, offs, -1);
                             offs += 4;
                         }
                         else
                         {
                             XMLElement item = elem.getSibling("element");
-                            int len = (item == null)?0:item.Counter;
+                            int len = (item == null) ? 0 : item.Counter;
                             buf.extend(offs + 4 + len * 2);
                             Bytes.pack4(buf.arr, offs, len);
                             offs += 4;
@@ -1138,11 +1138,11 @@ namespace Volante.Impl
                             {
                                 if (item.isIntValue())
                                 {
-                                    Bytes.pack2(buf.arr, offs, (short) item.IntValue);
+                                    Bytes.pack2(buf.arr, offs, (short)item.IntValue);
                                 }
                                 else if (item.isRealValue())
                                 {
-                                    Bytes.pack2(buf.arr, offs, (short) item.RealValue);
+                                    Bytes.pack2(buf.arr, offs, (short)item.RealValue);
                                 }
                                 else
                                 {
@@ -1154,17 +1154,17 @@ namespace Volante.Impl
                         }
                         continue;
 
-                    case ClassDescriptor.FieldType.tpArrayOfEnum: 
+                    case ClassDescriptor.FieldType.tpArrayOfEnum:
                         if (elem == null || elem.isNullValue())
                         {
                             buf.extend(offs + 4);
-                            Bytes.pack4(buf.arr, offs, - 1);
+                            Bytes.pack4(buf.arr, offs, -1);
                             offs += 4;
                         }
                         else
                         {
                             XMLElement item = elem.getSibling("element");
-                            int len = (item == null)?0:item.Counter;
+                            int len = (item == null) ? 0 : item.Counter;
                             Type elemType = f.FieldType.GetElementType();
                             buf.extend(offs + 4 + len * 4);
                             Bytes.pack4(buf.arr, offs, len);
@@ -1173,22 +1173,22 @@ namespace Volante.Impl
                             {
                                 if (item.isIntValue())
                                 {
-                                    Bytes.pack4(buf.arr, offs, (int) item.IntValue);
+                                    Bytes.pack4(buf.arr, offs, (int)item.IntValue);
                                 }
                                 else if (item.isRealValue())
                                 {
-                                    Bytes.pack4(buf.arr, offs, (int) item.RealValue);
+                                    Bytes.pack4(buf.arr, offs, (int)item.RealValue);
                                 }
-                                else if (item.isStringValue()) 
+                                else if (item.isStringValue())
                                 {
-                                    try 
+                                    try
                                     {
 #if CF
                                         Bytes.pack4(buf.arr, offs, (int)ClassDescriptor.parseEnum(elemType, item.StringValue));
 #else
                                         Bytes.pack4(buf.arr, offs, (int)Enum.Parse(elemType, item.StringValue));
 #endif
-                                    } 
+                                    }
                                     catch (ArgumentException)
                                     {
                                         throwException("Invalid enum value");
@@ -1204,18 +1204,18 @@ namespace Volante.Impl
                         }
                         continue;
 
-                    case ClassDescriptor.FieldType.tpArrayOfInt: 
-                    case ClassDescriptor.FieldType.tpArrayOfUInt: 
+                    case ClassDescriptor.FieldType.tpArrayOfInt:
+                    case ClassDescriptor.FieldType.tpArrayOfUInt:
                         if (elem == null || elem.isNullValue())
                         {
                             buf.extend(offs + 4);
-                            Bytes.pack4(buf.arr, offs, - 1);
+                            Bytes.pack4(buf.arr, offs, -1);
                             offs += 4;
                         }
                         else
                         {
                             XMLElement item = elem.getSibling("element");
-                            int len = (item == null)?0:item.Counter;
+                            int len = (item == null) ? 0 : item.Counter;
                             buf.extend(offs + 4 + len * 4);
                             Bytes.pack4(buf.arr, offs, len);
                             offs += 4;
@@ -1223,11 +1223,11 @@ namespace Volante.Impl
                             {
                                 if (item.isIntValue())
                                 {
-                                    Bytes.pack4(buf.arr, offs, (int) item.IntValue);
+                                    Bytes.pack4(buf.arr, offs, (int)item.IntValue);
                                 }
                                 else if (item.isRealValue())
                                 {
-                                    Bytes.pack4(buf.arr, offs, (int) item.RealValue);
+                                    Bytes.pack4(buf.arr, offs, (int)item.RealValue);
                                 }
                                 else
                                 {
@@ -1239,18 +1239,18 @@ namespace Volante.Impl
                         }
                         continue;
 
-                    case ClassDescriptor.FieldType.tpArrayOfLong: 
-                    case ClassDescriptor.FieldType.tpArrayOfULong: 
+                    case ClassDescriptor.FieldType.tpArrayOfLong:
+                    case ClassDescriptor.FieldType.tpArrayOfULong:
                         if (elem == null || elem.isNullValue())
                         {
                             buf.extend(offs + 4);
-                            Bytes.pack4(buf.arr, offs, - 1);
+                            Bytes.pack4(buf.arr, offs, -1);
                             offs += 4;
                         }
                         else
                         {
                             XMLElement item = elem.getSibling("element");
-                            int len = (item == null)?0:item.Counter;
+                            int len = (item == null) ? 0 : item.Counter;
                             buf.extend(offs + 4 + len * 8);
                             Bytes.pack4(buf.arr, offs, len);
                             offs += 4;
@@ -1262,7 +1262,7 @@ namespace Volante.Impl
                                 }
                                 else if (item.isRealValue())
                                 {
-                                    Bytes.pack8(buf.arr, offs, (long) item.RealValue);
+                                    Bytes.pack8(buf.arr, offs, (long)item.RealValue);
                                 }
                                 else
                                 {
@@ -1274,17 +1274,17 @@ namespace Volante.Impl
                         }
                         continue;
 
-                    case ClassDescriptor.FieldType.tpArrayOfFloat: 
+                    case ClassDescriptor.FieldType.tpArrayOfFloat:
                         if (elem == null || elem.isNullValue())
                         {
                             buf.extend(offs + 4);
-                            Bytes.pack4(buf.arr, offs, - 1);
+                            Bytes.pack4(buf.arr, offs, -1);
                             offs += 4;
                         }
                         else
                         {
                             XMLElement item = elem.getSibling("element");
-                            int len = (item == null)?0:item.Counter;
+                            int len = (item == null) ? 0 : item.Counter;
                             buf.extend(offs + 4 + len * 4);
                             Bytes.pack4(buf.arr, offs, len);
                             offs += 4;
@@ -1292,7 +1292,7 @@ namespace Volante.Impl
                             {
                                 if (item.isIntValue())
                                 {
-                                   Bytes.packF4(buf.arr, offs, (float)item.IntValue);
+                                    Bytes.packF4(buf.arr, offs, (float)item.IntValue);
                                 }
                                 else if (item.isRealValue())
                                 {
@@ -1308,17 +1308,17 @@ namespace Volante.Impl
                         }
                         continue;
 
-                    case ClassDescriptor.FieldType.tpArrayOfDouble: 
+                    case ClassDescriptor.FieldType.tpArrayOfDouble:
                         if (elem == null || elem.isNullValue())
                         {
                             buf.extend(offs + 4);
-                            Bytes.pack4(buf.arr, offs, - 1);
+                            Bytes.pack4(buf.arr, offs, -1);
                             offs += 4;
                         }
                         else
                         {
                             XMLElement item = elem.getSibling("element");
-                            int len = (item == null)?0:item.Counter;
+                            int len = (item == null) ? 0 : item.Counter;
                             buf.extend(offs + 4 + len * 8);
                             Bytes.pack4(buf.arr, offs, len);
                             offs += 4;
@@ -1342,17 +1342,17 @@ namespace Volante.Impl
                         }
                         continue;
 
-                    case ClassDescriptor.FieldType.tpArrayOfDate: 
+                    case ClassDescriptor.FieldType.tpArrayOfDate:
                         if (elem == null || elem.isNullValue())
                         {
                             buf.extend(offs + 4);
-                            Bytes.pack4(buf.arr, offs, - 1);
+                            Bytes.pack4(buf.arr, offs, -1);
                             offs += 4;
                         }
                         else
                         {
                             XMLElement item = elem.getSibling("element");
-                            int len = (item == null)?0:item.Counter;
+                            int len = (item == null) ? 0 : item.Counter;
                             buf.extend(offs + 4 + len * 8);
                             Bytes.pack4(buf.arr, offs, len);
                             offs += 4;
@@ -1360,12 +1360,12 @@ namespace Volante.Impl
                             {
                                 if (item.isNullValue())
                                 {
-                                    Bytes.pack8(buf.arr, offs, - 1);
+                                    Bytes.pack8(buf.arr, offs, -1);
                                 }
                                 else if (item.isStringValue())
                                 {
-                                    try 
-                                    { 
+                                    try
+                                    {
                                         Bytes.packDate(buf.arr, offs, DateTime.Parse(item.StringValue));
                                     }
                                     catch (FormatException)
@@ -1379,17 +1379,17 @@ namespace Volante.Impl
                         }
                         continue;
 
-                    case ClassDescriptor.FieldType.tpArrayOfDecimal: 
+                    case ClassDescriptor.FieldType.tpArrayOfDecimal:
                         if (elem == null || elem.isNullValue())
                         {
                             buf.extend(offs + 4);
-                            Bytes.pack4(buf.arr, offs, - 1);
+                            Bytes.pack4(buf.arr, offs, -1);
                             offs += 4;
                         }
                         else
                         {
                             XMLElement item = elem.getSibling("element");
-                            int len = (item == null)?0:item.Counter;
+                            int len = (item == null) ? 0 : item.Counter;
                             buf.extend(offs + 4 + len * 16);
                             Bytes.pack4(buf.arr, offs, len);
                             offs += 4;
@@ -1397,8 +1397,8 @@ namespace Volante.Impl
                             {
                                 if (item.isStringValue())
                                 {
-                                    try 
-                                    { 
+                                    try
+                                    {
                                         Bytes.packDecimal(buf.arr, offs, Decimal.Parse(item.StringValue));
                                     }
                                     catch (FormatException)
@@ -1412,17 +1412,17 @@ namespace Volante.Impl
                         }
                         continue;
 
-                    case ClassDescriptor.FieldType.tpArrayOfGuid: 
+                    case ClassDescriptor.FieldType.tpArrayOfGuid:
                         if (elem == null || elem.isNullValue())
                         {
                             buf.extend(offs + 4);
-                            Bytes.pack4(buf.arr, offs, - 1);
+                            Bytes.pack4(buf.arr, offs, -1);
                             offs += 4;
                         }
                         else
                         {
                             XMLElement item = elem.getSibling("element");
-                            int len = (item == null)?0:item.Counter;
+                            int len = (item == null) ? 0 : item.Counter;
                             buf.extend(offs + 4 + len * 16);
                             Bytes.pack4(buf.arr, offs, len);
                             offs += 4;
@@ -1430,8 +1430,8 @@ namespace Volante.Impl
                             {
                                 if (item.isStringValue())
                                 {
-                                    try 
-                                    { 
+                                    try
+                                    {
                                         Bytes.packGuid(buf.arr, offs, new Guid(item.StringValue));
                                     }
                                     catch (FormatException)
@@ -1445,17 +1445,17 @@ namespace Volante.Impl
                         }
                         continue;
 
-                    case ClassDescriptor.FieldType.tpArrayOfString: 
+                    case ClassDescriptor.FieldType.tpArrayOfString:
                         if (elem == null || elem.isNullValue())
                         {
                             buf.extend(offs + 4);
-                            Bytes.pack4(buf.arr, offs, - 1);
+                            Bytes.pack4(buf.arr, offs, -1);
                             offs += 4;
                         }
                         else
                         {
                             XMLElement item = elem.getSibling("element");
-                            int len = (item == null)?0:item.Counter;
+                            int len = (item == null) ? 0 : item.Counter;
                             buf.extend(offs + 4);
                             Bytes.pack4(buf.arr, offs, len);
                             offs += 4;
@@ -1482,25 +1482,25 @@ namespace Volante.Impl
                                 {
                                     throwException("Conversion for field " + fieldName + " is not possible");
                                 }
-                                offs = buf.packString(offs, val);  
+                                offs = buf.packString(offs, val);
                                 item = item.NextSibling;
                             }
                         }
                         continue;
 
-                    case ClassDescriptor.FieldType.tpArrayOfObject: 
-                    case ClassDescriptor.FieldType.tpArrayOfOid: 
-                    case ClassDescriptor.FieldType.tpLink: 
+                    case ClassDescriptor.FieldType.tpArrayOfObject:
+                    case ClassDescriptor.FieldType.tpArrayOfOid:
+                    case ClassDescriptor.FieldType.tpLink:
                         if (elem == null || elem.isNullValue())
                         {
                             buf.extend(offs + 4);
-                            Bytes.pack4(buf.arr, offs, - 1);
+                            Bytes.pack4(buf.arr, offs, -1);
                             offs += 4;
                         }
                         else
                         {
                             XMLElement item = elem.getSibling("element");
-                            int len = (item == null)?0:item.Counter;
+                            int len = (item == null) ? 0 : item.Counter;
                             buf.extend(offs + 4 + len * 4);
                             Bytes.pack4(buf.arr, offs, len);
                             offs += 4;
@@ -1519,17 +1519,17 @@ namespace Volante.Impl
                         }
                         continue;
 
-                    case ClassDescriptor.FieldType.tpArrayOfValue: 
+                    case ClassDescriptor.FieldType.tpArrayOfValue:
                         if (elem == null || elem.isNullValue())
                         {
                             buf.extend(offs + 4);
-                            Bytes.pack4(buf.arr, offs, - 1);
+                            Bytes.pack4(buf.arr, offs, -1);
                             offs += 4;
                         }
                         else
                         {
                             XMLElement item = elem.getSibling("element");
-                            int len = (item == null)?0:item.Counter;
+                            int len = (item == null) ? 0 : item.Counter;
                             Bytes.pack4(buf.arr, offs, len);
                             offs += 4;
                             ClassDescriptor elemDesc = fd.valueDesc;
@@ -1541,17 +1541,17 @@ namespace Volante.Impl
                         }
                         continue;
 
-                    case ClassDescriptor.FieldType.tpArrayOfRaw: 
+                    case ClassDescriptor.FieldType.tpArrayOfRaw:
                         if (elem == null || elem.isNullValue())
                         {
                             buf.extend(offs + 4);
-                            Bytes.pack4(buf.arr, offs, - 1);
+                            Bytes.pack4(buf.arr, offs, -1);
                             offs += 4;
                         }
                         else
                         {
                             XMLElement item = elem.getSibling("element");
-                            int len = (item == null)?0:item.Counter;
+                            int len = (item == null) ? 0 : item.Counter;
                             Bytes.pack4(buf.arr, offs, len);
                             offs += 4;
                             while (--len >= 0)
@@ -1575,10 +1575,10 @@ namespace Volante.Impl
             {
                 switch (scanner.scan())
                 {
-                    case XMLScanner.Token.GTS: 
+                    case XMLScanner.Token.GTS:
                         return elem;
 
-                    case XMLScanner.Token.GT: 
+                    case XMLScanner.Token.GT:
                         while ((tkn = scanner.scan()) == XMLScanner.Token.LT)
                         {
                             if (scanner.scan() != XMLScanner.Token.IDENT)
@@ -1591,22 +1591,22 @@ namespace Volante.Impl
                         }
                         switch (tkn)
                         {
-                            case XMLScanner.Token.SCONST: 
+                            case XMLScanner.Token.SCONST:
                                 elem.StringValue = scanner.String;
                                 tkn = scanner.scan();
                                 break;
 
-                            case XMLScanner.Token.ICONST: 
+                            case XMLScanner.Token.ICONST:
                                 elem.IntValue = scanner.Int;
                                 tkn = scanner.scan();
                                 break;
 
-                            case XMLScanner.Token.FCONST: 
+                            case XMLScanner.Token.FCONST:
                                 elem.RealValue = scanner.Real;
                                 tkn = scanner.scan();
                                 break;
 
-                            case XMLScanner.Token.IDENT: 
+                            case XMLScanner.Token.IDENT:
                                 if (scanner.Identifier.Equals("null"))
                                 {
                                     elem.setNullValue();
@@ -1625,7 +1625,7 @@ namespace Volante.Impl
                         }
                         return elem;
 
-                    case XMLScanner.Token.IDENT: 
+                    case XMLScanner.Token.IDENT:
                         attribute = scanner.Identifier;
                         if (scanner.scan() != XMLScanner.Token.EQ || scanner.scan() != XMLScanner.Token.SCONST)
                         {
@@ -1634,7 +1634,7 @@ namespace Volante.Impl
                         elem.addAttribute(attribute, scanner.String);
                         continue;
 
-                    default: 
+                    default:
                         throwException("Unexpected token");
                         break;
 
@@ -1642,15 +1642,15 @@ namespace Volante.Impl
             }
         }
 
-        internal void  throwException(System.String message)
+        internal void throwException(System.String message)
         {
             throw new XMLImportException(scanner.Line, scanner.Column, message);
         }
 
         internal StorageImpl storage;
-        internal XMLScanner  scanner;
-        internal Hashtable   classMap;
-        internal int[] idMap; 
+        internal XMLScanner scanner;
+        internal Hashtable classMap;
+        internal int[] idMap;
 
         internal class XMLScanner
         {
@@ -1702,7 +1702,7 @@ namespace Volante.Impl
                 }
             }
 
-            internal enum Token 
+            internal enum Token
             {
                 IDENT,
                 SCONST,
@@ -1717,16 +1717,16 @@ namespace Volante.Impl
             }
 
             internal System.IO.StreamReader reader;
-            internal int    line;
-            internal int    column;
+            internal int line;
+            internal int column;
             internal char[] sconst;
-            internal long   iconst;
+            internal long iconst;
             internal double fconst;
-            internal int    slen;
+            internal int slen;
             internal String ident;
-            internal int    size;
-            internal int    ungetChar;
-            internal bool   hasUngetChar;
+            internal int size;
+            internal int ungetChar;
+            internal bool hasUngetChar;
 
             internal XMLScanner(System.IO.StreamReader reader)
             {
@@ -1752,7 +1752,7 @@ namespace Volante.Impl
                 }
                 else if (ch == '\t')
                 {
-                    column += (column + 8) & ~ 7;
+                    column += (column + 8) & ~7;
                 }
                 else
                 {
@@ -1782,7 +1782,7 @@ namespace Volante.Impl
 
                 while (true)
                 {
-                    do 
+                    do
                     {
                         if ((ch = get()) < 0)
                         {
@@ -1793,7 +1793,7 @@ namespace Volante.Impl
 
                     switch (ch)
                     {
-                        case '<': 
+                        case '<':
                             ch = get();
                             if (ch == '?')
                             {
@@ -1817,10 +1817,10 @@ namespace Volante.Impl
                             }
                             return Token.LTS;
 
-                        case '>': 
+                        case '>':
                             return Token.GT;
 
-                        case '/': 
+                        case '/':
                             ch = get();
                             if (ch != '>')
                             {
@@ -1829,10 +1829,10 @@ namespace Volante.Impl
                             }
                             return Token.GTS;
 
-                        case '=': 
+                        case '=':
                             return Token.EQ;
 
-                        case '"': 
+                        case '"':
                             i = 0;
                             while (true)
                             {
@@ -1845,7 +1845,7 @@ namespace Volante.Impl
                                 {
                                     switch (get())
                                     {
-                                        case 'a': 
+                                        case 'a':
                                             if (get() != 'm' || get() != 'p' || get() != ';')
                                             {
                                                 throw new XMLImportException(line, column, "Bad XML file format");
@@ -1853,7 +1853,7 @@ namespace Volante.Impl
                                             ch = '&';
                                             break;
 
-                                        case 'l': 
+                                        case 'l':
                                             if (get() != 't' || get() != ';')
                                             {
                                                 throw new XMLImportException(line, column, "Bad XML file format");
@@ -1861,7 +1861,7 @@ namespace Volante.Impl
                                             ch = '<';
                                             break;
 
-                                        case 'g': 
+                                        case 'g':
                                             if (get() != 't' || get() != ';')
                                             {
                                                 throw new XMLImportException(line, column, "Bad XML file format");
@@ -1869,7 +1869,7 @@ namespace Volante.Impl
                                             ch = '>';
                                             break;
 
-                                        case 'q': 
+                                        case 'q':
                                             if (get() != 'u' || get() != 'o' || get() != 't' || get() != ';')
                                             {
                                                 throw new XMLImportException(line, column, "Bad XML file format");
@@ -1877,7 +1877,7 @@ namespace Volante.Impl
                                             ch = '"';
                                             break;
 
-                                        default: 
+                                        default:
                                             throw new XMLImportException(line, column, "Bad XML file format");
 
                                     }
@@ -1893,15 +1893,25 @@ namespace Volante.Impl
                                     Array.Copy(sconst, 0, newBuf, 0, i);
                                     sconst = newBuf;
                                 }
-                                sconst[i++] = (char) ch;
+                                sconst[i++] = (char)ch;
                             }
 
-                        case '-': case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9': 
+                        case '-':
+                        case '0':
+                        case '1':
+                        case '2':
+                        case '3':
+                        case '4':
+                        case '5':
+                        case '6':
+                        case '7':
+                        case '8':
+                        case '9':
                             i = 0;
                             floatingPoint = false;
                             while (true)
                             {
-                                if (!System.Char.IsDigit((char) ch) && ch != '-' && ch != '+' && ch != '.' && ch != 'E')
+                                if (!System.Char.IsDigit((char)ch) && ch != '-' && ch != '+' && ch != '.' && ch != 'E')
                                 {
                                     unget(ch);
                                     try
@@ -1927,7 +1937,7 @@ namespace Volante.Impl
                                 {
                                     throw new XMLImportException(line, column, "Bad XML file format");
                                 }
-                                sconst[i++] = (char) ch;
+                                sconst[i++] = (char)ch;
                                 if (ch == '.')
                                 {
                                     floatingPoint = true;
@@ -1935,19 +1945,19 @@ namespace Volante.Impl
                                 ch = get();
                             }
 
-                        default: 
+                        default:
                             i = 0;
-                            while (System.Char.IsLetterOrDigit((char) ch) || ch == '-' || ch == ':' || ch == '_' || ch == '.')
+                            while (System.Char.IsLetterOrDigit((char)ch) || ch == '-' || ch == ':' || ch == '_' || ch == '.')
                             {
                                 if (i == size)
                                 {
                                     throw new XMLImportException(line, column, "Bad XML file format");
                                 }
-                                if (ch == '-') 
-                                { 
+                                if (ch == '-')
+                                {
                                     ch = '+';
                                 }
-                                sconst[i++] = (char) ch;
+                                sconst[i++] = (char)ch;
                                 ch = get();
                             }
                             unget(ch);

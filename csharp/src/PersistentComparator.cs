@@ -2,7 +2,7 @@ namespace Volante
 {
     /// <summary> Base class for persistent comparator used in SortedCollection class
     /// </summary>
-    public abstract class PersistentComparator<K,V> : Persistent where V:class,IPersistent
+    public abstract class PersistentComparator<K, V> : Persistent where V : class,IPersistent
     {
         /// <summary> 
         /// Compare two members of collection

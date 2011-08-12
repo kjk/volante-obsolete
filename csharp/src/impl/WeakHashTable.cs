@@ -12,7 +12,7 @@ namespace Volante.Impl
 
         public WeakHashTable(int initialCapacity)
         {
-            threshold = (int) (initialCapacity * loadFactor);
+            threshold = (int)(initialCapacity * loadFactor);
             table = new Entry[initialCapacity];
         }
 
@@ -54,7 +54,7 @@ namespace Volante.Impl
                     if (e.oid == oid)
                     {
                         e.oref.Target = obj;
-                        return ;
+                        return;
                     }
                 }
                 if (count >= threshold)
@@ -73,8 +73,8 @@ namespace Volante.Impl
 
         public IPersistent get(int oid)
         {
-            while (true) 
-            { 
+            while (true)
+            {
                 lock (this)
                 {
                     Entry[] tab = table;
@@ -84,14 +84,14 @@ namespace Volante.Impl
                         if (e.oid == oid)
                         {
                             IPersistent obj = (IPersistent)e.oref.Target;
-                            if (obj == null) 
+                            if (obj == null)
                             {
-                                if (e.dirty > 0) 
+                                if (e.dirty > 0)
                                 {
                                     goto waitFinalization;
                                 }
-                            } 
-                            else if (obj.IsDeleted()) 
+                            }
+                            else if (obj.IsDeleted())
                             {
                                 if (prev != null)
                                 {
@@ -123,8 +123,8 @@ namespace Volante.Impl
             for (i = oldCapacity; --i >= 0; )
             {
                 Entry e, next, prev;
-                for (prev = null, e = oldMap[i]; e != null; e = next) 
-                { 
+                for (prev = null, e = oldMap[i]; e != null; e = next)
+                {
                     next = e.next;
                     if (!e.oref.IsAlive && e.dirty == 0)
                     {
@@ -148,12 +148,12 @@ namespace Volante.Impl
 
             if ((uint)count <= ((uint)threshold >> 1))
             {
-                return ;
+                return;
             }
             int newCapacity = oldCapacity * 2 + 1;
             Entry[] newMap = new Entry[newCapacity];
 
-            threshold = (int) (newCapacity * loadFactor);
+            threshold = (int)(newCapacity * loadFactor);
             table = newMap;
 
             for (i = oldCapacity; --i >= 0; )
@@ -170,26 +170,26 @@ namespace Volante.Impl
             }
         }
 
-        public void flush() 
+        public void flush()
         {
-            while (true) 
+            while (true)
             {
-                lock (this) 
-                { 
-                    for (int i = 0; i < table.Length; i++) 
-                    { 
-                        for (Entry e = table[i]; e != null; e = e.next) 
-                        { 
+                lock (this)
+                {
+                    for (int i = 0; i < table.Length; i++)
+                    {
+                        for (Entry e = table[i]; e != null; e = e.next)
+                        {
                             IPersistent obj = (IPersistent)e.oref.Target;
-                            if (obj != null) 
-                            { 
-                                if (obj.IsModified()) 
-                                { 
+                            if (obj != null)
+                            {
+                                if (obj.IsModified())
+                                {
                                     obj.Store();
                                 }
-                            } 
-                            else if (e.dirty != 0) 
-                            { 
+                            }
+                            else if (e.dirty != 0)
+                            {
                                 goto waitFinalization;
                             }
                         }
@@ -201,27 +201,27 @@ namespace Volante.Impl
             }
         }
 
-        public void invalidate() 
+        public void invalidate()
         {
-            while (true) 
+            while (true)
             {
-                lock (this) 
-                { 
-                    for (int i = 0; i < table.Length; i++) 
-                    { 
-                        for (Entry e = table[i]; e != null; e = e.next) 
-                        { 
+                lock (this)
+                {
+                    for (int i = 0; i < table.Length; i++)
+                    {
+                        for (Entry e = table[i]; e != null; e = e.next)
+                        {
                             IPersistent obj = (IPersistent)e.oref.Target;
-                            if (obj != null) 
-                            { 
-                                if (obj.IsModified()) 
-                                { 
+                            if (obj != null)
+                            {
+                                if (obj.IsModified())
+                                {
                                     e.dirty = 0;
                                     obj.Invalidate();
                                 }
-                            } 
-                            else if (e.dirty != 0) 
-                            { 
+                            }
+                            else if (e.dirty != 0)
+                            {
                                 goto waitFinalization;
                             }
                         }
@@ -235,15 +235,15 @@ namespace Volante.Impl
             }
         }
 
-        public void setDirty(int oid) 
+        public void setDirty(int oid)
         {
-            lock (this) 
-            { 
+            lock (this)
+            {
                 Entry[] tab = table;
                 int index = (oid & 0x7FFFFFFF) % tab.Length;
-                for (Entry e = tab[index] ; e != null ; e = e.next) 
+                for (Entry e = tab[index]; e != null; e = e.next)
                 {
-                    if (e.oid == oid) 
+                    if (e.oid == oid)
                     {
                         e.dirty += 1;
                         return;
@@ -252,26 +252,26 @@ namespace Volante.Impl
             }
         }
 
-        public void clearDirty(int oid) 
+        public void clearDirty(int oid)
         {
-            lock (this) 
-            { 
+            lock (this)
+            {
                 Entry[] tab = table;
                 int index = (oid & 0x7FFFFFFF) % tab.Length;
                 for (Entry e = tab[index], prev = null; e != null; prev = e, e = e.next)
                 {
-                    if (e.oid == oid) 
+                    if (e.oid == oid)
                     {
-                        if (e.oref.IsAlive) 
-                        { 
-                            if (e.dirty > 0) 
-                            { 
+                        if (e.oref.IsAlive)
+                        {
+                            if (e.dirty > 0)
+                            {
                                 e.dirty -= 1;
                             }
-                        } 
-                        else 
-                        { 
-                             if (prev != null)
+                        }
+                        else
+                        {
+                            if (prev != null)
                             {
                                 prev.next = e.next;
                             }
@@ -300,8 +300,8 @@ namespace Volante.Impl
             internal int oid;
             internal int dirty;
 
-            internal void clear() 
-            { 
+            internal void clear()
+            {
                 oref.Target = null;
                 oref = null;
                 dirty = 0;

@@ -6,52 +6,54 @@ namespace Volante
 
     /// <summary> Class representing relation between owner and members
     /// </summary>
-    public abstract class Relation<M,O> : PersistentCollection<M>, Link<M> where M:class,IPersistent where O:class,IPersistent
+    public abstract class Relation<M, O> : PersistentCollection<M>, Link<M>
+        where M : class,IPersistent
+        where O : class,IPersistent
     {
         public abstract int Size();
 
-        public abstract int Length 
+        public abstract int Length
         {
             get;
             set;
         }
 
-        public abstract M this[int i] 
+        public abstract M this[int i]
         {
             get;
             set;
         }
-		
+
         public abstract M Get(int i);
-		
+
         public abstract IPersistent GetRaw(int i);
-		
-        public abstract void  Set(int i, M obj);
 
-        public abstract void  RemoveAt(int i);
-        public abstract void  Remove(int i);
+        public abstract void Set(int i, M obj);
 
-        public abstract void  Insert(int i, M obj);
-				
-        public abstract void  AddAll(M[] arr);
-		
-        public abstract void  AddAll(M[] arr, int from, int length);
-		
-        public abstract void  AddAll(Link<M> anotherLink);
-      
+        public abstract void RemoveAt(int i);
+        public abstract void Remove(int i);
+
+        public abstract void Insert(int i, M obj);
+
+        public abstract void AddAll(M[] arr);
+
+        public abstract void AddAll(M[] arr, int from, int length);
+
+        public abstract void AddAll(Link<M> anotherLink);
+
         public abstract M[] ToArray();
 
         public abstract Array ToRawArray();
 
         public abstract Array ToArray(Type elemType);
 
-        public abstract bool  ContainsElement(int i, M obj);
+        public abstract bool ContainsElement(int i, M obj);
 
-        public abstract int   IndexOf(M obj);
-		
-        public abstract void  Pin();
+        public abstract int IndexOf(M obj);
 
-        public abstract void  Unpin();
+        public abstract void Pin();
+
+        public abstract void Unpin();
 
         /// <summary> Get or set relation owner
         /// </summary>
@@ -79,12 +81,12 @@ namespace Volante
         {
             this.owner = owner;
         }
-		
-        internal Relation() {}
+
+        internal Relation() { }
 
         public void SetOwner(IPersistent obj)
-        { 
-             owner = (O)obj;
+        {
+            owner = (O)obj;
         }
 
         private O owner;

@@ -4,29 +4,29 @@ using System.Runtime.Remoting.Messaging;
 
 namespace Volante.Impl
 {
-    public class PerstSink : IMessageSink 
+    public class PerstSink : IMessageSink
     {
-        internal PerstSink(PersistentContext target, IMessageSink next) 
+        internal PerstSink(PersistentContext target, IMessageSink next)
         {
             this.next = next;
             this.target = target;
         }
 
-        public IMessageSink NextSink 
+        public IMessageSink NextSink
         {
-            get 
-            { 
+            get
+            {
                 return next;
             }
         }
 
-        public IMessage SyncProcessMessage(IMessage call) 
+        public IMessage SyncProcessMessage(IMessage call)
         {
             IMethodMessage invocation = (IMethodMessage)call;
-            if (invocation.TypeName != "Volante.PersistentContext") 
-            { 
+            if (invocation.TypeName != "Volante.PersistentContext")
+            {
                 target.Load();
-                if (invocation.MethodName == "FieldSetter") 
+                if (invocation.MethodName == "FieldSetter")
                 {
                     target.Modify();
                 }
@@ -34,12 +34,12 @@ namespace Volante.Impl
             return NextSink.SyncProcessMessage(call);
         }
 
-        public IMessageCtrl AsyncProcessMessage(IMessage call, IMessageSink destination) 
+        public IMessageCtrl AsyncProcessMessage(IMessage call, IMessageSink destination)
         {
             return NextSink.AsyncProcessMessage(call, destination);
         }
 
-        private IMessageSink      next;
+        private IMessageSink next;
         private PersistentContext target;
     }
 }

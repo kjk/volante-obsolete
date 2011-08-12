@@ -3,7 +3,7 @@ namespace Volante
     ///<summary>
     /// Interface of object supporting locking
     /// </summary>
-    public interface IResource 
+    public interface IResource
     {
         /// <summary>
         /// Lock persistent object in shared mode. Other threads will be able to set their

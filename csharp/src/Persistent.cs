@@ -41,20 +41,20 @@ namespace Volante
             }
         }
 
-        public bool IsRaw() 
-        { 
+        public bool IsRaw()
+        {
             return (state & ObjectState.RAW) != 0;
-        } 
-    
-        public bool IsModified() 
-        { 
+        }
+
+        public bool IsModified()
+        {
             return (state & ObjectState.DIRTY) != 0;
-        } 
-   
-        public bool IsDeleted() 
-        { 
+        }
+
+        public bool IsDeleted()
+        {
             return (state & ObjectState.DELETED) != 0;
-        } 
+        }
 
         public bool IsPersistent()
         {
@@ -72,19 +72,19 @@ namespace Volante
             {
                 throw new StorageError(StorageError.ErrorCode.ACCESS_TO_STUB);
             }
-            if (storage != null) 
+            if (storage != null)
             {
                 storage.storeObject(this);
                 state &= ~ObjectState.DIRTY;
             }
         }
 
-        public void Modify() 
-        { 
-            if ((state & ObjectState.DIRTY) == 0 && oid != 0) 
-            { 
-                if ((state & ObjectState.RAW) != 0) 
-                { 
+        public void Modify()
+        {
+            if ((state & ObjectState.DIRTY) == 0 && oid != 0)
+            {
+                if ((state & ObjectState.RAW) != 0)
+                {
                     throw new StorageError(StorageError.ErrorCode.ACCESS_TO_STUB);
                 }
                 Debug.Assert((state & ObjectState.DELETED) == 0);
@@ -95,7 +95,7 @@ namespace Volante
 
         public virtual void Deallocate()
         {
-            if (oid != 0) 
+            if (oid != 0)
             {
                 storage.deallocateObject(this);
                 storage = null;
@@ -111,7 +111,7 @@ namespace Volante
 
         public override bool Equals(object o)
         {
-            return o is IPersistent && ((IPersistent) o).Oid == oid;
+            return o is IPersistent && ((IPersistent)o).Oid == oid;
         }
 
         public override int GetHashCode()
@@ -119,31 +119,31 @@ namespace Volante
             return oid;
         }
 
-        public virtual void OnLoad() 
+        public virtual void OnLoad()
         {
         }
-        
-        public virtual void OnStore() 
+
+        public virtual void OnStore()
         {
         }
-        
-        public virtual void Invalidate() 
+
+        public virtual void Invalidate()
         {
             state &= ~ObjectState.DIRTY;
             state |= ObjectState.RAW;
         }
 
-        internal protected Persistent() {}
+        internal protected Persistent() { }
 
-        protected Persistent(Storage storage) 
+        protected Persistent(Storage storage)
         {
             this.storage = storage;
-        } 
+        }
 
-        ~Persistent() 
+        ~Persistent()
         {
-            if ((state & ObjectState.DIRTY) != 0 && oid != 0) 
-            { 
+            if ((state & ObjectState.DIRTY) != 0 && oid != 0)
+            {
                 storage.storeFinalizedObject(this);
             }
             state = ObjectState.DELETED;
@@ -153,12 +153,12 @@ namespace Volante
         {
             this.oid = oid;
             this.storage = storage;
-            if (raw) 
+            if (raw)
             {
                 state |= ObjectState.RAW;
-            } 
-            else 
-            { 
+            }
+            else
+            {
                 state &= ~ObjectState.RAW;
             }
         }
@@ -171,11 +171,11 @@ namespace Volante
         internal protected ObjectState state;
 
         [Flags]
-        internal protected enum ObjectState 
+        internal protected enum ObjectState
         {
-            RAW=1,
-            DIRTY=2,
-            DELETED=4
+            RAW = 1,
+            DIRTY = 2,
+            DELETED = 4
         }
     }
 }

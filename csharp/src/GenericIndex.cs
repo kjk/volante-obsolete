@@ -4,12 +4,12 @@ namespace Volante
     using System.Collections;
     using System.Collections.Generic;
 
-    public enum IterationOrder 
+    public enum IterationOrder
     {
-        AscentOrder, 
+        AscentOrder,
         DescentOrder
     }
-    
+
     /// <summary> Interface of object index.
     /// Index is used to provide fast access to the object by key. 
     /// Object in the index are stored ordered by key value. 
@@ -18,24 +18,24 @@ namespace Volante
     /// (each boundary can be specified or unspecified and can be inclusive or exclusive)
     /// Key should be of scalar, String, java.util.Date or peristent object type.
     /// </summary>
-    public interface GenericIndex {}
+    public interface GenericIndex { }
 
-    public interface GenericIndex<K,V> : IPersistent, IResource, ICollection<V>, GenericIndex where V:class,IPersistent
+    public interface GenericIndex<K, V> : IPersistent, IResource, ICollection<V>, GenericIndex where V : class,IPersistent
     {
         /// <summary> Access element by key
         /// </summary>
-        V this[K key] 
-    {
+        V this[K key]
+        {
             get;
             set;
-        }       
+        }
 
         /// <summary> Get objects which key value belongs to the specified range.
         /// </summary>
-        V[] this[K from, K till] 
+        V[] this[K from, K till]
         {
             get;
-        }       
+        }
 
         /// <summary> Get object by key (exact match)     
         /// </summary>
@@ -223,7 +223,7 @@ namespace Volante
         /// <returns>enumerable collection</returns>
         ///
         IEnumerable<V> Reverse();
-        
+
         /// <summary>
         /// Get enumerable ascent ordered collection of objects in the index with key belonging to the specified range. 
         /// You should not update/remove or add members to the index during iteration
@@ -250,7 +250,7 @@ namespace Volante
         /// <returns>entry iterator</returns>
         ///
         IDictionaryEnumerator GetDictionaryEnumerator();
-        
+
         /// <summary>
         /// Get iterator for traversing entries in the index with key belonging to the specified range. 
         /// You should not update/remove or add members to the index during iteration
@@ -268,6 +268,6 @@ namespace Volante
         /// Get type of index key
         /// </summary>
         /// <returns>type of index key</returns>
-        Type KeyType {get;}
+        Type KeyType { get; }
     }
 }

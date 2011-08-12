@@ -1,11 +1,11 @@
 namespace Volante
-{    
+{
     using System;
 
     /// <summary>
     /// Interface to provide application apecific class loading
     /// </summary>
-    public interface ClassLoader 
+    public interface ClassLoader
     {
         /// <summary>
         /// Load class with specified name.

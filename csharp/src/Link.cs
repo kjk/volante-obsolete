@@ -7,7 +7,8 @@ namespace Volante
     /// <summary>
     /// Common interface for all links
     /// </summary>
-    public interface GenericLink {
+    public interface GenericLink
+    {
         /// <summary> Get number of the linked objects 
         /// </summary>
         /// <returns>the number of related objects
@@ -41,15 +42,15 @@ namespace Volante
         /// refefencing each other (each object can directly or indirectly 
         /// be accessed from other objects).
         /// </summary>
-        void Unpin();     
-     
-       /// <summary>
-       /// Replace references to elements with direct references.
-       /// It will impove spped of manipulations with links, but it can cause
-       /// recursive loading in memory large number of objects and as a result - memory
-       /// overflow, because garabge collector will not be able to collect them
-       /// </summary>
-       void Pin();     
+        void Unpin();
+
+        /// <summary>
+        /// Replace references to elements with direct references.
+        /// It will impove spped of manipulations with links, but it can cause
+        /// recursive loading in memory large number of objects and as a result - memory
+        /// overflow, because garabge collector will not be able to collect them
+        /// </summary>
+        void Pin();
     }
 
     /// <summary> Interface for one-to-many relation. There are two types of relations:
@@ -60,14 +61,15 @@ namespace Volante
     /// and standalone relation is represented by Relation persistent class created by
     /// Storage.createRelation method.
     /// </summary>
-    public interface Link<T> : IList<T>, GenericLink where T:class,IPersistent
+    public interface Link<T> : IList<T>, GenericLink where T : class,IPersistent
     {
         /// <summary>Number of the linked objects 
         /// </summary>
-        int Length {
-             get;
-             set;
-        }        
+        int Length
+        {
+            get;
+            set;
+        }
 
         /// <summary> Get related object by index
         /// </summary>
@@ -85,21 +87,21 @@ namespace Volante
         /// <param name="obj">object to be included in the relation     
         /// 
         /// </param>
-        void  Set(int i, T obj);
+        void Set(int i, T obj);
 
         /// <summary> Remove object with specified index from the relation
         /// </summary>
         /// <param name="i">index in the relartion
         /// 
         /// </param>
-        void  Remove(int i);
+        void Remove(int i);
 
         /// <summary> Add all elements of the array to the relation
         /// </summary>
         /// <param name="arr">array of obects which should be added to the relation
         /// 
         /// </param>
-        void  AddAll(T[] arr);
+        void AddAll(T[] arr);
 
         /// <summary> Add specified elements of the array to the relation
         /// </summary>
@@ -110,14 +112,14 @@ namespace Volante
         /// <param name="length">number of elements in the array to be added in the relation
         /// 
         /// </param>
-        void  AddAll(T[] arr, int from, int length);
+        void AddAll(T[] arr, int from, int length);
 
         /// <summary> Add all object members of the other relation to this relation
         /// </summary>
         /// <param name="link">another relation
         /// 
         /// </param>
-        void  AddAll(Link<T> link);
+        void AddAll(Link<T> link);
 
         /// <summary> Get relation members as array of objects
         /// </summary>
@@ -130,7 +132,7 @@ namespace Volante
         /// </summary>
         /// <returns>array of object with relation members used in implementation of Link class
         /// </returns>
-        Array ToRawArray(); 
+        Array ToRawArray();
 
 
         /// <summary> Get relation members as array with specifed element type

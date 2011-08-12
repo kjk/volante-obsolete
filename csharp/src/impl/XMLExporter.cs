@@ -15,7 +15,7 @@ namespace Volante.Impl
             this.writer = writer;
         }
 
-        public virtual void  exportDatabase(int rootOid)
+        public virtual void exportDatabase(int rootOid)
         {
             writer.Write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
             writer.Write("<database root=\"" + rootOid + "\">\n");
@@ -23,7 +23,7 @@ namespace Volante.Impl
             markedBitmap = new int[(storage.currIndexSize + 31) / 32];
             markedBitmap[rootOid >> 5] |= 1 << (rootOid & 31);
             int nExportedObjects;
-            do 
+            do
             {
                 nExportedObjects = 0;
                 for (int i = 0; i < markedBitmap.Length; i++)
@@ -37,25 +37,25 @@ namespace Volante.Impl
                             {
                                 int oid = (i << 5) + j;
                                 exportedBitmap[i] |= bit;
-                                markedBitmap[i] &= ~ bit;
+                                markedBitmap[i] &= ~bit;
                                 byte[] obj = storage.get(oid);
                                 int typeOid = ObjectHeader.getType(obj, 0);
                                 ClassDescriptor desc = storage.findClassDescriptor(typeOid);
                                 string name = desc.name;
-                                if (typeof(Btree).IsAssignableFrom(desc.cls)) 
+                                if (typeof(Btree).IsAssignableFrom(desc.cls))
                                 {
                                     Type t = desc.cls.GetGenericTypeDefinition();
-                                    if (t == typeof(Btree<,>) || t == typeof(BitIndex<>)) 
-                                    { 
+                                    if (t == typeof(Btree<,>) || t == typeof(BitIndex<>))
+                                    {
                                         exportIndex(oid, obj, name);
                                     }
                                     else if (t == typeof(PersistentSet<>))
                                     {
-                                         exportSet(oid, obj, name);
+                                        exportSet(oid, obj, name);
                                     }
                                     else if (t == typeof(BtreeFieldIndex<,>))
                                     {
-                                         exportFieldIndex(oid, obj, name);
+                                        exportFieldIndex(oid, obj, name);
                                     }
                                     else if (t == typeof(BtreeMultiFieldIndex<>))
                                     {
@@ -79,8 +79,8 @@ namespace Volante.Impl
             writer.Write("</database>\n");
         }
 
-        internal String exportIdentifier(String name) 
-        { 
+        internal String exportIdentifier(String name)
+        {
             name = name.Replace('+', '-');
             name = name.Replace("`", ".1");
             name = name.Replace(",", ".2");
@@ -90,15 +90,15 @@ namespace Volante.Impl
             return name;
         }
 
-        Btree createBtree(int oid, byte[] data) 
+        Btree createBtree(int oid, byte[] data)
         {
             Btree btree = storage.createBtreeStub(data, 0);
             storage.assignOid(btree, oid);
             return btree;
         }
 
-        internal void exportSet(int oid, byte[] data, string name) 
-        { 
+        internal void exportSet(int oid, byte[] data, string name)
+        {
             Btree btree = createBtree(oid, data);
             name = exportIdentifier(name);
             writer.Write(" <" + name + " id=\"" + oid + "\">\n");
@@ -106,21 +106,21 @@ namespace Volante.Impl
             writer.Write(" </" + name + ">\n");
         }
 
-        internal void  exportIndex(int oid, byte[] data, string name)
+        internal void exportIndex(int oid, byte[] data, string name)
         {
             Btree btree = createBtree(oid, data);
             name = exportIdentifier(name);
-            writer.Write(" <" + name + " id=\"" + oid + "\" unique=\"" + (btree.IsUnique ? '1' : '0') 
+            writer.Write(" <" + name + " id=\"" + oid + "\" unique=\"" + (btree.IsUnique ? '1' : '0')
                 + "\" type=\"" + btree.FieldType + "\">\n");
             btree.export(this);
             writer.Write(" </" + name + ">\n");
         }
 
-        internal void  exportFieldIndex(int oid, byte[] data, string name)
+        internal void exportFieldIndex(int oid, byte[] data, string name)
         {
             Btree btree = createBtree(oid, data);
             name = exportIdentifier(name);
-            writer.Write(" <" + name + " id=\"" + oid + "\" unique=\"" + (btree.IsUnique?'1':'0') + "\" class=");
+            writer.Write(" <" + name + " id=\"" + oid + "\" unique=\"" + (btree.IsUnique ? '1' : '0') + "\" class=");
             int offs = exportString(data, btree.HeaderSize);
             writer.Write(" field=");
             offs = exportString(data, offs);
@@ -129,17 +129,17 @@ namespace Volante.Impl
             writer.Write(" </" + name + ">\n");
         }
 
-        internal void exportMultiFieldIndex(int oid, byte[] data, string name) 
-        { 
+        internal void exportMultiFieldIndex(int oid, byte[] data, string name)
+        {
             Btree btree = createBtree(oid, data);
             name = exportIdentifier(name);
-            writer.Write(" <" + name + " id=\"" + oid + "\" unique=\"" + (btree.IsUnique ? '1' : '0') 
+            writer.Write(" <" + name + " id=\"" + oid + "\" unique=\"" + (btree.IsUnique ? '1' : '0')
                 + "\" class=");
             int offs = exportString(data, btree.HeaderSize);
             int nFields = Bytes.unpack4(data, offs);
             offs += 4;
-            for (int i = 0; i < nFields; i++) 
-            { 
+            for (int i = 0; i < nFields; i++)
+            {
                 writer.Write(" field" + i + "=");
                 offs = exportString(data, offs);
             }
@@ -147,76 +147,76 @@ namespace Volante.Impl
             int nTypes = Bytes.unpack4(data, offs);
             offs += 4;
             compoundKeyTypes = new ClassDescriptor.FieldType[nTypes];
-            for (int i = 0; i < nTypes; i++) 
-            { 
+            for (int i = 0; i < nTypes; i++)
+            {
                 compoundKeyTypes[i] = (ClassDescriptor.FieldType)Bytes.unpack4(data, offs);
                 offs += 4;
             }
-            btree.export(this); 
+            btree.export(this);
             compoundKeyTypes = null;
             writer.Write(" </" + name + ">\n");
         }
 
-        int exportKey(byte[] body, int offs, int size, ClassDescriptor.FieldType type) 
+        int exportKey(byte[] body, int offs, int size, ClassDescriptor.FieldType type)
         {
             switch (type)
             {
-                case ClassDescriptor.FieldType.tpBoolean: 
-                    writer.Write(body[offs++] != 0?"1":"0");
+                case ClassDescriptor.FieldType.tpBoolean:
+                    writer.Write(body[offs++] != 0 ? "1" : "0");
                     break;
 
-                case ClassDescriptor.FieldType.tpByte: 
-                    writer.Write(System.Convert.ToString((byte) body[offs++]));
+                case ClassDescriptor.FieldType.tpByte:
+                    writer.Write(System.Convert.ToString((byte)body[offs++]));
                     break;
 
-                case ClassDescriptor.FieldType.tpSByte: 
-                    writer.Write(System.Convert.ToString((sbyte) body[offs++]));
+                case ClassDescriptor.FieldType.tpSByte:
+                    writer.Write(System.Convert.ToString((sbyte)body[offs++]));
                     break;
 
-                case ClassDescriptor.FieldType.tpChar: 
+                case ClassDescriptor.FieldType.tpChar:
                     writer.Write(System.Convert.ToString((ushort)Bytes.unpack2(body, offs)));
                     offs += 2;
                     break;
 
-                case ClassDescriptor.FieldType.tpShort: 
+                case ClassDescriptor.FieldType.tpShort:
                     writer.Write(System.Convert.ToString((ushort)Bytes.unpack2(body, offs)));
                     offs += 2;
                     break;
 
-                case ClassDescriptor.FieldType.tpUShort: 
+                case ClassDescriptor.FieldType.tpUShort:
                     writer.Write(System.Convert.ToString((ushort)Bytes.unpack2(body, offs)));
                     offs += 2;
                     break;
 
-                case ClassDescriptor.FieldType.tpInt: 
+                case ClassDescriptor.FieldType.tpInt:
                     writer.Write(System.Convert.ToString(Bytes.unpack4(body, offs)));
                     offs += 4;
                     break;
 
-                case ClassDescriptor.FieldType.tpUInt: 
-                case ClassDescriptor.FieldType.tpObject:  
-                case ClassDescriptor.FieldType.tpOid:  
+                case ClassDescriptor.FieldType.tpUInt:
+                case ClassDescriptor.FieldType.tpObject:
+                case ClassDescriptor.FieldType.tpOid:
                 case ClassDescriptor.FieldType.tpEnum:
                     writer.Write(System.Convert.ToString((uint)Bytes.unpack4(body, offs)));
                     offs += 4;
                     break;
 
-                case ClassDescriptor.FieldType.tpLong: 
+                case ClassDescriptor.FieldType.tpLong:
                     writer.Write(System.Convert.ToString(Bytes.unpack8(body, offs)));
                     offs += 8;
                     break;
 
-                case ClassDescriptor.FieldType.tpULong: 
+                case ClassDescriptor.FieldType.tpULong:
                     writer.Write(System.Convert.ToString((ulong)Bytes.unpack8(body, offs)));
                     offs += 8;
                     break;
 
-                case ClassDescriptor.FieldType.tpFloat: 
+                case ClassDescriptor.FieldType.tpFloat:
                     writer.Write(System.Convert.ToString(Bytes.unpackF4(body, offs)));
                     offs += 4;
                     break;
 
-                case ClassDescriptor.FieldType.tpDouble: 
+                case ClassDescriptor.FieldType.tpDouble:
                     writer.Write(System.Convert.ToString(Bytes.unpackF8(body, offs)));
                     offs += 8;
                     break;
@@ -231,24 +231,24 @@ namespace Volante.Impl
                     offs += 16;
                     break;
 
-                case ClassDescriptor.FieldType.tpString: 
+                case ClassDescriptor.FieldType.tpString:
                     for (int i = 0; i < size; i++)
                     {
-                        exportChar((char) Bytes.unpack2(body, offs));
+                        exportChar((char)Bytes.unpack2(body, offs));
                         offs += 2;
                     }
                     break;
 
                 case ClassDescriptor.FieldType.tpArrayOfByte:
-                    for (int i = 0; i < size; i++) 
-                    { 
+                    for (int i = 0; i < size; i++)
+                    {
                         byte b = body[offs++];
                         writer.Write(hexDigit[(b >> 4) & 0xF]);
                         writer.Write(hexDigit[b & 0xF]);
                     }
                     break;
 
-                case ClassDescriptor.FieldType.tpDate: 
+                case ClassDescriptor.FieldType.tpDate:
                     writer.Write(Bytes.unpackDate(body, offs).ToString());
                     offs += 8;
                     break;
@@ -256,42 +256,42 @@ namespace Volante.Impl
                 default:
                     Debug.Assert(false, "Invalid type");
                     break;
-            }              
-            return offs;                                            
+            }
+            return offs;
         }
-                                                                    
-        void exportCompoundKey(byte[] body, int offs, int size, ClassDescriptor.FieldType type) 
-        { 
+
+        void exportCompoundKey(byte[] body, int offs, int size, ClassDescriptor.FieldType type)
+        {
             Debug.Assert(type == ClassDescriptor.FieldType.tpArrayOfByte);
             int end = offs + size;
-            for (int i = 0; i < compoundKeyTypes.Length; i++) 
-            { 
+            for (int i = 0; i < compoundKeyTypes.Length; i++)
+            {
                 type = compoundKeyTypes[i];
-                if (type == ClassDescriptor.FieldType.tpArrayOfByte || type == ClassDescriptor.FieldType.tpString) 
-                { 
+                if (type == ClassDescriptor.FieldType.tpArrayOfByte || type == ClassDescriptor.FieldType.tpString)
+                {
                     size = Bytes.unpack4(body, offs);
                     offs += 4;
                 }
                 writer.Write(" key" + i + "=\"");
-                offs = exportKey(body, offs, size, type); 
+                offs = exportKey(body, offs, size, type);
                 writer.Write("\"");
             }
             Debug.Assert(offs == end);
         }
 
-        internal void  exportAssoc(int oid, byte[] body, int offs, int size, ClassDescriptor.FieldType type)
+        internal void exportAssoc(int oid, byte[] body, int offs, int size, ClassDescriptor.FieldType type)
         {
             writer.Write("  <ref id=\"" + oid + "\"");
             if ((exportedBitmap[oid >> 5] & (1 << (oid & 31))) == 0)
             {
                 markedBitmap[oid >> 5] |= 1 << (oid & 31);
             }
-            if (compoundKeyTypes != null) 
-            { 
+            if (compoundKeyTypes != null)
+            {
                 exportCompoundKey(body, offs, size, type);
-            } 
-            else 
-            { 
+            }
+            else
+            {
                 writer.Write(" key=\"");
                 exportKey(body, offs, size, type);
                 writer.Write("\"");
@@ -299,7 +299,7 @@ namespace Volante.Impl
             writer.Write("/>\n");
         }
 
-        internal void  indentation(int indent)
+        internal void indentation(int indent)
         {
             while (--indent >= 0)
             {
@@ -307,27 +307,27 @@ namespace Volante.Impl
             }
         }
 
-        internal void  exportChar(char ch)
+        internal void exportChar(char ch)
         {
             switch (ch)
             {
-                case '<': 
+                case '<':
                     writer.Write("&lt;");
                     break;
 
-                case '>': 
+                case '>':
                     writer.Write("&gt;");
                     break;
 
-                case '&': 
+                case '&':
                     writer.Write("&amp;");
                     break;
 
-                case '"': 
+                case '"':
                     writer.Write("&quot;");
                     break;
 
-                default: 
+                default:
                     writer.Write(ch);
                     break;
 
@@ -343,26 +343,26 @@ namespace Volante.Impl
                 writer.Write("\"");
                 while (--len >= 0)
                 {
-                    exportChar((char) Bytes.unpack2(body, offs));
+                    exportChar((char)Bytes.unpack2(body, offs));
                     offs += 2;
                 }
                 writer.Write("\"");
-            } 
-            else if (len < -1) 
-            { 
-                writer.Write("\"");   
+            }
+            else if (len < -1)
+            {
+                writer.Write("\"");
                 string s;
-                if (storage.encoding != null) 
-                { 
-                    s = storage.encoding.GetString(body, offs, -len-2);
-                } 
-                else 
-                { 
-                    s = Encoding.Default.GetString(body, offs, -len-2);
+                if (storage.encoding != null)
+                {
+                    s = storage.encoding.GetString(body, offs, -len - 2);
                 }
-                offs -= len+2;
-                for (int i = 0, n = s.Length; i < n; i++) 
-                { 
+                else
+                {
+                    s = Encoding.Default.GetString(body, offs, -len - 2);
+                }
+                offs -= len + 2;
+                for (int i = 0, n = s.Length; i < n; i++)
+                {
                     exportChar(s[i]);
                 }
             }
@@ -373,13 +373,13 @@ namespace Volante.Impl
             return offs;
         }
 
-        internal static char[] hexDigit = new char[]{'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
+        internal static char[] hexDigit = new char[] { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
 
-        internal void exportRef(int oid) 
-        { 
+        internal void exportRef(int oid)
+        {
             writer.Write("<ref id=\"" + oid + "\"/>");
-            if (oid != 0 && (exportedBitmap[oid >> 5] & (1 << (oid & 31))) == 0) 
-            { 
+            if (oid != 0 && (exportedBitmap[oid >> 5] & (1 << (oid & 31))) == 0)
+            {
                 markedBitmap[oid >> 5] |= 1 << (oid & 31);
             }
         }
@@ -388,35 +388,35 @@ namespace Volante.Impl
         {
             int len = Bytes.unpack4(body, offs);
             offs += 4;
-            if (len < 0) 
-            { 
-                if (len == -2-(int)ClassDescriptor.FieldType.tpObject) 
-                { 
+            if (len < 0)
+            {
+                if (len == -2 - (int)ClassDescriptor.FieldType.tpObject)
+                {
                     exportRef(Bytes.unpack4(body, offs));
                     offs += 4;
-                } 
-                else if (len < -1) 
-                { 
+                }
+                else if (len < -1)
+                {
                     writer.Write("\"#");
-                    writer.Write(hexDigit[-2-len]);
-                    len = ClassDescriptor.Sizeof[-2-len];
-                    while (--len >= 0) 
+                    writer.Write(hexDigit[-2 - len]);
+                    len = ClassDescriptor.Sizeof[-2 - len];
+                    while (--len >= 0)
                     {
                         byte b = body[offs++];
                         writer.Write(hexDigit[(b >> 4) & 0xF]);
                         writer.Write(hexDigit[b & 0xF]);
                     }
                     writer.Write('\"');
-                } 
-                else 
-                { 
+                }
+                else
+                {
                     writer.Write("null");
                 }
-            } 
-            else 
+            }
+            else
             {
                 writer.Write('\"');
-                while (--len >= 0) 
+                while (--len >= 0)
                 {
                     byte b = body[offs++];
                     writer.Write(hexDigit[(b >> 4) & 0xF]);
@@ -426,7 +426,7 @@ namespace Volante.Impl
             }
             return offs;
         }
-    
+
         internal int exportObject(ClassDescriptor desc, byte[] body, int offs, int indent)
         {
             ClassDescriptor.FieldDescriptor[] all = desc.allFields;
@@ -440,34 +440,34 @@ namespace Volante.Impl
                 writer.Write("<" + fieldName + ">");
                 switch (fd.type)
                 {
-                    case ClassDescriptor.FieldType.tpBoolean: 
-                        writer.Write(body[offs++] != 0?"1":"0");
+                    case ClassDescriptor.FieldType.tpBoolean:
+                        writer.Write(body[offs++] != 0 ? "1" : "0");
                         break;
 
-                    case ClassDescriptor.FieldType.tpByte: 
-                        writer.Write(System.Convert.ToString((byte) body[offs++]));
+                    case ClassDescriptor.FieldType.tpByte:
+                        writer.Write(System.Convert.ToString((byte)body[offs++]));
                         break;
 
-                    case ClassDescriptor.FieldType.tpSByte: 
-                        writer.Write(System.Convert.ToString((sbyte) body[offs++]));
+                    case ClassDescriptor.FieldType.tpSByte:
+                        writer.Write(System.Convert.ToString((sbyte)body[offs++]));
                         break;
 
-                    case ClassDescriptor.FieldType.tpChar: 
+                    case ClassDescriptor.FieldType.tpChar:
                         writer.Write(System.Convert.ToString((ushort)Bytes.unpack2(body, offs)));
                         offs += 2;
                         break;
 
-                    case ClassDescriptor.FieldType.tpShort: 
+                    case ClassDescriptor.FieldType.tpShort:
                         writer.Write(System.Convert.ToString((ushort)Bytes.unpack2(body, offs)));
                         offs += 2;
                         break;
 
-                    case ClassDescriptor.FieldType.tpUShort: 
+                    case ClassDescriptor.FieldType.tpUShort:
                         writer.Write(System.Convert.ToString((ushort)Bytes.unpack2(body, offs)));
                         offs += 2;
                         break;
 
-                    case ClassDescriptor.FieldType.tpInt: 
+                    case ClassDescriptor.FieldType.tpInt:
                         writer.Write(System.Convert.ToString(Bytes.unpack4(body, offs)));
                         offs += 4;
                         break;
@@ -477,27 +477,27 @@ namespace Volante.Impl
                         offs += 4;
                         break;
 
-                    case ClassDescriptor.FieldType.tpUInt: 
+                    case ClassDescriptor.FieldType.tpUInt:
                         writer.Write(System.Convert.ToString((uint)Bytes.unpack4(body, offs)));
                         offs += 4;
                         break;
 
-                    case ClassDescriptor.FieldType.tpLong: 
+                    case ClassDescriptor.FieldType.tpLong:
                         writer.Write(System.Convert.ToString(Bytes.unpack8(body, offs)));
                         offs += 8;
                         break;
 
-                    case ClassDescriptor.FieldType.tpULong: 
+                    case ClassDescriptor.FieldType.tpULong:
                         writer.Write(System.Convert.ToString((ulong)Bytes.unpack8(body, offs)));
                         offs += 8;
                         break;
 
-                    case ClassDescriptor.FieldType.tpFloat: 
+                    case ClassDescriptor.FieldType.tpFloat:
                         writer.Write(System.Convert.ToString(Bytes.unpackF4(body, offs)));
                         offs += 4;
                         break;
 
-                    case ClassDescriptor.FieldType.tpDouble: 
+                    case ClassDescriptor.FieldType.tpDouble:
                         writer.Write(System.Convert.ToString(Bytes.unpackF8(body, offs)));
                         offs += 8;
                         break;
@@ -512,444 +512,444 @@ namespace Volante.Impl
                         offs += 16;
                         break;
 
-                    case ClassDescriptor.FieldType.tpString: 
+                    case ClassDescriptor.FieldType.tpString:
                         offs = exportString(body, offs);
                         break;
 
-                    case ClassDescriptor.FieldType.tpDate: 
-                    {
-                        long msec = Bytes.unpack8(body, offs);
-                        offs += 8;
-                        if (msec >= 0)
+                    case ClassDescriptor.FieldType.tpDate:
                         {
-                            writer.Write("\"" + new System.DateTime(msec) + "\"");
+                            long msec = Bytes.unpack8(body, offs);
+                            offs += 8;
+                            if (msec >= 0)
+                            {
+                                writer.Write("\"" + new System.DateTime(msec) + "\"");
+                            }
+                            else
+                            {
+                                writer.Write("null");
+                            }
+                            break;
                         }
-                        else
-                        {
-                            writer.Write("null");
-                        }
-                        break;
-                    }
 
-                    case ClassDescriptor.FieldType.tpObject: 
-                    case ClassDescriptor.FieldType.tpOid: 
+                    case ClassDescriptor.FieldType.tpObject:
+                    case ClassDescriptor.FieldType.tpOid:
                         exportRef(Bytes.unpack4(body, offs));
                         offs += 4;
                         break;
 
-                    case ClassDescriptor.FieldType.tpValue: 
+                    case ClassDescriptor.FieldType.tpValue:
                         writer.Write('\n');
                         offs = exportObject(fd.valueDesc, body, offs, indent + 1);
                         indentation(indent);
                         break;
 
-                    case ClassDescriptor.FieldType.tpRaw: 
-                    case ClassDescriptor.FieldType.tpArrayOfByte: 
-                    case ClassDescriptor.FieldType.tpArrayOfSByte: 
+                    case ClassDescriptor.FieldType.tpRaw:
+                    case ClassDescriptor.FieldType.tpArrayOfByte:
+                    case ClassDescriptor.FieldType.tpArrayOfSByte:
                         offs = exportBinary(body, offs);
                         break;
 
-                    case ClassDescriptor.FieldType.tpArrayOfBoolean: 
-                    {
-                        int len = Bytes.unpack4(body, offs);
-                        offs += 4;
-                        if (len < 0)
+                    case ClassDescriptor.FieldType.tpArrayOfBoolean:
                         {
-                            writer.Write("null");
-                        }
-                        else
-                        {
-                            writer.Write('\n');
-                            while (--len >= 0)
+                            int len = Bytes.unpack4(body, offs);
+                            offs += 4;
+                            if (len < 0)
                             {
-                                indentation(indent + 1);
-                                writer.Write("<element>" + (body[offs++] != 0?"1":"0") + "</element>\n");
+                                writer.Write("null");
                             }
-                            indentation(indent);
-                        }
-                        break;
-                    }
-
-                    case ClassDescriptor.FieldType.tpArrayOfChar: 
-                    {
-                        int len = Bytes.unpack4(body, offs);
-                        offs += 4;
-                        if (len < 0)
-                        {
-                            writer.Write("null");
-                        }
-                        else
-                        {
-                            writer.Write('\n');
-                            while (--len >= 0)
+                            else
                             {
-                                indentation(indent + 1);
-                                writer.Write("<element>" + (Bytes.unpack2(body, offs) & 0xFFFF) + "</element>\n");
-                                offs += 2;
-                            }
-                            indentation(indent);
-                        }
-                        break;
-                    }
-
-                    case ClassDescriptor.FieldType.tpArrayOfShort: 
-                    {
-                        int len = Bytes.unpack4(body, offs);
-                        offs += 4;
-                        if (len < 0)
-                        {
-                            writer.Write("null");
-                        }
-                        else
-                        {
-                            writer.Write('\n');
-                            while (--len >= 0)
-                            {
-                                indentation(indent + 1);
-                                writer.Write("<element>" + Bytes.unpack2(body, offs) + "</element>\n");
-                                offs += 2;
-                            }
-                            indentation(indent);
-                        }
-                        break;
-                    }
-
-                    case ClassDescriptor.FieldType.tpArrayOfUShort: 
-                    {
-                        int len = Bytes.unpack4(body, offs);
-                        offs += 4;
-                        if (len < 0)
-                        {
-                            writer.Write("null");
-                        }
-                        else
-                        {
-                            writer.Write('\n');
-                            while (--len >= 0)
-                            {
-                                indentation(indent + 1);
-                                writer.Write("<element>" + (ushort)Bytes.unpack2(body, offs) + "</element>\n");
-                                offs += 2;
-                            }
-                            indentation(indent);
-                        }
-                        break;
-                    }
-
-                    case ClassDescriptor.FieldType.tpArrayOfInt: 
-                    {
-                        int len = Bytes.unpack4(body, offs);
-                        offs += 4;
-                        if (len < 0)
-                        {
-                            writer.Write("null");
-                        }
-                        else
-                        {
-                            writer.Write('\n');
-                            while (--len >= 0)
-                            {
-                                indentation(indent + 1);
-                                writer.Write("<element>" + Bytes.unpack4(body, offs) + "</element>\n");
-                                offs += 4;
-                            }
-                            indentation(indent);
-                        }
-                        break;
-                    }
-
-                    case ClassDescriptor.FieldType.tpArrayOfEnum: 
-                    {
-                        int len = Bytes.unpack4(body, offs);
-                        offs += 4;
-                        if (len < 0)
-                        {
-                            writer.Write("null");
-                        }
-                        else
-                        {
-                            Type elemType = f.FieldType.GetElementType();
-                            writer.Write('\n');
-                            while (--len >= 0)
-                            {
-                                indentation(indent + 1);
-                                writer.Write("<element>" + Enum.ToObject(elemType, Bytes.unpack4(body, offs)) + "</element>\n");
-                                offs += 4;
-                            }
-                            indentation(indent);
-                        }
-                        break;
-                    }
-
-                    case ClassDescriptor.FieldType.tpArrayOfUInt: 
-                    {
-                        int len = Bytes.unpack4(body, offs);
-                        offs += 4;
-                        if (len < 0)
-                        {
-                            writer.Write("null");
-                        }
-                        else
-                        {
-                            writer.Write('\n');
-                            while (--len >= 0)
-                            {
-                                indentation(indent + 1);
-                                writer.Write("<element>" + (uint)Bytes.unpack4(body, offs) + "</element>\n");
-                                offs += 4;
-                            }
-                            indentation(indent);
-                        }
-                        break;
-                    }
-
-                    case ClassDescriptor.FieldType.tpArrayOfLong: 
-                    {
-                        int len = Bytes.unpack4(body, offs);
-                        offs += 4;
-                        if (len < 0)
-                        {
-                            writer.Write("null");
-                        }
-                        else
-                        {
-                            writer.Write('\n');
-                            while (--len >= 0)
-                            {
-                                indentation(indent + 1);
-                                writer.Write("<element>" + Bytes.unpack8(body, offs) + "</element>\n");
-                                offs += 8;
-                            }
-                            indentation(indent);
-                        }
-                        break;
-                    }
-
-                    case ClassDescriptor.FieldType.tpArrayOfULong: 
-                    {
-                        int len = Bytes.unpack4(body, offs);
-                        offs += 4;
-                        if (len < 0)
-                        {
-                            writer.Write("null");
-                        }
-                        else
-                        {
-                            writer.Write('\n');
-                            while (--len >= 0)
-                            {
-                                indentation(indent + 1);
-                                writer.Write("<element>" + (ulong)Bytes.unpack8(body, offs) + "</element>\n");
-                                offs += 8;
-                            }
-                            indentation(indent);
-                        }
-                        break;
-                    }
-
-                    case ClassDescriptor.FieldType.tpArrayOfFloat: 
-                    {
-                        int len = Bytes.unpack4(body, offs);
-                        offs += 4;
-                        if (len < 0)
-                        {
-                            writer.Write("null");
-                        }
-                        else
-                        {
-                            writer.Write('\n');
-                            while (--len >= 0)
-                            {
-                                indentation(indent + 1);
-                                writer.Write("<element>" + Bytes.unpackF4(body, offs) + "</element>\n");
-                                offs += 4;
-                            }
-                            indentation(indent);
-                        }
-                        break;
-                    }
-
-                    case ClassDescriptor.FieldType.tpArrayOfDouble: 
-                    {
-                        int len = Bytes.unpack4(body, offs);
-                        offs += 4;
-                        if (len < 0)
-                        {
-                            writer.Write("null");
-                        }
-                        else
-                        {
-                            writer.Write('\n');
-                            while (--len >= 0)
-                            {
-                                indentation(indent + 1);
-                                writer.Write("<element>" + Bytes.unpackF8(body, offs) + "</element>\n");
-                                offs += 8;
-                            }
-                            indentation(indent);
-                        }
-                        break;
-                    }
-
-                    case ClassDescriptor.FieldType.tpArrayOfDate: 
-                    {
-                        int len = Bytes.unpack4(body, offs);
-                        offs += 4;
-                        if (len < 0)
-                        {
-                            writer.Write("null");
-                        }
-                        else
-                        {
-                            writer.Write('\n');
-                            while (--len >= 0)
-                            {
-                                indentation(indent + 1);
-                                writer.Write("<element>\"" + Bytes.unpackDate(body, offs) + "\"</element>\n");
-                                offs += 8;
-                            }
-                        }
-                        break;
-                    }
-
-                    case ClassDescriptor.FieldType.tpArrayOfGuid: 
-                    {
-                        int len = Bytes.unpack4(body, offs);
-                        offs += 4;
-                        if (len < 0)
-                        {
-                            writer.Write("null");
-                        }
-                        else
-                        {
-                            writer.Write('\n');
-                            while (--len >= 0)
-                            {
-                                writer.Write("<element>\"" + Bytes.unpackGuid(body, offs) + "\"</element>\n");
-                                offs += 16;
-                            }
-                        }
-                        break;
-                    }
-
-                    case ClassDescriptor.FieldType.tpArrayOfDecimal: 
-                    {
-                        int len = Bytes.unpack4(body, offs);
-                        offs += 4;
-                        if (len < 0)
-                        {
-                            writer.Write("null");
-                        }
-                        else
-                        {
-                            writer.Write('\n');
-                            while (--len >= 0)
-                            {
-                                writer.Write("<element>\"" + Bytes.unpackDecimal(body, offs) + "\"</element>\n");
-                                offs += 16;
-                            }
-                        }
-                        break;
-                    }
-
-                    case ClassDescriptor.FieldType.tpArrayOfString: 
-                    {
-                        int len = Bytes.unpack4(body, offs);
-                        offs += 4;
-                        if (len < 0)
-                        {
-                            writer.Write("null");
-                        }
-                        else
-                        {
-                            writer.Write('\n');
-                            while (--len >= 0)
-                            {
-                                indentation(indent + 1);
-                                writer.Write("<element>");
-                                offs = exportString(body, offs);
-                                writer.Write("</element>\n");
-                            }
-                            indentation(indent);
-                        }
-                        break;
-                    }
-
-                    case ClassDescriptor.FieldType.tpLink: 
-                    case ClassDescriptor.FieldType.tpArrayOfObject: 
-                    case ClassDescriptor.FieldType.tpArrayOfOid: 
-                    {
-                        int len = Bytes.unpack4(body, offs);
-                        offs += 4;
-                        if (len < 0)
-                        {
-                            writer.Write("null");
-                        }
-                        else
-                        {
-                            writer.Write('\n');
-                            while (--len >= 0)
-                            {
-                                indentation(indent + 1);
-                                int oid = Bytes.unpack4(body, offs);
-                                if (oid != 0 && (exportedBitmap[oid >> 5] & (1 << (oid & 31))) == 0)
+                                writer.Write('\n');
+                                while (--len >= 0)
                                 {
-                                    markedBitmap[oid >> 5] |= 1 << (oid & 31);
+                                    indentation(indent + 1);
+                                    writer.Write("<element>" + (body[offs++] != 0 ? "1" : "0") + "</element>\n");
                                 }
-                                writer.Write("<element><ref id=\"" + oid + "\"/></element>\n");
-                                offs += 4;
+                                indentation(indent);
                             }
-                            indentation(indent);
+                            break;
                         }
-                        break;
-                    }
 
-                    case ClassDescriptor.FieldType.tpArrayOfValue: 
-                    {
-                        int len = Bytes.unpack4(body, offs);
-                        offs += 4;
-                        if (len < 0)
+                    case ClassDescriptor.FieldType.tpArrayOfChar:
                         {
-                            writer.Write("null");
-                        }
-                        else
-                        {
-                            writer.Write('\n');
-                            while (--len >= 0)
+                            int len = Bytes.unpack4(body, offs);
+                            offs += 4;
+                            if (len < 0)
                             {
-                                indentation(indent + 1);
-                                writer.Write("<element>\n");
-                                offs = exportObject(fd.valueDesc, body, offs, indent + 2);
-                                indentation(indent + 1);
-                                writer.Write("</element>\n");
+                                writer.Write("null");
                             }
-                            indentation(indent);
+                            else
+                            {
+                                writer.Write('\n');
+                                while (--len >= 0)
+                                {
+                                    indentation(indent + 1);
+                                    writer.Write("<element>" + (Bytes.unpack2(body, offs) & 0xFFFF) + "</element>\n");
+                                    offs += 2;
+                                }
+                                indentation(indent);
+                            }
+                            break;
                         }
-                        break;
-                    }
 
-                    case ClassDescriptor.FieldType.tpArrayOfRaw: 
-                    {
-                        int len = Bytes.unpack4(body, offs);
-                        offs += 4;
-                        if (len < 0)
+                    case ClassDescriptor.FieldType.tpArrayOfShort:
                         {
-                            writer.Write("null");
-                        }
-                        else
-                        {
-                            writer.Write('\n');
-                            while (--len >= 0)
+                            int len = Bytes.unpack4(body, offs);
+                            offs += 4;
+                            if (len < 0)
                             {
-                                indentation(indent+1);
-                                writer.Write("<element>");
-                                offs = exportBinary(body, offs);
-                                writer.Write("</element>\n");
+                                writer.Write("null");
                             }
-                            indentation(indent);
+                            else
+                            {
+                                writer.Write('\n');
+                                while (--len >= 0)
+                                {
+                                    indentation(indent + 1);
+                                    writer.Write("<element>" + Bytes.unpack2(body, offs) + "</element>\n");
+                                    offs += 2;
+                                }
+                                indentation(indent);
+                            }
+                            break;
                         }
-                        break;
-                    }
+
+                    case ClassDescriptor.FieldType.tpArrayOfUShort:
+                        {
+                            int len = Bytes.unpack4(body, offs);
+                            offs += 4;
+                            if (len < 0)
+                            {
+                                writer.Write("null");
+                            }
+                            else
+                            {
+                                writer.Write('\n');
+                                while (--len >= 0)
+                                {
+                                    indentation(indent + 1);
+                                    writer.Write("<element>" + (ushort)Bytes.unpack2(body, offs) + "</element>\n");
+                                    offs += 2;
+                                }
+                                indentation(indent);
+                            }
+                            break;
+                        }
+
+                    case ClassDescriptor.FieldType.tpArrayOfInt:
+                        {
+                            int len = Bytes.unpack4(body, offs);
+                            offs += 4;
+                            if (len < 0)
+                            {
+                                writer.Write("null");
+                            }
+                            else
+                            {
+                                writer.Write('\n');
+                                while (--len >= 0)
+                                {
+                                    indentation(indent + 1);
+                                    writer.Write("<element>" + Bytes.unpack4(body, offs) + "</element>\n");
+                                    offs += 4;
+                                }
+                                indentation(indent);
+                            }
+                            break;
+                        }
+
+                    case ClassDescriptor.FieldType.tpArrayOfEnum:
+                        {
+                            int len = Bytes.unpack4(body, offs);
+                            offs += 4;
+                            if (len < 0)
+                            {
+                                writer.Write("null");
+                            }
+                            else
+                            {
+                                Type elemType = f.FieldType.GetElementType();
+                                writer.Write('\n');
+                                while (--len >= 0)
+                                {
+                                    indentation(indent + 1);
+                                    writer.Write("<element>" + Enum.ToObject(elemType, Bytes.unpack4(body, offs)) + "</element>\n");
+                                    offs += 4;
+                                }
+                                indentation(indent);
+                            }
+                            break;
+                        }
+
+                    case ClassDescriptor.FieldType.tpArrayOfUInt:
+                        {
+                            int len = Bytes.unpack4(body, offs);
+                            offs += 4;
+                            if (len < 0)
+                            {
+                                writer.Write("null");
+                            }
+                            else
+                            {
+                                writer.Write('\n');
+                                while (--len >= 0)
+                                {
+                                    indentation(indent + 1);
+                                    writer.Write("<element>" + (uint)Bytes.unpack4(body, offs) + "</element>\n");
+                                    offs += 4;
+                                }
+                                indentation(indent);
+                            }
+                            break;
+                        }
+
+                    case ClassDescriptor.FieldType.tpArrayOfLong:
+                        {
+                            int len = Bytes.unpack4(body, offs);
+                            offs += 4;
+                            if (len < 0)
+                            {
+                                writer.Write("null");
+                            }
+                            else
+                            {
+                                writer.Write('\n');
+                                while (--len >= 0)
+                                {
+                                    indentation(indent + 1);
+                                    writer.Write("<element>" + Bytes.unpack8(body, offs) + "</element>\n");
+                                    offs += 8;
+                                }
+                                indentation(indent);
+                            }
+                            break;
+                        }
+
+                    case ClassDescriptor.FieldType.tpArrayOfULong:
+                        {
+                            int len = Bytes.unpack4(body, offs);
+                            offs += 4;
+                            if (len < 0)
+                            {
+                                writer.Write("null");
+                            }
+                            else
+                            {
+                                writer.Write('\n');
+                                while (--len >= 0)
+                                {
+                                    indentation(indent + 1);
+                                    writer.Write("<element>" + (ulong)Bytes.unpack8(body, offs) + "</element>\n");
+                                    offs += 8;
+                                }
+                                indentation(indent);
+                            }
+                            break;
+                        }
+
+                    case ClassDescriptor.FieldType.tpArrayOfFloat:
+                        {
+                            int len = Bytes.unpack4(body, offs);
+                            offs += 4;
+                            if (len < 0)
+                            {
+                                writer.Write("null");
+                            }
+                            else
+                            {
+                                writer.Write('\n');
+                                while (--len >= 0)
+                                {
+                                    indentation(indent + 1);
+                                    writer.Write("<element>" + Bytes.unpackF4(body, offs) + "</element>\n");
+                                    offs += 4;
+                                }
+                                indentation(indent);
+                            }
+                            break;
+                        }
+
+                    case ClassDescriptor.FieldType.tpArrayOfDouble:
+                        {
+                            int len = Bytes.unpack4(body, offs);
+                            offs += 4;
+                            if (len < 0)
+                            {
+                                writer.Write("null");
+                            }
+                            else
+                            {
+                                writer.Write('\n');
+                                while (--len >= 0)
+                                {
+                                    indentation(indent + 1);
+                                    writer.Write("<element>" + Bytes.unpackF8(body, offs) + "</element>\n");
+                                    offs += 8;
+                                }
+                                indentation(indent);
+                            }
+                            break;
+                        }
+
+                    case ClassDescriptor.FieldType.tpArrayOfDate:
+                        {
+                            int len = Bytes.unpack4(body, offs);
+                            offs += 4;
+                            if (len < 0)
+                            {
+                                writer.Write("null");
+                            }
+                            else
+                            {
+                                writer.Write('\n');
+                                while (--len >= 0)
+                                {
+                                    indentation(indent + 1);
+                                    writer.Write("<element>\"" + Bytes.unpackDate(body, offs) + "\"</element>\n");
+                                    offs += 8;
+                                }
+                            }
+                            break;
+                        }
+
+                    case ClassDescriptor.FieldType.tpArrayOfGuid:
+                        {
+                            int len = Bytes.unpack4(body, offs);
+                            offs += 4;
+                            if (len < 0)
+                            {
+                                writer.Write("null");
+                            }
+                            else
+                            {
+                                writer.Write('\n');
+                                while (--len >= 0)
+                                {
+                                    writer.Write("<element>\"" + Bytes.unpackGuid(body, offs) + "\"</element>\n");
+                                    offs += 16;
+                                }
+                            }
+                            break;
+                        }
+
+                    case ClassDescriptor.FieldType.tpArrayOfDecimal:
+                        {
+                            int len = Bytes.unpack4(body, offs);
+                            offs += 4;
+                            if (len < 0)
+                            {
+                                writer.Write("null");
+                            }
+                            else
+                            {
+                                writer.Write('\n');
+                                while (--len >= 0)
+                                {
+                                    writer.Write("<element>\"" + Bytes.unpackDecimal(body, offs) + "\"</element>\n");
+                                    offs += 16;
+                                }
+                            }
+                            break;
+                        }
+
+                    case ClassDescriptor.FieldType.tpArrayOfString:
+                        {
+                            int len = Bytes.unpack4(body, offs);
+                            offs += 4;
+                            if (len < 0)
+                            {
+                                writer.Write("null");
+                            }
+                            else
+                            {
+                                writer.Write('\n');
+                                while (--len >= 0)
+                                {
+                                    indentation(indent + 1);
+                                    writer.Write("<element>");
+                                    offs = exportString(body, offs);
+                                    writer.Write("</element>\n");
+                                }
+                                indentation(indent);
+                            }
+                            break;
+                        }
+
+                    case ClassDescriptor.FieldType.tpLink:
+                    case ClassDescriptor.FieldType.tpArrayOfObject:
+                    case ClassDescriptor.FieldType.tpArrayOfOid:
+                        {
+                            int len = Bytes.unpack4(body, offs);
+                            offs += 4;
+                            if (len < 0)
+                            {
+                                writer.Write("null");
+                            }
+                            else
+                            {
+                                writer.Write('\n');
+                                while (--len >= 0)
+                                {
+                                    indentation(indent + 1);
+                                    int oid = Bytes.unpack4(body, offs);
+                                    if (oid != 0 && (exportedBitmap[oid >> 5] & (1 << (oid & 31))) == 0)
+                                    {
+                                        markedBitmap[oid >> 5] |= 1 << (oid & 31);
+                                    }
+                                    writer.Write("<element><ref id=\"" + oid + "\"/></element>\n");
+                                    offs += 4;
+                                }
+                                indentation(indent);
+                            }
+                            break;
+                        }
+
+                    case ClassDescriptor.FieldType.tpArrayOfValue:
+                        {
+                            int len = Bytes.unpack4(body, offs);
+                            offs += 4;
+                            if (len < 0)
+                            {
+                                writer.Write("null");
+                            }
+                            else
+                            {
+                                writer.Write('\n');
+                                while (--len >= 0)
+                                {
+                                    indentation(indent + 1);
+                                    writer.Write("<element>\n");
+                                    offs = exportObject(fd.valueDesc, body, offs, indent + 2);
+                                    indentation(indent + 1);
+                                    writer.Write("</element>\n");
+                                }
+                                indentation(indent);
+                            }
+                            break;
+                        }
+
+                    case ClassDescriptor.FieldType.tpArrayOfRaw:
+                        {
+                            int len = Bytes.unpack4(body, offs);
+                            offs += 4;
+                            if (len < 0)
+                            {
+                                writer.Write("null");
+                            }
+                            else
+                            {
+                                writer.Write('\n');
+                                while (--len >= 0)
+                                {
+                                    indentation(indent + 1);
+                                    writer.Write("<element>");
+                                    offs = exportBinary(body, offs);
+                                    writer.Write("</element>\n");
+                                }
+                                indentation(indent);
+                            }
+                            break;
+                        }
                 }
                 writer.Write("</" + fieldName + ">\n");
             }

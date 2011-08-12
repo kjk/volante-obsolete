@@ -5,32 +5,32 @@ namespace Volante.Impl
     using Volante;
 
 
-    public class BlobImpl : PersistentResource, Blob 
-    { 
-        long     size;
+    public class BlobImpl : PersistentResource, Blob
+    {
+        long size;
         BlobImpl next;
-        byte[]   body;
+        byte[] body;
 
-        class BlobStream : Stream 
+        class BlobStream : Stream
         {
             protected BlobImpl curr;
             protected BlobImpl first;
-            protected int      offs;
-            protected long     pos;
-            protected long     currPos;
-            protected long     size;
+            protected int offs;
+            protected long pos;
+            protected long currPos;
+            protected long size;
 
-            public override bool CanRead 
+            public override bool CanRead
             {
-                get 
+                get
                 {
                     return true;
                 }
             }
-              
-            public override bool CanSeek  
+
+            public override bool CanSeek
             {
-                get 
+                get
                 {
                     return true;
                 }
@@ -38,29 +38,29 @@ namespace Volante.Impl
 
             public override bool CanWrite
             {
-                get 
+                get
                 {
                     return true;
                 }
             }
-            
-            public override long  Length 
+
+            public override long Length
             {
-                get 
+                get
                 {
                     return size;
                 }
             }
-            
-            public override long Position 
+
+            public override long Position
             {
-                get 
+                get
                 {
                     return currPos;
                 }
-                set 
+                set
                 {
-                    if (value < 0) 
+                    if (value < 0)
                     {
                         throw new ArgumentException("Nagative position");
                     }
@@ -79,37 +79,37 @@ namespace Volante.Impl
             {
             }
 
-            protected void SetPointer() 
+            protected void SetPointer()
             {
                 long skip = currPos;
-                if (skip < pos) 
+                if (skip < pos)
                 {
                     curr = first;
                     offs = 0;
                     pos = 0;
-                } 
-                else 
+                }
+                else
                 {
                     skip -= pos;
                 }
-                     
-                while (skip > 0) 
-                { 
-                    if (offs == curr.body.Length) 
-                    { 
-                        if (curr.next == null) 
-                        { 
+
+                while (skip > 0)
+                {
+                    if (offs == curr.body.Length)
+                    {
+                        if (curr.next == null)
+                        {
                             curr.Modify();
                             curr = curr.next = new BlobImpl(curr.body.Length);
-                        } 
-                        else 
+                        }
+                        else
                         {
                             curr = curr.next;
                             curr.Load();
                         }
                         offs = 0;
                     }
-                    int n = skip > curr.body.Length - offs ? curr.body.Length - offs : (int)skip; 
+                    int n = skip > curr.body.Length - offs ? curr.body.Length - offs : (int)skip;
                     pos += n;
                     skip -= n;
                     offs += n;
@@ -118,26 +118,26 @@ namespace Volante.Impl
 
             public override int Read(byte[] buffer, int dst, int count)
             {
-                if (currPos >= size) 
-                { 
+                if (currPos >= size)
+                {
                     return 0;
                 }
                 SetPointer();
 
-                if (count > size - pos) 
-                { 
+                if (count > size - pos)
+                {
                     count = (int)(size - pos);
                 }
                 int beg = dst;
-                while (count > 0) 
-                { 
-                    if (offs == curr.body.Length) 
-                    { 
+                while (count > 0)
+                {
+                    if (offs == curr.body.Length)
+                    {
                         curr = curr.next;
                         curr.Load();
                         offs = 0;
                     }
-                    int n = count > curr.body.Length - offs ? curr.body.Length - offs : count; 
+                    int n = count > curr.body.Length - offs ? curr.body.Length - offs : count;
                     Array.Copy(curr.body, offs, buffer, dst, n);
                     pos += n;
                     dst += n;
@@ -151,7 +151,7 @@ namespace Volante.Impl
             public override long Seek(long offset, SeekOrigin origin)
             {
                 long newPos = -1;
-                switch (origin) 
+                switch (origin)
                 {
                     case SeekOrigin.Begin:
                         newPos = offset;
@@ -163,30 +163,30 @@ namespace Volante.Impl
                         newPos = size - offset;
                         break;
                 }
-                if (newPos < 0) 
+                if (newPos < 0)
                 {
                     throw new ArgumentException("Negative position");
                 }
                 currPos = newPos;
                 return newPos;
             }
-             
+
 
             public override void SetLength(long length)
             {
                 BlobImpl blob = first;
                 size = 0;
-                if (length > 0) 
-                { 
-                    while (length > blob.body.Length)  
+                if (length > 0)
+                {
+                    while (length > blob.body.Length)
                     {
                         size += blob.body.Length;
-                        if (blob.next == null) 
-                        { 
+                        if (blob.next == null)
+                        {
                             blob.Modify();
                             blob = blob.next = new BlobImpl(blob.body.Length);
-                        } 
-                        else 
+                        }
+                        else
                         {
                             blob = blob.next;
                             blob.Load();
@@ -194,12 +194,12 @@ namespace Volante.Impl
                     }
                     size += length;
                 }
-                if (pos > size) 
-                { 
+                if (pos > size)
+                {
                     pos = size;
                     curr = blob;
                 }
-                if (blob.next != null) 
+                if (blob.next != null)
                 {
                     BlobImpl.DeallocateAll(blob.next);
                     blob.Modify();
@@ -209,27 +209,27 @@ namespace Volante.Impl
                 first.size = size;
             }
 
-            public override void Write(byte[] buffer, int src, int count) 
+            public override void Write(byte[] buffer, int src, int count)
             {
                 SetPointer();
 
-                while (count > 0) 
-                { 
-                    if (offs == curr.body.Length) 
-                    { 
-                        if (curr.next == null) 
-                        { 
+                while (count > 0)
+                {
+                    if (offs == curr.body.Length)
+                    {
+                        if (curr.next == null)
+                        {
                             curr.Modify();
                             curr = curr.next = new BlobImpl(curr.body.Length);
-                        } 
-                        else 
+                        }
+                        else
                         {
                             curr = curr.next;
                             curr.Load();
                         }
                         offs = 0;
                     }
-                    int n = count > curr.body.Length - offs ? curr.body.Length - offs : count; 
+                    int n = count > curr.body.Length - offs ? curr.body.Length - offs : count;
                     curr.Modify();
                     Array.Copy(buffer, src, curr.body, offs, n);
                     pos += n;
@@ -238,7 +238,7 @@ namespace Volante.Impl
                     count -= n;
                 }
                 currPos = pos;
-                if (pos > size) 
+                if (pos > size)
                 {
                     size = pos;
                     first.Modify();
@@ -258,10 +258,10 @@ namespace Volante.Impl
             }
         }
 
-        static protected void DeallocateAll(BlobImpl curr) 
+        static protected void DeallocateAll(BlobImpl curr)
         {
-            while (curr != null) 
-            {                
+            while (curr != null)
+            {
                 curr.Load();
                 BlobImpl next = curr.next;
                 curr.Deallocate();
@@ -272,7 +272,7 @@ namespace Volante.Impl
         public override void Deallocate()
         {
             Load();
-            if (size != 0) 
+            if (size != 0)
             {
                 DeallocateAll(next);
             }
@@ -280,8 +280,8 @@ namespace Volante.Impl
         }
 
 
-        public override bool RecursiveLoading() 
-        { 
+        public override bool RecursiveLoading()
+        {
             return false;
         }
 
@@ -290,11 +290,11 @@ namespace Volante.Impl
             return new BlobStream(this);
         }
 
-        protected internal BlobImpl(int size) 
-        { 
+        protected internal BlobImpl(int size)
+        {
             body = new byte[size];
         }
 
-        internal BlobImpl() {}
-    }   
+        internal BlobImpl() { }
+    }
 }

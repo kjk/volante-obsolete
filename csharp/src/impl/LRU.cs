@@ -1,4 +1,4 @@
-namespace Volante.Impl        
+namespace Volante.Impl
 {
     using System;
     using Volante;

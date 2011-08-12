@@ -3,10 +3,10 @@ namespace Volante
     using System;
     using System.Threading;
     using System.Collections;
-	
+
     /// <summary>Base class for persistent capable objects supporting locking
     /// </summary>
-    public class PersistentResource : Persistent, IResource 
+    public class PersistentResource : Persistent, IResource
     {
 #if CF
         class WaitContext 
@@ -167,165 +167,165 @@ namespace Volante
             }
         }
 #else
-        public void SharedLock()    
+        public void SharedLock()
         {
-            lock (this) 
-            { 
+            lock (this)
+            {
                 Thread currThread = Thread.CurrentThread;
-                while (true) 
-                { 
-                    if (owner == currThread) 
-                    { 
+                while (true)
+                {
+                    if (owner == currThread)
+                    {
                         nWriters += 1;
                         break;
-                    } 
-                    else if (nWriters == 0) 
-                    { 
-                        if (nReaders == 0 && storage != null) 
-                        { 
+                    }
+                    else if (nWriters == 0)
+                    {
+                        if (nReaders == 0 && storage != null)
+                        {
                             storage.lockObject(this);
                         }
                         nReaders += 1;
                         break;
-                    } 
-                    else 
-                    { 
+                    }
+                    else
+                    {
                         Monitor.Wait(this);
                     }
                 }
             }
         }
-                    
-        public bool SharedLock(long timeout) 
+
+        public bool SharedLock(long timeout)
         {
             Thread currThread = Thread.CurrentThread;
             DateTime startTime = DateTime.Now;
             TimeSpan ts = TimeSpan.FromMilliseconds(timeout);
-            lock (this) 
-            { 
-                while (true) 
-                { 
-                    if (owner == currThread) 
-                    { 
+            lock (this)
+            {
+                while (true)
+                {
+                    if (owner == currThread)
+                    {
                         nWriters += 1;
                         return true;
-                    } 
-                    else if (nWriters == 0) 
-                    { 
-                        if (nReaders == 0 && storage != null) 
-                        { 
+                    }
+                    else if (nWriters == 0)
+                    {
+                        if (nReaders == 0 && storage != null)
+                        {
                             storage.lockObject(this);
                         }
                         nReaders += 1;
                         return true;
-                    } 
-                    else 
-                    { 
+                    }
+                    else
+                    {
                         DateTime currTime = DateTime.Now;
-                        if (startTime + ts <= currTime) 
-                        { 
+                        if (startTime + ts <= currTime)
+                        {
                             return false;
                         }
                         Monitor.Wait(this, startTime + ts - currTime);
                     }
                 }
-            } 
+            }
         }
-    
-                    
-        public void ExclusiveLock() 
+
+
+        public void ExclusiveLock()
         {
             Thread currThread = Thread.CurrentThread;
             lock (this)
-            { 
-                while (true) 
-                { 
-                    if (owner == currThread) 
-                    { 
+            {
+                while (true)
+                {
+                    if (owner == currThread)
+                    {
                         nWriters += 1;
                         break;
-                    } 
-                    else if (nReaders == 0 && nWriters == 0) 
-                    { 
+                    }
+                    else if (nReaders == 0 && nWriters == 0)
+                    {
                         nWriters = 1;
                         owner = currThread;
-                        if (storage != null) 
-                        { 
+                        if (storage != null)
+                        {
                             storage.lockObject(this);
                         }
                         break;
-                    } 
-                    else 
-                    { 
+                    }
+                    else
+                    {
                         Monitor.Wait(this);
                     }
                 }
-            } 
+            }
         }
-                    
-        public bool ExclusiveLock(long timeout) 
+
+        public bool ExclusiveLock(long timeout)
         {
             Thread currThread = Thread.CurrentThread;
             TimeSpan ts = TimeSpan.FromMilliseconds(timeout);
             DateTime startTime = DateTime.Now;
-            lock (this) 
-            { 
-                while (true) 
-                { 
-                    if (owner == currThread) 
-                    { 
+            lock (this)
+            {
+                while (true)
+                {
+                    if (owner == currThread)
+                    {
                         nWriters += 1;
                         return true;
-                    } 
-                    else if (nReaders == 0 && nWriters == 0) 
-                    { 
+                    }
+                    else if (nReaders == 0 && nWriters == 0)
+                    {
                         nWriters = 1;
                         owner = currThread;
-                        if (storage != null) 
-                        { 
+                        if (storage != null)
+                        {
                             storage.lockObject(this);
                         }
                         return true;
-                    } 
-                    else 
-                    { 
+                    }
+                    else
+                    {
                         DateTime currTime = DateTime.Now;
-                        if (startTime + ts <= currTime) 
-                        { 
+                        if (startTime + ts <= currTime)
+                        {
                             return false;
                         }
                         Monitor.Wait(this, startTime + ts - currTime);
                     }
                 }
-            } 
+            }
         }
 
-        public void Unlock() 
+        public void Unlock()
         {
-            lock (this) 
-            { 
-                if (nWriters != 0) 
-                { 
-                    if (--nWriters == 0) 
-                    { 
+            lock (this)
+            {
+                if (nWriters != 0)
+                {
+                    if (--nWriters == 0)
+                    {
                         owner = null;
                         Monitor.PulseAll(this);
                     }
-                } 
+                }
                 else if (nReaders != 0)
-                { 
-                    if (--nReaders == 0) 
-                    { 
+                {
+                    if (--nReaders == 0)
+                    {
                         Monitor.PulseAll(this);
                     }
                 }
             }
         }
 
-        public void Reset() 
-        { 
-            lock (this) 
-            { 
+        public void Reset()
+        {
+            lock (this)
+            {
                 nReaders = 0;
                 nWriters = 0;
                 owner = null;
@@ -334,16 +334,16 @@ namespace Volante
         }
 
 #endif
-        internal protected PersistentResource() {}
+        internal protected PersistentResource() { }
 
-        internal protected PersistentResource(Storage storage) 
-            : base(storage) {}
+        internal protected PersistentResource(Storage storage)
+            : base(storage) { }
 
         [NonSerialized()]
         private Thread owner;
         [NonSerialized()]
-        private int    nReaders;
+        private int nReaders;
         [NonSerialized()]
-        private int    nWriters;
+        private int nWriters;
     }
 }

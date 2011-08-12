@@ -7,9 +7,8 @@ namespace Volante
     ///<summary>
     /// Interface of objects set
     /// </summary>
-    public interface ISet<T> : IPersistent, IResource, ICollection<T> where T:class,IPersistent
+    public interface ISet<T> : IPersistent, IResource, ICollection<T> where T : class,IPersistent
     {
-
         /// <summary>
         /// Check if the set contains all members from specified collection
         /// </summary>
@@ -24,7 +23,7 @@ namespace Volante
         /// <returns><code>true</code> if at least one element was added to the set,
         /// <code>false</code> if now new elements were added</returns>
         bool AddAll(ICollection<T> c);
-    
+
         /// <summary>
         /// Remove from the set all members from the specified enumerator
         /// </summary>
@@ -37,7 +36,7 @@ namespace Volante
         /// </summary>
         /// <returns>array of object with set members</returns>
         T[] ToArray();
-        
+
         /// <summary>
         /// Copy all set members to an array of specified type
         /// </summary>

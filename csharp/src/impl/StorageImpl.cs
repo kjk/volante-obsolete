@@ -1,4 +1,4 @@
-namespace Volante.Impl    
+namespace Volante.Impl
 {
     using System;
     using System.Collections;
@@ -11,7 +11,7 @@ namespace Volante.Impl
 
     public class StorageImpl : Storage
     {
-        public const int DEFAULT_PAGE_POOL_SIZE = 4*1024*1024;
+        public const int DEFAULT_PAGE_POOL_SIZE = 4 * 1024 * 1024;
 
 #if CF
         static StorageImpl() 
@@ -51,7 +51,7 @@ namespace Volante.Impl
                 }
             }
         }
- 
+
         /// <summary> Initialial database index size - increasing it reduce number of inde reallocation but increase
         /// initial database size. Should be set before openning connection.
         /// </summary>
@@ -97,15 +97,15 @@ namespace Volante.Impl
                 throw new StorageError(StorageError.ErrorCode.STORAGE_NOT_OPENED);
             }
         }
-                
-        int getBitmapPageId(int i) 
-        { 
-            return i < dbBitmapPages ? dbBitmapId + i : header.root[1-currIndex].bitmapExtent + i;
+
+        int getBitmapPageId(int i)
+        {
+            return i < dbBitmapPages ? dbBitmapId + i : header.root[1 - currIndex].bitmapExtent + i;
         }
 
         internal long getPos(int oid)
         {
-            lock (objectCache) 
+            lock (objectCache)
             {
                 if (oid == 0 || oid >= currIndexSize)
                 {
@@ -120,7 +120,7 @@ namespace Volante.Impl
 
         internal void setPos(int oid, long pos)
         {
-            lock (objectCache) 
+            lock (objectCache)
             {
                 dirtyPagesMap[oid >> (dbHandlesPerPageBits + 5)] |= 1 << ((oid >> dbHandlesPerPageBits) & 31);
                 Page pg = pool.putPage(header.root[1 - currIndex].index + ((long)(oid >> dbHandlesPerPageBits) << Page.pageBits));
@@ -136,7 +136,7 @@ namespace Volante.Impl
             {
                 throw new StorageError(StorageError.ErrorCode.INVALID_OID);
             }
-            return pool.get(pos & ~ dbFlagsMask);
+            return pool.get(pos & ~dbFlagsMask);
         }
 
         internal Page getPage(int oid)
@@ -146,12 +146,12 @@ namespace Volante.Impl
             {
                 throw new StorageError(StorageError.ErrorCode.DELETED_OBJECT);
             }
-            return pool.getPage(pos & ~ dbFlagsMask);
+            return pool.getPage(pos & ~dbFlagsMask);
         }
 
         internal Page putPage(int oid)
         {
-            lock (objectCache) 
+            lock (objectCache)
             {
                 long pos = getPos(oid);
                 if ((pos & (dbFreeHandleFlag | dbPageObjectFlag)) != dbPageObjectFlag)
@@ -162,11 +162,11 @@ namespace Volante.Impl
                 {
                     dirtyPagesMap[oid >> (dbHandlesPerPageBits + 5)] |= 1 << ((oid >> dbHandlesPerPageBits) & 31);
                     allocate(Page.pageSize, oid);
-                    cloneBitmap(pos & ~ dbFlagsMask, Page.pageSize);
+                    cloneBitmap(pos & ~dbFlagsMask, Page.pageSize);
                     pos = getPos(oid);
                 }
                 modified = true;
-                return pool.putPage(pos & ~ dbFlagsMask);
+                return pool.putPage(pos & ~dbFlagsMask);
             }
         }
 
@@ -177,32 +177,32 @@ namespace Volante.Impl
             return oid;
         }
 
-        public void  deallocateObject(IPersistent obj)
+        public void deallocateObject(IPersistent obj)
         {
             lock (this)
             {
-                lock (objectCache) 
-                { 
+                lock (objectCache)
+                {
                     int oid = obj.Oid;
-                    if (oid == 0) 
-                    { 
+                    if (oid == 0)
+                    {
                         return;
-                    }       
+                    }
                     long pos = getPos(oid);
                     objectCache.remove(oid);
-                    int offs = (int) pos & (Page.pageSize - 1);
+                    int offs = (int)pos & (Page.pageSize - 1);
                     if ((offs & (dbFreeHandleFlag | dbPageObjectFlag)) != 0)
                     {
                         throw new StorageError(StorageError.ErrorCode.DELETED_OBJECT);
                     }
                     Page pg = pool.getPage(pos - offs);
-                    offs &= ~ dbFlagsMask;
+                    offs &= ~dbFlagsMask;
                     int size = ObjectHeader.getSize(pg.data, offs);
                     pool.unfix(pg);
                     freeId(oid);
-                    if ((pos & dbModifiedFlag) != 0) 
+                    if ((pos & dbModifiedFlag) != 0)
                     {
-                        free(pos & ~ dbFlagsMask, size);
+                        free(pos & ~dbFlagsMask, size);
                     }
                     else
                     {
@@ -213,31 +213,31 @@ namespace Volante.Impl
             }
         }
 
-        internal void  freePage(int oid)
+        internal void freePage(int oid)
         {
             long pos = getPos(oid);
             Debug.Assert((pos & (dbFreeHandleFlag | dbPageObjectFlag)) == dbPageObjectFlag);
             if ((pos & dbModifiedFlag) != 0)
             {
-                free(pos & ~ dbFlagsMask, Page.pageSize);
+                free(pos & ~dbFlagsMask, Page.pageSize);
             }
             else
             {
-                cloneBitmap(pos & ~ dbFlagsMask, Page.pageSize);
+                cloneBitmap(pos & ~dbFlagsMask, Page.pageSize);
             }
             freeId(oid);
         }
 
         virtual protected bool isDirty()
-        { 
-             return header.dirty;
+        {
+            return header.dirty;
         }
 
-        internal void setDirty() 
+        internal void setDirty()
         {
             modified = true;
-            if (!header.dirty) 
-            { 
+            if (!header.dirty)
+            {
                 header.dirty = true;
                 Page pg = pool.putPage(0);
                 header.pack(pg.data);
@@ -248,16 +248,16 @@ namespace Volante.Impl
 
         internal int allocateId()
         {
-            lock (objectCache) 
+            lock (objectCache)
             {
                 int oid;
                 int curr = 1 - currIndex;
                 setDirty();
                 if ((oid = header.root[curr].freeList) != 0)
                 {
-                    header.root[curr].freeList = (int) (getPos(oid) >> dbFlagsBits);
+                    header.root[curr].freeList = (int)(getPos(oid) >> dbFlagsBits);
                     Debug.Assert(header.root[curr].freeList >= 0);
-                    dirtyPagesMap[oid >> (dbHandlesPerPageBits + 5)] 
+                    dirtyPagesMap[oid >> (dbHandlesPerPageBits + 5)]
                         |= 1 << ((oid >> dbHandlesPerPageBits) & 31);
                     return oid;
                 }
@@ -266,27 +266,27 @@ namespace Volante.Impl
                 {
                     int oldIndexSize = header.root[curr].indexSize;
                     int newIndexSize = oldIndexSize * 2;
-                    if (newIndexSize < oldIndexSize) 
-                    { 
-                        newIndexSize = int.MaxValue & ~(dbHandlesPerPage-1);
-                        if (newIndexSize <= oldIndexSize) 
-                        { 
+                    if (newIndexSize < oldIndexSize)
+                    {
+                        newIndexSize = int.MaxValue & ~(dbHandlesPerPage - 1);
+                        if (newIndexSize <= oldIndexSize)
+                        {
                             throw new StorageError(StorageError.ErrorCode.NOT_ENOUGH_SPACE);
                         }
                     }
-                    long newIndex = allocate(newIndexSize*8L, 0);
-                    if (currIndexSize >= header.root[curr].indexSize) 
+                    long newIndex = allocate(newIndexSize * 8L, 0);
+                    if (currIndexSize >= header.root[curr].indexSize)
                     {
                         long oldIndex = header.root[curr].index;
-                        pool.copy(newIndex, oldIndex, currIndexSize*8L);
+                        pool.copy(newIndex, oldIndex, currIndexSize * 8L);
                         header.root[curr].index = newIndex;
                         header.root[curr].indexSize = newIndexSize;
-                        free(oldIndex, oldIndexSize*8L);
-                    } 
-                    else 
-                    { 
+                        free(oldIndex, oldIndexSize * 8L);
+                    }
+                    else
+                    {
                         // index was already reallocated
-                        free(newIndex, newIndexSize*8L);
+                        free(newIndex, newIndexSize * 8L);
                     }
                 }
                 oid = currIndexSize;
@@ -298,17 +298,17 @@ namespace Volante.Impl
 
         internal void freeId(int oid)
         {
-            lock (objectCache) 
+            lock (objectCache)
             {
-                setPos(oid, ((long) (header.root[1 - currIndex].freeList) << dbFlagsBits) | dbFreeHandleFlag);
+                setPos(oid, ((long)(header.root[1 - currIndex].freeList) << dbFlagsBits) | dbFreeHandleFlag);
                 header.root[1 - currIndex].freeList = oid;
             }
         }
 
-        internal static byte[] firstHoleSize = new byte[]{8, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 6, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 7, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 6, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0};
-        internal static byte[] lastHoleSize = new byte[]{8, 7, 6, 6, 5, 5, 5, 5, 4, 4, 4, 4, 4, 4, 4, 4, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-        internal static byte[] maxHoleSize = new byte[]{8, 7, 6, 6, 5, 5, 5, 5, 4, 4, 4, 4, 4, 4, 4, 4, 4, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 5, 4, 3, 3, 2, 2, 2, 2, 3, 2, 2, 2, 2, 2, 2, 2, 4, 3, 2, 2, 2, 2, 2, 2, 3, 2, 2, 2, 2, 2, 2, 2, 6, 5, 4, 4, 3, 3, 3, 3, 3, 2, 2, 2, 2, 2, 2, 2, 4, 3, 2, 2, 2, 1, 1, 1, 3, 2, 1, 1, 2, 1, 1, 1, 5, 4, 3, 3, 2, 2, 2, 2, 3, 2, 1, 1, 2, 1, 1, 1, 4, 3, 2, 2, 2, 1, 1, 1, 3, 2, 1, 1, 2, 1, 1, 1, 7, 6, 5, 5, 4, 4, 4, 4, 3, 3, 3, 3, 3, 3, 3, 3, 4, 3, 2, 2, 2, 2, 2, 2, 3, 2, 2, 2, 2, 2, 2, 2, 5, 4, 3, 3, 2, 2, 2, 2, 3, 2, 1, 1, 2, 1, 1, 1, 4, 3, 2, 2, 2, 1, 1, 1, 3, 2, 1, 1, 2, 1, 1, 1, 6, 5, 4, 4, 3, 3, 3, 3, 3, 2, 2, 2, 2, 2, 2, 2, 4, 3, 2, 2, 2, 1, 1, 1, 3, 2, 1, 1, 2, 1, 1, 1, 5, 4, 3, 3, 2, 2, 2, 2, 3, 2, 1, 1, 2, 1, 1, 1, 4, 3, 2, 2, 2, 1, 1, 1, 3, 2, 1, 1, 2, 1, 1, 0};
-        internal static byte[] maxHoleOffset = new byte[]{0, 1, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 0, 1, 5, 5, 5, 5, 5, 5, 0, 5, 5, 5, 5, 5, 5, 5, 0, 1, 2, 2, 0, 3, 3, 3, 0, 1, 6, 6, 0, 6, 6, 6, 0, 1, 2, 2, 0, 6, 6, 6, 0, 1, 6, 6, 0, 6, 6, 6, 0, 1, 2, 2, 3, 3, 3, 3, 0, 1, 4, 4, 0, 4, 4, 4, 0, 1, 2, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 5, 0, 1, 2, 2, 0, 3, 3, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 2, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 7, 0, 1, 2, 2, 3, 3, 3, 3, 0, 4, 4, 4, 4, 4, 4, 4, 0, 1, 2, 2, 0, 5, 5, 5, 0, 1, 5, 5, 0, 5, 5, 5, 0, 1, 2, 2, 0, 3, 3, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 2, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 6, 0, 1, 2, 2, 3, 3, 3, 3, 0, 1, 4, 4, 0, 4, 4, 4, 0, 1, 2, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 5, 0, 1, 2, 2, 0, 3, 3, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 2, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 0};
+        internal static byte[] firstHoleSize = new byte[] { 8, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 6, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 7, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 6, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0 };
+        internal static byte[] lastHoleSize = new byte[] { 8, 7, 6, 6, 5, 5, 5, 5, 4, 4, 4, 4, 4, 4, 4, 4, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+        internal static byte[] maxHoleSize = new byte[] { 8, 7, 6, 6, 5, 5, 5, 5, 4, 4, 4, 4, 4, 4, 4, 4, 4, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 5, 4, 3, 3, 2, 2, 2, 2, 3, 2, 2, 2, 2, 2, 2, 2, 4, 3, 2, 2, 2, 2, 2, 2, 3, 2, 2, 2, 2, 2, 2, 2, 6, 5, 4, 4, 3, 3, 3, 3, 3, 2, 2, 2, 2, 2, 2, 2, 4, 3, 2, 2, 2, 1, 1, 1, 3, 2, 1, 1, 2, 1, 1, 1, 5, 4, 3, 3, 2, 2, 2, 2, 3, 2, 1, 1, 2, 1, 1, 1, 4, 3, 2, 2, 2, 1, 1, 1, 3, 2, 1, 1, 2, 1, 1, 1, 7, 6, 5, 5, 4, 4, 4, 4, 3, 3, 3, 3, 3, 3, 3, 3, 4, 3, 2, 2, 2, 2, 2, 2, 3, 2, 2, 2, 2, 2, 2, 2, 5, 4, 3, 3, 2, 2, 2, 2, 3, 2, 1, 1, 2, 1, 1, 1, 4, 3, 2, 2, 2, 1, 1, 1, 3, 2, 1, 1, 2, 1, 1, 1, 6, 5, 4, 4, 3, 3, 3, 3, 3, 2, 2, 2, 2, 2, 2, 2, 4, 3, 2, 2, 2, 1, 1, 1, 3, 2, 1, 1, 2, 1, 1, 1, 5, 4, 3, 3, 2, 2, 2, 2, 3, 2, 1, 1, 2, 1, 1, 1, 4, 3, 2, 2, 2, 1, 1, 1, 3, 2, 1, 1, 2, 1, 1, 0 };
+        internal static byte[] maxHoleOffset = new byte[] { 0, 1, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 0, 1, 5, 5, 5, 5, 5, 5, 0, 5, 5, 5, 5, 5, 5, 5, 0, 1, 2, 2, 0, 3, 3, 3, 0, 1, 6, 6, 0, 6, 6, 6, 0, 1, 2, 2, 0, 6, 6, 6, 0, 1, 6, 6, 0, 6, 6, 6, 0, 1, 2, 2, 3, 3, 3, 3, 0, 1, 4, 4, 0, 4, 4, 4, 0, 1, 2, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 5, 0, 1, 2, 2, 0, 3, 3, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 2, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 7, 0, 1, 2, 2, 3, 3, 3, 3, 0, 4, 4, 4, 4, 4, 4, 4, 0, 1, 2, 2, 0, 5, 5, 5, 0, 1, 5, 5, 0, 5, 5, 5, 0, 1, 2, 2, 0, 3, 3, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 2, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 6, 0, 1, 2, 2, 3, 3, 3, 3, 0, 1, 4, 4, 0, 4, 4, 4, 0, 1, 2, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 5, 0, 1, 2, 2, 0, 3, 3, 3, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 2, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 0 };
 
         internal const int pageBits = Page.pageSize * 8;
         internal const int inc = Page.pageSize / dbAllocationQuantum / 8;
@@ -316,7 +316,7 @@ namespace Volante.Impl
         internal static void memset(Page pg, int offs, int pattern, int len)
         {
             byte[] arr = pg.data;
-            byte pat = (byte) pattern;
+            byte pat = (byte)pattern;
             while (--len >= 0)
             {
                 arr[offs++] = pat;
@@ -324,22 +324,22 @@ namespace Volante.Impl
         }
 
         public long UsedSize
-        { 
-            get       
-            { 
+        {
+            get
+            {
                 return usedSize;
             }
         }
 
         public long DatabaseSize
-        { 
-            get 
-            { 
-                return header.root[1-currIndex].size;
+        {
+            get
+            {
+                return header.root[1 - currIndex].size;
             }
         }
 
-        internal void  extend(long size)
+        internal void extend(long size)
         {
             if (size > header.root[1 - currIndex].size)
             {
@@ -380,25 +380,25 @@ namespace Volante.Impl
             reservedChain = reservedChain.next;
         }
 
-        Page putBitmapPage(int i) 
-        { 
+        Page putBitmapPage(int i)
+        {
             return putPage(getBitmapPageId(i));
         }
 
-        Page getBitmapPage(int i) 
-        { 
+        Page getBitmapPage(int i)
+        {
             return getPage(getBitmapPageId(i));
         }
 
         internal long allocate(long size, int oid)
         {
-            lock (objectCache) 
+            lock (objectCache)
             {
                 setDirty();
-                size = (size + dbAllocationQuantum - 1) & ~ (dbAllocationQuantum - 1);
+                size = (size + dbAllocationQuantum - 1) & ~(dbAllocationQuantum - 1);
                 Debug.Assert(size != 0);
                 allocatedDelta += size;
-                if (allocatedDelta > gcThreshold) 
+                if (allocatedDelta > gcThreshold)
                 {
                     gc0();
                 }
@@ -410,7 +410,7 @@ namespace Volante.Impl
                 int offs, firstPage, lastPage, i, j;
                 int holeBeforeFreePage = 0;
                 int freeBitmapPage = 0;
-                int  curr = 1 - currIndex;
+                int curr = 1 - currIndex;
                 Page pg;
 
                 lastPage = header.root[curr].bitmapEnd - dbBitmapId;
@@ -419,7 +419,7 @@ namespace Volante.Impl
                 if (alignment == 0)
                 {
                     firstPage = currPBitmapPage;
-                    offs = (currPBitmapOffs + inc - 1) & ~ (inc - 1);
+                    offs = (currPBitmapOffs + inc - 1) & ~(inc - 1);
                 }
                 else
                 {
@@ -429,45 +429,45 @@ namespace Volante.Impl
 
                 while (true)
                 {
-                    if (alignment == 0) 
-                    { 
+                    if (alignment == 0)
+                    {
                         // allocate page object 
                         for (i = firstPage; i < lastPage; i++)
                         {
-                            int spaceNeeded = objBitSize - holeBitSize < pageBits 
+                            int spaceNeeded = objBitSize - holeBitSize < pageBits
                                 ? objBitSize - holeBitSize : pageBits;
-                            if (bitmapPageAvailableSpace[i] <= spaceNeeded) 
+                            if (bitmapPageAvailableSpace[i] <= spaceNeeded)
                             {
                                 holeBitSize = 0;
                                 offs = 0;
                                 continue;
                             }
                             pg = getBitmapPage(i);
-                            int startOffs = offs;   
-                            while (offs < Page.pageSize) 
-                            { 
-                                if (pg.data[offs++] != 0) 
-                                { 
-                                    offs = (offs + inc - 1) & ~(inc-1);
+                            int startOffs = offs;
+                            while (offs < Page.pageSize)
+                            {
+                                if (pg.data[offs++] != 0)
+                                {
+                                    offs = (offs + inc - 1) & ~(inc - 1);
                                     holeBitSize = 0;
-                                } 
-                                else if ((holeBitSize += 8) == objBitSize) 
-                                { 
-                                    pos = (((long)i*Page.pageSize + offs)*8 - holeBitSize) 
+                                }
+                                else if ((holeBitSize += 8) == objBitSize)
+                                {
+                                    pos = (((long)i * Page.pageSize + offs) * 8 - holeBitSize)
                                         << dbAllocationQuantumBits;
-                                    if (wasReserved(pos, size)) 
-                                    { 
+                                    if (wasReserved(pos, size))
+                                    {
                                         offs += objBitSize >> 3;
-                                        startOffs = offs = (offs+inc-1) & ~(inc-1);
+                                        startOffs = offs = (offs + inc - 1) & ~(inc - 1);
                                         holeBitSize = 0;
                                         continue;
-                                    }       
+                                    }
                                     reserveLocation(pos, size);
                                     currPBitmapPage = i;
                                     currPBitmapOffs = offs;
                                     extend(pos + size);
-                                    if (oid != 0) 
-                                    { 
+                                    if (oid != 0)
+                                    {
                                         long prev = getPos(oid);
                                         uint marker = (uint)prev & dbFlagsMask;
                                         pool.copy(pos, prev - marker, size);
@@ -476,146 +476,30 @@ namespace Volante.Impl
                                     pool.unfix(pg);
                                     pg = putBitmapPage(i);
                                     int holeBytes = holeBitSize >> 3;
-                                    if (holeBytes > offs) 
-                                    { 
+                                    if (holeBytes > offs)
+                                    {
                                         memset(pg, 0, 0xFF, offs);
                                         holeBytes -= offs;
                                         pool.unfix(pg);
                                         pg = putBitmapPage(--i);
                                         offs = Page.pageSize;
                                     }
-                                    while (holeBytes > Page.pageSize) 
-                                    { 
+                                    while (holeBytes > Page.pageSize)
+                                    {
                                         memset(pg, 0, 0xFF, Page.pageSize);
                                         holeBytes -= Page.pageSize;
                                         bitmapPageAvailableSpace[i] = 0;
                                         pool.unfix(pg);
                                         pg = putBitmapPage(--i);
                                     }
-                                    memset(pg, offs-holeBytes, 0xFF, holeBytes);
+                                    memset(pg, offs - holeBytes, 0xFF, holeBytes);
                                     commitLocation();
                                     pool.unfix(pg);
                                     return pos;
                                 }
                             }
                             if (startOffs == 0 && holeBitSize == 0
-                                && spaceNeeded < bitmapPageAvailableSpace[i]) 
-                            { 
-                                bitmapPageAvailableSpace[i] = spaceNeeded;
-                            }
-                            offs = 0;
-                            pool.unfix(pg);
-                        }
-                    } 
-                    else 
-                    { 
-                        for (i = firstPage; i < lastPage; i++)
-                        {
-                            int spaceNeeded = objBitSize - holeBitSize < pageBits 
-                                ? objBitSize - holeBitSize : pageBits;
-                            if (bitmapPageAvailableSpace[i] <= spaceNeeded) 
-                            {
-                                holeBitSize = 0;
-                                offs = 0;
-                                continue;
-                            }
-                            pg = getBitmapPage(i);
-                            int startOffs = offs;
-                            while (offs < Page.pageSize) 
-                            { 
-                                int mask = pg.data[offs] & 0xFF; 
-                                if (holeBitSize + firstHoleSize[mask] >= objBitSize) 
-                                { 
-                                    pos = (((long)i*Page.pageSize + offs)*8 
-                                        - holeBitSize) << dbAllocationQuantumBits;
-                                    if (wasReserved(pos, size)) 
-                                    {                       
-                                        startOffs = offs += (objBitSize + 7) >> 3;
-                                        holeBitSize = 0;
-                                        continue;
-                                    }       
-                                    reserveLocation(pos, size);
-                                    currRBitmapPage = i;
-                                    currRBitmapOffs = offs;
-                                    extend(pos + size);
-                                    if (oid != 0) 
-                                    { 
-                                        long prev = getPos(oid);
-                                        uint marker = (uint)prev & dbFlagsMask;
-                                        pool.copy(pos, prev - marker, size);
-                                        setPos(oid, pos | marker | dbModifiedFlag);
-                                    }
-                                    pool.unfix(pg);
-                                    pg = putBitmapPage(i);
-                                    pg.data[offs] |= (byte)((1 << (objBitSize - holeBitSize)) - 1); 
-                                    if (holeBitSize != 0) 
-                                    { 
-                                        if (holeBitSize > offs*8) 
-                                        { 
-                                            memset(pg, 0, 0xFF, offs);
-                                            holeBitSize -= offs*8;
-                                            pool.unfix(pg);
-                                            pg = putBitmapPage(--i);
-                                            offs = Page.pageSize;
-                                        }
-                                        while (holeBitSize > pageBits) 
-                                        { 
-                                            memset(pg, 0, 0xFF, Page.pageSize);
-                                            holeBitSize -= pageBits;
-                                            bitmapPageAvailableSpace[i] = 0;
-                                            pool.unfix(pg);
-                                            pg = putBitmapPage(--i);
-                                        }
-                                        while ((holeBitSize -= 8) > 0) 
-                                        { 
-                                            pg.data[--offs] = (byte)0xFF; 
-                                        }
-                                        pg.data[offs-1] |= (byte)~((1 << -holeBitSize) - 1);
-                                    }
-                                    pool.unfix(pg);
-                                    commitLocation();
-                                    return pos;
-                                } 
-                                else if (maxHoleSize[mask] >= objBitSize) 
-                                { 
-                                    int holeBitOffset = maxHoleOffset[mask];
-                                    pos = (((long)i*Page.pageSize + offs)*8 + holeBitOffset) << dbAllocationQuantumBits;
-                                    if (wasReserved(pos, size)) 
-                                    { 
-                                        startOffs = offs += (objBitSize + 7) >> 3;
-                                        holeBitSize = 0;
-                                        continue;
-                                    }       
-                                    reserveLocation(pos, size);
-                                    currRBitmapPage = i;
-                                    currRBitmapOffs = offs;
-                                    extend(pos + size);
-                                    if (oid != 0) 
-                                    { 
-                                        long prev = getPos(oid);
-                                        uint marker = (uint)prev & dbFlagsMask;
-                                        pool.copy(pos, prev - marker, size);
-                                        setPos(oid, pos | marker | dbModifiedFlag);
-                                    }
-                                    pool.unfix(pg);
-                                    pg = putBitmapPage(i);
-                                    pg.data[offs] |= (byte)(((1<<objBitSize) - 1) << holeBitOffset);
-                                    pool.unfix(pg);
-                                    commitLocation();
-                                    return pos;
-                                }
-                                offs += 1;
-                                if (lastHoleSize[mask] == 8) 
-                                { 
-                                    holeBitSize += 8;
-                                } 
-                                else 
-                                { 
-                                    holeBitSize = lastHoleSize[mask];
-                                }
-                            }
-                            if (startOffs == 0 && holeBitSize == 0
-                                && spaceNeeded < bitmapPageAvailableSpace[i]) 
+                                && spaceNeeded < bitmapPageAvailableSpace[i])
                             {
                                 bitmapPageAvailableSpace[i] = spaceNeeded;
                             }
@@ -623,44 +507,160 @@ namespace Volante.Impl
                             pool.unfix(pg);
                         }
                     }
-                    if (firstPage == 0) 
-                    { 
-                        if (freeBitmapPage > i) 
-                        { 
+                    else
+                    {
+                        for (i = firstPage; i < lastPage; i++)
+                        {
+                            int spaceNeeded = objBitSize - holeBitSize < pageBits
+                                ? objBitSize - holeBitSize : pageBits;
+                            if (bitmapPageAvailableSpace[i] <= spaceNeeded)
+                            {
+                                holeBitSize = 0;
+                                offs = 0;
+                                continue;
+                            }
+                            pg = getBitmapPage(i);
+                            int startOffs = offs;
+                            while (offs < Page.pageSize)
+                            {
+                                int mask = pg.data[offs] & 0xFF;
+                                if (holeBitSize + firstHoleSize[mask] >= objBitSize)
+                                {
+                                    pos = (((long)i * Page.pageSize + offs) * 8
+                                        - holeBitSize) << dbAllocationQuantumBits;
+                                    if (wasReserved(pos, size))
+                                    {
+                                        startOffs = offs += (objBitSize + 7) >> 3;
+                                        holeBitSize = 0;
+                                        continue;
+                                    }
+                                    reserveLocation(pos, size);
+                                    currRBitmapPage = i;
+                                    currRBitmapOffs = offs;
+                                    extend(pos + size);
+                                    if (oid != 0)
+                                    {
+                                        long prev = getPos(oid);
+                                        uint marker = (uint)prev & dbFlagsMask;
+                                        pool.copy(pos, prev - marker, size);
+                                        setPos(oid, pos | marker | dbModifiedFlag);
+                                    }
+                                    pool.unfix(pg);
+                                    pg = putBitmapPage(i);
+                                    pg.data[offs] |= (byte)((1 << (objBitSize - holeBitSize)) - 1);
+                                    if (holeBitSize != 0)
+                                    {
+                                        if (holeBitSize > offs * 8)
+                                        {
+                                            memset(pg, 0, 0xFF, offs);
+                                            holeBitSize -= offs * 8;
+                                            pool.unfix(pg);
+                                            pg = putBitmapPage(--i);
+                                            offs = Page.pageSize;
+                                        }
+                                        while (holeBitSize > pageBits)
+                                        {
+                                            memset(pg, 0, 0xFF, Page.pageSize);
+                                            holeBitSize -= pageBits;
+                                            bitmapPageAvailableSpace[i] = 0;
+                                            pool.unfix(pg);
+                                            pg = putBitmapPage(--i);
+                                        }
+                                        while ((holeBitSize -= 8) > 0)
+                                        {
+                                            pg.data[--offs] = (byte)0xFF;
+                                        }
+                                        pg.data[offs - 1] |= (byte)~((1 << -holeBitSize) - 1);
+                                    }
+                                    pool.unfix(pg);
+                                    commitLocation();
+                                    return pos;
+                                }
+                                else if (maxHoleSize[mask] >= objBitSize)
+                                {
+                                    int holeBitOffset = maxHoleOffset[mask];
+                                    pos = (((long)i * Page.pageSize + offs) * 8 + holeBitOffset) << dbAllocationQuantumBits;
+                                    if (wasReserved(pos, size))
+                                    {
+                                        startOffs = offs += (objBitSize + 7) >> 3;
+                                        holeBitSize = 0;
+                                        continue;
+                                    }
+                                    reserveLocation(pos, size);
+                                    currRBitmapPage = i;
+                                    currRBitmapOffs = offs;
+                                    extend(pos + size);
+                                    if (oid != 0)
+                                    {
+                                        long prev = getPos(oid);
+                                        uint marker = (uint)prev & dbFlagsMask;
+                                        pool.copy(pos, prev - marker, size);
+                                        setPos(oid, pos | marker | dbModifiedFlag);
+                                    }
+                                    pool.unfix(pg);
+                                    pg = putBitmapPage(i);
+                                    pg.data[offs] |= (byte)(((1 << objBitSize) - 1) << holeBitOffset);
+                                    pool.unfix(pg);
+                                    commitLocation();
+                                    return pos;
+                                }
+                                offs += 1;
+                                if (lastHoleSize[mask] == 8)
+                                {
+                                    holeBitSize += 8;
+                                }
+                                else
+                                {
+                                    holeBitSize = lastHoleSize[mask];
+                                }
+                            }
+                            if (startOffs == 0 && holeBitSize == 0
+                                && spaceNeeded < bitmapPageAvailableSpace[i])
+                            {
+                                bitmapPageAvailableSpace[i] = spaceNeeded;
+                            }
+                            offs = 0;
+                            pool.unfix(pg);
+                        }
+                    }
+                    if (firstPage == 0)
+                    {
+                        if (freeBitmapPage > i)
+                        {
                             i = freeBitmapPage;
                             holeBitSize = holeBeforeFreePage;
                         }
                         objBitSize -= holeBitSize;
                         // number of bits reserved for the object and aligned on page boundary
-                        int skip = (objBitSize + Page.pageSize/dbAllocationQuantum - 1) 
-                            & ~(Page.pageSize/dbAllocationQuantum - 1);
+                        int skip = (objBitSize + Page.pageSize / dbAllocationQuantum - 1)
+                            & ~(Page.pageSize / dbAllocationQuantum - 1);
                         // page aligned position after allocated object
                         pos = ((long)i << dbBitmapSegmentBits) + ((long)skip << dbAllocationQuantumBits);
 
                         long extension = (size > extensionQuantum) ? size : extensionQuantum;
                         int oldIndexSize = 0;
                         long oldIndex = 0;
-                        int morePages = (int)((extension + Page.pageSize*(dbAllocationQuantum*8-1) - 1)
-                            / (Page.pageSize*(dbAllocationQuantum*8-1)));
-                        if (i + morePages > dbLargeBitmapPages) 
-                        { 
+                        int morePages = (int)((extension + Page.pageSize * (dbAllocationQuantum * 8 - 1) - 1)
+                            / (Page.pageSize * (dbAllocationQuantum * 8 - 1)));
+                        if (i + morePages > dbLargeBitmapPages)
+                        {
                             throw new StorageError(StorageError.ErrorCode.NOT_ENOUGH_SPACE);
                         }
-                        if (i <= dbBitmapPages && i + morePages > dbBitmapPages) 
-                        {   
+                        if (i <= dbBitmapPages && i + morePages > dbBitmapPages)
+                        {
                             // We are out of space mapped by memory default allocation bitmap
                             oldIndexSize = header.root[curr].indexSize;
-                            if (oldIndexSize <= currIndexSize + dbLargeBitmapPages - dbBitmapPages) 
+                            if (oldIndexSize <= currIndexSize + dbLargeBitmapPages - dbBitmapPages)
                             {
                                 int newIndexSize = oldIndexSize;
                                 oldIndex = header.root[curr].index;
-                                do 
-                                { 
-                                    newIndexSize <<= 1;                    
-                                    if (newIndexSize < 0) 
-                                    { 
-                                        newIndexSize = int.MaxValue & ~(dbHandlesPerPage-1);
-                                        if (newIndexSize < currIndexSize + dbLargeBitmapPages - dbBitmapPages) 
+                                do
+                                {
+                                    newIndexSize <<= 1;
+                                    if (newIndexSize < 0)
+                                    {
+                                        newIndexSize = int.MaxValue & ~(dbHandlesPerPage - 1);
+                                        if (newIndexSize < currIndexSize + dbLargeBitmapPages - dbBitmapPages)
                                         {
                                             throw new StorageError(StorageError.ErrorCode.NOT_ENOUGH_SPACE);
                                         }
@@ -668,42 +668,42 @@ namespace Volante.Impl
                                     }
                                 } while (newIndexSize <= currIndexSize + dbLargeBitmapPages - dbBitmapPages);
 
-                                if (size + newIndexSize*8L > extensionQuantum) 
-                                { 
-                                    extension = size + newIndexSize*8L;
-                                    morePages = (int)((extension + Page.pageSize*(dbAllocationQuantum*8-1) - 1)
-                                        / (Page.pageSize*(dbAllocationQuantum*8-1)));
+                                if (size + newIndexSize * 8L > extensionQuantum)
+                                {
+                                    extension = size + newIndexSize * 8L;
+                                    morePages = (int)((extension + Page.pageSize * (dbAllocationQuantum * 8 - 1) - 1)
+                                        / (Page.pageSize * (dbAllocationQuantum * 8 - 1)));
                                 }
-                                extend(pos + (long)morePages*Page.pageSize + newIndexSize*8L);
-                                long newIndex = pos + (long)morePages*Page.pageSize;                        
-                                fillBitmap(pos + (skip>>3) + (long)morePages * (Page.pageSize/dbAllocationQuantum/8),
+                                extend(pos + (long)morePages * Page.pageSize + newIndexSize * 8L);
+                                long newIndex = pos + (long)morePages * Page.pageSize;
+                                fillBitmap(pos + (skip >> 3) + (long)morePages * (Page.pageSize / dbAllocationQuantum / 8),
                                     newIndexSize >> dbAllocationQuantumBits);
-                                pool.copy(newIndex, oldIndex, oldIndexSize*8L);
+                                pool.copy(newIndex, oldIndex, oldIndexSize * 8L);
                                 header.root[curr].index = newIndex;
                                 header.root[curr].indexSize = newIndexSize;
                             }
                             int[] newBitmapPageAvailableSpace = new int[dbLargeBitmapPages];
                             Array.Copy(bitmapPageAvailableSpace, 0, newBitmapPageAvailableSpace, 0, dbBitmapPages);
-                            for (j = dbBitmapPages; j < dbLargeBitmapPages; j++) 
-                            { 
+                            for (j = dbBitmapPages; j < dbLargeBitmapPages; j++)
+                            {
                                 newBitmapPageAvailableSpace[j] = int.MaxValue;
                             }
                             bitmapPageAvailableSpace = newBitmapPageAvailableSpace;
-                        
-                            for (j = 0; j < dbLargeBitmapPages - dbBitmapPages; j++) 
-                            { 
+
+                            for (j = 0; j < dbLargeBitmapPages - dbBitmapPages; j++)
+                            {
                                 setPos(currIndexSize + j, dbFreeHandleFlag);
                             }
 
                             header.root[curr].bitmapExtent = currIndexSize;
                             header.root[curr].indexUsed = currIndexSize += dbLargeBitmapPages - dbBitmapPages;
                         }
-                        extend(pos + (long)morePages*Page.pageSize);
+                        extend(pos + (long)morePages * Page.pageSize);
                         long adr = pos;
                         int len = objBitSize >> 3;
                         // fill bitmap pages used for allocation of object space with 0xFF 
-                        while (len >= Page.pageSize) 
-                        { 
+                        while (len >= Page.pageSize)
+                        {
                             pg = pool.putPage(adr);
                             memset(pg, 0, 0xFF, Page.pageSize);
                             pool.unfix(pg);
@@ -713,49 +713,49 @@ namespace Volante.Impl
                         // fill part of last page responsible for allocation of object space
                         pg = pool.putPage(adr);
                         memset(pg, 0, 0xFF, len);
-                        pg.data[len] = (byte)((1 << (objBitSize&7))-1);
+                        pg.data[len] = (byte)((1 << (objBitSize & 7)) - 1);
                         pool.unfix(pg);
 
                         // mark in bitmap newly allocated object
-                        fillBitmap(pos + (skip>>3), morePages * (Page.pageSize/dbAllocationQuantum/8));
-                    
+                        fillBitmap(pos + (skip >> 3), morePages * (Page.pageSize / dbAllocationQuantum / 8));
+
                         j = i;
-                        while (--morePages >= 0) 
-                        { 
+                        while (--morePages >= 0)
+                        {
                             setPos(getBitmapPageId(j++), pos | dbPageObjectFlag | dbModifiedFlag);
                             pos += Page.pageSize;
                         }
                         header.root[curr].bitmapEnd = j + dbBitmapId;
-                        j = i + objBitSize / pageBits; 
-                        if (alignment != 0) 
-                        { 
+                        j = i + objBitSize / pageBits;
+                        if (alignment != 0)
+                        {
                             currRBitmapPage = j;
                             currRBitmapOffs = 0;
-                        } 
-                        else 
-                        { 
+                        }
+                        else
+                        {
                             currPBitmapPage = j;
                             currPBitmapOffs = 0;
                         }
-                        while (j > i) 
-                        { 
+                        while (j > i)
+                        {
                             bitmapPageAvailableSpace[--j] = 0;
                         }
-                
-                        pos = ((long)i*Page.pageSize*8 - holeBitSize)  << dbAllocationQuantumBits;
-                        if (oid != 0) 
-                        { 
+
+                        pos = ((long)i * Page.pageSize * 8 - holeBitSize) << dbAllocationQuantumBits;
+                        if (oid != 0)
+                        {
                             long prev = getPos(oid);
                             uint marker = (uint)prev & dbFlagsMask;
                             pool.copy(pos, prev - marker, size);
                             setPos(oid, pos | marker | dbModifiedFlag);
                         }
-                
-                        if (holeBitSize != 0) 
-                        { 
+
+                        if (holeBitSize != 0)
+                        {
                             reserveLocation(pos, size);
-                            while (holeBitSize > pageBits) 
-                            { 
+                            while (holeBitSize > pageBits)
+                            {
                                 holeBitSize -= pageBits;
                                 pg = putBitmapPage(--i);
                                 memset(pg, 0, 0xFF, Page.pageSize);
@@ -764,27 +764,27 @@ namespace Volante.Impl
                             }
                             pg = putBitmapPage(--i);
                             offs = Page.pageSize;
-                            while ((holeBitSize -= 8) > 0) 
-                            { 
-                                pg.data[--offs] = (byte)0xFF; 
+                            while ((holeBitSize -= 8) > 0)
+                            {
+                                pg.data[--offs] = (byte)0xFF;
                             }
-                            pg.data[offs-1] |= (byte)~((1 << -holeBitSize) - 1);
+                            pg.data[offs - 1] |= (byte)~((1 << -holeBitSize) - 1);
                             pool.unfix(pg);
                             commitLocation();
                         }
-                        if (oldIndex != 0) 
-                        { 
-                            free(oldIndex, oldIndexSize*8L);
+                        if (oldIndex != 0)
+                        {
+                            free(oldIndex, oldIndexSize * 8L);
                         }
                         return pos;
                     }
-                    if (gcThreshold != Int64.MaxValue && !gcDone) 
+                    if (gcThreshold != Int64.MaxValue && !gcDone)
                     {
                         allocatedDelta -= size;
                         usedSize -= size;
                         gc0();
                         currRBitmapPage = currPBitmapPage = 0;
-                        currRBitmapOffs = currPBitmapOffs = 0;                
+                        currRBitmapOffs = currPBitmapOffs = 0;
                         return allocate(size, oid);
                     }
                     freeBitmapPage = i;
@@ -797,20 +797,20 @@ namespace Volante.Impl
             }
         }
 
-        void fillBitmap(long adr, int len) 
-        { 
-            while (true) 
-            { 
-                int off = (int)adr & (Page.pageSize-1);
+        void fillBitmap(long adr, int len)
+        {
+            while (true)
+            {
+                int off = (int)adr & (Page.pageSize - 1);
                 Page pg = pool.putPage(adr - off);
-                if (Page.pageSize - off >= len) 
-                { 
+                if (Page.pageSize - off >= len)
+                {
                     memset(pg, off, 0xFF, len);
                     pool.unfix(pg);
                     break;
-                } 
-                else 
-                { 
+                }
+                else
+                {
                     memset(pg, off, 0xFF, Page.pageSize - off);
                     pool.unfix(pg);
                     adr += Page.pageSize - off;
@@ -821,15 +821,15 @@ namespace Volante.Impl
 
         internal void free(long pos, long size)
         {
-            lock (objectCache) 
+            lock (objectCache)
             {
                 Debug.Assert(pos != 0 && (pos & (dbAllocationQuantum - 1)) == 0);
                 long quantNo = pos >> dbAllocationQuantumBits;
-                int objBitSize = (int)((size+dbAllocationQuantum-1) >> dbAllocationQuantumBits);
-                int pageId = (int) (quantNo >> (Page.pageBits + 3));
-                int offs = (int) (quantNo & (Page.pageSize * 8 - 1)) >> 3;
+                int objBitSize = (int)((size + dbAllocationQuantum - 1) >> dbAllocationQuantumBits);
+                int pageId = (int)(quantNo >> (Page.pageBits + 3));
+                int offs = (int)(quantNo & (Page.pageSize * 8 - 1)) >> 3;
                 Page pg = putBitmapPage(pageId);
-                int bitOffs = (int) quantNo & 7;
+                int bitOffs = (int)quantNo & 7;
 
                 allocatedDelta -= (long)objBitSize << dbAllocationQuantumBits;
                 usedSize -= (long)objBitSize << dbAllocationQuantumBits;
@@ -862,13 +862,13 @@ namespace Volante.Impl
                     }
                     while ((objBitSize -= 8) > 0)
                     {
-                        pg.data[offs++] = (byte) 0;
+                        pg.data[offs++] = (byte)0;
                     }
-                    pg.data[offs] &= (byte) (~ ((1 << (objBitSize + 8)) - 1));
+                    pg.data[offs] &= (byte)(~((1 << (objBitSize + 8)) - 1));
                 }
                 else
                 {
-                    pg.data[offs] &= (byte) (~ (((1 << objBitSize) - 1) << bitOffs));
+                    pg.data[offs] &= (byte)(~(((1 << objBitSize) - 1) << bitOffs));
                 }
                 pool.unfix(pg);
             }
@@ -876,21 +876,21 @@ namespace Volante.Impl
 
         internal void cloneBitmap(long pos, long size)
         {
-            lock (objectCache) 
+            lock (objectCache)
             {
                 long quantNo = pos >> dbAllocationQuantumBits;
-                int  objBitSize = (int)((size + dbAllocationQuantum - 1) >> dbAllocationQuantumBits);
-                int  pageId = (int)(quantNo >> (Page.pageBits + 3));
-                int  offs = (int) (quantNo & (Page.pageSize * 8 - 1)) >> 3;
-                int  bitOffs = (int) quantNo & 7;
-                int  oid = getBitmapPageId(pageId);
+                int objBitSize = (int)((size + dbAllocationQuantum - 1) >> dbAllocationQuantumBits);
+                int pageId = (int)(quantNo >> (Page.pageBits + 3));
+                int offs = (int)(quantNo & (Page.pageSize * 8 - 1)) >> 3;
+                int bitOffs = (int)quantNo & 7;
+                int oid = getBitmapPageId(pageId);
                 pos = getPos(oid);
                 if ((pos & dbModifiedFlag) == 0)
                 {
-                    dirtyPagesMap[oid >> (dbHandlesPerPageBits + 5)] 
+                    dirtyPagesMap[oid >> (dbHandlesPerPageBits + 5)]
                         |= 1 << ((oid >> dbHandlesPerPageBits) & 31);
                     allocate(Page.pageSize, oid);
-                    cloneBitmap(pos & ~ dbFlagsMask, Page.pageSize);
+                    cloneBitmap(pos & ~dbFlagsMask, Page.pageSize);
                 }
 
                 if (objBitSize > 8 - bitOffs)
@@ -903,10 +903,10 @@ namespace Volante.Impl
                         pos = getPos(oid);
                         if ((pos & dbModifiedFlag) == 0)
                         {
-                            dirtyPagesMap[oid >> (dbHandlesPerPageBits + 5)] 
+                            dirtyPagesMap[oid >> (dbHandlesPerPageBits + 5)]
                                 |= 1 << ((oid >> dbHandlesPerPageBits) & 31);
                             allocate(Page.pageSize, oid);
-                            cloneBitmap(pos & ~ dbFlagsMask, Page.pageSize);
+                            cloneBitmap(pos & ~dbFlagsMask, Page.pageSize);
                         }
                         objBitSize -= (Page.pageSize - offs) * 8;
                         offs = 0;
@@ -927,26 +927,26 @@ namespace Volante.Impl
 
         public void Open(String filePath, int pagePoolSize)
         {
-            OSFile file = new OSFile(filePath, readOnly, noFlush);      
-            try 
+            OSFile file = new OSFile(filePath, readOnly, noFlush);
+            try
             {
                 Open(file, pagePoolSize);
-            } 
-            catch (StorageError) 
+            }
+            catch (StorageError)
             {
-                file.Close();            
+                file.Close();
                 throw;
             }
         }
 
-        protected virtual OidHashTable createObjectCache(CacheType kind, int pagePoolSize, int objectCacheSize) 
-        { 
-            if (pagePoolSize == 0 || kind == CacheType.Strong) 
+        protected virtual OidHashTable createObjectCache(CacheType kind, int pagePoolSize, int objectCacheSize)
+        {
+            if (pagePoolSize == 0 || kind == CacheType.Strong)
             {
                 return new StrongHashTable(objectCacheSize);
             }
-            if (kind == CacheType.Weak) 
-            { 
+            if (kind == CacheType.Weak)
+            {
                 return new WeakHashTable(objectCacheSize);
             }
             Debug.Assert(kind == CacheType.Lru);
@@ -955,14 +955,14 @@ namespace Volante.Impl
 
         public void Open(String filePath, int pagePoolSize, String cipherKey)
         {
-            Rc4File file = new Rc4File(filePath, readOnly, noFlush, cipherKey);      
-            try 
+            Rc4File file = new Rc4File(filePath, readOnly, noFlush, cipherKey);
+            try
             {
                 Open(file, pagePoolSize);
-            } 
-            catch (StorageError) 
+            }
+            catch (StorageError)
             {
-                file.Close();            
+                file.Close();
                 throw;
             }
         }
@@ -983,7 +983,7 @@ namespace Volante.Impl
                 {
                     indexSize = dbFirstUserId;
                 }
-                indexSize = (indexSize + dbHandlesPerPage - 1) & ~ (dbHandlesPerPage - 1);
+                indexSize = (indexSize + dbHandlesPerPage - 1) & ~(dbHandlesPerPage - 1);
 
                 dirtyPagesMap = new int[dbDirtyPageBitmapSize / 4 + 1];
                 gcThreshold = Int64.MaxValue;
@@ -995,7 +995,7 @@ namespace Volante.Impl
                 gcDone = false;
                 allocatedDelta = 0;
 
-                resolvedTypes = new Hashtable();                
+                resolvedTypes = new Hashtable();
 
                 nNestedTransactions = 0;
                 nBlockedTransactions = 0;
@@ -1010,8 +1010,8 @@ namespace Volante.Impl
 
                 modified = false;
 
-                objectCache =  createObjectCache(cacheKind, pagePoolSize, objectCacheInitSize);
-                
+                objectCache = createObjectCache(cacheKind, pagePoolSize, objectCacheInitSize);
+
                 classDescMap = new Hashtable();
                 descList = null;
 
@@ -1029,7 +1029,7 @@ namespace Volante.Impl
                 {
                     throw new StorageError(StorageError.ErrorCode.DATABASE_CORRUPTED);
                 }
-                if (pool == null) 
+                if (pool == null)
                 {
                     pool = new PagePool(pagePoolSize / Page.pageSize);
                     pool.open(file);
@@ -1054,23 +1054,23 @@ namespace Volante.Impl
                     header.root[0].shadowIndexSize = indexSize;
                     header.root[1].shadowIndexSize = indexSize;
 
-                    int bitmapPages = (int) ((used + Page.pageSize * (dbAllocationQuantum * 8 - 1) - 1) / (Page.pageSize * (dbAllocationQuantum * 8 - 1)));
+                    int bitmapPages = (int)((used + Page.pageSize * (dbAllocationQuantum * 8 - 1) - 1) / (Page.pageSize * (dbAllocationQuantum * 8 - 1)));
                     long bitmapSize = (long)bitmapPages * Page.pageSize;
-                    int usedBitmapSize = (int) ((used + bitmapSize) >> (dbAllocationQuantumBits + 3));
+                    int usedBitmapSize = (int)((used + bitmapSize) >> (dbAllocationQuantumBits + 3));
 
-                    for (i = 0; i < bitmapPages; i++) 
-                    { 
-                        pg = pool.putPage(used + (long)i*Page.pageSize);
+                    for (i = 0; i < bitmapPages; i++)
+                    {
+                        pg = pool.putPage(used + (long)i * Page.pageSize);
                         byte[] bitmap = pg.data;
                         int n = usedBitmapSize > Page.pageSize ? Page.pageSize : usedBitmapSize;
-                        for (int j = 0; j < n; j++) 
-                        { 
+                        for (int j = 0; j < n; j++)
+                        {
                             bitmap[j] = (byte)0xFF;
                         }
                         pool.unfix(pg);
                     }
-                    
-                    int bitmapIndexSize = ((dbBitmapId + dbBitmapPages) * 8 + Page.pageSize - 1) & ~ (Page.pageSize - 1);
+
+                    int bitmapIndexSize = ((dbBitmapId + dbBitmapPages) * 8 + Page.pageSize - 1) & ~(Page.pageSize - 1);
                     byte[] index = new byte[bitmapIndexSize];
                     Bytes.pack8(index, dbInvalidId * 8, dbFreeHandleFlag);
                     for (i = 0; i < bitmapPages; i++)
@@ -1114,46 +1114,46 @@ namespace Volante.Impl
                     }
                     if (isDirty())
                     {
-                        if (listener != null) 
+                        if (listener != null)
                         {
                             listener.DatabaseCorrupted();
                         }
                         System.Console.WriteLine("Database was not normally closed: start recovery");
-                        header.root[1-curr].size = header.root[curr].size;
-                        header.root[1-curr].indexUsed = header.root[curr].indexUsed;
-                        header.root[1-curr].freeList = header.root[curr].freeList;
-                        header.root[1-curr].index = header.root[curr].shadowIndex;
-                        header.root[1-curr].indexSize = header.root[curr].shadowIndexSize;
-                        header.root[1-curr].shadowIndex = header.root[curr].index;
-                        header.root[1-curr].shadowIndexSize = header.root[curr].indexSize;
-                        header.root[1-curr].bitmapEnd = header.root[curr].bitmapEnd;
-                        header.root[1-curr].rootObject = header.root[curr].rootObject;
-                        header.root[1-curr].classDescList = header.root[curr].classDescList;
-                        header.root[1-curr].bitmapExtent = header.root[curr].bitmapExtent;
+                        header.root[1 - curr].size = header.root[curr].size;
+                        header.root[1 - curr].indexUsed = header.root[curr].indexUsed;
+                        header.root[1 - curr].freeList = header.root[curr].freeList;
+                        header.root[1 - curr].index = header.root[curr].shadowIndex;
+                        header.root[1 - curr].indexSize = header.root[curr].shadowIndexSize;
+                        header.root[1 - curr].shadowIndex = header.root[curr].index;
+                        header.root[1 - curr].shadowIndexSize = header.root[curr].indexSize;
+                        header.root[1 - curr].bitmapEnd = header.root[curr].bitmapEnd;
+                        header.root[1 - curr].rootObject = header.root[curr].rootObject;
+                        header.root[1 - curr].classDescList = header.root[curr].classDescList;
+                        header.root[1 - curr].bitmapExtent = header.root[curr].bitmapExtent;
 
                         pg = pool.putPage(0);
                         header.pack(pg.data);
                         pool.unfix(pg);
 
-                        pool.copy(header.root[1-curr].index,    
-                                  header.root[curr].index, 
-                                  (header.root[curr].indexUsed * 8L + Page.pageSize - 1) & ~ (Page.pageSize - 1));
-                        if (listener != null) 
+                        pool.copy(header.root[1 - curr].index,
+                                  header.root[curr].index,
+                                  (header.root[curr].indexUsed * 8L + Page.pageSize - 1) & ~(Page.pageSize - 1));
+                        if (listener != null)
                         {
                             listener.RecoveryCompleted();
                         }
                         System.Console.WriteLine("Recovery completed");
                     }
-                    currIndexSize = header.root[1-curr].indexUsed;
+                    currIndexSize = header.root[1 - curr].indexUsed;
                     committedIndexSize = currIndexSize;
                     usedSize = header.root[curr].size;
                 }
-                int nBitmapPages = header.root[1-currIndex].bitmapExtent == 0 ? dbBitmapPages : dbLargeBitmapPages;
+                int nBitmapPages = header.root[1 - currIndex].bitmapExtent == 0 ? dbBitmapPages : dbLargeBitmapPages;
                 bitmapPageAvailableSpace = new int[nBitmapPages];
-                for (i = 0; i < bitmapPageAvailableSpace.Length; i++) 
-                { 
+                for (i = 0; i < bitmapPageAvailableSpace.Length; i++)
+                {
                     bitmapPageAvailableSpace[i] = int.MaxValue;
-                }        
+                }
                 currRBitmapPage = currPBitmapPage = 0;
                 currRBitmapOffs = currPBitmapOffs = 0;
 
@@ -1162,12 +1162,12 @@ namespace Volante.Impl
             }
         }
 
-        public bool IsOpened() 
-        { 
+        public bool IsOpened()
+        {
             return opened;
         }
 
-        internal static void  checkIfFinal(ClassDescriptor desc)
+        internal static void checkIfFinal(ClassDescriptor desc)
         {
             System.Type cls = desc.cls;
             for (ClassDescriptor next = desc.next; next != null; next = next.next)
@@ -1184,10 +1184,10 @@ namespace Volante.Impl
             }
         }
 
-        internal void  reloadScheme()
+        internal void reloadScheme()
         {
             classDescMap.Clear();
-            int descListOid = header.root[1-currIndex].classDescList;
+            int descListOid = header.root[1 - currIndex].classDescList;
             classDescMap[typeof(ClassDescriptor)] = new ClassDescriptor(this, typeof(ClassDescriptor));
             classDescMap[typeof(ClassDescriptor.FieldDescriptor)] = new ClassDescriptor(this, typeof(ClassDescriptor.FieldDescriptor));
             if (descListOid != 0)
@@ -1200,8 +1200,8 @@ namespace Volante.Impl
                 }
                 for (desc = descList; desc != null; desc = desc.next)
                 {
-                    if (classDescMap[desc.cls] == desc) 
-                    { 
+                    if (classDescMap[desc.cls] == desc)
+                    {
                         desc.resolve();
                     }
                     checkIfFinal(desc);
@@ -1212,8 +1212,8 @@ namespace Volante.Impl
                 descList = null;
             }
 #if !CF
-            if (enableCodeGeneration) 
-            { 
+            if (enableCodeGeneration)
+            {
                 codeGenerationThread = new Thread(new ThreadStart(generateSerializers));
                 codeGenerationThread.Priority = ThreadPriority.BelowNormal;
                 codeGenerationThread.IsBackground = true;
@@ -1221,34 +1221,34 @@ namespace Volante.Impl
             }
 #endif
         }
- 
-        internal void generateSerializers() 
+
+        internal void generateSerializers()
         {
-            for (ClassDescriptor desc = descList; desc != null; desc = desc.next) 
+            for (ClassDescriptor desc = descList; desc != null; desc = desc.next)
             {
                 desc.generateSerializer();
             }
         }
 
-        internal void  assignOid(IPersistent obj, int oid)
+        internal void assignOid(IPersistent obj, int oid)
         {
             obj.AssignOid(this, oid, false);
         }
 
-        internal void registerClassDescriptor(ClassDescriptor desc) 
-        { 
+        internal void registerClassDescriptor(ClassDescriptor desc)
+        {
             classDescMap[desc.cls] = desc;
             desc.next = descList;
             descList = desc;
             checkIfFinal(desc);
             storeObject0(desc);
-            header.root[1-currIndex].classDescList = desc.Oid;
+            header.root[1 - currIndex].classDescList = desc.Oid;
             modified = true;
-        }      
+        }
 
         internal ClassDescriptor getClassDescriptor(System.Type cls)
         {
-            ClassDescriptor desc = (ClassDescriptor) classDescMap[cls];
+            ClassDescriptor desc = (ClassDescriptor)classDescMap[cls];
             if (desc == null)
             {
                 desc = new ClassDescriptor(this, cls);
@@ -1260,13 +1260,13 @@ namespace Volante.Impl
 
         public void Commit()
         {
-            lock (backgroundGcMonitor) 
-            { 
+            lock (backgroundGcMonitor)
+            {
                 lock (this)
                 {
                     ensureOpened();
                     objectCache.flush();
-           
+
                     if (!modified)
                     {
                         return;
@@ -1283,34 +1283,34 @@ namespace Volante.Impl
             int i, j, n;
             int[] map = dirtyPagesMap;
             int oldIndexSize = header.root[curr].indexSize;
-            int newIndexSize = header.root[1-curr].indexSize;
+            int newIndexSize = header.root[1 - curr].indexSize;
             int nPages = committedIndexSize >> dbHandlesPerPageBits;
             Page pg;
 
             if (newIndexSize > oldIndexSize)
             {
-                cloneBitmap(header.root[curr].index, oldIndexSize*8L);
+                cloneBitmap(header.root[curr].index, oldIndexSize * 8L);
                 long newIndex;
-                while (true) 
-                { 
-                    newIndex = allocate(newIndexSize*8L, 0);
-                    if (newIndexSize == header.root[1-curr].indexSize) 
-                    { 
+                while (true)
+                {
+                    newIndex = allocate(newIndexSize * 8L, 0);
+                    if (newIndexSize == header.root[1 - curr].indexSize)
+                    {
                         break;
                     }
-                    free(newIndex, newIndexSize*8L);
-                    newIndexSize = header.root[1-curr].indexSize;
+                    free(newIndex, newIndexSize * 8L);
+                    newIndexSize = header.root[1 - curr].indexSize;
                 }
-                header.root[1-curr].shadowIndex = newIndex;
-                header.root[1-curr].shadowIndexSize = newIndexSize;
-                free(header.root[curr].index, oldIndexSize*8L);
+                header.root[1 - curr].shadowIndex = newIndex;
+                header.root[1 - curr].shadowIndexSize = newIndexSize;
+                free(header.root[curr].index, oldIndexSize * 8L);
             }
 
             for (i = 0; i < nPages; i++)
             {
                 if ((map[i >> 5] & (1 << (i & 31))) != 0)
                 {
-                    Page srcIndex = pool.getPage(header.root[1-curr].index + (long)i * Page.pageSize);
+                    Page srcIndex = pool.getPage(header.root[1 - curr].index + (long)i * Page.pageSize);
                     Page dstIndex = pool.getPage(header.root[curr].index + (long)i * Page.pageSize);
                     for (j = 0; j < Page.pageSize; j += 8)
                     {
@@ -1321,11 +1321,11 @@ namespace Volante.Impl
                             {
                                 if ((pos & dbPageObjectFlag) != 0)
                                 {
-                                    free(pos & ~ dbFlagsMask, Page.pageSize);
+                                    free(pos & ~dbFlagsMask, Page.pageSize);
                                 }
                                 else if (pos != 0)
                                 {
-                                    int offs = (int) pos & (Page.pageSize - 1);
+                                    int offs = (int)pos & (Page.pageSize - 1);
                                     pg = pool.getPage(pos - offs);
                                     free(pos, ObjectHeader.getSize(pg.data, offs));
                                     pool.unfix(pg);
@@ -1340,10 +1340,10 @@ namespace Volante.Impl
             n = committedIndexSize & (dbHandlesPerPage - 1);
             if (n != 0 && (map[i >> 5] & (1 << (i & 31))) != 0)
             {
-                Page srcIndex = pool.getPage(header.root[1-curr].index + (long)i * Page.pageSize);
+                Page srcIndex = pool.getPage(header.root[1 - curr].index + (long)i * Page.pageSize);
                 Page dstIndex = pool.getPage(header.root[curr].index + (long)i * Page.pageSize);
                 j = 0;
-                do 
+                do
                 {
                     long pos = Bytes.unpack8(dstIndex.data, j);
                     if (Bytes.unpack8(srcIndex.data, j) != pos)
@@ -1352,11 +1352,11 @@ namespace Volante.Impl
                         {
                             if ((pos & dbPageObjectFlag) != 0)
                             {
-                                free(pos & ~ dbFlagsMask, Page.pageSize);
+                                free(pos & ~dbFlagsMask, Page.pageSize);
                             }
                             else if (pos != 0)
                             {
-                                int offs = (int) pos & (Page.pageSize - 1);
+                                int offs = (int)pos & (Page.pageSize - 1);
                                 pg = pool.getPage(pos - offs);
                                 free(pos, ObjectHeader.getSize(pg.data, offs));
                                 pool.unfix(pg);
@@ -1375,10 +1375,10 @@ namespace Volante.Impl
             {
                 if ((map[i >> 5] & (1 << (i & 31))) != 0)
                 {
-                    pg = pool.putPage(header.root[1-curr].index + (long)i * Page.pageSize);
+                    pg = pool.putPage(header.root[1 - curr].index + (long)i * Page.pageSize);
                     for (j = 0; j < Page.pageSize; j += 8)
                     {
-                        Bytes.pack8(pg.data, j, Bytes.unpack8(pg.data, j) & ~ dbModifiedFlag);
+                        Bytes.pack8(pg.data, j, Bytes.unpack8(pg.data, j) & ~dbModifiedFlag);
                     }
                     pool.unfix(pg);
                 }
@@ -1386,20 +1386,20 @@ namespace Volante.Impl
 
             if (currIndexSize > committedIndexSize)
             {
-                long page = (header.root[1-curr].index + committedIndexSize * 8L) & ~ (Page.pageSize - 1);
-                long end = (header.root[1-curr].index + Page.pageSize - 1 + currIndexSize * 8L) & ~ (Page.pageSize - 1);
+                long page = (header.root[1 - curr].index + committedIndexSize * 8L) & ~(Page.pageSize - 1);
+                long end = (header.root[1 - curr].index + Page.pageSize - 1 + currIndexSize * 8L) & ~(Page.pageSize - 1);
                 while (page < end)
                 {
                     pg = pool.putPage(page);
                     for (j = 0; j < Page.pageSize; j += 8)
                     {
-                        Bytes.pack8(pg.data, j, Bytes.unpack8(pg.data, j) & ~ dbModifiedFlag);
+                        Bytes.pack8(pg.data, j, Bytes.unpack8(pg.data, j) & ~dbModifiedFlag);
                     }
                     pool.unfix(pg);
                     page += Page.pageSize;
                 }
             }
-            header.root[1-curr].usedSize = usedSize;
+            header.root[1 - curr].usedSize = usedSize;
             pg = pool.putPage(0);
             header.pack(pg.data);
             pool.flush();
@@ -1410,25 +1410,25 @@ namespace Volante.Impl
             pool.unfix(pg);
             pool.flush();
 
-            header.root[1-curr].size = header.root[curr].size;
-            header.root[1-curr].indexUsed = currIndexSize;
-            header.root[1-curr].freeList = header.root[curr].freeList;
-            header.root[1-curr].bitmapEnd = header.root[curr].bitmapEnd;
-            header.root[1-curr].rootObject = header.root[curr].rootObject;
-            header.root[1-curr].classDescList = header.root[curr].classDescList;
-            header.root[1-curr].bitmapExtent = header.root[curr].bitmapExtent;
+            header.root[1 - curr].size = header.root[curr].size;
+            header.root[1 - curr].indexUsed = currIndexSize;
+            header.root[1 - curr].freeList = header.root[curr].freeList;
+            header.root[1 - curr].bitmapEnd = header.root[curr].bitmapEnd;
+            header.root[1 - curr].rootObject = header.root[curr].rootObject;
+            header.root[1 - curr].classDescList = header.root[curr].classDescList;
+            header.root[1 - curr].bitmapExtent = header.root[curr].bitmapExtent;
 
             if (currIndexSize == 0 || newIndexSize != oldIndexSize)
             {
                 if (currIndexSize == 0)
                 {
-                    currIndexSize = header.root[1-curr].indexUsed;
+                    currIndexSize = header.root[1 - curr].indexUsed;
                 }
-                header.root[1-curr].index = header.root[curr].shadowIndex;
-                header.root[1-curr].indexSize = header.root[curr].shadowIndexSize;
-                header.root[1-curr].shadowIndex = header.root[curr].index;
-                header.root[1-curr].shadowIndexSize = header.root[curr].indexSize;
-                pool.copy(header.root[1-curr].index, header.root[curr].index, currIndexSize * 8L);
+                header.root[1 - curr].index = header.root[curr].shadowIndex;
+                header.root[1 - curr].indexSize = header.root[curr].shadowIndexSize;
+                header.root[1 - curr].shadowIndex = header.root[curr].index;
+                header.root[1 - curr].shadowIndexSize = header.root[curr].indexSize;
+                pool.copy(header.root[1 - curr].index, header.root[curr].index, currIndexSize * 8L);
                 i = (currIndexSize + dbHandlesPerPage * 32 - 1) >> (dbHandlesPerPageBits + 5);
                 while (--i >= 0)
                 {
@@ -1442,15 +1442,15 @@ namespace Volante.Impl
                     if ((map[i >> 5] & (1 << (i & 31))) != 0)
                     {
                         map[i >> 5] -= (1 << (i & 31));
-                        pool.copy(header.root[1-curr].index + (long)i * Page.pageSize, 
-                                  header.root[curr].index + (long)i * Page.pageSize, 
+                        pool.copy(header.root[1 - curr].index + (long)i * Page.pageSize,
+                                  header.root[curr].index + (long)i * Page.pageSize,
                                   Page.pageSize);
                     }
                 }
                 if (currIndexSize > i * dbHandlesPerPage && ((map[i >> 5] & (1 << (i & 31))) != 0 || currIndexSize != committedIndexSize))
                 {
-                    pool.copy(header.root[1-curr].index + (long)i * Page.pageSize, 
-                              header.root[curr].index + (long)i * Page.pageSize, 
+                    pool.copy(header.root[1 - curr].index + (long)i * Page.pageSize,
+                              header.root[curr].index + (long)i * Page.pageSize,
                               8L * currIndexSize - (long)i * Page.pageSize);
                     j = i >> 5;
                     n = (currIndexSize + dbHandlesPerPage * 32 - 1) >> (dbHandlesPerPageBits + 5);
@@ -1464,16 +1464,16 @@ namespace Volante.Impl
             currIndex = curr;
             committedIndexSize = currIndexSize;
         }
-        
+
         public void Rollback()
         {
             lock (this)
             {
                 ensureOpened();
                 objectCache.invalidate();
-        
-                if (!modified) 
-                { 
+
+                if (!modified)
+                {
                     return;
                 }
                 rollback0();
@@ -1485,7 +1485,7 @@ namespace Volante.Impl
         {
             int curr = currIndex;
             int[] map = dirtyPagesMap;
-            if (header.root[1-curr].index != header.root[curr].shadowIndex)
+            if (header.root[1 - curr].index != header.root[curr].shadowIndex)
             {
                 pool.copy(header.root[curr].shadowIndex, header.root[curr].index, 8L * committedIndexSize);
             }
@@ -1496,23 +1496,23 @@ namespace Volante.Impl
                 {
                     if ((map[i >> 5] & (1 << (i & 31))) != 0)
                     {
-                        pool.copy(header.root[curr].shadowIndex + (long)i * Page.pageSize, 
-                                  header.root[curr].index + (long)i * Page.pageSize, 
+                        pool.copy(header.root[curr].shadowIndex + (long)i * Page.pageSize,
+                                  header.root[curr].index + (long)i * Page.pageSize,
                                   Page.pageSize);
                     }
                 }
             }
             for (int j = (currIndexSize + dbHandlesPerPage * 32 - 1) >> (dbHandlesPerPageBits + 5); --j >= 0; map[j] = 0)
                 ;
-            header.root[1-curr].index = header.root[curr].shadowIndex;
-            header.root[1-curr].indexSize = header.root[curr].shadowIndexSize;
-            header.root[1-curr].indexUsed = committedIndexSize;
-            header.root[1-curr].freeList = header.root[curr].freeList;
-            header.root[1-curr].bitmapEnd = header.root[curr].bitmapEnd;
-            header.root[1-curr].size = header.root[curr].size;
-            header.root[1-curr].rootObject = header.root[curr].rootObject;
-            header.root[1-curr].classDescList = header.root[curr].classDescList;
-            header.root[1-curr].bitmapExtent = header.root[curr].bitmapExtent;
+            header.root[1 - curr].index = header.root[curr].shadowIndex;
+            header.root[1 - curr].indexSize = header.root[curr].shadowIndexSize;
+            header.root[1 - curr].indexUsed = committedIndexSize;
+            header.root[1 - curr].freeList = header.root[curr].freeList;
+            header.root[1 - curr].bitmapEnd = header.root[curr].bitmapEnd;
+            header.root[1 - curr].size = header.root[curr].size;
+            header.root[1 - curr].rootObject = header.root[curr].rootObject;
+            header.root[1 - curr].classDescList = header.root[curr].classDescList;
+            header.root[1 - curr].bitmapExtent = header.root[curr].bitmapExtent;
             header.dirty = true;
             usedSize = header.root[curr].size;
             currIndexSize = committedIndexSize;
@@ -1522,11 +1522,11 @@ namespace Volante.Impl
 
             reloadScheme();
         }
-        
-        private void memset(byte[] arr, int off, int len, byte val) 
-        { 
-            while (--len >= 0) 
-            { 
+
+        private void memset(byte[] arr, int off, int len, byte val)
+        {
+            while (--len >= 0)
+            {
                 arr[off++] = val;
             }
         }
@@ -1542,13 +1542,13 @@ namespace Volante.Impl
             }
         }
 #else
-        public IPersistent CreateClass(Type type) 
+        public IPersistent CreateClass(Type type)
         {
-            lock (this) 
+            lock (this)
             {
                 ensureOpened();
 
-                lock (objectCache) 
+                lock (objectCache)
                 {
                     Type wrapper = getWrapper(type);
                     IPersistent obj = (IPersistent)wrapper.Assembly.CreateInstance(wrapper.Name);
@@ -1562,21 +1562,21 @@ namespace Volante.Impl
             }
         }
 
-        internal Type getWrapper(Type original) 
+        internal Type getWrapper(Type original)
         {
             Type wrapper;
             bool ok = wrapperHash.TryGetValue(original, out wrapper);
-            if (!ok) 
-            { 
+            if (!ok)
+            {
                 wrapper = CodeGenerator.Instance.CreateWrapper(original);
                 wrapperHash[original] = wrapper;
             }
             return wrapper;
         }
 #endif
-        public int MakePersistent(IPersistent obj) 
+        public int MakePersistent(IPersistent obj)
         {
-            if (obj == null) 
+            if (obj == null)
             {
                 return 0;
             }
@@ -1584,10 +1584,10 @@ namespace Volante.Impl
             {
                 return obj.Oid;
             }
-            lock (this) 
+            lock (this)
             {
                 ensureOpened();
-                lock (objectCache) 
+                lock (objectCache)
                 {
                     int oid = allocateId();
                     obj.AssignOid(this, oid, false);
@@ -1605,64 +1605,64 @@ namespace Volante.Impl
             {
                 ensureOpened();
                 objectCache.flush();
-                int    curr = 1-currIndex;
-                int    nObjects = header.root[curr].indexUsed;
-                long   indexOffs = header.root[curr].index;
-                int    i, j, k;
-                int    nUsedIndexPages = (nObjects + dbHandlesPerPage - 1) / dbHandlesPerPage;
-                int    nIndexPages = (int)((header.root[curr].indexSize + dbHandlesPerPage - 1) / dbHandlesPerPage);
-                long   totalRecordsSize = 0;
-                long   nPagedObjects = 0;
-                int    bitmapExtent = header.root[curr].bitmapExtent;
+                int curr = 1 - currIndex;
+                int nObjects = header.root[curr].indexUsed;
+                long indexOffs = header.root[curr].index;
+                int i, j, k;
+                int nUsedIndexPages = (nObjects + dbHandlesPerPage - 1) / dbHandlesPerPage;
+                int nIndexPages = (int)((header.root[curr].indexSize + dbHandlesPerPage - 1) / dbHandlesPerPage);
+                long totalRecordsSize = 0;
+                long nPagedObjects = 0;
+                int bitmapExtent = header.root[curr].bitmapExtent;
                 long[] index = new long[nObjects];
-                int[]  oids = new int[nObjects];
-            
-                if (bitmapExtent == 0) 
-                { 
+                int[] oids = new int[nObjects];
+
+                if (bitmapExtent == 0)
+                {
                     bitmapExtent = int.MaxValue;
                 }
-                for (i = 0, j = 0; i < nUsedIndexPages; i++) 
+                for (i = 0, j = 0; i < nUsedIndexPages; i++)
                 {
-                    Page pg = pool.getPage(indexOffs + (long)i*Page.pageSize);
-                    for (k = 0; k < dbHandlesPerPage && j < nObjects; k++, j++) 
-                    { 
-                        long pos = Bytes.unpack8(pg.data, k*8);
+                    Page pg = pool.getPage(indexOffs + (long)i * Page.pageSize);
+                    for (k = 0; k < dbHandlesPerPage && j < nObjects; k++, j++)
+                    {
+                        long pos = Bytes.unpack8(pg.data, k * 8);
                         index[j] = pos;
                         oids[j] = j;
-                        if ((pos & dbFreeHandleFlag) == 0) 
-                        { 
-                            if ((pos & dbPageObjectFlag) != 0) 
+                        if ((pos & dbFreeHandleFlag) == 0)
+                        {
+                            if ((pos & dbPageObjectFlag) != 0)
                             {
                                 nPagedObjects += 1;
-                            } 
-                            else if (pos != 0) 
-                            { 
-                                int offs = (int)pos & (Page.pageSize-1);
+                            }
+                            else if (pos != 0)
+                            {
+                                int offs = (int)pos & (Page.pageSize - 1);
                                 Page op = pool.getPage(pos - offs);
                                 int size = ObjectHeader.getSize(op.data, offs & ~dbFlagsMask);
-                                size = (size + dbAllocationQuantum-1) & ~(dbAllocationQuantum-1);
-                                totalRecordsSize += size; 
+                                size = (size + dbAllocationQuantum - 1) & ~(dbAllocationQuantum - 1);
+                                totalRecordsSize += size;
                                 pool.unfix(op);
                             }
                         }
                     }
                     pool.unfix(pg);
-        
-                } 
+
+                }
                 Header newHeader = new Header();
                 newHeader.curr = 0;
                 newHeader.dirty = false;
                 newHeader.initialized = true;
-                long newFileSize = (long)(nPagedObjects + nIndexPages*2 + 1)*Page.pageSize + totalRecordsSize;
-                newFileSize = (newFileSize + Page.pageSize-1) & ~(Page.pageSize-1);	
+                long newFileSize = (long)(nPagedObjects + nIndexPages * 2 + 1) * Page.pageSize + totalRecordsSize;
+                newFileSize = (newFileSize + Page.pageSize - 1) & ~(Page.pageSize - 1);
                 newHeader.root = new RootPage[2];
                 newHeader.root[0] = new RootPage();
                 newHeader.root[1] = new RootPage();
                 newHeader.root[0].size = newHeader.root[1].size = newFileSize;
                 newHeader.root[0].index = newHeader.root[1].shadowIndex = Page.pageSize;
-                newHeader.root[0].shadowIndex = newHeader.root[1].index = Page.pageSize + (long)nIndexPages*Page.pageSize;
-                newHeader.root[0].shadowIndexSize = newHeader.root[0].indexSize = 
-                    newHeader.root[1].shadowIndexSize = newHeader.root[1].indexSize = nIndexPages*dbHandlesPerPage;
+                newHeader.root[0].shadowIndex = newHeader.root[1].index = Page.pageSize + (long)nIndexPages * Page.pageSize;
+                newHeader.root[0].shadowIndexSize = newHeader.root[0].indexSize =
+                    newHeader.root[1].shadowIndexSize = newHeader.root[1].indexSize = nIndexPages * dbHandlesPerPage;
                 newHeader.root[0].indexUsed = newHeader.root[1].indexUsed = nObjects;
                 newHeader.root[0].freeList = newHeader.root[1].freeList = header.root[curr].freeList;
                 newHeader.root[0].bitmapEnd = newHeader.root[1].bitmapEnd = header.root[curr].bitmapEnd;
@@ -1674,75 +1674,75 @@ namespace Volante.Impl
                 byte[] page = new byte[Page.pageSize];
                 newHeader.pack(page);
                 stream.Write(page, 0, Page.pageSize);
-        
-                long pageOffs = (long)(nIndexPages*2 + 1)*Page.pageSize;
-                long recOffs = (long)(nPagedObjects + nIndexPages*2 + 1)*Page.pageSize;
+
+                long pageOffs = (long)(nIndexPages * 2 + 1) * Page.pageSize;
+                long recOffs = (long)(nPagedObjects + nIndexPages * 2 + 1) * Page.pageSize;
 #if CF
                 Array.Sort(index, oids, 0, nObjects, new PositionComparer());
 #else
                 Array.Sort(index, oids);
 #endif
-                byte[] newIndex = new byte[nIndexPages*dbHandlesPerPage*8];
-                for (i = 0; i < nObjects; i++) 
+                byte[] newIndex = new byte[nIndexPages * dbHandlesPerPage * 8];
+                for (i = 0; i < nObjects; i++)
                 {
                     long pos = index[i];
                     int oid = oids[i];
-                    if (pos != 0 && (pos & dbFreeHandleFlag) == 0) 
-                    { 
-                        if ((pos & dbPageObjectFlag) != 0) 
+                    if (pos != 0 && (pos & dbFreeHandleFlag) == 0)
+                    {
+                        if ((pos & dbPageObjectFlag) != 0)
                         {
-                            Bytes.pack8(newIndex, oid*8, pageOffs | dbPageObjectFlag);
+                            Bytes.pack8(newIndex, oid * 8, pageOffs | dbPageObjectFlag);
                             pageOffs += Page.pageSize;
-                        } 
+                        }
                         else
-                        { 
-                            Bytes.pack8(newIndex, oid*8, recOffs);
-                            int offs = (int)pos & (Page.pageSize-1);
+                        {
+                            Bytes.pack8(newIndex, oid * 8, recOffs);
+                            int offs = (int)pos & (Page.pageSize - 1);
                             Page op = pool.getPage(pos - offs);
                             int size = ObjectHeader.getSize(op.data, offs & ~dbFlagsMask);
-                            size = (size + dbAllocationQuantum-1) & ~(dbAllocationQuantum-1);
-                            recOffs += size; 
+                            size = (size + dbAllocationQuantum - 1) & ~(dbAllocationQuantum - 1);
+                            recOffs += size;
                             pool.unfix(op);
                         }
-                    } 
-                    else 
-                    { 
-                        Bytes.pack8(newIndex, oid*8, pos);
+                    }
+                    else
+                    {
+                        Bytes.pack8(newIndex, oid * 8, pos);
                     }
                 }
                 stream.Write(newIndex, 0, newIndex.Length);
                 stream.Write(newIndex, 0, newIndex.Length);
 
-                for (i = 0; i < nObjects; i++) 
+                for (i = 0; i < nObjects; i++)
                 {
                     long pos = index[i];
-                    if (((int)pos & (dbFreeHandleFlag|dbPageObjectFlag)) == dbPageObjectFlag) 
-                    { 
-                        if (oids[i] < dbBitmapId + dbBitmapPages 
+                    if (((int)pos & (dbFreeHandleFlag | dbPageObjectFlag)) == dbPageObjectFlag)
+                    {
+                        if (oids[i] < dbBitmapId + dbBitmapPages
                             || (oids[i] >= bitmapExtent && oids[i] < bitmapExtent + dbLargeBitmapPages - dbBitmapPages))
-                        { 
-                            int pageId = oids[i] < dbBitmapId + dbBitmapPages 
+                        {
+                            int pageId = oids[i] < dbBitmapId + dbBitmapPages
                                 ? oids[i] - dbBitmapId : oids[i] - bitmapExtent;
-                            long mappedSpace = (long)pageId*Page.pageSize*8*dbAllocationQuantum;
-                            if (mappedSpace >= newFileSize) 
-                            { 
+                            long mappedSpace = (long)pageId * Page.pageSize * 8 * dbAllocationQuantum;
+                            if (mappedSpace >= newFileSize)
+                            {
                                 memset(page, 0, Page.pageSize, (byte)0);
-                            } 
-                            else if (mappedSpace + Page.pageSize*8*dbAllocationQuantum <= newFileSize) 
-                            { 
+                            }
+                            else if (mappedSpace + Page.pageSize * 8 * dbAllocationQuantum <= newFileSize)
+                            {
                                 memset(page, 0, Page.pageSize, (byte)0xFF);
-                            } 
-                            else 
-                            { 
+                            }
+                            else
+                            {
                                 int nBits = (int)((newFileSize - mappedSpace) >> dbAllocationQuantumBits);
                                 memset(page, 0, nBits >> 3, (byte)0xFF);
                                 page[nBits >> 3] = (byte)((1 << (nBits & 7)) - 1);
                                 memset(page, (nBits >> 3) + 1, Page.pageSize - (nBits >> 3) - 1, (byte)0);
                             }
                             stream.Write(page, 0, Page.pageSize);
-                        } 
-                        else 
-                        {                        
+                        }
+                        else
+                        {
                             Page pg = pool.getPage(pos & ~dbFlagsMask);
                             stream.Write(pg.data, 0, Page.pageSize);
                             pool.unfix(pg);
@@ -1750,21 +1750,21 @@ namespace Volante.Impl
                     }
                 }
 
-                for (i = 0; i < nObjects; i++) 
+                for (i = 0; i < nObjects; i++)
                 {
                     long pos = index[i];
-                    if (pos != 0 && ((int)pos & (dbFreeHandleFlag|dbPageObjectFlag)) == 0) 
-                    { 
+                    if (pos != 0 && ((int)pos & (dbFreeHandleFlag | dbPageObjectFlag)) == 0)
+                    {
                         pos &= ~dbFlagsMask;
-                        int offs = (int)pos & (Page.pageSize-1);
+                        int offs = (int)pos & (Page.pageSize - 1);
                         Page pg = pool.getPage(pos - offs);
                         int size = ObjectHeader.getSize(pg.data, offs);
-                        size = (size + dbAllocationQuantum-1) & ~(dbAllocationQuantum-1);
+                        size = (size + dbAllocationQuantum - 1) & ~(dbAllocationQuantum - 1);
 
-                        while (true) 
-                        { 
-                            if (Page.pageSize - offs >= size) 
-                            { 
+                        while (true)
+                        {
+                            if (Page.pageSize - offs >= size)
+                            {
                                 stream.Write(pg.data, offs, size);
                                 break;
                             }
@@ -1772,14 +1772,14 @@ namespace Volante.Impl
                             size -= Page.pageSize - offs;
                             pos += Page.pageSize - offs;
                             offs = 0;
-                            pool.unfix(pg); 
+                            pool.unfix(pg);
                             pg = pool.getPage(pos);
                         }
                         pool.unfix(pg);
                     }
                 }
-                if (recOffs != newFileSize) 
-                {       
+                if (recOffs != newFileSize)
+                {
                     Debug.Assert(newFileSize - recOffs < Page.pageSize);
                     int align = (int)(newFileSize - recOffs);
                     memset(page, 0, align, (byte)0);
@@ -1787,31 +1787,31 @@ namespace Volante.Impl
                 }
             }
         }
-                
-        public Index<K,V> CreateIndex<K,V>(bool unique) where V:class,IPersistent
+
+        public Index<K, V> CreateIndex<K, V>(bool unique) where V : class,IPersistent
         {
             lock (this)
             {
                 ensureOpened();
 
-                Index<K,V> index = alternativeBtree 
-                    ? (Index<K,V>)new AltBtree<K,V>(unique)
-                    : (Index<K,V>)new Btree<K,V>(unique);
+                Index<K, V> index = alternativeBtree
+                    ? (Index<K, V>)new AltBtree<K, V>(unique)
+                    : (Index<K, V>)new Btree<K, V>(unique);
                 index.AssignOid(this, 0, false);
                 return index;
             }
         }
 
-        public Index<K,V> CreateThickIndex<K,V>() where V:class,IPersistent
+        public Index<K, V> CreateThickIndex<K, V>() where V : class,IPersistent
         {
             lock (this)
             {
                 ensureOpened();
-                return new ThickIndex<K,V>(this);
+                return new ThickIndex<K, V>(this);
             }
         }
-        
-        public BitIndex<T> CreateBitIndex<T>() where T:class,IPersistent
+
+        public BitIndex<T> CreateBitIndex<T>() where T : class,IPersistent
         {
             lock (this)
             {
@@ -1822,7 +1822,7 @@ namespace Volante.Impl
             }
         }
 
-        public SpatialIndex<T> CreateSpatialIndex<T>() where T:class,IPersistent
+        public SpatialIndex<T> CreateSpatialIndex<T>() where T : class,IPersistent
         {
             lock (this)
             {
@@ -1833,7 +1833,7 @@ namespace Volante.Impl
             }
         }
 
-        public SpatialIndexR2<T> CreateSpatialIndexR2<T>() where T:class,IPersistent
+        public SpatialIndexR2<T> CreateSpatialIndexR2<T>() where T : class,IPersistent
         {
             lock (this)
             {
@@ -1844,25 +1844,25 @@ namespace Volante.Impl
             }
         }
 
-        public SortedCollection<K,V> CreateSortedCollection<K,V>(PersistentComparator<K,V> comparator, bool unique) where V:class,IPersistent
+        public SortedCollection<K, V> CreateSortedCollection<K, V>(PersistentComparator<K, V> comparator, bool unique) where V : class,IPersistent
         {
-            ensureOpened();       
-            return new Ttree<K,V>(comparator, unique);
+            ensureOpened();
+            return new Ttree<K, V>(comparator, unique);
         }
 
-        public SortedCollection<K,V> CreateSortedCollection<K,V>(bool unique) where V:class,IPersistent,IComparable<K>,IComparable<V>
+        public SortedCollection<K, V> CreateSortedCollection<K, V>(bool unique) where V : class,IPersistent, IComparable<K>, IComparable<V>
         {
-            ensureOpened();    
-            return new Ttree<K,V>(new DefaultPersistentComparator<K,V>(), unique);
+            ensureOpened();
+            return new Ttree<K, V>(new DefaultPersistentComparator<K, V>(), unique);
         }
 
-        public ISet<T> CreateSet<T>() where T:class,IPersistent
+        public ISet<T> CreateSet<T>() where T : class,IPersistent
         {
             lock (this)
             {
                 ensureOpened();
 
-                ISet<T> s = alternativeBtree 
+                ISet<T> s = alternativeBtree
                     ? (ISet<T>)new AltPersistentSet<T>()
                     : (ISet<T>)new PersistentSet<T>();
                 s.AssignOid(this, 0, false);
@@ -1870,12 +1870,12 @@ namespace Volante.Impl
             }
         }
 
-        public ISet<T> CreateScalableSet<T>() where T:class,IPersistent
+        public ISet<T> CreateScalableSet<T>() where T : class,IPersistent
         {
             return CreateScalableSet<T>(8);
         }
 
-        public ISet<T> CreateScalableSet<T>(int initialSize) where T:class,IPersistent
+        public ISet<T> CreateScalableSet<T>(int initialSize) where T : class,IPersistent
         {
             lock (this)
             {
@@ -1885,20 +1885,20 @@ namespace Volante.Impl
             }
         }
 
-        public FieldIndex<K,V> CreateFieldIndex<K,V>(String fieldName, bool unique) where V:class,IPersistent
+        public FieldIndex<K, V> CreateFieldIndex<K, V>(String fieldName, bool unique) where V : class,IPersistent
         {
             lock (this)
             {
                 ensureOpened();
-                FieldIndex<K,V> index = alternativeBtree
-                    ? (FieldIndex<K,V>)new AltBtreeFieldIndex<K,V>(fieldName, unique)
-                    : (FieldIndex<K,V>)new BtreeFieldIndex<K,V>(fieldName, unique);
+                FieldIndex<K, V> index = alternativeBtree
+                    ? (FieldIndex<K, V>)new AltBtreeFieldIndex<K, V>(fieldName, unique)
+                    : (FieldIndex<K, V>)new BtreeFieldIndex<K, V>(fieldName, unique);
                 index.AssignOid(this, 0, false);
                 return index;
             }
         }
 
-        public MultiFieldIndex<T> CreateFieldIndex<T>(string[] fieldNames, bool unique) where T:class,IPersistent
+        public MultiFieldIndex<T> CreateFieldIndex<T>(string[] fieldNames, bool unique) where T : class,IPersistent
         {
             lock (this)
             {
@@ -1920,56 +1920,58 @@ namespace Volante.Impl
             }
         }
 
-        public Link<T> CreateLink<T>() where T:class,IPersistent
+        public Link<T> CreateLink<T>() where T : class,IPersistent
         {
             return CreateLink<T>(8);
         }
 
-        public Link<T> CreateLink<T>(int initialSize) where T:class,IPersistent
+        public Link<T> CreateLink<T>(int initialSize) where T : class,IPersistent
         {
             return new LinkImpl<T>(initialSize);
         }
 
-        internal Link<T> ConstructLink<T>(IPersistent[] arr, IPersistent owner) where T:class,IPersistent
+        internal Link<T> ConstructLink<T>(IPersistent[] arr, IPersistent owner) where T : class,IPersistent
         {
             return new LinkImpl<T>(arr, owner);
         }
 
-        public PArray<T> CreateArray<T>() where T:class,IPersistent
+        public PArray<T> CreateArray<T>() where T : class,IPersistent
         {
             return CreateArray<T>(8);
         }
 
-        public PArray<T> CreateArray<T>(int initialSize) where T:class,IPersistent
+        public PArray<T> CreateArray<T>(int initialSize) where T : class,IPersistent
         {
             return new PArrayImpl<T>(this, initialSize);
         }
 
-        internal PArray<T> ConstructArray<T>(int[] arr, IPersistent owner) where T:class,IPersistent
+        internal PArray<T> ConstructArray<T>(int[] arr, IPersistent owner) where T : class,IPersistent
         {
             return new PArrayImpl<T>(this, arr, owner);
         }
 
-        public Relation<M,O> CreateRelation<M,O>(O owner) where M:class,IPersistent where O:class,IPersistent
+        public Relation<M, O> CreateRelation<M, O>(O owner)
+            where M : class,IPersistent
+            where O : class,IPersistent
         {
-            return new RelationImpl<M,O>(owner);
+            return new RelationImpl<M, O>(owner);
         }
 
-        public TimeSeries<T> CreateTimeSeries<T>(int blockSize, long maxBlockTimeInterval) where T:TimeSeriesTick
+        public TimeSeries<T> CreateTimeSeries<T>(int blockSize, long maxBlockTimeInterval) where T : TimeSeriesTick
         {
             return new TimeSeriesImpl<T>(this, blockSize, maxBlockTimeInterval);
         }
-        
-        public PatriciaTrie<T> CreatePatriciaTrie<T>() where T:class,IPersistent
+
+        public PatriciaTrie<T> CreatePatriciaTrie<T>() where T : class,IPersistent
         {
             return new PTrie<T>();
         }
 
-        public ISet<IPersistent> CreateSet() 
+        public ISet<IPersistent> CreateSet()
         {
-             return CreateSet<IPersistent>();
-        } 
-        
+            return CreateSet<IPersistent>();
+        }
+
         public Link<IPersistent> CreateLink()
         {
             return CreateLink<IPersistent>(8);
@@ -1990,18 +1992,18 @@ namespace Volante.Impl
             return CreateArray<IPersistent>(initialSize);
         }
 
-        public Blob CreateBlob() 
+        public Blob CreateBlob()
         {
             return new BlobImpl(Page.pageSize - ObjectHeader.Sizeof - 16);
         }
 
 #if !OMIT_XML
-        public void  ExportXML(System.IO.StreamWriter writer)
+        public void ExportXML(System.IO.StreamWriter writer)
         {
             lock (this)
             {
                 ensureOpened();
-                int rootOid = header.root[1-currIndex].rootObject;
+                int rootOid = header.root[1 - currIndex].rootObject;
                 if (rootOid != 0)
                 {
                     XMLExporter xmlExporter = new XMLExporter(this, writer);
@@ -2010,7 +2012,7 @@ namespace Volante.Impl
             }
         }
 
-        public void  ImportXML(System.IO.StreamReader reader)
+        public void ImportXML(System.IO.StreamReader reader)
         {
             lock (this)
             {
@@ -2021,48 +2023,48 @@ namespace Volante.Impl
         }
 #endif
 
-        internal long getGCPos(int oid) 
-        { 
-            Page pg = pool.getPage(header.root[currIndex].index 
+        internal long getGCPos(int oid)
+        {
+            Page pg = pool.getPage(header.root[currIndex].index
                 + ((long)(oid >> dbHandlesPerPageBits) << Page.pageBits));
-            long pos = Bytes.unpack8(pg.data, (oid & (dbHandlesPerPage-1)) << 3);
+            long pos = Bytes.unpack8(pg.data, (oid & (dbHandlesPerPage - 1)) << 3);
             pool.unfix(pg);
             return pos;
         }
-        
-        internal void markOid(int oid) 
-        { 
-            if (oid != 0) 
-            {  
+
+        internal void markOid(int oid)
+        {
+            if (oid != 0)
+            {
                 long pos = getGCPos(oid);
-                if ((pos & (dbFreeHandleFlag|dbPageObjectFlag)) != 0) 
-                { 
+                if ((pos & (dbFreeHandleFlag | dbPageObjectFlag)) != 0)
+                {
                     throw new StorageError(StorageError.ErrorCode.INVALID_OID);
-                }     
+                }
                 int bit = (int)((ulong)pos >> dbAllocationQuantumBits);
-                if ((blackBitmap[(uint)bit >> 5] & (1 << (bit & 31))) == 0) 
-                { 
+                if ((blackBitmap[(uint)bit >> 5] & (1 << (bit & 31))) == 0)
+                {
                     greyBitmap[(uint)bit >> 5] |= 1 << (bit & 31);
                 }
             }
         }
 
-        internal Page getGCPage(int oid) 
-        {  
+        internal Page getGCPage(int oid)
+        {
             return pool.getPage(getGCPos(oid) & ~dbFlagsMask);
         }
 
-        public int Gc() 
-        { 
-            lock (this) 
-            { 
+        public int Gc()
+        {
+            lock (this)
+            {
                 return gc0();
             }
         }
 
-        internal Btree createBtreeStub(byte[] data, int offs) 
-        { 
-            return new Btree<int,IPersistent>(data, ObjectHeader.Sizeof + offs);
+        internal Btree createBtreeStub(byte[] data, int offs)
+        {
+            return new Btree<int, IPersistent>(data, ObjectHeader.Sizeof + offs);
         }
 
         private void mark()
@@ -2071,53 +2073,53 @@ namespace Volante.Impl
             int bitmapSize = (int)((ulong)header.root[currIndex].size >> (dbAllocationQuantumBits + 5)) + 1;
             bool existsNotMarkedObjects;
             long pos;
-            int  i, j;
+            int i, j;
 
-            if (listener != null) 
-            { 
+            if (listener != null)
+            {
                 listener.GcStarted();
-            }          
- 
+            }
+
             greyBitmap = new int[bitmapSize];
             blackBitmap = new int[bitmapSize];
             int rootOid = header.root[currIndex].rootObject;
-            if (rootOid != 0) 
-            { 
+            if (rootOid != 0)
+            {
                 markOid(rootOid);
-                do 
-                { 
+                do
+                {
                     existsNotMarkedObjects = false;
-                    for (i = 0; i < bitmapSize; i++) 
-                    { 
-                        if (greyBitmap[i] != 0) 
-                        { 
+                    for (i = 0; i < bitmapSize; i++)
+                    {
+                        if (greyBitmap[i] != 0)
+                        {
                             existsNotMarkedObjects = true;
-                            for (j = 0; j < 32; j++) 
-                            { 
-                                if ((greyBitmap[i] & (1 << j)) != 0) 
-                                { 
+                            for (j = 0; j < 32; j++)
+                            {
+                                if ((greyBitmap[i] & (1 << j)) != 0)
+                                {
                                     pos = (((long)i << 5) + j) << dbAllocationQuantumBits;
                                     greyBitmap[i] &= ~(1 << j);
                                     blackBitmap[i] |= 1 << j;
-                                    int offs = (int)pos & (Page.pageSize-1);
+                                    int offs = (int)pos & (Page.pageSize - 1);
                                     Page pg = pool.getPage(pos - offs);
                                     int typeOid = ObjectHeader.getType(pg.data, offs);
-                                    if (typeOid != 0) 
-                                    { 
+                                    if (typeOid != 0)
+                                    {
                                         ClassDescriptor desc = (ClassDescriptor)lookupObject(typeOid, typeof(ClassDescriptor));
-                                        if (typeof(Btree).IsAssignableFrom(desc.cls)) 
-                                        { 
+                                        if (typeof(Btree).IsAssignableFrom(desc.cls))
+                                        {
                                             Btree btree = createBtreeStub(pg.data, offs);
                                             btree.AssignOid(this, 0, false);
                                             btree.markTree();
-                                        } 
-                                        else if (desc.hasReferences) 
-                                        { 
+                                        }
+                                        else if (desc.hasReferences)
+                                        {
                                             markObject(pool.get(pos), ObjectHeader.Sizeof, desc);
-                                                
+
                                         }
                                     }
-                                    pool.unfix(pg);                                
+                                    pool.unfix(pg);
                                 }
                             }
                         }
@@ -2126,54 +2128,54 @@ namespace Volante.Impl
             }
         }
 
-        private int sweep() 
+        private int sweep()
         {
             int nDeallocated = 0;
             long pos;
             gcDone = true;
-            for (int i = dbFirstUserId, j = committedIndexSize; i < j; i++) 
+            for (int i = dbFirstUserId, j = committedIndexSize; i < j; i++)
             {
                 pos = getGCPos(i);
-                if (pos != 0 && ((int)pos & (dbPageObjectFlag|dbFreeHandleFlag)) == 0) 
+                if (pos != 0 && ((int)pos & (dbPageObjectFlag | dbFreeHandleFlag)) == 0)
                 {
                     int bit = (int)((ulong)pos >> dbAllocationQuantumBits);
-                    if ((blackBitmap[(uint)bit >> 5] & (1 << (bit & 31))) == 0) 
-                    { 
+                    if ((blackBitmap[(uint)bit >> 5] & (1 << (bit & 31))) == 0)
+                    {
                         // object is not accessible
-                        if (getPos(i) != pos) 
-                        { 
+                        if (getPos(i) != pos)
+                        {
                             throw new StorageError(StorageError.ErrorCode.INVALID_OID);
                         }
-                        int offs = (int)pos & (Page.pageSize-1);
+                        int offs = (int)pos & (Page.pageSize - 1);
                         Page pg = pool.getPage(pos - offs);
                         int typeOid = ObjectHeader.getType(pg.data, offs);
-                        if (typeOid != 0) 
-                        { 
+                        if (typeOid != 0)
+                        {
                             ClassDescriptor desc = findClassDescriptor(typeOid);
                             nDeallocated += 1;
-                            if (desc != null 
-                                && (typeof(Btree).IsAssignableFrom(desc.cls))) 
-                            { 
+                            if (desc != null
+                                && (typeof(Btree).IsAssignableFrom(desc.cls)))
+                            {
                                 Btree btree = createBtreeStub(pg.data, offs);
                                 pool.unfix(pg);
                                 btree.AssignOid(this, i, false);
                                 btree.Deallocate();
                             }
-                            else 
-                            { 
+                            else
+                            {
                                 int size = ObjectHeader.getSize(pg.data, offs);
                                 pool.unfix(pg);
                                 freeId(i);
-                                objectCache.remove(i);                        
+                                objectCache.remove(i);
                                 cloneBitmap(pos, size);
                             }
-                            if (listener != null) 
-                            { 
+                            if (listener != null)
+                            {
                                 listener.DeallocateObject(desc.cls, i);
                             }
                         }
                     }
-                }   
+                }
             }
 
             greyBitmap = null;
@@ -2181,41 +2183,41 @@ namespace Volante.Impl
             allocatedDelta = 0;
             gcActive = false;
 
-            if (listener != null) 
+            if (listener != null)
             {
                 listener.GcCompleted(nDeallocated);
             }
             return nDeallocated;
         }
-    
+
 #if !CF
-        public void backgroundGcThread() 
-        { 
-            while (true) 
-            { 
-                lock (backgroundGcStartMonitor) 
-                { 
-                    while (!gcGo && opened) 
-                    { 
+        public void backgroundGcThread()
+        {
+            while (true)
+            {
+                lock (backgroundGcStartMonitor)
+                {
+                    while (!gcGo && opened)
+                    {
                         Monitor.Wait(backgroundGcStartMonitor);
                     }
-                    if (!opened) 
-                    { 
+                    if (!opened)
+                    {
                         return;
                     }
                     gcGo = false;
                 }
-                lock (backgroundGcMonitor) 
+                lock (backgroundGcMonitor)
                 {
-                    if (!opened) 
-                    { 
+                    if (!opened)
+                    {
                         return;
                     }
                     mark();
-                    lock (this) 
-                    { 
-                        lock (objectCache) 
-                        { 
+                    lock (this)
+                    {
+                        lock (objectCache)
+                        {
                             sweep();
                         }
                     }
@@ -2223,9 +2225,9 @@ namespace Volante.Impl
             }
         }
 
-        private void activateGc() 
-        { 
-            lock (backgroundGcStartMonitor) 
+        private void activateGc()
+        {
+            lock (backgroundGcStartMonitor)
             {
                 gcGo = true;
                 Monitor.Pulse(backgroundGcStartMonitor);
@@ -2235,20 +2237,20 @@ namespace Volante.Impl
 
         private int gc0()
         {
-            lock (objectCache) 
-            { 
+            lock (objectCache)
+            {
                 ensureOpened();
 
-                if (gcDone || gcActive) 
-                { 
+                if (gcDone || gcActive)
+                {
                     return 0;
                 }
                 gcActive = true;
 #if !CF
-                if (backgroundGc) 
-                { 
-                    if (gcThread == null) 
-                    { 
+                if (backgroundGc)
+                {
+                    if (gcThread == null)
+                    {
                         gcThread = new Thread(new ThreadStart(backgroundGcThread));
                         gcThread.Start();
                     }
@@ -2257,24 +2259,24 @@ namespace Volante.Impl
                 }
 #endif
                 // System.out.println("Start GC, allocatedDelta=" + allocatedDelta + ", header[" + currIndex + "].size=" + header.root[currIndex].size + ", gcTreshold=" + gcThreshold);
-                        
+
                 mark();
                 return sweep();
             }
         }
 
-        public Dictionary<Type, MemoryUsage> GetMemoryDump() 
-        { 
-            lock (this) 
-            { 
-                lock (objectCache) 
-                { 
+        public Dictionary<Type, MemoryUsage> GetMemoryDump()
+        {
+            lock (this)
+            {
+                lock (objectCache)
+                {
                     ensureOpened();
 
                     int bitmapSize = (int)(header.root[currIndex].size >> (dbAllocationQuantumBits + 5)) + 1;
                     bool existsNotMarkedObjects;
                     long pos;
-                    int  i, j;
+                    int i, j;
 
                     // mark
                     greyBitmap = new int[bitmapSize];
@@ -2282,122 +2284,122 @@ namespace Volante.Impl
                     int rootOid = header.root[currIndex].rootObject;
                     var map = new Dictionary<Type, MemoryUsage>();
 
-                    if (rootOid != 0) 
-                    { 
+                    if (rootOid != 0)
+                    {
                         MemoryUsage indexUsage = new MemoryUsage(typeof(GenericIndex));
                         MemoryUsage classUsage = new MemoryUsage(typeof(Type));
 
                         markOid(rootOid);
-                        do 
-                        { 
+                        do
+                        {
                             existsNotMarkedObjects = false;
-                            for (i = 0; i < bitmapSize; i++) 
-                            { 
-                                if (greyBitmap[i] != 0) 
-                                { 
+                            for (i = 0; i < bitmapSize; i++)
+                            {
+                                if (greyBitmap[i] != 0)
+                                {
                                     existsNotMarkedObjects = true;
-                                    for (j = 0; j < 32; j++) 
-                                    { 
-                                        if ((greyBitmap[i] & (1 << j)) != 0) 
-                                        { 
+                                    for (j = 0; j < 32; j++)
+                                    {
+                                        if ((greyBitmap[i] & (1 << j)) != 0)
+                                        {
                                             pos = (((long)i << 5) + j) << dbAllocationQuantumBits;
                                             greyBitmap[i] &= ~(1 << j);
                                             blackBitmap[i] |= 1 << j;
-                                            int offs = (int)pos & (Page.pageSize-1);
+                                            int offs = (int)pos & (Page.pageSize - 1);
                                             Page pg = pool.getPage(pos - offs);
                                             int typeOid = ObjectHeader.getType(pg.data, offs);
                                             int objSize = ObjectHeader.getSize(pg.data, offs);
-                                            int alignedSize = (objSize + dbAllocationQuantum - 1) & ~(dbAllocationQuantum-1);                                    
-                                            if (typeOid != 0) 
-                                            { 
+                                            int alignedSize = (objSize + dbAllocationQuantum - 1) & ~(dbAllocationQuantum - 1);
+                                            if (typeOid != 0)
+                                            {
                                                 markOid(typeOid);
                                                 ClassDescriptor desc = findClassDescriptor(typeOid);
-                                                if (typeof(Btree).IsAssignableFrom(desc.cls)) 
-                                                { 
+                                                if (typeof(Btree).IsAssignableFrom(desc.cls))
+                                                {
                                                     Btree btree = createBtreeStub(pg.data, offs);
                                                     btree.AssignOid(this, 0, false);
                                                     int nPages = btree.markTree();
                                                     indexUsage.nInstances += 1;
-                                                    indexUsage.totalSize += (long)nPages*Page.pageSize + objSize;
-                                                    indexUsage.allocatedSize += (long)nPages*Page.pageSize + alignedSize;
-                                                } 
-                                                else 
+                                                    indexUsage.totalSize += (long)nPages * Page.pageSize + objSize;
+                                                    indexUsage.allocatedSize += (long)nPages * Page.pageSize + alignedSize;
+                                                }
+                                                else
                                                 {
                                                     MemoryUsage usage;
                                                     var ok = map.TryGetValue(desc.cls, out usage);
-                                                    if (!ok) 
-                                                    { 
+                                                    if (!ok)
+                                                    {
                                                         usage = new MemoryUsage(desc.cls);
                                                         map[desc.cls] = usage;
                                                     }
                                                     usage.nInstances += 1;
                                                     usage.totalSize += objSize;
                                                     usage.allocatedSize += alignedSize;
-                                                      
-                                                    if (desc.hasReferences) 
-                                                    { 
+
+                                                    if (desc.hasReferences)
+                                                    {
                                                         markObject(pool.get(pos), ObjectHeader.Sizeof, desc);
                                                     }
                                                 }
-                                            } 
-                                            else 
-                                            { 
+                                            }
+                                            else
+                                            {
                                                 classUsage.nInstances += 1;
                                                 classUsage.totalSize += objSize;
                                                 classUsage.allocatedSize += alignedSize;
                                             }
-                                            pool.unfix(pg);                                
+                                            pool.unfix(pg);
                                         }
                                     }
                                 }
                             }
                         } while (existsNotMarkedObjects);
-                
-                        if (indexUsage.nInstances != 0) 
-                        { 
+
+                        if (indexUsage.nInstances != 0)
+                        {
                             map[typeof(GenericIndex)] = indexUsage;
                         }
-                        if (classUsage.nInstances != 0) 
-                        { 
+                        if (classUsage.nInstances != 0)
+                        {
                             map[typeof(Type)] = classUsage;
                         }
                         MemoryUsage system = new MemoryUsage(typeof(Storage));
-                        system.totalSize += header.root[0].indexSize*8L;
-                        system.totalSize += header.root[1].indexSize*8L;
-                        system.totalSize += (long)(header.root[currIndex].bitmapEnd-dbBitmapId)*Page.pageSize;
+                        system.totalSize += header.root[0].indexSize * 8L;
+                        system.totalSize += header.root[1].indexSize * 8L;
+                        system.totalSize += (long)(header.root[currIndex].bitmapEnd - dbBitmapId) * Page.pageSize;
                         system.totalSize += Page.pageSize; // root page
 
-                        if (header.root[currIndex].bitmapExtent != 0) 
-                        { 
-                            system.allocatedSize = getBitmapUsedSpace(dbBitmapId, dbBitmapId+dbBitmapPages)
-                                +  getBitmapUsedSpace(header.root[currIndex].bitmapExtent, 
-                                header.root[currIndex].bitmapExtent + header.root[currIndex].bitmapEnd-dbBitmapId);
-                        } 
-                        else 
-                        { 
+                        if (header.root[currIndex].bitmapExtent != 0)
+                        {
+                            system.allocatedSize = getBitmapUsedSpace(dbBitmapId, dbBitmapId + dbBitmapPages)
+                                + getBitmapUsedSpace(header.root[currIndex].bitmapExtent,
+                                header.root[currIndex].bitmapExtent + header.root[currIndex].bitmapEnd - dbBitmapId);
+                        }
+                        else
+                        {
                             system.allocatedSize = getBitmapUsedSpace(dbBitmapId, header.root[currIndex].bitmapEnd);
                         }
                         system.nInstances = header.root[currIndex].indexSize;
                         map[typeof(Storage)] = system;
-                    } 
+                    }
                     return map;
                 }
             }
         }
 
-        long getBitmapUsedSpace(int from, int till) 
-        { 
+        long getBitmapUsedSpace(int from, int till)
+        {
             long allocated = 0;
-            while (from < till) 
+            while (from < till)
             {
                 Page pg = getGCPage(from);
-                for (int j = 0; j < Page.pageSize; j++) 
+                for (int j = 0; j < Page.pageSize; j++)
                 {
                     int mask = pg.data[j] & 0xFF;
-                    while (mask != 0) 
-                    { 
-                        if ((mask & 1) != 0) 
-                        { 
+                    while (mask != 0)
+                    {
+                        if ((mask & 1) != 0)
+                        {
                             allocated += dbAllocationQuantum;
                         }
                         mask >>= 1;
@@ -2408,16 +2410,16 @@ namespace Volante.Impl
             }
             return allocated;
         }
-        
-        internal int markObject(byte[] obj, int offs,  ClassDescriptor desc)
-        { 
+
+        internal int markObject(byte[] obj, int offs, ClassDescriptor desc)
+        {
             ClassDescriptor.FieldDescriptor[] all = desc.allFields;
 
-            for (int i = 0, n = all.Length; i < n; i++) 
-            { 
+            for (int i = 0, n = all.Length; i < n; i++)
+            {
                 ClassDescriptor.FieldDescriptor fd = all[i];
-                switch (fd.type) 
-                { 
+                switch (fd.type)
+                {
                     case ClassDescriptor.FieldType.tpBoolean:
                     case ClassDescriptor.FieldType.tpByte:
                     case ClassDescriptor.FieldType.tpSByte:
@@ -2445,19 +2447,19 @@ namespace Volante.Impl
                         offs += 16;
                         continue;
                     case ClassDescriptor.FieldType.tpString:
-                    {
-                        int strlen = Bytes.unpack4(obj, offs);
-                        offs += 4;
-                        if (strlen > 0) 
                         {
-                            offs += strlen*2;
-                        } 
-                        else if (strlen < -1) 
-                        {
-                            offs -= strlen+2;
+                            int strlen = Bytes.unpack4(obj, offs);
+                            offs += 4;
+                            if (strlen > 0)
+                            {
+                                offs += strlen * 2;
+                            }
+                            else if (strlen < -1)
+                            {
+                                offs -= strlen + 2;
+                            }
+                            continue;
                         }
-                        continue;
-                    }
                     case ClassDescriptor.FieldType.tpObject:
                     case ClassDescriptor.FieldType.tpOid:
                         markOid(Bytes.unpack4(obj, offs));
@@ -2467,154 +2469,154 @@ namespace Volante.Impl
                         offs = markObject(obj, offs, fd.valueDesc);
                         continue;
                     case ClassDescriptor.FieldType.tpRaw:
-                    {
-                        int len = Bytes.unpack4(obj, offs);
-                        offs += 4;
-                        if (len > 0) 
-                        { 
-                            offs += len;
-                        } 
-                        else if (len == -2-(int)ClassDescriptor.FieldType.tpObject) 
                         {
-                            markOid(Bytes.unpack4(obj, offs));
+                            int len = Bytes.unpack4(obj, offs);
                             offs += 4;
-                        }
-                        else if (len < -1) 
-                        { 
-                            offs += ClassDescriptor.Sizeof[-2-len];
-                        }
-                        continue;
-                    }
-                    case ClassDescriptor.FieldType.tpArrayOfByte:
-                    case ClassDescriptor.FieldType.tpArrayOfSByte:
-                    case ClassDescriptor.FieldType.tpArrayOfBoolean:
-                    {
-                        int len = Bytes.unpack4(obj, offs);
-                        offs += 4;
-                        if (len > 0) 
-                        { 
-                            offs += len;
-                        } 
-                        continue;
-                    }
-                    case ClassDescriptor.FieldType.tpArrayOfShort:
-                    case ClassDescriptor.FieldType.tpArrayOfUShort:
-                    case ClassDescriptor.FieldType.tpArrayOfChar:
-                    {
-                        int len = Bytes.unpack4(obj, offs);
-                        offs += 4;
-                        if (len > 0) 
-                        { 
-                            offs += len*2;
-                        }
-                        continue;
-                    }
-                    case ClassDescriptor.FieldType.tpArrayOfInt:
-                    case ClassDescriptor.FieldType.tpArrayOfUInt:
-                    case ClassDescriptor.FieldType.tpArrayOfEnum:
-                    case ClassDescriptor.FieldType.tpArrayOfFloat:
-                    {
-                        int len = Bytes.unpack4(obj, offs);
-                        offs += 4;
-                        if (len > 0) 
-                        { 
-                            offs += len*4;
-                        }
-                        continue;
-                    }
-                    case ClassDescriptor.FieldType.tpArrayOfLong:
-                    case ClassDescriptor.FieldType.tpArrayOfULong:
-                    case ClassDescriptor.FieldType.tpArrayOfDouble:
-                    case ClassDescriptor.FieldType.tpArrayOfDate:
-                    {
-                        int len = Bytes.unpack4(obj, offs);
-                        offs += 4;
-                        if (len > 0) 
-                        { 
-                            offs += len*8;
-                        }
-                        continue;
-                    }
-                    case ClassDescriptor.FieldType.tpArrayOfString:
-                    {
-                        int len = Bytes.unpack4(obj, offs);
-                        offs += 4;
-                        while (--len >= 0) 
-                        {
-                            int strlen = Bytes.unpack4(obj, offs);
-                            offs += 4;
-                            if (strlen > 0) 
-                            { 
-                                offs += strlen*2;
-                            }                       
-                            else if (strlen < -1) 
+                            if (len > 0)
                             {
-                                offs -= strlen+2;
+                                offs += len;
                             }
-                        }
-                        continue;
-                    }
-                    case ClassDescriptor.FieldType.tpArrayOfObject:
-                    case ClassDescriptor.FieldType.tpArrayOfOid:
-                    case ClassDescriptor.FieldType.tpLink:
-                    {
-                        int len = Bytes.unpack4(obj, offs);
-                        offs += 4;
-                        while (--len >= 0) 
-                        {
-                            markOid(Bytes.unpack4(obj, offs));
-                            offs += 4;
-                        }
-                        continue;
-                    }
-                    case ClassDescriptor.FieldType.tpArrayOfValue:
-                    {
-                        int len = Bytes.unpack4(obj, offs);
-                        offs += 4;
-                        ClassDescriptor valueDesc = fd.valueDesc;
-                        while (--len >= 0) 
-                        {
-                            offs = markObject(obj, offs, valueDesc);
-                        }
-                        continue;
-                    }
-                    case ClassDescriptor.FieldType.tpArrayOfRaw:
-                    {
-                        int len = Bytes.unpack4(obj, offs);
-                        offs += 4;
-                        while (--len >= 0) 
-                        {
-                            int rawlen = Bytes.unpack4(obj, offs);
-                            offs += 4;
-                            if (rawlen >= 0) 
-                            { 
-                                offs += rawlen;
-                            }
-                            else if (rawlen == -2-(int)ClassDescriptor.FieldType.tpObject) 
+                            else if (len == -2 - (int)ClassDescriptor.FieldType.tpObject)
                             {
                                 markOid(Bytes.unpack4(obj, offs));
                                 offs += 4;
                             }
-                            else if (rawlen < -1) 
-                            { 
-                                offs += ClassDescriptor.Sizeof[-2-rawlen];
+                            else if (len < -1)
+                            {
+                                offs += ClassDescriptor.Sizeof[-2 - len];
                             }
+                            continue;
                         }
-                        continue;
-                    }
+                    case ClassDescriptor.FieldType.tpArrayOfByte:
+                    case ClassDescriptor.FieldType.tpArrayOfSByte:
+                    case ClassDescriptor.FieldType.tpArrayOfBoolean:
+                        {
+                            int len = Bytes.unpack4(obj, offs);
+                            offs += 4;
+                            if (len > 0)
+                            {
+                                offs += len;
+                            }
+                            continue;
+                        }
+                    case ClassDescriptor.FieldType.tpArrayOfShort:
+                    case ClassDescriptor.FieldType.tpArrayOfUShort:
+                    case ClassDescriptor.FieldType.tpArrayOfChar:
+                        {
+                            int len = Bytes.unpack4(obj, offs);
+                            offs += 4;
+                            if (len > 0)
+                            {
+                                offs += len * 2;
+                            }
+                            continue;
+                        }
+                    case ClassDescriptor.FieldType.tpArrayOfInt:
+                    case ClassDescriptor.FieldType.tpArrayOfUInt:
+                    case ClassDescriptor.FieldType.tpArrayOfEnum:
+                    case ClassDescriptor.FieldType.tpArrayOfFloat:
+                        {
+                            int len = Bytes.unpack4(obj, offs);
+                            offs += 4;
+                            if (len > 0)
+                            {
+                                offs += len * 4;
+                            }
+                            continue;
+                        }
+                    case ClassDescriptor.FieldType.tpArrayOfLong:
+                    case ClassDescriptor.FieldType.tpArrayOfULong:
+                    case ClassDescriptor.FieldType.tpArrayOfDouble:
+                    case ClassDescriptor.FieldType.tpArrayOfDate:
+                        {
+                            int len = Bytes.unpack4(obj, offs);
+                            offs += 4;
+                            if (len > 0)
+                            {
+                                offs += len * 8;
+                            }
+                            continue;
+                        }
+                    case ClassDescriptor.FieldType.tpArrayOfString:
+                        {
+                            int len = Bytes.unpack4(obj, offs);
+                            offs += 4;
+                            while (--len >= 0)
+                            {
+                                int strlen = Bytes.unpack4(obj, offs);
+                                offs += 4;
+                                if (strlen > 0)
+                                {
+                                    offs += strlen * 2;
+                                }
+                                else if (strlen < -1)
+                                {
+                                    offs -= strlen + 2;
+                                }
+                            }
+                            continue;
+                        }
+                    case ClassDescriptor.FieldType.tpArrayOfObject:
+                    case ClassDescriptor.FieldType.tpArrayOfOid:
+                    case ClassDescriptor.FieldType.tpLink:
+                        {
+                            int len = Bytes.unpack4(obj, offs);
+                            offs += 4;
+                            while (--len >= 0)
+                            {
+                                markOid(Bytes.unpack4(obj, offs));
+                                offs += 4;
+                            }
+                            continue;
+                        }
+                    case ClassDescriptor.FieldType.tpArrayOfValue:
+                        {
+                            int len = Bytes.unpack4(obj, offs);
+                            offs += 4;
+                            ClassDescriptor valueDesc = fd.valueDesc;
+                            while (--len >= 0)
+                            {
+                                offs = markObject(obj, offs, valueDesc);
+                            }
+                            continue;
+                        }
+                    case ClassDescriptor.FieldType.tpArrayOfRaw:
+                        {
+                            int len = Bytes.unpack4(obj, offs);
+                            offs += 4;
+                            while (--len >= 0)
+                            {
+                                int rawlen = Bytes.unpack4(obj, offs);
+                                offs += 4;
+                                if (rawlen >= 0)
+                                {
+                                    offs += rawlen;
+                                }
+                                else if (rawlen == -2 - (int)ClassDescriptor.FieldType.tpObject)
+                                {
+                                    markOid(Bytes.unpack4(obj, offs));
+                                    offs += 4;
+                                }
+                                else if (rawlen < -1)
+                                {
+                                    offs += ClassDescriptor.Sizeof[-2 - rawlen];
+                                }
+                            }
+                            continue;
+                        }
                 }
             }
             return offs;
         }
 
-        internal class ThreadTransactionContext 
+        internal class ThreadTransactionContext
         {
-            internal int       nested;
+            internal int nested;
             internal ArrayList locked;
             internal ArrayList modified;
-            
-            internal ThreadTransactionContext() 
-            { 
+
+            internal ThreadTransactionContext()
+            {
                 locked = new ArrayList();
                 modified = new ArrayList();
             }
@@ -2625,17 +2627,17 @@ namespace Volante.Impl
             get
             {
                 ThreadTransactionContext ctx = (ThreadTransactionContext)Thread.GetData(transactionContext);
-                if (ctx == null) 
-                { 
+                if (ctx == null)
+                {
                     ctx = new ThreadTransactionContext();
                     Thread.SetData(transactionContext, ctx);
                 }
                 return ctx;
-            }			
+            }
         }
 
-        public void EndThreadTransaction() 
-        { 
+        public void EndThreadTransaction()
+        {
             EndThreadTransaction(Int32.MaxValue);
         }
 
@@ -2801,32 +2803,32 @@ namespace Volante.Impl
 #else
         public virtual void BeginThreadTransaction(TransactionMode mode)
         {
-            if (mode == TransactionMode.Serializable) 
-            { 
+            if (mode == TransactionMode.Serializable)
+            {
                 useSerializableTransactions = true;
-                TransactionContext.nested += 1;;
-            } 
-            else 
-            { 
-                lock (transactionMonitor) 
+                TransactionContext.nested += 1; ;
+            }
+            else
+            {
+                lock (transactionMonitor)
                 {
-                    if (scheduledCommitTime != Int64.MaxValue) 
-                    { 
+                    if (scheduledCommitTime != Int64.MaxValue)
+                    {
                         nBlockedTransactions += 1;
-                        while (DateTime.Now.Ticks >= scheduledCommitTime) 
-                        { 
+                        while (DateTime.Now.Ticks >= scheduledCommitTime)
+                        {
                             Monitor.Wait(transactionMonitor);
                         }
                         nBlockedTransactions -= 1;
                     }
                     nNestedTransactions += 1;
-                }	    
-                if (mode == TransactionMode.Exclusive) 
-                { 
+                }
+                if (mode == TransactionMode.Exclusive)
+                {
                     transactionLock.ExclusiveLock();
-                } 
-                else 
-                { 
+                }
+                else
+                {
                     transactionLock.SharedLock();
                 }
             }
@@ -2835,70 +2837,70 @@ namespace Volante.Impl
         public virtual void EndThreadTransaction(int maxDelay)
         {
             ThreadTransactionContext ctx = TransactionContext;
-            if (ctx.nested != 0) 
+            if (ctx.nested != 0)
             { // serializable transaction
-                if (--ctx.nested == 0) 
-                { 
+                if (--ctx.nested == 0)
+                {
                     int i = ctx.modified.Count;
-                    if (i != 0) 
-                    { 
-                        do 
-                        { 
+                    if (i != 0)
+                    {
+                        do
+                        {
                             ((IPersistent)ctx.modified[--i]).Store();
                         } while (i != 0);
 
-                        lock (backgroundGcMonitor) 
-                        { 
-                            lock (this) 
-                            { 
+                        lock (backgroundGcMonitor)
+                        {
+                            lock (this)
+                            {
                                 commit0();
                             }
                         }
                     }
-                    for (i = ctx.locked.Count; --i >= 0;) 
-                    { 
+                    for (i = ctx.locked.Count; --i >= 0; )
+                    {
                         ((IResource)ctx.locked[i]).Reset();
                     }
                     ctx.modified.Clear();
                     ctx.locked.Clear();
-                } 
-            } 
-            else 
+                }
+            }
+            else
             { // exclusive or cooperative transaction        
-                lock (transactionMonitor) 
-                { 
+                lock (transactionMonitor)
+                {
                     transactionLock.Unlock();
-                    if (nNestedTransactions != 0) 
+                    if (nNestedTransactions != 0)
                     { // may be everything is already aborted
-                        if (--nNestedTransactions == 0) 
-                        { 
+                        if (--nNestedTransactions == 0)
+                        {
                             nCommittedTransactions += 1;
                             Commit();
                             scheduledCommitTime = Int64.MaxValue;
-                            if (nBlockedTransactions != 0) 
-                            { 
+                            if (nBlockedTransactions != 0)
+                            {
                                 Monitor.PulseAll(transactionMonitor);
                             }
-                        } 
-                        else 
+                        }
+                        else
                         {
-                            if (maxDelay != Int32.MaxValue) 
-                            { 
+                            if (maxDelay != Int32.MaxValue)
+                            {
                                 long nextCommit = DateTime.Now.Ticks + maxDelay;
-                                if (nextCommit < scheduledCommitTime) 
-                                { 
+                                if (nextCommit < scheduledCommitTime)
+                                {
                                     scheduledCommitTime = nextCommit;
                                 }
-                                if (maxDelay == 0) 
-                                { 
+                                if (maxDelay == 0)
+                                {
                                     int n = nCommittedTransactions;
                                     nBlockedTransactions += 1;
-                                    do 
-                                    { 
+                                    do
+                                    {
                                         Monitor.Wait(transactionMonitor);
                                     } while (nCommittedTransactions == n);
                                     nBlockedTransactions -= 1;
-                                }				    
+                                }
                             }
                         }
                     }
@@ -2909,37 +2911,37 @@ namespace Volante.Impl
         public void RollbackThreadTransaction()
         {
             ThreadTransactionContext ctx = TransactionContext;
-            if (ctx.nested != 0) 
+            if (ctx.nested != 0)
             { // serializable transaction
-                ctx.nested = 0; 
+                ctx.nested = 0;
                 int i = ctx.modified.Count;
-                if (i != 0) 
-                { 
-                    do 
-                    { 
+                if (i != 0)
+                {
+                    do
+                    {
                         ((IPersistent)ctx.modified[--i]).Invalidate();
                     } while (i != 0);
-                
-                    lock (this) 
-                    { 
+
+                    lock (this)
+                    {
                         rollback0();
                     }
                 }
-                for (i = ctx.locked.Count; --i >= 0;) 
-                { 
+                for (i = ctx.locked.Count; --i >= 0; )
+                {
                     ((IResource)ctx.locked[i]).Reset();
-                } 
+                }
                 ctx.modified.Clear();
                 ctx.locked.Clear();
-            } 
-            else 
-            { 
-                lock (transactionMonitor) 
-                { 
+            }
+            else
+            {
+                lock (transactionMonitor)
+                {
                     transactionLock.Reset();
                     nNestedTransactions = 0;
-                    if (nBlockedTransactions != 0) 
-                    { 
+                    if (nBlockedTransactions != 0)
+                    {
                         Monitor.PulseAll(transactionMonitor);
                     }
                     Rollback();
@@ -2951,7 +2953,8 @@ namespace Volante.Impl
 
         public virtual void Close()
         {
-            lock (backgroundGcMonitor) {
+            lock (backgroundGcMonitor)
+            {
                 Commit();
                 opened = false;
             }
@@ -2960,9 +2963,9 @@ namespace Volante.Impl
             {
                 codeGenerationThread.Join();
                 codeGenerationThread = null;
-            }               
-            if (gcThread != null) 
-            {             
+            }
+            if (gcThread != null)
+            {
                 activateGc();
                 gcThread.Join();
             }
@@ -2988,7 +2991,7 @@ namespace Volante.Impl
             descList = null;
         }
 
-        public bool AlternativeBtree 
+        public bool AlternativeBtree
         {
             set { alternativeBtree = value; }
             get { return alternativeBtree; }
@@ -3005,7 +3008,7 @@ namespace Volante.Impl
         {
             set { initIndexSize = value; }
             get { return initIndexSize; }
-        }        
+        }
 
         // TODO: needs tests
         public long ExtensionQuantum
@@ -3097,27 +3100,27 @@ namespace Volante.Impl
             this.listener = listener;
             return prevListener;
         }
-    
+
         public IPersistent GetObjectByOID(int oid)
         {
-            lock (this) 
-            { 
+            lock (this)
+            {
                 return oid == 0 ? null : lookupObject(oid, null);
             }
         }
 
-        public void modifyObject(IPersistent obj) 
+        public void modifyObject(IPersistent obj)
         {
-            lock (this) 
-            {                 
-                lock (objectCache) 
-                { 
-                    if (!obj.IsModified()) 
-                    { 
-                        if (useSerializableTransactions) 
-                        { 
+            lock (this)
+            {
+                lock (objectCache)
+                {
+                    if (!obj.IsModified())
+                    {
+                        if (useSerializableTransactions)
+                        {
                             ThreadTransactionContext ctx = TransactionContext;
-                            if (ctx.nested != 0) 
+                            if (ctx.nested != 0)
                             { // serializable transaction
                                 ctx.modified.Add(obj);
                             }
@@ -3128,46 +3131,46 @@ namespace Volante.Impl
             }
         }
 
-        public void lockObject(IPersistent obj) 
-        { 
-            if (useSerializableTransactions) 
-            { 
+        public void lockObject(IPersistent obj)
+        {
+            if (useSerializableTransactions)
+            {
                 ThreadTransactionContext ctx = TransactionContext;
-                if (ctx.nested != 0) 
+                if (ctx.nested != 0)
                 { // serializable transaction
                     ctx.locked.Add(obj);
                 }
             }
         }
-         
-        public void storeObject(IPersistent obj) 
+
+        public void storeObject(IPersistent obj)
         {
-            lock (this) 
+            lock (this)
             {
                 ensureOpened();
 
-                lock (objectCache) 
-                { 
+                lock (objectCache)
+                {
                     storeObject0(obj);
                 }
             }
         }
 
-        public void storeFinalizedObject(IPersistent obj) 
+        public void storeFinalizedObject(IPersistent obj)
         {
-            if (opened) 
-            { 
-                lock (objectCache) 
-                { 
-                    if (obj.Oid != 0) 
-                    { 
+            if (opened)
+            {
+                lock (objectCache)
+                {
+                    if (obj.Oid != 0)
+                    {
                         storeObject0(obj);
                     }
                 }
             }
         }
 
-        void storeObject0(IPersistent obj) 
+        void storeObject0(IPersistent obj)
         {
             obj.OnStore();
             int oid = obj.Oid;
@@ -3175,17 +3178,17 @@ namespace Volante.Impl
             if (oid == 0)
             {
                 oid = allocateId();
-                if (!obj.IsDeleted()) 
+                if (!obj.IsDeleted())
                 {
                     objectCache.put(oid, obj);
                 }
                 obj.AssignOid(this, oid, false);
                 newObject = true;
-            } 
-            else if (obj.IsModified()) 
+            }
+            else if (obj.IsModified())
             {
                 objectCache.clearDirty(oid);
-            } 
+            }
             byte[] data = packObject(obj);
             long pos;
             int newSize = ObjectHeader.getSize(data, 0);
@@ -3196,28 +3199,28 @@ namespace Volante.Impl
             }
             else
             {
-                int offs = (int) pos & (Page.pageSize - 1);
+                int offs = (int)pos & (Page.pageSize - 1);
                 if ((offs & (dbFreeHandleFlag | dbPageObjectFlag)) != 0)
                 {
                     throw new StorageError(StorageError.ErrorCode.DELETED_OBJECT);
                 }
                 Page pg = pool.getPage(pos - offs);
-                offs &= ~ dbFlagsMask;
+                offs &= ~dbFlagsMask;
                 int size = ObjectHeader.getSize(pg.data, offs);
                 pool.unfix(pg);
                 if ((pos & dbModifiedFlag) == 0)
                 {
-                    cloneBitmap(pos & ~ dbFlagsMask, size);
+                    cloneBitmap(pos & ~dbFlagsMask, size);
                     pos = allocate(newSize, 0);
                     setPos(oid, pos | dbModifiedFlag);
                 }
                 else
                 {
-                    if (((newSize + dbAllocationQuantum - 1) & ~ (dbAllocationQuantum - 1)) > ((size + dbAllocationQuantum - 1) & ~ (dbAllocationQuantum - 1)))
+                    if (((newSize + dbAllocationQuantum - 1) & ~(dbAllocationQuantum - 1)) > ((size + dbAllocationQuantum - 1) & ~(dbAllocationQuantum - 1)))
                     {
                         long newPos = allocate(newSize, 0);
-                        cloneBitmap(pos & ~ dbFlagsMask, size);
-                        free(pos & ~ dbFlagsMask, size);
+                        cloneBitmap(pos & ~dbFlagsMask, size);
+                        free(pos & ~dbFlagsMask, size);
                         pos = newPos;
                         setPos(oid, pos | dbModifiedFlag);
                     }
@@ -3235,8 +3238,8 @@ namespace Volante.Impl
         {
             lock (this)
             {
-                if (obj.IsRaw()) 
-                { 
+                if (obj.IsRaw())
+                {
                     loadStub(obj.Oid, obj, obj.GetType());
                 }
             }
@@ -3266,8 +3269,8 @@ namespace Volante.Impl
             return oid;
         }
 
-        internal ClassDescriptor findClassDescriptor(int oid) 
-        { 
+        internal ClassDescriptor findClassDescriptor(int oid)
+        {
             return (ClassDescriptor)lookupObject(oid, typeof(ClassDescriptor));
         }
 
@@ -3287,24 +3290,24 @@ namespace Volante.Impl
                 return stub;
             }
             ClassDescriptor desc;
-            if (cls == typeof(Persistent) || (desc = (ClassDescriptor) classDescMap[cls]) == null || desc.hasSubclasses)
+            if (cls == typeof(Persistent) || (desc = (ClassDescriptor)classDescMap[cls]) == null || desc.hasSubclasses)
             {
                 long pos = getPos(oid);
-                int offs = (int) pos & (Page.pageSize - 1);
+                int offs = (int)pos & (Page.pageSize - 1);
                 if ((offs & (dbFreeHandleFlag | dbPageObjectFlag)) != 0)
                 {
                     throw new StorageError(StorageError.ErrorCode.DELETED_OBJECT);
                 }
                 Page pg = pool.getPage(pos - offs);
-                int typeOid = ObjectHeader.getType(pg.data, offs & ~ dbFlagsMask);
+                int typeOid = ObjectHeader.getType(pg.data, offs & ~dbFlagsMask);
                 pool.unfix(pg);
                 desc = findClassDescriptor(typeOid);
             }
-            if (desc.serializer != null) 
-            { 
+            if (desc.serializer != null)
+            {
                 stub = desc.serializer.newInstance();
-            } 
-            else 
+            }
+            else
             {
                 stub = (IPersistent)desc.newInstance();
             }
@@ -3320,67 +3323,67 @@ namespace Volante.Impl
             {
                 throw new StorageError(StorageError.ErrorCode.DELETED_OBJECT);
             }
-            byte[] body = pool.get(pos & ~ dbFlagsMask);
+            byte[] body = pool.get(pos & ~dbFlagsMask);
             ClassDescriptor desc;
             int typeOid = ObjectHeader.getType(body, 0);
-            if (typeOid == 0) 
-            { 
+            if (typeOid == 0)
+            {
                 desc = (ClassDescriptor)classDescMap[cls];
-            } 
-            else 
-            { 
+            }
+            else
+            {
                 desc = findClassDescriptor(typeOid);
             }
-            if (obj == null) 
-            { 
-                if (desc.serializer != null) 
+            if (obj == null)
+            {
+                if (desc.serializer != null)
                 {
                     obj = desc.serializer.newInstance();
-                } 
-                else 
+                }
+                else
                 {
                     obj = (IPersistent)desc.newInstance();
                 }
                 objectCache.put(oid, obj);
             }
             obj.AssignOid(this, oid, false);
-            if (desc.serializer != null) 
-            { 
+            if (desc.serializer != null)
+            {
                 desc.serializer.unpack(this, obj, body, obj.RecursiveLoading(), encoding);
-            } 
-            else 
-            { 
+            }
+            else
+            {
                 unpackObject(obj, desc, obj.RecursiveLoading(), body, ObjectHeader.Sizeof, obj);
             }
             obj.OnLoad();
             return obj;
         }
 
-        internal int unpackObject(object obj, ClassDescriptor desc, bool recursiveLoading, byte[] body, int offs, IPersistent po) 
+        internal int unpackObject(object obj, ClassDescriptor desc, bool recursiveLoading, byte[] body, int offs, IPersistent po)
         {
             ClassDescriptor.FieldDescriptor[] all = desc.allFields;
             for (int i = 0, n = all.Length; i < n; i++)
             {
                 ClassDescriptor.FieldDescriptor fd = all[i];
-                if (obj == null || fd.field == null) 
+                if (obj == null || fd.field == null)
                 {
                     offs = skipField(body, offs, fd, fd.type);
-                } 
-                else 
+                }
+                else
                 {
                     object val = obj;
                     offs = unpackField(body, offs, recursiveLoading, ref val, fd, fd.type, po);
                     fd.field.SetValue(obj, val);
                 }
-            }  
+            }
             return offs;
         }
 
         public int skipField(byte[] body, int offs, ClassDescriptor.FieldDescriptor fd, ClassDescriptor.FieldType type)
         {
             int len;
-            switch (type) 
-            { 
+            switch (type)
+            {
                 case ClassDescriptor.FieldType.tpBoolean:
                 case ClassDescriptor.FieldType.tpByte:
                 case ClassDescriptor.FieldType.tpSByte:
@@ -3406,13 +3409,13 @@ namespace Volante.Impl
                 case ClassDescriptor.FieldType.tpString:
                     len = Bytes.unpack4(body, offs);
                     offs += 4;
-                    if (len > 0) 
-                    { 
-                        offs += len*2;
-                    }                        
-                    else if (len < -1) 
+                    if (len > 0)
                     {
-                        offs -= len+2;
+                        offs += len * 2;
+                    }
+                    else if (len < -1)
+                    {
+                        offs -= len + 2;
                     }
 
                     break;
@@ -3424,13 +3427,13 @@ namespace Volante.Impl
                 case ClassDescriptor.FieldType.tpArrayOfBoolean:
                     len = Bytes.unpack4(body, offs);
                     offs += 4;
-                    if (len > 0) 
-                    { 
+                    if (len > 0)
+                    {
                         offs += len;
                     }
-                    else if (len < -1) 
-                    { 
-                        offs += ClassDescriptor.Sizeof[-2-len];
+                    else if (len < -1)
+                    {
+                        offs += ClassDescriptor.Sizeof[-2 - len];
                     }
                     break;
                 case ClassDescriptor.FieldType.tpArrayOfShort:
@@ -3438,9 +3441,9 @@ namespace Volante.Impl
                 case ClassDescriptor.FieldType.tpArrayOfChar:
                     len = Bytes.unpack4(body, offs);
                     offs += 4;
-                    if (len > 0) 
-                    { 
-                        offs += len*2;
+                    if (len > 0)
+                    {
+                        offs += len * 2;
                     }
                     break;
                 case ClassDescriptor.FieldType.tpArrayOfInt:
@@ -3451,9 +3454,9 @@ namespace Volante.Impl
                 case ClassDescriptor.FieldType.tpLink:
                     len = Bytes.unpack4(body, offs);
                     offs += 4;
-                    if (len > 0) 
-                    { 
-                        offs += len*4;
+                    if (len > 0)
+                    {
+                        offs += len * 4;
                     }
                     break;
                 case ClassDescriptor.FieldType.tpArrayOfLong:
@@ -3462,27 +3465,27 @@ namespace Volante.Impl
                 case ClassDescriptor.FieldType.tpArrayOfDate:
                     len = Bytes.unpack4(body, offs);
                     offs += 4;
-                    if (len > 0) 
-                    { 
-                        offs += len*8;
+                    if (len > 0)
+                    {
+                        offs += len * 8;
                     }
                     break;
                 case ClassDescriptor.FieldType.tpArrayOfString:
                     len = Bytes.unpack4(body, offs);
                     offs += 4;
-                    if (len > 0) 
-                    { 
-                        for (int j = 0; j < len; j++) 
+                    if (len > 0)
+                    {
+                        for (int j = 0; j < len; j++)
                         {
                             int strlen = Bytes.unpack4(body, offs);
                             offs += 4;
-                            if (strlen > 0) 
+                            if (strlen > 0)
                             {
-                                offs += strlen*2;
-                            }                       
-                            else if (strlen < -1) 
+                                offs += strlen * 2;
+                            }
+                            else if (strlen < -1)
                             {
-                                offs -= strlen+2;
+                                offs -= strlen + 2;
                             }
 
                         }
@@ -3492,11 +3495,11 @@ namespace Volante.Impl
                 case ClassDescriptor.FieldType.tpArrayOfValue:
                     len = Bytes.unpack4(body, offs);
                     offs += 4;
-                    if (len > 0) 
-                    { 
+                    if (len > 0)
+                    {
                         ClassDescriptor valueDesc = fd.valueDesc;
-                        for (int j = 0; j < len; j++) 
-                        { 
+                        for (int j = 0; j < len; j++)
+                        {
                             offs = unpackObject(null, valueDesc, false, body, offs, null);
                         }
                     }
@@ -3504,19 +3507,19 @@ namespace Volante.Impl
                 case ClassDescriptor.FieldType.tpArrayOfRaw:
                     len = Bytes.unpack4(body, offs);
                     offs += 4;
-                    if (len > 0) 
-                    { 
-                        for (int j = 0; j < len; j++) 
+                    if (len > 0)
+                    {
+                        for (int j = 0; j < len; j++)
                         {
                             int rawlen = Bytes.unpack4(body, offs);
                             offs += 4;
-                            if (rawlen > 0) 
+                            if (rawlen > 0)
                             {
                                 len += rawlen;
                             }
-                            else if (rawlen < -1) 
-                            { 
-                                offs += ClassDescriptor.Sizeof[-2-rawlen];
+                            else if (rawlen < -1)
+                            {
+                                offs += ClassDescriptor.Sizeof[-2 - rawlen];
                             }
                         }
                     }
@@ -3525,7 +3528,7 @@ namespace Volante.Impl
             return offs;
         }
 
-        private int unpackRawValue(byte[] body, int offs, out object val, bool recursiveLoading) 
+        private int unpackRawValue(byte[] body, int offs, out object val, bool recursiveLoading)
         {
             int len = Bytes.unpack4(body, offs);
             offs += 4;
@@ -3535,72 +3538,72 @@ namespace Volante.Impl
                 val = objectFormatter.Deserialize(ms);
                 ms.Close();
                 offs += len;
-            } 
-            else 
-            { 
-                switch ((ClassDescriptor.FieldType)(-2-len)) 
-                { 
+            }
+            else
+            {
+                switch ((ClassDescriptor.FieldType)(-2 - len))
+                {
                     case ClassDescriptor.FieldType.tpBoolean:
                         val = body[offs++] != 0;
                         break;
                     case ClassDescriptor.FieldType.tpByte:
                         val = body[offs++];
-                        break;                            
+                        break;
                     case ClassDescriptor.FieldType.tpSByte:
                         val = (sbyte)body[offs++];
-                        break;                            
+                        break;
                     case ClassDescriptor.FieldType.tpChar:
                         val = (char)Bytes.unpack2(body, offs);
                         offs += 2;
-                        break;                            
+                        break;
                     case ClassDescriptor.FieldType.tpShort:
                         val = Bytes.unpack2(body, offs);
                         offs += 2;
-                        break;                            
+                        break;
                     case ClassDescriptor.FieldType.tpUShort:
                         val = (ushort)Bytes.unpack2(body, offs);
                         offs += 2;
-                        break;                            
+                        break;
                     case ClassDescriptor.FieldType.tpInt:
                     case ClassDescriptor.FieldType.tpOid:
                         val = Bytes.unpack4(body, offs);
                         offs += 4;
-                        break;                            
+                        break;
                     case ClassDescriptor.FieldType.tpUInt:
                         val = (uint)Bytes.unpack4(body, offs);
                         offs += 4;
-                        break;                            
+                        break;
                     case ClassDescriptor.FieldType.tpLong:
                         val = Bytes.unpack8(body, offs);
                         offs += 8;
-                        break;                            
+                        break;
                     case ClassDescriptor.FieldType.tpULong:
                         val = (ulong)Bytes.unpack8(body, offs);
                         offs += 8;
-                        break;                            
+                        break;
                     case ClassDescriptor.FieldType.tpFloat:
                         val = Bytes.unpackF4(body, offs);
                         offs += 4;
-                        break;                            
+                        break;
                     case ClassDescriptor.FieldType.tpDouble:
                         val = Bytes.unpackF8(body, offs);
                         offs += 8;
-                        break;                            
+                        break;
                     case ClassDescriptor.FieldType.tpDate:
                         val = Bytes.unpackDate(body, offs);
                         offs += 8;
-                        break;                                                       
+                        break;
                     case ClassDescriptor.FieldType.tpGuid:
                         val = Bytes.unpackGuid(body, offs);
                         offs += 8;
-                        break;                                                       
+                        break;
                     case ClassDescriptor.FieldType.tpDecimal:
                         val = Bytes.unpackDecimal(body, offs);
                         offs += 8;
-                        break;                                                       
+                        break;
                     case ClassDescriptor.FieldType.tpObject:
-                        val = unswizzle(Bytes.unpack4(body, offs), 
-                            typeof(Persistent), 
+                        val = unswizzle(Bytes.unpack4(body, offs),
+                            typeof(Persistent),
                             recursiveLoading);
                         offs += 4;
                         break;
@@ -3608,7 +3611,7 @@ namespace Volante.Impl
                         val = null;
                         break;
                 }
-            }    
+            }
             return offs;
         }
 
@@ -3617,65 +3620,65 @@ namespace Volante.Impl
             int len;
             switch (type)
             {
-                case ClassDescriptor.FieldType.tpBoolean: 
+                case ClassDescriptor.FieldType.tpBoolean:
                     val = body[offs++] != 0;
                     break;
 
-                case ClassDescriptor.FieldType.tpByte: 
+                case ClassDescriptor.FieldType.tpByte:
                     val = body[offs++];
                     break;
 
-                case ClassDescriptor.FieldType.tpSByte: 
+                case ClassDescriptor.FieldType.tpSByte:
                     val = (sbyte)body[offs++];
                     break;
 
-                case ClassDescriptor.FieldType.tpChar: 
+                case ClassDescriptor.FieldType.tpChar:
                     val = (char)Bytes.unpack2(body, offs);
                     offs += 2;
                     break;
 
-                case ClassDescriptor.FieldType.tpShort: 
+                case ClassDescriptor.FieldType.tpShort:
                     val = Bytes.unpack2(body, offs);
                     offs += 2;
                     break;
 
-                case ClassDescriptor.FieldType.tpUShort: 
+                case ClassDescriptor.FieldType.tpUShort:
                     val = (ushort)Bytes.unpack2(body, offs);
                     offs += 2;
                     break;
 
-                case ClassDescriptor.FieldType.tpEnum: 
+                case ClassDescriptor.FieldType.tpEnum:
                     val = Enum.ToObject(fd.field.FieldType, Bytes.unpack4(body, offs));
                     offs += 4;
                     break;
 
-                case ClassDescriptor.FieldType.tpInt: 
-                case ClassDescriptor.FieldType.tpOid: 
+                case ClassDescriptor.FieldType.tpInt:
+                case ClassDescriptor.FieldType.tpOid:
                     val = Bytes.unpack4(body, offs);
                     offs += 4;
                     break;
 
-                case ClassDescriptor.FieldType.tpUInt: 
+                case ClassDescriptor.FieldType.tpUInt:
                     val = (uint)Bytes.unpack4(body, offs);
                     offs += 4;
                     break;
 
-                case ClassDescriptor.FieldType.tpLong: 
+                case ClassDescriptor.FieldType.tpLong:
                     val = Bytes.unpack8(body, offs);
                     offs += 8;
                     break;
 
-                case ClassDescriptor.FieldType.tpULong: 
+                case ClassDescriptor.FieldType.tpULong:
                     val = (ulong)Bytes.unpack8(body, offs);
                     offs += 8;
                     break;
 
-                case ClassDescriptor.FieldType.tpFloat: 
+                case ClassDescriptor.FieldType.tpFloat:
                     val = Bytes.unpackF4(body, offs);
                     offs += 4;
                     break;
 
-                case ClassDescriptor.FieldType.tpDouble: 
+                case ClassDescriptor.FieldType.tpDouble:
                     val = Bytes.unpackF8(body, offs);
                     offs += 8;
                     break;
@@ -3690,42 +3693,42 @@ namespace Volante.Impl
                     offs += 16;
                     break;
 
-                case ClassDescriptor.FieldType.tpString: 
-                {
-                    string str;
-                    offs = Bytes.unpackString(body, offs, out str, encoding);
-                    val = str;
-                    break;
-                }
+                case ClassDescriptor.FieldType.tpString:
+                    {
+                        string str;
+                        offs = Bytes.unpackString(body, offs, out str, encoding);
+                        val = str;
+                        break;
+                    }
 
-                case ClassDescriptor.FieldType.tpDate: 
+                case ClassDescriptor.FieldType.tpDate:
                     val = Bytes.unpackDate(body, offs);
                     offs += 8;
                     break;
 
-                case ClassDescriptor.FieldType.tpObject: 
-                    if (fd == null) 
-                    { 
+                case ClassDescriptor.FieldType.tpObject:
+                    if (fd == null)
+                    {
                         val = unswizzle(Bytes.unpack4(body, offs), typeof(Persistent), recursiveLoading);
-                    } 
-                    else 
-                    { 
-                        val = unswizzle(Bytes.unpack4(body, offs), fd.field.FieldType, 
-                                        fd.recursiveLoading|recursiveLoading);
+                    }
+                    else
+                    {
+                        val = unswizzle(Bytes.unpack4(body, offs), fd.field.FieldType,
+                                        fd.recursiveLoading | recursiveLoading);
                     }
                     offs += 4;
                     break;
 
-                case ClassDescriptor.FieldType.tpValue: 
+                case ClassDescriptor.FieldType.tpValue:
                     val = fd.field.GetValue(val);
                     offs = unpackObject(val, fd.valueDesc, recursiveLoading, body, offs, po);
                     break;
 
-                case ClassDescriptor.FieldType.tpRaw: 
+                case ClassDescriptor.FieldType.tpRaw:
                     offs = unpackRawValue(body, offs, out val, recursiveLoading);
                     break;
 
-                case ClassDescriptor.FieldType.tpArrayOfByte: 
+                case ClassDescriptor.FieldType.tpArrayOfByte:
                     len = Bytes.unpack4(body, offs);
                     offs += 4;
                     if (len < 0)
@@ -3741,7 +3744,7 @@ namespace Volante.Impl
                     }
                     break;
 
-                case ClassDescriptor.FieldType.tpArrayOfSByte: 
+                case ClassDescriptor.FieldType.tpArrayOfSByte:
                     len = Bytes.unpack4(body, offs);
                     offs += 4;
                     if (len < 0)
@@ -3759,7 +3762,7 @@ namespace Volante.Impl
                     }
                     break;
 
-                case ClassDescriptor.FieldType.tpArrayOfBoolean: 
+                case ClassDescriptor.FieldType.tpArrayOfBoolean:
                     len = Bytes.unpack4(body, offs);
                     offs += 4;
                     if (len < 0)
@@ -3777,7 +3780,7 @@ namespace Volante.Impl
                     }
                     break;
 
-                case ClassDescriptor.FieldType.tpArrayOfShort: 
+                case ClassDescriptor.FieldType.tpArrayOfShort:
                     len = Bytes.unpack4(body, offs);
                     offs += 4;
                     if (len < 0)
@@ -3796,7 +3799,7 @@ namespace Volante.Impl
                     }
                     break;
 
-                case ClassDescriptor.FieldType.tpArrayOfUShort: 
+                case ClassDescriptor.FieldType.tpArrayOfUShort:
                     len = Bytes.unpack4(body, offs);
                     offs += 4;
                     if (len < 0)
@@ -3815,7 +3818,7 @@ namespace Volante.Impl
                     }
                     break;
 
-                case ClassDescriptor.FieldType.tpArrayOfChar: 
+                case ClassDescriptor.FieldType.tpArrayOfChar:
                     len = Bytes.unpack4(body, offs);
                     offs += 4;
                     if (len < 0)
@@ -3827,14 +3830,14 @@ namespace Volante.Impl
                         char[] arr = new char[len];
                         for (int j = 0; j < len; j++)
                         {
-                            arr[j] = (char) Bytes.unpack2(body, offs);
+                            arr[j] = (char)Bytes.unpack2(body, offs);
                             offs += 2;
                         }
                         val = arr;
                     }
                     break;
 
-                case ClassDescriptor.FieldType.tpArrayOfEnum: 
+                case ClassDescriptor.FieldType.tpArrayOfEnum:
                     len = Bytes.unpack4(body, offs);
                     offs += 4;
                     if (len < 0)
@@ -3854,7 +3857,7 @@ namespace Volante.Impl
                     }
                     break;
 
-                case ClassDescriptor.FieldType.tpArrayOfInt: 
+                case ClassDescriptor.FieldType.tpArrayOfInt:
                     len = Bytes.unpack4(body, offs);
                     offs += 4;
                     if (len < 0)
@@ -3873,7 +3876,7 @@ namespace Volante.Impl
                     }
                     break;
 
-                case ClassDescriptor.FieldType.tpArrayOfUInt: 
+                case ClassDescriptor.FieldType.tpArrayOfUInt:
                     len = Bytes.unpack4(body, offs);
                     offs += 4;
                     if (len < 0)
@@ -3892,7 +3895,7 @@ namespace Volante.Impl
                     }
                     break;
 
-                case ClassDescriptor.FieldType.tpArrayOfLong: 
+                case ClassDescriptor.FieldType.tpArrayOfLong:
                     len = Bytes.unpack4(body, offs);
                     offs += 4;
                     if (len < 0)
@@ -3911,7 +3914,7 @@ namespace Volante.Impl
                     }
                     break;
 
-                case ClassDescriptor.FieldType.tpArrayOfULong: 
+                case ClassDescriptor.FieldType.tpArrayOfULong:
                     len = Bytes.unpack4(body, offs);
                     offs += 4;
                     if (len < 0)
@@ -3930,7 +3933,7 @@ namespace Volante.Impl
                     }
                     break;
 
-                case ClassDescriptor.FieldType.tpArrayOfFloat: 
+                case ClassDescriptor.FieldType.tpArrayOfFloat:
                     len = Bytes.unpack4(body, offs);
                     offs += 4;
                     if (len < 0)
@@ -3949,7 +3952,7 @@ namespace Volante.Impl
                     }
                     break;
 
-                case ClassDescriptor.FieldType.tpArrayOfDouble: 
+                case ClassDescriptor.FieldType.tpArrayOfDouble:
                     len = Bytes.unpack4(body, offs);
                     offs += 4;
                     if (len < 0)
@@ -3968,7 +3971,7 @@ namespace Volante.Impl
                     }
                     break;
 
-                case ClassDescriptor.FieldType.tpArrayOfDate: 
+                case ClassDescriptor.FieldType.tpArrayOfDate:
                     len = Bytes.unpack4(body, offs);
                     offs += 4;
                     if (len < 0)
@@ -3987,7 +3990,7 @@ namespace Volante.Impl
                     }
                     break;
 
-                case ClassDescriptor.FieldType.tpArrayOfString: 
+                case ClassDescriptor.FieldType.tpArrayOfString:
                     len = Bytes.unpack4(body, offs);
                     offs += 4;
                     if (len < 0)
@@ -4005,7 +4008,7 @@ namespace Volante.Impl
                     }
                     break;
 
-                case ClassDescriptor.FieldType.tpArrayOfDecimal: 
+                case ClassDescriptor.FieldType.tpArrayOfDecimal:
                     len = Bytes.unpack4(body, offs);
                     offs += 4;
                     if (len < 0)
@@ -4024,7 +4027,7 @@ namespace Volante.Impl
                     }
                     break;
 
-                case ClassDescriptor.FieldType.tpArrayOfGuid: 
+                case ClassDescriptor.FieldType.tpArrayOfGuid:
                     len = Bytes.unpack4(body, offs);
                     offs += 4;
                     if (len < 0)
@@ -4043,7 +4046,7 @@ namespace Volante.Impl
                     }
                     break;
 
-                case ClassDescriptor.FieldType.tpArrayOfObject: 
+                case ClassDescriptor.FieldType.tpArrayOfObject:
                     len = Bytes.unpack4(body, offs);
                     offs += 4;
                     if (len < 0)
@@ -4066,17 +4069,17 @@ namespace Volante.Impl
                 case ClassDescriptor.FieldType.tpArrayOfValue:
                     len = Bytes.unpack4(body, offs);
                     offs += 4;
-                    if (len < 0) 
-                    { 
+                    if (len < 0)
+                    {
                         val = null;
-                    } 
-                    else 
+                    }
+                    else
                     {
                         Type elemType = fd.field.FieldType.GetElementType();
                         Array arr = Array.CreateInstance(elemType, len);
                         ClassDescriptor valueDesc = fd.valueDesc;
-                        for (int j = 0; j < len; j++) 
-                        { 
+                        for (int j = 0; j < len; j++)
+                        {
                             object elem = arr.GetValue(j);
                             offs = unpackObject(elem, valueDesc, recursiveLoading, body, offs, po);
                             arr.SetValue(elem, j);
@@ -4088,16 +4091,16 @@ namespace Volante.Impl
                 case ClassDescriptor.FieldType.tpArrayOfRaw:
                     len = Bytes.unpack4(body, offs);
                     offs += 4;
-                    if (len < 0) 
+                    if (len < 0)
                     {
                         val = null;
                     }
-                    else 
+                    else
                     {
                         Type elemType = fd.field.FieldType.GetElementType();
                         Array arr = Array.CreateInstance(elemType, len);
-                        for (int j = 0; j < len; j++) 
-                        { 
+                        for (int j = 0; j < len; j++)
+                        {
                             object elem;
                             offs = unpackRawValue(body, offs, out elem, recursiveLoading);
                             arr.SetValue(elem, j);
@@ -4106,7 +4109,7 @@ namespace Volante.Impl
                     }
                     break;
 
-                case ClassDescriptor.FieldType.tpLink: 
+                case ClassDescriptor.FieldType.tpLink:
                     len = Bytes.unpack4(body, offs);
                     offs += 4;
                     if (len < 0)
@@ -4125,11 +4128,11 @@ namespace Volante.Impl
                                 arr[j] = new PersistentStub(this, elemOid);
                             }
                         }
-                        val = fd.constructor.Invoke(this, new object[]{arr, po});
+                        val = fd.constructor.Invoke(this, new object[] { arr, po });
                     }
                     break;
 
-                case ClassDescriptor.FieldType.tpArrayOfOid: 
+                case ClassDescriptor.FieldType.tpArrayOfOid:
                     len = Bytes.unpack4(body, offs);
                     offs += 4;
                     if (len < 0)
@@ -4144,7 +4147,7 @@ namespace Volante.Impl
                             arr[j] = Bytes.unpack4(body, offs);
                             offs += 4;
                         }
-                        val = fd.constructor.Invoke(this, new object[]{arr, po});
+                        val = fd.constructor.Invoke(this, new object[] { arr, po });
                     }
                     break;
             }
@@ -4157,21 +4160,21 @@ namespace Volante.Impl
             int offs = ObjectHeader.Sizeof;
             buf.extend(offs);
             ClassDescriptor desc = getClassDescriptor(obj.GetType());
-            if (desc.serializer != null) 
-            { 
+            if (desc.serializer != null)
+            {
                 offs = desc.serializer.pack(this, obj, buf);
-            } 
-            else 
-            { 
+            }
+            else
+            {
                 offs = packObject(obj, desc, offs, buf, obj);
             }
             ObjectHeader.setSize(buf.arr, 0, offs);
             ObjectHeader.setType(buf.arr, 0, desc.Oid);
-            return buf.arr;        
+            return buf.arr;
         }
 
         public int packObject(object obj, ClassDescriptor desc, int offs, ByteBuffer buf, IPersistent po)
-        { 
+        {
             ClassDescriptor.FieldDescriptor[] flds = desc.allFields;
 
             for (int i = 0, n = flds.Length; i < n; i++)
@@ -4187,125 +4190,125 @@ namespace Volante.Impl
             if (val == null)
             {
                 buf.extend(offs + 4);
-                Bytes.pack4(buf.arr, offs, - 1);
+                Bytes.pack4(buf.arr, offs, -1);
                 offs += 4;
             }
-            else if (val is IPersistent) 
-            { 
+            else if (val is IPersistent)
+            {
                 buf.extend(offs + 8);
-                Bytes.pack4(buf.arr, offs, -2-(int)ClassDescriptor.FieldType.tpObject);
-                Bytes.pack4(buf.arr, offs+4, swizzle((IPersistent)val));
-                offs += 8;                        
-            } 
-            else 
+                Bytes.pack4(buf.arr, offs, -2 - (int)ClassDescriptor.FieldType.tpObject);
+                Bytes.pack4(buf.arr, offs + 4, swizzle((IPersistent)val));
+                offs += 8;
+            }
+            else
             {
                 Type t = val.GetType();
-                if (t == typeof(bool)) 
+                if (t == typeof(bool))
                 {
                     buf.extend(offs + 5);
-                    Bytes.pack4(buf.arr, offs, -2-(int)ClassDescriptor.FieldType.tpBoolean);
-                    buf.arr[offs+4] = (byte)((bool)val ? 1 : 0);
-                    offs += 5;                   
-                } 
-                else if (t == typeof(char)) 
+                    Bytes.pack4(buf.arr, offs, -2 - (int)ClassDescriptor.FieldType.tpBoolean);
+                    buf.arr[offs + 4] = (byte)((bool)val ? 1 : 0);
+                    offs += 5;
+                }
+                else if (t == typeof(char))
                 {
                     buf.extend(offs + 6);
-                    Bytes.pack4(buf.arr, offs, -2-(int)ClassDescriptor.FieldType.tpChar);
-                    Bytes.pack2(buf.arr, offs+4, (short)(char)val);
-                    offs += 6;                         
-                } 
-                else if (t == typeof(byte)) 
-                { 
+                    Bytes.pack4(buf.arr, offs, -2 - (int)ClassDescriptor.FieldType.tpChar);
+                    Bytes.pack2(buf.arr, offs + 4, (short)(char)val);
+                    offs += 6;
+                }
+                else if (t == typeof(byte))
+                {
                     buf.extend(offs + 5);
-                    Bytes.pack4(buf.arr, offs, -2-(int)ClassDescriptor.FieldType.tpByte);
-                    buf.arr[offs+4] = (byte)val;
-                    offs += 5; 
-                } 
-                else if (t == typeof(sbyte)) 
-                { 
+                    Bytes.pack4(buf.arr, offs, -2 - (int)ClassDescriptor.FieldType.tpByte);
+                    buf.arr[offs + 4] = (byte)val;
+                    offs += 5;
+                }
+                else if (t == typeof(sbyte))
+                {
                     buf.extend(offs + 5);
-                    Bytes.pack4(buf.arr, offs, -2-(int)ClassDescriptor.FieldType.tpSByte);
-                    buf.arr[offs+4] = (byte)(sbyte)val;
-                    offs += 5; 
-                } 
-                else if (t == typeof(short)) 
+                    Bytes.pack4(buf.arr, offs, -2 - (int)ClassDescriptor.FieldType.tpSByte);
+                    buf.arr[offs + 4] = (byte)(sbyte)val;
+                    offs += 5;
+                }
+                else if (t == typeof(short))
                 {
                     buf.extend(offs + 6);
-                    Bytes.pack4(buf.arr, offs, -2-(int)ClassDescriptor.FieldType.tpShort);
-                    Bytes.pack2(buf.arr, offs+4, (short)val);
-                    offs += 6;                                                   
-                } 
-                else if (t == typeof(ushort)) 
+                    Bytes.pack4(buf.arr, offs, -2 - (int)ClassDescriptor.FieldType.tpShort);
+                    Bytes.pack2(buf.arr, offs + 4, (short)val);
+                    offs += 6;
+                }
+                else if (t == typeof(ushort))
                 {
                     buf.extend(offs + 6);
-                    Bytes.pack4(buf.arr, offs, -2-(int)ClassDescriptor.FieldType.tpUShort);
-                    Bytes.pack2(buf.arr, offs+4, (short)(ushort)val);
-                    offs += 6; 
-                } 
-                else if (t == typeof(int)) 
+                    Bytes.pack4(buf.arr, offs, -2 - (int)ClassDescriptor.FieldType.tpUShort);
+                    Bytes.pack2(buf.arr, offs + 4, (short)(ushort)val);
+                    offs += 6;
+                }
+                else if (t == typeof(int))
                 {
                     buf.extend(offs + 8);
-                    Bytes.pack4(buf.arr, offs, -2-(int)ClassDescriptor.FieldType.tpInt);
-                    Bytes.pack4(buf.arr, offs+4, (int)val);
-                    offs += 8;                       
-                } 
-                else if (t == typeof(uint)) 
+                    Bytes.pack4(buf.arr, offs, -2 - (int)ClassDescriptor.FieldType.tpInt);
+                    Bytes.pack4(buf.arr, offs + 4, (int)val);
+                    offs += 8;
+                }
+                else if (t == typeof(uint))
                 {
                     buf.extend(offs + 8);
-                    Bytes.pack4(buf.arr, offs, -2-(int)ClassDescriptor.FieldType.tpUInt);
-                    Bytes.pack4(buf.arr, offs+4, (int)(uint)val);
-                    offs += 8;                       
-                } 
-                else if (t == typeof(long)) 
+                    Bytes.pack4(buf.arr, offs, -2 - (int)ClassDescriptor.FieldType.tpUInt);
+                    Bytes.pack4(buf.arr, offs + 4, (int)(uint)val);
+                    offs += 8;
+                }
+                else if (t == typeof(long))
                 {
                     buf.extend(offs + 12);
-                    Bytes.pack4(buf.arr, offs, -2-(int)ClassDescriptor.FieldType.tpLong);
-                    Bytes.pack8(buf.arr, offs+4, (long)val);
-                    offs += 12; 
-                } 
-                else if (t == typeof(ulong)) 
-                {   
-                    buf.extend(offs + 12);
-                    Bytes.pack4(buf.arr, offs, -2-(int)ClassDescriptor.FieldType.tpULong);
-                    Bytes.pack8(buf.arr, offs+4, (long)(ulong)val);
-                    offs += 12; 
-                } 
-                else if (t == typeof(float)) 
-                {
-                    buf.extend(offs + 8);
-                    Bytes.pack4(buf.arr, offs, -2-(int)ClassDescriptor.FieldType.tpFloat);
-                    Bytes.packF4(buf.arr, offs+4, (float)val);
-                    offs += 8;                              
-                } 
-                else if (t == typeof(double)) 
-                {
-                    buf.extend(offs + 12);
-                    Bytes.pack4(buf.arr, offs, -2-(int)ClassDescriptor.FieldType.tpDouble);
-                    Bytes.packF8(buf.arr, offs+4, (double)val);
+                    Bytes.pack4(buf.arr, offs, -2 - (int)ClassDescriptor.FieldType.tpLong);
+                    Bytes.pack8(buf.arr, offs + 4, (long)val);
                     offs += 12;
-                } 
-                else if (t == typeof(DateTime)) 
+                }
+                else if (t == typeof(ulong))
                 {
                     buf.extend(offs + 12);
-                    Bytes.pack4(buf.arr, offs, -2-(int)ClassDescriptor.FieldType.tpDate);
-                    Bytes.packDate(buf.arr, offs+4, (DateTime)val);
-                    offs += 12;                                                   
-                } 
-                else if (t == typeof(Guid)) 
+                    Bytes.pack4(buf.arr, offs, -2 - (int)ClassDescriptor.FieldType.tpULong);
+                    Bytes.pack8(buf.arr, offs + 4, (long)(ulong)val);
+                    offs += 12;
+                }
+                else if (t == typeof(float))
+                {
+                    buf.extend(offs + 8);
+                    Bytes.pack4(buf.arr, offs, -2 - (int)ClassDescriptor.FieldType.tpFloat);
+                    Bytes.packF4(buf.arr, offs + 4, (float)val);
+                    offs += 8;
+                }
+                else if (t == typeof(double))
                 {
                     buf.extend(offs + 12);
-                    Bytes.pack4(buf.arr, offs, -2-(int)ClassDescriptor.FieldType.tpGuid);
-                    Bytes.packGuid(buf.arr, offs+4, (Guid)val);
-                    offs += 12;                                                   
-                } 
-                else if (t == typeof(Decimal)) 
+                    Bytes.pack4(buf.arr, offs, -2 - (int)ClassDescriptor.FieldType.tpDouble);
+                    Bytes.packF8(buf.arr, offs + 4, (double)val);
+                    offs += 12;
+                }
+                else if (t == typeof(DateTime))
                 {
                     buf.extend(offs + 12);
-                    Bytes.pack4(buf.arr, offs, -2-(int)ClassDescriptor.FieldType.tpDecimal);
-                    Bytes.packDecimal(buf.arr, offs+4, (decimal)val);
-                    offs += 12;                                                   
-                } 
-                else 
+                    Bytes.pack4(buf.arr, offs, -2 - (int)ClassDescriptor.FieldType.tpDate);
+                    Bytes.packDate(buf.arr, offs + 4, (DateTime)val);
+                    offs += 12;
+                }
+                else if (t == typeof(Guid))
+                {
+                    buf.extend(offs + 12);
+                    Bytes.pack4(buf.arr, offs, -2 - (int)ClassDescriptor.FieldType.tpGuid);
+                    Bytes.packGuid(buf.arr, offs + 4, (Guid)val);
+                    offs += 12;
+                }
+                else if (t == typeof(Decimal))
+                {
+                    buf.extend(offs + 12);
+                    Bytes.pack4(buf.arr, offs, -2 - (int)ClassDescriptor.FieldType.tpDecimal);
+                    Bytes.packDecimal(buf.arr, offs + 4, (decimal)val);
+                    offs += 12;
+                }
+                else
                 {
                     System.IO.MemoryStream ms = new System.IO.MemoryStream();
                     objectFormatter.Serialize(ms, val);
@@ -4326,52 +4329,52 @@ namespace Volante.Impl
         {
             switch (type)
             {
-                case ClassDescriptor.FieldType.tpByte: 
+                case ClassDescriptor.FieldType.tpByte:
                     return buf.packI1(offs, (byte)val);
-                case ClassDescriptor.FieldType.tpSByte: 
+                case ClassDescriptor.FieldType.tpSByte:
                     return buf.packI1(offs, (sbyte)val);
-                case ClassDescriptor.FieldType.tpBoolean: 
+                case ClassDescriptor.FieldType.tpBoolean:
                     return buf.packBool(offs, (bool)val);
-                case ClassDescriptor.FieldType.tpShort: 
+                case ClassDescriptor.FieldType.tpShort:
                     return buf.packI2(offs, (short)val);
-                case ClassDescriptor.FieldType.tpUShort: 
+                case ClassDescriptor.FieldType.tpUShort:
                     return buf.packI2(offs, (ushort)val);
-                case ClassDescriptor.FieldType.tpChar: 
+                case ClassDescriptor.FieldType.tpChar:
                     return buf.packI2(offs, (char)val);
-                case ClassDescriptor.FieldType.tpEnum: 
-                case ClassDescriptor.FieldType.tpInt: 
-                case ClassDescriptor.FieldType.tpOid: 
+                case ClassDescriptor.FieldType.tpEnum:
+                case ClassDescriptor.FieldType.tpInt:
+                case ClassDescriptor.FieldType.tpOid:
                     return buf.packI4(offs, (int)val);
-                case ClassDescriptor.FieldType.tpUInt: 
+                case ClassDescriptor.FieldType.tpUInt:
                     return buf.packI4(offs, (int)(uint)val);
-                case ClassDescriptor.FieldType.tpLong: 
+                case ClassDescriptor.FieldType.tpLong:
                     return buf.packI8(offs, (long)val);
-                case ClassDescriptor.FieldType.tpULong: 
+                case ClassDescriptor.FieldType.tpULong:
                     return buf.packI8(offs, (long)(ulong)val);
-                case ClassDescriptor.FieldType.tpFloat: 
+                case ClassDescriptor.FieldType.tpFloat:
                     return buf.packF4(offs, (float)val);
-                case ClassDescriptor.FieldType.tpDouble: 
+                case ClassDescriptor.FieldType.tpDouble:
                     return buf.packF8(offs, (double)val);
                 case ClassDescriptor.FieldType.tpDecimal:
                     return buf.packDecimal(offs, (decimal)val);
                 case ClassDescriptor.FieldType.tpGuid:
                     return buf.packGuid(offs, (Guid)val);
-                case ClassDescriptor.FieldType.tpDate: 
+                case ClassDescriptor.FieldType.tpDate:
                     return buf.packDate(offs, (DateTime)val);
-                case ClassDescriptor.FieldType.tpString: 
+                case ClassDescriptor.FieldType.tpString:
                     return buf.packString(offs, (string)val);
                 case ClassDescriptor.FieldType.tpValue:
                     return packObject(val, fd.valueDesc, offs, buf, po);
-                case ClassDescriptor.FieldType.tpObject: 
+                case ClassDescriptor.FieldType.tpObject:
                     return buf.packI4(offs, swizzle((IPersistent)val));
                 case ClassDescriptor.FieldType.tpRaw:
                     offs = packRawValue(buf, offs, val);
                     break;
-                case ClassDescriptor.FieldType.tpArrayOfByte: 
+                case ClassDescriptor.FieldType.tpArrayOfByte:
                     if (val == null)
                     {
                         buf.extend(offs + 4);
-                        Bytes.pack4(buf.arr, offs, - 1);
+                        Bytes.pack4(buf.arr, offs, -1);
                         offs += 4;
                     }
                     else
@@ -4386,11 +4389,11 @@ namespace Volante.Impl
                     }
                     break;
 
-                case ClassDescriptor.FieldType.tpArrayOfSByte: 
+                case ClassDescriptor.FieldType.tpArrayOfSByte:
                     if (val == null)
                     {
                         buf.extend(offs + 4);
-                        Bytes.pack4(buf.arr, offs, - 1);
+                        Bytes.pack4(buf.arr, offs, -1);
                         offs += 4;
                     }
                     else
@@ -4407,12 +4410,12 @@ namespace Volante.Impl
                         offs += len;
                     }
                     break;
- 
-                case ClassDescriptor.FieldType.tpArrayOfBoolean: 
+
+                case ClassDescriptor.FieldType.tpArrayOfBoolean:
                     if (val == null)
                     {
                         buf.extend(offs + 4);
-                        Bytes.pack4(buf.arr, offs, - 1);
+                        Bytes.pack4(buf.arr, offs, -1);
                         offs += 4;
                     }
                     else
@@ -4424,16 +4427,16 @@ namespace Volante.Impl
                         offs += 4;
                         for (int j = 0; j < len; j++, offs++)
                         {
-                            buf.arr[offs] = (byte) (arr[j]?1:0);
+                            buf.arr[offs] = (byte)(arr[j] ? 1 : 0);
                         }
                     }
                     break;
- 
-                case ClassDescriptor.FieldType.tpArrayOfShort: 
+
+                case ClassDescriptor.FieldType.tpArrayOfShort:
                     if (val == null)
                     {
                         buf.extend(offs + 4);
-                        Bytes.pack4(buf.arr, offs, - 1);
+                        Bytes.pack4(buf.arr, offs, -1);
                         offs += 4;
                     }
                     else
@@ -4451,11 +4454,11 @@ namespace Volante.Impl
                     }
                     break;
 
-                case ClassDescriptor.FieldType.tpArrayOfUShort: 
+                case ClassDescriptor.FieldType.tpArrayOfUShort:
                     if (val == null)
                     {
                         buf.extend(offs + 4);
-                        Bytes.pack4(buf.arr, offs, - 1);
+                        Bytes.pack4(buf.arr, offs, -1);
                         offs += 4;
                     }
                     else
@@ -4473,11 +4476,11 @@ namespace Volante.Impl
                     }
                     break;
 
-                case ClassDescriptor.FieldType.tpArrayOfChar: 
+                case ClassDescriptor.FieldType.tpArrayOfChar:
                     if (val == null)
                     {
                         buf.extend(offs + 4);
-                        Bytes.pack4(buf.arr, offs, - 1);
+                        Bytes.pack4(buf.arr, offs, -1);
                         offs += 4;
                     }
                     else
@@ -4489,17 +4492,17 @@ namespace Volante.Impl
                         offs += 4;
                         for (int j = 0; j < len; j++)
                         {
-                            Bytes.pack2(buf.arr, offs, (short) arr[j]);
+                            Bytes.pack2(buf.arr, offs, (short)arr[j]);
                             offs += 2;
                         }
                     }
                     break;
 
-                case ClassDescriptor.FieldType.tpArrayOfEnum: 
+                case ClassDescriptor.FieldType.tpArrayOfEnum:
                     if (val == null)
                     {
                         buf.extend(offs + 4);
-                        Bytes.pack4(buf.arr, offs, - 1);
+                        Bytes.pack4(buf.arr, offs, -1);
                         offs += 4;
                     }
                     else
@@ -4516,12 +4519,12 @@ namespace Volante.Impl
                         }
                     }
                     break;
- 
-                case ClassDescriptor.FieldType.tpArrayOfInt: 
+
+                case ClassDescriptor.FieldType.tpArrayOfInt:
                     if (val == null)
                     {
                         buf.extend(offs + 4);
-                        Bytes.pack4(buf.arr, offs, - 1);
+                        Bytes.pack4(buf.arr, offs, -1);
                         offs += 4;
                     }
                     else
@@ -4539,11 +4542,11 @@ namespace Volante.Impl
                     }
                     break;
 
-                case ClassDescriptor.FieldType.tpArrayOfUInt: 
+                case ClassDescriptor.FieldType.tpArrayOfUInt:
                     if (val == null)
                     {
                         buf.extend(offs + 4);
-                        Bytes.pack4(buf.arr, offs, - 1);
+                        Bytes.pack4(buf.arr, offs, -1);
                         offs += 4;
                     }
                     else
@@ -4561,11 +4564,11 @@ namespace Volante.Impl
                     }
                     break;
 
-                case ClassDescriptor.FieldType.tpArrayOfLong: 
+                case ClassDescriptor.FieldType.tpArrayOfLong:
                     if (val == null)
                     {
                         buf.extend(offs + 4);
-                        Bytes.pack4(buf.arr, offs, - 1);
+                        Bytes.pack4(buf.arr, offs, -1);
                         offs += 4;
                     }
                     else
@@ -4583,11 +4586,11 @@ namespace Volante.Impl
                     }
                     break;
 
-                case ClassDescriptor.FieldType.tpArrayOfULong: 
+                case ClassDescriptor.FieldType.tpArrayOfULong:
                     if (val == null)
                     {
                         buf.extend(offs + 4);
-                        Bytes.pack4(buf.arr, offs, - 1);
+                        Bytes.pack4(buf.arr, offs, -1);
                         offs += 4;
                     }
                     else
@@ -4605,11 +4608,11 @@ namespace Volante.Impl
                     }
                     break;
 
-                case ClassDescriptor.FieldType.tpArrayOfFloat: 
+                case ClassDescriptor.FieldType.tpArrayOfFloat:
                     if (val == null)
                     {
                         buf.extend(offs + 4);
-                        Bytes.pack4(buf.arr, offs, - 1);
+                        Bytes.pack4(buf.arr, offs, -1);
                         offs += 4;
                     }
                     else
@@ -4627,11 +4630,11 @@ namespace Volante.Impl
                     }
                     break;
 
-                case ClassDescriptor.FieldType.tpArrayOfDouble: 
+                case ClassDescriptor.FieldType.tpArrayOfDouble:
                     if (val == null)
                     {
                         buf.extend(offs + 4);
-                        Bytes.pack4(buf.arr, offs, - 1);
+                        Bytes.pack4(buf.arr, offs, -1);
                         offs += 4;
                     }
                     else
@@ -4649,11 +4652,11 @@ namespace Volante.Impl
                     }
                     break;
 
-                case ClassDescriptor.FieldType.tpArrayOfValue: 
+                case ClassDescriptor.FieldType.tpArrayOfValue:
                     if (val == null)
                     {
                         buf.extend(offs + 4);
-                        Bytes.pack4(buf.arr, offs, - 1);
+                        Bytes.pack4(buf.arr, offs, -1);
                         offs += 4;
                     }
                     else
@@ -4671,11 +4674,11 @@ namespace Volante.Impl
                     }
                     break;
 
-                case ClassDescriptor.FieldType.tpArrayOfDate: 
+                case ClassDescriptor.FieldType.tpArrayOfDate:
                     if (val == null)
                     {
                         buf.extend(offs + 4);
-                        Bytes.pack4(buf.arr, offs, - 1);
+                        Bytes.pack4(buf.arr, offs, -1);
                         offs += 4;
                     }
                     else
@@ -4693,11 +4696,11 @@ namespace Volante.Impl
                     }
                     break;
 
-                case ClassDescriptor.FieldType.tpArrayOfDecimal: 
+                case ClassDescriptor.FieldType.tpArrayOfDecimal:
                     if (val == null)
                     {
                         buf.extend(offs + 4);
-                        Bytes.pack4(buf.arr, offs, - 1);
+                        Bytes.pack4(buf.arr, offs, -1);
                         offs += 4;
                     }
                     else
@@ -4715,11 +4718,11 @@ namespace Volante.Impl
                     }
                     break;
 
-                case ClassDescriptor.FieldType.tpArrayOfGuid: 
+                case ClassDescriptor.FieldType.tpArrayOfGuid:
                     if (val == null)
                     {
                         buf.extend(offs + 4);
-                        Bytes.pack4(buf.arr, offs, - 1);
+                        Bytes.pack4(buf.arr, offs, -1);
                         offs += 4;
                     }
                     else
@@ -4737,11 +4740,11 @@ namespace Volante.Impl
                     }
                     break;
 
-                case ClassDescriptor.FieldType.tpArrayOfString: 
+                case ClassDescriptor.FieldType.tpArrayOfString:
                     if (val == null)
                     {
                         buf.extend(offs + 4);
-                        Bytes.pack4(buf.arr, offs, - 1);
+                        Bytes.pack4(buf.arr, offs, -1);
                         offs += 4;
                     }
                     else
@@ -4758,11 +4761,11 @@ namespace Volante.Impl
                     }
                     break;
 
-                case ClassDescriptor.FieldType.tpArrayOfObject: 
+                case ClassDescriptor.FieldType.tpArrayOfObject:
                     if (val == null)
                     {
                         buf.extend(offs + 4);
-                        Bytes.pack4(buf.arr, offs, - 1);
+                        Bytes.pack4(buf.arr, offs, -1);
                         offs += 4;
                     }
                     else
@@ -4779,11 +4782,11 @@ namespace Volante.Impl
                         }
                     }
                     break;
-                case ClassDescriptor.FieldType.tpArrayOfRaw: 
+                case ClassDescriptor.FieldType.tpArrayOfRaw:
                     if (val == null)
                     {
                         buf.extend(offs + 4);
-                        Bytes.pack4(buf.arr, offs, - 1);
+                        Bytes.pack4(buf.arr, offs, -1);
                         offs += 4;
                     }
                     else
@@ -4799,17 +4802,17 @@ namespace Volante.Impl
                         }
                     }
                     break;
-                case ClassDescriptor.FieldType.tpLink: 
+                case ClassDescriptor.FieldType.tpLink:
                     if (val == null)
                     {
                         buf.extend(offs + 4);
-                        Bytes.pack4(buf.arr, offs, - 1);
+                        Bytes.pack4(buf.arr, offs, -1);
                         offs += 4;
                     }
                     else
                     {
-                        GenericLink link = (GenericLink)val; 
-                        link.SetOwner(po);                       
+                        GenericLink link = (GenericLink)val;
+                        link.SetOwner(po);
                         int len = link.Size();
                         buf.extend(offs + 4 + len * 4);
                         Bytes.pack4(buf.arr, offs, len);
@@ -4823,11 +4826,11 @@ namespace Volante.Impl
                     }
                     break;
 
-                case ClassDescriptor.FieldType.tpArrayOfOid: 
+                case ClassDescriptor.FieldType.tpArrayOfOid:
                     if (val == null)
                     {
                         buf.extend(offs + 4);
-                        Bytes.pack4(buf.arr, offs, - 1);
+                        Bytes.pack4(buf.arr, offs, -1);
                         offs += 4;
                     }
                     else
@@ -4851,32 +4854,32 @@ namespace Volante.Impl
 
         public ClassLoader Loader
         {
-            set 
-            { 
+            set
+            {
                 loader = value;
             }
 
-            get 
-            { 
+            get
+            {
                 return loader;
             }
         }
 
-        private int  initIndexSize        = dbDefaultInitIndexSize;
-        private int  objectCacheInitSize  = dbDefaultObjectCacheInitSize;
-        private long extensionQuantum     = dbDefaultExtensionQuantum;
+        private int initIndexSize = dbDefaultInitIndexSize;
+        private int objectCacheInitSize = dbDefaultObjectCacheInitSize;
+        private long extensionQuantum = dbDefaultExtensionQuantum;
         private CacheType cacheKind = CacheType.Lru;
         private bool readOnly = false;
         private bool noFlush = false;
         private bool alternativeBtree = false;
         private bool backgroundGc = false;
-        
+
         internal bool replicationAck = false;
 
         internal PagePool pool;
-        internal Header   header; // base address of database file mapping
-        internal int[]    dirtyPagesMap; // bitmap of changed pages in current index
-        internal bool     modified;
+        internal Header header; // base address of database file mapping
+        internal int[] dirtyPagesMap; // bitmap of changed pages in current index
+        internal bool modified;
 
         internal int currRBitmapPage; //current bitmap page for allocating records
         internal int currRBitmapOffs; //offset in current bitmap page for allocating 
@@ -4888,21 +4891,21 @@ namespace Volante.Impl
 
         internal int committedIndexSize;
         internal int currIndexSize;
-        
+
         internal bool enableCodeGeneration = true;
 
 #if CF
         internal static ArrayList assemblies;
         CNetMonitor transactionMonitor;
 #else
-        internal Thread codeGenerationThread;        
-        object    transactionMonitor;
-        Dictionary<Type,Type> wrapperHash = new Dictionary<Type,Type>();
+        internal Thread codeGenerationThread;
+        object transactionMonitor;
+        Dictionary<Type, Type> wrapperHash = new Dictionary<Type, Type>();
 #endif
-        int       nNestedTransactions;
-        int       nBlockedTransactions;
-        int       nCommittedTransactions;
-        long      scheduledCommitTime;
+        int nNestedTransactions;
+        int nBlockedTransactions;
+        int nCommittedTransactions;
+        long scheduledCommitTime;
         PersistentResource transactionLock;
 
         internal System.Runtime.Serialization.Formatters.Binary.BinaryFormatter objectFormatter;
@@ -4912,27 +4915,27 @@ namespace Volante.Impl
         internal int[] bitmapPageAvailableSpace;
         internal bool opened;
 
-        internal int[]     greyBitmap; // bitmap of visited during GC but not yet marked object
-        internal int[]     blackBitmap;    // bitmap of objects marked during GC 
-        internal long      gcThreshold;
-        internal long      allocatedDelta;
-        internal bool      gcDone;
-        internal bool      gcActive;
-        internal bool      gcGo;
-        internal object    backgroundGcMonitor;
-        internal object    backgroundGcStartMonitor;
-        internal Thread    gcThread;
-        internal Encoding  encoding;
+        internal int[] greyBitmap; // bitmap of visited during GC but not yet marked object
+        internal int[] blackBitmap;    // bitmap of objects marked during GC 
+        internal long gcThreshold;
+        internal long allocatedDelta;
+        internal bool gcDone;
+        internal bool gcActive;
+        internal bool gcGo;
+        internal object backgroundGcMonitor;
+        internal object backgroundGcStartMonitor;
+        internal Thread gcThread;
+        internal Encoding encoding;
 
-        internal StorageListener  listener;
+        internal StorageListener listener;
 
         private ClassLoader loader;
 
-        internal Hashtable        resolvedTypes;
+        internal Hashtable resolvedTypes;
 
-        internal OidHashTable     objectCache;
-        internal Hashtable        classDescMap;
-        internal ClassDescriptor  descList;
+        internal OidHashTable objectCache;
+        internal Hashtable classDescMap;
+        internal ClassDescriptor descList;
 
         internal static readonly LocalDataStoreSlot transactionContext = Thread.AllocateDataSlot();
         internal bool useSerializableTransactions;
@@ -4966,12 +4969,12 @@ namespace Volante.Impl
 
         internal static int Sizeof = 3 + RootPage.Sizeof * 2;
 
-        internal void  pack(byte[] rec)
+        internal void pack(byte[] rec)
         {
             int offs = 0;
-            rec[offs++] = (byte) curr;
-            rec[offs++] = (byte) (dirty?1:0);
-            rec[offs++] = (byte) (initialized?1:0);
+            rec[offs++] = (byte)curr;
+            rec[offs++] = (byte)(dirty ? 1 : 0);
+            rec[offs++] = (byte)(initialized ? 1 : 0);
             for (int i = 0; i < 2; i++)
             {
                 Bytes.pack8(rec, offs, root[i].size);
@@ -5001,7 +5004,7 @@ namespace Volante.Impl
             }
         }
 
-        internal void  unpack(byte[] rec)
+        internal void unpack(byte[] rec)
         {
             int offs = 0;
             curr = rec[offs++];

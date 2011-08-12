@@ -38,41 +38,41 @@ namespace Volante.Impl
             return Bytes.unpack4(pg.data, firstKeyOffs + index * 4);
         }
 
-        internal static void  setnItems(Page pg, int nItems)
+        internal static void setnItems(Page pg, int nItems)
         {
-            Bytes.pack2(pg.data, 0, (short) nItems);
+            Bytes.pack2(pg.data, 0, (short)nItems);
         }
-        internal static void  setSize(Page pg, int size)
+        internal static void setSize(Page pg, int size)
         {
-            Bytes.pack2(pg.data, 2, (short) size);
+            Bytes.pack2(pg.data, 2, (short)size);
         }
-        internal static void  setKeyStrOid(Page pg, int index, int oid)
+        internal static void setKeyStrOid(Page pg, int index, int oid)
         {
             Bytes.pack4(pg.data, firstKeyOffs + index * 8, oid);
         }
-        internal static void  setKeyStrSize(Page pg, int index, int size)
+        internal static void setKeyStrSize(Page pg, int index, int size)
         {
-            Bytes.pack2(pg.data, firstKeyOffs + index * 8 + 4, (short) size);
+            Bytes.pack2(pg.data, firstKeyOffs + index * 8 + 4, (short)size);
         }
-        internal static void  setKeyStrOffs(Page pg, int index, int offs)
+        internal static void setKeyStrOffs(Page pg, int index, int offs)
         {
-            Bytes.pack2(pg.data, firstKeyOffs + index * 8 + 6, (short) offs);
+            Bytes.pack2(pg.data, firstKeyOffs + index * 8 + 6, (short)offs);
         }
-        internal static void  setKeyStrChars(Page pg, int offs, char[] str)
+        internal static void setKeyStrChars(Page pg, int offs, char[] str)
         {
             int len = str.Length;
             for (int i = 0; i < len; i++)
             {
-                Bytes.pack2(pg.data, firstKeyOffs + offs, (short) str[i]);
+                Bytes.pack2(pg.data, firstKeyOffs + offs, (short)str[i]);
                 offs += 2;
             }
         }
-        internal static void setKeyBytes(Page pg, int offs, byte[] bytes) 
-        { 
+        internal static void setKeyBytes(Page pg, int offs, byte[] bytes)
+        {
             Array.Copy(bytes, 0, pg.data, firstKeyOffs + offs, bytes.Length);
         }
 
-        internal static void  setReference(Page pg, int index, int oid)
+        internal static void setReference(Page pg, int index, int oid)
         {
             Bytes.pack4(pg.data, firstKeyOffs + index * 4, oid);
         }
@@ -87,54 +87,54 @@ namespace Volante.Impl
             double r8;
             switch (key.type)
             {
-                case ClassDescriptor.FieldType.tpSByte: 
-                    return (sbyte) key.ival - (sbyte)pg.data[BtreePage.firstKeyOffs + i];
-                
-                case ClassDescriptor.FieldType.tpBoolean: 
-                case ClassDescriptor.FieldType.tpByte: 
+                case ClassDescriptor.FieldType.tpSByte:
+                    return (sbyte)key.ival - (sbyte)pg.data[BtreePage.firstKeyOffs + i];
+
+                case ClassDescriptor.FieldType.tpBoolean:
+                case ClassDescriptor.FieldType.tpByte:
                     return (byte)key.ival - pg.data[BtreePage.firstKeyOffs + i];
 
-                case ClassDescriptor.FieldType.tpShort: 
-                    return (short) key.ival - Bytes.unpack2(pg.data, BtreePage.firstKeyOffs + i * 2);
-                case ClassDescriptor.FieldType.tpUShort: 
-                    return (ushort) key.ival - (ushort)Bytes.unpack2(pg.data, BtreePage.firstKeyOffs + i * 2);
+                case ClassDescriptor.FieldType.tpShort:
+                    return (short)key.ival - Bytes.unpack2(pg.data, BtreePage.firstKeyOffs + i * 2);
+                case ClassDescriptor.FieldType.tpUShort:
+                    return (ushort)key.ival - (ushort)Bytes.unpack2(pg.data, BtreePage.firstKeyOffs + i * 2);
 
-                case ClassDescriptor.FieldType.tpChar: 
-                    return (char) key.ival - (char) Bytes.unpack2(pg.data, BtreePage.firstKeyOffs + i * 2);
+                case ClassDescriptor.FieldType.tpChar:
+                    return (char)key.ival - (char)Bytes.unpack2(pg.data, BtreePage.firstKeyOffs + i * 2);
 
-                case ClassDescriptor.FieldType.tpObject: 
-                case ClassDescriptor.FieldType.tpUInt: 
-                case ClassDescriptor.FieldType.tpOid: 
-                case ClassDescriptor.FieldType.tpEnum: 
+                case ClassDescriptor.FieldType.tpObject:
+                case ClassDescriptor.FieldType.tpUInt:
+                case ClassDescriptor.FieldType.tpOid:
+                case ClassDescriptor.FieldType.tpEnum:
                     u4 = (uint)Bytes.unpack4(pg.data, BtreePage.firstKeyOffs + i * 4);
                     return (uint)key.ival < u4 ? -1 : (uint)key.ival == u4 ? 0 : 1;
 
-                case ClassDescriptor.FieldType.tpInt: 
+                case ClassDescriptor.FieldType.tpInt:
                     i4 = Bytes.unpack4(pg.data, BtreePage.firstKeyOffs + i * 4);
                     return key.ival < i4 ? -1 : key.ival == i4 ? 0 : 1;
 
-                case ClassDescriptor.FieldType.tpLong: 
+                case ClassDescriptor.FieldType.tpLong:
                     i8 = Bytes.unpack8(pg.data, BtreePage.firstKeyOffs + i * 8);
                     return key.lval < i8 ? -1 : key.lval == i8 ? 0 : 1;
 
-                case ClassDescriptor.FieldType.tpDate: 
-                case ClassDescriptor.FieldType.tpULong: 
+                case ClassDescriptor.FieldType.tpDate:
+                case ClassDescriptor.FieldType.tpULong:
                     u8 = (ulong)Bytes.unpack8(pg.data, BtreePage.firstKeyOffs + i * 8);
                     return (ulong)key.lval < u8 ? -1 : (ulong)key.lval == u8 ? 0 : 1;
 
-                case ClassDescriptor.FieldType.tpFloat: 
+                case ClassDescriptor.FieldType.tpFloat:
                     r4 = Bytes.unpackF4(pg.data, BtreePage.firstKeyOffs + i * 4);
                     return key.dval < r4 ? -1 : key.dval == r4 ? 0 : 1;
 
-                case ClassDescriptor.FieldType.tpDouble: 
+                case ClassDescriptor.FieldType.tpDouble:
                     r8 = Bytes.unpackF8(pg.data, BtreePage.firstKeyOffs + i * 8);
                     return key.dval < r8 ? -1 : key.dval == r8 ? 0 : 1;
 
                 case ClassDescriptor.FieldType.tpDecimal:
-                   return key.dec.CompareTo(Bytes.unpackDecimal(pg.data, BtreePage.firstKeyOffs + i*16));
+                    return key.dec.CompareTo(Bytes.unpackDecimal(pg.data, BtreePage.firstKeyOffs + i * 16));
 
                 case ClassDescriptor.FieldType.tpGuid:
-                    return key.guid.CompareTo(Bytes.unpackGuid(pg.data, BtreePage.firstKeyOffs + i*16));
+                    return key.guid.CompareTo(Bytes.unpackGuid(pg.data, BtreePage.firstKeyOffs + i * 16));
             }
             Debug.Assert(false, "Invalid type");
             return 0;
@@ -145,12 +145,12 @@ namespace Volante.Impl
             char[] chars = (char[])key.oval;
             int alen = chars.Length;
             int blen = BtreePage.getKeyStrSize(pg, i);
-            int minlen = alen < blen?alen:blen;
+            int minlen = alen < blen ? alen : blen;
             int offs = BtreePage.getKeyStrOffs(pg, i) + BtreePage.firstKeyOffs;
             byte[] b = pg.data;
             for (int j = 0; j < minlen; j++)
             {
-                int diff = chars[j] - (char) Bytes.unpack2(b, offs);
+                int diff = chars[j] - (char)Bytes.unpack2(b, offs);
                 if (diff != 0)
                 {
                     return diff;
@@ -192,7 +192,7 @@ namespace Volante.Impl
                         {
                             while (l < n)
                             {
-                                if (- compareStr(lastKey, pg, l) >= lastKey.inclusion)
+                                if (-compareStr(lastKey, pg, l) >= lastKey.inclusion)
                                 {
                                     return false;
                                 }
@@ -203,7 +203,7 @@ namespace Volante.Impl
                         }
                         else
                         {
-                            do 
+                            do
                             {
                                 if (!find(db, getKeyStrOid(pg, l), firstKey, lastKey, tree, height, result))
                                 {
@@ -231,7 +231,7 @@ namespace Volante.Impl
                         }
                         else
                         {
-                            do 
+                            do
                             {
                                 if (!find(db, getKeyStrOid(pg, l), firstKey, lastKey, tree, height, result))
                                 {
@@ -277,7 +277,7 @@ namespace Volante.Impl
                         }
                         else
                         {
-                            do 
+                            do
                             {
                                 if (!find(db, getKeyStrOid(pg, l), firstKey, lastKey, tree, height, result))
                                 {
@@ -305,7 +305,7 @@ namespace Volante.Impl
                         }
                         else
                         {
-                            do 
+                            do
                             {
                                 if (!find(db, getKeyStrOid(pg, l), firstKey, lastKey, tree, height, result))
                                 {
@@ -340,7 +340,7 @@ namespace Volante.Impl
                         {
                             while (l < n)
                             {
-                                if (- compare(lastKey, pg, l) >= lastKey.inclusion)
+                                if (-compare(lastKey, pg, l) >= lastKey.inclusion)
                                 {
                                     return false;
                                 }
@@ -352,7 +352,7 @@ namespace Volante.Impl
                         }
                         else
                         {
-                            do 
+                            do
                             {
                                 if (!find(db, getReference(pg, maxItems - 1 - l), firstKey, lastKey, tree, height, result))
                                 {
@@ -378,7 +378,7 @@ namespace Volante.Impl
                     }
                     else
                     {
-                        do 
+                        do
                         {
                             if (!find(db, getReference(pg, maxItems - 1 - l), firstKey, lastKey, tree, height, result))
                             {
@@ -396,18 +396,18 @@ namespace Volante.Impl
             return true;
         }
 
-        static int comparePrefix(string key, Page pg, int i) 
-        { 
+        static int comparePrefix(string key, Page pg, int i)
+        {
             int alen = key.Length;
             int blen = BtreePage.getKeyStrSize(pg, i);
             int minlen = alen < blen ? alen : blen;
             int offs = BtreePage.getKeyStrOffs(pg, i) + BtreePage.firstKeyOffs;
             byte[] b = pg.data;
-            for (int j = 0; j < minlen; j++) 
-            { 
+            for (int j = 0; j < minlen; j++)
+            {
                 int diff = key[j] - (char)Bytes.unpack2(b, offs);
-                if (diff != 0) 
-                { 
+                if (diff != 0)
+                {
                     return diff;
                 }
                 offs += 2;
@@ -422,56 +422,56 @@ namespace Volante.Impl
             int l = 0, n = getnItems(pg), r = n;
             int oid;
             height -= 1;
-            try 
-            { 
-                while (l < r)  
+            try
+            {
+                while (l < r)
                 {
-                    int i = (l+r) >> 1;
-                    if (comparePrefix(key, pg, i) > 0) 
+                    int i = (l + r) >> 1;
+                    if (comparePrefix(key, pg, i) > 0)
                     {
-                        l = i + 1; 
-                    } 
-                    else 
-                    { 
+                        l = i + 1;
+                    }
+                    else
+                    {
                         r = i;
                     }
                 }
-                Debug.Assert(r == l); 
-                if (height == 0) 
-                { 
-                    while (l < n) 
-                    { 
-                        if (comparePrefix(key, pg, l) < 0) 
-                        { 
+                Debug.Assert(r == l);
+                if (height == 0)
+                {
+                    while (l < n)
+                    {
+                        if (comparePrefix(key, pg, l) < 0)
+                        {
                             return false;
                         }
                         oid = getKeyStrOid(pg, l);
                         result.Add(db.lookupObject(oid, null));
                         l += 1;
                     }
-                } 
-                else 
-                { 
-                    do 
+                }
+                else
+                {
+                    do
                     {
-                        if (!prefixSearch(db, getKeyStrOid(pg, l), key, height, result)) 
+                        if (!prefixSearch(db, getKeyStrOid(pg, l), key, height, result))
                         {
                             return false;
                         }
-                        if (l == n) 
-                        { 
+                        if (l == n)
+                        {
                             return true;
                         }
                     } while (comparePrefix(key, pg, l++) >= 0);
                     return false;
                 }
-            } 
-            finally 
-            { 
+            }
+            finally
+            {
                 db.pool.unfix(pg);
             }
             return true;
-        }    
+        }
 
         internal static int allocate(StorageImpl db, int root, ClassDescriptor.FieldType type, BtreeKey ins)
         {
@@ -547,16 +547,16 @@ namespace Volante.Impl
                     }
                     else if (r < n && compareStr(ins.key, pg, r) == 0)
                     {
-                        if (overwrite) 
-                        { 
+                        if (overwrite)
+                        {
                             db.pool.unfix(pg);
                             pg = null;
                             pg = db.putPage(pageId);
                             setKeyStrOid(pg, r, ins.oid);
                             return BtreeResult.Overwrite;
                         }
-                        else if (unique) 
-                        { 
+                        else if (unique)
+                        {
                             return BtreeResult.Duplicate;
                         }
                     }
@@ -591,16 +591,16 @@ namespace Volante.Impl
                     }
                     else if (r < n && tree.compareByteArrays(ins.key, pg, r) == 0)
                     {
-                        if (overwrite) 
-                        { 
+                        if (overwrite)
+                        {
                             db.pool.unfix(pg);
                             pg = null;
                             pg = db.putPage(pageId);
                             setKeyStrOid(pg, r, ins.oid);
                             return BtreeResult.Overwrite;
                         }
-                        else if (unique) 
-                        { 
+                        else if (unique)
+                        {
                             return BtreeResult.Duplicate;
                         }
                     }
@@ -633,16 +633,16 @@ namespace Volante.Impl
                     }
                     else if (r < n && compare(ins.key, pg, r) == 0)
                     {
-                        if (overwrite) 
-                        { 
+                        if (overwrite)
+                        {
                             db.pool.unfix(pg);
                             pg = null;
                             pg = db.putPage(pageId);
                             setReference(pg, maxItems - r - 1, ins.oid);
                             return BtreeResult.Overwrite;
                         }
-                        else if (unique) 
-                        { 
+                        else if (unique)
+                        {
                             return BtreeResult.Duplicate;
                         }
                     }
@@ -705,8 +705,8 @@ namespace Volante.Impl
             }
             finally
             {
-                if (pg != null) 
-                { 
+                if (pg != null)
+                {
                     db.pool.unfix(pg);
                 }
             }
@@ -716,9 +716,9 @@ namespace Volante.Impl
         {
             int nItems = getnItems(pg);
             int size = getSize(pg);
-            int n = (height != 0)?nItems + 1:nItems;
+            int n = (height != 0) ? nItems + 1 : nItems;
             // insert before e[r]
-            char[] sval = (char[])ins.key.oval;        
+            char[] sval = (char[])ins.key.oval;
             int len = sval.Length;
             if (size + len * 2 + (n + 1) * strKeySize <= keySpace)
             {
@@ -776,9 +776,9 @@ namespace Volante.Impl
                         }
                     }
                     int delta = (moved + addSize * 2 + (bn + 1) * strKeySize) - (j * strKeySize + size - subSize * 2 + inserted);
-                    if (delta >= - prevDelta)
+                    if (delta >= -prevDelta)
                     {
-                         if (height == 0)
+                        if (height == 0)
                         {
                             ins.getStr(b, bn - 1);
                         }
@@ -838,16 +838,16 @@ namespace Volante.Impl
             }
             setnItems(pg, nItems);
             setSize(pg, size);
-            return size + strKeySize * (nItems + 1) < keySpace / 2?BtreeResult.Underflow:BtreeResult.Done;
+            return size + strKeySize * (nItems + 1) < keySpace / 2 ? BtreeResult.Underflow : BtreeResult.Done;
         }
 
         internal static BtreeResult insertByteArrayKey(StorageImpl db, Page pg, int r, BtreeKey ins, int height)
         {
             int nItems = getnItems(pg);
             int size = getSize(pg);
-            int n = (height != 0)?nItems + 1:nItems;
+            int n = (height != 0) ? nItems + 1 : nItems;
             // insert before e[r]
-            byte[] bval = (byte[])ins.key.oval;        
+            byte[] bval = (byte[])ins.key.oval;
             int len = bval.Length;
             if (size + len + (n + 1) * strKeySize <= keySpace)
             {
@@ -905,7 +905,7 @@ namespace Volante.Impl
                         }
                     }
                     int delta = (moved + addSize + (bn + 1) * strKeySize) - (j * strKeySize + size - subSize + inserted);
-                    if (delta >= - prevDelta)
+                    if (delta >= -prevDelta)
                     {
                         if (height == 0)
                         {
@@ -967,7 +967,7 @@ namespace Volante.Impl
             }
             setnItems(pg, nItems);
             setSize(pg, size);
-            return size + strKeySize * (nItems + 1) < keySpace / 2?BtreeResult.Underflow:BtreeResult.Done;
+            return size + strKeySize * (nItems + 1) < keySpace / 2 ? BtreeResult.Underflow : BtreeResult.Done;
         }
 
         internal static int compactifyStrings(Page pg, int m)
@@ -982,7 +982,7 @@ namespace Volante.Impl
             int nZeroLengthStrings = 0;
             if (m < 0)
             {
-                m = - m;
+                m = -m;
                 for (i = 0; i < n - m; i++)
                 {
                     len = getKeyStrSize(pg, i);
@@ -1004,7 +1004,7 @@ namespace Volante.Impl
                     {
                         offs = getKeyStrOffs(pg, i) >> 1;
                         size[offs + len] = len;
-                        index[offs + len] = - 1;
+                        index[offs + len] = -1;
                     }
                 }
             }
@@ -1017,7 +1017,7 @@ namespace Volante.Impl
                     {
                         offs = getKeyStrOffs(pg, i) >> 1;
                         size[offs + len] = len;
-                        index[offs + len] = - 1;
+                        index[offs + len] = -1;
                     }
                 }
                 for (; i < n; i++)
@@ -1070,7 +1070,7 @@ namespace Volante.Impl
             int nZeroLengthArrays = 0;
             if (m < 0)
             {
-                m = - m;
+                m = -m;
                 for (i = 0; i < n - m; i++)
                 {
                     len = getKeyStrSize(pg, i);
@@ -1105,7 +1105,7 @@ namespace Volante.Impl
                     {
                         offs = getKeyStrOffs(pg, i);
                         size[offs + len] = len;
-                        index[offs + len] = - 1;
+                        index[offs + len] = -1;
                     }
                 }
                 for (; i < n; i++)
@@ -1173,7 +1173,7 @@ namespace Volante.Impl
                 setSize(pg, size -= len);
             }
             setnItems(pg, nItems - 1);
-            return size + strKeySize * nItems < keySpace / 2?BtreeResult.Underflow:BtreeResult.Done;
+            return size + strKeySize * nItems < keySpace / 2 ? BtreeResult.Underflow : BtreeResult.Done;
         }
 
         internal static BtreeResult removeByteArrayKey(Page pg, int r)
@@ -1203,7 +1203,7 @@ namespace Volante.Impl
                 setSize(pg, size -= len);
             }
             setnItems(pg, nItems - 1);
-            return size + strKeySize * nItems < keySpace / 2?BtreeResult.Underflow:BtreeResult.Done;
+            return size + strKeySize * nItems < keySpace / 2 ? BtreeResult.Underflow : BtreeResult.Done;
         }
 
         internal static BtreeResult replaceStrKey(StorageImpl db, Page pg, int r, BtreeKey ins, int height)
@@ -1263,7 +1263,7 @@ namespace Volante.Impl
                             int delta = ((an + i) * strKeySize + size_a + addSize * 2) - ((bn - i) * strKeySize + size_b - subSize * 2);
                             if (delta >= 0)
                             {
-                                if (delta >= - prevDelta)
+                                if (delta >= -prevDelta)
                                 {
                                     i -= 1;
                                 }
@@ -1383,7 +1383,7 @@ namespace Volante.Impl
                             int delta = ((an + i) * strKeySize + size_a + addSize * 2) - ((bn - i) * strKeySize + size_b - subSize * 2);
                             if (delta >= 0)
                             {
-                                if (delta >= - prevDelta)
+                                if (delta >= -prevDelta)
                                 {
                                     i -= 1;
                                 }
@@ -1437,7 +1437,7 @@ namespace Volante.Impl
                             setnItems(a, an);
                             rem.getStr(b, bn - k - 1);
                             result = replaceStrKey(db, pg, r - 1, rem, height);
-                            setnItems(b, compactifyStrings(b, - i));
+                            setnItems(b, compactifyStrings(b, -i));
                         }
                         db.pool.unfix(a);
                         db.pool.unfix(b);
@@ -1518,7 +1518,7 @@ namespace Volante.Impl
                             int delta = ((an + i) * strKeySize + size_a + addSize) - ((bn - i) * strKeySize + size_b - subSize);
                             if (delta >= 0)
                             {
-                                if (delta >= - prevDelta)
+                                if (delta >= -prevDelta)
                                 {
                                     i -= 1;
                                 }
@@ -1638,7 +1638,7 @@ namespace Volante.Impl
                             int delta = ((an + i) * strKeySize + size_a + addSize) - ((bn - i) * strKeySize + size_b - subSize);
                             if (delta >= 0)
                             {
-                                if (delta >= - prevDelta)
+                                if (delta >= -prevDelta)
                                 {
                                     i -= 1;
                                 }
@@ -1692,7 +1692,7 @@ namespace Volante.Impl
                             setnItems(a, an);
                             rem.getByteArray(b, bn - k - 1);
                             result = replaceByteArrayKey(db, pg, r - 1, rem, height);
-                            setnItems(b, compactifyByteArrays(b, - i));
+                            setnItems(b, compactifyByteArrays(b, -i));
                         }
                         db.pool.unfix(a);
                         db.pool.unfix(b);
@@ -1780,7 +1780,7 @@ namespace Volante.Impl
                         setnItems(pg, nItems - 1);
                         db.pool.unfix(a);
                         db.pool.unfix(b);
-                        return nItems * (itemSize + 4) < keySpace / 2?BtreeResult.Underflow:BtreeResult.Done;
+                        return nItems * (itemSize + 4) < keySpace / 2 ? BtreeResult.Underflow : BtreeResult.Done;
                     }
                 }
                 else
@@ -1833,7 +1833,7 @@ namespace Volante.Impl
                         setnItems(pg, nItems - 1);
                         db.pool.unfix(a);
                         db.pool.unfix(b);
-                        return nItems * (itemSize + 4) < keySpace / 2?BtreeResult.Underflow:BtreeResult.Done;
+                        return nItems * (itemSize + 4) < keySpace / 2 ? BtreeResult.Underflow : BtreeResult.Done;
                     }
                 }
             }
@@ -1862,20 +1862,20 @@ namespace Volante.Impl
                     }
                     if (--height != 0)
                     {
-                        do 
+                        do
                         {
                             switch (remove(db, getKeyStrOid(pg, r), tree, rem, height))
                             {
-                                case BtreeResult.Underflow: 
+                                case BtreeResult.Underflow:
                                     db.pool.unfix(pg);
                                     pg = null;
                                     pg = db.putPage(pageId);
                                     return handlePageUnderflow(db, pg, r, tree.FieldType, rem, height);
 
-                                case BtreeResult.Done: 
+                                case BtreeResult.Done:
                                     return BtreeResult.Done;
 
-                                case BtreeResult.Overflow: 
+                                case BtreeResult.Overflow:
                                     db.pool.unfix(pg);
                                     pg = null;
                                     pg = db.putPage(pageId);
@@ -1908,7 +1908,7 @@ namespace Volante.Impl
                             r += 1;
                         }
                     }
-                } 
+                }
                 else if (tree.FieldType == ClassDescriptor.FieldType.tpArrayOfByte)
                 {
                     while (l < r)
@@ -1925,20 +1925,20 @@ namespace Volante.Impl
                     }
                     if (--height != 0)
                     {
-                        do 
+                        do
                         {
                             switch (remove(db, getKeyStrOid(pg, r), tree, rem, height))
                             {
-                                case BtreeResult.Underflow: 
+                                case BtreeResult.Underflow:
                                     db.pool.unfix(pg);
                                     pg = null;
                                     pg = db.putPage(pageId);
                                     return handlePageUnderflow(db, pg, r, tree.FieldType, rem, height);
 
-                                case BtreeResult.Done: 
+                                case BtreeResult.Done:
                                     return BtreeResult.Done;
 
-                                case BtreeResult.Overflow: 
+                                case BtreeResult.Overflow:
                                     db.pool.unfix(pg);
                                     pg = null;
                                     pg = db.putPage(pageId);
@@ -1971,7 +1971,7 @@ namespace Volante.Impl
                             r += 1;
                         }
                     }
-                } 
+                }
                 else // scalars
                 {
                     int itemSize = ClassDescriptor.Sizeof[(int)tree.FieldType];
@@ -2003,7 +2003,7 @@ namespace Volante.Impl
                                     memcpy(pg, r, pg, r + 1, n - r - 1, itemSize);
                                     memcpy(pg, maxItems - n + 1, pg, maxItems - n, n - r - 1, 4);
                                     setnItems(pg, --n);
-                                    return n * (itemSize + 4) < keySpace / 2?BtreeResult.Underflow:BtreeResult.Done;
+                                    return n * (itemSize + 4) < keySpace / 2 ? BtreeResult.Underflow : BtreeResult.Done;
                                 }
                             }
                             else
@@ -2014,16 +2014,16 @@ namespace Volante.Impl
                         }
                         return BtreeResult.NotFound;
                     }
-                    do 
+                    do
                     {
                         switch (remove(db, getReference(pg, maxItems - r - 1), tree, rem, height))
                         {
-                            case BtreeResult.Underflow: 
+                            case BtreeResult.Underflow:
                                 db.pool.unfix(pg);
                                 pg = db.putPage(pageId);
                                 return handlePageUnderflow(db, pg, r, tree.FieldType, rem, height);
 
-                            case BtreeResult.Done: 
+                            case BtreeResult.Done:
                                 return BtreeResult.Done;
 
                         }
@@ -2034,7 +2034,7 @@ namespace Volante.Impl
             }
             finally
             {
-                if (pg != null) 
+                if (pg != null)
                 {
                     db.pool.unfix(pg);
 
@@ -2126,53 +2126,53 @@ namespace Volante.Impl
         {
             Page pg = db.getGCPage(pageId);
             int nPages = 1;
-            try 
-            { 
+            try
+            {
                 int i, n = getnItems(pg);
-                if (--height != 0) 
+                if (--height != 0)
                 {
-                    if (type == ClassDescriptor.FieldType.tpString || type == ClassDescriptor.FieldType.tpArrayOfByte) 
+                    if (type == ClassDescriptor.FieldType.tpString || type == ClassDescriptor.FieldType.tpArrayOfByte)
                     { // page of strings
-                        for (i = 0; i <= n; i++) 
-                        { 
+                        for (i = 0; i <= n; i++)
+                        {
                             nPages += markPage(db, getKeyStrOid(pg, i), type, height);
                         }
-                    } 
-                    else 
-                    { 
-                        for (i = 0; i <= n; i++) 
-                        { 
-                            nPages += markPage(db, getReference(pg, maxItems-i-1), type, height);
+                    }
+                    else
+                    {
+                        for (i = 0; i <= n; i++)
+                        {
+                            nPages += markPage(db, getReference(pg, maxItems - i - 1), type, height);
                         }
                     }
-                } 
-                else 
-                { 
-                    if (type == ClassDescriptor.FieldType.tpString || type == ClassDescriptor.FieldType.tpArrayOfByte) 
+                }
+                else
+                {
+                    if (type == ClassDescriptor.FieldType.tpString || type == ClassDescriptor.FieldType.tpArrayOfByte)
                     { // page of strings
-                        for (i = 0; i < n; i++) 
+                        for (i = 0; i < n; i++)
                         {
                             db.markOid(getKeyStrOid(pg, i));
                         }
                     }
-                    else 
+                    else
                     { // page of scalars
-                        for (i = 0; i < n; i++) 
-                        { 
-                            db.markOid(getReference(pg, maxItems-1-i));
+                        for (i = 0; i < n; i++)
+                        {
+                            db.markOid(getReference(pg, maxItems - 1 - i));
                         }
-                    } 
+                    }
                 }
-            } 
-            finally 
-            { 
+            }
+            finally
+            {
                 db.pool.unfix(pg);
             }
             return nPages;
         }
 
 #if !OMIT_XML
-        internal static void  exportPage(StorageImpl db, XMLExporter exporter, int pageId, ClassDescriptor.FieldType type, int height)
+        internal static void exportPage(StorageImpl db, XMLExporter exporter, int pageId, ClassDescriptor.FieldType type, int height)
         {
             Page pg = db.getPage(pageId);
             try

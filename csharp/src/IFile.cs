@@ -5,8 +5,8 @@ namespace Volante
     /// as support of flash cards, encrypted files,...
     /// Implentation of this interface should throw StorageError exception in case of failure
     /// </summary>
-    public interface IFile 
-    { 
+    public interface IFile
+    {
         /// <summary> Write data to the file
         /// </summary>
         /// <param name="pos"> offset in the file
@@ -29,7 +29,7 @@ namespace Volante
         /// <summary> Flush all fiels changes to the disk
         /// </summary>
         void Sync();
-    
+
         /// <summary>
         /// Prevent other processes from modifying the file
         /// </summary>

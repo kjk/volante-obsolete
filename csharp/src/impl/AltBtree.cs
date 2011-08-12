@@ -5,33 +5,34 @@ namespace Volante.Impl
     using System.Diagnostics;
     using Volante;
     using System.Collections.Generic;
-    using Link=Link<IPersistent>;
+    using Link = Link<IPersistent>;
 
-    class AltBtree<K,V> : PersistentCollection<V>, Index<K,V> where V:class, IPersistent
+    class AltBtree<K, V> : PersistentCollection<V>, Index<K, V> where V : class, IPersistent
     {
         public Type KeyType
         {
             get
             {
                 return typeof(K);
-            }            
+            }
         }
         internal int height;
         internal ClassDescriptor.FieldType type;
         internal int nElems;
         internal bool unique;
         internal BtreePage root;
-        
+
         [NonSerialized()]
         internal int updateCounter;
-        
+
         internal AltBtree()
         {
         }
-        
+
         public override void OnLoad()
         {
-             if (type != ClassDescriptor.getTypeCode(typeof(K))) {
+            if (type != ClassDescriptor.getTypeCode(typeof(K)))
+            {
                 throw new StorageError(StorageError.ErrorCode.INCOMPATIBLE_KEY_TYPE, typeof(K));
             }
         }
@@ -41,32 +42,32 @@ namespace Volante.Impl
             internal Key key;
             internal IPersistent node;
             internal IPersistent oldNode;
-            
+
             internal BtreeKey(Key key, IPersistent node)
             {
                 this.key = key;
                 this.node = node;
             }
         }
-        
+
         internal abstract class BtreePage : Persistent
         {
-            internal abstract Array Data{get;}
+            internal abstract Array Data { get; }
             internal int nItems;
             internal Link items;
-       
+
             internal const int BTREE_PAGE_SIZE = Page.pageSize - ObjectHeader.Sizeof - 4 * 3;
-            
+
             internal abstract object getKeyValue(int i);
             internal abstract Key getKey(int i);
             internal abstract int compare(Key key, int i);
-            internal abstract void  insert(BtreeKey key, int i);
+            internal abstract void insert(BtreeKey key, int i);
             internal abstract BtreePage clonePage();
-            
-            internal virtual void  clearKeyValue(int i)
+
+            internal virtual void clearKeyValue(int i)
             {
             }
-            
+
             internal virtual bool find(Key firstKey, Key lastKey, int height, ArrayList result)
             {
                 int l = 0, n = nItems, r = n;
@@ -104,9 +105,9 @@ namespace Volante.Impl
                     }
                     else
                     {
-                        do 
+                        do
                         {
-                            if (!((BtreePage) items[l]).find(firstKey, lastKey, height, result))
+                            if (!((BtreePage)items[l]).find(firstKey, lastKey, height, result))
                             {
                                 return false;
                             }
@@ -129,9 +130,9 @@ namespace Volante.Impl
                 }
                 else
                 {
-                    do 
+                    do
                     {
-                        if (!((BtreePage) items[l]).find(firstKey, lastKey, height, result))
+                        if (!((BtreePage)items[l]).find(firstKey, lastKey, height, result))
                         {
                             return false;
                         }
@@ -140,31 +141,31 @@ namespace Volante.Impl
                 }
                 return true;
             }
-            
-            internal static void  memcpyData(BtreePage dst_pg, int dst_idx, BtreePage src_pg, int src_idx, int len)
+
+            internal static void memcpyData(BtreePage dst_pg, int dst_idx, BtreePage src_pg, int src_idx, int len)
             {
                 Array.Copy(src_pg.Data, src_idx, dst_pg.Data, dst_idx, len);
             }
-            
-            internal static void  memcpyItems(BtreePage dst_pg, int dst_idx, BtreePage src_pg, int src_idx, int len)
+
+            internal static void memcpyItems(BtreePage dst_pg, int dst_idx, BtreePage src_pg, int src_idx, int len)
             {
                 Array.Copy(src_pg.items.ToRawArray(), src_idx, dst_pg.items.ToRawArray(), dst_idx, len);
             }
-            
-            internal static void  memcpy(BtreePage dst_pg, int dst_idx, BtreePage src_pg, int src_idx, int len)
+
+            internal static void memcpy(BtreePage dst_pg, int dst_idx, BtreePage src_pg, int src_idx, int len)
             {
                 memcpyData(dst_pg, dst_idx, src_pg, src_idx, len);
                 memcpyItems(dst_pg, dst_idx, src_pg, src_idx, len);
             }
-            
-            internal virtual void  memset(int i, int len)
+
+            internal virtual void memset(int i, int len)
             {
                 while (--len >= 0)
                 {
                     items[i++] = null;
                 }
             }
-            
+
             internal virtual OperationResult insert(BtreeKey ins, int height, bool unique, bool overwrite)
             {
                 OperationResult result;
@@ -185,7 +186,7 @@ namespace Volante.Impl
                 /* insert before e[r] */
                 if (--height != 0)
                 {
-                    result = ((BtreePage) items[r]).insert(ins, height, unique, overwrite);
+                    result = ((BtreePage)items[r]).insert(ins, height, unique, overwrite);
                     Debug.Assert(result != OperationResult.NotFound);
                     if (result != OperationResult.Overflow)
                     {
@@ -254,17 +255,17 @@ namespace Volante.Impl
                     return OperationResult.Overflow;
                 }
             }
-            
+
             internal virtual OperationResult handlePageUnderflow(int r, BtreeKey rem, int height)
             {
-                BtreePage a = (BtreePage) items[r];
+                BtreePage a = (BtreePage)items[r];
                 a.Modify();
                 Modify();
                 int an = a.nItems;
                 if (r < nItems)
                 {
                     // exists greater page
-                    BtreePage b = (BtreePage) items[r + 1];
+                    BtreePage b = (BtreePage)items[r + 1];
                     int bn = b.nItems;
                     Debug.Assert(bn >= an);
                     if (height != 1)
@@ -306,7 +307,7 @@ namespace Volante.Impl
                 else
                 {
                     // page b is before a
-                    BtreePage b = (BtreePage) items[r - 1];
+                    BtreePage b = (BtreePage)items[r - 1];
                     int bn = b.nItems;
                     Debug.Assert(bn >= an);
                     if (height != 1)
@@ -353,11 +354,11 @@ namespace Volante.Impl
                     }
                 }
             }
-            
+
             internal virtual OperationResult remove(BtreeKey rem, int height)
             {
                 int i, n = nItems, l = 0, r = n;
-                
+
                 while (l < r)
                 {
                     i = (l + r) >> 1;
@@ -395,36 +396,36 @@ namespace Volante.Impl
                     }
                     return OperationResult.NotFound;
                 }
-                do 
+                do
                 {
-                    switch (((BtreePage) items[r]).remove(rem, height))
-                    {                       
-                        case OperationResult.Underflow: 
+                    switch (((BtreePage)items[r]).remove(rem, height))
+                    {
+                        case OperationResult.Underflow:
                             return handlePageUnderflow(r, rem, height);
-                        
-                        case OperationResult.Done: 
+
+                        case OperationResult.Done:
                             return OperationResult.Done;
                     }
                 }
                 while (++r <= n);
-                
+
                 return OperationResult.NotFound;
             }
-            
+
             internal virtual void purge(int height)
             {
                 if (--height != 0)
                 {
                     int n = nItems;
-                    do 
+                    do
                     {
-                        ((BtreePage) items[n]).purge(height);
+                        ((BtreePage)items[n]).purge(height);
                     }
                     while (--n >= 0);
                 }
                 Deallocate();
             }
-            
+
             internal virtual int traverseForward(int height, IPersistent[] result, int pos)
             {
                 int i, n = nItems;
@@ -432,7 +433,7 @@ namespace Volante.Impl
                 {
                     for (i = 0; i <= n; i++)
                     {
-                        pos = ((BtreePage) items[i]).traverseForward(height, result, pos);
+                        pos = ((BtreePage)items[i]).traverseForward(height, result, pos);
                     }
                 }
                 else
@@ -444,19 +445,19 @@ namespace Volante.Impl
                 }
                 return pos;
             }
-            
-            internal BtreePage(Storage s, int n) : base(s)
+
+            internal BtreePage(Storage s, int n)
+                : base(s)
             {
                 items = s.CreateLink(n);
                 items.Length = n;
             }
-            
+
             internal BtreePage()
             {
             }
         }
-        
-        
+
         class BtreePageOfByte : BtreePage
         {
             internal override Array Data
@@ -465,7 +466,7 @@ namespace Volante.Impl
                 {
                     return data;
                 }
-                
+
             }
 
             protected byte[] data;
@@ -476,38 +477,39 @@ namespace Volante.Impl
             {
                 return data[i];
             }
-            
+
             internal override Key getKey(int i)
             {
                 return new Key(data[i]);
             }
-            
+
             internal override BtreePage clonePage()
             {
                 return new BtreePageOfByte(Storage);
             }
-            
+
             internal override int compare(Key key, int i)
             {
-                return (byte) key.ival - data[i];
+                return (byte)key.ival - data[i];
             }
-            
+
             internal override void insert(BtreeKey key, int i)
             {
                 items[i] = key.node;
-                data[i] = (byte) key.key.ival;
+                data[i] = (byte)key.key.ival;
             }
-            
-            internal BtreePageOfByte(Storage s) : base(s, MAX_ITEMS)
+
+            internal BtreePageOfByte(Storage s)
+                : base(s, MAX_ITEMS)
             {
                 data = new byte[MAX_ITEMS];
             }
-            
+
             internal BtreePageOfByte()
             {
             }
         }
-        
+
         class BtreePageOfSByte : BtreePage
         {
             internal override Array Data
@@ -516,76 +518,76 @@ namespace Volante.Impl
                 {
                     return data;
                 }
-                
             }
-            
+
             sbyte[] data;
-            
+
             const int MAX_ITEMS = BTREE_PAGE_SIZE / (4 + 1);
-            
-            
+
             internal override object getKeyValue(int i)
             {
                 return data[i];
             }
-            
+
             internal override Key getKey(int i)
             {
                 return new Key(data[i]);
             }
-            
+
             internal override BtreePage clonePage()
             {
                 return new BtreePageOfSByte(Storage);
             }
-            
+
             internal override int compare(Key key, int i)
             {
-                return (sbyte) key.ival - data[i];
+                return (sbyte)key.ival - data[i];
             }
-            
+
             internal override void insert(BtreeKey key, int i)
             {
                 items[i] = key.node;
-                data[i] = (sbyte) key.key.ival;
+                data[i] = (sbyte)key.key.ival;
             }
-            
-            internal BtreePageOfSByte(Storage s) : base(s, MAX_ITEMS)
+
+            internal BtreePageOfSByte(Storage s)
+                : base(s, MAX_ITEMS)
             {
                 data = new sbyte[MAX_ITEMS];
             }
-            
+
             internal BtreePageOfSByte()
             {
             }
         }
-        
+
         class BtreePageOfBoolean : BtreePageOfByte
         {
             internal override Key getKey(int i)
             {
                 return new Key(data[i] != 0);
             }
-            
+
             internal override object getKeyValue(int i)
             {
                 return data[i] != 0;
             }
-            
+
             internal override BtreePage clonePage()
             {
                 return new BtreePageOfBoolean(Storage);
             }
-            
+
             internal BtreePageOfBoolean()
             {
             }
-            
-            internal BtreePageOfBoolean(Storage s) : base(s)
+
+            internal BtreePageOfBoolean(Storage s)
+                : base(s)
             {
             }
         }
-        
+
         class BtreePageOfShort : BtreePage
         {
             internal override Array Data
@@ -594,49 +596,50 @@ namespace Volante.Impl
                 {
                     return data;
                 }
-                
+
             }
             internal short[] data;
-            
+
             const int MAX_ITEMS = BTREE_PAGE_SIZE / (4 + 2);
-            
-            
+
+
             internal override Key getKey(int i)
             {
                 return new Key(data[i]);
             }
-            
+
             internal override object getKeyValue(int i)
             {
                 return data[i];
             }
-            
+
             internal override BtreePage clonePage()
             {
                 return new BtreePageOfShort(Storage);
             }
-            
+
             internal override int compare(Key key, int i)
             {
-                return (short) key.ival - data[i];
+                return (short)key.ival - data[i];
             }
-            
+
             internal override void insert(BtreeKey key, int i)
             {
                 items[i] = key.node;
-                data[i] = (short) key.key.ival;
+                data[i] = (short)key.key.ival;
             }
-            
-            internal BtreePageOfShort(Storage s) : base(s, MAX_ITEMS)
+
+            internal BtreePageOfShort(Storage s)
+                : base(s, MAX_ITEMS)
             {
                 data = new short[MAX_ITEMS];
             }
-            
+
             internal BtreePageOfShort()
             {
             }
         }
-        
+
         class BtreePageOfUShort : BtreePage
         {
             internal override Array Data
@@ -645,49 +648,50 @@ namespace Volante.Impl
                 {
                     return data;
                 }
-                
+
             }
             internal ushort[] data;
-            
+
             const int MAX_ITEMS = BTREE_PAGE_SIZE / (4 + 2);
-            
-            
+
+
             internal override Key getKey(int i)
             {
                 return new Key(data[i]);
             }
-            
+
             internal override object getKeyValue(int i)
             {
                 return data[i];
             }
-            
+
             internal override BtreePage clonePage()
             {
                 return new BtreePageOfUShort(Storage);
             }
-            
+
             internal override int compare(Key key, int i)
             {
-                return (ushort) key.ival - data[i];
+                return (ushort)key.ival - data[i];
             }
-            
+
             internal override void insert(BtreeKey key, int i)
             {
                 items[i] = key.node;
-                data[i] = (ushort) key.key.ival;
+                data[i] = (ushort)key.key.ival;
             }
-            
-            internal BtreePageOfUShort(Storage s) : base(s, MAX_ITEMS)
+
+            internal BtreePageOfUShort(Storage s)
+                : base(s, MAX_ITEMS)
             {
                 data = new ushort[MAX_ITEMS];
             }
-            
+
             internal BtreePageOfUShort()
             {
             }
         }
-        
+
         class BtreePageOfInt : BtreePage
         {
             internal override Array Data
@@ -696,49 +700,50 @@ namespace Volante.Impl
                 {
                     return data;
                 }
-                
+
             }
             internal int[] data;
-            
+
             const int MAX_ITEMS = BTREE_PAGE_SIZE / (4 + 4);
-            
-            
+
+
             internal override Key getKey(int i)
             {
                 return new Key(data[i]);
             }
-            
+
             internal override object getKeyValue(int i)
             {
                 return data[i];
             }
-            
+
             internal override BtreePage clonePage()
             {
                 return new BtreePageOfInt(Storage);
             }
-            
+
             internal override int compare(Key key, int i)
             {
                 return key.ival - data[i];
             }
-            
+
             internal override void insert(BtreeKey key, int i)
             {
                 items[i] = key.node;
                 data[i] = key.key.ival;
             }
-            
-            internal BtreePageOfInt(Storage s) : base(s, MAX_ITEMS)
+
+            internal BtreePageOfInt(Storage s)
+                : base(s, MAX_ITEMS)
             {
                 data = new int[MAX_ITEMS];
             }
-            
+
             internal BtreePageOfInt()
             {
             }
         }
-        
+
         class BtreePageOfUInt : BtreePage
         {
             internal override Array Data
@@ -747,49 +752,50 @@ namespace Volante.Impl
                 {
                     return data;
                 }
-                
+
             }
             internal uint[] data;
-            
+
             const int MAX_ITEMS = BTREE_PAGE_SIZE / (4 + 4);
-            
-            
+
+
             internal override Key getKey(int i)
             {
                 return new Key(data[i]);
             }
-            
+
             internal override object getKeyValue(int i)
             {
                 return data[i];
             }
-            
+
             internal override BtreePage clonePage()
             {
                 return new BtreePageOfUInt(Storage);
             }
-            
+
             internal override int compare(Key key, int i)
             {
-                return (uint) key.ival < data[i] ? -1 : (uint) key.ival == data[i] ? 0 : 1;
+                return (uint)key.ival < data[i] ? -1 : (uint)key.ival == data[i] ? 0 : 1;
             }
-            
+
             internal override void insert(BtreeKey key, int i)
             {
                 items[i] = key.node;
-                data[i] = (uint) key.key.ival;
+                data[i] = (uint)key.key.ival;
             }
-            
-            internal BtreePageOfUInt(Storage s) : base(s, MAX_ITEMS)
+
+            internal BtreePageOfUInt(Storage s)
+                : base(s, MAX_ITEMS)
             {
                 data = new uint[MAX_ITEMS];
             }
-            
+
             internal BtreePageOfUInt()
             {
             }
         }
-        
+
         class BtreePageOfLong : BtreePage
         {
             internal override Array Data
@@ -798,49 +804,50 @@ namespace Volante.Impl
                 {
                     return data;
                 }
-                
+
             }
             internal long[] data;
-            
+
             const int MAX_ITEMS = BTREE_PAGE_SIZE / (4 + 8);
-            
-            
+
+
             internal override Key getKey(int i)
             {
                 return new Key(data[i]);
             }
-            
+
             internal override object getKeyValue(int i)
             {
                 return data[i];
             }
-            
+
             internal override BtreePage clonePage()
             {
                 return new BtreePageOfLong(Storage);
             }
-            
+
             internal override int compare(Key key, int i)
             {
                 return key.lval < data[i] ? -1 : key.lval == data[i] ? 0 : 1;
             }
-            
+
             internal override void insert(BtreeKey key, int i)
             {
                 items[i] = key.node;
                 data[i] = key.key.lval;
             }
-            
-            internal BtreePageOfLong(Storage s) : base(s, MAX_ITEMS)
+
+            internal BtreePageOfLong(Storage s)
+                : base(s, MAX_ITEMS)
             {
                 data = new long[MAX_ITEMS];
             }
-            
+
             internal BtreePageOfLong()
             {
             }
         }
-        
+
         class BtreePageOfULong : BtreePage
         {
             internal override Array Data
@@ -849,48 +856,49 @@ namespace Volante.Impl
                 {
                     return data;
                 }
-                
+
             }
             internal ulong[] data;
-            
+
             const int MAX_ITEMS = BTREE_PAGE_SIZE / (4 + 8);
 
             internal override Key getKey(int i)
             {
                 return new Key(data[i]);
             }
-            
+
             internal override object getKeyValue(int i)
             {
                 return data[i];
             }
-            
+
             internal override BtreePage clonePage()
             {
                 return new BtreePageOfULong(Storage);
             }
-            
+
             internal override int compare(Key key, int i)
             {
                 return (ulong)key.lval < data[i] ? -1 : (ulong)key.lval == data[i] ? 0 : 1;
             }
-            
+
             internal override void insert(BtreeKey key, int i)
             {
                 items[i] = key.node;
                 data[i] = (ulong)key.key.lval;
             }
-            
-            internal BtreePageOfULong(Storage s) : base(s, MAX_ITEMS)
+
+            internal BtreePageOfULong(Storage s)
+                : base(s, MAX_ITEMS)
             {
                 data = new ulong[MAX_ITEMS];
             }
-            
+
             internal BtreePageOfULong()
             {
             }
         }
-        
+
         class BtreePageOfFloat : BtreePage
         {
             internal override Array Data
@@ -899,49 +907,50 @@ namespace Volante.Impl
                 {
                     return data;
                 }
-                
+
             }
             internal float[] data;
-            
+
             const int MAX_ITEMS = BTREE_PAGE_SIZE / (4 + 4);
-            
-            
+
+
             internal override Key getKey(int i)
             {
                 return new Key(data[i]);
             }
-            
+
             internal override object getKeyValue(int i)
             {
                 return data[i];
             }
-            
+
             internal override BtreePage clonePage()
             {
                 return new BtreePageOfFloat(Storage);
             }
-            
+
             internal override int compare(Key key, int i)
             {
-                return (float) key.dval < data[i]?- 1:(float) key.dval == data[i]?0:1;
+                return (float)key.dval < data[i] ? -1 : (float)key.dval == data[i] ? 0 : 1;
             }
-            
+
             internal override void insert(BtreeKey key, int i)
             {
                 items[i] = key.node;
-                data[i] = (float) key.key.dval;
+                data[i] = (float)key.key.dval;
             }
-            
-            internal BtreePageOfFloat(Storage s) : base(s, MAX_ITEMS)
+
+            internal BtreePageOfFloat(Storage s)
+                : base(s, MAX_ITEMS)
             {
                 data = new float[MAX_ITEMS];
             }
-            
+
             internal BtreePageOfFloat()
             {
             }
         }
-        
+
         class BtreePageOfDouble : BtreePage
         {
             internal override Array Data
@@ -950,49 +959,50 @@ namespace Volante.Impl
                 {
                     return data;
                 }
-                
+
             }
             internal double[] data;
-            
+
             const int MAX_ITEMS = BTREE_PAGE_SIZE / (4 + 8);
-            
-            
+
+
             internal override Key getKey(int i)
             {
                 return new Key(data[i]);
             }
-            
+
             internal override object getKeyValue(int i)
             {
                 return data[i];
             }
-            
+
             internal override BtreePage clonePage()
             {
                 return new BtreePageOfDouble(Storage);
             }
-            
+
             internal override int compare(Key key, int i)
             {
-                return key.dval < data[i]?- 1:key.dval == data[i]?0:1;
+                return key.dval < data[i] ? -1 : key.dval == data[i] ? 0 : 1;
             }
-            
+
             internal override void insert(BtreeKey key, int i)
             {
                 items[i] = key.node;
                 data[i] = key.key.dval;
             }
-            
-            internal BtreePageOfDouble(Storage s) : base(s, MAX_ITEMS)
+
+            internal BtreePageOfDouble(Storage s)
+                : base(s, MAX_ITEMS)
             {
                 data = new double[MAX_ITEMS];
             }
-            
+
             internal BtreePageOfDouble()
             {
             }
         }
-        
+
         class BtreePageOfGuid : BtreePage
         {
             internal override Array Data
@@ -1001,49 +1011,50 @@ namespace Volante.Impl
                 {
                     return data;
                 }
-                
+
             }
             internal Guid[] data;
-            
+
             const int MAX_ITEMS = BTREE_PAGE_SIZE / (4 + 16);
-            
-            
+
+
             internal override Key getKey(int i)
             {
                 return new Key(data[i]);
             }
-            
+
             internal override object getKeyValue(int i)
             {
                 return data[i];
             }
-            
+
             internal override BtreePage clonePage()
             {
                 return new BtreePageOfGuid(Storage);
             }
-            
+
             internal override int compare(Key key, int i)
             {
                 return key.guid.CompareTo(data[i]);
             }
-            
+
             internal override void insert(BtreeKey key, int i)
             {
                 items[i] = key.node;
                 data[i] = key.key.guid;
             }
-            
-            internal BtreePageOfGuid(Storage s) : base(s, MAX_ITEMS)
+
+            internal BtreePageOfGuid(Storage s)
+                : base(s, MAX_ITEMS)
             {
                 data = new Guid[MAX_ITEMS];
             }
-            
+
             internal BtreePageOfGuid()
             {
             }
         }
-        
+
         class BtreePageOfDecimal : BtreePage
         {
             internal override Array Data
@@ -1052,49 +1063,50 @@ namespace Volante.Impl
                 {
                     return data;
                 }
-                
+
             }
             internal decimal[] data;
-            
+
             const int MAX_ITEMS = BTREE_PAGE_SIZE / (4 + 16);
-            
-            
+
+
             internal override Key getKey(int i)
             {
                 return new Key(data[i]);
             }
-            
+
             internal override object getKeyValue(int i)
             {
                 return data[i];
             }
-            
+
             internal override BtreePage clonePage()
             {
                 return new BtreePageOfDecimal(Storage);
             }
-            
+
             internal override int compare(Key key, int i)
             {
                 return key.dec.CompareTo(data[i]);
             }
-            
+
             internal override void insert(BtreeKey key, int i)
             {
                 items[i] = key.node;
                 data[i] = key.key.dec;
             }
-            
-            internal BtreePageOfDecimal(Storage s) : base(s, MAX_ITEMS)
+
+            internal BtreePageOfDecimal(Storage s)
+                : base(s, MAX_ITEMS)
             {
                 data = new decimal[MAX_ITEMS];
             }
-            
+
             internal BtreePageOfDecimal()
             {
             }
         }
-        
+
         class BtreePageOfObject : BtreePage
         {
             internal override Array Data
@@ -1103,50 +1115,51 @@ namespace Volante.Impl
                 {
                     return data.ToRawArray();
                 }
-                
+
             }
             internal Link data;
-            
+
             const int MAX_ITEMS = BTREE_PAGE_SIZE / (4 + 4);
-            
-            
+
+
             internal override Key getKey(int i)
             {
                 return new Key(data.GetRaw(i));
             }
-            
+
             internal override object getKeyValue(int i)
             {
                 return data[i];
             }
-            
+
             internal override BtreePage clonePage()
             {
                 return new BtreePageOfObject(Storage);
             }
-            
+
             internal override int compare(Key key, int i)
             {
-                return (int) key.ival - data[i].Oid;
+                return (int)key.ival - data[i].Oid;
             }
-            
+
             internal override void insert(BtreeKey key, int i)
             {
                 items[i] = key.node;
-                data[i] = (IPersistent) key.key.oval;
+                data[i] = (IPersistent)key.key.oval;
             }
-            
-            internal BtreePageOfObject(Storage s) : base(s, MAX_ITEMS)
+
+            internal BtreePageOfObject(Storage s)
+                : base(s, MAX_ITEMS)
             {
                 data = s.CreateLink(MAX_ITEMS);
                 data.Length = MAX_ITEMS;
             }
-            
+
             internal BtreePageOfObject()
             {
             }
         }
-        
+
         class BtreePageOfString : BtreePage
         {
             internal override Array Data
@@ -1155,45 +1168,45 @@ namespace Volante.Impl
                 {
                     return data;
                 }
-                
+
             }
             internal string[] data;
-            
+
             internal const int MAX_ITEMS = 100;
-            
-            
+
+
             internal override Key getKey(int i)
             {
                 return new Key(data[i]);
             }
-            
+
             internal override object getKeyValue(int i)
             {
                 return data[i];
             }
-            
-            internal override void  clearKeyValue(int i)
+
+            internal override void clearKeyValue(int i)
             {
                 data[i] = null;
             }
-            
+
             internal override BtreePage clonePage()
             {
                 return new BtreePageOfString(Storage);
             }
-            
+
             internal override int compare(Key key, int i)
             {
-                return ((string) key.oval).CompareTo(data[i]);
+                return ((string)key.oval).CompareTo(data[i]);
             }
-            
+
             internal override void insert(BtreeKey key, int i)
             {
                 items[i] = key.node;
-                data[i] = (string) key.key.oval;
+                data[i] = (string)key.key.oval;
             }
-            
-            internal override void  memset(int i, int len)
+
+            internal override void memset(int i, int len)
             {
                 while (--len >= 0)
                 {
@@ -1202,7 +1215,7 @@ namespace Volante.Impl
                     i += 1;
                 }
             }
-            
+
             internal virtual bool prefixSearch(string key, int height, ArrayList result)
             {
                 int l = 0, n = nItems, r = n;
@@ -1234,9 +1247,9 @@ namespace Volante.Impl
                 }
                 else
                 {
-                    do 
+                    do
                     {
-                        if (!((BtreePageOfString) items[l]).prefixSearch(key, height, result))
+                        if (!((BtreePageOfString)items[l]).prefixSearch(key, height, result))
                         {
                             return false;
                         }
@@ -1250,18 +1263,19 @@ namespace Volante.Impl
                 }
                 return true;
             }
-            
-            
-            internal BtreePageOfString(Storage s) : base(s, MAX_ITEMS)
+
+
+            internal BtreePageOfString(Storage s)
+                : base(s, MAX_ITEMS)
             {
                 data = new string[MAX_ITEMS];
             }
-            
+
             internal BtreePageOfString()
             {
             }
         }
-        
+
         class BtreePageOfRaw : BtreePage
         {
             internal override Array Data
@@ -1270,49 +1284,50 @@ namespace Volante.Impl
                 {
                     return (Array)data;
                 }
-                
+
             }
             internal object data;
-            
+
             internal const int MAX_ITEMS = 100;
-            
-            
+
+
             internal override Key getKey(int i)
             {
-                return new Key((IComparable)((object[]) data)[i]);
+                return new Key((IComparable)((object[])data)[i]);
             }
-            
+
             internal override object getKeyValue(int i)
             {
                 return ((object[])data)[i];
             }
-            
-            internal override void  clearKeyValue(int i)
+
+            internal override void clearKeyValue(int i)
             {
                 ((object[])data)[i] = null;
             }
-            
+
             internal override BtreePage clonePage()
             {
                 return new BtreePageOfRaw(Storage);
             }
-            
+
             internal override int compare(Key key, int i)
             {
-                return ((IComparable) key.oval).CompareTo(((object[]) data)[i]);
+                return ((IComparable)key.oval).CompareTo(((object[])data)[i]);
             }
-            
+
             internal override void insert(BtreeKey key, int i)
             {
                 items[i] = key.node;
                 ((object[])data)[i] = key.key.oval;
             }
-            
-            internal BtreePageOfRaw(Storage s) : base(s, MAX_ITEMS)
+
+            internal BtreePageOfRaw(Storage s)
+                : base(s, MAX_ITEMS)
             {
                 data = new object[MAX_ITEMS];
             }
-            
+
             internal BtreePageOfRaw()
             {
             }
@@ -1324,58 +1339,58 @@ namespace Volante.Impl
             if ((int)elemType > (int)ClassDescriptor.FieldType.tpOid
                 && elemType != ClassDescriptor.FieldType.tpDecimal
                 && elemType != ClassDescriptor.FieldType.tpRaw
-                && elemType != ClassDescriptor.FieldType.tpGuid) 
+                && elemType != ClassDescriptor.FieldType.tpGuid)
             {
                 throw new StorageError(StorageError.ErrorCode.UNSUPPORTED_INDEX_TYPE, c);
             }
             return elemType;
         }
-        
+
         internal AltBtree(bool unique)
         {
             type = checkType(typeof(K));
             this.unique = unique;
         }
-        
+
         internal AltBtree(ClassDescriptor.FieldType type, bool unique)
         {
             this.type = type;
             this.unique = unique;
         }
-        
-        internal enum OperationResult 
-        { 
-            Done, 
+
+        internal enum OperationResult
+        {
+            Done,
             Overflow,
             Underflow,
             NotFound,
             Duplicate,
             Overwrite
         }
-        
-        public override int Count 
-        { 
-            get 
+
+        public override int Count
+        {
+            get
             {
                 return nElems;
             }
         }
 
-        public V this[K key] 
+        public V this[K key]
         {
-            get 
+            get
             {
                 return Get(key);
             }
-            set 
+            set
             {
                 Set(key, value);
             }
-        } 
-        
-        public V[] this[K from, K till] 
+        }
+
+        public V[] this[K from, K till]
         {
-            get 
+            get
             {
                 return Get(from, till);
             }
@@ -1389,20 +1404,20 @@ namespace Volante.Impl
                 {
                     throw new StorageError(StorageError.ErrorCode.INCOMPATIBLE_KEY_TYPE);
                 }
-                if ((type == ClassDescriptor.FieldType.tpObject 
-                     || type == ClassDescriptor.FieldType.tpOid) 
+                if ((type == ClassDescriptor.FieldType.tpObject
+                     || type == ClassDescriptor.FieldType.tpOid)
                     && key.ival == 0 && key.oval != null)
                 {
                     throw new StorageError(StorageError.ErrorCode.INVALID_OID);
                 }
                 if (key.oval is char[])
                 {
-                    key = new Key(new string((char[]) key.oval), key.inclusion != 0);
+                    key = new Key(new string((char[])key.oval), key.inclusion != 0);
                 }
             }
             return key;
         }
-        
+
         public virtual V Get(Key key)
         {
             key = checkKey(key);
@@ -1420,20 +1435,20 @@ namespace Volante.Impl
                 }
                 else
                 {
-                    return (V) list[0];
+                    return (V)list[0];
                 }
             }
             return null;
         }
 
-        public virtual V Get(K key) 
+        public virtual V Get(K key)
         {
             return Get(KeyBuilder.getKeyFromObject(key));
         }
 
 
         internal static V[] emptySelection = new V[0];
-        
+
         public virtual V[] PrefixSearch(string key)
         {
             if (ClassDescriptor.FieldType.tpString != type)
@@ -1443,15 +1458,15 @@ namespace Volante.Impl
             if (root != null)
             {
                 ArrayList list = new ArrayList();
-                ((BtreePageOfString) root).prefixSearch(key, height, list);
+                ((BtreePageOfString)root).prefixSearch(key, height, list);
                 if (list.Count != 0)
                 {
-                    return (V[]) list.ToArray(typeof(V));
+                    return (V[])list.ToArray(typeof(V));
                 }
             }
             return emptySelection;
         }
-        
+
         public virtual V[] Get(Key from, Key till)
         {
             if (root != null)
@@ -1460,22 +1475,22 @@ namespace Volante.Impl
                 root.find(checkKey(from), checkKey(till), height, list);
                 if (list.Count != 0)
                 {
-                    return (V[]) list.ToArray(typeof(V));
+                    return (V[])list.ToArray(typeof(V));
                 }
             }
             return emptySelection;
         }
-        
+
         public virtual V[] Get(K from, K till)
         {
             return Get(KeyBuilder.getKeyFromObject(from), KeyBuilder.getKeyFromObject(till));
         }
-         
+
         public virtual bool Put(Key key, V obj)
         {
             return insert(key, obj, false) == null;
         }
-        
+
         public virtual bool Put(K key, V obj)
         {
             return Put(KeyBuilder.getKeyFromObject(key), obj);
@@ -1485,7 +1500,7 @@ namespace Volante.Impl
         {
             return (V)insert(key, obj, true);
         }
-        
+
         public virtual V Set(K key, V obj)
         {
             return Set(KeyBuilder.getKeyFromObject(key), obj);
@@ -1496,83 +1511,83 @@ namespace Volante.Impl
             Storage s = Storage;
             BtreePage newRoot = null;
             switch (type)
-            {               
-                case ClassDescriptor.FieldType.tpByte: 
+            {
+                case ClassDescriptor.FieldType.tpByte:
                     newRoot = new BtreePageOfByte(s);
                     break;
-                
-                case ClassDescriptor.FieldType.tpSByte: 
+
+                case ClassDescriptor.FieldType.tpSByte:
                     newRoot = new BtreePageOfSByte(s);
                     break;
-                
-                case ClassDescriptor.FieldType.tpShort: 
+
+                case ClassDescriptor.FieldType.tpShort:
                     newRoot = new BtreePageOfShort(s);
                     break;
-                
-                case ClassDescriptor.FieldType.tpUShort: 
+
+                case ClassDescriptor.FieldType.tpUShort:
                     newRoot = new BtreePageOfUShort(s);
                     break;
-                
-                case ClassDescriptor.FieldType.tpBoolean: 
+
+                case ClassDescriptor.FieldType.tpBoolean:
                     newRoot = new BtreePageOfBoolean(s);
                     break;
-                
-                case ClassDescriptor.FieldType.tpInt: 
-                case ClassDescriptor.FieldType.tpOid: 
+
+                case ClassDescriptor.FieldType.tpInt:
+                case ClassDescriptor.FieldType.tpOid:
                     newRoot = new BtreePageOfInt(s);
                     break;
-                
-                case ClassDescriptor.FieldType.tpUInt: 
+
+                case ClassDescriptor.FieldType.tpUInt:
                     newRoot = new BtreePageOfInt(s);
                     break;
-                
-                case ClassDescriptor.FieldType.tpLong: 
+
+                case ClassDescriptor.FieldType.tpLong:
                     newRoot = new BtreePageOfLong(s);
                     break;
-                
-                case ClassDescriptor.FieldType.tpULong: 
+
+                case ClassDescriptor.FieldType.tpULong:
                     newRoot = new BtreePageOfLong(s);
                     break;
-                
-                case ClassDescriptor.FieldType.tpFloat: 
+
+                case ClassDescriptor.FieldType.tpFloat:
                     newRoot = new BtreePageOfFloat(s);
                     break;
-                
-                case ClassDescriptor.FieldType.tpDouble: 
+
+                case ClassDescriptor.FieldType.tpDouble:
                     newRoot = new BtreePageOfDouble(s);
                     break;
-                
-                case ClassDescriptor.FieldType.tpObject: 
+
+                case ClassDescriptor.FieldType.tpObject:
                     newRoot = new BtreePageOfObject(s);
                     break;
-                
-                case ClassDescriptor.FieldType.tpString: 
+
+                case ClassDescriptor.FieldType.tpString:
                     newRoot = new BtreePageOfString(s);
                     break;
-                
-                case ClassDescriptor.FieldType.tpRaw: 
+
+                case ClassDescriptor.FieldType.tpRaw:
                     newRoot = new BtreePageOfRaw(s);
                     break;
-                
-                case ClassDescriptor.FieldType.tpDecimal: 
+
+                case ClassDescriptor.FieldType.tpDecimal:
                     newRoot = new BtreePageOfDecimal(s);
                     break;
-                
-                case ClassDescriptor.FieldType.tpGuid: 
+
+                case ClassDescriptor.FieldType.tpGuid:
                     newRoot = new BtreePageOfGuid(s);
                     break;
-                
-                default: 
+
+                default:
                     Debug.Assert(false, "Invalid type");
                     break;
-                
+
             }
             newRoot.insert(ins, 0);
             newRoot.items[1] = root;
             newRoot.nItems = 1;
             root = newRoot;
         }
-        
+
         internal IPersistent insert(Key key, IPersistent obj, bool overwrite)
         {
             BtreeKey ins = new BtreeKey(checkKey(key), obj);
@@ -1599,17 +1614,17 @@ namespace Volante.Impl
             Modify();
             return null;
         }
-        
+
         public virtual void Remove(Key key, V obj)
         {
             Remove(new BtreeKey(checkKey(key), obj));
         }
-        
+
         public virtual void Remove(K key, V obj)
         {
-            Remove(new BtreeKey(KeyBuilder.getKeyFromObject(key), obj));    
+            Remove(new BtreeKey(KeyBuilder.getKeyFromObject(key), obj));
         }
-        
+
         internal virtual void Remove(BtreeKey rem)
         {
             if (root == null)
@@ -1629,7 +1644,7 @@ namespace Volante.Impl
                     BtreePage newRoot = null;
                     if (height != 1)
                     {
-                        newRoot = (BtreePage) root.items[0];
+                        newRoot = (BtreePage)root.items[0];
                     }
                     root.Deallocate();
                     root = newRoot;
@@ -1639,7 +1654,7 @@ namespace Volante.Impl
             updateCounter += 1;
             Modify();
         }
-        
+
         public virtual V Remove(Key key)
         {
             if (!unique)
@@ -1650,23 +1665,23 @@ namespace Volante.Impl
             Remove(rk);
             return (V)rk.oldNode;
         }
-        
+
         public virtual V RemoveKey(K key)
         {
             return Remove(KeyBuilder.getKeyFromObject(key));
         }
-        
+
         public virtual V[] GetPrefix(string prefix)
         {
             return Get(new Key(prefix, true), new Key(prefix + Char.MaxValue, false));
         }
-        
+
         public virtual int Size()
         {
             return nElems;
         }
-        
-        public override void Clear() 
+
+        public override void Clear()
         {
             if (root != null)
             {
@@ -1678,7 +1693,7 @@ namespace Volante.Impl
                 Modify();
             }
         }
-        
+
         public virtual V[] ToArray()
         {
             V[] arr = new V[nElems];
@@ -1688,7 +1703,7 @@ namespace Volante.Impl
             }
             return (V[])arr;
         }
-        
+
         public virtual Array ToArray(Type elemType)
         {
             Array arr = Array.CreateInstance(elemType, nElems);
@@ -1698,7 +1713,7 @@ namespace Volante.Impl
             }
             return arr;
         }
-        
+
         public override void Deallocate()
         {
             if (root != null)
@@ -1707,16 +1722,16 @@ namespace Volante.Impl
             }
             base.Deallocate();
         }
-        
+
         class BtreeEnumerator : IEnumerator<V>
         {
-            internal BtreeEnumerator(AltBtree<K,V> tree) 
-            { 
+            internal BtreeEnumerator(AltBtree<K, V> tree)
+            {
                 this.tree = tree;
                 Reset();
             }
-            
-            public void Reset() 
+
+            public void Reset()
             {
                 BtreePage page = tree.root;
                 int h = tree.height;
@@ -1730,7 +1745,7 @@ namespace Volante.Impl
                     {
                         posStack[sp] = 0;
                         pageStack[sp] = page;
-                        page = (BtreePage) page.items[0];
+                        page = (BtreePage)page.items[0];
                         sp += 1;
                     }
                     posStack[sp] = 0;
@@ -1739,21 +1754,21 @@ namespace Volante.Impl
                     sp += 1;
                 }
             }
-            
+
             protected virtual void getCurrent(BtreePage pg, int pos)
             {
                 curr = pg.items[pos];
             }
-            
-            public void Dispose() {}
 
-            public bool MoveNext() 
+            public void Dispose() { }
+
+            public bool MoveNext()
             {
-                if (counter != tree.updateCounter) 
-                { 
+                if (counter != tree.updateCounter)
+                {
                     throw new InvalidOperationException("B-Tree was modified");
                 }
-                if (sp > 0 && posStack[sp-1] < end) 
+                if (sp > 0 && posStack[sp - 1] < end)
                 {
                     int pos = posStack[sp - 1];
                     BtreePage pg = pageStack[sp - 1];
@@ -1768,9 +1783,9 @@ namespace Volante.Impl
                             if (++pos <= pg.nItems)
                             {
                                 posStack[sp - 1] = pos;
-                                do 
+                                do
                                 {
-                                    pg = (BtreePage) pg.items[pos];
+                                    pg = (BtreePage)pg.items[pos];
                                     end = pg.nItems;
                                     pageStack[sp] = pg;
                                     posStack[sp] = pos = 0;
@@ -1792,10 +1807,10 @@ namespace Volante.Impl
 
             public virtual V Current
             {
-                get 
+                get
                 {
-                    if (!hasCurrent) 
-                    { 
+                    if (!hasCurrent)
+                    {
                         throw new InvalidOperationException();
                     }
                     return (V)curr;
@@ -1815,60 +1830,60 @@ namespace Volante.Impl
             protected int counter;
             protected IPersistent curr;
             protected bool hasCurrent;
-            protected AltBtree<K,V> tree;
+            protected AltBtree<K, V> tree;
         }
-        
+
         class BtreeDictionaryEnumerator : BtreeEnumerator, IDictionaryEnumerator
         {
-            internal BtreeDictionaryEnumerator(AltBtree<K,V> tree) 
-                : base(tree) 
-            {   
+            internal BtreeDictionaryEnumerator(AltBtree<K, V> tree)
+                : base(tree)
+            {
             }
 
-            protected override void getCurrent(BtreePage pg, int pos) 
-            { 
+            protected override void getCurrent(BtreePage pg, int pos)
+            {
                 base.getCurrent(pg, pos);
                 key = pg.getKeyValue(pos);
             }
 
-            public new virtual object Current 
+            public new virtual object Current
             {
-                get 
+                get
                 {
                     return Entry;
                 }
             }
 
-            public DictionaryEntry Entry 
+            public DictionaryEntry Entry
             {
-                get 
+                get
                 {
-                    if (!hasCurrent) 
-                    { 
+                    if (!hasCurrent)
+                    {
                         throw new InvalidOperationException();
                     }
                     return new DictionaryEntry(key, curr);
                 }
             }
 
-            public object Key 
+            public object Key
             {
-                get 
+                get
                 {
-                    if (!hasCurrent) 
-                    { 
+                    if (!hasCurrent)
+                    {
                         throw new InvalidOperationException();
                     }
                     return key;
                 }
             }
 
-            public object Value 
+            public object Value
             {
-                get 
+                get
                 {
-                    if (!hasCurrent) 
-                    { 
+                    if (!hasCurrent)
+                    {
                         throw new InvalidOperationException();
                     }
                     return curr;
@@ -1877,9 +1892,8 @@ namespace Volante.Impl
 
             protected object key;
         }
-        
-        
-        public override IEnumerator<V> GetEnumerator() 
+
+        public override IEnumerator<V> GetEnumerator()
         {
             return new BtreeEnumerator(this);
         }
@@ -1888,16 +1902,16 @@ namespace Volante.Impl
         {
             return (IEnumerator)new BtreeEnumerator(this);
         }
-        
-        public IDictionaryEnumerator GetDictionaryEnumerator() 
+
+        public IDictionaryEnumerator GetDictionaryEnumerator()
         {
             return new BtreeDictionaryEnumerator(this);
         }
-        
+
         class BtreeSelectionIterator : IEnumerator<V>, IEnumerable<V>
-        { 
-            internal BtreeSelectionIterator(AltBtree<K,V> tree, Key from, Key till, IterationOrder order) 
-            { 
+        {
+            internal BtreeSelectionIterator(AltBtree<K, V> tree, Key from, Key till, IterationOrder order)
+            {
                 this.from = from;
                 this.till = till;
                 this.order = order;
@@ -1905,7 +1919,7 @@ namespace Volante.Impl
                 Reset();
             }
 
-            public IEnumerator<V> GetEnumerator() 
+            public IEnumerator<V> GetEnumerator()
             {
                 return this;
             }
@@ -1915,10 +1929,10 @@ namespace Volante.Impl
                 return this;
             }
 
-            public void Reset() 
+            public void Reset()
             {
                 int i, l, r;
-                
+
                 sp = 0;
                 counter = tree.updateCounter;
                 if (tree.height == 0)
@@ -1927,10 +1941,10 @@ namespace Volante.Impl
                 }
                 BtreePage page = tree.root;
                 int h = tree.height;
-                
+
                 pageStack = new BtreePage[h];
                 posStack = new int[h];
-                
+
                 if (order == IterationOrder.AscentOrder)
                 {
                     if (from == null)
@@ -1939,7 +1953,7 @@ namespace Volante.Impl
                         {
                             posStack[sp] = 0;
                             pageStack[sp] = page;
-                            page = (BtreePage) page.items[0];
+                            page = (BtreePage)page.items[0];
                             sp += 1;
                         }
                         posStack[sp] = 0;
@@ -1968,7 +1982,7 @@ namespace Volante.Impl
                             }
                             Debug.Assert(r == l);
                             posStack[sp] = r;
-                            page = (BtreePage) page.items[r];
+                            page = (BtreePage)page.items[r];
                             sp += 1;
                         }
                         pageStack[sp] = page;
@@ -2000,7 +2014,7 @@ namespace Volante.Impl
                     if (sp != 0 && till != null)
                     {
                         page = pageStack[sp - 1];
-                        if (- page.compare(till, posStack[sp - 1]) >= till.inclusion)
+                        if (-page.compare(till, posStack[sp - 1]) >= till.inclusion)
                         {
                             sp = 0;
                         }
@@ -2015,7 +2029,7 @@ namespace Volante.Impl
                         {
                             pageStack[sp] = page;
                             posStack[sp] = page.nItems;
-                            page = (BtreePage) page.items[page.nItems];
+                            page = (BtreePage)page.items[page.nItems];
                             sp += 1;
                         }
                         pageStack[sp] = page;
@@ -2042,7 +2056,7 @@ namespace Volante.Impl
                             }
                             Debug.Assert(r == l);
                             posStack[sp] = r;
-                            page = (BtreePage) page.items[r];
+                            page = (BtreePage)page.items[r];
                             sp += 1;
                         }
                         pageStack[sp] = page;
@@ -2081,16 +2095,16 @@ namespace Volante.Impl
                     }
                 }
             }
-            
-            public void Dispose() {}
 
-            public bool MoveNext() 
+            public void Dispose() { }
+
+            public bool MoveNext()
             {
-                if (counter != tree.updateCounter) 
-                { 
+                if (counter != tree.updateCounter)
+                {
                     throw new InvalidOperationException("B-Tree was modified");
                 }
-                if (sp != 0) 
+                if (sp != 0)
                 {
                     int pos = posStack[sp - 1];
                     BtreePage pg = pageStack[sp - 1];
@@ -2102,18 +2116,18 @@ namespace Volante.Impl
                 hasCurrent = false;
                 return false;
             }
-            
+
             protected virtual void getCurrent(BtreePage pg, int pos)
             {
                 curr = pg.items[pos];
             }
-            
-            public virtual V Current 
+
+            public virtual V Current
             {
-                get 
+                get
                 {
-                    if (!hasCurrent) 
-                    { 
+                    if (!hasCurrent)
+                    {
                         throw new InvalidOperationException();
                     }
                     return (V)curr;
@@ -2127,7 +2141,7 @@ namespace Volante.Impl
                     return Current;
                 }
             }
-            
+
             protected internal void gotoNextItem(BtreePage pg, int pos)
             {
                 if (order == IterationOrder.AscentOrder)
@@ -2141,9 +2155,9 @@ namespace Volante.Impl
                             if (++pos <= pg.nItems)
                             {
                                 posStack[sp - 1] = pos;
-                                do 
+                                do
                                 {
-                                    pg = (BtreePage) pg.items[pos];
+                                    pg = (BtreePage)pg.items[pos];
                                     end = pg.nItems;
                                     pageStack[sp] = pg;
                                     posStack[sp] = pos = 0;
@@ -2157,7 +2171,7 @@ namespace Volante.Impl
                     {
                         posStack[sp - 1] = pos;
                     }
-                    if (sp != 0 && till != null && - pg.compare(till, pos) >= till.inclusion)
+                    if (sp != 0 && till != null && -pg.compare(till, pos) >= till.inclusion)
                     {
                         sp = 0;
                     }
@@ -2174,9 +2188,9 @@ namespace Volante.Impl
                             if (--pos >= 0)
                             {
                                 posStack[sp - 1] = pos;
-                                do 
+                                do
                                 {
-                                    pg = (BtreePage) pg.items[pos];
+                                    pg = (BtreePage)pg.items[pos];
                                     pageStack[sp] = pg;
                                     posStack[sp] = pos = pg.nItems;
                                 }
@@ -2196,7 +2210,7 @@ namespace Volante.Impl
                     }
                 }
             }
-            
+
             protected BtreePage[] pageStack;
             protected int[] posStack;
             protected int sp;
@@ -2207,59 +2221,59 @@ namespace Volante.Impl
             protected int counter;
             protected bool hasCurrent;
             protected IPersistent curr;
-            protected AltBtree<K,V> tree;
+            protected AltBtree<K, V> tree;
         }
-        
-        class BtreeDictionarySelectionIterator : BtreeSelectionIterator, IDictionaryEnumerator 
-        { 
-            internal BtreeDictionarySelectionIterator(AltBtree<K,V> tree, Key from, Key till, IterationOrder order) 
+
+        class BtreeDictionarySelectionIterator : BtreeSelectionIterator, IDictionaryEnumerator
+        {
+            internal BtreeDictionarySelectionIterator(AltBtree<K, V> tree, Key from, Key till, IterationOrder order)
                 : base(tree, from, till, order)
-            {}
-               
+            { }
+
             protected override void getCurrent(BtreePage pg, int pos)
             {
                 base.getCurrent(pg, pos);
                 key = pg.getKeyValue(pos);
             }
-             
-            public new virtual object Current 
+
+            public new virtual object Current
             {
-                get 
+                get
                 {
                     return Entry;
                 }
             }
 
-            public DictionaryEntry Entry 
+            public DictionaryEntry Entry
             {
-                get 
+                get
                 {
-                    if (!hasCurrent) 
-                    { 
+                    if (!hasCurrent)
+                    {
                         throw new InvalidOperationException();
                     }
                     return new DictionaryEntry(key, curr);
                 }
             }
 
-            public object Key 
+            public object Key
             {
-                get 
+                get
                 {
-                    if (!hasCurrent) 
-                    { 
+                    if (!hasCurrent)
+                    {
                         throw new InvalidOperationException();
                     }
                     return key;
                 }
             }
 
-            public object Value 
+            public object Value
             {
-                get 
+                get
                 {
-                    if (!hasCurrent) 
-                    { 
+                    if (!hasCurrent)
+                    {
                         throw new InvalidOperationException();
                     }
                     return curr;
@@ -2268,65 +2282,65 @@ namespace Volante.Impl
 
             protected object key;
         }
-        
-        public IEnumerator<V> GetEnumerator(Key from, Key till, IterationOrder order) 
+
+        public IEnumerator<V> GetEnumerator(Key from, Key till, IterationOrder order)
         {
             return Range(from, till, order).GetEnumerator();
         }
 
-        public IEnumerator<V> GetEnumerator(K from, K till, IterationOrder order) 
+        public IEnumerator<V> GetEnumerator(K from, K till, IterationOrder order)
         {
             return Range(from, till, order).GetEnumerator();
         }
 
-        public IEnumerator<V> GetEnumerator(Key from, Key till) 
+        public IEnumerator<V> GetEnumerator(Key from, Key till)
         {
             return Range(from, till).GetEnumerator();
         }
 
-        public IEnumerator<V> GetEnumerator(K from, K till) 
+        public IEnumerator<V> GetEnumerator(K from, K till)
         {
             return Range(from, till).GetEnumerator();
         }
 
-        public IEnumerator<V> GetEnumerator(string prefix) 
+        public IEnumerator<V> GetEnumerator(string prefix)
         {
             return StartsWith(prefix).GetEnumerator();
         }
 
-        public virtual IEnumerable<V> Range(Key from, Key till, IterationOrder order) 
-        { 
+        public virtual IEnumerable<V> Range(Key from, Key till, IterationOrder order)
+        {
             return new BtreeSelectionIterator(this, checkKey(from), checkKey(till), order);
         }
 
-        public virtual IEnumerable<V> Range(Key from, Key till) 
-        { 
+        public virtual IEnumerable<V> Range(Key from, Key till)
+        {
             return Range(from, till, IterationOrder.AscentOrder);
         }
-            
-        public IEnumerable<V> Range(K from, K till, IterationOrder order) 
-        { 
+
+        public IEnumerable<V> Range(K from, K till, IterationOrder order)
+        {
             return Range(KeyBuilder.getKeyFromObject(from), KeyBuilder.getKeyFromObject(till), order);
         }
 
-        public IEnumerable<V> Range(K from, K till) 
-        { 
+        public IEnumerable<V> Range(K from, K till)
+        {
             return Range(KeyBuilder.getKeyFromObject(from), KeyBuilder.getKeyFromObject(till), IterationOrder.AscentOrder);
         }
- 
+
         public IEnumerable<V> Reverse()
-        { 
+        {
             return new BtreeSelectionIterator(this, null, null, IterationOrder.DescentOrder);
         }
 
-        public IEnumerable<V> StartsWith(string prefix) 
-        { 
+        public IEnumerable<V> StartsWith(string prefix)
+        {
             return Range(new Key(prefix), new Key(prefix + Char.MaxValue, false), IterationOrder.AscentOrder);
         }
- 
-        public virtual IDictionaryEnumerator GetDictionaryEnumerator(Key from, Key till, IterationOrder order) 
-        { 
+
+        public virtual IDictionaryEnumerator GetDictionaryEnumerator(Key from, Key till, IterationOrder order)
+        {
             return new BtreeDictionarySelectionIterator(this, checkKey(from), checkKey(till), order);
-        }        
+        }
     }
 }

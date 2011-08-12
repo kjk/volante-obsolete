@@ -7,14 +7,14 @@ namespace Volante
     /// <summary>
     /// Base class for all persistent collections
     /// </summary>
-    public abstract class PersistentCollection<T> : PersistentResource, ICollection<T> where T:class,IPersistent
+    public abstract class PersistentCollection<T> : PersistentResource, ICollection<T> where T : class,IPersistent
     {
         public PersistentCollection()
         {
         }
 
         public PersistentCollection(Storage storage)
-        : base(storage) 
+            : base(storage)
         {
         }
 
@@ -24,32 +24,32 @@ namespace Volante
         {
             return GetEnumerator();
         }
-        
-        public abstract int Count 
-        { 
-            get;
-         }
 
-        public virtual bool IsSynchronized 
+        public abstract int Count
         {
-            get 
+            get;
+        }
+
+        public virtual bool IsSynchronized
+        {
+            get
             {
                 return true;
             }
         }
 
-        public virtual object SyncRoot 
+        public virtual object SyncRoot
         {
-            get 
+            get
             {
                 return this;
             }
         }
 
-        public virtual void CopyTo(T[] dst, int i) 
+        public virtual void CopyTo(T[] dst, int i)
         {
-            foreach (object o in this) 
-            { 
+            foreach (object o in this)
+            {
                 dst.SetValue(o, i++);
             }
         }
@@ -61,19 +61,19 @@ namespace Volante
 
         public abstract void Clear();
 
-        public virtual bool IsReadOnly 
-        { 
+        public virtual bool IsReadOnly
+        {
             get
-            { 
+            {
                 return false;
-            } 
-        } 
+            }
+        }
 
-        public virtual bool Contains(T obj) 
+        public virtual bool Contains(T obj)
         {
             foreach (T o in this)
-            { 
-                if (o == obj) 
+            {
+                if (o == obj)
                 {
                     return true;
                 }
@@ -81,8 +81,8 @@ namespace Volante
             return false;
         }
 
-        public virtual bool Remove(T obj) 
-        {        
+        public virtual bool Remove(T obj)
+        {
             throw new InvalidOperationException("Remove is not supported");
         }
     }

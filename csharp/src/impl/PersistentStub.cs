@@ -2,14 +2,14 @@ namespace Volante.Impl
 {
     using Volante;
 
-    public class PersistentStub : IPersistent 
-    { 
+    public class PersistentStub : IPersistent
+    {
         public virtual int Oid
         {
             get
             {
                 return oid;
-            }	
+            }
         }
 
         public virtual Storage Storage
@@ -17,28 +17,28 @@ namespace Volante.Impl
             get
             {
                 return storage;
-            }			
+            }
         }
 
         public virtual void Load()
         {
             throw new StorageError(StorageError.ErrorCode.ACCESS_TO_STUB);
         }
-		
-        public bool IsRaw() 
-        { 
-            return true;
-        } 
-    
-        public bool IsModified() 
-        { 
-            return false;
-        } 
 
-        public bool IsDeleted() 
-        { 
+        public bool IsRaw()
+        {
+            return true;
+        }
+
+        public bool IsModified()
+        {
             return false;
-        } 
+        }
+
+        public bool IsDeleted()
+        {
+            return false;
+        }
 
         public bool IsPersistent()
         {
@@ -55,8 +55,8 @@ namespace Volante.Impl
             throw new StorageError(StorageError.ErrorCode.ACCESS_TO_STUB);
         }
 
-        public void Modify() 
-        { 
+        public void Modify()
+        {
             throw new StorageError(StorageError.ErrorCode.ACCESS_TO_STUB);
         }
 
@@ -72,7 +72,7 @@ namespace Volante.Impl
 
         public override bool Equals(object o)
         {
-            return o is IPersistent && ((IPersistent) o).Oid == oid;
+            return o is IPersistent && ((IPersistent)o).Oid == oid;
         }
 
         public override int GetHashCode()
@@ -80,24 +80,24 @@ namespace Volante.Impl
             return oid;
         }
 
-        public virtual void OnLoad() 
-        {
-        }
-        
-        public virtual void OnStore() 
+        public virtual void OnLoad()
         {
         }
 
-        public virtual void Invalidate() 
+        public virtual void OnStore()
+        {
+        }
+
+        public virtual void Invalidate()
         {
             throw new StorageError(StorageError.ErrorCode.ACCESS_TO_STUB);
         }
 
-        internal PersistentStub(Storage storage, int oid) 
+        internal PersistentStub(Storage storage, int oid)
         {
             this.storage = storage;
             this.oid = oid;
-        } 
+        }
 
         public void AssignOid(Storage storage, int oid, bool raw)
         {

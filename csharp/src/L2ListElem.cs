@@ -5,8 +5,8 @@ namespace Volante
     /// <summary>
     /// Double linked list element.
     /// </summary>
-    public class L2ListElem<T> : Persistent where T:L2ListElem<T>
-    { 
+    public class L2ListElem<T> : Persistent where T : L2ListElem<T>
+    {
         internal T next;
         internal T prev;
         /// <summary>
@@ -15,8 +15,8 @@ namespace Volante
         /// or list header
         /// </summary>
         public T Next
-        { 
-            get 
+        {
+            get
             {
                 return next;
             }
@@ -27,9 +27,9 @@ namespace Volante
         /// Been call for the first list element, this method will return last element of the list 
         /// or list header
         /// </summary>
-        public T Prev 
-        { 
-            get 
+        public T Prev
+        {
+            get
             {
                 return prev;
             }
@@ -39,8 +39,8 @@ namespace Volante
         /// Make list empty. 
         /// This method should be applied to list header. 
         /// </summary>
-        public void Prune() 
-        { 
+        public void Prune()
+        {
             Modify();
             next = prev = null;
         }

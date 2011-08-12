@@ -6,8 +6,8 @@ namespace Volante.Impl
     using System.Reflection;
     using System.Diagnostics;
     using Volante;
-    
-    class AltBtreeMultiFieldIndex<T>:AltBtree<object[],T>, MultiFieldIndex<T> where T:class,IPersistent
+
+    class AltBtreeMultiFieldIndex<T> : AltBtree<object[], T>, MultiFieldIndex<T> where T : class,IPersistent
     {
         internal String className;
         internal String[] fieldNames;
@@ -15,48 +15,48 @@ namespace Volante.Impl
         Type cls;
         [NonSerialized()]
         MemberInfo[] mbr;
- 
+
         internal AltBtreeMultiFieldIndex()
         {
         }
 
-        private void locateFields() 
+        private void locateFields()
         {
             mbr = new MemberInfo[fieldNames.Length];
-            for (int i = 0; i < fieldNames.Length; i++) 
+            for (int i = 0; i < fieldNames.Length; i++)
             {
-                mbr[i] = cls.GetField(fieldNames[i], BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public); 
-                if (mbr[i] == null) 
-                { 
-                    mbr[i] = cls.GetProperty(fieldNames[i], BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public); 
-                    if (mbr[i] == null) 
-                    { 
+                mbr[i] = cls.GetField(fieldNames[i], BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+                if (mbr[i] == null)
+                {
+                    mbr[i] = cls.GetProperty(fieldNames[i], BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+                    if (mbr[i] == null)
+                    {
                         throw new StorageError(StorageError.ErrorCode.INDEXED_FIELD_NOT_FOUND, className + "." + fieldNames[i]);
                     }
                 }
             }
         }
 
-        public Type IndexedClass 
+        public Type IndexedClass
         {
-            get 
-            { 
+            get
+            {
                 return cls;
             }
         }
 
-        public MemberInfo KeyField 
+        public MemberInfo KeyField
         {
-            get 
-            { 
+            get
+            {
                 return mbr[0];
             }
         }
 
-        public MemberInfo[] KeyFields 
+        public MemberInfo[] KeyFields
         {
-            get 
-            { 
+            get
+            {
                 return mbr;
             }
         }
@@ -64,35 +64,35 @@ namespace Volante.Impl
         public override void OnLoad()
         {
             cls = ClassDescriptor.lookup(Storage, className);
-            if (cls != typeof(T)) 
+            if (cls != typeof(T))
             {
                 throw new StorageError(StorageError.ErrorCode.INCOMPATIBLE_VALUE_TYPE, cls);
             }
             locateFields();
         }
-        
-        internal AltBtreeMultiFieldIndex(string[] fieldNames, bool unique) 
+
+        internal AltBtreeMultiFieldIndex(string[] fieldNames, bool unique)
         {
             this.cls = typeof(T);
             this.unique = unique;
             this.fieldNames = fieldNames;
             this.className = ClassDescriptor.getTypeName(cls);
             locateFields();
-            type = ClassDescriptor.FieldType.tpRaw;        
+            type = ClassDescriptor.FieldType.tpRaw;
         }
-        
+
         [Serializable]
         internal class CompoundKey : IComparable
         {
             internal object[] keys;
-            
+
             public int CompareTo(object o)
             {
-                CompoundKey c = (CompoundKey) o;
-                int n = keys.Length < c.keys.Length?keys.Length:c.keys.Length;
+                CompoundKey c = (CompoundKey)o;
+                int n = keys.Length < c.keys.Length ? keys.Length : c.keys.Length;
                 for (int i = 0; i < n; i++)
                 {
-                    int diff = ((IComparable) keys[i]).CompareTo(c.keys[i]);
+                    int diff = ((IComparable)keys[i]).CompareTo(c.keys[i]);
                     if (diff != 0)
                     {
                         return diff;
@@ -100,13 +100,13 @@ namespace Volante.Impl
                 }
                 return keys.Length - c.keys.Length;
             }
-            
+
             internal CompoundKey(object[] keys)
             {
                 this.keys = keys;
             }
         }
-        
+
         private Key convertKey(Key key)
         {
             if (key == null)
@@ -117,9 +117,9 @@ namespace Volante.Impl
             {
                 throw new StorageError(StorageError.ErrorCode.INCOMPATIBLE_KEY_TYPE);
             }
-            return new Key(new CompoundKey((System.Object[]) key.oval), key.inclusion != 0);
+            return new Key(new CompoundKey((System.Object[])key.oval), key.inclusion != 0);
         }
-        
+
         private Key extractKey(IPersistent obj)
         {
             object[] keys = new object[mbr.Length];
@@ -129,55 +129,55 @@ namespace Volante.Impl
             }
             return new Key(new CompoundKey(keys));
         }
-        
-        public bool Put(T obj) 
+
+        public bool Put(T obj)
         {
             return base.Put(extractKey(obj), obj);
         }
 
-        public T Set(T obj) 
+        public T Set(T obj)
         {
             return base.Set(extractKey(obj), obj);
         }
 
-        public override bool Remove(T obj) 
+        public override bool Remove(T obj)
         {
-            try 
-            { 
-                base.Remove(new BtreeKey(extractKey(obj), obj));        
+            try
+            {
+                base.Remove(new BtreeKey(extractKey(obj), obj));
             }
-            catch (StorageError x) 
-            { 
-                if (x.Code == StorageError.ErrorCode.KEY_NOT_FOUND) 
-                { 
+            catch (StorageError x)
+            {
+                if (x.Code == StorageError.ErrorCode.KEY_NOT_FOUND)
+                {
                     return false;
                 }
                 throw;
             }
             return true;
         }
-        
-        public override T Remove(Key key) 
+
+        public override T Remove(Key key)
         {
             return base.Remove(convertKey(key));
-        }       
+        }
 
 
-        public override bool Contains(T obj) 
+        public override bool Contains(T obj)
         {
             Key key = extractKey(obj);
-            if (unique) 
-            { 
+            if (unique)
+            {
                 return base.Get(key) != null;
-            } 
-            else 
-            { 
+            }
+            else
+            {
                 T[] mbrs = Get(key, key);
 
-                for (int i = 0; i < mbrs.Length; i++) 
-                { 
-                    if (mbrs[i] == obj) 
-                    { 
+                for (int i = 0; i < mbrs.Length; i++)
+                {
+                    if (mbrs[i] == obj)
+                    {
                         return true;
                     }
                 }
@@ -185,7 +185,7 @@ namespace Volante.Impl
             }
         }
 
-        public void Append(T obj) 
+        public void Append(T obj)
         {
             throw new StorageError(StorageError.ErrorCode.UNSUPPORTED_INDEX_TYPE);
         }
@@ -197,30 +197,30 @@ namespace Volante.Impl
             {
                 root.find(convertKey(from), convertKey(till), height, list);
             }
-            return (T[]) list.ToArray(cls);
+            return (T[])list.ToArray(cls);
         }
 
-        public override T[] ToArray() 
+        public override T[] ToArray()
         {
             T[] arr = new T[nElems];
-            if (root != null) 
-            { 
+            if (root != null)
+            {
                 root.traverseForward(height, arr, 0);
             }
             return arr;
         }
 
-        public override T Get(Key key) 
+        public override T Get(Key key)
         {
             return base.Get(convertKey(key));
         }
- 
-        public override IEnumerable<T> Range(Key from, Key till, IterationOrder order) 
-        { 
+
+        public override IEnumerable<T> Range(Key from, Key till, IterationOrder order)
+        {
             return base.Range(convertKey(from), convertKey(till), order);
         }
 
-        public override IDictionaryEnumerator GetDictionaryEnumerator(Key from, Key till, IterationOrder order) 
+        public override IDictionaryEnumerator GetDictionaryEnumerator(Key from, Key till, IterationOrder order)
         {
             return base.GetDictionaryEnumerator(convertKey(from), convertKey(till), order);
         }

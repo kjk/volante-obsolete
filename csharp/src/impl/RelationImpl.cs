@@ -6,40 +6,42 @@ using Volante;
 
 namespace Volante.Impl
 {
-    public class RelationImpl<M,O>:Relation<M,O> where M:class,IPersistent where O:class,IPersistent
+    public class RelationImpl<M, O> : Relation<M, O>
+        where M : class,IPersistent
+        where O : class,IPersistent
     {
-        public override int Count 
-        { 
-            get 
+        public override int Count
+        {
+            get
             {
                 return link.Count;
             }
         }
 
-        public override void CopyTo(M[] dst, int i) 
+        public override void CopyTo(M[] dst, int i)
         {
             link.CopyTo(dst, i);
         }
 
-        public override int Length 
+        public override int Length
         {
-            get 
+            get
             {
                 return link.Length;
             }
-            set 
+            set
             {
                 link.Length = value;
             }
-        }       
+        }
 
-        public override M this[int i] 
+        public override M this[int i]
         {
-            get 
+            get
             {
                 return link.Get(i);
             }
-            set 
+            set
             {
                 link.Set(i, value);
             }
@@ -65,7 +67,7 @@ namespace Volante.Impl
             link.Set(i, obj);
         }
 
-        public override bool Remove(M obj) 
+        public override bool Remove(M obj)
         {
             return link.Remove(obj);
         }
@@ -135,13 +137,13 @@ namespace Volante.Impl
             return link.IndexOf(obj);
         }
 
-        public override IEnumerator<M> GetEnumerator() 
+        public override IEnumerator<M> GetEnumerator()
         {
             return link.GetEnumerator();
 
         }
 
-        public override void Clear() 
+        public override void Clear()
         {
             link.Clear();
         }
@@ -156,12 +158,13 @@ namespace Volante.Impl
             link.Pin();
         }
 
-        internal RelationImpl(O owner):base(owner)
+        internal RelationImpl(O owner)
+            : base(owner)
         {
             link = new LinkImpl<M>(8);
         }
 
-        internal RelationImpl() {}
+        internal RelationImpl() { }
 
         internal Link<M> link;
     }

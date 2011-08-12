@@ -9,12 +9,12 @@ namespace Volante
     /// You should derive your time series element from this class
     /// and implement Time getter method.
     /// </summary>
-    public interface TimeSeriesTick 
-    { 
+    public interface TimeSeriesTick
+    {
         /// <summary>
         /// Get time series element timestamp (100 nanoseconds)
         /// </summary>
-        long Time {get;}
+        long Time { get; }
     }
 
     /// <summary>
@@ -33,8 +33,8 @@ namespace Volante
     /// the size of the block.
     /// </p>
     /// </summary>
-    public interface TimeSeries<T> : IPersistent, IResource, ICollection<T> where T:TimeSeriesTick
-    {    
+    public interface TimeSeries<T> : IPersistent, IResource, ICollection<T> where T : TimeSeriesTick
+    {
 
         /// <summary>
         /// Get forward iterator for time series elements belonging to the specified range
@@ -108,24 +108,24 @@ namespace Volante
         /// Get timestamp of first time series element
         /// </summary>
         /// <exception cref="Volante.StorageError">StorageError(StorageError.ErrorClass.KEY_NOT_FOUND) if time series is empy</exception>
-        DateTime FirstTime {get;}
+        DateTime FirstTime { get; }
 
         /// <summary>
         /// Get timestamp of last time series element
         /// </summary>
         /// <exception cref="Volante.StorageError">StorageError(StorageError.ErrorClass.KEY_NOT_FOUND) if time series is empy</exception>
-        DateTime LastTime {get;}
+        DateTime LastTime { get; }
 
         /// <summary> 
         /// Get tick for specified data
         /// </summary>
         /// <param name="timestamp">time series element timestamp</param>
         /// <exception cref="Volante.StorageError">StorageError(StorageError.ErrorClass.KEY_NOT_FOUND) if no element with such timestamp exists</exception>
-        T this[DateTime timestamp] 
+        T this[DateTime timestamp]
         {
             get;
         }
-    
+
         /// <summary>
         /// Check if data is available in time series for the specified time
         /// </summary>

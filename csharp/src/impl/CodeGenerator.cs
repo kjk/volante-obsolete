@@ -13,14 +13,14 @@ namespace Volante.Impl
     /// </summary>
     internal class CodeGenerator
     {
-        public GeneratedSerializer Generate(ClassDescriptor desc)            
+        public GeneratedSerializer Generate(ClassDescriptor desc)
         {
             ModuleBuilder module = EmitAssemblyModule();
             Type newCls = EmitClass(module, desc);
             return (GeneratedSerializer)module.Assembly.CreateInstance(newCls.Name);
         }
 
-        public Type CreateWrapper(Type type)            
+        public Type CreateWrapper(Type type)
         {
             return EmitClassWrapper(EmitAssemblyModule(), type);
         }
@@ -42,23 +42,23 @@ namespace Volante.Impl
             }
             return dynamicModule;
         }
-        
+
         private MethodBuilder GetBuilder(TypeBuilder serializerType, MethodInfo methodInterface)
         {
             Type returnType = methodInterface.ReturnType;
             ParameterInfo[] methodParams = methodInterface.GetParameters();
             Type[] paramTypes = new Type[methodParams.Length];
-            for (int i = 0; i < methodParams.Length; i++) 
+            for (int i = 0; i < methodParams.Length; i++)
             {
                 paramTypes[i] = methodParams[i].ParameterType;
             }
             return serializerType.DefineMethod(methodInterface.Name,
                 MethodAttributes.Public | MethodAttributes.Virtual,
                 returnType,
-                paramTypes);            
+                paramTypes);
         }
 
-        private void generatePackField(ILGenerator il, FieldInfo f, MethodInfo pack) 
+        private void generatePackField(ILGenerator il, FieldInfo f, MethodInfo pack)
         {
             il.Emit(OpCodes.Ldarg_3); // buf
             il.Emit(OpCodes.Ldloc_1, offs); // offs
@@ -87,37 +87,37 @@ namespace Volante.Impl
                 FieldInfo f = fd.field;
                 switch (fd.type)
                 {
-                    case ClassDescriptor.FieldType.tpByte: 
-                    case ClassDescriptor.FieldType.tpSByte: 
+                    case ClassDescriptor.FieldType.tpByte:
+                    case ClassDescriptor.FieldType.tpSByte:
                         generatePackField(il, f, packI1);
                         continue;
 
-                    case ClassDescriptor.FieldType.tpBoolean: 
+                    case ClassDescriptor.FieldType.tpBoolean:
                         generatePackField(il, f, packBool);
                         continue;
 
-                    case ClassDescriptor.FieldType.tpShort: 
-                    case ClassDescriptor.FieldType.tpUShort: 
-                    case ClassDescriptor.FieldType.tpChar: 
+                    case ClassDescriptor.FieldType.tpShort:
+                    case ClassDescriptor.FieldType.tpUShort:
+                    case ClassDescriptor.FieldType.tpChar:
                         generatePackField(il, f, packI2);
                         continue;
 
-                    case ClassDescriptor.FieldType.tpEnum: 
-                    case ClassDescriptor.FieldType.tpInt: 
-                    case ClassDescriptor.FieldType.tpUInt: 
+                    case ClassDescriptor.FieldType.tpEnum:
+                    case ClassDescriptor.FieldType.tpInt:
+                    case ClassDescriptor.FieldType.tpUInt:
                         generatePackField(il, f, packI4);
                         continue;
 
-                    case ClassDescriptor.FieldType.tpLong: 
-                    case ClassDescriptor.FieldType.tpULong: 
+                    case ClassDescriptor.FieldType.tpLong:
+                    case ClassDescriptor.FieldType.tpULong:
                         generatePackField(il, f, packI8);
                         continue;
 
-                    case ClassDescriptor.FieldType.tpFloat: 
+                    case ClassDescriptor.FieldType.tpFloat:
                         generatePackField(il, f, packF4);
                         continue;
 
-                    case ClassDescriptor.FieldType.tpDouble: 
+                    case ClassDescriptor.FieldType.tpDouble:
                         generatePackField(il, f, packF8);
                         continue;
 
@@ -129,18 +129,18 @@ namespace Volante.Impl
                         generatePackField(il, f, packGuid);
                         continue;
 
-                    case ClassDescriptor.FieldType.tpDate: 
+                    case ClassDescriptor.FieldType.tpDate:
                         generatePackField(il, f, packDate);
                         continue;
 
-                    case ClassDescriptor.FieldType.tpString: 
+                    case ClassDescriptor.FieldType.tpString:
                         generatePackField(il, f, packString);
                         continue;
-                
+
                     default:
                         il.Emit(OpCodes.Ldarg_1); // storage
                         il.Emit(OpCodes.Ldarg_3); // buf
-                        il.Emit(OpCodes.Ldloc_1, offs); 
+                        il.Emit(OpCodes.Ldloc_1, offs);
                         il.Emit(OpCodes.Ldloc_0, obj);
                         il.Emit(OpCodes.Ldfld, f);
                         il.Emit(OpCodes.Ldnull); // fd
@@ -173,42 +173,42 @@ namespace Volante.Impl
             {
                 ClassDescriptor.FieldDescriptor fd = flds[i];
                 FieldInfo f = fd.field;
-                if (f == null) 
+                if (f == null)
                 {
                     switch (fd.type)
                     {
-                        case ClassDescriptor.FieldType.tpByte: 
-                        case ClassDescriptor.FieldType.tpSByte: 
-                        case ClassDescriptor.FieldType.tpBoolean: 
+                        case ClassDescriptor.FieldType.tpByte:
+                        case ClassDescriptor.FieldType.tpSByte:
+                        case ClassDescriptor.FieldType.tpBoolean:
                             il.Emit(OpCodes.Ldloc_1, offs);
                             il.Emit(OpCodes.Ldc_I4_1);
                             il.Emit(OpCodes.Add);
                             il.Emit(OpCodes.Stloc_1, offs);
                             continue;
 
-                        case ClassDescriptor.FieldType.tpShort: 
-                        case ClassDescriptor.FieldType.tpUShort: 
-                        case ClassDescriptor.FieldType.tpChar: 
+                        case ClassDescriptor.FieldType.tpShort:
+                        case ClassDescriptor.FieldType.tpUShort:
+                        case ClassDescriptor.FieldType.tpChar:
                             il.Emit(OpCodes.Ldloc_1, offs);
                             il.Emit(OpCodes.Ldc_I4_2);
                             il.Emit(OpCodes.Add);
                             il.Emit(OpCodes.Stloc_1, offs);
                             continue;
 
-                        case ClassDescriptor.FieldType.tpEnum: 
-                        case ClassDescriptor.FieldType.tpInt: 
-                        case ClassDescriptor.FieldType.tpUInt: 
-                        case ClassDescriptor.FieldType.tpFloat: 
+                        case ClassDescriptor.FieldType.tpEnum:
+                        case ClassDescriptor.FieldType.tpInt:
+                        case ClassDescriptor.FieldType.tpUInt:
+                        case ClassDescriptor.FieldType.tpFloat:
                             il.Emit(OpCodes.Ldloc_1, offs);
                             il.Emit(OpCodes.Ldc_I4_4);
                             il.Emit(OpCodes.Add);
                             il.Emit(OpCodes.Stloc_1, offs);
                             continue;
 
-                        case ClassDescriptor.FieldType.tpLong: 
-                        case ClassDescriptor.FieldType.tpULong: 
-                        case ClassDescriptor.FieldType.tpDate: 
-                        case ClassDescriptor.FieldType.tpDouble: 
+                        case ClassDescriptor.FieldType.tpLong:
+                        case ClassDescriptor.FieldType.tpULong:
+                        case ClassDescriptor.FieldType.tpDate:
+                        case ClassDescriptor.FieldType.tpDouble:
                             il.Emit(OpCodes.Ldloc_1, offs);
                             il.Emit(OpCodes.Ldc_I4_8);
                             il.Emit(OpCodes.Add);
@@ -234,11 +234,11 @@ namespace Volante.Impl
                             continue;
                     }
                 }
-                else 
+                else
                 {
                     switch (fd.type)
                     {
-                        case ClassDescriptor.FieldType.tpByte: 
+                        case ClassDescriptor.FieldType.tpByte:
                             il.Emit(OpCodes.Ldloc_0, obj);
                             il.Emit(OpCodes.Ldarg_3); // body
                             il.Emit(OpCodes.Ldloc_1, offs);
@@ -250,7 +250,7 @@ namespace Volante.Impl
                             il.Emit(OpCodes.Stloc_1, offs);
                             continue;
 
-                        case ClassDescriptor.FieldType.tpSByte: 
+                        case ClassDescriptor.FieldType.tpSByte:
                             il.Emit(OpCodes.Ldloc_0, obj);
                             il.Emit(OpCodes.Ldarg_3); // body
                             il.Emit(OpCodes.Ldloc_1, offs);
@@ -263,7 +263,7 @@ namespace Volante.Impl
                             il.Emit(OpCodes.Stloc_1, offs);
                             continue;
 
-                        case ClassDescriptor.FieldType.tpBoolean: 
+                        case ClassDescriptor.FieldType.tpBoolean:
                             il.Emit(OpCodes.Ldloc_0, obj);
                             il.Emit(OpCodes.Ldarg_3); // body
                             il.Emit(OpCodes.Ldloc_1, offs);
@@ -275,7 +275,7 @@ namespace Volante.Impl
                             il.Emit(OpCodes.Stloc_1, offs);
                             continue;
 
-                        case ClassDescriptor.FieldType.tpShort: 
+                        case ClassDescriptor.FieldType.tpShort:
                             il.Emit(OpCodes.Ldloc_0, obj);
                             il.Emit(OpCodes.Ldarg_3); // body
                             il.Emit(OpCodes.Ldloc_1, offs);
@@ -287,8 +287,8 @@ namespace Volante.Impl
                             il.Emit(OpCodes.Stloc_1, offs);
                             continue;
 
-                        case ClassDescriptor.FieldType.tpUShort: 
-                        case ClassDescriptor.FieldType.tpChar: 
+                        case ClassDescriptor.FieldType.tpUShort:
+                        case ClassDescriptor.FieldType.tpChar:
                             il.Emit(OpCodes.Ldloc_0, obj);
                             il.Emit(OpCodes.Ldarg_3); // body
                             il.Emit(OpCodes.Ldloc_1, offs);
@@ -301,9 +301,9 @@ namespace Volante.Impl
                             il.Emit(OpCodes.Stloc_1, offs);
                             continue;
 
-                        case ClassDescriptor.FieldType.tpEnum: 
-                        case ClassDescriptor.FieldType.tpInt: 
-                        case ClassDescriptor.FieldType.tpUInt: 
+                        case ClassDescriptor.FieldType.tpEnum:
+                        case ClassDescriptor.FieldType.tpInt:
+                        case ClassDescriptor.FieldType.tpUInt:
                             il.Emit(OpCodes.Ldloc_0, obj);
                             il.Emit(OpCodes.Ldarg_3); // body
                             il.Emit(OpCodes.Ldloc_1, offs);
@@ -315,8 +315,8 @@ namespace Volante.Impl
                             il.Emit(OpCodes.Stloc_1, offs);
                             continue;
 
-                        case ClassDescriptor.FieldType.tpLong: 
-                        case ClassDescriptor.FieldType.tpULong: 
+                        case ClassDescriptor.FieldType.tpLong:
+                        case ClassDescriptor.FieldType.tpULong:
                             il.Emit(OpCodes.Ldloc_0, obj);
                             il.Emit(OpCodes.Ldarg_3); // body
                             il.Emit(OpCodes.Ldloc_1, offs);
@@ -328,7 +328,7 @@ namespace Volante.Impl
                             il.Emit(OpCodes.Stloc_1, offs);
                             continue;
 
-                        case ClassDescriptor.FieldType.tpFloat: 
+                        case ClassDescriptor.FieldType.tpFloat:
                             il.Emit(OpCodes.Ldloc_0, obj);
                             il.Emit(OpCodes.Ldarg_3); // body
                             il.Emit(OpCodes.Ldloc_1, offs);
@@ -340,7 +340,7 @@ namespace Volante.Impl
                             il.Emit(OpCodes.Stloc_1, offs);
                             continue;
 
-                        case ClassDescriptor.FieldType.tpDouble: 
+                        case ClassDescriptor.FieldType.tpDouble:
                             il.Emit(OpCodes.Ldloc_0, obj);
                             il.Emit(OpCodes.Ldarg_3); // body
                             il.Emit(OpCodes.Ldloc_1, offs);
@@ -376,7 +376,7 @@ namespace Volante.Impl
                             il.Emit(OpCodes.Stloc_1, offs);
                             continue;
 
-                        case ClassDescriptor.FieldType.tpDate: 
+                        case ClassDescriptor.FieldType.tpDate:
                             il.Emit(OpCodes.Ldloc_0, obj);
                             il.Emit(OpCodes.Ldarg_3); // body
                             il.Emit(OpCodes.Ldloc_1, offs);
@@ -388,7 +388,7 @@ namespace Volante.Impl
                             il.Emit(OpCodes.Stloc_1, offs);
                             continue;
 
-                        case ClassDescriptor.FieldType.tpString: 
+                        case ClassDescriptor.FieldType.tpString:
                             il.Emit(OpCodes.Ldarg_3); // body
                             il.Emit(OpCodes.Ldloc_1, offs);
                             il.Emit(OpCodes.Ldloc_0, obj);
@@ -397,7 +397,7 @@ namespace Volante.Impl
                             il.Emit(OpCodes.Call, unpackString);
                             il.Emit(OpCodes.Stloc_1, offs);
                             continue;
-                
+
                         default:
                             il.Emit(OpCodes.Ldarg_1); // storage
                             il.Emit(OpCodes.Ldarg_3); // body
@@ -463,14 +463,14 @@ namespace Volante.Impl
         {
             String generatedClassName = type.Name + "Wrapper";
             TypeBuilder wrapperType;
-            
-            if (type.IsInterface) 
+
+            if (type.IsInterface)
             {
-                wrapperType = module.DefineType(generatedClassName, TypeAttributes.Public, 
+                wrapperType = module.DefineType(generatedClassName, TypeAttributes.Public,
                     typeof(IResource).IsAssignableFrom(type) ? typeof(PersistentResource) : typeof(Persistent));
                 wrapperType.AddInterfaceImplementation(type);
-            } 
-            else 
+            }
+            else
             {
                 wrapperType = module.DefineType(generatedClassName, TypeAttributes.Public, type);
             }
@@ -481,23 +481,23 @@ namespace Volante.Impl
             //ConstructorBuilder constructor =
             //    wrapperType.DefineDefaultConstructor(MethodAttributes.Public);
 
-            PropertyInfo[] properties = type.GetProperties(BindingFlags.Public|BindingFlags.NonPublic|BindingFlags.Instance);
-            for (int i = 0; i < properties.Length; i++) 
-            { 
+            PropertyInfo[] properties = type.GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+            for (int i = 0; i < properties.Length; i++)
+            {
                 PropertyInfo prop = properties[i];
                 MethodInfo getter = prop.GetGetMethod(true);
                 MethodInfo setter = prop.GetSetMethod(true);
-                if (getter != null && setter != null && getter.IsVirtual && setter.IsVirtual) 
-                { 
+                if (getter != null && setter != null && getter.IsVirtual && setter.IsVirtual)
+                {
                     Type returnType = getter.ReturnType;
                     String fieldName = prop.Name;
                     Type fieldType;
-                    if (typeof(IPersistent).IsAssignableFrom(returnType)) 
+                    if (typeof(IPersistent).IsAssignableFrom(returnType))
                     {
                         fieldType = typeof(int);
                         fieldName = "r_" + fieldName;
-                    } 
-                    else 
+                    }
+                    else
                     {
                         fieldType = returnType;
                         fieldName = "s_" + fieldName;
@@ -508,15 +508,15 @@ namespace Volante.Impl
                     }
 
                     FieldBuilder fb = wrapperType.DefineField(fieldName, fieldType, FieldAttributes.Private);
-                                
+
                     MethodBuilder getterImpl = wrapperType.DefineMethod(getter.Name,
-                        MethodAttributes.Public|MethodAttributes.Virtual|MethodAttributes.NewSlot,    
+                        MethodAttributes.Public | MethodAttributes.Virtual | MethodAttributes.NewSlot,
                         returnType,
                         new Type[] { });
 
                     ILGenerator il = getterImpl.GetILGenerator();
 
-                    if (fieldType != returnType) 
+                    if (fieldType != returnType)
                     {
                         il.Emit(OpCodes.Ldarg_0);
                         il.Emit(OpCodes.Callvirt, getStorage);
@@ -524,8 +524,8 @@ namespace Volante.Impl
                         il.Emit(OpCodes.Ldfld, fb);
                         il.Emit(OpCodes.Callvirt, getByOid);
                         il.Emit(OpCodes.Castclass, returnType);
-                    } 
-                    else 
+                    }
+                    else
                     {
                         il.Emit(OpCodes.Ldarg_0);
                         il.Emit(OpCodes.Ldfld, fb);
@@ -535,21 +535,21 @@ namespace Volante.Impl
                     wrapperType.DefineMethodOverride(getterImpl, getter);
 
                     MethodBuilder setterImpl = wrapperType.DefineMethod(setter.Name,
-                        MethodAttributes.Public|MethodAttributes.Virtual|MethodAttributes.NewSlot,    
+                        MethodAttributes.Public | MethodAttributes.Virtual | MethodAttributes.NewSlot,
                         null,
                         new Type[] { returnType });
 
                     il = setterImpl.GetILGenerator();
 
                     il.Emit(OpCodes.Ldarg_0);
-                    if (fieldType != returnType) 
+                    if (fieldType != returnType)
                     {
                         il.Emit(OpCodes.Ldarg_0);
                         il.Emit(OpCodes.Callvirt, getStorage);
                         il.Emit(OpCodes.Ldarg_1);
                         il.Emit(OpCodes.Callvirt, makePersistent);
-                    } 
-                    else 
+                    }
+                    else
                     {
                         il.Emit(OpCodes.Ldarg_1);
                     }
@@ -565,12 +565,12 @@ namespace Volante.Impl
             return wrapperType;
         }
 
-        public static CodeGenerator Instance 
-        {                                
-            get 
+        public static CodeGenerator Instance
+        {
+            get
             {
-                if (instance == null) 
-                { 
+                if (instance == null)
+                {
                     instance = new CodeGenerator();
                 }
                 return instance;
@@ -614,7 +614,7 @@ namespace Volante.Impl
         private MethodInfo makePersistent = typeof(Storage).GetMethod("MakePersistent");
 
         private ModuleBuilder dynamicModule;
-        private int           counter;
+        private int counter;
     }
 }
 

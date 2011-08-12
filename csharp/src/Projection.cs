@@ -11,14 +11,16 @@ namespace Volante
     /// value of specified field (of IPersistent, array of IPersistent, Link or Relation type)
     /// is inspected and all referenced object for projection (duplicate values are eliminated)
     /// </summary>
-    public class Projection<From,To> : ICollection<To> where From:class,IPersistent where To:class,IPersistent
-    { 
+    public class Projection<From, To> : ICollection<To>
+        where From : class,IPersistent
+        where To : class,IPersistent
+    {
         /// <summary>
         /// Constructor of projection specified by field name of projected objects
         /// </summary>
         /// <param name="fieldName">field name used to perform projection</param>
-        public Projection(String fieldName) 
-        { 
+        public Projection(String fieldName)
+        {
             SetProjectionField(fieldName);
         }
 
@@ -28,36 +30,36 @@ namespace Volante
         /// map method in it or sepcify type and fieldName later using setProjectionField
         /// method
         /// </summary>
-        public Projection() {}
+        public Projection() { }
 
-        public int Count 
-        { 
-            get 
+        public int Count
+        {
+            get
             {
                 return hash.Count;
             }
         }
 
-        public bool IsSynchronized 
+        public bool IsSynchronized
         {
-            get 
+            get
             {
                 return false;
             }
         }
 
-        public object SyncRoot 
+        public object SyncRoot
         {
-            get 
+            get
             {
                 return null;
             }
         }
 
-        public void CopyTo(To[] dst, int i) 
+        public void CopyTo(To[] dst, int i)
         {
-            foreach (object o in this) 
-            { 
+            foreach (object o in this)
+            {
                 dst.SetValue(o, i++);
             }
         }
@@ -66,12 +68,12 @@ namespace Volante
         /// Specify projection field name
         /// </summary>
         /// <param name="fieldName">field name used to perform projection</param>
-        public void SetProjectionField(string fieldName) 
-        { 
+        public void SetProjectionField(string fieldName)
+        {
             Type type = typeof(From);
             field = type.GetField(fieldName, BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
-            if (field == null) 
-            { 
+            if (field == null)
+            {
                 throw new StorageError(StorageError.ErrorCode.KEY_NOT_FOUND);
             }
         }
@@ -80,83 +82,83 @@ namespace Volante
         /// Project specified selection
         /// </summary>
         /// <param name="selection">array with selected object</param>
-        public void Project(From[] selection) 
-        { 
-            for (int i = 0; i < selection.Length; i++) 
-            { 
+        public void Project(From[] selection)
+        {
+            for (int i = 0; i < selection.Length; i++)
+            {
                 Map(selection[i]);
             }
-        } 
+        }
 
         /// <summary>
         /// Project specified object
         /// </summary>
         /// <param name="obj">selected object</param>
-        public void Project(From obj) 
-        { 
+        public void Project(From obj)
+        {
             Map(obj);
-        } 
+        }
 
         /// <summary>
         /// Project specified selection
         /// </summary>
         /// <param name="selection">enumerator specifying selceted objects</param>
-        public void Project(IEnumerator<From> selection) 
-        { 
-            while (selection.MoveNext()) 
-            { 
+        public void Project(IEnumerator<From> selection)
+        {
+            while (selection.MoveNext())
+            {
                 Map(selection.Current);
             }
-        } 
+        }
 
         /// <summary>
         /// Project specified selection
         /// </summary>
         /// <param name="selection">enumerator specifying selceted objects</param>
-        public void Project(IEnumerable<From> selection) 
-        { 
-            foreach (From obj in selection) 
-            { 
+        public void Project(IEnumerable<From> selection)
+        {
+            foreach (From obj in selection)
+            {
                 Map(obj);
             }
-        } 
+        }
 
         /// <summary>
         /// Join this projection with another projection.
         /// Result of this join is set of objects present in both projections.
         /// </summary>
         /// <param name="prj">joined projection</param>
-        public void Join<X>(Projection<X,To> prj) where X:class,IPersistent
-        { 
-            Dictionary<To,To> join = new Dictionary<To,To>();
-            foreach (To p in prj.hash.Keys) 
+        public void Join<X>(Projection<X, To> prj) where X : class,IPersistent
+        {
+            Dictionary<To, To> join = new Dictionary<To, To>();
+            foreach (To p in prj.hash.Keys)
             {
-                if (hash.ContainsKey(p)) 
-                { 
+                if (hash.ContainsKey(p))
+                {
                     join[p] = p;
                 }
             }
             hash = join;
         }
- 
+
         /// <summary>
         /// Get result of preceding project and join operations
         /// </summary>
         /// <returns>array of objects</returns>
-        public To[] ToArray() 
-        { 
+        public To[] ToArray()
+        {
             To[] arr = new To[hash.Count];
             hash.Keys.CopyTo(arr, 0);
             return arr;
         }
- 
+
         /// <summary>
         /// Get result of preceding project and join operations
         /// </summary>
         /// <param name="elemType">type of result array element</param>
         /// <returns>array of objects</returns>
-        public Array ToArray(Type elemType) 
-        { 
+        public Array ToArray(Type elemType)
+        {
             Array arr = Array.CreateInstance(elemType, hash.Count);
             hash.Keys.CopyTo((To[])arr, 0);
             return arr;
@@ -165,9 +167,9 @@ namespace Volante
         /// <summary>
         /// Get number of objets in the result 
         /// </summary>
-        public int Length 
-        { 
-            get 
+        public int Length
+        {
+            get
             {
                 return hash.Count;
             }
@@ -177,8 +179,8 @@ namespace Volante
         /// Get enumerator for result of preceding project and join operations
         /// </summary>
         /// <returns>enumerator</returns>
-        public IEnumerator<To> GetEnumerator() 
-        { 
+        public IEnumerator<To> GetEnumerator()
+        {
             return hash.Keys.GetEnumerator();
         }
 
@@ -190,8 +192,8 @@ namespace Volante
         /// <summary>
         /// Reset projection - clear result of prceding project and join operations
         /// </summary>
-        public void Reset() 
-        { 
+        public void Reset()
+        {
             hash.Clear();
         }
 
@@ -199,9 +201,9 @@ namespace Volante
         /// Add object to the set
         /// </summary>
         /// <param name="obj">object to be added to the set</param>
-        public void Add(To obj) 
-        { 
-            if (obj != null) 
+        public void Add(To obj)
+        {
+            if (obj != null)
             {
                 hash[obj] = obj;
             }
@@ -213,38 +215,38 @@ namespace Volante
         /// to provide application specific mapping
         /// </summary>
         /// <param name="obj">object from the selection</param>
-        protected void Map(From obj) 
-        {   
-            if (field == null) 
-            { 
+        protected void Map(From obj)
+        {
+            if (field == null)
+            {
                 Add((To)(object)obj);
-            } 
-            else 
-            { 
+            }
+            else
+            {
                 object o = field.GetValue(obj);
-                if (o is Link<To>) 
-                { 
+                if (o is Link<To>)
+                {
                     To[] arr = ((Link<To>)o).ToArray();
-                    for (int i = 0; i < arr.Length; i++) 
-                    { 
+                    for (int i = 0; i < arr.Length; i++)
+                    {
                         Add(arr[i]);
                     }
-                } 
-                else if (o is To[]) 
-                { 
+                }
+                else if (o is To[])
+                {
                     To[] arr = (To[])o;
-                    for (int i = 0; i < arr.Length; i++) 
-                    { 
-                        Add(arr[i]);                            
+                    for (int i = 0; i < arr.Length; i++)
+                    {
+                        Add(arr[i]);
                     }
-                } 
-                else 
-                { 
+                }
+                else
+                {
                     Add((To)o);
                 }
             }
-        } 
-    
+        }
+
         public bool IsReadOnly
         {
             get
@@ -253,22 +255,22 @@ namespace Volante
             }
         }
 
-        public bool Contains(To obj) 
-        { 
-             return hash[obj] != null;
+        public bool Contains(To obj)
+        {
+            return hash[obj] != null;
         }
 
-        public bool Remove(To obj) 
-        { 
-             return hash.Remove(obj);
+        public bool Remove(To obj)
+        {
+            return hash.Remove(obj);
         }
 
-        public void Clear() 
-        { 
+        public void Clear()
+        {
             hash.Clear();
         }
 
-        private Dictionary<To,To> hash = new Dictionary<To,To>();
-        private FieldInfo  field;
+        private Dictionary<To, To> hash = new Dictionary<To, To>();
+        private FieldInfo field;
     }
 }

@@ -10,33 +10,33 @@ namespace Volante.Impl
 
     public sealed class ClassDescriptor : Persistent
     {
-        internal ClassDescriptor   next;
-        internal String            name;
+        internal ClassDescriptor next;
+        internal String name;
         internal FieldDescriptor[] allFields;
-        internal bool              hasReferences;
-        internal static Module     lastModule;
+        internal bool hasReferences;
+        internal static Module lastModule;
 
-        public class FieldDescriptor : Persistent 
-        { 
-            internal String          fieldName;
-            internal String          className;
-            internal FieldType       type;
+        public class FieldDescriptor : Persistent
+        {
+            internal String fieldName;
+            internal String className;
+            internal FieldType type;
             internal ClassDescriptor valueDesc;
             [NonSerialized()]
-            internal FieldInfo       field;
+            internal FieldInfo field;
             [NonSerialized()]
-            internal bool            recursiveLoading;
+            internal bool recursiveLoading;
             [NonSerialized()]
             internal MethodInfo constructor;
 
-            public bool equals(FieldDescriptor fd) 
-            { 
-                return fieldName.Equals(fd.fieldName) 
+            public bool equals(FieldDescriptor fd)
+            {
+                return fieldName.Equals(fd.fieldName)
                     && className.Equals(fd.className)
                     && valueDesc == fd.valueDesc
                     && type == fd.type;
             }
-        }    
+        }
         [NonSerialized()]
         internal Type cls;
         [NonSerialized()]
@@ -50,12 +50,12 @@ namespace Volante.Impl
 
         internal static bool serializeNonPersistentObjects;
 
-        public enum FieldType 
+        public enum FieldType
         {
             tpBoolean,
             tpByte,
             tpSByte,
-            tpShort, 
+            tpShort,
             tpUShort,
             tpChar,
             tpEnum,
@@ -77,7 +77,7 @@ namespace Volante.Impl
             tpArrayOfBoolean,
             tpArrayOfByte,
             tpArrayOfSByte,
-            tpArrayOfShort, 
+            tpArrayOfShort,
             tpArrayOfUShort,
             tpArrayOfChar,
             tpArrayOfEnum,
@@ -162,22 +162,22 @@ namespace Volante.Impl
         }
 #endif
 
-        public bool equals(ClassDescriptor cd) 
-        { 
-            if (cd == null || allFields.Length != cd.allFields.Length) 
-            { 
+        public bool equals(ClassDescriptor cd)
+        {
+            if (cd == null || allFields.Length != cd.allFields.Length)
+            {
                 return false;
             }
-            for (int i = 0; i < allFields.Length; i++) 
-            { 
-                if (!allFields[i].equals(cd.allFields[i])) 
-                { 
+            for (int i = 0; i < allFields.Length; i++)
+            {
+                if (!allFields[i].equals(cd.allFields[i]))
+                {
                     return false;
                 }
             }
             return true;
         }
-        
+
         internal Object newInstance()
         {
             try
@@ -197,16 +197,16 @@ namespace Volante.Impl
 
         internal void generateSerializer()
         {
-            if (!cls.IsPublic || defaultConstructor == null || !defaultConstructor.IsPublic) 
-            { 
+            if (!cls.IsPublic || defaultConstructor == null || !defaultConstructor.IsPublic)
+            {
                 return;
             }
             FieldDescriptor[] flds = allFields;
-            for (int i = 0, n = flds.Length; i < n; i++) 
+            for (int i = 0, n = flds.Length; i < n; i++)
             {
                 FieldDescriptor fd = flds[i];
-                switch (fd.type) 
-                { 
+                switch (fd.type)
+                {
                     case FieldType.tpValue:
                     case FieldType.tpArrayOfValue:
                     case FieldType.tpArrayOfObject:
@@ -214,20 +214,20 @@ namespace Volante.Impl
                     case FieldType.tpArrayOfRaw:
                     case FieldType.tpLink:
                     case FieldType.tpArrayOfOid:
-    
+
                         return;
                     default:
                         break;
                 }
                 FieldInfo f = flds[i].field;
-                if (f == null || !f.IsPublic) 
+                if (f == null || !f.IsPublic)
                 {
                     return;
                 }
             }
             serializer = serializerGenerator.Generate(this);
         }
-        
+
         static private bool isObjectProperty(Type cls, FieldInfo f)
         {
             return typeof(PersistentWrapper).IsAssignableFrom(cls) && f.Name.StartsWith("r_");
@@ -235,8 +235,8 @@ namespace Volante.Impl
 #endif
 
         MethodInfo GetConstructor(FieldInfo f, string name)
-        { 
-            MethodInfo mi = typeof(StorageImpl).GetMethod(name, BindingFlags.Instance|BindingFlags.NonPublic|BindingFlags.DeclaredOnly);
+        {
+            MethodInfo mi = typeof(StorageImpl).GetMethod(name, BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.DeclaredOnly);
             //return mi.BindGenericParameters(f.FieldType.GetGenericArguments());
             //TODO: verify it's MakeGenericMethod
             return mi.MakeGenericMethod(f.FieldType.GetGenericArguments());
@@ -245,17 +245,17 @@ namespace Volante.Impl
         internal static String getTypeName(Type t)
         {
             if (t.IsGenericType)
-            { 
+            {
                 Type[] genericArgs = t.GetGenericArguments();
                 t = t.GetGenericTypeDefinition();
                 StringBuilder buf = new StringBuilder(t.FullName);
                 buf.Append('=');
                 char sep = '[';
-                for (int j = 0; j < genericArgs.Length; j++) 
-                { 
-                     buf.Append(sep);
-                     sep = ',';
-                     buf.Append(getTypeName(genericArgs[j]));
+                for (int j = 0; j < genericArgs.Length; j++)
+                {
+                    buf.Append(sep);
+                    sep = ',';
+                    buf.Append(getTypeName(genericArgs[j]));
                 }
                 buf.Append(']');
                 return buf.ToString();
@@ -269,7 +269,7 @@ namespace Volante.Impl
                 && t != typeof(IPersistent) && t != typeof(PersistentContext) && t != typeof(Persistent);
         }
 
-        internal void  buildFieldList(StorageImpl storage, System.Type cls, ArrayList list)
+        internal void buildFieldList(StorageImpl storage, System.Type cls, ArrayList list)
         {
             System.Type superclass = cls.BaseType;
             if (superclass != null && superclass != typeof(MarshalByRefObject))
@@ -277,7 +277,7 @@ namespace Volante.Impl
                 buildFieldList(storage, superclass, list);
             }
             System.Reflection.FieldInfo[] flds = cls.GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.DeclaredOnly);
-#if !CF 
+#if !CF
             bool isWrapper = typeof(PersistentWrapper).IsAssignableFrom(cls);
 #endif
             bool hasTransparentAttribute = cls.GetCustomAttributes(typeof(TransparentPersistenceAttribute), true).Length != 0;
@@ -293,15 +293,15 @@ namespace Volante.Impl
                     fd.className = getTypeName(cls);
                     Type fieldType = f.FieldType;
                     FieldType type = getTypeCode(fieldType);
-                    switch (type) 
+                    switch (type)
                     {
-#if !CF 
+#if !CF
                         case FieldType.tpInt:
-                            if (isWrapper && isObjectProperty(cls, f)) 
+                            if (isWrapper && isObjectProperty(cls, f))
                             {
                                 hasReferences = true;
                                 type = FieldType.tpOid;
-                            } 
+                            }
                             break;
 #endif
                         case FieldType.tpArrayOfOid:
@@ -318,7 +318,7 @@ namespace Volante.Impl
                             hasReferences = true;
                             if (hasTransparentAttribute && isPerstInternalType(fieldType))
                             {
-                                fd.recursiveLoading = true; 
+                                fd.recursiveLoading = true;
                             }
                             break;
                         case FieldType.tpValue:
@@ -335,7 +335,7 @@ namespace Volante.Impl
                 }
             }
         }
-		
+
         public static FieldType getTypeCode(System.Type c)
         {
             FieldType type;
@@ -395,16 +395,16 @@ namespace Volante.Impl
             {
                 type = FieldType.tpDate;
             }
-            else if (c.IsEnum) 
-            { 
+            else if (c.IsEnum)
+            {
                 type = FieldType.tpEnum;
             }
             else if (c.Equals(typeof(decimal)))
-            { 
+            {
                 type = FieldType.tpDecimal;
             }
-            else if (c.Equals(typeof(Guid))) 
-            { 
+            else if (c.Equals(typeof(Guid)))
+            {
                 type = FieldType.tpGuid;
             }
             else if (typeof(IPersistent).IsAssignableFrom(c))
@@ -434,12 +434,12 @@ namespace Volante.Impl
             }
             else
             {
-                if (serializeNonPersistentObjects || c == typeof(object) || c == typeof(IComparable)) 
+                if (serializeNonPersistentObjects || c == typeof(object) || c == typeof(IComparable))
                 {
                     type = FieldType.tpRaw;
-                } 
-                else 
-                { 
+                }
+                else
+                {
                     throw new StorageError(StorageError.ErrorCode.UNSUPPORTED_TYPE, c);
                 }
             }
@@ -456,40 +456,40 @@ namespace Volante.Impl
             name = getTypeName(cls);
             ArrayList list = new ArrayList();
             buildFieldList(storage, cls, list);
-            allFields = (FieldDescriptor[]) list.ToArray(typeof(FieldDescriptor));
-            defaultConstructor = cls.GetConstructor(BindingFlags.Instance|BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic|BindingFlags.DeclaredOnly, null, defaultConstructorProfile, null);
-            if (defaultConstructor == null && !typeof(ValueType).IsAssignableFrom(cls)) 
-            { 
+            allFields = (FieldDescriptor[])list.ToArray(typeof(FieldDescriptor));
+            defaultConstructor = cls.GetConstructor(BindingFlags.Instance | BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly, null, defaultConstructorProfile, null);
+            if (defaultConstructor == null && !typeof(ValueType).IsAssignableFrom(cls))
+            {
                 throw new StorageError(StorageError.ErrorCode.DESCRIPTOR_FAILURE, cls);
             }
             resolved = true;
         }
-		
+
         internal static Type lookup(Storage storage, String name)
         {
             Hashtable resolvedTypes = ((StorageImpl)storage).resolvedTypes;
             lock (resolvedTypes)
-            { 
+            {
                 Type cls = (Type)resolvedTypes[name];
                 if (cls != null)
-                { 
+                {
                     return cls;
                 }
                 ClassLoader loader = storage.Loader;
-                if (loader != null) 
-                { 
+                if (loader != null)
+                {
                     cls = loader.LoadClass(name);
-                    if (cls != null) 
-                    { 
+                    if (cls != null)
+                    {
                         resolvedTypes[name] = cls;
                         return cls;
                     }
                 }
                 Module last = lastModule;
-                if (last != null) 
+                if (last != null)
                 {
                     cls = last.GetType(name);
-                    if (cls != null) 
+                    if (cls != null)
                     {
                         resolvedTypes[name] = cls;
                         return cls;
@@ -498,41 +498,41 @@ namespace Volante.Impl
 
                 int p = name.IndexOf('=');
                 if (p >= 0)
-                { 
+                {
                     Type genericType = lookup(storage, name.Substring(0, p));
                     Type[] genericParams = new Type[genericType.GetGenericArguments().Length];
                     int nest = 0;
-                    int i = p += 2; 
+                    int i = p += 2;
                     int n = 0;
 
                     while (true)
-                    {   
+                    {
                         switch (name[i++])
                         {
-                        case '[': 
-                            nest += 1;
-                            break;
-                        case ']': 
-                            if (--nest < 0) 
-                            { 
-                                genericParams[n++] = lookup(storage, name.Substring(p, i-p-1));
-                                Debug.Assert(n == genericParams.Length);
-                                cls = genericType.MakeGenericType(genericParams);
-                                if (cls == null)
-                                { 
-                                    throw new StorageError(StorageError.ErrorCode.CLASS_NOT_FOUND, name);
+                            case '[':
+                                nest += 1;
+                                break;
+                            case ']':
+                                if (--nest < 0)
+                                {
+                                    genericParams[n++] = lookup(storage, name.Substring(p, i - p - 1));
+                                    Debug.Assert(n == genericParams.Length);
+                                    cls = genericType.MakeGenericType(genericParams);
+                                    if (cls == null)
+                                    {
+                                        throw new StorageError(StorageError.ErrorCode.CLASS_NOT_FOUND, name);
+                                    }
+                                    resolvedTypes[name] = cls;
+                                    return cls;
                                 }
-                                resolvedTypes[name] = cls;
-                                return cls;
-                            }   
-                            break;
-                        case ',':
-                            if (nest == 0) 
-                            {
-                                genericParams[n++] = lookup(storage, name.Substring(p, i-p-1));
-                                p = i;
-                            }
-                            break;
+                                break;
+                            case ',':
+                                if (nest == 0)
+                                {
+                                    genericParams[n++] = lookup(storage, name.Substring(p, i - p - 1));
+                                    p = i;
+                                }
+                                break;
                         }
                     }
                 }
@@ -540,20 +540,20 @@ namespace Volante.Impl
 #if CF
                 foreach (Assembly ass in StorageImpl.assemblies) 
 #else
-                foreach (Assembly ass in AppDomain.CurrentDomain.GetAssemblies()) 
+                foreach (Assembly ass in AppDomain.CurrentDomain.GetAssemblies())
 #endif
-                { 
-                    foreach (Module mod in ass.GetModules()) 
-                    { 
+                {
+                    foreach (Module mod in ass.GetModules())
+                    {
                         Type t = mod.GetType(name);
-                        if (t != null) 
+                        if (t != null)
                         {
-                            if (cls != null) 
-                            { 
+                            if (cls != null)
+                            {
                                 throw new StorageError(StorageError.ErrorCode.AMBIGUITY_CLASS, name);
-                            } 
-                            else 
-                            { 
+                            }
+                            else
+                            {
                                 lastModule = mod;
                                 cls = t;
                             }
@@ -561,16 +561,16 @@ namespace Volante.Impl
                     }
                 }
 #if !CF
-                if (cls == null && name.EndsWith("Wrapper")) 
+                if (cls == null && name.EndsWith("Wrapper"))
                 {
-                    Type originalType = lookup(storage, name.Substring(0, name.Length-7));
-                    lock (storage) 
+                    Type originalType = lookup(storage, name.Substring(0, name.Length - 7));
+                    lock (storage)
                     {
                         cls = ((StorageImpl)storage).getWrapper(originalType);
                     }
                 }
 #endif
-                if (cls == null) 
+                if (cls == null)
                 {
                     throw new StorageError(StorageError.ErrorCode.CLASS_NOT_FOUND, name);
                 }
@@ -584,42 +584,42 @@ namespace Volante.Impl
             cls = lookup(Storage, name);
             int n = allFields.Length;
             bool hasTransparentAttribute = cls.GetCustomAttributes(typeof(TransparentPersistenceAttribute), true).Length != 0;
-            for (int i = n; --i >= 0;) 
-            { 
+            for (int i = n; --i >= 0; )
+            {
                 FieldDescriptor fd = allFields[i];
                 fd.Load();
                 fd.field = cls.GetField(fd.fieldName, BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
-                if (hasTransparentAttribute && fd.type == FieldType.tpObject && isPerstInternalType(fd.field.FieldType)) 
+                if (hasTransparentAttribute && fd.type == FieldType.tpObject && isPerstInternalType(fd.field.FieldType))
                 {
                     fd.recursiveLoading = true;
-                }                
+                }
 
                 switch (fd.type)
                 {
-                case FieldType.tpArrayOfOid:
-                    fd.constructor = GetConstructor(fd.field, "ConstructArray");
-                    break;
-                case FieldType.tpLink:
-                    fd.constructor = GetConstructor(fd.field, "ConstructLink");
-                    break;
-                default:
-                    break;
+                    case FieldType.tpArrayOfOid:
+                        fd.constructor = GetConstructor(fd.field, "ConstructArray");
+                        break;
+                    case FieldType.tpLink:
+                        fd.constructor = GetConstructor(fd.field, "ConstructLink");
+                        break;
+                    default:
+                        break;
                 }
             }
 
-            defaultConstructor = cls.GetConstructor(BindingFlags.Instance|BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic|BindingFlags.DeclaredOnly, null, defaultConstructorProfile, null);
-            if (defaultConstructor == null && !typeof(ValueType).IsAssignableFrom(cls)) 
-            { 
+            defaultConstructor = cls.GetConstructor(BindingFlags.Instance | BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly, null, defaultConstructorProfile, null);
+            if (defaultConstructor == null && !typeof(ValueType).IsAssignableFrom(cls))
+            {
                 throw new StorageError(StorageError.ErrorCode.DESCRIPTOR_FAILURE, cls);
             }
             StorageImpl s = (StorageImpl)Storage;
-            if (!s.classDescMap.Contains(cls)) 
+            if (!s.classDescMap.Contains(cls))
             {
                 ((StorageImpl)Storage).classDescMap.Add(cls, this);
             }
         }
 
-        internal void resolve() 
+        internal void resolve()
         {
             if (resolved)
                 return;
@@ -627,7 +627,7 @@ namespace Volante.Impl
             StorageImpl classStorage = (StorageImpl)Storage;
             ClassDescriptor desc = new ClassDescriptor(classStorage, cls);
             resolved = true;
-            if (!desc.equals(this)) 
+            if (!desc.equals(this))
             {
                 classStorage.registerClassDescriptor(desc);
             }

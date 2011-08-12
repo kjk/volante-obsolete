@@ -12,8 +12,8 @@ namespace Volante
     /// (each boundary can be specified or unspecified and can be inclusive or exclusive)
     /// Key should be of scalar, String, java.util.Date or peristent object type.
     /// </summary>
-    public interface Index<K,V> : GenericIndex<K,V> where V:class,IPersistent
-    {    
+    public interface Index<K, V> : GenericIndex<K, V> where V : class,IPersistent
+    {
         /// <summary> Put new object in the index. 
         /// </summary>
         /// <param name="key">object key wrapper
@@ -74,7 +74,7 @@ namespace Volante
         /// <exception cref="Volante.StorageError">StorageError(StorageError.ErrorCode.KEY_NOT_FOUND) exception if there is no such key in the index
         /// 
         /// </exception>
-        void  Remove(Key key, V obj);
+        void Remove(Key key, V obj);
 
         /// <summary> Remove object with specified key from the tree.
         /// </summary>
@@ -85,7 +85,7 @@ namespace Volante
         /// <exception cref="Volante.StorageError">StorageError(StorageError.ErrorCode.KEY_NOT_FOUND) exception if there is no such key in the index
         /// 
         /// </exception>
-        void  Remove(K key, V obj);
+        void Remove(K key, V obj);
 
         /// <summary> Remove key from the unique index.
         /// </summary>
@@ -96,7 +96,7 @@ namespace Volante
         /// or StorageError(StorageError.ErrorCode.KEY_NOT_UNIQUE) if index is not unique.
         /// 
         /// </exception>
-        V  Remove(Key key);
+        V Remove(Key key);
 
         /// <summary> Remove key from the unique index.
         /// </summary>

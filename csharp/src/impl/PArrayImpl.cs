@@ -4,42 +4,26 @@ namespace Volante.Impl
     using System.Collections;
     using System.Collections.Generic;
     using Volante;
-	
-    public class PArrayImpl<T> : PArray<T> where T:class,IPersistent
+
+    public class PArrayImpl<T> : PArray<T> where T : class,IPersistent
     {
-        private void Modify() 
+        private void Modify()
         {
-            if (owner != null) 
+            if (owner != null)
             {
                 owner.Modify();
             }
-        } 
-                
-        public int Count 
-        { 
-            get 
+        }
+
+        public int Count
+        {
+            get
             {
                 return used;
             }
         }
 
-        public bool IsSynchronized 
-        {
-            get 
-            {
-                return false;
-            }
-        }
-
-        public object SyncRoot 
-        {
-            get 
-            {
-                return null;
-            }
-        }
-
-        public bool IsReadOnly 
+        public bool IsSynchronized
         {
             get
             {
@@ -47,52 +31,68 @@ namespace Volante.Impl
             }
         }
 
-        public void CopyTo(T[] dst, int i) 
+        public object SyncRoot
+        {
+            get
+            {
+                return null;
+            }
+        }
+
+        public bool IsReadOnly
+        {
+            get
+            {
+                return false;
+            }
+        }
+
+        public void CopyTo(T[] dst, int i)
         {
             Array.Copy(arr, 0, dst, i, used);
         }
-        
+
         public virtual int Size()
         {
             return used;
         }
-		
-        public virtual int Length 
+
+        public virtual int Length
         {
-            get 
+            get
             {
                 return used;
             }
 
-            set 
+            set
             {
-                if (value < used) 
-                { 
+                if (value < used)
+                {
                     Array.Clear(arr, value, used);
                     Modify();
-                } 
-                else 
-                { 
-                    reserveSpace(value - used);            
+                }
+                else
+                {
+                    reserveSpace(value - used);
                 }
                 used = value;
 
             }
-        }        
+        }
 
-        public virtual T this[int i] 
+        public virtual T this[int i]
         {
-             get
-             {
-                 return Get(i);
-             }
-           
-             set 
-             { 
-                 Set(i, value);
-             }
-        }    
-   
+            get
+            {
+                return Get(i);
+            }
+
+            set
+            {
+                Set(i, value);
+            }
+        }
+
         public virtual T Get(int i)
         {
             if (i < 0 || i >= used)
@@ -101,7 +101,7 @@ namespace Volante.Impl
             }
             return loadElem(i);
         }
-		
+
         public virtual IPersistent GetRaw(int i)
         {
             if (i < 0 || i >= used)
@@ -130,11 +130,11 @@ namespace Volante.Impl
             Modify();
         }
 
-        public bool Remove(T obj) 
+        public bool Remove(T obj)
         {
             int i = IndexOf(obj);
-            if (i >= 0) 
-            { 
+            if (i >= 0)
+            {
                 Remove(i);
                 return true;
             }
@@ -142,7 +142,7 @@ namespace Volante.Impl
         }
 
         public virtual void RemoveAt(int i)
-        { 
+        {
             Remove(i);
         }
 
@@ -162,7 +162,7 @@ namespace Volante.Impl
         {
             if (used + len > arr.Length)
             {
-                int[] newArr = new int[used + len > arr.Length * 2?used + len:arr.Length * 2];
+                int[] newArr = new int[used + len > arr.Length * 2 ? used + len : arr.Length * 2];
                 Array.Copy(arr, 0, newArr, 0, used);
                 arr = newArr;
             }
@@ -196,9 +196,9 @@ namespace Volante.Impl
         {
             int i, j;
             reserveSpace(length);
-            for (i = from, j = used; --length >= 0; i++, j++) 
-            { 
-                arr[j] = storage.MakePersistent(a[i]); 
+            for (i = from, j = used; --length >= 0; i++, j++)
+            {
+                arr[j] = storage.MakePersistent(a[i]);
             }
             used = j;
         }
@@ -207,14 +207,16 @@ namespace Volante.Impl
         {
             int n = link.Length;
             reserveSpace(n);
-            if (link is PArray<T>) 
+            if (link is PArray<T>)
             {
-                PArray<T> src = (PArray<T>)link; 
+                PArray<T> src = (PArray<T>)link;
                 for (int i = 0, j = used; i < n; i++, j++)
                 {
                     arr[j] = src.GetOid(i);
                 }
-            } else {
+            }
+            else
+            {
                 for (int i = 0, j = used; i < n; i++, j++)
                 {
                     arr[j] = storage.MakePersistent(link.GetRaw(i));
@@ -256,17 +258,17 @@ namespace Volante.Impl
         public virtual int IndexOf(T obj)
         {
             int oid = obj == null ? 0 : ((IPersistent)obj).Oid;
-            for (int i = used; --i >= 0;) 
+            for (int i = used; --i >= 0; )
             {
-                 if (arr[i] == oid) 
-                 {
-                     return i;
-                 }
+                if (arr[i] == oid)
+                {
+                    return i;
+                }
             }
-            return - 1;
+            return -1;
         }
 
-        public virtual bool ContainsElement(int i, T obj) 
+        public virtual bool ContainsElement(int i, T obj)
         {
             int oid = arr[i];
             return (obj == null && oid == 0) || (obj != null && obj.Oid == oid);
@@ -281,11 +283,12 @@ namespace Volante.Impl
 
         class ArrayEnumerator : IEnumerator<T>
         {
-            public void Dispose() {}
+            public void Dispose() { }
 
-            public bool MoveNext() 
+            public bool MoveNext()
             {
-                if (i+1 < arr.Length) { 
+                if (i + 1 < arr.Length)
+                {
                     i += 1;
                     return true;
                 }
@@ -294,7 +297,7 @@ namespace Volante.Impl
 
             public T Current
             {
-                get 
+                get
                 {
                     return arr[i];
                 }
@@ -308,7 +311,7 @@ namespace Volante.Impl
                 }
             }
 
-            public void Reset() 
+            public void Reset()
             {
                 i = -1;
             }
@@ -319,12 +322,12 @@ namespace Volante.Impl
                 i = -1;
             }
 
-            private int    i;
+            private int i;
             private PArray<T> arr;
-        }      
+        }
 
-        public IEnumerator<T> GetEnumerator() 
-        { 
+        public IEnumerator<T> GetEnumerator()
+        {
             return new ArrayEnumerator(this);
         }
 
@@ -333,12 +336,12 @@ namespace Volante.Impl
             return GetEnumerator();
         }
 
-        public void Pin() 
-        { 
+        public void Pin()
+        {
         }
 
-        public void Unpin() 
-        { 
+        public void Unpin()
+        {
         }
 
         private T loadElem(int i)
@@ -347,8 +350,8 @@ namespace Volante.Impl
         }
 
         public void SetOwner(IPersistent owner)
-        { 
-             this.owner = owner;
+        {
+            this.owner = owner;
         }
 
         internal PArrayImpl()
@@ -369,8 +372,8 @@ namespace Volante.Impl
             used = oids.Length;
         }
 
-        int[]       arr;
-        int         used;
+        int[] arr;
+        int used;
         StorageImpl storage;
         [NonSerialized()]
         IPersistent owner;

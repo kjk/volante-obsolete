@@ -1,16 +1,16 @@
 namespace Volante
 {
     #region StreamFile
-    
+
     /// <summary>
     /// PERST IFile implementation. Allows to store PERST databases on <see cref="System.IO.Stream"/> instances.
     /// </summary>
-    internal class StreamFile : IFile 
+    internal class StreamFile : IFile
     {
         private long offset = 0;
         private bool noFlush = false;
         private System.IO.Stream stream;
-        
+
         /// <summary>
         /// Construction
         /// </summary>
@@ -19,7 +19,7 @@ namespace Volante
         {
             this.stream = stream;
         }
-        
+
         /// <summary>
         /// Construction
         /// </summary>
@@ -59,9 +59,9 @@ namespace Volante
 
         public void Sync()
         {
-            if (noFlush == false) 
+            if (noFlush == false)
             {
-                stream.Flush ();
+                stream.Flush();
             }
         }
 
@@ -70,7 +70,7 @@ namespace Volante
         /// </summary>
         public void Close()
         {
-            stream.Close ();
+            stream.Close();
         }
 
         /// <summary>
@@ -89,7 +89,7 @@ namespace Volante
             set { this.noFlush = value; }
         }
 
-        public long Length 
+        public long Length
         {
             get { return stream.Length; }
         }

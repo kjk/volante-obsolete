@@ -8,7 +8,7 @@ namespace Volante
     /// Spatial index is used to allow fast selection of spatial objects belonging to the specified rectangle.
     /// Spatial index is implemented using Guttman R-Tree with quadratic split algorithm.
     /// </summary>
-    public interface SpatialIndexR2<T> : IPersistent, IResource, ICollection<T> where T:class,IPersistent
+    public interface SpatialIndexR2<T> : IPersistent, IResource, ICollection<T> where T : class,IPersistent
     {
         /// <summary>
         /// Find all objects located in the selected rectangle
@@ -18,7 +18,7 @@ namespace Volante
         /// <returns>array of objects which enveloping rectangle intersects with specified rectangle
         /// </returns>             
         T[] Get(RectangleR2 r);
-    
+
         /// <summary>
         /// Put new object in the index. 
         /// </summary>
@@ -46,8 +46,8 @@ namespace Volante
         /// </summary>
         /// <returns>number of objects in the index
         /// </returns>
-        int  Size();
-    
+        int Size();
+
         /// <summary>
         /// Get wrapping rectangle 
         /// </summary>
@@ -55,7 +55,7 @@ namespace Volante
         /// If index is empty <i>empty rectangle</i> (double.MaxValue, double.MaxValue, double.MinValue, double.MinValue)
         /// is returned.
         /// </returns>
-        RectangleR2 WrappingRectangle 
+        RectangleR2 WrappingRectangle
         {
             get;
         }

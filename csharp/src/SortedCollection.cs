@@ -1,5 +1,5 @@
-namespace Volante 
-{ 
+namespace Volante
+{
     using System;
     using System.Collections;
     using System.Collections.Generic;
@@ -7,7 +7,8 @@ namespace Volante
     /// <summary>
     /// Range boundary kind
     /// </summary>
-    public enum BoundaryKind {
+    public enum BoundaryKind
+    {
         /// <summary>exclusive interval</summary>
         Exclusive = 0,
         /// <summary>inclusive interval</summary>
@@ -25,21 +26,21 @@ namespace Volante
     /// can cause trashing and so very bad performance. Unlike other index structures SortedCollection
     /// doesn't store values of keys and so search in the collection requires fetching all of its members.
     /// </summary>
-    public interface SortedCollection<K,V> : IPersistent, IResource, ICollection<V> where V:class,IPersistent
-    { 
+    public interface SortedCollection<K, V> : IPersistent, IResource, ICollection<V> where V : class,IPersistent
+    {
         /// <summary> Access element by key
         /// </summary>
-        V this[K key] 
+        V this[K key]
         {
             get;
-        }       
+        }
 
         /// <summary> Access elements by key range
         /// </summary>
-        V[] this[K low, K high] 
+        V[] this[K low, K high]
         {
             get;
-        }       
+        }
 
         /// <summary>
         /// Get member with specified key.
@@ -80,7 +81,7 @@ namespace Volante
         /// </summary>
         /// <returns> number of objects in the collection</returns>
         ///
-        int        Size();
+        int Size();
 
         /// <summary>
         /// Get all objects in the index as array ordered by index key.
@@ -141,6 +142,6 @@ namespace Volante
         /// </summary>
         /// <returns> collection comparator</returns>
         ///
-        PersistentComparator<K,V> GetComparator();
+        PersistentComparator<K, V> GetComparator();
     }
 }

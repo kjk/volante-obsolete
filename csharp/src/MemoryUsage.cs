@@ -19,7 +19,7 @@ namespace Volante
         /// Number of reachable instance of the particular class in the database.
         /// </summary>
         public int nInstances;
-    
+
         /// <summary>
         /// Total size of all reachable instances
         /// </summary>

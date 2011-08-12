@@ -1,31 +1,32 @@
-namespace Volante.Impl        
+namespace Volante.Impl
 {
     using System;
     using Volante;
     using System.Diagnostics;
-	
+
     class PagePool
     {
-        internal LRU    lru;
-        internal Page   freePages;
+        internal LRU lru;
+        internal Page freePages;
         internal Page[] hashTable;
-        internal int    poolSize;
-        internal bool   autoExtended;
-        internal IFile  file;
-		
+        internal int poolSize;
+        internal bool autoExtended;
+        internal IFile file;
+
         internal int nDirtyPages;
         internal Page[] dirtyPages;
-		
+
         internal bool flushing;
-		
+
         const int INFINITE_POOL_INITIAL_SIZE = 8;
 
         internal PagePool(int poolSize)
         {
-            if (poolSize == 0) { 
+            if (poolSize == 0)
+            {
                 autoExtended = true;
                 poolSize = INFINITE_POOL_INITIAL_SIZE;
-            }            
+            }
             this.poolSize = poolSize;
         }
 
@@ -34,7 +35,7 @@ namespace Volante.Impl
             Debug.Assert((addr & (Page.pageSize - 1)) == 0);
             Page pg;
             int pageNo = (int)((ulong)addr >> Page.pageBits);
-            int hashCode =  pageNo % poolSize;
+            int hashCode = pageNo % poolSize;
 
             lock (this)
             {
@@ -56,12 +57,13 @@ namespace Volante.Impl
                     pg = freePages;
                     if (pg != null)
                     {
-                        freePages = (Page) pg.next;
+                        freePages = (Page)pg.next;
                     }
-                    else if (autoExtended) 
-                    { 
-                        if (pageNo >= poolSize) {
-                            int newPoolSize = pageNo >= poolSize*2 ? pageNo+1 : poolSize*2;
+                    else if (autoExtended)
+                    {
+                        if (pageNo >= poolSize)
+                        {
+                            int newPoolSize = pageNo >= poolSize * 2 ? pageNo + 1 : poolSize * 2;
                             Page[] newHashTable = new Page[newPoolSize];
                             Array.Copy(hashTable, 0, newHashTable, 0, hashTable.Length);
                             hashTable = newHashTable;
@@ -73,7 +75,7 @@ namespace Volante.Impl
                     else
                     {
                         Debug.Assert(lru.prev != lru, "unfixed page available");
-                        pg = (Page) lru.prev;
+                        pg = (Page)lru.prev;
                         pg.unlink();
                         lock (pg)
                         {
@@ -88,7 +90,7 @@ namespace Volante.Impl
                                 }
                             }
                         }
-                        int h = (int) (pg.offs >> Page.pageBits) % poolSize;
+                        int h = (int)(pg.offs >> Page.pageBits) % poolSize;
                         Page curr = hashTable[h], prev = null;
                         while (curr != pg)
                         {
@@ -113,8 +115,9 @@ namespace Volante.Impl
                 if ((pg.state & Page.psDirty) == 0 && (state & Page.psDirty) != 0)
                 {
                     Debug.Assert(!flushing);
-                    if (nDirtyPages >= dirtyPages.Length) {                     
-                        Page[] newDirtyPages = new Page[nDirtyPages*2];
+                    if (nDirtyPages >= dirtyPages.Length)
+                    {
+                        Page[] newDirtyPages = new Page[nDirtyPages * 2];
                         Array.Copy(dirtyPages, 0, newDirtyPages, 0, dirtyPages.Length);
                         dirtyPages = newDirtyPages;
                     }
@@ -131,22 +134,22 @@ namespace Volante.Impl
                             pg.data[i] = 0;
                         }
                     }
-                    pg.state &= ~ Page.psRaw;
+                    pg.state &= ~Page.psRaw;
                 }
             }
             return pg;
         }
-		
-		
-        internal void  copy(long dst, long src, long size)
+
+
+        internal void copy(long dst, long src, long size)
         {
-            int dstOffs = (int) dst & (Page.pageSize - 1);
-            int srcOffs = (int) src & (Page.pageSize - 1);
+            int dstOffs = (int)dst & (Page.pageSize - 1);
+            int srcOffs = (int)src & (Page.pageSize - 1);
             dst -= dstOffs;
             src -= srcOffs;
             Page dstPage = find(dst, Page.psDirty);
             Page srcPage = find(src, 0);
-            do 
+            do
             {
                 if (dstOffs == Page.pageSize)
                 {
@@ -171,26 +174,26 @@ namespace Volante.Impl
                 {
                     len = Page.pageSize - dstOffs;
                 }
-                Array.Copy(srcPage.data, srcOffs, dstPage.data, dstOffs, (int) len);
-                srcOffs = (int) (srcOffs + len);
-                dstOffs = (int) (dstOffs + len);
+                Array.Copy(srcPage.data, srcOffs, dstPage.data, dstOffs, (int)len);
+                srcOffs = (int)(srcOffs + len);
+                dstOffs = (int)(dstOffs + len);
                 size -= len;
             }
             while (size != 0);
             unfix(dstPage);
             unfix(srcPage);
         }
-		
-        internal void write(long dstPos, byte[] src) 
+
+        internal void write(long dstPos, byte[] src)
         {
-            Debug.Assert((dstPos & (Page.pageSize-1)) == 0);
-            Debug.Assert((src.Length & (Page.pageSize-1)) == 0);
-            for (int i = 0; i < src.Length;) 
-            { 
+            Debug.Assert((dstPos & (Page.pageSize - 1)) == 0);
+            Debug.Assert((src.Length & (Page.pageSize - 1)) == 0);
+            for (int i = 0; i < src.Length; )
+            {
                 Page pg = find(dstPos, Page.psDirty);
                 byte[] dst = pg.data;
-                for (int j = 0; j < Page.pageSize; j++) 
-                { 
+                for (int j = 0; j < Page.pageSize; j++)
+                {
                     dst[j] = src[i++];
                 }
                 unfix(pg);
@@ -207,7 +210,8 @@ namespace Volante.Impl
             nDirtyPages = 0;
             lru = new LRU();
             freePages = null;
-            if (!autoExtended) { 
+            if (!autoExtended)
+            {
                 for (int i = poolSize; --i >= 0; )
                 {
                     Page pg = new Page();
@@ -217,7 +221,7 @@ namespace Volante.Impl
             }
         }
 
-        internal void  close()
+        internal void close()
         {
             lock (this)
             {
@@ -229,7 +233,7 @@ namespace Volante.Impl
             }
         }
 
-        internal void  unfix(Page pg)
+        internal void unfix(Page pg)
         {
             lock (this)
             {
@@ -250,8 +254,9 @@ namespace Volante.Impl
                 {
                     Debug.Assert(!flushing);
                     pg.state |= Page.psDirty;
-                    if (nDirtyPages >= dirtyPages.Length) {                     
-                        Page[] newDirtyPages = new Page[nDirtyPages*2];
+                    if (nDirtyPages >= dirtyPages.Length)
+                    {
+                        Page[] newDirtyPages = new Page[nDirtyPages * 2];
                         Array.Copy(dirtyPages, 0, newDirtyPages, 0, dirtyPages.Length);
                         dirtyPages = newDirtyPages;
                     }
@@ -260,21 +265,21 @@ namespace Volante.Impl
                 }
             }
         }
-		
+
         internal Page getPage(long addr)
         {
             return find(addr, 0);
         }
-		
+
         internal Page putPage(long addr)
         {
             return find(addr, Page.psDirty);
         }
-		
+
         internal byte[] get(long pos)
         {
             Debug.Assert(pos != 0);
-            int offs = (int) pos & (Page.pageSize - 1);
+            int offs = (int)pos & (Page.pageSize - 1);
             Page pg = find(pos - offs, 0);
             int size = ObjectHeader.getSize(pg.data, offs);
             Debug.Assert(size >= ObjectHeader.Sizeof);
@@ -290,19 +295,19 @@ namespace Volante.Impl
                 pg = find(pos, 0);
                 offs = 0;
             }
-            Array.Copy(pg.data, offs,obj, dst, size);
+            Array.Copy(pg.data, offs, obj, dst, size);
             unfix(pg);
             return obj;
         }
-		
-        internal void  put(long pos, byte[] obj)
+
+        internal void put(long pos, byte[] obj)
         {
             put(pos, obj, obj.Length);
         }
-		
-        internal void  put(long pos, byte[] obj, int size)
+
+        internal void put(long pos, byte[] obj, int size)
         {
-            int offs = (int) pos & (Page.pageSize - 1);
+            int offs = (int)pos & (Page.pageSize - 1);
             Page pg = find(pos - offs, Page.psDirty);
             int src = 0;
             while (size > Page.pageSize - offs)
@@ -318,7 +323,7 @@ namespace Volante.Impl
             Array.Copy(obj, src, pg.data, offs, size);
             unfix(pg);
         }
-		
+
 #if CF
         class PageComparator : System.Collections.IComparer 
         {
@@ -332,7 +337,7 @@ namespace Volante.Impl
 #endif
 
 
-        internal virtual void  flush()
+        internal virtual void flush()
         {
             lock (this)
             {
@@ -351,7 +356,7 @@ namespace Volante.Impl
                     if ((pg.state & Page.psDirty) != 0)
                     {
                         file.Write(pg.offs, pg.data);
-                        pg.state &= ~ Page.psDirty;
+                        pg.state &= ~Page.psDirty;
                     }
                 }
             }

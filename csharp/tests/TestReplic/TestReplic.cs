@@ -12,94 +12,115 @@ public class TestReplic
     
 }
 #else
-public class TestReplic 
-{ 
-    class Record : Persistent { 
+public class TestReplic
+{
+    class Record : Persistent
+    {
         public int key;
     }
-    
+
     const int nIterations = 1000000;
     const int nRecords = 1000;
     const int transSize = 100;
     const int defaultPort = 6000;
-    const int asyncBufSize = 1024*1024;
-    const int pagePoolSize = 32*1024*1024;
+    const int asyncBufSize = 1024 * 1024;
+    const int pagePoolSize = 32 * 1024 * 1024;
 
     private static void usage()
-    { 
+    {
         Console.WriteLine("Usage: TestReplic (master|slave) [port] [-async] [-ack]");
     }
 
     static public void Main(string[] args)
-    {    
+    {
         int i;
-        if (args.Length < 1) {
+        if (args.Length < 1)
+        {
             usage();
             return;
         }
         int port = defaultPort;
         bool ack = false;
         bool async = false;
-        for (i = 1; i < args.Length; i++) { 
-            if (args[i].StartsWith("-")) { 
-                if (args[i] == "-async") { 
+        for (i = 1; i < args.Length; i++)
+        {
+            if (args[i].StartsWith("-"))
+            {
+                if (args[i] == "-async")
+                {
                     async = true;
-                } else if (args[i] == "-ack") { 
+                }
+                else if (args[i] == "-ack")
+                {
                     ack = true;
-                } else { 
+                }
+                else
+                {
                     usage();
                 }
-            } else { 
+            }
+            else
+            {
                 port = int.Parse(args[i]);
             }
         }
-        if ("master" == args[0]) { 
-            ReplicationMasterStorage db = 
-                StorageFactory.CreateReplicationMasterStorage(new string[]{"localhost:" + port},
+        if ("master" == args[0])
+        {
+            ReplicationMasterStorage db =
+                StorageFactory.CreateReplicationMasterStorage(new string[] { "localhost:" + port },
                                                                        async ? asyncBufSize : 0);
             db.FileNoFlush = true;
             db.ReplicationAck = ack;
             db.Open("master.dbs", pagePoolSize);
 
-            FieldIndex<int,Record> root = (FieldIndex<int,Record>)db.Root;
-            if (root == null) { 
-                root = db.CreateFieldIndex<int,Record>("key", true);
+            FieldIndex<int, Record> root = (FieldIndex<int, Record>)db.Root;
+            if (root == null)
+            {
+                root = db.CreateFieldIndex<int, Record>("key", true);
                 db.Root = root;
             }
             DateTime start = DateTime.Now;
-            for (i = 0; i < nIterations; i++) {
-                if (i >= nRecords) { 
-                    root.Remove(new Key(i-nRecords));
+            for (i = 0; i < nIterations; i++)
+            {
+                if (i >= nRecords)
+                {
+                    root.Remove(new Key(i - nRecords));
                 }
                 Record rec = new Record();
                 rec.key = i;
                 root.Put(rec);
-                if (i >= nRecords && i % transSize == 0) {
+                if (i >= nRecords && i % transSize == 0)
+                {
                     db.Commit();
                 }
             }
             db.Close();
-            Console.WriteLine("Elapsed time for " + nIterations + " iterations: " 
+            Console.WriteLine("Elapsed time for " + nIterations + " iterations: "
                                + (DateTime.Now - start));
-        } else if ("slave" == args[0]) { 
-            ReplicationSlaveStorage db = 
-                StorageFactory.CreateReplicationSlaveStorage(port); 
+        }
+        else if ("slave" == args[0])
+        {
+            ReplicationSlaveStorage db =
+                StorageFactory.CreateReplicationSlaveStorage(port);
             db.FileNoFlush = true;
             db.ReplicationAck = ack;
-            db.Open("slave.dbs", pagePoolSize);         
+            db.Open("slave.dbs", pagePoolSize);
             DateTime total = new DateTime(0);
             int n = 0;
-            while (db.IsConnected()) { 
+            while (db.IsConnected())
+            {
                 db.WaitForModification();
                 db.BeginThreadTransaction(TransactionMode.ReplicationSlave);
-                FieldIndex<int,Record> root = (FieldIndex<int,Record>)db.Root;
-                if (root != null && root.Count == nRecords) {
+                FieldIndex<int, Record> root = (FieldIndex<int, Record>)db.Root;
+                if (root != null && root.Count == nRecords)
+                {
                     DateTime start = DateTime.Now;
                     int prevKey = -1;
                     i = 0;
-                    foreach (Record rec in root) { 
+                    foreach (Record rec in root)
+                    {
                         int key = rec.key;
-                        Debug.Assert(prevKey < 0 || key == prevKey+1);
+                        Debug.Assert(prevKey < 0 || key == prevKey + 1);
                         prevKey = key;
                         i += 1;
                     }
@@ -111,7 +132,9 @@ public class TestReplic
             }
             db.Close();
             Console.WriteLine("Elapsed time for " + n + " iterations: " + total);
-        } else {
+        }
+        else
+        {
             usage();
         }
     }

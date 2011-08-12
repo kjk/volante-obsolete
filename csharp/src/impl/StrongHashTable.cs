@@ -12,7 +12,7 @@ namespace Volante.Impl
 
         public StrongHashTable(int initialCapacity)
         {
-            threshold = (int) (initialCapacity * loadFactor);
+            threshold = (int)(initialCapacity * loadFactor);
             if (initialCapacity != 0)
             {
                 table = new Entry[initialCapacity];
@@ -46,7 +46,7 @@ namespace Volante.Impl
             }
         }
 
-        public void  put(int oid, IPersistent obj)
+        public void put(int oid, IPersistent obj)
         {
             lock (this)
             {
@@ -57,7 +57,7 @@ namespace Volante.Impl
                     if (e.oid == oid)
                     {
                         e.oref = obj;
-                        return ;
+                        return;
                     }
                 }
                 if (count >= threshold)
@@ -91,33 +91,33 @@ namespace Volante.Impl
             }
         }
 
-        public void flush() 
+        public void flush()
         {
-            lock (this) 
+            lock (this)
             {
-                for (int i = 0; i < table.Length; i++) 
-                { 
-                    for (Entry e = table[i]; e != null; e = e.next) 
-                    { 
-                        if (e.oref.IsModified()) 
-                        { 
+                for (int i = 0; i < table.Length; i++)
+                {
+                    for (Entry e = table[i]; e != null; e = e.next)
+                    {
+                        if (e.oref.IsModified())
+                        {
                             e.oref.Store();
                         }
                     }
                 }
             }
         }
-    
-        public void invalidate() 
+
+        public void invalidate()
         {
-            lock (this) 
+            lock (this)
             {
-                for (int i = 0; i < table.Length; i++) 
-                { 
-                    for (Entry e = table[i]; e != null; e = e.next) 
-                    { 
-                        if (e.oref.IsModified()) 
-                        { 
+                for (int i = 0; i < table.Length; i++)
+                {
+                    for (Entry e = table[i]; e != null; e = e.next)
+                    {
+                        if (e.oref.IsModified())
+                        {
                             e.oref.Invalidate();
                         }
                     }
@@ -126,7 +126,7 @@ namespace Volante.Impl
                 count = 0;
             }
         }
-    
+
         internal void rehash()
         {
             int oldCapacity = table.Length;
@@ -136,7 +136,7 @@ namespace Volante.Impl
             int newCapacity = oldCapacity * 2 + 1;
             Entry[] newMap = new Entry[newCapacity];
 
-            threshold = (int) (newCapacity * loadFactor);
+            threshold = (int)(newCapacity * loadFactor);
             table = newMap;
 
             for (i = oldCapacity; --i >= 0; )
@@ -158,11 +158,11 @@ namespace Volante.Impl
             return count;
         }
 
-        public void setDirty(int oid) 
+        public void setDirty(int oid)
         {
-        } 
+        }
 
-        public void clearDirty(int oid) 
+        public void clearDirty(int oid)
         {
         }
 

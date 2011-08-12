@@ -4,7 +4,7 @@ namespace Volante
     using System.Runtime.InteropServices;
     using System.ComponentModel;
     using System.Diagnostics;
-	
+
     /// <summary> Base class for persistent capable objects with marshal be reference semantic
     /// </summary>
     public abstract class MarshalByRefPersistent : MarshalByRefObject, IPersistent
@@ -15,7 +15,7 @@ namespace Volante
             get
             {
                 return oid;
-            }	
+            }
         }
 
         [Browsable(false)]
@@ -24,7 +24,7 @@ namespace Volante
             get
             {
                 return storage;
-            }			
+            }
         }
 
         public virtual void Load()
@@ -34,27 +34,27 @@ namespace Volante
                 storage.loadObject(this);
             }
         }
-		
-        public bool IsRaw() 
-        { 
+
+        public bool IsRaw()
+        {
             return (state & ObjectState.RAW) != 0;
-        } 
-    
-        public bool IsModified() 
-        { 
+        }
+
+        public bool IsModified()
+        {
             return (state & ObjectState.DIRTY) != 0;
-        } 
- 
-        public bool IsDeleted() 
-        { 
+        }
+
+        public bool IsDeleted()
+        {
             return (state & ObjectState.DELETED) != 0;
-        } 
+        }
 
         public bool IsPersistent()
         {
             return oid != 0;
         }
-		
+
         public virtual int MakePersistent(Storage storage)
         {
             if (oid == 0)
@@ -63,26 +63,26 @@ namespace Volante
             }
             return oid;
         }
-		
+
         public virtual void Store()
         {
             if ((state & ObjectState.RAW) != 0)
             {
                 throw new StorageError(StorageError.ErrorCode.ACCESS_TO_STUB);
             }
-            if (storage != null) 
+            if (storage != null)
             {
                 storage.storeObject(this);
                 state &= ~ObjectState.DIRTY;
             }
         }
-		
-        public void Modify() 
-        { 
-            if ((state & ObjectState.DIRTY) == 0 && oid != 0) 
-            { 
-                if ((state & ObjectState.RAW) != 0) 
-                { 
+
+        public void Modify()
+        {
+            if ((state & ObjectState.DIRTY) == 0 && oid != 0)
+            {
+                if ((state & ObjectState.RAW) != 0)
+                {
                     throw new StorageError(StorageError.ErrorCode.ACCESS_TO_STUB);
                 }
                 Debug.Assert((state & ObjectState.DELETED) == 0);
@@ -93,7 +93,7 @@ namespace Volante
 
         public virtual void Deallocate()
         {
-            if (oid != 0) 
+            if (oid != 0)
             {
                 storage.deallocateObject(this);
                 storage = null;
@@ -101,48 +101,48 @@ namespace Volante
                 state = 0;
             }
         }
-		
+
         public virtual bool RecursiveLoading()
         {
             return true;
         }
-		
-		
+
+
         public override bool Equals(object o)
         {
-            return o is IPersistent && ((IPersistent) o).Oid == oid;
+            return o is IPersistent && ((IPersistent)o).Oid == oid;
         }
-		
+
         public override int GetHashCode()
         {
             return oid;
         }
-		
-        public virtual void OnLoad() 
+
+        public virtual void OnLoad()
         {
         }
-        
-        public virtual void OnStore() 
+
+        public virtual void OnStore()
         {
         }
-        
-        public virtual void Invalidate() 
+
+        public virtual void Invalidate()
         {
             state |= ObjectState.RAW;
         }
-        
-        protected MarshalByRefPersistent() {}
 
-        protected MarshalByRefPersistent(Storage storage) 
+        protected MarshalByRefPersistent() { }
+
+        protected MarshalByRefPersistent(Storage storage)
         {
             this.storage = storage;
         }
 
 
-        ~MarshalByRefPersistent() 
+        ~MarshalByRefPersistent()
         {
-            if ((state & ObjectState.DIRTY) != 0 && oid != 0) 
-            { 
+            if ((state & ObjectState.DIRTY) != 0 && oid != 0)
+            {
                 storage.storeFinalizedObject(this);
             }
             state = ObjectState.DELETED;
@@ -152,12 +152,12 @@ namespace Volante
         {
             this.oid = oid;
             this.storage = storage;
-            if (raw) 
+            if (raw)
             {
                 state |= ObjectState.RAW;
             }
-            else 
-            { 
+            else
+            {
                 state &= ~ObjectState.RAW;
             }
         }
@@ -170,11 +170,11 @@ namespace Volante
         ObjectState state;
 
         [Flags]
-        enum ObjectState 
+        enum ObjectState
         {
-            RAW=1,
-            DIRTY=2,
-            DELETED=4
+            RAW = 1,
+            DIRTY = 2,
+            DELETED = 4
         }
     }
 }

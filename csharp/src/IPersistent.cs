@@ -19,10 +19,10 @@ namespace Volante
         {
             get;
         }
-        
+
         /// <summary> Load object from the database (if needed)
         /// </summary>
-        void  Load();
+        void Load();
 
         /// 
         /// <summary> Check if object is stub and has to be loaded from the database
@@ -58,17 +58,17 @@ namespace Volante
         /// <param name="storage">storage in which object should be stored 
         /// </param>
         /// <returns>OID assigned to the object</returns>
-       int MakePersistent(Storage storage);
+        int MakePersistent(Storage storage);
 
         /// <summary> Save object in the database
         /// </summary>
-        void  Store();
+        void Store();
 
         /// <summary>
         /// Mark object as modified. Object will be saved to the database during transaction commit.
         /// </summary>
         void Modify();
-    
+
         /// <summary> Deallocate persistent object from the database
         /// </summary>
         void Deallocate();
@@ -90,13 +90,13 @@ namespace Volante
         /// It can be used to initialize transient fields of the object. 
         /// Default implementation of this method do nothing 
         /// </summary>
-        void OnLoad();        
+        void OnLoad();
 
         /// <summary> This method is  called by the database befire storing of the object.
         /// It can be used to initialize transient fields of the object. 
         /// Default implementation of this method do nothing 
         /// </summary>
-        void OnStore();        
+        void OnStore();
 
         /// <summary>
         /// Invalidate object. Invalidated object has to be explicitly

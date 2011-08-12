@@ -13,7 +13,7 @@ namespace Volante
     /// (each boundary can be specified or unspecified and can be inclusive or exclusive)
     /// Key should be of scalar, String, DateTime or peristent object type.
     /// </summary>
-    public interface FieldIndex<K,V> : GenericIndex<K,V> where V:class,IPersistent
+    public interface FieldIndex<K, V> : GenericIndex<K, V> where V : class,IPersistent
     {
 
         /// <summary> Put new object in the index. 
@@ -82,23 +82,23 @@ namespace Volante
         /// Get class object objects which can be inserted in this index
         /// </summary>
         /// <returns>class specified in Storage.createFielIndex method</returns>
-        Type IndexedClass{get;}
+        Type IndexedClass { get; }
 
         /// <summary>
         /// Get key field
         /// </summary>
         /// <returns>field info for key field</returns>
-        MemberInfo KeyField{get;}
+        MemberInfo KeyField { get; }
     }
 
     /// <summary> Interface of multifield index. 
     /// </summary>
-    public interface MultiFieldIndex<V> : FieldIndex<object[],V> where V:class,IPersistent
+    public interface MultiFieldIndex<V> : FieldIndex<object[], V> where V : class,IPersistent
     {
         /// <summary>
         /// Get fields used as a key
         /// </summary>
         /// <returns>array of index key fields</returns>
-        MemberInfo[] KeyFields{get;}
+        MemberInfo[] KeyFields { get; }
     }
 }

@@ -6,58 +6,59 @@ namespace Volante.Impl
     using System.Reflection;
     using System.Diagnostics;
     using Volante;
-    
-    class AltBtreeFieldIndex<K,V> : AltBtree<K,V>, FieldIndex<K,V> where V:class, IPersistent
+
+    class AltBtreeFieldIndex<K, V> : AltBtree<K, V>, FieldIndex<K, V> where V : class, IPersistent
     {
         internal String className;
         internal String fieldName;
-        internal long   autoincCount;
+        internal long autoincCount;
         [NonSerialized()]
         Type cls;
         [NonSerialized()]
         MemberInfo mbr;
         [NonSerialized()]
         Type mbrType;
- 
+
         internal AltBtreeFieldIndex()
         {
         }
 
-        private void lookupField(String name) 
+        private void lookupField(String name)
         {
             FieldInfo fld = cls.GetField(fieldName, BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
-            if (fld == null) 
-            { 
+            if (fld == null)
+            {
                 PropertyInfo prop = cls.GetProperty(fieldName, BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
-                if (prop == null)  
+                if (prop == null)
                 {
                     throw new StorageError(StorageError.ErrorCode.INDEXED_FIELD_NOT_FOUND, className + "." + fieldName);
                 }
                 mbrType = prop.PropertyType;
                 mbr = prop;
-            } 
-            else 
+            }
+            else
             {
                 mbrType = fld.FieldType;
                 mbr = fld;
             }
-            if (mbrType != typeof(K)) { 
+            if (mbrType != typeof(K))
+            {
                 throw new StorageError(StorageError.ErrorCode.INCOMPATIBLE_KEY_TYPE, mbrType);
-            }    
+            }
         }
 
-        public Type IndexedClass 
+        public Type IndexedClass
         {
-            get 
-            { 
+            get
+            {
                 return cls;
             }
         }
 
-        public MemberInfo KeyField 
+        public MemberInfo KeyField
         {
-            get 
-            { 
+            get
+            {
                 return mbr;
             }
         }
@@ -65,14 +66,14 @@ namespace Volante.Impl
         public override void OnLoad()
         {
             cls = ClassDescriptor.lookup(Storage, className);
-            if (cls != typeof(V)) 
+            if (cls != typeof(V))
             {
                 throw new StorageError(StorageError.ErrorCode.INCOMPATIBLE_VALUE_TYPE, mbrType);
             }
             lookupField(fieldName);
         }
-        
-        internal AltBtreeFieldIndex(String fieldName, bool unique) 
+
+        internal AltBtreeFieldIndex(String fieldName, bool unique)
         {
             this.cls = typeof(V);
             this.unique = unique;
@@ -81,12 +82,12 @@ namespace Volante.Impl
             lookupField(fieldName);
             type = checkType(mbrType);
         }
-        
-        private Key extractKey(IPersistent obj) 
-        { 
+
+        private Key extractKey(IPersistent obj)
+        {
             Object val = mbr is FieldInfo ? ((FieldInfo)mbr).GetValue(obj) : ((PropertyInfo)mbr).GetValue(obj, null);
             Key key = null;
-            switch (type) 
+            switch (type)
             {
                 case ClassDescriptor.FieldType.tpBoolean:
                     key = new Key((bool)val);
@@ -108,10 +109,10 @@ namespace Volante.Impl
                     break;
                 case ClassDescriptor.FieldType.tpInt:
                     key = new Key((int)val);
-                    break;            
+                    break;
                 case ClassDescriptor.FieldType.tpUInt:
                     key = new Key((uint)val);
-                    break;            
+                    break;
                 case ClassDescriptor.FieldType.tpObject:
                     key = new Key((IPersistent)val);
                     break;
@@ -120,10 +121,10 @@ namespace Volante.Impl
                     break;
                 case ClassDescriptor.FieldType.tpLong:
                     key = new Key((long)val);
-                    break;            
+                    break;
                 case ClassDescriptor.FieldType.tpULong:
                     key = new Key((ulong)val);
-                    break;            
+                    break;
                 case ClassDescriptor.FieldType.tpDate:
                     key = new Key((DateTime)val);
                     break;
@@ -151,48 +152,48 @@ namespace Volante.Impl
             }
             return key;
         }
-        
-        public bool Put(V obj) 
+
+        public bool Put(V obj)
         {
             return base.Put(extractKey(obj), obj);
         }
 
-        public V Set(V obj) 
+        public V Set(V obj)
         {
             return base.Set(extractKey(obj), obj);
         }
 
-        public override bool Remove(V obj) 
+        public override bool Remove(V obj)
         {
-            try 
-            { 
+            try
+            {
                 base.Remove(new BtreeKey(extractKey(obj), obj));
-            } 
-            catch (StorageError x) 
-            { 
-                if (x.Code == StorageError.ErrorCode.KEY_NOT_FOUND) 
-                { 
+            }
+            catch (StorageError x)
+            {
+                if (x.Code == StorageError.ErrorCode.KEY_NOT_FOUND)
+                {
                     return false;
                 }
                 throw;
             }
             return true;
         }
-        
-        public override bool Contains(V obj) 
+
+        public override bool Contains(V obj)
         {
             Key key = extractKey(obj);
-            if (unique) 
-            { 
+            if (unique)
+            {
                 return base.Get(key) != null;
-            } 
-            else 
-            { 
+            }
+            else
+            {
                 V[] mbrs = Get(key, key);
-                for (int i = 0; i < mbrs.Length; i++) 
-                { 
-                    if (mbrs[i] == obj) 
-                    { 
+                for (int i = 0; i < mbrs.Length; i++)
+                {
+                    if (mbrs[i] == obj)
+                    {
                         return true;
                     }
                 }
@@ -200,33 +201,33 @@ namespace Volante.Impl
             }
         }
 
-        public void Append(V obj) 
+        public void Append(V obj)
         {
-            lock (this) 
-            { 
+            lock (this)
+            {
                 Key key;
-                object val; 
-                switch (type) 
+                object val;
+                switch (type)
                 {
                     case ClassDescriptor.FieldType.tpInt:
                         key = new Key((int)autoincCount);
                         val = (int)autoincCount;
-                        break;            
+                        break;
                     case ClassDescriptor.FieldType.tpLong:
                         key = new Key(autoincCount);
                         val = autoincCount;
-                        break;            
+                        break;
                     default:
                         throw new StorageError(StorageError.ErrorCode.UNSUPPORTED_INDEX_TYPE, mbrType);
                 }
-                if (mbr is FieldInfo) 
-                { 
+                if (mbr is FieldInfo)
+                {
                     ((FieldInfo)mbr).SetValue(obj, val);
-                } 
-                else 
+                }
+                else
                 {
                     ((PropertyInfo)mbr).SetValue(obj, val, null);
-                }              
+                }
                 autoincCount += 1;
                 obj.Modify();
                 base.insert(key, obj, false);

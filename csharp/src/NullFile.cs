@@ -9,24 +9,25 @@ namespace Volante
     /// between database sessions. If you need in-memory database but which provide data persistency, 
     /// you should use normal file and infinite page pool size. 
     /// </summary>
-    public class NullFile : IFile 
+    public class NullFile : IFile
     {
-         public void Write(long pos, byte[] buf) {}
+        public void Write(long pos, byte[] buf) { }
 
-         public int Read(long pos, byte[] buf) {
-             return 0;
-         }
+        public int Read(long pos, byte[] buf)
+        {
+            return 0;
+        }
 
-         public void Sync() {}
+        public void Sync() { }
 
-        public void Lock() {}
+        public void Lock() { }
 
-        public void Close() {}
+        public void Close() { }
 
         public bool NoFlush
         {
             get { return false; }
-            set {}
+            set { }
         }
 
         public long Length

@@ -1,6 +1,6 @@
 namespace Volante.Impl
 {
-    public interface PersistentWrapper 
+    public interface PersistentWrapper
     {
     }
-} 
+}

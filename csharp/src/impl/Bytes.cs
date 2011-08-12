@@ -58,7 +58,7 @@ namespace Volante.Impl
 #else
         public static short unpack2(byte[] arr, int offs)
         {
-            return (short) (((sbyte)arr[offs] << 8) | arr[offs + 1]);
+            return (short)(((sbyte)arr[offs] << 8) | arr[offs + 1]);
         }
 
         public static int unpack4(byte[] arr, int offs)
@@ -68,25 +68,25 @@ namespace Volante.Impl
 
         public static long unpack8(byte[] arr, int offs)
         {
-            return ((long) unpack4(arr, offs) << 32) | (uint)unpack4(arr, offs + 4);
+            return ((long)unpack4(arr, offs) << 32) | (uint)unpack4(arr, offs + 4);
         }
 
-        public static void  pack2(byte[] arr, int offs, short val)
+        public static void pack2(byte[] arr, int offs, short val)
         {
-            arr[offs] = (byte) (val >> 8);
-            arr[offs + 1] = (byte) val;
+            arr[offs] = (byte)(val >> 8);
+            arr[offs + 1] = (byte)val;
         }
-        public static void  pack4(byte[] arr, int offs, int val)
+        public static void pack4(byte[] arr, int offs, int val)
         {
-            arr[offs] = (byte) (val >> 24);
-            arr[offs + 1] = (byte) (val >> 16);
-            arr[offs + 2] = (byte) (val >> 8);
-            arr[offs + 3] = (byte) val;
+            arr[offs] = (byte)(val >> 24);
+            arr[offs + 1] = (byte)(val >> 16);
+            arr[offs + 2] = (byte)(val >> 8);
+            arr[offs + 3] = (byte)val;
         }
-        public static void  pack8(byte[] arr, int offs, long val)
+        public static void pack8(byte[] arr, int offs, long val)
         {
-            pack4(arr, offs, (int) (val >> 32));
-            pack4(arr, offs + 4, (int) val);
+            pack4(arr, offs, (int)(val >> 32));
+            pack4(arr, offs + 4, (int)val);
         }
 #endif
 
@@ -108,9 +108,9 @@ namespace Volante.Impl
         {
             int[] bits = new int[4];
             bits[0] = Bytes.unpack4(arr, offs);
-            bits[1] = Bytes.unpack4(arr, offs+4);
-            bits[2] = Bytes.unpack4(arr, offs+8);
-            bits[3] = Bytes.unpack4(arr, offs+12);
+            bits[1] = Bytes.unpack4(arr, offs + 4);
+            bits[2] = Bytes.unpack4(arr, offs + 8);
+            bits[3] = Bytes.unpack4(arr, offs + 12);
             return new decimal(bits);
         }
 
@@ -128,22 +128,22 @@ namespace Volante.Impl
                     offs += 2;
                 }
                 str = new string(chars);
-            } 
-            else if (len < -1) 
+            }
+            else if (len < -1)
             {
-                if (encoding != null) 
-                { 
-                    str = encoding.GetString(arr, offs, -2-len);
-                } 
-                else 
-                { 
-                    str = Encoding.Default.GetString(arr, offs, -2-len);
+                if (encoding != null)
+                {
+                    str = encoding.GetString(arr, offs, -2 - len);
                 }
-                offs -= 2+len;
+                else
+                {
+                    str = Encoding.Default.GetString(arr, offs, -2 - len);
+                }
+                offs -= 2 + len;
             }
             return offs;
         }
-    
+
         public static Guid unpackGuid(byte[] arr, int offs)
         {
             byte[] bits = new byte[16];
@@ -151,7 +151,7 @@ namespace Volante.Impl
             return new Guid(bits);
         }
 
-        public static DateTime unpackDate(byte[] arr, int offs) 
+        public static DateTime unpackDate(byte[] arr, int offs)
         {
             return new DateTime(unpack8(arr, offs));
         }
@@ -160,7 +160,7 @@ namespace Volante.Impl
         {
             pack4(arr, offs, BitConverter.ToInt32(BitConverter.GetBytes(val), 0));
         }
- 
+
         public static void packF8(byte[] arr, int offs, double val)
         {
 #if CF 
@@ -174,9 +174,9 @@ namespace Volante.Impl
         {
             int[] bits = Decimal.GetBits(val);
             pack4(arr, offs, bits[0]);
-            pack4(arr, offs+4, bits[1]);
-            pack4(arr, offs+8, bits[2]);
-            pack4(arr, offs+12, bits[3]);
+            pack4(arr, offs + 4, bits[1]);
+            pack4(arr, offs + 8, bits[2]);
+            pack4(arr, offs + 12, bits[3]);
         }
 
         public static void packGuid(byte[] arr, int offs, Guid val)

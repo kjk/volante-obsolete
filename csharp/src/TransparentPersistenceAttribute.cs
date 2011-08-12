@@ -3,7 +3,7 @@ using Volante.Impl;
 using System.Runtime.Remoting.Contexts;
 using System.Runtime.Remoting.Messaging;
 using System.Runtime.Remoting.Activation;
-  
+
 namespace Volante
 {
     /// <summary>
@@ -15,15 +15,16 @@ namespace Volante
     [AttributeUsage(AttributeTargets.Class)]
     public class TransparentPersistenceAttribute : ContextAttribute, IContributeObjectSink
     {
-        public TransparentPersistenceAttribute() : base("PerstMOP")
+        public TransparentPersistenceAttribute()
+            : base("PerstMOP")
         {
         }
-   
-        public override bool IsContextOK(Context ctx, IConstructionCallMessage ctor) 
+
+        public override bool IsContextOK(Context ctx, IConstructionCallMessage ctor)
         {
             return false;
         }
-        public IMessageSink GetObjectSink(MarshalByRefObject target, IMessageSink next) 
+        public IMessageSink GetObjectSink(MarshalByRefObject target, IMessageSink next)
         {
             return new PerstSink((PersistentContext)target, next);
         }
