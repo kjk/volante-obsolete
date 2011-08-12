@@ -27,7 +27,7 @@ namespace Volante
     /// as single object (block).
     /// </p><p> 
     /// As far as C# currently has no templates and
-    /// Perst need to know format of block class, it is responsibity of prgorammer
+    /// Volante need to know format of block class, it is responsibity of prgorammer
     /// to create block implementation derived from TimeSeriesBlock class
     /// and containing array of time series elements. Size of this array specifies
     /// the size of the block.

@@ -517,7 +517,7 @@ namespace Volante
         bool ReplicationAck { get; set; }
 
         /// <TR><TD><code>perst.string.encoding</code></TD><TD>String</TD><TD>null</TD>
-        /// <TD>Specifies encoding of storing strings in the database. By default Perst stores 
+        /// <TD>Specifies encoding of storing strings in the database. By default Volante stores 
         /// strings as sequence of chars (two bytes per char). If all strings in application are in 
         /// the same language, then using encoding  can signifficantly reduce space needed
         /// to store string (about two times). But please notice, that this option has influence
@@ -612,7 +612,7 @@ namespace Volante
         /// In this case when such timeout is expired, new cooperative transaction will be blocked until
         /// transaction is committed.
         /// </summary>
-        /// <param name="maxDelay">maximal delay in milliseconds of committing transaction.  Please notice, that Perst could 
+        /// <param name="maxDelay">maximal delay in milliseconds of committing transaction.  Please notice, that Volante could 
         /// not force other threads to commit their cooperative transactions when this timeout is expired. It will only
         /// block new cooperative transactions to make it possible to current transaction to complete their work.
         /// If <code>maxDelay</code> is 0, current thread will be blocked until all other cooperative trasnaction are also finished

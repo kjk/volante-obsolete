@@ -2,7 +2,7 @@ namespace Volante
 {
     /// <summary>
     /// Class encapsulating native .Net string. System.String is not persistent object
-    /// so it can not be stored in Perst as independent persistent object. 
+    /// so it can not be stored in Volante as independent persistent object. 
     /// But sometimes it is needed. This class sole this problem providing implcit conversion
     /// operator from System.String to PerisstentString.
     /// Also PersistentString class is mutable, allowing to change it's values.

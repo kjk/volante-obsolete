@@ -16,7 +16,7 @@ namespace Volante
     public class TransparentPersistenceAttribute : ContextAttribute, IContributeObjectSink
     {
         public TransparentPersistenceAttribute()
-            : base("PerstMOP")
+            : base("VolanteMOP")
         {
         }
 
