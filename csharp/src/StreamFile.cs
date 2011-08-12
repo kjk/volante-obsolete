@@ -3,7 +3,7 @@ namespace Volante
     #region StreamFile
 
     /// <summary>
-    /// PERST IFile implementation. Allows to store PERST databases on <see cref="System.IO.Stream"/> instances.
+    /// IFile implementation which to store databases on <see cref="System.IO.Stream"/> instances.
     /// </summary>
     internal class StreamFile : IFile
     {

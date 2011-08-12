@@ -320,8 +320,6 @@ public class TestsMain
 
         var tStart = DateTime.Now;
 
-        RunTestIndexBoolean();
-
         RunTestBackup();
         RunTestBit();
         RunTestBlob();
@@ -336,7 +334,6 @@ public class TestsMain
         RunTestIndexBoolean();
         RunTestList();
         RunTestR2();
-
         RunTestRaw();
         RunTestRtree();
         RunTestTtree();

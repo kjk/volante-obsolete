@@ -23,6 +23,7 @@ namespace Volante
         {
             int i;
             Record r=null;
+
             string dbName = "testidxbool.dbs";
             Tests.SafeDeleteFile(dbName);
 
@@ -123,19 +124,69 @@ namespace Volante
             }
             Tests.Assert(first.val == r.val);
 
-#if NOT_USED
-            key = 1999;
-            for (i = 0; i < nRecords; i++)
+            i = 0;
+            foreach (var r2 in idx.Range(false, true))
             {
-                key = (3141592621L * key + 2718281829L) % 1000000007L;
-                Record rec = intIndex.Get(key);
-                Record removed = intIndex.RemoveKey(key);
-                Tests.Assert(removed == rec);
-                strIndex.Remove(new Key(System.Convert.ToString(key)), rec);
-                rec.Deallocate();
+                if (i < falseCount)
+                    Tests.Assert(!r2.ToBool());
+                else
+                    Tests.Assert(r2.ToBool());
+                i++;
             }
-#endif
+            Tests.Assert(i == count);
 
+            i = 0;
+            foreach (var r2 in idx.Range(false, true, IterationOrder.DescentOrder))
+            {
+                if (i < trueCount)
+                    Tests.Assert(r2.ToBool());
+                else
+                    Tests.Assert(!r2.ToBool());
+                i++;
+            }
+            Tests.Assert(i == count);
+
+            i = 0;
+            foreach (var r2 in idx.Reverse())
+            {
+                if (i < trueCount)
+                    Tests.Assert(r2.ToBool());
+                else
+                    Tests.Assert(!r2.ToBool());
+                i++;
+            }
+            Tests.Assert(i == count);
+
+            Tests.Assert(idx.KeyType == typeof(Boolean));
+            Tests.AssertStorageException(() => idx.Remove(new Key(true)), StorageError.ErrorCode.KEY_NOT_UNIQUE);
+            Tests.AssertStorageException(() => idx.RemoveKey(true), StorageError.ErrorCode.KEY_NOT_UNIQUE);
+
+            recs = idx[false, true];
+            Tests.Assert(recs.Length == idx.Count);
+
+            i = 0;
+            int removedTrue = 0;
+            int removedFalse = 0;
+            foreach (var r2 in recs)
+            {
+                var b = r2.ToBool();
+                if (i % 3 == 1)
+                {
+                    idx.Remove(b, r2);
+                    if (r2.ToBool())
+                        ++removedTrue;
+                    else
+                        ++removedFalse;
+                    r2.Deallocate();
+                }
+                i++;
+            }
+            db.Commit();
+
+            count -= (removedTrue + removedFalse);
+            falseCount -= removedFalse;
+            trueCount -= removedTrue;
+            Tests.Assert(idx.Count == count);
             db.Close();
             res.ExecutionTime = DateTime.Now - tStart;
             res.Ok = Tests.FinalizeTest();
