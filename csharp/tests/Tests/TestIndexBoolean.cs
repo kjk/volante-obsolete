@@ -125,6 +125,7 @@ namespace Volante
                     Tests.Assert(!r.ToBool());
                 else
                     Tests.Assert(r.ToBool());
+                i++;
             }
 
             e1 = idx.GetEnumerator(false, true, IterationOrder.DescentOrder);
@@ -136,6 +137,7 @@ namespace Volante
                     Tests.Assert(r.ToBool());
                 else
                     Tests.Assert(!r.ToBool());
+                i++;
             }
             Tests.Assert(first.val == r.val);
 
