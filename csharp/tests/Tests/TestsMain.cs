@@ -47,6 +47,36 @@ public class Tests
         FailedStackTraces.Add(new StackTrace());
     }
 
+    public delegate void Action();
+    public static void AssertException<TExc>(Action func)
+        where TExc : Exception
+    {
+        bool gotException = false;
+        try
+        {
+            func();
+        }
+        catch (TExc)
+        {
+            gotException = true;
+        }
+        Assert(gotException);
+    }
+
+    public static void AssertStorageException(Action func, StorageError.ErrorCode expectedCode)
+    {
+        bool gotException = false;
+        try
+        {
+            func();
+        }
+        catch (StorageError exc)
+        {
+            gotException = exc.Code == expectedCode;
+        }
+        Assert(gotException);
+    }
+
     public static bool FinalizeTest()
     {
         TotalTests += 1;

@@ -65,28 +65,10 @@ namespace Volante
             res.InsertTime = DateTime.Now - start;
 
             start = System.DateTime.Now;
-            bool gotException = false;
-            try
-            {
-                r = idx[true];
-            }
-            catch (StorageError exc)
-            {
-                if (exc.Code == StorageError.ErrorCode.KEY_NOT_UNIQUE)
-                    gotException = true;
-            }
-            Tests.Assert(gotException);
-            gotException = false;
-            try
-            {
-                r = idx[false];
-            }
-            catch (StorageError exc)
-            {
-                if (exc.Code == StorageError.ErrorCode.KEY_NOT_UNIQUE)
-                    gotException = true;
-            }
-            Tests.Assert(gotException);
+            Tests.AssertStorageException(() => { r = idx[true]; }, StorageError.ErrorCode.KEY_NOT_UNIQUE );
+
+            Tests.AssertStorageException(() => { r = idx[false]; },
+ StorageError.ErrorCode.KEY_NOT_UNIQUE );
 
             Record[] recs = idx[true, true];
             Tests.Assert(recs.Length == trueCount);

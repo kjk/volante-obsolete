@@ -37,7 +37,7 @@ namespace Volante
             get;
         }
 
-        /// <summary> Get object by key (exact match)     
+        /// <summary> Get object by key (exact match)
         /// </summary>
         /// <param name="key">wrapper of the specified key. It should match with type of the index and should be inclusive.
         /// </param>
