@@ -195,6 +195,15 @@ public class TestsMain
         r.Print();
     }
 
+    static void RunTestIndexBoolean()
+    {
+        int n = GetIterCount("TestIndexBoolean");
+        var r = TestIndexBoolean.Run(n, false);
+        r.Print();
+        r = TestIndexBoolean.Run(n, true);
+        r.Print();
+    }
+
     static void RunTestList()
     {
         int n = GetIterCount("TestList");
@@ -268,6 +277,8 @@ public class TestsMain
 
         var tStart = DateTime.Now;
 
+        RunTestIndexBoolean();
+
         RunTestBackup();
         RunTestBit();
         RunTestBlob();
@@ -279,6 +290,7 @@ public class TestsMain
         RunTestIndex2();
         RunTestIndex3();
         RunTestIndex4();
+        RunTestIndexBoolean();
         RunTestList();
         RunTestR2();
 
