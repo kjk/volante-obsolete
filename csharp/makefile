@@ -8,6 +8,7 @@
 CSC=gmcs
 
 CSC_FLAGS =-debug+ -d:MONO
+MONO_FLAGS = --gc=sgen
 
 ifeq ($(CFG),)
 CFG=rel
@@ -32,12 +33,6 @@ endif
 
 VOLANTE=$(O)/Volante.dll
 
-TESTS_NAMES=TestBackup TestBit TestBlob TestCompoundIndex TestConcur TestEnumerator\
-	TestGC TestIndex TestIndex2 TestIndex3 TestIndex4 TestIndexBoolean TestList \
-	TestR2 TestRaw TestRtree\
-	TestTimeSeries TestTtree TestXml TestsMain
-TESTS_SRC = $(patsubst %, tests/Tests/%.cs, ${TESTS_NAMES})
-
 TESTS=$(O)/Tests.exe
 
 EXAMPLES_NAMES=Guess IpCountry PropGuess TestLink TestSOD TestSSD TransparentGuess
@@ -51,19 +46,19 @@ tests: volante $(TESTS)
 
 examples: volante $(EXAMPLES)
 
-runtests: tests force
-	cd $(O); mono Tests.exe -fast
+runtests: clean tests force
+	cd $(O); mono $(MONO_FLAGS) Tests.exe -fast
 
 runtestsslow: tests force
-	cd $(O); mono Tests.exe -slow
+	cd $(O); mono $(MONO_FLAGS) Tests.exe -slow
 
 $(O):
 	@mkdir -p $(O)
 
 $(VOLANTE): src/*.cs src/impl/*.cs
-	$(CSC) $(CSC_FLAGS) -t:library -out:$(VOLANTE) src/*.cs src/impl/*.cs
+	$(CSC) $(CSC_FLAGS) -t:library -out:$(VOLANTE) $^
 
-$(O)/Tests.exe: $(TESTS_SRC)
+$(O)/Tests.exe: tests/Tests/*.cs
 	$(CSC) $(CSC_FLAGS) -t:exe -r:$(VOLANTE) -out:$@ $^
 
 $(O)/TestReplic.exe: tests/TestReplic/TestReplic.cs

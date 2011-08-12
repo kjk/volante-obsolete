@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using Volante;
 
@@ -31,6 +32,7 @@ public class Tests
     internal static int CurrAssertsCount = 0;
     internal static int CurrAssertsFailed = 0;
 
+    internal static List<StackTrace> FailedStackTraces = new List<StackTrace>();
     static void ResetAssertsCount()
     {
         CurrAssertsCount = 0;
@@ -42,7 +44,7 @@ public class Tests
         CurrAssertsCount += 1;
         if (cond) return;
         CurrAssertsFailed += 1;
-        // TODO: record callstacks of all failed exceptions
+        FailedStackTraces.Add(new StackTrace());
     }
 
     public static bool FinalizeTest()
@@ -53,6 +55,17 @@ public class Tests
         bool ok = CurrAssertsFailed == 0;
         ResetAssertsCount();
         return ok;
+    }
+
+    public static void PrintFailedStackTraces()
+    {
+        int max = 5;
+        foreach (var st in FailedStackTraces)
+        {
+            Console.WriteLine(st.ToString() + "\n");
+            if (--max == 0)
+                break;
+        }
     }
 
     public static void SafeDeleteFile(string path)
@@ -301,6 +314,7 @@ public class TestsMain
         RunTestXml();
 
         var tEnd = DateTime.Now;
+        var executionTime = tEnd - tStart;
 
         if (0 == Tests.FailedTests)
         {
@@ -310,8 +324,8 @@ public class TestsMain
         {
             Console.WriteLine(String.Format("FAIL! Failed {0} out of {1} tests", Tests.FailedTests, Tests.TotalTests));
         }
-        var t = tEnd - tStart;
-        Console.WriteLine(String.Format("Running time: {0} ms", (int)t.TotalMilliseconds));
+        Tests.PrintFailedStackTraces();
+        Console.WriteLine(String.Format("Running time: {0} ms", (int)executionTime.TotalMilliseconds));
     }
 }
 
