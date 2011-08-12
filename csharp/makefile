@@ -33,8 +33,9 @@ endif
 VOLANTE=$(O)/Volante.dll
 
 TESTS_NAMES=TestBackup TestBit TestBlob TestCompoundIndex TestConcur TestEnumerator\
-	TestGC TestIndex TestIndex2 TestList TestR2 TestRaw TestRtree\
-	TestTimeSeries TestTtree TestXml Tests TestsMain
+	TestGC TestIndex TestIndex2 TestIndex3 TestIndex4 TestIndexBoolean TestList \
+	TestR2 TestRaw TestRtree\
+	TestTimeSeries TestTtree TestXml TestsMain
 TESTS_SRC = $(patsubst %, tests/Tests/%.cs, ${TESTS_NAMES})
 
 TESTS=$(O)/Tests.exe
