@@ -654,7 +654,6 @@ namespace Volante.Impl
 
             const int MAX_ITEMS = BTREE_PAGE_SIZE / (4 + 2);
 
-
             internal override Key getKey(int i)
             {
                 return new Key(data[i]);
@@ -705,7 +704,6 @@ namespace Volante.Impl
             internal int[] data;
 
             const int MAX_ITEMS = BTREE_PAGE_SIZE / (4 + 4);
-
 
             internal override Key getKey(int i)
             {
@@ -758,7 +756,6 @@ namespace Volante.Impl
 
             const int MAX_ITEMS = BTREE_PAGE_SIZE / (4 + 4);
 
-
             internal override Key getKey(int i)
             {
                 return new Key(data[i]);
@@ -809,7 +806,6 @@ namespace Volante.Impl
             internal long[] data;
 
             const int MAX_ITEMS = BTREE_PAGE_SIZE / (4 + 8);
-
 
             internal override Key getKey(int i)
             {
@@ -913,7 +909,6 @@ namespace Volante.Impl
 
             const int MAX_ITEMS = BTREE_PAGE_SIZE / (4 + 4);
 
-
             internal override Key getKey(int i)
             {
                 return new Key(data[i]);
@@ -959,12 +954,10 @@ namespace Volante.Impl
                 {
                     return data;
                 }
-
             }
             internal double[] data;
 
             const int MAX_ITEMS = BTREE_PAGE_SIZE / (4 + 8);
-
 
             internal override Key getKey(int i)
             {
@@ -1011,12 +1004,10 @@ namespace Volante.Impl
                 {
                     return data;
                 }
-
             }
             internal Guid[] data;
 
             const int MAX_ITEMS = BTREE_PAGE_SIZE / (4 + 16);
-
 
             internal override Key getKey(int i)
             {
@@ -1063,12 +1054,10 @@ namespace Volante.Impl
                 {
                     return data;
                 }
-
             }
             internal decimal[] data;
 
             const int MAX_ITEMS = BTREE_PAGE_SIZE / (4 + 16);
-
 
             internal override Key getKey(int i)
             {
@@ -1115,12 +1104,10 @@ namespace Volante.Impl
                 {
                     return data.ToRawArray();
                 }
-
             }
             internal Link data;
 
             const int MAX_ITEMS = BTREE_PAGE_SIZE / (4 + 4);
-
 
             internal override Key getKey(int i)
             {
@@ -1168,12 +1155,10 @@ namespace Volante.Impl
                 {
                     return data;
                 }
-
             }
             internal string[] data;
 
             internal const int MAX_ITEMS = 100;
-
 
             internal override Key getKey(int i)
             {
@@ -1264,7 +1249,6 @@ namespace Volante.Impl
                 return true;
             }
 
-
             internal BtreePageOfString(Storage s)
                 : base(s, MAX_ITEMS)
             {
@@ -1284,12 +1268,10 @@ namespace Volante.Impl
                 {
                     return (Array)data;
                 }
-
             }
             internal object data;
 
             internal const int MAX_ITEMS = 100;
-
 
             internal override Key getKey(int i)
             {
@@ -1398,22 +1380,22 @@ namespace Volante.Impl
 
         internal virtual Key checkKey(Key key)
         {
-            if (key != null)
+            if (key == null)
+                return null;
+
+            if (key.type != type)
             {
-                if (key.type != type)
-                {
-                    throw new StorageError(StorageError.ErrorCode.INCOMPATIBLE_KEY_TYPE);
-                }
-                if ((type == ClassDescriptor.FieldType.tpObject
-                     || type == ClassDescriptor.FieldType.tpOid)
-                    && key.ival == 0 && key.oval != null)
-                {
-                    throw new StorageError(StorageError.ErrorCode.INVALID_OID);
-                }
-                if (key.oval is char[])
-                {
-                    key = new Key(new string((char[])key.oval), key.inclusion != 0);
-                }
+                throw new StorageError(StorageError.ErrorCode.INCOMPATIBLE_KEY_TYPE);
+            }
+            if ((type == ClassDescriptor.FieldType.tpObject
+                    || type == ClassDescriptor.FieldType.tpOid)
+                && key.ival == 0 && key.oval != null)
+            {
+                throw new StorageError(StorageError.ErrorCode.INVALID_OID);
+            }
+            if (key.oval is char[])
+            {
+                key = new Key(new string((char[])key.oval), key.inclusion != 0);
             }
             return key;
         }
@@ -1421,31 +1403,23 @@ namespace Volante.Impl
         public virtual V Get(Key key)
         {
             key = checkKey(key);
-            if (root != null)
-            {
-                ArrayList list = new ArrayList();
-                root.find(key, key, height, list);
-                if (list.Count > 1)
-                {
-                    throw new StorageError(StorageError.ErrorCode.KEY_NOT_UNIQUE);
-                }
-                else if (list.Count == 0)
-                {
-                    return null;
-                }
-                else
-                {
-                    return (V)list[0];
-                }
-            }
-            return null;
+            if (root == null)
+                return null;
+
+            ArrayList list = new ArrayList();
+            root.find(key, key, height, list);
+            if (list.Count > 1)
+                throw new StorageError(StorageError.ErrorCode.KEY_NOT_UNIQUE);
+            else if (list.Count == 0)
+                return null;
+            else
+                return (V)list[0];
         }
 
         public virtual V Get(K key)
         {
             return Get(KeyBuilder.getKeyFromObject(key));
         }
-
 
         internal static V[] emptySelection = new V[0];
 
@@ -1580,7 +1554,6 @@ namespace Volante.Impl
                 default:
                     Debug.Assert(false, "Invalid type");
                     break;
-
             }
             newRoot.insert(ins, 0);
             newRoot.items[1] = root;
@@ -1683,15 +1656,15 @@ namespace Volante.Impl
 
         public override void Clear()
         {
-            if (root != null)
-            {
-                root.purge(height);
-                root = null;
-                nElems = 0;
-                height = 0;
-                updateCounter += 1;
-                Modify();
-            }
+            if (root == null)
+                return;
+
+            root.purge(height);
+            root = null;
+            nElems = 0;
+            height = 0;
+            updateCounter += 1;
+            Modify();
         }
 
         public virtual V[] ToArray()
