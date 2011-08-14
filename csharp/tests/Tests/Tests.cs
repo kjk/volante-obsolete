@@ -238,12 +238,31 @@ public class TestsMain
         r.Print();
     }
 
+    static void RunTestIndex4()
+    {
+        int n = GetIterCount("TestIndex4");
+        var r = TestIndex4.Run(n, false);
+        r.Print();
+        r = TestIndex4.Run(n, true);
+        r.Print();
+    }
+
     static void RunTestIndexBoolean()
     {
         int n = GetIterCount("TestIndexBoolean");
         var r = TestIndexBoolean.Run(n, false);
         r.Print();
         r = TestIndexBoolean.Run(n, true);
+        r.Print();
+    }
+
+    static void RunTestIndexByte()
+    {
+        TestResult r;
+        int n = GetIterCount("TestIndexByte");
+        r = TestIndexByte.Run(n, false);
+        r.Print();
+        r = TestIndexByte.Run(n, true);
         r.Print();
     }
 
@@ -277,15 +296,6 @@ public class TestsMain
     {
         int n = GetIterCount("TestRtree");
         var r = TestRtree.Run(n);
-        r.Print();
-    }
-
-    static void RunTestIndex4()
-    {
-        int n = GetIterCount("TestIndex4");
-        var r = TestIndex4.Run(n, false);
-        r.Print();
-        r = TestIndex4.Run(n, true);
         r.Print();
     }
 
@@ -332,6 +342,7 @@ public class TestsMain
         RunTestIndex3();
         RunTestIndex4();
         RunTestIndexBoolean();
+        RunTestIndexByte();
         RunTestList();
         RunTestR2();
         RunTestRaw();

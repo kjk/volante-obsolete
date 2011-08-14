@@ -39,11 +39,10 @@ namespace Volante
             if (altBtree)
                 db.AlternativeBtree = true;
             db.Open(dbName);
-
             Tests.Assert(null == db.Root);
             var idx = db.CreateIndex<Boolean, Record>(false);
+            db.Root = idx;
 
-            start = System.DateTime.Now;
             long val = 1999;
             int falseCount = 0;
             int trueCount = 0;

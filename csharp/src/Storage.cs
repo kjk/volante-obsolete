@@ -45,7 +45,7 @@ namespace Volante
     public interface Storage
     {
         /// <summary> Get/set storage root. Storage can have exactly one root object. 
-        /// If you need to have several root object and access them by name (as is is possible 
+        /// If you need to have several root object and access them by name (as is possible 
         /// in many other OODBMSes), you should create index and use it as root object.
         /// Previous reference to the root object is rewritten but old root is not automatically deallocated.
         /// </summary>
@@ -399,7 +399,7 @@ namespace Volante
 
         /// <summary> 
         /// Explicitely make object peristent. Usually objects are made persistent
-        /// implicitlely using "persistency on reachability apporach", but this
+        /// implicitly using "persistency on reachability apporach", but this
         /// method allows to do it explicitly. If object is already persistent, execution of
         /// this method has no effect.
         /// </summary>
