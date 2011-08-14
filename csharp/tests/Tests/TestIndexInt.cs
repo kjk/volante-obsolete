@@ -40,15 +40,14 @@ namespace Volante
             var res = new TestIndexNumericResult()
             {
                 Count = count,
-                TestName = String.Format("TestIndexInt, count={0}", count)
+                TestName = String.Format("TestIndexInt, count={0}, altBtree={1}", count, altBtree)
             };
 
             var tStart = DateTime.Now;
             var start = DateTime.Now;
 
             Storage db = StorageFactory.CreateStorage();
-            if (altBtree)
-                db.AlternativeBtree = true;
+            db.AlternativeBtree = altBtree;
             db.Open(dbName);
             Tests.Assert(null == db.Root);
             var idx = db.CreateIndex<int, Record>(false);
@@ -92,14 +91,7 @@ namespace Volante
             while (e1.MoveNext())
             {
                 r = e1.Current;
-                if (altBtree)
-                {
-                    // TODO: there seems to be bug with AltBtree where int.MinValue is stored after int.MaxValue
-                    if (i <= count)
-                        Tests.Assert(r.nval >= prev);
-                }
-                else
-                    Tests.Assert(r.nval >= prev);
+                Tests.Assert(r.nval >= prev);
                 prev = r.nval;
                 i++;
             }
@@ -161,6 +153,36 @@ namespace Volante
             res.ExecutionTime = DateTime.Now - tStart;
             res.Ok = Tests.FinalizeTest();
             return res;
+        }
+
+        const int INFINITE_PAGE_POOL_SIZE = 0;
+        // Test for BtreePageOfInt.compare() bug
+        static public void TestIndexInt00()
+        {
+            Record r;
+            int i;
+            Storage db = StorageFactory.CreateStorage();
+            db.AlternativeBtree = true;
+            NullFile dbFile = new NullFile();
+            db.Open(dbFile, INFINITE_PAGE_POOL_SIZE);
+            Tests.Assert(null == db.Root);
+            var idx = db.CreateIndex<int, Record>(false);
+            db.Root = idx;
+
+            idx.Put(min, new Record(min));
+            idx.Put(max, new Record(max));
+
+            int prev = min;
+            i = 0;
+            var e1 = idx.GetEnumerator();
+            while (e1.MoveNext())
+            {
+                r = e1.Current;
+                Tests.Assert(r.nval >= prev);
+                prev = r.nval;
+                i++;
+            }
+            db.Close();
         }
     }
 }

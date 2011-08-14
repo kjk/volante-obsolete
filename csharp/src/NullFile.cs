@@ -2,11 +2,13 @@ namespace Volante
 {
     /// <summary>
     /// This implementation of <code>IFile</code> interface can be used
-    /// to make hhh an main-memory database. It should be used when pagePoolSize
-    /// is set to <code>Storage.INFINITE_PAGE_POOL</code>. In this case all pages are cached in memory
-    /// and <code>NullFile</code> is used just as a stub.
-    /// <code>NullFile</code> should be used only when data is transient - i.e. it should not be saved
-    /// between database sessions. If you need in-memory database but which provide data persistency, 
+    /// to make Volante as an main-memory database. It should be used when
+    /// pagePoolSize is set to <code>Storage.INFINITE_PAGE_POOL</code>.
+    /// In this case all pages are cached in memory and <code>NullFile</code>
+    /// is used just as a stub.
+    /// <code>NullFile</code> should be used only when data is transient
+    /// i.e. it will not be saved between database sessions. If you need
+    /// an in-memory database that provides data persistency, 
     /// you should use normal file and infinite page pool size. 
     /// </summary>
     public class NullFile : IFile

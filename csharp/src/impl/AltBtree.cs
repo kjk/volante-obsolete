@@ -722,7 +722,13 @@ namespace Volante.Impl
 
             internal override int compare(Key key, int i)
             {
-                return key.ival - data[i];
+                // Note: can't use key.ival - data[i] because
+                // e.g. int.MaxVal - int.MinVal overflows
+                if (key.ival > data[i])
+                    return 1;
+                if (data[i] == key.ival)
+                    return 0;
+                return -1;
             }
 
             internal override void insert(BtreeKey key, int i)

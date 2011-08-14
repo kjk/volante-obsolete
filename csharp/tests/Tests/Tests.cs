@@ -385,6 +385,7 @@ public class TestsMain
 
         var tStart = DateTime.Now;
 
+        TestIndexInt.TestIndexInt00();
         RunTestBackup();
         RunTestBit();
         RunTestBlob();

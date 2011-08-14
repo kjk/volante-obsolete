@@ -63,8 +63,7 @@ namespace Volante
             var start = DateTime.Now;
 
             Storage db = StorageFactory.CreateStorage();
-            if (altBtree)
-                db.AlternativeBtree = true;
+            db.AlternativeBtree = altBtree;
             db.Open(dbName);
             Tests.Assert(null == db.Root);
             var idx = db.CreateIndex<byte, Record>(false);
