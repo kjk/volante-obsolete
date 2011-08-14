@@ -31,12 +31,6 @@ namespace Volante
             long val = (n % range) + (long)byte.MinValue;
             return (byte)val;
 #if NOT_USED
-            if (typeof(T) == typeof(sbyte))            {
-                long range = sbyte.MaxValue - sbyte.MinValue;
-                long val = (n % range) + (long)sbyte.MinValue;
-                res = (T)Convert.ChangeType(val, typeof(T));
-                return;
-            }
             if (typeof(T) == typeof(short))
             {
                 long range = short.MaxValue - short.MinValue;
@@ -126,15 +120,18 @@ namespace Volante
             Tests.Assert(idx.Size() == count + 2);
 
             start = System.DateTime.Now;
-            Record[] recs = idx[byte.MinValue, 0];
+            byte low = byte.MinValue;
+            byte high = byte.MaxValue;
+            byte mid = 0;
+            Record[] recs = idx[low, mid];
             foreach (var r2 in recs)
             {
-                Tests.Assert(r2.lval <= 0);
+                Tests.Assert(r2.lval >= low && r2.lval <= mid);
             }
-            recs = idx[0, byte.MaxValue];
+            recs = idx[mid, high];
             foreach (var r2 in recs)
             {
-                Tests.Assert(r2.lval >= 0);
+                Tests.Assert(r2.lval >= mid && r2.lval <= high);
             }
             byte prev = byte.MinValue;
             var e1 = idx.GetEnumerator();
