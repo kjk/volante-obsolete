@@ -109,8 +109,10 @@
     <Compile Include="TestIndex4.cs" />
     <Compile Include="TestIndexBoolean.cs" />
     <Compile Include="TestIndexByte.cs" />
+    <Compile Include="TestIndexInt.cs" />
     <Compile Include="TestIndexSByte.cs" />
     <Compile Include="TestIndexShort.cs" />
+    <Compile Include="TestIndexUInt.cs" />
     <Compile Include="TestIndexUShort.cs" />
     <Compile Include="TestList.cs" />
     <Compile Include="TestR2.cs" />

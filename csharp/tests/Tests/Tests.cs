@@ -301,6 +301,26 @@ public class TestsMain
         r.Print();
     }
 
+    static void RunTestIndexInt()
+    {
+        TestResult r;
+        int n = GetIterCount("RunTestIndexInt");
+        r = TestIndexInt.Run(n, false);
+        r.Print();
+        r = TestIndexInt.Run(n, true);
+        r.Print();
+    }
+
+    static void RunTestIndexUInt()
+    {
+        TestResult r;
+        int n = GetIterCount("RunTestIndexUInt");
+        r = TestIndexUInt.Run(n, false);
+        r.Print();
+        r = TestIndexUInt.Run(n, true);
+        r.Print();
+    }
+
     static void RunTestList()
     {
         int n = GetIterCount("TestList");
@@ -381,6 +401,8 @@ public class TestsMain
         RunTestIndexSByte();
         RunTestIndexShort();
         RunTestIndexUShort();
+        RunTestIndexInt();
+        RunTestIndexUInt();
         RunTestList();
         RunTestR2();
         RunTestRaw();
