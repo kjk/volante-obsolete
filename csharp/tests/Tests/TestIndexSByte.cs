@@ -20,10 +20,14 @@ namespace Volante
             }
         }
 
+        const sbyte min = sbyte.MinValue;
+        const sbyte max = sbyte.MaxValue;
+        const sbyte mid = sbyte.MaxValue / 2;
+
         static sbyte Clamp(long n)
         {
-            long range = sbyte.MaxValue - sbyte.MinValue;
-            long val = (n % range) + (long)sbyte.MinValue;
+            long range = max - min;
+            long val = (n % range) + (long)min;
             return (sbyte)val;
         }
 
@@ -59,8 +63,8 @@ namespace Volante
                 if (i % 100 == 0)
                     db.Commit();
             }
-            idx.Put(sbyte.MinValue, new Record(sbyte.MinValue));
-            idx.Put(sbyte.MaxValue, new Record(sbyte.MaxValue));
+            idx.Put(min, new Record(min));
+            idx.Put(max, new Record(max));
 
             Tests.Assert(idx.Count == count + 2);
             db.Commit();
@@ -68,20 +72,17 @@ namespace Volante
             Tests.Assert(idx.Size() == count + 2);
 
             start = System.DateTime.Now;
-            sbyte low = sbyte.MinValue;
-            sbyte high = sbyte.MaxValue;
-            sbyte mid = sbyte.MaxValue / 2;
-            Record[] recs = idx[low, mid];
+            Record[] recs = idx[min, mid];
             foreach (var r2 in recs)
             {
-                Tests.Assert(r2.lval <= mid && r2.lval >= low);
+                Tests.Assert(r2.lval >= min && r2.lval <= mid);
             }
-            recs = idx[mid, high];
+            recs = idx[mid, max];
             foreach (var r2 in recs)
             {
-                Tests.Assert(r2.lval >= mid && r2.lval <= high);
+                Tests.Assert(r2.lval >= mid && r2.lval <= max);
             }
-            sbyte prev = sbyte.MinValue;
+            sbyte prev = min;
             var e1 = idx.GetEnumerator();
             while (e1.MoveNext())
             {
@@ -90,35 +91,35 @@ namespace Volante
                 prev = r.nval;
             }
 
-            prev = sbyte.MinValue;
+            prev = min;
             foreach (var r2 in idx)
             {
                 Tests.Assert(r.nval >= prev);
                 prev = r.nval;
             }
 
-            prev = sbyte.MinValue;
-            foreach (var r2 in idx.Range(sbyte.MinValue, sbyte.MaxValue, IterationOrder.AscentOrder))
+            prev = min;
+            foreach (var r2 in idx.Range(min, max, IterationOrder.AscentOrder))
             {
                 Tests.Assert(r.nval >= prev);
                 prev = r.nval;
             }
 
-            prev = sbyte.MaxValue;
-            foreach (var r2 in idx.Range(sbyte.MinValue, sbyte.MaxValue, IterationOrder.DescentOrder))
+            prev = max;
+            foreach (var r2 in idx.Range(min, max, IterationOrder.DescentOrder))
             {
                 Tests.Assert(prev >= r.nval);
                 prev = r.nval;
             }
 
-            prev = sbyte.MaxValue;
+            prev = max;
             foreach (var r2 in idx.Reverse())
             {
                 Tests.Assert(prev >= r.nval);
                 prev = r.nval;
             }
             long usedBeforeDelete = db.UsedSize;
-            recs = idx[sbyte.MinValue, sbyte.MaxValue];
+            recs = idx[min, max];
             foreach (var r2 in recs)
             {
                 Tests.Assert(!r2.IsDeleted());

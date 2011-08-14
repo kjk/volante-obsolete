@@ -276,6 +276,16 @@ public class TestsMain
         r.Print();
     }
 
+    static void RunTestIndexShort()
+    {
+        TestResult r;
+        int n = GetIterCount("TestIndexShort");
+        r = TestIndexShort.Run(n, false);
+        r.Print();
+        r = TestIndexShort.Run(n, true);
+        r.Print();
+    }
+
     static void RunTestList()
     {
         int n = GetIterCount("TestList");
@@ -354,6 +364,7 @@ public class TestsMain
         RunTestIndexBoolean();
         RunTestIndexByte();
         RunTestIndexSByte();
+        RunTestIndexShort();
         RunTestList();
         RunTestR2();
         RunTestRaw();
