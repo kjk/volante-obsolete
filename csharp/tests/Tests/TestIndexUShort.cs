@@ -4,13 +4,13 @@ namespace Volante
     using System.Collections;
     using System.Diagnostics;
 
-    public class TestIndexByte
+    public class TestIndexUShort
     {
         public class Record : Persistent
         {
             public long lval;
-            public byte nval; // native value
-            public Record(byte v)
+            public ushort nval; // native value
+            public Record(ushort v)
             {
                 nval = v;
                 lval = (long)v;
@@ -20,57 +20,27 @@ namespace Volante
             }
         }
 
-        const byte min = byte.MinValue;
-        const byte max = byte.MaxValue;
-        const byte mid = 0;
+        const ushort min = ushort.MinValue;
+        const ushort max = ushort.MaxValue;
+        const ushort mid = max / 2;
 
         static byte Clamp(long n)
         {
             long range = max - min;
             long val = (n % range) + (long)min;
             return (byte)val;
-#if NOT_USED
-            if (typeof(T) == typeof(int))
-            {
-                long range = (long)int.MaxValue + 1; // not really true
-                long val = (n % range) + (long)(int.MinValue / 2);
-                res = (T)Convert.ChangeType(val, typeof(T));
-                return;
-            }
-            if (typeof(T) == typeof(uint))
-            {
-                long range = uint.MaxValue - uint.MinValue;
-                long val = (n % range) + (long)uint.MinValue;
-                res = (T)Convert.ChangeType(val, typeof(T));
-                return;
-            }
-            if (typeof(T) == typeof(long))
-            {
-                long range = long.MaxValue; // not really true
-                long val = (n % range) + (long.MinValue / 2);
-                res = (T)Convert.ChangeType(val, typeof(T));
-                return;
-            }
-            if (typeof(T) == typeof(ulong))
-            {
-                long range = long.MaxValue; // not really true
-                long val = (n % range) + (long)(ulong.MinValue / 2);
-                res = (T)Convert.ChangeType(val, typeof(T));
-                return;
-            }
-#endif
         }
 
         static public TestIndexNumericResult Run(int count, bool altBtree)
         {
             int i;
             Record r = null;
-            string dbName = "testnumbyte.dbs";
+            string dbName = "testnumushort.dbs";
             Tests.SafeDeleteFile(dbName);
             var res = new TestIndexNumericResult()
             {
                 Count = count,
-                TestName = String.Format("TestIndexByte, count={0}", count)
+                TestName = String.Format("TestIndexUShort, count={0}", count)
             };
 
             var tStart = DateTime.Now;
@@ -81,7 +51,7 @@ namespace Volante
                 db.AlternativeBtree = true;
             db.Open(dbName);
             Tests.Assert(null == db.Root);
-            var idx = db.CreateIndex<byte, Record>(false);
+            var idx = db.CreateIndex<ushort, Record>(false);
             db.Root = idx;
             long val = 1999;
             for (i = 0; i < count; i++)
@@ -112,7 +82,7 @@ namespace Volante
             {
                 Tests.Assert(r2.lval >= mid && r2.lval <= max);
             }
-            byte prev = min;
+            ushort prev = min;
             var e1 = idx.GetEnumerator();
             while (e1.MoveNext())
             {

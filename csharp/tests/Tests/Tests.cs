@@ -25,6 +25,11 @@ public class TestResult
     }
 }
 
+public class TestIndexNumericResult : TestResult
+{
+    public TimeSpan InsertTime;
+}
+
 public class Tests
 {
     internal static int TotalTests = 0;
@@ -286,6 +291,16 @@ public class TestsMain
         r.Print();
     }
 
+    static void RunTestIndexUShort()
+    {
+        TestResult r;
+        int n = GetIterCount("TestIndexUShort");
+        r = TestIndexUShort.Run(n, false);
+        r.Print();
+        r = TestIndexUShort.Run(n, true);
+        r.Print();
+    }
+
     static void RunTestList()
     {
         int n = GetIterCount("TestList");
@@ -365,6 +380,7 @@ public class TestsMain
         RunTestIndexByte();
         RunTestIndexSByte();
         RunTestIndexShort();
+        RunTestIndexUShort();
         RunTestList();
         RunTestR2();
         RunTestRaw();
