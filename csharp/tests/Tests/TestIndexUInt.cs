@@ -91,9 +91,7 @@ namespace Volante
             while (e1.MoveNext())
             {
                 r = e1.Current;
-                // TODO: there seems to be a bug in AltBtree second item inserted is uint.MaxValue
-                if (!altBtree)
-                    Tests.Assert(r.nval >= prev);
+                Tests.Assert(r.nval >= prev);
                 prev = r.nval;
                 i++;
             }
@@ -143,9 +141,7 @@ namespace Volante
                 r2.Deallocate();
                 i++;
             }
-            // TODO: there seems to be a bug in AltBtree where idx.Count doesn't change after removing the items
-            if (!altBtree)
-                Tests.Assert(idx.Count == 0);
+            Tests.Assert(idx.Count == 0);
             db.Commit();
             long usedAfterDelete = db.UsedSize;
             db.Gc();
@@ -156,5 +152,32 @@ namespace Volante
             res.Ok = Tests.FinalizeTest();
             return res;
         }
+
+        static public void TestIndexUInt00()
+        {
+            Record r;
+            int i;
+            Storage db = Tests.GetTransientStorage(true);
+            Tests.Assert(null == db.Root);
+            var idx = db.CreateIndex<uint, Record>(false);
+            db.Root = idx;
+
+            idx.Put(min, new Record(min));
+            idx.Put(max, new Record(max));
+
+            uint prev = min;
+            i = 0;
+            var e1 = idx.GetEnumerator();
+            while (e1.MoveNext())
+            {
+                r = e1.Current;
+                Tests.Assert(r.nval >= prev);
+                prev = r.nval;
+                i++;
+            }
+            db.Close();
+        }
+
     }
 }
+

@@ -779,7 +779,12 @@ namespace Volante.Impl
 
             internal override int compare(Key key, int i)
             {
-                return (uint)key.ival < data[i] ? -1 : (uint)key.ival == data[i] ? 0 : 1;
+                uint uval = (uint)key.ival;
+                if (uval > data[i])
+                    return 1;
+                if (uval == data[i])
+                    return 0;
+                return -1;
             }
 
             internal override void insert(BtreeKey key, int i)
@@ -1518,7 +1523,7 @@ namespace Volante.Impl
                     break;
 
                 case ClassDescriptor.FieldType.tpUInt:
-                    newRoot = new BtreePageOfInt(s);
+                    newRoot = new BtreePageOfUInt(s);
                     break;
 
                 case ClassDescriptor.FieldType.tpLong:
@@ -1526,7 +1531,7 @@ namespace Volante.Impl
                     break;
 
                 case ClassDescriptor.FieldType.tpULong:
-                    newRoot = new BtreePageOfLong(s);
+                    newRoot = new BtreePageOfULong(s);
                     break;
 
                 case ClassDescriptor.FieldType.tpFloat:

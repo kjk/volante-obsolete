@@ -63,7 +63,6 @@ namespace Volante.Impl
             get { return file.Length; }
         }
 
-
         internal OSFile(String filePath, bool readOnly, bool noFlush)
         {
             this.noFlush = noFlush;

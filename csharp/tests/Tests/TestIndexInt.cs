@@ -141,9 +141,7 @@ namespace Volante
                 r2.Deallocate();
                 i++;
             }
-            // TODO: there seems to be a bug in AltBtree where idx.Count doesn't change after removing the items
-            if (!altBtree)
-                Tests.Assert(idx.Count == 0);
+            Tests.Assert(idx.Count == 0);
             db.Commit();
             long usedAfterDelete = db.UsedSize;
             db.Gc();
@@ -155,16 +153,12 @@ namespace Volante
             return res;
         }
 
-        const int INFINITE_PAGE_POOL_SIZE = 0;
         // Test for BtreePageOfInt.compare() bug
         static public void TestIndexInt00()
         {
             Record r;
             int i;
-            Storage db = StorageFactory.CreateStorage();
-            db.AlternativeBtree = true;
-            NullFile dbFile = new NullFile();
-            db.Open(dbFile, INFINITE_PAGE_POOL_SIZE);
+            Storage db = Tests.GetTransientStorage(true);
             Tests.Assert(null == db.Root);
             var idx = db.CreateIndex<int, Record>(false);
             db.Root = idx;
