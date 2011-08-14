@@ -172,7 +172,7 @@ namespace Volante
                 Tests.Assert(prev >= r.nval);
                 prev = r.nval;
             }
-            long usedBeforeDelete = db.DatabaseSize;
+            long usedBeforeDelete = db.UsedSize;
             recs = idx[byte.MinValue, byte.MaxValue];
             foreach (var r2 in recs)
             {
@@ -182,13 +182,11 @@ namespace Volante
             }
             Tests.Assert(idx.Count == 0);
             db.Commit();
-            long usedAfterDelete = db.DatabaseSize;
+            long usedAfterDelete = db.UsedSize;
             db.Gc();
             db.Commit();
-            long usedAfterGc = db.DatabaseSize;
+            long usedAfterGc = db.UsedSize;
             db.Close();
-            // TODO: figure out why usedAfterDelete and
-            // usedAfterGc are not smaller than usedBeforeDelete
             res.ExecutionTime = DateTime.Now - tStart;
             res.Ok = Tests.FinalizeTest();
             return res;
