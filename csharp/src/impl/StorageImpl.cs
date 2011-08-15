@@ -1822,7 +1822,7 @@ namespace Volante.Impl
             }
         }
 
-        public SpatialIndex<T> CreateSpatialIndex<T>() where T : class,IPersistent
+        public ISpatialIndex<T> CreateSpatialIndex<T>() where T : class,IPersistent
         {
             lock (this)
             {
@@ -1833,7 +1833,7 @@ namespace Volante.Impl
             }
         }
 
-        public SpatialIndexR2<T> CreateSpatialIndexR2<T>() where T : class,IPersistent
+        public ISpatialIndexR2<T> CreateSpatialIndexR2<T>() where T : class,IPersistent
         {
             lock (this)
             {

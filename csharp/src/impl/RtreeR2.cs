@@ -5,7 +5,7 @@ namespace Volante.Impl
     using System.Collections.Generic;
     using Volante;
 
-    class RtreeR2<T> : PersistentCollection<T>, SpatialIndexR2<T> where T : class, IPersistent
+    class RtreeR2<T> : PersistentCollection<T>, ISpatialIndexR2<T> where T : class, IPersistent
     {
         private int height;
         private int n;

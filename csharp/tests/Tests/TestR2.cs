@@ -13,7 +13,7 @@ namespace Volante
             public RectangleR2 rect;
         }
 
-        SpatialIndexR2<SpatialObject> index;
+        ISpatialIndexR2<SpatialObject> index;
 
         const int nObjectsInTree = 1000;
 

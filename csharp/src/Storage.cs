@@ -182,7 +182,7 @@ namespace Volante
         /// <returns>
         /// persistent object implementing spatial index
         /// </returns>
-        SpatialIndex<T> CreateSpatialIndex<T>() where T : class,IPersistent;
+        ISpatialIndex<T> CreateSpatialIndex<T>() where T : class,IPersistent;
 
         /// <summary>
         /// Create new R2 spatial index
@@ -190,7 +190,7 @@ namespace Volante
         /// <returns>
         /// persistent object implementing spatial index
         /// </returns>
-        SpatialIndexR2<T> CreateSpatialIndexR2<T>() where T : class,IPersistent;
+        ISpatialIndexR2<T> CreateSpatialIndexR2<T>() where T : class,IPersistent;
 
         /// <summary>
         /// Create new sorted collection with specified comparator

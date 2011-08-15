@@ -13,7 +13,7 @@ namespace Volante
 
     public class TestRtree : Persistent
     {
-        SpatialIndex<SpatialObject> index;
+        ISpatialIndex<SpatialObject> index;
 
         const int nObjectsInTree = 1000;
 

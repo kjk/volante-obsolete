@@ -8,7 +8,7 @@ namespace Volante
     /// Spatial index is used to allow fast selection of spatial objects belonging to the specified rectangle.
     /// Spatial index is implemented using Guttman R-Tree with quadratic split algorithm.
     /// </summary>
-    public interface SpatialIndexR2<T> : IPersistent, IResource, ICollection<T> where T : class,IPersistent
+    public interface ISpatialIndexR2<T> : IPersistent, IResource, ICollection<T> where T : class,IPersistent
     {
         /// <summary>
         /// Find all objects located in the selected rectangle

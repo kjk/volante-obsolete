@@ -6,7 +6,7 @@ using Volante;
 namespace Volante.Impl
 {
 
-    class Rtree<T> : PersistentCollection<T>, SpatialIndex<T> where T : class, IPersistent
+    class Rtree<T> : PersistentCollection<T>, ISpatialIndex<T> where T : class, IPersistent
     {
         private int height;
         private int n;
