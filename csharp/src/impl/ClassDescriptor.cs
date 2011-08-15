@@ -467,14 +467,13 @@ namespace Volante.Impl
 
         internal static Type lookup(IStorage storage, String name)
         {
-            Hashtable resolvedTypes = ((StorageImpl)storage).resolvedTypes;
+            var resolvedTypes = ((StorageImpl)storage).resolvedTypes;
             lock (resolvedTypes)
             {
-                Type cls = (Type)resolvedTypes[name];
-                if (cls != null)
-                {
+                Type cls;
+                var ok = resolvedTypes.TryGetValue(name, out cls);
+                if (ok)
                     return cls;
-                }
                 IClassLoader loader = storage.Loader;
                 if (loader != null)
                 {

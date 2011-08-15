@@ -995,7 +995,7 @@ namespace Volante.Impl
                 gcDone = false;
                 allocatedDelta = 0;
 
-                resolvedTypes = new Hashtable();
+                resolvedTypes = new Dictionary<string, Type>();
 
                 nNestedTransactions = 0;
                 nBlockedTransactions = 0;
@@ -4960,7 +4960,7 @@ namespace Volante.Impl
 
         private IClassLoader loader;
 
-        internal Hashtable resolvedTypes;
+        internal Dictionary<string, Type> resolvedTypes;
 
         internal OidHashTable objectCache;
         internal Hashtable classDescMap;
