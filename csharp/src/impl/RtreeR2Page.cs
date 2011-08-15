@@ -15,7 +15,7 @@ namespace Volante.Impl
         internal RectangleR2[] b;
         internal Link branch;
 
-        internal RtreeR2Page(Storage storage, IPersistent obj, RectangleR2 r)
+        internal RtreeR2Page(IStorage storage, IPersistent obj, RectangleR2 r)
         {
             branch = storage.CreateLink(card);
             branch.Length = card;
@@ -28,7 +28,7 @@ namespace Volante.Impl
             }
         }
 
-        internal RtreeR2Page(Storage storage, RtreeR2Page root, RtreeR2Page p)
+        internal RtreeR2Page(IStorage storage, RtreeR2Page root, RtreeR2Page p)
         {
             branch = storage.CreateLink(card);
             branch.Length = card;
@@ -44,7 +44,7 @@ namespace Volante.Impl
 
         internal RtreeR2Page() { }
 
-        internal RtreeR2Page insert(Storage storage, RectangleR2 r, IPersistent obj, int level)
+        internal RtreeR2Page insert(IStorage storage, RectangleR2 r, IPersistent obj, int level)
         {
             Modify();
             if (--level != 0)
@@ -184,7 +184,7 @@ namespace Volante.Impl
             Modify();
         }
 
-        RtreeR2Page addBranch(Storage storage, RectangleR2 r, IPersistent obj)
+        RtreeR2Page addBranch(IStorage storage, RectangleR2 r, IPersistent obj)
         {
             if (n < card)
             {
@@ -197,7 +197,7 @@ namespace Volante.Impl
             }
         }
 
-        RtreeR2Page splitPage(Storage storage, RectangleR2 r, IPersistent obj)
+        RtreeR2Page splitPage(IStorage storage, RectangleR2 r, IPersistent obj)
         {
             int i, j, seed0 = 0, seed1 = 0;
             double[] rectArea = new double[card + 1];

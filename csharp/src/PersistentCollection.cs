@@ -13,7 +13,7 @@ namespace Volante
         {
         }
 
-        public PersistentCollection(Storage storage)
+        public PersistentCollection(IStorage storage)
             : base(storage)
         {
         }

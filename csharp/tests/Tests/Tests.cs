@@ -112,10 +112,10 @@ public class Tests
         catch { }
     }
 
-    public static Storage GetTransientStorage(bool altBtree)
+    public static IStorage GetTransientStorage(bool altBtree)
     {
         const int INFINITE_PAGE_POOL_SIZE = 0;
-        Storage db = StorageFactory.CreateStorage();
+        IStorage db = StorageFactory.CreateStorage();
         db.AlternativeBtree = true;
         NullFile dbFile = new NullFile();
         db.Open(dbFile, INFINITE_PAGE_POOL_SIZE);

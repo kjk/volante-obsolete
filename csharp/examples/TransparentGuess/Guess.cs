@@ -92,7 +92,7 @@ public class Guess:PersistentContext
 	
     static public void  Main(System.String[] args)
     {
-        Storage db = StorageFactory.CreateStorage();
+        IStorage db = StorageFactory.CreateStorage();
 		
         db.Open("guess.dbs", 4*1024*1024, "GUESS");
         Guess root = (Guess) db.Root;

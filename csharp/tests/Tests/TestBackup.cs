@@ -49,7 +49,7 @@ namespace Volante
             DateTime tStart = DateTime.Now;
             DateTime start = DateTime.Now;
 
-            Storage db = StorageFactory.CreateStorage();
+            IStorage db = StorageFactory.CreateStorage();
             db.Open(DbName1, pagePoolSize);
             Root root = (Root)db.Root;
             if (root == null)

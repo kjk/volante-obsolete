@@ -43,7 +43,7 @@ namespace Volante
             var tStart = DateTime.Now;
             var start = DateTime.Now;
 
-            Storage db = StorageFactory.CreateStorage();
+            IStorage db = StorageFactory.CreateStorage();
             db.SerializeTransientObjects = true;
             db.Open(dbName);
             TestRaw root = (TestRaw)db.Root;

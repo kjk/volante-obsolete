@@ -38,7 +38,7 @@ namespace Volante
         {
             int rc;
             byte[] buf = new byte[1024];
-            Storage db = StorageFactory.CreateStorage();
+            IStorage db = StorageFactory.CreateStorage();
             db.Open(DbName);
             Index<string, Blob> root = (Index<string, Blob>)db.Root;
             Tests.Assert(root == null);
@@ -64,7 +64,7 @@ namespace Volante
         {
             int rc;
             byte[] buf = new byte[1024];
-            Storage db = StorageFactory.CreateStorage();
+            IStorage db = StorageFactory.CreateStorage();
             db.Open(DbName);
             Index<string, Blob> root = (Index<string, Blob>)db.Root;
             Tests.Assert(root != null);

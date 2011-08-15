@@ -597,7 +597,7 @@ namespace Volante.Impl
             block.Modify();
         }
 
-        internal TimeSeriesImpl(Storage storage, int blockSize, long maxBlockTimeInterval)
+        internal TimeSeriesImpl(IStorage storage, int blockSize, long maxBlockTimeInterval)
         {
             this.blockSize = blockSize;
             this.maxBlockTimeInterval = maxBlockTimeInterval;

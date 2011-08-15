@@ -57,7 +57,7 @@ namespace Volante
             var tStart = DateTime.Now;
             var start = DateTime.Now;
 
-            Storage db = StorageFactory.CreateStorage();
+            IStorage db = StorageFactory.CreateStorage();
             db.Open(dbName, pagePoolSize);
             FieldIndex<string, Stock> stocks = (FieldIndex<string, Stock>)db.Root;
             Tests.Assert(stocks == null);

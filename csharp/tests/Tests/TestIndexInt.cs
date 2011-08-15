@@ -44,7 +44,7 @@ namespace Volante
             var tStart = DateTime.Now;
             var start = DateTime.Now;
 
-            Storage db = StorageFactory.CreateStorage();
+            IStorage db = StorageFactory.CreateStorage();
             db.AlternativeBtree = altBtree;
             db.Open(dbName);
             Tests.Assert(null == db.Root);
@@ -156,7 +156,7 @@ namespace Volante
         {
             Record r;
             int i;
-            Storage db = Tests.GetTransientStorage(true);
+            IStorage db = Tests.GetTransientStorage(true);
             Tests.Assert(null == db.Root);
             var idx = db.CreateIndex<int, Record>(false);
             db.Root = idx;

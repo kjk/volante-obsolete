@@ -41,7 +41,7 @@ namespace Volante
             };
             var tStart = DateTime.Now;
 
-            Storage db = StorageFactory.CreateStorage();
+            IStorage db = StorageFactory.CreateStorage();
             if (altBtree || serializableTransaction)
                 db.AlternativeBtree = true;
 

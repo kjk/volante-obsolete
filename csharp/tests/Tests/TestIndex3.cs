@@ -27,7 +27,7 @@ namespace Volante
             Tests.SafeDeleteFile(dbName);
 
             var tStart = DateTime.Now;
-            Storage db = StorageFactory.CreateStorage();
+            IStorage db = StorageFactory.CreateStorage();
             db.AlternativeBtree = useAltBtree;
             db.Open(dbName);
             Root root = (Root)db.Root;

@@ -68,7 +68,7 @@ public class TestLink
         Supplier[] suppliers;
         Detail[] details;
         Order order;
-        Storage db = StorageFactory.CreateStorage();
+        IStorage db = StorageFactory.CreateStorage();
         db.Open("testlist.dbs");
         Root root = (Root)db.Root;
         

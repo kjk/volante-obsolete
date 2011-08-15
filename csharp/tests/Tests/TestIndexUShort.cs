@@ -44,7 +44,7 @@ namespace Volante
             var tStart = DateTime.Now;
             var start = DateTime.Now;
 
-            Storage db = StorageFactory.CreateStorage();
+            IStorage db = StorageFactory.CreateStorage();
             db.AlternativeBtree = altBtree;
             db.Open(dbName);
             Tests.Assert(null == db.Root);

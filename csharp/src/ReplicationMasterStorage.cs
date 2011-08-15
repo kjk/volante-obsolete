@@ -3,7 +3,7 @@ namespace Volante
     /// <summary>
     /// Storage performing replication of changed pages to specified slave nodes.
     /// </summary>
-    public interface ReplicationMasterStorage : Storage
+    public interface ReplicationMasterStorage : IStorage
     {
         /// <summary>
         /// Get number of currently available slave nodes

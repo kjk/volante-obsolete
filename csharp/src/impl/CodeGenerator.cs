@@ -610,8 +610,8 @@ namespace Volante.Impl
 
         private MethodInfo modify = typeof(IPersistent).GetMethod("Modify");
         private MethodInfo getStorage = typeof(IPersistent).GetProperty("Storage").GetGetMethod();
-        private MethodInfo getByOid = typeof(Storage).GetMethod("GetObjectByOID");
-        private MethodInfo makePersistent = typeof(Storage).GetMethod("MakePersistent");
+        private MethodInfo getByOid = typeof(IStorage).GetMethod("GetObjectByOID");
+        private MethodInfo makePersistent = typeof(IStorage).GetMethod("MakePersistent");
 
         private ModuleBuilder dynamicModule;
         private int counter;

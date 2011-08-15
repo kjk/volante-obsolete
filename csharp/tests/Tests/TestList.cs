@@ -41,7 +41,7 @@ namespace Volante
             var tStart = DateTime.Now;
             var start = DateTime.Now;
 
-            Storage db = StorageFactory.CreateStorage();
+            IStorage db = StorageFactory.CreateStorage();
             db.Open(dbName, 10 * 1024 * 1024, "LinkedList"); // 10M cache
             db.Root = db.CreateClass(typeof(LinkNode));
             LinkNode header = (LinkNode)db.Root;

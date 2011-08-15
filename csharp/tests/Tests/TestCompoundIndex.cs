@@ -34,7 +34,7 @@ namespace Volante
             DateTime tStart = DateTime.Now;
             DateTime start = DateTime.Now;
 
-            Storage db = StorageFactory.CreateStorage();
+            IStorage db = StorageFactory.CreateStorage();
             db.AlternativeBtree = altBtree;
             db.Open(dbName, pagePoolSize);
             MultiFieldIndex<Record> root = (MultiFieldIndex<Record>)db.Root;

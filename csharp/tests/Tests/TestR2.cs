@@ -29,7 +29,7 @@ namespace Volante
             Tests.SafeDeleteFile(dbName);
 
             DateTime tStart = DateTime.Now;
-            Storage db = StorageFactory.CreateStorage();
+            IStorage db = StorageFactory.CreateStorage();
             SpatialObject so;
             RectangleR2 r;
             db.FileNoFlush = noFlush;

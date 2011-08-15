@@ -83,7 +83,7 @@ namespace Volante
 
             DateTime tStart = DateTime.Now;
             DateTime start = DateTime.Now;
-            Storage db = StorageFactory.CreateStorage();
+            IStorage db = StorageFactory.CreateStorage();
             db.Open(dbName, pagePoolSize);
 
             Catalogue root = (Catalogue)db.Root;

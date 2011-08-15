@@ -9,7 +9,7 @@ namespace Volante.Impl
     using System.Text;
     using Volante;
 
-    public class StorageImpl : Storage
+    public class StorageImpl : IStorage
     {
         public const int DEFAULT_PAGE_POOL_SIZE = 4 * 1024 * 1024;
 
@@ -2363,7 +2363,7 @@ namespace Volante.Impl
                         {
                             map[typeof(Type)] = classUsage;
                         }
-                        MemoryUsage system = new MemoryUsage(typeof(Storage));
+                        MemoryUsage system = new MemoryUsage(typeof(IStorage));
                         system.totalSize += header.root[0].indexSize * 8L;
                         system.totalSize += header.root[1].indexSize * 8L;
                         system.totalSize += (long)(header.root[currIndex].bitmapEnd - dbBitmapId) * Page.pageSize;
@@ -2380,7 +2380,7 @@ namespace Volante.Impl
                             system.allocatedSize = getBitmapUsedSpace(dbBitmapId, header.root[currIndex].bitmapEnd);
                         }
                         system.nInstances = header.root[currIndex].indexSize;
-                        map[typeof(Storage)] = system;
+                        map[typeof(IStorage)] = system;
                     }
                     return map;
                 }

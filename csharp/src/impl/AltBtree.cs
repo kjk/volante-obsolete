@@ -446,7 +446,7 @@ namespace Volante.Impl
                 return pos;
             }
 
-            internal BtreePage(Storage s, int n)
+            internal BtreePage(IStorage s, int n)
                 : base(s)
             {
                 items = s.CreateLink(n);
@@ -499,7 +499,7 @@ namespace Volante.Impl
                 data[i] = (byte)key.key.ival;
             }
 
-            internal BtreePageOfByte(Storage s)
+            internal BtreePageOfByte(IStorage s)
                 : base(s, MAX_ITEMS)
             {
                 data = new byte[MAX_ITEMS];
@@ -550,7 +550,7 @@ namespace Volante.Impl
                 data[i] = (sbyte)key.key.ival;
             }
 
-            internal BtreePageOfSByte(Storage s)
+            internal BtreePageOfSByte(IStorage s)
                 : base(s, MAX_ITEMS)
             {
                 data = new sbyte[MAX_ITEMS];
@@ -582,7 +582,7 @@ namespace Volante.Impl
             {
             }
 
-            internal BtreePageOfBoolean(Storage s)
+            internal BtreePageOfBoolean(IStorage s)
                 : base(s)
             {
             }
@@ -629,7 +629,7 @@ namespace Volante.Impl
                 data[i] = (short)key.key.ival;
             }
 
-            internal BtreePageOfShort(Storage s)
+            internal BtreePageOfShort(IStorage s)
                 : base(s, MAX_ITEMS)
             {
                 data = new short[MAX_ITEMS];
@@ -680,7 +680,7 @@ namespace Volante.Impl
                 data[i] = (ushort)key.key.ival;
             }
 
-            internal BtreePageOfUShort(Storage s)
+            internal BtreePageOfUShort(IStorage s)
                 : base(s, MAX_ITEMS)
             {
                 data = new ushort[MAX_ITEMS];
@@ -737,7 +737,7 @@ namespace Volante.Impl
                 data[i] = key.key.ival;
             }
 
-            internal BtreePageOfInt(Storage s)
+            internal BtreePageOfInt(IStorage s)
                 : base(s, MAX_ITEMS)
             {
                 data = new int[MAX_ITEMS];
@@ -793,7 +793,7 @@ namespace Volante.Impl
                 data[i] = (uint)key.key.ival;
             }
 
-            internal BtreePageOfUInt(Storage s)
+            internal BtreePageOfUInt(IStorage s)
                 : base(s, MAX_ITEMS)
             {
                 data = new uint[MAX_ITEMS];
@@ -844,7 +844,7 @@ namespace Volante.Impl
                 data[i] = key.key.lval;
             }
 
-            internal BtreePageOfLong(Storage s)
+            internal BtreePageOfLong(IStorage s)
                 : base(s, MAX_ITEMS)
             {
                 data = new long[MAX_ITEMS];
@@ -895,7 +895,7 @@ namespace Volante.Impl
                 data[i] = (ulong)key.key.lval;
             }
 
-            internal BtreePageOfULong(Storage s)
+            internal BtreePageOfULong(IStorage s)
                 : base(s, MAX_ITEMS)
             {
                 data = new ulong[MAX_ITEMS];
@@ -947,7 +947,7 @@ namespace Volante.Impl
                 data[i] = (ulong)key.key.lval;
             }
 
-            internal BtreePageOfDate(Storage s)
+            internal BtreePageOfDate(IStorage s)
                 : base(s, MAX_ITEMS)
             {
                 data = new ulong[MAX_ITEMS];
@@ -999,7 +999,7 @@ namespace Volante.Impl
                 data[i] = (float)key.key.dval;
             }
 
-            internal BtreePageOfFloat(Storage s)
+            internal BtreePageOfFloat(IStorage s)
                 : base(s, MAX_ITEMS)
             {
                 data = new float[MAX_ITEMS];
@@ -1049,7 +1049,7 @@ namespace Volante.Impl
                 data[i] = key.key.dval;
             }
 
-            internal BtreePageOfDouble(Storage s)
+            internal BtreePageOfDouble(IStorage s)
                 : base(s, MAX_ITEMS)
             {
                 data = new double[MAX_ITEMS];
@@ -1099,7 +1099,7 @@ namespace Volante.Impl
                 data[i] = key.key.guid;
             }
 
-            internal BtreePageOfGuid(Storage s)
+            internal BtreePageOfGuid(IStorage s)
                 : base(s, MAX_ITEMS)
             {
                 data = new Guid[MAX_ITEMS];
@@ -1149,7 +1149,7 @@ namespace Volante.Impl
                 data[i] = key.key.dec;
             }
 
-            internal BtreePageOfDecimal(Storage s)
+            internal BtreePageOfDecimal(IStorage s)
                 : base(s, MAX_ITEMS)
             {
                 data = new decimal[MAX_ITEMS];
@@ -1199,7 +1199,7 @@ namespace Volante.Impl
                 data[i] = (IPersistent)key.key.oval;
             }
 
-            internal BtreePageOfObject(Storage s)
+            internal BtreePageOfObject(IStorage s)
                 : base(s, MAX_ITEMS)
             {
                 data = s.CreateLink(MAX_ITEMS);
@@ -1313,7 +1313,7 @@ namespace Volante.Impl
                 return true;
             }
 
-            internal BtreePageOfString(Storage s)
+            internal BtreePageOfString(IStorage s)
                 : base(s, MAX_ITEMS)
             {
                 data = new string[MAX_ITEMS];
@@ -1368,7 +1368,7 @@ namespace Volante.Impl
                 ((object[])data)[i] = key.key.oval;
             }
 
-            internal BtreePageOfRaw(Storage s)
+            internal BtreePageOfRaw(IStorage s)
                 : base(s, MAX_ITEMS)
             {
                 data = new object[MAX_ITEMS];
@@ -1546,7 +1546,7 @@ namespace Volante.Impl
 
         internal void allocateRootPage(BtreeKey ins)
         {
-            Storage s = Storage;
+            IStorage s = Storage;
             BtreePage newRoot = null;
             switch (type)
             {

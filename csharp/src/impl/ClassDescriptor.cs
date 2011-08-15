@@ -465,7 +465,7 @@ namespace Volante.Impl
             resolved = true;
         }
 
-        internal static Type lookup(Storage storage, String name)
+        internal static Type lookup(IStorage storage, String name)
         {
             Hashtable resolvedTypes = ((StorageImpl)storage).resolvedTypes;
             lock (resolvedTypes)

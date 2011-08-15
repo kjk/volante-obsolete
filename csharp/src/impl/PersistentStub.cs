@@ -12,7 +12,7 @@ namespace Volante.Impl
             }
         }
 
-        public virtual Storage Storage
+        public virtual IStorage Storage
         {
             get
             {
@@ -45,7 +45,7 @@ namespace Volante.Impl
             return true;
         }
 
-        public virtual int MakePersistent(Storage storage)
+        public virtual int MakePersistent(IStorage storage)
         {
             throw new StorageError(StorageError.ErrorCode.ACCESS_TO_STUB);
         }
@@ -93,18 +93,18 @@ namespace Volante.Impl
             throw new StorageError(StorageError.ErrorCode.ACCESS_TO_STUB);
         }
 
-        internal PersistentStub(Storage storage, int oid)
+        internal PersistentStub(IStorage storage, int oid)
         {
             this.storage = storage;
             this.oid = oid;
         }
 
-        public void AssignOid(Storage storage, int oid, bool raw)
+        public void AssignOid(IStorage storage, int oid, bool raw)
         {
             throw new StorageError(StorageError.ErrorCode.ACCESS_TO_STUB);
         }
 
-        private Storage storage;
+        private IStorage storage;
         private int oid;
     }
 }
