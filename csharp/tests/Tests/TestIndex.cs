@@ -28,7 +28,7 @@ namespace Volante
 
         internal static int pagePoolSize = 32 * 1024 * 1024;
 
-        static public TestIndexResult Run(int nRecords, bool altBtree, bool inMemory, bool serializableTransaction)
+        static public TestIndexResult Run(int count, bool altBtree, bool inMemory, bool serializableTransaction)
         {
             int i;
             string dbName = "testidx.dbs";
@@ -36,7 +36,7 @@ namespace Volante
 
             var res = new TestIndexResult()
             {
-                Count = nRecords,
+                Count = count,
                 TestName = String.Format("TestIndex(altBtree={0},inMemory={1},serializable={2}", altBtree, inMemory, serializableTransaction)
             };
             var tStart = DateTime.Now;
@@ -66,7 +66,7 @@ namespace Volante
 
             DateTime start = DateTime.Now;
             long key = 1999;
-            for (i = 0; i < nRecords; i++)
+            for (i = 0; i < count; i++)
             {
                 Record rec = new Record();
                 key = (3141592621L * key + 2718281829L) % 1000000007L;
@@ -94,7 +94,7 @@ namespace Volante
             start = System.DateTime.Now;
 
             key = 1999;
-            for (i = 0; i < nRecords; i++)
+            for (i = 0; i < count; i++)
             {
                 key = (3141592621L * key + 2718281829L) % 1000000007L;
                 Record rec1 = intIndex[key];
@@ -112,7 +112,7 @@ namespace Volante
                 key = rec.intKey;
                 i += 1;
             }
-            Tests.Assert(i == nRecords);
+            Tests.Assert(i == count);
 
             String strKey = "";
             i = 0;
@@ -122,7 +122,7 @@ namespace Volante
                 strKey = rec.strKey;
                 i += 1;
             }
-            Tests.Assert(i == nRecords);
+            Tests.Assert(i == count);
             res.IterationTime = DateTime.Now - start;
             start = System.DateTime.Now;
 
@@ -145,7 +145,7 @@ namespace Volante
                 prev = k;
                 i++;
             }
-            Tests.Assert(i == nRecords);
+            Tests.Assert(i == count);
             Tests.AssertException<InvalidOperationException>(
                 () => { var tmp = de.Current; });
             Tests.AssertException<InvalidOperationException>(
@@ -156,7 +156,7 @@ namespace Volante
                 () => { var tmp = de.Value; });
 
             key = 1999;
-            for (i = 0; i < nRecords; i++)
+            for (i = 0; i < count; i++)
             {
                 key = (3141592621L * key + 2718281829L) % 1000000007L;
                 Record rec = intIndex.Get(key);
