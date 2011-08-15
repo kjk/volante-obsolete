@@ -23,3 +23,4 @@
 19. Rename SpatialIndex => ISpatialIndex, SpatialIndexR2 => ISpatialIndexR2
 20. Rename BitIndex => IBitIndex, MultiFieldIndex => IMultiFieldIndex
 21. Rename FieldIndex => IFieldIndex, GenericIndex => IGenericIndex
+22. Rename GenericLink => IGenericLink

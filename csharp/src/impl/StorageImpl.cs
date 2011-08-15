@@ -4811,7 +4811,7 @@ namespace Volante.Impl
                     }
                     else
                     {
-                        GenericLink link = (GenericLink)val;
+                        IGenericLink link = (IGenericLink)val;
                         link.SetOwner(po);
                         int len = link.Size();
                         buf.extend(offs + 4 + len * 4);

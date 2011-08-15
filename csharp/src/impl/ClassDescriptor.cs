@@ -419,7 +419,7 @@ namespace Volante.Impl
             {
                 type = FieldType.tpArrayOfOid;
             }
-            else if (typeof(GenericLink).IsAssignableFrom(c))
+            else if (typeof(IGenericLink).IsAssignableFrom(c))
             {
                 type = FieldType.tpLink;
             }

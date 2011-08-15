@@ -7,7 +7,7 @@ namespace Volante
     /// <summary>
     /// Common interface for all links
     /// </summary>
-    public interface GenericLink
+    public interface IGenericLink
     {
         /// <summary> Get number of the linked objects 
         /// </summary>
@@ -61,7 +61,7 @@ namespace Volante
     /// and standalone relation is represented by Relation persistent class created by
     /// Storage.createRelation method.
     /// </summary>
-    public interface ILink<T> : IList<T>, GenericLink where T : class,IPersistent
+    public interface ILink<T> : IList<T>, IGenericLink where T : class,IPersistent
     {
         /// <summary>Number of the linked objects 
         /// </summary>
