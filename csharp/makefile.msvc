@@ -3,7 +3,6 @@
 # CFG=[dbg|rel] (default: dbg)
 # OMIT_XML=[yes|no] - default: no
 # OMIT_REPLICATION=[yes|no] - default: no
-# FOR_PARTCOVER=[yes|no] - default: no
 
 CSC=csc
 CSC_FLAGS=/debug+
@@ -31,13 +30,6 @@ O=$(O)-norepl
 !if "$(OMIT_ALL)"=="yes"
 CSC_FLAGS=$(CSC_FLAGS) /d:OMIT_REPLICATION /d:OMIT_XML
 O=$(O)-noall
-!endif
-
-!if "$(FOR_PARTCOVER)"=="yes"
-# PartCover doesn't support 64bit, so force building as x86 so
-# we can do code coverage with PartCover under 64-bit OS as well
-CSC_FLAGS=$(CSC_FLAGS) /platform:x86
-O=$(O)-cov
 !endif
 
 EXAMPLES=$(O)\Guess.exe $(O)\IpCountry.exe $(O)\PropGuess.exe $(O)\TestLink.exe \
