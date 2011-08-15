@@ -20,7 +20,7 @@ namespace Volante
     /// </summary>
     public interface GenericIndex { }
 
-    public interface GenericIndex<K, V> : IPersistent, IResource, ICollection<V>, GenericIndex where V : class,IPersistent
+    public interface IGenericIndex<K, V> : IPersistent, IResource, ICollection<V>, GenericIndex where V : class,IPersistent
     {
         /// <summary> Access element by key
         /// </summary>

@@ -59,7 +59,7 @@ namespace Volante
 
             IStorage db = StorageFactory.CreateStorage();
             db.Open(dbName, pagePoolSize);
-            FieldIndex<string, Stock> stocks = (FieldIndex<string, Stock>)db.Root;
+            IFieldIndex<string, Stock> stocks = (IFieldIndex<string, Stock>)db.Root;
             Tests.Assert(stocks == null);
             stocks = db.CreateFieldIndex<string, Stock>("name", true);
             stock = new Stock();

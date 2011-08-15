@@ -19,10 +19,10 @@ public class Shipment : Persistent {
 }
 
 public class TestSSD : Persistent {
-    public FieldIndex<string,Supplier>    supplierName;
-    public FieldIndex<string,Detail>     detailId;
-    public FieldIndex<Supplier,Shipment> shipmentSupplier;
-    public FieldIndex<Detail,Shipment>   shipmentDetail;
+    public IFieldIndex<string,Supplier>    supplierName;
+    public IFieldIndex<string,Detail>     detailId;
+    public IFieldIndex<Supplier,Shipment> shipmentSupplier;
+    public IFieldIndex<Detail,Shipment>   shipmentDetail;
 
     static void skip(String prompt) {
         Console.Write(prompt);

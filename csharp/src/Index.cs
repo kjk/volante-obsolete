@@ -12,7 +12,7 @@ namespace Volante
     /// (each boundary can be specified or unspecified and can be inclusive or exclusive)
     /// Key should be of scalar, String, java.util.Date or peristent object type.
     /// </summary>
-    public interface Index<K, V> : GenericIndex<K, V> where V : class,IPersistent
+    public interface Index<K, V> : IGenericIndex<K, V> where V : class,IPersistent
     {
         /// <summary> Put new object in the index. 
         /// </summary>

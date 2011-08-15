@@ -26,8 +26,8 @@ class Order : Persistent
 
 class Root : Persistent 
 {
-    internal FieldIndex<string,Detail> details;
-    internal FieldIndex<string,Supplier> suppliers;
+    internal IFieldIndex<string,Detail> details;
+    internal IFieldIndex<string,Supplier> suppliers;
 }
 
 public class TestLink

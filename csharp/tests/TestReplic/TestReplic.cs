@@ -73,7 +73,7 @@ public class TestReplic
             db.ReplicationAck = ack;
             db.Open("master.dbs", pagePoolSize);
 
-            FieldIndex<int, Record> root = (FieldIndex<int, Record>)db.Root;
+            IFieldIndex<int, Record> root = (IFieldIndex<int, Record>)db.Root;
             if (root == null)
             {
                 root = db.CreateFieldIndex<int, Record>("key", true);
@@ -111,7 +111,7 @@ public class TestReplic
             {
                 db.WaitForModification();
                 db.BeginThreadTransaction(TransactionMode.ReplicationSlave);
-                FieldIndex<int, Record> root = (FieldIndex<int, Record>)db.Root;
+                IFieldIndex<int, Record> root = (IFieldIndex<int, Record>)db.Root;
                 if (root != null && root.Count == nRecords)
                 {
                     DateTime start = DateTime.Now;

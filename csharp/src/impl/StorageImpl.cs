@@ -1885,14 +1885,14 @@ namespace Volante.Impl
             }
         }
 
-        public FieldIndex<K, V> CreateFieldIndex<K, V>(String fieldName, bool unique) where V : class,IPersistent
+        public IFieldIndex<K, V> CreateFieldIndex<K, V>(String fieldName, bool unique) where V : class,IPersistent
         {
             lock (this)
             {
                 ensureOpened();
-                FieldIndex<K, V> index = alternativeBtree
-                    ? (FieldIndex<K, V>)new AltBtreeFieldIndex<K, V>(fieldName, unique)
-                    : (FieldIndex<K, V>)new BtreeFieldIndex<K, V>(fieldName, unique);
+                IFieldIndex<K, V> index = alternativeBtree
+                    ? (IFieldIndex<K, V>)new AltBtreeFieldIndex<K, V>(fieldName, unique)
+                    : (IFieldIndex<K, V>)new BtreeFieldIndex<K, V>(fieldName, unique);
                 index.AssignOid(this, 0, false);
                 return index;
             }

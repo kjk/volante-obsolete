@@ -22,3 +22,4 @@
 18. Rename TimeSeriesTick => ITimeSeriesTick, SortedCollection => ISortedCollection
 19. Rename SpatialIndex => ISpatialIndex, SpatialIndexR2 => ISpatialIndexR2
 20. Rename BitIndex => IBitIndex, MultiFieldIndex => IMultiFieldIndex
+21. Rename FieldIndex => IFieldIndex, GenericIndex => IGenericIndex

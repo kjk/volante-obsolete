@@ -13,7 +13,7 @@ namespace Volante
     /// (each boundary can be specified or unspecified and can be inclusive or exclusive)
     /// Key should be of scalar, String, DateTime or peristent object type.
     /// </summary>
-    public interface FieldIndex<K, V> : GenericIndex<K, V> where V : class,IPersistent
+    public interface IFieldIndex<K, V> : IGenericIndex<K, V> where V : class,IPersistent
     {
 
         /// <summary> Put new object in the index. 
@@ -93,7 +93,7 @@ namespace Volante
 
     /// <summary> Interface of multifield index. 
     /// </summary>
-    public interface IMultiFieldIndex<V> : FieldIndex<object[], V> where V : class,IPersistent
+    public interface IMultiFieldIndex<V> : IFieldIndex<object[], V> where V : class,IPersistent
     {
         /// <summary>
         /// Get fields used as a key

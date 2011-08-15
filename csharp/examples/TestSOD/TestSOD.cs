@@ -35,8 +35,8 @@ public class Order : Persistent
 
 public class TestSOD : Persistent 
 {
-    public FieldIndex<string,Supplier> supplierName;
-    public FieldIndex<string,Detail>   detailId;
+    public IFieldIndex<string,Supplier> supplierName;
+    public IFieldIndex<string,Detail>   detailId;
 
     static void skip(String prompt) 
     {

@@ -21,7 +21,7 @@ namespace Volante
         class Root : Persistent
         {
             internal Index<string, Record> strIndex;
-            internal FieldIndex<long, Record> intIndex;
+            internal IFieldIndex<long, Record> intIndex;
             internal IMultiFieldIndex<Record> compoundIndex;
         }
 
@@ -60,7 +60,7 @@ namespace Volante
                 root.compoundIndex = db.CreateFieldIndex<Record>(new String[] { "strKey", "intKey" }, true);
                 db.Root = root;
             }
-            FieldIndex<long, Record> intIndex = root.intIndex;
+            IFieldIndex<long, Record> intIndex = root.intIndex;
             IMultiFieldIndex<Record> compoundIndex = root.compoundIndex;
             Index<string, Record> strIndex = root.strIndex;
             long key = 1999;

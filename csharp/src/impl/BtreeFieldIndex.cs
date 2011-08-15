@@ -7,7 +7,7 @@ namespace Volante.Impl
     using System.Diagnostics;
     using Volante;
 
-    class BtreeFieldIndex<K, V> : Btree<K, V>, FieldIndex<K, V> where V : class,IPersistent
+    class BtreeFieldIndex<K, V> : Btree<K, V>, IFieldIndex<K, V> where V : class,IPersistent
     {
         internal String className;
         internal String fieldName;

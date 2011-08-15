@@ -153,7 +153,7 @@ namespace Volante
         /// <exception cref="Volante.StorageError">StorageError(StorageError.INDEXED_FIELD_NOT_FOUND) if there is no such field in specified class,
         /// StorageError(StorageError.UNSUPPORTED_INDEX_TYPE) exception if type of specified field is not supported by implementation
         /// </exception>
-        FieldIndex<K, V> CreateFieldIndex<K, V>(string fieldName, bool unique) where V : class,IPersistent;
+        IFieldIndex<K, V> CreateFieldIndex<K, V>(string fieldName, bool unique) where V : class,IPersistent;
 
         /// <summary> 
         /// Create new multi-field index
