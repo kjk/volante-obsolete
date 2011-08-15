@@ -1,15 +1,17 @@
 --- Release version 0.9 ??.??.????
 
 1. Renamed Perst to Volante
-2. Fixes when using USE_GENERICS define
+2. Fixed the version that uses generics and ditched the non-generic version
 3. Added OMIT_XML and OMIT_REPLICATION defines for building smaller dll by excluding those features
 4. Wrote Unix/Mac makefile and test runner (using mono)
-5. Fix AltBtree enumerators to detect tree modification during enumeration
-6. Started unit tests
+5. Fixed AltBtree enumerators to detect tree modification during enumeration
+6. Started  on more comprehensive tests
 7. Converted polymorphic Storage.SetProperty() method into C# properties
-8. Remove Storage.SetGcThreshold() since it's redundant with the new
+8. Removed Storage.SetGcThreshold() since it's redundant with the new
    Storage.GcThreshold property
-9. Fix Storage.FileNoFlush so that it works also before database is opened,
+9. Fixed Storage.FileNoFlush so that it works also before database is opened,
    as per docs.
 10. Converted Storage.CacheKind property from a string to Storage.CacheType enum
-11. Converted a few Hashtable to Dictionary<>
+11. Fixed uint and ulong indexes in AltBtree
+12. Fixed int indexes in AltBtree
+13. Added support for DateTime for AltBtree index

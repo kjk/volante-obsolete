@@ -109,6 +109,7 @@
     <Compile Include="TestIndex4.cs" />
     <Compile Include="TestIndexBoolean.cs" />
     <Compile Include="TestIndexByte.cs" />
+    <Compile Include="TestIndexDateTime.cs" />
     <Compile Include="TestIndexDecimal.cs" />
     <Compile Include="TestIndexDouble.cs" />
     <Compile Include="TestIndexFloat.cs" />

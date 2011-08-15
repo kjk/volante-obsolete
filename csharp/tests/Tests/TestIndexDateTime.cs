@@ -3,12 +3,12 @@ namespace Volante
     using System;
     using System.Collections;
 
-    public class TestIndexDecimal
+    public class TestIndexDateTime
     {
         public class Record : Persistent
         {
-            public decimal nval; // native value
-            public Record(decimal v)
+            public DateTime nval; // native value
+            public Record(DateTime v)
             {
                 nval = v;
             }
@@ -17,25 +17,25 @@ namespace Volante
             }
         }
 
-        const decimal min = decimal.MinValue;
-        const decimal max = decimal.MaxValue;
-        const decimal mid = 0;
+        static readonly DateTime min = DateTime.MinValue;
+        static readonly DateTime max = DateTime.MaxValue;
+        static readonly DateTime mid = new DateTime(max.Ticks / 2);
 
-        static decimal Clamp(long n)
+        static DateTime Clamp(long n)
         {
-            return n;
+            return new DateTime(n);
         }
 
         static public TestIndexNumericResult Run(int count, bool altBtree)
         {
             int i;
             Record r = null;
-            string dbName = "testnumlong.dbs";
+            string dbName = "testnumdatetime.dbs";
             Tests.SafeDeleteFile(dbName);
             var res = new TestIndexNumericResult()
             {
                 Count = count,
-                TestName = String.Format("TestIndexDecimal, count={0}, altBtree={1}", count, altBtree)
+                TestName = String.Format("TestIndexDateTime, count={0}, altBtree={1}", count, altBtree)
             };
 
             var tStart = DateTime.Now;
@@ -45,13 +45,13 @@ namespace Volante
             db.AlternativeBtree = altBtree;
             db.Open(dbName);
             Tests.Assert(null == db.Root);
-            var idx = db.CreateIndex<decimal, Record>(false);
+            var idx = db.CreateIndex<DateTime, Record>(false);
             db.Root = idx;
             long val = 1999;
             for (i = 0; i < count; i++)
             {
                 val = (3141592621L * val + 2718281829L) % 1000000007L;
-                decimal idxVal = Clamp(val);
+                DateTime idxVal = Clamp(val);
                 r = new Record(idxVal);
                 idx.Put(idxVal, r);
                 if (i % 100 == 0)
@@ -80,7 +80,7 @@ namespace Volante
                 Tests.Assert(r2.nval >= mid && r2.nval <= max);
                 i++;
             }
-            decimal prev = min;
+            DateTime prev = min;
             i = 0;
             var e1 = idx.GetEnumerator();
             while (e1.MoveNext())

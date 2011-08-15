@@ -11,4 +11,5 @@ Things to do for c# version:
 * change Hashtables to Dictionary<> (e.g. classDescMap, resolvedTypes in StorageImpl.cs)
 * rename PerstSink to VolanteSink
 * get rid of Storage.StringEncoding and always use utf8 for storing strings (?)
+
 Done:

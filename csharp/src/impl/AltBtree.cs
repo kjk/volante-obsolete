@@ -906,6 +906,59 @@ namespace Volante.Impl
             }
         }
 
+        class BtreePageOfDate : BtreePage
+        {
+            internal override Array Data
+            {
+                get
+                {
+                    return data;
+                }
+
+            }
+            internal ulong[] data;
+
+            const int MAX_ITEMS = BTREE_PAGE_SIZE / (4 + 8);
+
+            internal override Key getKey(int i)
+            {
+                return new Key(data[i]);
+            }
+
+            internal override object getKeyValue(int i)
+            {
+                return data[i];
+            }
+
+            internal override BtreePage clonePage()
+            {
+                return new BtreePageOfDate(Storage);
+            }
+
+            internal override int compare(Key key, int i)
+            {
+                ulong uval = (ulong)key.lval;
+                return uval < data[i] ? -1 : uval == data[i] ? 0 : 1;
+            }
+
+            internal override void insert(BtreeKey key, int i)
+            {
+                items[i] = key.node;
+                data[i] = (ulong)key.key.lval;
+            }
+
+            internal BtreePageOfDate(Storage s)
+                : base(s, MAX_ITEMS)
+            {
+                data = new ulong[MAX_ITEMS];
+            }
+
+            internal BtreePageOfDate()
+            {
+            }
+        }
+
+        
         class BtreePageOfFloat : BtreePage
         {
             internal override Array Data
@@ -1532,6 +1585,10 @@ namespace Volante.Impl
 
                 case ClassDescriptor.FieldType.tpULong:
                     newRoot = new BtreePageOfULong(s);
+                    break;
+
+                case ClassDescriptor.FieldType.tpDate:
+                    newRoot = new BtreePageOfDate(s);
                     break;
 
                 case ClassDescriptor.FieldType.tpFloat:
