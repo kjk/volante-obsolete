@@ -18,3 +18,4 @@
 14. Rename Storage => IStorage, PatriciaKey => IPatriciaKey
 15. Rename GenericPArray => IGenericPArray, Blob => IBlob
 16. Rename PArray => IParray, Link => ILink
+17. Rename ClassLoader => IClassLoader, TimeSeries => ITimeSeries

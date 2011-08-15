@@ -5,7 +5,7 @@ namespace Volante
     /// <summary>
     /// Interface to provide application apecific class loading
     /// </summary>
-    public interface ClassLoader
+    public interface IClassLoader
     {
         /// <summary>
         /// Load class with specified name.

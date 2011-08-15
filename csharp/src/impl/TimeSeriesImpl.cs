@@ -7,7 +7,7 @@ namespace Volante.Impl
     using System.Diagnostics;
     using Volante;
 
-    class TimeSeriesImpl<T> : PersistentResource, TimeSeries<T> where T : TimeSeriesTick
+    class TimeSeriesImpl<T> : PersistentResource, ITimeSeries<T> where T : TimeSeriesTick
     {
         public virtual bool IsSynchronized
         {

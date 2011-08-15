@@ -33,7 +33,7 @@ namespace Volante
     /// the size of the block.
     /// </p>
     /// </summary>
-    public interface TimeSeries<T> : IPersistent, IResource, ICollection<T> where T : TimeSeriesTick
+    public interface ITimeSeries<T> : IPersistent, IResource, ICollection<T> where T : TimeSeriesTick
     {
 
         /// <summary>

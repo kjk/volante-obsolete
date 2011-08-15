@@ -475,7 +475,7 @@ namespace Volante.Impl
                 {
                     return cls;
                 }
-                ClassLoader loader = storage.Loader;
+                IClassLoader loader = storage.Loader;
                 if (loader != null)
                 {
                     cls = loader.LoadClass(name);

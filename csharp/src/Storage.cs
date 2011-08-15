@@ -306,7 +306,7 @@ namespace Volante
         /// value of maxBlockTimeInterval can be set as 100*(24*60*60*10000000L)*2
         /// </param>
         /// <returns>new empty time series</returns>
-        TimeSeries<T> CreateTimeSeries<T>(int blockSize, long maxBlockTimeInterval) where T : TimeSeriesTick;
+        ITimeSeries<T> CreateTimeSeries<T>(int blockSize, long maxBlockTimeInterval) where T : TimeSeriesTick;
 
         /// <summary>
         /// Create PATRICIA trie (Practical Algorithm To Retrieve Information Coded In Alphanumeric)
@@ -459,7 +459,7 @@ namespace Volante
         /// <TD><code>perst.gc.threshold</code></TD><TD>long</TD><TD>long.MaxValue</TD>
         /// <TD>Threshold for initiation of garbage collection. 
         /// If it is set to the value different from long.MaxValue, GC will be started each time 
-        /// when delta between total size of allocated and deallocated objects exceeds specified threashold OR                                                                                                                                                                                                                           
+        /// when delta between total size of allocated and deallocated objects exceeds specified threashold OR
         /// after reaching end of allocation bitmap in allocator.</TD>
         /// ---
         /// <summary>Set threshold for initiation of garbage collection. By default garbage collection is disable (threshold is set to
@@ -537,7 +537,7 @@ namespace Volante
         /// loaded class descriptors. If class loader is not specified or
         /// it did find the class, then class will be searched in all active assemblies
         /// </summary>
-        ClassLoader Loader { get; set; }
+        IClassLoader Loader { get; set; }
 
 #if CF
         /// <summary>

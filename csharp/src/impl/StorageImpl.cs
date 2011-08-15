@@ -1957,7 +1957,7 @@ namespace Volante.Impl
             return new RelationImpl<M, O>(owner);
         }
 
-        public TimeSeries<T> CreateTimeSeries<T>(int blockSize, long maxBlockTimeInterval) where T : TimeSeriesTick
+        public ITimeSeries<T> CreateTimeSeries<T>(int blockSize, long maxBlockTimeInterval) where T : TimeSeriesTick
         {
             return new TimeSeriesImpl<T>(this, blockSize, maxBlockTimeInterval);
         }
@@ -4852,7 +4852,7 @@ namespace Volante.Impl
             return offs;
         }
 
-        public ClassLoader Loader
+        public IClassLoader Loader
         {
             set
             {
@@ -4929,7 +4929,7 @@ namespace Volante.Impl
 
         internal StorageListener listener;
 
-        private ClassLoader loader;
+        private IClassLoader loader;
 
         internal Hashtable resolvedTypes;
 

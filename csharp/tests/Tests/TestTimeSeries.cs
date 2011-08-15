@@ -35,7 +35,7 @@ namespace Volante
         class Stock : Persistent
         {
             public string name;
-            public TimeSeries<Quote> quotes;
+            public ITimeSeries<Quote> quotes;
         }
 
         const int pagePoolSize = 32 * 1024 * 1024;
