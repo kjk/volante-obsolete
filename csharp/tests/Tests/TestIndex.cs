@@ -54,15 +54,16 @@ namespace Volante
                 db.BeginThreadTransaction(TransactionMode.Serializable);
 
             Root root = (Root)db.Root;
-            if (root == null)
-            {
-                root = new Root();
-                root.strIndex = db.CreateIndex<string, Record>(true);
-                root.intIndex = db.CreateIndex<long, Record>(true);
-                db.Root = root;
-            }
-            Index<string, Record> strIndex = root.strIndex;
-            Index<long, Record> intIndex = root.intIndex;
+            Tests.Assert(null == root);
+            root = new Root();
+            root.strIndex = db.CreateIndex<string, Record>(true);
+            root.intIndex = db.CreateIndex<long, Record>(true);
+            db.Root = root;
+            var strIndex = root.strIndex;
+            Tests.Assert(typeof(string) == strIndex.KeyType);
+            var intIndex = root.intIndex;
+            Tests.Assert(typeof(long) == intIndex.KeyType);
+
             DateTime start = DateTime.Now;
             long key = 1999;
             for (i = 0; i < nRecords; i++)
@@ -134,13 +135,25 @@ namespace Volante
                 DictionaryEntry e2 = de.Entry;
                 Tests.Assert(e1.Equals(e2));
                 long k = (long)e1.Key;
-                Record v = (Record)e1.Value;
-                Tests.Assert(v.intKey == k);
+                long k2 = (long)de.Key;
+                Tests.Assert(k == k2);
+                Record v1 = (Record)e1.Value;
+                Record v2 = (Record)de.Value;
+                Tests.Assert(v1.Equals(v2));
+                Tests.Assert(v1.intKey == k);
                 Tests.Assert(k >= prev);
                 prev = k;
                 i++;
             }
             Tests.Assert(i == nRecords);
+            Tests.AssertException<InvalidOperationException>(
+                () => { var tmp = de.Current; });
+            Tests.AssertException<InvalidOperationException>(
+                () => { var tmp = de.Entry; });
+            Tests.AssertException<InvalidOperationException>(
+                () => { var tmp = de.Key; });
+            Tests.AssertException<InvalidOperationException>(
+                () => { var tmp = de.Value; });
 
             key = 1999;
             for (i = 0; i < nRecords; i++)
