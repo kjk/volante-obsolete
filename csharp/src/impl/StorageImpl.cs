@@ -2309,7 +2309,7 @@ namespace Volante.Impl
 
                     if (rootOid != 0)
                     {
-                        MemoryUsage indexUsage = new MemoryUsage(typeof(GenericIndex));
+                        MemoryUsage indexUsage = new MemoryUsage(typeof(IGenericIndex));
                         MemoryUsage classUsage = new MemoryUsage(typeof(Type));
 
                         markOid(rootOid);
@@ -2382,7 +2382,7 @@ namespace Volante.Impl
 
                         if (indexUsage.nInstances != 0)
                         {
-                            map[typeof(GenericIndex)] = indexUsage;
+                            map[typeof(IGenericIndex)] = indexUsage;
                         }
                         if (classUsage.nInstances != 0)
                         {

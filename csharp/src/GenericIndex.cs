@@ -14,13 +14,13 @@ namespace Volante
     /// Index is used to provide fast access to the object by key. 
     /// Object in the index are stored ordered by key value. 
     /// It is possible to select object using exact value of the key or 
-    /// select set of objects which key belongs to the specified interval 
+    /// select set of objects whose key belongs to the specified interval 
     /// (each boundary can be specified or unspecified and can be inclusive or exclusive)
-    /// Key should be of scalar, String, java.util.Date or peristent object type.
+    /// Key should be of scalar, String, DateTime or peristent object type.
     /// </summary>
-    public interface GenericIndex { }
+    public interface IGenericIndex { }
 
-    public interface IGenericIndex<K, V> : IPersistent, IResource, ICollection<V>, GenericIndex where V : class,IPersistent
+    public interface IGenericIndex<K, V> : IPersistent, IResource, ICollection<V>, IGenericIndex where V : class,IPersistent
     {
         /// <summary> Access element by key
         /// </summary>

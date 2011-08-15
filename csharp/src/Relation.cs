@@ -71,12 +71,12 @@ namespace Volante
             }
         }
 
-        /// <summary> Relation constructor. Creates empty relation with specified owner and no members. 
+        /// <summary> Relation constructor. Creates empty relation with specified owner and no members.
         /// Members can be added to the relation later.
         /// </summary>
         /// <param name="owner">owner of the relation
         /// 
-        /// </param>		
+        /// </param>
         public Relation(O owner)
         {
             this.owner = owner;

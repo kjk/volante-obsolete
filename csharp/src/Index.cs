@@ -6,11 +6,11 @@ namespace Volante
 
     /// <summary> Interface of object index.
     /// Index is used to provide fast access to the object by key. 
-    /// Object in the index are stored ordered by key value. 
+    /// Objects in the index are stored ordered by key value. 
     /// It is possible to select object using exact value of the key or 
-    /// select set of objects which key belongs to the specified interval 
+    /// select set of objects whose key belongs to a specified interval 
     /// (each boundary can be specified or unspecified and can be inclusive or exclusive)
-    /// Key should be of scalar, String, java.util.Date or peristent object type.
+    /// Key should be of scalar, String, DateTime or peristent object type.
     /// </summary>
     public interface Index<K, V> : IGenericIndex<K, V> where V : class,IPersistent
     {
