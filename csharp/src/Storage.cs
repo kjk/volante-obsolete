@@ -408,6 +408,7 @@ namespace Volante
         /// <returns>OID assigned to the object</returns>
         int MakePersistent(IPersistent obj);
 
+#if !OMIT_BTREE
         /// <TR><TD><code>perst.alternative.btree</code></TD><TD>bool</TD><TD>false</TD>
         /// <TD>Use aternative implementation of B-Tree (not using direct access to database
         /// file pages). This implementation should be used in case of serialized per thread transctions.
@@ -419,6 +420,7 @@ namespace Volante
         /// of object caching. And B-Tree supports keys of user defined types. 
         /// </TD></TR>
         bool AlternativeBtree { get; set; }
+#endif
 
         /// <TR><TD><code>perst.serialize.transient.objects</code></TD><TD>bool</TD><TD>false</TD>
         /// <TD>Serialize any class not derived from IPersistent or IValue using standard Java serialization

@@ -1795,7 +1795,7 @@ namespace Volante.Impl
                 ensureOpened();
 #if !OMIT_BTREE
                 Index<K, V> index = alternativeBtree
-                    ? (Index<K, V>)new AltBtree<K, V>(unique)
+                    ? new AltBtree<K, V>(unique)
                     : (Index<K, V>)new Btree<K, V>(unique);
 #else
                 Index<K, V> index = new AltBtree<K, V>(unique);
@@ -3016,11 +3016,13 @@ namespace Volante.Impl
             descList = null;
         }
 
+#if !OMIT_BTREE
         public bool AlternativeBtree
         {
             set { alternativeBtree = value; }
             get { return alternativeBtree; }
         }
+#endif
 
         public bool SerializeTransientObjects
         {
@@ -4896,7 +4898,9 @@ namespace Volante.Impl
         private CacheType cacheKind = CacheType.Lru;
         private bool readOnly = false;
         private bool noFlush = false;
+#if !OMIT_BTREE
         private bool alternativeBtree = false;
+#endif
         private bool backgroundGc = false;
 
         internal bool replicationAck = false;
