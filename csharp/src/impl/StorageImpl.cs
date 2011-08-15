@@ -1012,7 +1012,7 @@ namespace Volante.Impl
 
                 objectCache = createObjectCache(cacheKind, pagePoolSize, objectCacheInitSize);
 
-                classDescMap = new Hashtable();
+                classDescMap = new Dictionary<Type,ClassDescriptor>();
                 descList = null;
 
                 objectFormatter = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
@@ -1248,8 +1248,9 @@ namespace Volante.Impl
 
         internal ClassDescriptor getClassDescriptor(System.Type cls)
         {
-            ClassDescriptor desc = (ClassDescriptor)classDescMap[cls];
-            if (desc == null)
+            ClassDescriptor desc;
+            var found = classDescMap.TryGetValue(cls, out desc);
+            if (!found)
             {
                 desc = new ClassDescriptor(this, cls);
                 desc.generateSerializer();
@@ -3355,7 +3356,7 @@ namespace Volante.Impl
             int typeOid = ObjectHeader.getType(body, 0);
             if (typeOid == 0)
             {
-                desc = (ClassDescriptor)classDescMap[cls];
+                desc = classDescMap[cls];
             }
             else
             {
@@ -4963,7 +4964,7 @@ namespace Volante.Impl
         internal Dictionary<string, Type> resolvedTypes;
 
         internal OidHashTable objectCache;
-        internal Hashtable classDescMap;
+        internal Dictionary<Type, ClassDescriptor> classDescMap;
         internal ClassDescriptor descList;
 
         internal static readonly LocalDataStoreSlot transactionContext = Thread.AllocateDataSlot();

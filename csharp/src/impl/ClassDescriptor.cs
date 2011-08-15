@@ -612,7 +612,7 @@ namespace Volante.Impl
                 throw new StorageError(StorageError.ErrorCode.DESCRIPTOR_FAILURE, cls);
             }
             StorageImpl s = (StorageImpl)Storage;
-            if (!s.classDescMap.Contains(cls))
+            if (!s.classDescMap.ContainsKey(cls))
             {
                 ((StorageImpl)Storage).classDescMap.Add(cls, this);
             }
