@@ -125,6 +125,23 @@ namespace Volante
             res.IterationTime = DateTime.Now - start;
             start = System.DateTime.Now;
 
+            IDictionaryEnumerator de = intIndex.GetDictionaryEnumerator();
+            long prev = long.MinValue;
+            i = 0;
+            while (de.MoveNext())
+            {
+                DictionaryEntry e1 = (DictionaryEntry)de.Current;
+                DictionaryEntry e2 = de.Entry;
+                Tests.Assert(e1.Equals(e2));
+                long k = (long)e1.Key;
+                Record v = (Record)e1.Value;
+                Tests.Assert(v.intKey == k);
+                Tests.Assert(k >= prev);
+                prev = k;
+                i++;
+            }
+            Tests.Assert(i == nRecords);
+
             key = 1999;
             for (i = 0; i < nRecords; i++)
             {
