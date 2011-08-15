@@ -552,6 +552,7 @@ namespace Volante.Impl
                 throwException("ID is not specified or index");
             }
             ClassDescriptor desc = storage.getClassDescriptor(findClassByName(indexType));
+#if !OMIT_BTREE
             Btree btree = (Btree)desc.newInstance();
             if (className != null)
             {
@@ -593,6 +594,7 @@ namespace Volante.Impl
                 }
             }
             storage.assignOid(btree, oid);
+#endif
 
             while ((tkn = scanner.scan()) == XMLScanner.Token.LT)
             {
@@ -600,6 +602,7 @@ namespace Volante.Impl
                 {
                     throwException("<ref> element expected");
                 }
+#if !OMIT_BTREE
                 XMLElement refElem = readElement("ref");
                 Key key;
                 if (fieldNames != null)
@@ -618,6 +621,7 @@ namespace Volante.Impl
                 }
                 IPersistent obj = new PersistentStub(storage, mapId(getIntAttribute(refElem, "id")));
                 btree.insert(key, obj, false);
+#endif
             }
             if (tkn != XMLScanner.Token.LTS
                 || scanner.scan() != XMLScanner.Token.IDENT
@@ -626,6 +630,7 @@ namespace Volante.Impl
             {
                 throwException("Element is not closed");
             }
+#if !OMIT_BTREE
             ByteBuffer buf = new ByteBuffer(storage.encoding);
             buf.extend(ObjectHeader.Sizeof);
             int size = storage.packObject(btree, desc, ObjectHeader.Sizeof, buf, null);
@@ -636,6 +641,7 @@ namespace Volante.Impl
             storage.setPos(oid, pos | StorageImpl.dbModifiedFlag);
 
             storage.pool.put(pos & ~StorageImpl.dbFlagsMask, data, size);
+#endif
         }
 
         internal void createObject(XMLElement elem)

@@ -1793,10 +1793,13 @@ namespace Volante.Impl
             lock (this)
             {
                 ensureOpened();
-
+#if !OMIT_BTREE
                 Index<K, V> index = alternativeBtree
                     ? (Index<K, V>)new AltBtree<K, V>(unique)
                     : (Index<K, V>)new Btree<K, V>(unique);
+#else
+                Index<K, V> index = new AltBtree<K, V>(unique);
+#endif
                 index.AssignOid(this, 0, false);
                 return index;
             }
@@ -1811,6 +1814,7 @@ namespace Volante.Impl
             }
         }
 
+#if !OMIT_BTREE
         public IBitIndex<T> CreateBitIndex<T>() where T : class,IPersistent
         {
             lock (this)
@@ -1821,6 +1825,7 @@ namespace Volante.Impl
                 return index;
             }
         }
+#endif
 
         public ISpatialIndex<T> CreateSpatialIndex<T>() where T : class,IPersistent
         {
@@ -1861,10 +1866,13 @@ namespace Volante.Impl
             lock (this)
             {
                 ensureOpened();
-
+#if !OMIT_BTREE
                 ISet<T> s = alternativeBtree
                     ? (ISet<T>)new AltPersistentSet<T>()
                     : (ISet<T>)new PersistentSet<T>();
+#else
+                ISet<T> s = new AltPersistentSet<T>();
+#endif
                 s.AssignOid(this, 0, false);
                 return s;
             }
@@ -1890,9 +1898,13 @@ namespace Volante.Impl
             lock (this)
             {
                 ensureOpened();
+#if !OMIT_BTREE
                 IFieldIndex<K, V> index = alternativeBtree
                     ? (IFieldIndex<K, V>)new AltBtreeFieldIndex<K, V>(fieldName, unique)
                     : (IFieldIndex<K, V>)new BtreeFieldIndex<K, V>(fieldName, unique);
+#else
+                IFieldIndex<K, V> index = (IFieldIndex<K, V>)new AltBtreeFieldIndex<K, V>(fieldName, unique);
+#endif
                 index.AssignOid(this, 0, false);
                 return index;
             }
@@ -1911,9 +1923,13 @@ namespace Volante.Impl
                 }
                 MultiFieldIndex<T> index = new BtreeMultiFieldIndex<T>(fieldNames, unique);
 #else
+#if !OMIT_BTREE
                 IMultiFieldIndex<T> index = alternativeBtree
                     ? (IMultiFieldIndex<T>)new AltBtreeMultiFieldIndex<T>(fieldNames, unique)
                     : (IMultiFieldIndex<T>)new BtreeMultiFieldIndex<T>(fieldNames, unique);
+#else
+                IMultiFieldIndex<T> index = (IMultiFieldIndex<T>)new AltBtreeMultiFieldIndex<T>(fieldNames, unique);
+#endif
 #endif
                 index.AssignOid(this, 0, false);
                 return index;
@@ -2062,10 +2078,12 @@ namespace Volante.Impl
             }
         }
 
+#if !OMIT_BTREE
         internal Btree createBtreeStub(byte[] data, int offs)
         {
             return new Btree<int, IPersistent>(data, ObjectHeader.Sizeof + offs);
         }
+#endif
 
         private void mark()
         {
@@ -2107,13 +2125,16 @@ namespace Volante.Impl
                                     if (typeOid != 0)
                                     {
                                         ClassDescriptor desc = (ClassDescriptor)lookupObject(typeOid, typeof(ClassDescriptor));
+#if !OMIT_BTREE
                                         if (typeof(Btree).IsAssignableFrom(desc.cls))
                                         {
                                             Btree btree = createBtreeStub(pg.data, offs);
                                             btree.AssignOid(this, 0, false);
                                             btree.markTree();
                                         }
-                                        else if (desc.hasReferences)
+                                        else
+#endif
+                                        if (desc.hasReferences)
                                         {
                                             markObject(pool.get(pos), ObjectHeader.Sizeof, desc);
 
@@ -2153,6 +2174,7 @@ namespace Volante.Impl
                         {
                             ClassDescriptor desc = findClassDescriptor(typeOid);
                             nDeallocated += 1;
+#if !OMIT_BTREE
                             if (desc != null
                                 && (typeof(Btree).IsAssignableFrom(desc.cls)))
                             {
@@ -2162,6 +2184,7 @@ namespace Volante.Impl
                                 btree.Deallocate();
                             }
                             else
+#endif
                             {
                                 int size = ObjectHeader.getSize(pg.data, offs);
                                 pool.unfix(pg);
@@ -2314,6 +2337,7 @@ namespace Volante.Impl
                                             {
                                                 markOid(typeOid);
                                                 ClassDescriptor desc = findClassDescriptor(typeOid);
+#if !OMIT_BTREE
                                                 if (typeof(Btree).IsAssignableFrom(desc.cls))
                                                 {
                                                     Btree btree = createBtreeStub(pg.data, offs);
@@ -2324,6 +2348,7 @@ namespace Volante.Impl
                                                     indexUsage.allocatedSize += (long)nPages * Page.pageSize + alignedSize;
                                                 }
                                                 else
+#endif
                                                 {
                                                     MemoryUsage usage;
                                                     var ok = map.TryGetValue(desc.cls, out usage);

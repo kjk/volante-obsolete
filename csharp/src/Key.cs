@@ -490,4 +490,100 @@ namespace Volante
             oval = v;
         }
     }
+
+    class KeyBuilder
+    {
+        public static Key getKeyFromObject(object o)
+        {
+            if (o == null)
+            {
+                return null;
+            }
+            else if (o is byte)
+            {
+                return new Key((byte)o);
+            }
+            else if (o is sbyte)
+            {
+                return new Key((sbyte)o);
+            }
+            else if (o is short)
+            {
+                return new Key((short)o);
+            }
+            else if (o is ushort)
+            {
+                return new Key((ushort)o);
+            }
+            else if (o is int)
+            {
+                return new Key((int)o);
+            }
+            else if (o is uint)
+            {
+                return new Key((uint)o);
+            }
+            else if (o is long)
+            {
+                return new Key((long)o);
+            }
+            else if (o is ulong)
+            {
+                return new Key((ulong)o);
+            }
+            else if (o is float)
+            {
+                return new Key((float)o);
+            }
+            else if (o is double)
+            {
+                return new Key((double)o);
+            }
+            else if (o is bool)
+            {
+                return new Key((bool)o);
+            }
+            else if (o is char)
+            {
+                return new Key((char)o);
+            }
+            else if (o is String)
+            {
+                return new Key((String)o);
+            }
+            else if (o is DateTime)
+            {
+                return new Key((DateTime)o);
+            }
+            else if (o is byte[])
+            {
+                return new Key((byte[])o);
+            }
+            else if (o is object[])
+            {
+                return new Key((object[])o);
+            }
+            else if (o is Enum)
+            {
+                return new Key((Enum)o);
+            }
+            else if (o is IPersistent)
+            {
+                return new Key((IPersistent)o);
+            }
+            else if (o is Guid)
+            {
+                return new Key((Guid)o);
+            }
+            else if (o is Decimal)
+            {
+                return new Key((Decimal)o);
+            }
+            else if (o is IComparable)
+            {
+                return new Key((IComparable)o);
+            }
+            throw new StorageError(StorageError.ErrorCode.UNSUPPORTED_TYPE);
+        }
+    }
 }

@@ -177,9 +177,11 @@ public class TestsMain
 
     static void RunTestBit()
     {
+#if !OMIT_BTREE
         int n = GetIterCount("TestBit");
         var r = TestBit.Run(n);
         r.Print();
+#endif
     }
 
     static void RunTestBlob()

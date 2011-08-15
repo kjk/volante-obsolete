@@ -1,3 +1,4 @@
+#if !OMIT_BTREE
 namespace Volante.Impl
 {
     using System;
@@ -592,3 +593,4 @@ namespace Volante.Impl
         }
     }
 }
+#endif

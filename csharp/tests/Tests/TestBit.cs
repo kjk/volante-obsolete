@@ -1,3 +1,4 @@
+#if !OMIT_BTREE
 namespace Volante
 {
     using System;
@@ -149,3 +150,4 @@ namespace Volante
         }
     }
 }
+#endif

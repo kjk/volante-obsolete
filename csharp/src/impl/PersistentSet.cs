@@ -1,3 +1,4 @@
+#if !OMIT_BTREE
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -5,7 +6,6 @@ using Volante;
 
 namespace Volante.Impl
 {
-
     class PersistentSet<T> : Btree<T, T>, ISet<T> where T : class, IPersistent
     {
         public PersistentSet()
@@ -107,3 +107,4 @@ namespace Volante.Impl
         }
     }
 }
+#endif

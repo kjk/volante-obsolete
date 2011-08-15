@@ -1,3 +1,4 @@
+#if !OMIT_BTREE
 namespace Volante
 {
     using System;
@@ -65,4 +66,4 @@ namespace Volante
         IEnumerable<T> Select(int setBits, int clearBits);
     }
 }
-
+#endif

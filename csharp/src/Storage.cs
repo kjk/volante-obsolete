@@ -169,12 +169,14 @@ namespace Volante
         /// </exception>
         IMultiFieldIndex<V> CreateFieldIndex<V>(string[] fieldNames, bool unique) where V : class,IPersistent;
 
+#if !OMIT_BTREE
         /// <summary>
         /// Create new bit index. Bit index is used to select object 
         /// with specified set of (boolean) properties.
         /// </summary>
         /// <returns>persistent object implementing bit index</returns>
         IBitIndex<T> CreateBitIndex<T>() where T : class,IPersistent;
+#endif
 
         /// <summary>
         /// Create new spatial index with integer coordinates

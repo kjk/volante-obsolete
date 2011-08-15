@@ -42,6 +42,7 @@ namespace Volante.Impl
                                 int typeOid = ObjectHeader.getType(obj, 0);
                                 ClassDescriptor desc = storage.findClassDescriptor(typeOid);
                                 string name = desc.name;
+#if !OMIT_BTREE
                                 if (typeof(Btree).IsAssignableFrom(desc.cls))
                                 {
                                     Type t = desc.cls.GetGenericTypeDefinition();
@@ -63,6 +64,7 @@ namespace Volante.Impl
                                     }
                                 }
                                 else
+#endif
                                 {
                                     String className = exportIdentifier(desc.name);
                                     writer.Write(" <" + className + " id=\"" + oid + "\">\n");
@@ -78,6 +80,7 @@ namespace Volante.Impl
             while (nExportedObjects != 0);
             writer.Write("</database>\n");
         }
+#endif
 
         internal String exportIdentifier(String name)
         {
@@ -90,6 +93,7 @@ namespace Volante.Impl
             return name;
         }
 
+#if !OMIT_BTREE
         Btree createBtree(int oid, byte[] data)
         {
             Btree btree = storage.createBtreeStub(data, 0);
@@ -156,6 +160,7 @@ namespace Volante.Impl
             compoundKeyTypes = null;
             writer.Write(" </" + name + ">\n");
         }
+#endif
 
         int exportKey(byte[] body, int offs, int size, ClassDescriptor.FieldType type)
         {
@@ -963,4 +968,3 @@ namespace Volante.Impl
         private ClassDescriptor.FieldType[] compoundKeyTypes;
     }
 }
-#endif

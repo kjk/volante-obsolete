@@ -12,3 +12,6 @@ Things to do for c# version:
 * rename PerstSink to VolanteSink
 * get rid of Storage.StringEncoding and always use utf8 for storing strings (?)
 * remove CacheType - just use the best cache
+
+Notes:
+* building without (old) Btree code saves 48kB (264 => 216)
