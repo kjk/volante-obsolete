@@ -203,7 +203,7 @@ namespace Volante.Impl
             used = j;
         }
 
-        public virtual void AddAll(Link<T> link)
+        public virtual void AddAll(ILink<T> link)
         {
             int n = link.Length;
             reserveSpace(n);

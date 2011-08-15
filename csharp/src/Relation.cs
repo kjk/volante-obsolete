@@ -6,7 +6,7 @@ namespace Volante
 
     /// <summary> Class representing relation between owner and members
     /// </summary>
-    public abstract class Relation<M, O> : PersistentCollection<M>, Link<M>
+    public abstract class Relation<M, O> : PersistentCollection<M>, ILink<M>
         where M : class,IPersistent
         where O : class,IPersistent
     {
@@ -39,7 +39,7 @@ namespace Volante
 
         public abstract void AddAll(M[] arr, int from, int length);
 
-        public abstract void AddAll(Link<M> anotherLink);
+        public abstract void AddAll(ILink<M> anotherLink);
 
         public abstract M[] ToArray();
 

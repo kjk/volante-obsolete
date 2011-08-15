@@ -6,14 +6,14 @@ class Detail : Persistent
     internal String name;
     internal String color;
     internal double weight;
-    internal Link<Order> orders;
+    internal ILink<Order> orders;
 }
 
 class Supplier : Persistent 
 { 
     internal String name;
     internal String address;
-    internal Link<Order> orders;
+    internal ILink<Order> orders;
 }
 
 class Order : Persistent 

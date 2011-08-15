@@ -221,14 +221,14 @@ namespace Volante
         /// </summary>
         /// <returns>new empty link, new members can be added to the link later.
         /// </returns>
-        Link<T> CreateLink<T>() where T : class,IPersistent;
+        ILink<T> CreateLink<T>() where T : class,IPersistent;
 
         /// <summary> Create one-to-many link with specified initial size.
         /// </summary>
         /// <param name="initialSize">initial size of the array</param>
         /// <returns>new link with specified size
         /// </returns>
-        Link<T> CreateLink<T>(int initialSize) where T : class,IPersistent;
+        ILink<T> CreateLink<T>(int initialSize) where T : class,IPersistent;
 
         /// <summary>  Create new scalable set references to persistent objects.
         /// This container can effciently store small number of references as well 
@@ -335,7 +335,7 @@ namespace Volante
         /// <returns>
         /// link of IPersistent references
         /// </returns>
-        Link<IPersistent> CreateLink();
+        ILink<IPersistent> CreateLink();
 
         /// <summary>
         /// Create new generic link with specified initial size
@@ -344,7 +344,7 @@ namespace Volante
         /// <returns>
         /// link of IPersistent references
         /// </returns>
-        Link<IPersistent> CreateLink(int initialSize);
+        ILink<IPersistent> CreateLink(int initialSize);
 
         /// <summary>
         /// Create new generic array of reference

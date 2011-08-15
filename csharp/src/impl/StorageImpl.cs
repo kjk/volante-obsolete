@@ -1920,17 +1920,17 @@ namespace Volante.Impl
             }
         }
 
-        public Link<T> CreateLink<T>() where T : class,IPersistent
+        public ILink<T> CreateLink<T>() where T : class,IPersistent
         {
             return CreateLink<T>(8);
         }
 
-        public Link<T> CreateLink<T>(int initialSize) where T : class,IPersistent
+        public ILink<T> CreateLink<T>(int initialSize) where T : class,IPersistent
         {
             return new LinkImpl<T>(initialSize);
         }
 
-        internal Link<T> ConstructLink<T>(IPersistent[] arr, IPersistent owner) where T : class,IPersistent
+        internal ILink<T> ConstructLink<T>(IPersistent[] arr, IPersistent owner) where T : class,IPersistent
         {
             return new LinkImpl<T>(arr, owner);
         }
@@ -1972,12 +1972,12 @@ namespace Volante.Impl
             return CreateSet<IPersistent>();
         }
 
-        public Link<IPersistent> CreateLink()
+        public ILink<IPersistent> CreateLink()
         {
             return CreateLink<IPersistent>(8);
         }
 
-        public Link<IPersistent> CreateLink(int initialSize)
+        public ILink<IPersistent> CreateLink(int initialSize)
         {
             return CreateLink<IPersistent>(initialSize);
         }

@@ -5,7 +5,7 @@ namespace Volante.Impl
     using System.Diagnostics;
     using Volante;
     using System.Collections.Generic;
-    using Link = Link<IPersistent>;
+    using ILink = ILink<IPersistent>;
 
     class AltBtree<K, V> : PersistentCollection<V>, Index<K, V> where V : class, IPersistent
     {
@@ -54,7 +54,7 @@ namespace Volante.Impl
         {
             internal abstract Array Data { get; }
             internal int nItems;
-            internal Link items;
+            internal ILink items;
 
             internal const int BTREE_PAGE_SIZE = Page.pageSize - ObjectHeader.Sizeof - 4 * 3;
 
@@ -1169,7 +1169,7 @@ namespace Volante.Impl
                     return data.ToRawArray();
                 }
             }
-            internal Link data;
+            internal ILink data;
 
             const int MAX_ITEMS = BTREE_PAGE_SIZE / (4 + 4);
 

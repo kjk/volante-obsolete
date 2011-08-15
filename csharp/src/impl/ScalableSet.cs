@@ -6,7 +6,7 @@ namespace Volante.Impl
 {
     class ScalableSet<T> : PersistentCollection<T>, ISet<T> where T : class,IPersistent
     {
-        Link<T> link;
+        ILink<T> link;
         ISet<T> pset;
         const int BTREE_THRESHOLD = 128;
 

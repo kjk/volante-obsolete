@@ -5,7 +5,7 @@ namespace Volante.Impl
     using System.Collections.Generic;
     using Volante;
 
-    public class LinkImpl<T> : Link<T> where T : class,IPersistent
+    public class LinkImpl<T> : ILink<T> where T : class,IPersistent
     {
         private void Modify()
         {
@@ -189,7 +189,7 @@ namespace Volante.Impl
             used += length;
         }
 
-        public virtual void AddAll(Link<T> link)
+        public virtual void AddAll(ILink<T> link)
         {
             int n = link.Length;
             reserveSpace(n);
@@ -305,14 +305,14 @@ namespace Volante.Impl
                 i = -1;
             }
 
-            internal LinkEnumerator(Link<T> link)
+            internal LinkEnumerator(ILink<T> link)
             {
                 this.link = link;
                 i = -1;
             }
 
             private int i;
-            private Link<T> link;
+            private ILink<T> link;
         }
 
         public IEnumerator<T> GetEnumerator()

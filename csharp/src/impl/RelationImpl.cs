@@ -102,7 +102,7 @@ namespace Volante.Impl
             link.AddAll(arr, from, length);
         }
 
-        public override void AddAll(Link<M> anotherLink)
+        public override void AddAll(ILink<M> anotherLink)
         {
             link.AddAll(anotherLink);
         }
@@ -166,6 +166,6 @@ namespace Volante.Impl
 
         internal RelationImpl() { }
 
-        internal Link<M> link;
+        internal ILink<M> link;
     }
 }

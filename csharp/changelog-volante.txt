@@ -17,4 +17,4 @@
 13. Added support for DateTime for AltBtree index
 14. Rename Storage => IStorage, PatriciaKey => IPatriciaKey
 15. Rename GenericPArray => IGenericPArray, Blob => IBlob
-
+16. Rename PArray => IParray, Link => ILink

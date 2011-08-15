@@ -224,9 +224,9 @@ namespace Volante
             else
             {
                 object o = field.GetValue(obj);
-                if (o is Link<To>)
+                if (o is ILink<To>)
                 {
-                    To[] arr = ((Link<To>)o).ToArray();
+                    To[] arr = ((ILink<To>)o).ToArray();
                     for (int i = 0; i < arr.Length; i++)
                     {
                         Add(arr[i]);

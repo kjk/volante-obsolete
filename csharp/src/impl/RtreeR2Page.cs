@@ -4,7 +4,7 @@ namespace Volante.Impl
     using System.Collections;
     using Volante;
     using System.Diagnostics;
-    using Link = Volante.Link<IPersistent>;
+    using Link = Volante.ILink<IPersistent>;
 
     class RtreeR2Page : Persistent
     {

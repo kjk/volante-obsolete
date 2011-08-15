@@ -61,7 +61,7 @@ namespace Volante
     /// and standalone relation is represented by Relation persistent class created by
     /// Storage.createRelation method.
     /// </summary>
-    public interface Link<T> : IList<T>, GenericLink where T : class,IPersistent
+    public interface ILink<T> : IList<T>, GenericLink where T : class,IPersistent
     {
         /// <summary>Number of the linked objects 
         /// </summary>
@@ -119,7 +119,7 @@ namespace Volante
         /// <param name="link">another relation
         /// 
         /// </param>
-        void AddAll(Link<T> link);
+        void AddAll(ILink<T> link);
 
         /// <summary> Get relation members as array of objects
         /// </summary>

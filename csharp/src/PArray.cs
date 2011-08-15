@@ -37,7 +37,7 @@ namespace Volante
     /// C# array here, instead you should use PArray class.
     /// PArray is created by Storage.createArray method
     /// </summary>
-    public interface IPArray<T> : IGenericPArray, Link<T> where T : class,IPersistent
+    public interface IPArray<T> : IGenericPArray, ILink<T> where T : class,IPersistent
     {
     }
 }
