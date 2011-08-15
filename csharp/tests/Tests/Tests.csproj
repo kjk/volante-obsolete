@@ -115,6 +115,7 @@
     <Compile Include="TestIndexGuid.cs" />
     <Compile Include="TestIndexInt.cs" />
     <Compile Include="TestIndexLong.cs" />
+    <Compile Include="TestIndexObject.cs" />
     <Compile Include="TestIndexSByte.cs" />
     <Compile Include="TestIndexShort.cs" />
     <Compile Include="TestIndexUInt.cs" />

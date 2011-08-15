@@ -279,16 +279,22 @@ namespace Volante.Impl
 
         protected Key checkKey(Key key)
         {
-            if (key != null)
+            if (key == null)
+                return null;
+
+            if (key.type != type)
             {
-                if (key.type != type)
-                {
-                    throw new StorageError(StorageError.ErrorCode.INCOMPATIBLE_KEY_TYPE);
-                }
-                if (type == ClassDescriptor.FieldType.tpString && key.oval is string)
-                {
-                    key = new Key(((string)key.oval).ToCharArray(), key.inclusion != 0);
-                }
+                throw new StorageError(StorageError.ErrorCode.INCOMPATIBLE_KEY_TYPE);
+            }
+            if ((type == ClassDescriptor.FieldType.tpObject
+                    || type == ClassDescriptor.FieldType.tpOid)
+                && key.ival == 0 && key.oval != null)
+            {
+                throw new StorageError(StorageError.ErrorCode.INVALID_OID);
+            }
+            if (type == ClassDescriptor.FieldType.tpString && key.oval is string)
+            {
+                key = new Key(((string)key.oval).ToCharArray(), key.inclusion != 0);
             }
             return key;
         }

@@ -391,6 +391,16 @@ public class TestsMain
         r.Print();
     }
 
+    static void RunTestIndexObject()
+    {
+        TestResult r;
+        int n = GetIterCount("RunTestIndexObject");
+        r = TestIndexObject.Run(n, false);
+        r.Print();
+        r = TestIndexObject.Run(n, true);
+        r.Print();
+    }
+
     static void RunTestList()
     {
         int n = GetIterCount("TestList");
@@ -455,6 +465,8 @@ public class TestsMain
 
         var tStart = DateTime.Now;
 
+        RunTestIndexObject();
+
         TestIndexUInt.TestIndexUInt00();
         TestIndexInt.TestIndexInt00();
         RunTestBackup();
@@ -481,6 +493,7 @@ public class TestsMain
         RunTestIndexFloat();
         RunTestIndexDouble();
         RunTestIndexGuid();
+        RunTestIndexObject();
         RunTestList();
         RunTestR2();
         RunTestRaw();
