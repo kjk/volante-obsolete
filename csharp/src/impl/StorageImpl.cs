@@ -1935,17 +1935,17 @@ namespace Volante.Impl
             return new LinkImpl<T>(arr, owner);
         }
 
-        public PArray<T> CreateArray<T>() where T : class,IPersistent
+        public IPArray<T> CreateArray<T>() where T : class,IPersistent
         {
             return CreateArray<T>(8);
         }
 
-        public PArray<T> CreateArray<T>(int initialSize) where T : class,IPersistent
+        public IPArray<T> CreateArray<T>(int initialSize) where T : class,IPersistent
         {
             return new PArrayImpl<T>(this, initialSize);
         }
 
-        internal PArray<T> ConstructArray<T>(int[] arr, IPersistent owner) where T : class,IPersistent
+        internal IPArray<T> ConstructArray<T>(int[] arr, IPersistent owner) where T : class,IPersistent
         {
             return new PArrayImpl<T>(this, arr, owner);
         }
@@ -1982,12 +1982,12 @@ namespace Volante.Impl
             return CreateLink<IPersistent>(initialSize);
         }
 
-        public PArray<IPersistent> CreateArray()
+        public IPArray<IPersistent> CreateArray()
         {
             return CreateArray<IPersistent>(8);
         }
 
-        public PArray<IPersistent> CreateArray(int initialSize)
+        public IPArray<IPersistent> CreateArray(int initialSize)
         {
             return CreateArray<IPersistent>(initialSize);
         }

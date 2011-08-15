@@ -5,7 +5,7 @@ namespace Volante.Impl
     using System.Collections.Generic;
     using Volante;
 
-    public class PArrayImpl<T> : PArray<T> where T : class,IPersistent
+    public class PArrayImpl<T> : IPArray<T> where T : class,IPersistent
     {
         private void Modify()
         {
@@ -207,9 +207,9 @@ namespace Volante.Impl
         {
             int n = link.Length;
             reserveSpace(n);
-            if (link is PArray<T>)
+            if (link is IPArray<T>)
             {
-                PArray<T> src = (PArray<T>)link;
+                IPArray<T> src = (IPArray<T>)link;
                 for (int i = 0, j = used; i < n; i++, j++)
                 {
                     arr[j] = src.GetOid(i);
@@ -316,14 +316,14 @@ namespace Volante.Impl
                 i = -1;
             }
 
-            internal ArrayEnumerator(PArray<T> arr)
+            internal ArrayEnumerator(IPArray<T> arr)
             {
                 this.arr = arr;
                 i = -1;
             }
 
             private int i;
-            private PArray<T> arr;
+            private IPArray<T> arr;
         }
 
         public IEnumerator<T> GetEnumerator()

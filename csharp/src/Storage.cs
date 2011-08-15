@@ -257,7 +257,7 @@ namespace Volante
         /// </summary>
         /// <returns>new empty array, new members can be added to the array later.
         /// </returns>
-        PArray<T> CreateArray<T>() where T : class,IPersistent;
+        IPArray<T> CreateArray<T>() where T : class,IPersistent;
 
         /// <summary> Create dynamcially extended array of reference to persistent objects.
         /// It is inteded to be used in classes using virtual properties to 
@@ -266,7 +266,7 @@ namespace Volante
         /// <param name="initialSize">initially allocated size of the array</param>
         /// <returns>new empty array, new members can be added to the array later.
         /// </returns>
-        PArray<T> CreateArray<T>(int initialSize) where T : class,IPersistent;
+        IPArray<T> CreateArray<T>(int initialSize) where T : class,IPersistent;
 
         /// <summary> Create relation object. Unlike link which represent embedded relation and stored
         /// inside owner object, this Relation object is standalone persisitent object
@@ -352,7 +352,7 @@ namespace Volante
         /// <returns>
         /// array of IPersistent references
         /// </returns>
-        PArray<IPersistent> CreateArray();
+        IPArray<IPersistent> CreateArray();
 
         /// <summary>
         /// Create new generic array of reference
@@ -361,7 +361,7 @@ namespace Volante
         /// <returns>
         /// array of IPersistent references
         /// </returns>
-        PArray<IPersistent> CreateArray(int initialSize);
+        IPArray<IPersistent> CreateArray(int initialSize);
 
         /// <summary> Commit transaction (if needed) and close the storage
         /// </summary>

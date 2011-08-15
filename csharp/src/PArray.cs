@@ -31,13 +31,13 @@ namespace Volante
         void SetOwner(IPersistent owner);
     }
 
-    /// <summary>Dynamically extended array of reference to persistent objects.
+    /// <summary>Dynamically extended array of references to persistent objects.
     /// It is inteded to be used in classes using virtual properties to 
     /// access components of persistent objects. You can not use standard
     /// C# array here, instead you should use PArray class.
     /// PArray is created by Storage.createArray method
     /// </summary>
-    public interface PArray<T> : IGenericPArray, Link<T> where T : class,IPersistent
+    public interface IPArray<T> : IGenericPArray, Link<T> where T : class,IPersistent
     {
     }
 }
