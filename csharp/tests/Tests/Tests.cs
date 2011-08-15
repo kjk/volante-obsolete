@@ -381,6 +381,16 @@ public class TestsMain
         r.Print();
     }
 
+    static void RunTestIndexGuid()
+    {
+        TestResult r;
+        int n = GetIterCount("RunTestIndexGuid");
+        r = TestIndexGuid.Run(n, false);
+        r.Print();
+        r = TestIndexGuid.Run(n, true);
+        r.Print();
+    }
+
     static void RunTestList()
     {
         int n = GetIterCount("TestList");
@@ -470,6 +480,7 @@ public class TestsMain
         RunTestIndexDecimal();
         RunTestIndexFloat();
         RunTestIndexDouble();
+        RunTestIndexGuid();
         RunTestList();
         RunTestR2();
         RunTestRaw();

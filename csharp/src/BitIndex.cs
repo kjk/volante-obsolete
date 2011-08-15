@@ -6,7 +6,7 @@ namespace Volante
 
     /// <summary>
     /// Interface of bit index.
-    /// Bit index allows to effiicently search object with specified 
+    /// Bit index allows to efficiently search object with specified 
     /// set of properties. Each object has associated mask of 32 bites. 
     /// Meaning of bits is application dependent. Usually each bit stands for
     /// some binary or boolean property, for example "sex", but it is possible to 

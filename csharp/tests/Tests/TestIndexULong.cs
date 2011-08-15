@@ -98,8 +98,8 @@ namespace Volante
             i = 0;
             foreach (var r2 in idx)
             {
-                Tests.Assert(r.nval >= prev);
-                prev = r.nval;
+                Tests.Assert(r2.nval >= prev);
+                prev = r2.nval;
                 i++;
             }
 
@@ -107,8 +107,8 @@ namespace Volante
             i = 0;
             foreach (var r2 in idx.Range(min, max, IterationOrder.AscentOrder))
             {
-                Tests.Assert(r.nval >= prev);
-                prev = r.nval;
+                Tests.Assert(r2.nval >= prev);
+                prev = r2.nval;
                 i++;
             }
 
@@ -116,8 +116,8 @@ namespace Volante
             i = 0;
             foreach (var r2 in idx.Range(min, max, IterationOrder.DescentOrder))
             {
-                Tests.Assert(prev >= r.nval);
-                prev = r.nval;
+                Tests.Assert(prev >= r2.nval);
+                prev = r2.nval;
                 i++;
             }
 
@@ -125,8 +125,8 @@ namespace Volante
             i = 0;
             foreach (var r2 in idx.Reverse())
             {
-                Tests.Assert(prev >= r.nval);
-                prev = r.nval;
+                Tests.Assert(prev >= r2.nval);
+                prev = r2.nval;
                 i++;
             }
             long usedBeforeDelete = db.UsedSize;

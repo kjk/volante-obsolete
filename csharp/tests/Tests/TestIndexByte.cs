@@ -93,29 +93,29 @@ namespace Volante
             prev = min;
             foreach (var r2 in idx)
             {
-                Tests.Assert(r.nval >= prev);
-                prev = r.nval;
+                Tests.Assert(r2.nval >= prev);
+                prev = r2.nval;
             }
 
             prev = min;
             foreach (var r2 in idx.Range(min, max, IterationOrder.AscentOrder))
             {
-                Tests.Assert(r.nval >= prev);
-                prev = r.nval;
+                Tests.Assert(r2.nval >= prev);
+                prev = r2.nval;
             }
 
             prev = max;
             foreach (var r2 in idx.Range(min, max, IterationOrder.DescentOrder))
             {
-                Tests.Assert(prev >= r.nval);
-                prev = r.nval;
+                Tests.Assert(prev >= r2.nval);
+                prev = r2.nval;
             }
 
             prev = max;
             foreach (var r2 in idx.Reverse())
             {
-                Tests.Assert(prev >= r.nval);
-                prev = r.nval;
+                Tests.Assert(prev >= r2.nval);
+                prev = r2.nval;
             }
             long usedBeforeDelete = db.UsedSize;
             recs = idx[min, max];

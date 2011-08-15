@@ -112,6 +112,7 @@
     <Compile Include="TestIndexDecimal.cs" />
     <Compile Include="TestIndexDouble.cs" />
     <Compile Include="TestIndexFloat.cs" />
+    <Compile Include="TestIndexGuid.cs" />
     <Compile Include="TestIndexInt.cs" />
     <Compile Include="TestIndexLong.cs" />
     <Compile Include="TestIndexSByte.cs" />
