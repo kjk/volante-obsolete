@@ -1,7 +1,6 @@
 namespace Volante
 {
     using System;
-    using System.Collections;
 
     public class TestIndexFloat
     {

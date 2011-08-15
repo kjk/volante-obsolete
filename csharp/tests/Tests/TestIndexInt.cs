@@ -1,8 +1,6 @@
 namespace Volante
 {
     using System;
-    using System.Collections;
-    using System.Diagnostics;
 
     public class TestIndexInt
     {

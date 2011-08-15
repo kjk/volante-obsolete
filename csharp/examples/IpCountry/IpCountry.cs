@@ -11,7 +11,7 @@ public class IpCountry
 
     class Root : Persistent { 
         internal Index<string,Country> countries;
-        internal PatriciaTrie<Country> trie;
+        internal IPatriciaTrie<Country> trie;
     }
 
     class Country : Persistent { 

@@ -1,7 +1,6 @@
 namespace Volante
 {
     using System;
-    using System.Collections;
     using System.Collections.Generic;
     using System.Text;
 
@@ -320,7 +319,7 @@ namespace Volante
         /// to other structures such as hashtables when memory space is of concern.
         /// </summary>
         /// <returns>created PATRICIA trie</returns>
-        PatriciaTrie<T> CreatePatriciaTrie<T>() where T : class,IPersistent;
+        IPatriciaTrie<T> CreatePatriciaTrie<T>() where T : class,IPersistent;
 
         /// <summary>
         /// Create new generic set of objects

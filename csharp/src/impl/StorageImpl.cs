@@ -1962,7 +1962,7 @@ namespace Volante.Impl
             return new TimeSeriesImpl<T>(this, blockSize, maxBlockTimeInterval);
         }
 
-        public PatriciaTrie<T> CreatePatriciaTrie<T>() where T : class,IPersistent
+        public IPatriciaTrie<T> CreatePatriciaTrie<T>() where T : class,IPersistent
         {
             return new PTrie<T>();
         }

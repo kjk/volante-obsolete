@@ -14,7 +14,7 @@ namespace Volante
     /// This structure has it's main use in IP routing software, but can provide an interesting alternative 
     /// to other structures such as hashtables when memory space is of concern.
     /// </summary>
-    public interface PatriciaTrie<T> : IPersistent, IResource, ICollection<T> where T : class,IPersistent
+    public interface IPatriciaTrie<T> : IPersistent, IResource, ICollection<T> where T : class,IPersistent
     {
         /// <summary> 
         /// Add new key to the trie

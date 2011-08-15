@@ -5,7 +5,7 @@ using Volante;
 
 namespace Volante.Impl
 {
-    class PTrie<T> : PersistentCollection<T>, PatriciaTrie<T> where T : class, IPersistent
+    class PTrie<T> : PersistentCollection<T>, IPatriciaTrie<T> where T : class, IPersistent
     {
         private PTrieNode rootZero;
         private PTrieNode rootOne;
