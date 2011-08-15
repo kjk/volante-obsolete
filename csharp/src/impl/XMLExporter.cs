@@ -45,7 +45,7 @@ namespace Volante.Impl
                                 if (typeof(Btree).IsAssignableFrom(desc.cls))
                                 {
                                     Type t = desc.cls.GetGenericTypeDefinition();
-                                    if (t == typeof(Btree<,>) || t == typeof(BitIndex<>))
+                                    if (t == typeof(Btree<,>) || t == typeof(IBitIndex<>))
                                     {
                                         exportIndex(oid, obj, name);
                                     }

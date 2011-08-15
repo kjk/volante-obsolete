@@ -93,7 +93,7 @@ namespace Volante
 
     /// <summary> Interface of multifield index. 
     /// </summary>
-    public interface MultiFieldIndex<V> : FieldIndex<object[], V> where V : class,IPersistent
+    public interface IMultiFieldIndex<V> : FieldIndex<object[], V> where V : class,IPersistent
     {
         /// <summary>
         /// Get fields used as a key

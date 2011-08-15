@@ -167,14 +167,14 @@ namespace Volante
         /// <exception cref="Volante.StorageError">StorageError(StorageError.INDEXED_FIELD_NOT_FOUND) if there is no such field in specified class,
         /// StorageError(StorageError.UNSUPPORTED_INDEX_TYPE) exception if type of specified field is not supported by implementation
         /// </exception>
-        MultiFieldIndex<V> CreateFieldIndex<V>(string[] fieldNames, bool unique) where V : class,IPersistent;
+        IMultiFieldIndex<V> CreateFieldIndex<V>(string[] fieldNames, bool unique) where V : class,IPersistent;
 
         /// <summary>
         /// Create new bit index. Bit index is used to select object 
         /// with specified set of (boolean) properties.
         /// </summary>
         /// <returns>persistent object implementing bit index</returns>
-        BitIndex<T> CreateBitIndex<T>() where T : class,IPersistent;
+        IBitIndex<T> CreateBitIndex<T>() where T : class,IPersistent;
 
         /// <summary>
         /// Create new spatial index with integer coordinates

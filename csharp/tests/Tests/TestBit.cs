@@ -66,7 +66,7 @@ namespace Volante
         class Catalogue : Persistent
         {
             internal FieldIndex<string, Car> modelIndex;
-            internal BitIndex<Car> optionIndex;
+            internal IBitIndex<Car> optionIndex;
         }
 
         public static TestBitResult Run(int nRecords)

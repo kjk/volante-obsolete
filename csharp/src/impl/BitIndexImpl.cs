@@ -6,7 +6,7 @@ namespace Volante.Impl
     using System.Diagnostics;
     using Volante;
 
-    class BitIndexImpl<T> : Btree<IPersistent, T>, BitIndex<T> where T : class,IPersistent
+    class BitIndexImpl<T> : Btree<IPersistent, T>, IBitIndex<T> where T : class,IPersistent
     {
         class Key
         {

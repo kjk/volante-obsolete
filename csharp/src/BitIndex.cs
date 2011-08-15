@@ -12,7 +12,7 @@ namespace Volante
     /// some binary or boolean property, for example "sex", but it is possible to 
     /// use group of bits to represent enumerations with more possible values.
     /// </summary>
-    public interface BitIndex<T> : IPersistent, IResource, ICollection<T> where T : class,IPersistent
+    public interface IBitIndex<T> : IPersistent, IResource, ICollection<T> where T : class,IPersistent
     {
         /// <summary>
         /// Get properties of specified object

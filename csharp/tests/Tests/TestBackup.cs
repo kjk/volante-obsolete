@@ -22,7 +22,7 @@ namespace Volante
         {
             internal Index<string, Record> strIndex;
             internal FieldIndex<long, Record> intIndex;
-            internal MultiFieldIndex<Record> compoundIndex;
+            internal IMultiFieldIndex<Record> compoundIndex;
         }
 
         internal static int pagePoolSize = 32 * 1024 * 1024;
@@ -61,7 +61,7 @@ namespace Volante
                 db.Root = root;
             }
             FieldIndex<long, Record> intIndex = root.intIndex;
-            MultiFieldIndex<Record> compoundIndex = root.compoundIndex;
+            IMultiFieldIndex<Record> compoundIndex = root.compoundIndex;
             Index<string, Record> strIndex = root.strIndex;
             long key = 1999;
             for (i = 0; i < nRecords; i++)

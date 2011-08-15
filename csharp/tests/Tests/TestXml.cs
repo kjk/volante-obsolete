@@ -30,7 +30,7 @@ namespace Volante
         {
             internal Index<string, Record> strIndex;
             internal FieldIndex<long, Record> intIndex;
-            internal MultiFieldIndex<Record> compoundIndex;
+            internal IMultiFieldIndex<Record> compoundIndex;
             internal Point point;
         }
 
@@ -69,7 +69,7 @@ namespace Volante
 
             Index<string, Record> strIndex = root.strIndex;
             FieldIndex<long, Record> intIndex = root.intIndex;
-            MultiFieldIndex<Record> compoundIndex = root.compoundIndex;
+            IMultiFieldIndex<Record> compoundIndex = root.compoundIndex;
 
             long key = 1999;
             int i;

@@ -1811,12 +1811,12 @@ namespace Volante.Impl
             }
         }
 
-        public BitIndex<T> CreateBitIndex<T>() where T : class,IPersistent
+        public IBitIndex<T> CreateBitIndex<T>() where T : class,IPersistent
         {
             lock (this)
             {
                 ensureOpened();
-                BitIndex<T> index = new BitIndexImpl<T>();
+                IBitIndex<T> index = new BitIndexImpl<T>();
                 index.AssignOid(this, 0, false);
                 return index;
             }
@@ -1898,7 +1898,7 @@ namespace Volante.Impl
             }
         }
 
-        public MultiFieldIndex<T> CreateFieldIndex<T>(string[] fieldNames, bool unique) where T : class,IPersistent
+        public IMultiFieldIndex<T> CreateFieldIndex<T>(string[] fieldNames, bool unique) where T : class,IPersistent
         {
             lock (this)
             {
@@ -1911,9 +1911,9 @@ namespace Volante.Impl
                 }
                 MultiFieldIndex<T> index = new BtreeMultiFieldIndex<T>(fieldNames, unique);
 #else
-                MultiFieldIndex<T> index = alternativeBtree
-                    ? (MultiFieldIndex<T>)new AltBtreeMultiFieldIndex<T>(fieldNames, unique)
-                    : (MultiFieldIndex<T>)new BtreeMultiFieldIndex<T>(fieldNames, unique);
+                IMultiFieldIndex<T> index = alternativeBtree
+                    ? (IMultiFieldIndex<T>)new AltBtreeMultiFieldIndex<T>(fieldNames, unique)
+                    : (IMultiFieldIndex<T>)new BtreeMultiFieldIndex<T>(fieldNames, unique);
 #endif
                 index.AssignOid(this, 0, false);
                 return index;

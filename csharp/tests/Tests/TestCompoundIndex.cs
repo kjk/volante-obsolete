@@ -37,7 +37,7 @@ namespace Volante
             IStorage db = StorageFactory.CreateStorage();
             db.AlternativeBtree = altBtree;
             db.Open(dbName, pagePoolSize);
-            MultiFieldIndex<Record> root = (MultiFieldIndex<Record>)db.Root;
+            IMultiFieldIndex<Record> root = (IMultiFieldIndex<Record>)db.Root;
             if (root == null)
             {
                 root = db.CreateFieldIndex<Record>(new string[] { "intKey", "strKey" }, true);

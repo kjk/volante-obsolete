@@ -21,3 +21,4 @@
 17. Rename ClassLoader => IClassLoader, TimeSeries => ITimeSeries
 18. Rename TimeSeriesTick => ITimeSeriesTick, SortedCollection => ISortedCollection
 19. Rename SpatialIndex => ISpatialIndex, SpatialIndexR2 => ISpatialIndexR2
+20. Rename BitIndex => IBitIndex, MultiFieldIndex => IMultiFieldIndex
