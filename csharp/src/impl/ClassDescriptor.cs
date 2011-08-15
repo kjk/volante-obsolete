@@ -415,7 +415,7 @@ namespace Volante.Impl
             {
                 type = FieldType.tpValue;
             }
-            else if (typeof(GenericPArray).IsAssignableFrom(c))
+            else if (typeof(IGenericPArray).IsAssignableFrom(c))
             {
                 type = FieldType.tpArrayOfOid;
             }

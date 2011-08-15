@@ -5,7 +5,7 @@ namespace Volante
     /// <summary>
     /// Common interface for all PArrays
     /// </summary> 
-    public interface GenericPArray
+    public interface IGenericPArray
     {
         /// <summary> Get number of the array elements
         /// </summary>
@@ -37,7 +37,7 @@ namespace Volante
     /// C# array here, instead you should use PArray class.
     /// PArray is created by Storage.createArray method
     /// </summary>
-    public interface PArray<T> : GenericPArray, Link<T> where T : class,IPersistent
+    public interface PArray<T> : IGenericPArray, Link<T> where T : class,IPersistent
     {
     }
 }

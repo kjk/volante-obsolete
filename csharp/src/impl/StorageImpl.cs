@@ -4835,7 +4835,7 @@ namespace Volante.Impl
                     }
                     else
                     {
-                        GenericPArray arr = (GenericPArray)val;
+                        IGenericPArray arr = (IGenericPArray)val;
                         arr.SetOwner(po);
                         int len = arr.Size();
                         buf.extend(offs + 4 + len * 4);
