@@ -22,8 +22,8 @@ namespace Volante
 
         public class Root : Persistent
         {
-            public SortedCollection<string, Record> strIndex;
-            public SortedCollection<long, Record> intIndex;
+            public ISortedCollection<string, Record> strIndex;
+            public ISortedCollection<long, Record> intIndex;
         }
 
         public class IntRecordComparator : PersistentComparator<long, Record>
@@ -80,8 +80,8 @@ namespace Volante
             root.intIndex = db.CreateSortedCollection<long, Record>(new IntRecordComparator(), true);
             db.Root = root;
 
-            SortedCollection<long, Record> intIndex = root.intIndex;
-            SortedCollection<string, Record> strIndex = root.strIndex;
+            ISortedCollection<long, Record> intIndex = root.intIndex;
+            ISortedCollection<string, Record> strIndex = root.strIndex;
             long key = 1999;
             for (i = 0; i < nRecords; i++)
             {

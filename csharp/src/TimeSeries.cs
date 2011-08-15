@@ -2,14 +2,13 @@ namespace Volante
 {
     using System;
     using System.Collections.Generic;
-    using System.Collections;
 
     /// <summary>
     /// Interface for timeseries element.
     /// You should derive your time series element from this class
     /// and implement Time getter method.
     /// </summary>
-    public interface TimeSeriesTick
+    public interface ITimeSeriesTick
     {
         /// <summary>
         /// Get time series element timestamp (100 nanoseconds)
@@ -33,7 +32,7 @@ namespace Volante
     /// the size of the block.
     /// </p>
     /// </summary>
-    public interface ITimeSeries<T> : IPersistent, IResource, ICollection<T> where T : TimeSeriesTick
+    public interface ITimeSeries<T> : IPersistent, IResource, ICollection<T> where T : ITimeSeriesTick
     {
 
         /// <summary>

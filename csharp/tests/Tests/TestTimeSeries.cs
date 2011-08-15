@@ -12,7 +12,7 @@ namespace Volante
 
     public class TestTimeSeries
     {
-        public struct Quote : TimeSeriesTick
+        public struct Quote : ITimeSeriesTick
         {
             public int timestamp;
             public float low;

@@ -35,7 +35,7 @@ namespace Volante
 
         class PersonList : Persistent
         {
-            public SortedCollection<Name, Person> list;
+            public ISortedCollection<Name, Person> list;
         }
 
         class NameComparator : PersistentComparator<Name, Person>
@@ -84,7 +84,7 @@ namespace Volante
             root = new PersonList();
             root.list = db.CreateSortedCollection<Name, Person>(new NameComparator(), true);
             db.Root = root;
-            SortedCollection<Name, Person> list = root.list;
+            ISortedCollection<Name, Person> list = root.list;
             long key = 1999;
             for (i = 0; i < nRecords; i++)
             {

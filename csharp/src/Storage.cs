@@ -198,7 +198,7 @@ namespace Volante
         /// <param name="comparator">comparator class specifying order in the collection</param>
         /// <param name="unique"> whether collection is unique (members with the same key value are not allowed)</param>
         /// <returns> persistent object implementing sorted collection</returns>
-        SortedCollection<K, V> CreateSortedCollection<K, V>(PersistentComparator<K, V> comparator, bool unique) where V : class,IPersistent;
+        ISortedCollection<K, V> CreateSortedCollection<K, V>(PersistentComparator<K, V> comparator, bool unique) where V : class,IPersistent;
 
         /// <summary>
         /// Create new sorted collection. Members of this collections should implement 
@@ -207,7 +207,7 @@ namespace Volante
         /// </summary>
         /// <param name="unique"> whether collection is unique (members with the same key value are not allowed)</param>
         /// <returns> persistent object implementing sorted collection</returns>
-        SortedCollection<K, V> CreateSortedCollection<K, V>(bool unique) where V : class,IPersistent, IComparable<K>, IComparable<V>;
+        ISortedCollection<K, V> CreateSortedCollection<K, V>(bool unique) where V : class,IPersistent, IComparable<K>, IComparable<V>;
 
         /// <summary>
         /// Create new object set
@@ -306,7 +306,7 @@ namespace Volante
         /// value of maxBlockTimeInterval can be set as 100*(24*60*60*10000000L)*2
         /// </param>
         /// <returns>new empty time series</returns>
-        ITimeSeries<T> CreateTimeSeries<T>(int blockSize, long maxBlockTimeInterval) where T : TimeSeriesTick;
+        ITimeSeries<T> CreateTimeSeries<T>(int blockSize, long maxBlockTimeInterval) where T : ITimeSeriesTick;
 
         /// <summary>
         /// Create PATRICIA trie (Practical Algorithm To Retrieve Information Coded In Alphanumeric)

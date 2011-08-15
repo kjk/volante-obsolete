@@ -19,3 +19,5 @@
 15. Rename GenericPArray => IGenericPArray, Blob => IBlob
 16. Rename PArray => IParray, Link => ILink
 17. Rename ClassLoader => IClassLoader, TimeSeries => ITimeSeries
+18. Rename TimeSeriesTick => ITimeSeriesTick, SortedCollection => ISortedCollection
+

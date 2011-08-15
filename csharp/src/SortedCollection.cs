@@ -26,7 +26,7 @@ namespace Volante
     /// can cause trashing and so very bad performance. Unlike other index structures SortedCollection
     /// doesn't store values of keys and so search in the collection requires fetching all of its members.
     /// </summary>
-    public interface SortedCollection<K, V> : IPersistent, IResource, ICollection<V> where V : class,IPersistent
+    public interface ISortedCollection<K, V> : IPersistent, IResource, ICollection<V> where V : class,IPersistent
     {
         /// <summary> Access element by key
         /// </summary>

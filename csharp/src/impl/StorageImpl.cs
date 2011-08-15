@@ -1844,13 +1844,13 @@ namespace Volante.Impl
             }
         }
 
-        public SortedCollection<K, V> CreateSortedCollection<K, V>(PersistentComparator<K, V> comparator, bool unique) where V : class,IPersistent
+        public ISortedCollection<K, V> CreateSortedCollection<K, V>(PersistentComparator<K, V> comparator, bool unique) where V : class,IPersistent
         {
             ensureOpened();
             return new Ttree<K, V>(comparator, unique);
         }
 
-        public SortedCollection<K, V> CreateSortedCollection<K, V>(bool unique) where V : class,IPersistent, IComparable<K>, IComparable<V>
+        public ISortedCollection<K, V> CreateSortedCollection<K, V>(bool unique) where V : class,IPersistent, IComparable<K>, IComparable<V>
         {
             ensureOpened();
             return new Ttree<K, V>(new DefaultPersistentComparator<K, V>(), unique);
@@ -1957,7 +1957,7 @@ namespace Volante.Impl
             return new RelationImpl<M, O>(owner);
         }
 
-        public ITimeSeries<T> CreateTimeSeries<T>(int blockSize, long maxBlockTimeInterval) where T : TimeSeriesTick
+        public ITimeSeries<T> CreateTimeSeries<T>(int blockSize, long maxBlockTimeInterval) where T : ITimeSeriesTick
         {
             return new TimeSeriesImpl<T>(this, blockSize, maxBlockTimeInterval);
         }

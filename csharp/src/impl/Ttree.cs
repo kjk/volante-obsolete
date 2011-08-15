@@ -5,7 +5,7 @@ namespace Volante.Impl
     using System.Collections.Generic;
     using Volante;
 
-    class Ttree<K, V> : PersistentCollection<V>, SortedCollection<K, V> where V : class, IPersistent
+    class Ttree<K, V> : PersistentCollection<V>, ISortedCollection<K, V> where V : class, IPersistent
     {
         private PersistentComparator<K, V> comparator;
         private bool unique;
