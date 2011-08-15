@@ -3,7 +3,7 @@ namespace Volante
     /// <summary>
     /// Interface to store/fetch large binary objects
     /// </summary>
-    public interface Blob : IPersistent, IResource
+    public interface IBlob : IPersistent, IResource
     {
         /// <summary>
         /// Get stream to fetch/store BLOB data 

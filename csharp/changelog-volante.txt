@@ -16,4 +16,5 @@
 12. Fixed int indexes in AltBtree
 13. Added support for DateTime for AltBtree index
 14. Rename Storage => IStorage, PatriciaKey => IPatriciaKey
-15. Rename GenericPArray => IGenericPArray
+15. Rename GenericPArray => IGenericPArray, Blob => IBlob
+

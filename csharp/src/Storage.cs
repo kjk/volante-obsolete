@@ -285,7 +285,7 @@ namespace Volante
         /// Create new BLOB. Create object for storing large binary data.
         /// </summary>
         /// <returns>empty BLOB</returns>
-        Blob CreateBlob();
+        IBlob CreateBlob();
 
         /// <summary>
         /// Create new time series object. 

@@ -40,14 +40,14 @@ namespace Volante
             byte[] buf = new byte[1024];
             IStorage db = StorageFactory.CreateStorage();
             db.Open(DbName);
-            Index<string, Blob> root = (Index<string, Blob>)db.Root;
+            Index<string, IBlob> root = (Index<string, IBlob>)db.Root;
             Tests.Assert(root == null);
-            root = db.CreateIndex<string, Blob>(true);
+            root = db.CreateIndex<string, IBlob>(true);
             db.Root = root;
             foreach (string file in files)
             {
                 FileStream fin = new FileStream(file, FileMode.Open, FileAccess.Read);
-                Blob blob = db.CreateBlob();
+                IBlob blob = db.CreateBlob();
                 Stream bout = blob.GetStream();
                 while ((rc = fin.Read(buf, 0, buf.Length)) > 0)
                 {
@@ -66,12 +66,12 @@ namespace Volante
             byte[] buf = new byte[1024];
             IStorage db = StorageFactory.CreateStorage();
             db.Open(DbName);
-            Index<string, Blob> root = (Index<string, Blob>)db.Root;
+            Index<string, IBlob> root = (Index<string, IBlob>)db.Root;
             Tests.Assert(root != null);
             foreach (string file in files)
             {
                 byte[] buf2 = new byte[1024];
-                Blob blob = root[file];
+                IBlob blob = root[file];
                 Tests.Assert(blob != null);
                 Stream bin = blob.GetStream();
                 FileStream fin = new FileStream(file, FileMode.Open, FileAccess.Read);

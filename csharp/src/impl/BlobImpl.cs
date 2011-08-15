@@ -5,7 +5,7 @@ namespace Volante.Impl
     using Volante;
 
 
-    public class BlobImpl : PersistentResource, Blob
+    public class BlobImpl : PersistentResource, IBlob
     {
         long size;
         BlobImpl next;

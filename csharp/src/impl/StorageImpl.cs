@@ -1992,7 +1992,7 @@ namespace Volante.Impl
             return CreateArray<IPersistent>(initialSize);
         }
 
-        public Blob CreateBlob()
+        public IBlob CreateBlob()
         {
             return new BlobImpl(Page.pageSize - ObjectHeader.Sizeof - 16);
         }
