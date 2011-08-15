@@ -351,6 +351,16 @@ public class TestsMain
         r.Print();
     }
 
+    static void RunTestIndexDecimal()
+    {
+        TestResult r;
+        int n = GetIterCount("RunTestIndexDecimal");
+        r = TestIndexDecimal.Run(n, false);
+        r.Print();
+        r = TestIndexDecimal.Run(n, true);
+        r.Print();
+    }
+
     static void RunTestList()
     {
         int n = GetIterCount("TestList");
@@ -437,6 +447,7 @@ public class TestsMain
         RunTestIndexUInt();
         RunTestIndexLong();
         RunTestIndexULong();
+        RunTestIndexDecimal();
         RunTestList();
         RunTestR2();
         RunTestRaw();
