@@ -83,24 +83,15 @@
     <Compile Include="src\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="src\BitIndex.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="src\Blob.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="src\ClassLoader.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="src\FieldIndex.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="src\GenericIndex.cs">
-      <SubType>Code</SubType>
-    </Compile>
+    <Compile Include="src\IBitIndex.cs" />
+    <Compile Include="src\IBlob.cs" />
+    <Compile Include="src\IClassLoader.cs" />
+    <Compile Include="src\IFieldIndex.cs" />
     <Compile Include="src\IFile.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="src\IGenericIndex.cs" />
+    <Compile Include="src\ILink.cs" />
     <Compile Include="src\impl\AltBtree.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -191,7 +182,7 @@
     <Compile Include="src\impl\PersistentWrapper.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="src\impl\PerstSink.cs">
+    <Compile Include="src\impl\VolanteSink.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="src\impl\PTrie.cs">
@@ -273,9 +264,6 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="src\L2ListElem.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="src\Link.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="src\MarshalByRefPersistent.cs">

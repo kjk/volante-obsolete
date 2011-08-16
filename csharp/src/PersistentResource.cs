@@ -44,16 +44,16 @@ namespace Volante
                 }
                 ctx.next = null;
             }
-            if (queueStart != null) 
-            { 
+            if (queueStart != null)
+            {
                 queueEnd = queueEnd.next = ctx;
-            } 
+            }
             else 
-            { 
+            {
                 queueStart = queueEnd = ctx;
-            }                            
+            }
             ctx.exclusive = exclusive;
- 
+
             Monitor.Exit(this);
             ctx.evt.WaitOne();
 
@@ -64,65 +64,65 @@ namespace Volante
             }
         }
 
-        public void SharedLock()    
+        public void SharedLock()
         {
             Monitor.Enter(this);
             Thread currThread = Thread.CurrentThread;
             if (owner == currThread) 
-            { 
+            {
                 nWriters += 1;
                 Monitor.Exit(this);
-            } 
-            else if (nWriters == 0) 
-            { 
+            }
+            else if (nWriters == 0)
+            {
                 nReaders += 1;
                 Monitor.Exit(this);
-            } 
-            else 
-            { 
+            }
+            else
+            {
                 wait(false);
-            } 
+            }
         }
 
         public void ExclusiveLock() 
         {
             Thread currThread = Thread.CurrentThread;
             Monitor.Enter(this);
-            if (owner == currThread) 
-            { 
+            if (owner == currThread)
+            {
                 nWriters += 1;
                 Monitor.Exit(this);
-            } 
+            }
             else if (nReaders == 0 && nWriters == 0) 
-            { 
+            {
                 nWriters = 1;
                 owner = currThread;
                 Monitor.Exit(this);
-            } 
-            else {
+            }
+            else
+            {
                 wait(true);
-                owner = currThread;    
-            } 
+                owner = currThread;
+            }
         }
-                    
 
         private void notify() 
         {
             WaitContext next, ctx = queueStart;
-            while (ctx != null) 
-            { 
-                if (ctx.exclusive) 
+            while (ctx != null)
+            {
+                if (ctx.exclusive)
                 {
-                    if (nReaders == 0) 
+                    if (nReaders == 0)
                     {
                         nWriters = 1;
                         next = ctx.next;
                         ctx.evt.Set();
                         ctx = next;
-                    } 
+                    }
                     break;
-                } 
-                else 
+                }
+                else
                 {
                     nReaders += 1;
                     next = ctx.next;
@@ -133,33 +133,32 @@ namespace Volante
             queueStart = ctx;
         }
 
-        
-        public void Unlock() 
+        public void Unlock()
         {
-            lock (this) 
-            { 
-                if (nWriters != 0) 
-                { 
-                    if (--nWriters == 0) 
-                    { 
+            lock (this)
+            {
+                if (nWriters != 0)
+                {
+                    if (--nWriters == 0)
+                    {
                         owner = null;
                         notify();
                     }
-                } 
+                }
                 else if (nReaders != 0)
-                { 
-                    if (--nReaders == 0) 
-                    { 
+                {
+                    if (--nReaders == 0)
+                    {
                         notify();
                     }
                 }
             }
         }
 
-        public void Reset() 
-        { 
-            lock (this) 
-            { 
+        public void Reset()
+        {
+            lock (this)
+            {
                 nReaders = 0;
                 nWriters = 0;
                 owner = null;

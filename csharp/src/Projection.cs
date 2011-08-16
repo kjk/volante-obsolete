@@ -6,7 +6,7 @@ namespace Volante
     using System.Reflection;
 
     /// <summary>
-    /// Class use to project selected objects using relation field. 
+    /// Class used to project selected objects using relation field. 
     /// For all selected objects (specified by array ort iterator), 
     /// value of specified field (of IPersistent, array of IPersistent, Link or Relation type)
     /// is inspected and all referenced object for projection (duplicate values are eliminated)
