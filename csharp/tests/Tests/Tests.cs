@@ -63,7 +63,7 @@ public class TestConfig
         return db;
     }
 
-    public IStorage GetDatabase()
+    public IStorage GetDatabase(bool delete=true)
     {
         IStorage db = null;
         if (InMemory == InMemoryType.Full)
@@ -71,7 +71,8 @@ public class TestConfig
         else
         {
             var name = DatabaseName;
-            Tests.SafeDeleteFile(name);
+            if (delete)
+                Tests.SafeDeleteFile(name);
             db = StorageFactory.CreateStorage();
             if (InMemory == InMemoryType.File)
             {
@@ -271,6 +272,11 @@ public class TestsMain
             new TestConfig{ InMemory = TestConfig.InMemoryType.No, FileKind = TestConfig.FileType.Stream, AltBtree=true }
         };
 
+    static TestConfig[] ConfigIndex4 = new TestConfig[] {
+            new TestConfig{ InMemory = TestConfig.InMemoryType.No },
+            new TestConfig{ InMemory = TestConfig.InMemoryType.No, AltBtree=true }
+        };
+
     public class TestInfo
     {
         public string Name;
@@ -310,6 +316,8 @@ public class TestsMain
         new TestInfo("TestIndexDateTime"),
         new TestInfo("TestIndex", ConfigsIndex, Counts1),
         new TestInfo("TestIndex2"),
+        new TestInfo("TestIndex3"),
+        new TestInfo("TestIndex4", ConfigIndex4, Counts1),
 
         /*
         new TestInfo("TestBit"),
@@ -318,8 +326,6 @@ public class TestsMain
         new TestInfo("TestConcur"),
         new TestInfo("TestEnumerator"),
         new TestInfo("TestGc"),
-        new TestInfo("TestIndex3"),
-        new TestInfo("TestIndex4"),
         new TestInfo("TestList"),
         new TestInfo("TestR2"),
         new TestInfo("TestRaw"),
@@ -334,8 +340,6 @@ public class TestsMain
     static Dictionary<string, int[]> IterCounts =
         new Dictionary<string, int[]>
         {
-            { "TestIndex3", new int[2] { 200, 10000 } },
-            { "TestIndex4", new int[2] { 200, 10000 } },
             { "TestEnumerator", new int[2] { 200, 2000 } },
             { "TestRtree", new int[2] { 800, 20000 } },
             { "TestR2", new int[2] { 1000, 20000 } },
@@ -446,24 +450,6 @@ public class TestsMain
         r.Print();
     }
 
-    static void RunTestIndex3()
-    {
-        int n = GetIterCount("TestIndex3");
-        var r = TestIndex3.Run(n, false);
-        r.Print();
-        r = TestIndex3.Run(n, true);
-        r.Print();
-    }
-
-    static void RunTestIndex4()
-    {
-        int n = GetIterCount("TestIndex4");
-        var r = TestIndex4.Run(n, false);
-        r.Print();
-        r = TestIndex4.Run(n, true);
-        r.Print();
-    }
-
     static void RunTestList()
     {
         int n = GetIterCount("TestList");
@@ -564,7 +550,8 @@ public class TestsMain
             "TestIndexFloat", "TestIndexDouble",
             "TestIndexGuid", "TestIndexObject",
             "TestIndexDateTime", "TestIndex",
-            "TestIndex2"
+            "TestIndex2", "TestIndex3",
+            "TestIndex4"
         };
 
         foreach (var t in tests)
@@ -578,8 +565,6 @@ public class TestsMain
         RunTestConcur();
         RunTestEnumerator();
         RunTestGc();
-        RunTestIndex3();
-        RunTestIndex4();
         RunTestList();
         RunTestR2();
         RunTestRaw();

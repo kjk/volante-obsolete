@@ -33,21 +33,12 @@ namespace Volante
             }
         }
 
-        public static TestResult Run(int count, bool useAltBtree)
+        public void Run(TestConfig config)
         {
-            var res = new TestResult()
-            {
-                Count = count,
-                TestName = String.Format("TestIndex4 altBtree={0}", useAltBtree)
-            };
-
-            string dbName = @"testidx4.dbs";
-            Tests.SafeDeleteFile(dbName);
-
-            var tStart = DateTime.Now;
-            IStorage db = StorageFactory.CreateStorage();
-            db.AlternativeBtree = useAltBtree;
-            db.Open(dbName);
+            int count = config.Count;
+            var res = new TestResult();
+            config.Result = res;
+            IStorage db = config.GetDatabase();
             Index<string, StringInt> root = (Index<string, StringInt>)db.Root;
             Tests.Assert(null == root);
             root = db.CreateIndex<string, StringInt>(true);
@@ -68,16 +59,11 @@ namespace Volante
             CheckStrings(root, strs, count);
             db.Close();
 
-            db = StorageFactory.CreateStorage();
-            db.Open(dbName);
+            db = config.GetDatabase(false);
             root = (Index<string, StringInt>)db.Root;
             Tests.Assert(null != root);
             CheckStrings(root, strs, count);
             db.Close();
-
-            res.ExecutionTime = DateTime.Now - tStart;
-            res.Ok = Tests.FinalizeTest();
-            return res;
         }
     }
 }
