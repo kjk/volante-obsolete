@@ -61,24 +61,13 @@ namespace Volante
             }
         }
 
-        const int pagePoolSize = 32 * 1024 * 1024;
-
-        static public TestTtreeResult Run(int count)
+        public void Run(TestConfig config)
         {
             int i;
-            var res = new TestTtreeResult()
-            {
-                Count = count,
-                TestName = "TestTtree"
-            };
-
-            string dbName = "testtree.dbs";
-            Tests.SafeDeleteFile(dbName);
-
-            DateTime tStart = DateTime.Now;
+            int count = config.Count;
+            var res = new TestTtreeResult();
             DateTime start = DateTime.Now;
-            IStorage db = StorageFactory.CreateStorage();
-            db.Open(dbName, pagePoolSize);
+            IStorage db = config.GetDatabase();
             PersonList root = (PersonList)db.Root;
             Tests.Assert(root == null);
             root = new PersonList();
@@ -136,9 +125,6 @@ namespace Volante
             res.RemoveTime = DateTime.Now - start;
             Tests.Assert(list.Count == 0);
             db.Close();
-            res.ExecutionTime = DateTime.Now - tStart;
-            res.Ok = Tests.FinalizeTest();
-            return res;
         }
     }
 }

@@ -17,34 +17,24 @@ namespace Volante
 
         const int nObjectsInTree = 1000;
 
-        public static TestR2Result Run(int nIterations, bool noFlush)
+        public void Run(TestConfig config)
         {
-            var res = new TestR2Result()
-            {
-                Count = nIterations,
-                TestName = String.Format("TestR2(noFlush={0})", noFlush)
-            };
-
-            string dbName = "testr2.dbs";
-            Tests.SafeDeleteFile(dbName);
-
-            DateTime tStart = DateTime.Now;
-            IStorage db = StorageFactory.CreateStorage();
             SpatialObject so;
             RectangleR2 r;
-            db.FileNoFlush = noFlush;
-            db.Open(dbName);
+            int count = config.Count;
+            bool noFlush = config.AltBtree; // a hack
+            var res = new TestR2Result();
+            config.Result = res;
+            IStorage db = config.GetDatabase();
             TestR2 root = (TestR2)db.Root;
-            if (root == null)
-            {
-                root = new TestR2();
-                root.index = db.CreateSpatialIndexR2<SpatialObject>();
-                db.Root = root;
-            }
+            Tests.Assert(root == null);
+            root = new TestR2();
+            root.index = db.CreateSpatialIndexR2<SpatialObject>();
+            db.Root = root;
 
             RectangleR2[] rectangles = new RectangleR2[nObjectsInTree];
             long key = 1999;
-            for (int i = 0; i < nIterations; i++)
+            for (int i = 0; i < count; i++)
             {
                 int j = i % nObjectsInTree;
                 if (i >= nObjectsInTree)
@@ -57,21 +47,15 @@ namespace Volante
                     {
                         so = sos[k];
                         if (r.Equals(so.rect))
-                        {
                             po = so;
-                        }
                         else
-                        {
                             Tests.Assert(r.Intersects(so.rect));
-                        }
                     }
                     Tests.Assert(po != null);
                     for (int k = 0; k < nObjectsInTree; k++)
                     {
                         if (r.Intersects(rectangles[k]))
-                        {
                             n += 1;
-                        }
                     }
                     Tests.Assert(n == sos.Length);
 
@@ -98,17 +82,10 @@ namespace Volante
                 root.index.Put(r, so);
 
                 if (i % 100 == 0)
-                {
                     db.Commit();
-                }
             }
             root.index.Clear();
             db.Close();
-
-            res.ExecutionTime = DateTime.Now - tStart;
-            res.Ok = Tests.FinalizeTest();
-            return res;
         }
     }
-
 }

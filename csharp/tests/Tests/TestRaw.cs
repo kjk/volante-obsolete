@@ -28,46 +28,37 @@ namespace Volante
         Hashtable map;
         Object nil;
 
-        static public string dbName = "testraw.dbs";
-
-        public static TestRawResult Run(int nListMembers)
+        public void Run(TestConfig config)
         {
-            var res = new TestRawResult()
-            {
-                Count = nListMembers,
-                TestName = "TestRaw"
-            };
+            int count = config.Count;
+            var res = new TestRawResult();
+            config.Result = res;
 
-            int nHashMembers = nListMembers * 10;
-
-            var tStart = DateTime.Now;
+            int nHashMembers = count * 10;
             var start = DateTime.Now;
 
-            IStorage db = StorageFactory.CreateStorage();
-            db.SerializeTransientObjects = true;
-            db.Open(dbName);
+            IStorage db = config.GetDatabase();
             TestRaw root = (TestRaw)db.Root;
-            if (root == null)
+            Tests.Assert(null == root);
+
+            root = new TestRaw();
+            L1List list = null;
+            for (int i = 0; i < count; i++)
             {
-                root = new TestRaw();
-                L1List list = null;
-                for (int i = 0; i < nListMembers; i++)
-                {
-                    list = new L1List(i, list);
-                }
-                root.list = list;
-                root.map = new Hashtable();
-                for (int i = 0; i < nHashMembers; i++)
-                {
-                    root.map["key-" + i] = "value-" + i;
-                }
-                db.Root = root;
-                res.InsertTime = DateTime.Now - start;
+                list = new L1List(i, list);
             }
+            root.list = list;
+            root.map = new Hashtable();
+            for (int i = 0; i < nHashMembers; i++)
+            {
+                root.map["key-" + i] = "value-" + i;
+            }
+            db.Root = root;
+            res.InsertTime = DateTime.Now - start;
 
             start = DateTime.Now;
             L1List elem = root.list;
-            for (int i = nListMembers; --i >= 0; )
+            for (int i = count; --i >= 0; )
             {
                 Tests.Assert(elem.obj.Equals(i));
                 elem = elem.next;
@@ -78,14 +69,6 @@ namespace Volante
             }
             res.TraverseTime = DateTime.Now - start;
             db.Close();
-            // shutup the compiler about TestRaw.nil not being used
-            Tests.Assert(root.nil == null);
-            root.nil = 3;
-            Tests.Assert(root.nil != null);
-
-            res.ExecutionTime = DateTime.Now - tStart;
-            res.Ok = Tests.FinalizeTest();
-            return res;
         }
     }
 

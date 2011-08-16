@@ -17,22 +17,15 @@ namespace Volante
 
         const int nObjectsInTree = 1000;
 
-        public static TestRtreeResult Run(int nIterations)
+        public void Run(TestConfig config)
         {
-            var res = new TestRtreeResult()
-            {
-                Count = nIterations,
-                TestName = "TestRtree"
-            };
-
-            string dbName = "testrtree.dbs";
-            Tests.SafeDeleteFile(dbName);
-
-            DateTime tStart = DateTime.Now;
-            IStorage db = StorageFactory.CreateStorage();
             SpatialObject so;
             Rectangle r;
-            db.Open(dbName);
+            int count = config.Count;
+            var res = new TestRtreeResult();
+            config.Result = res;
+
+            IStorage db = config.GetDatabase();
             TestRtree root = (TestRtree)db.Root;
             Tests.Assert(root == null);
             root = new TestRtree();
@@ -41,7 +34,7 @@ namespace Volante
 
             Rectangle[] rectangles = new Rectangle[nObjectsInTree];
             long key = 1999;
-            for (int i = 0; i < nIterations; i++)
+            for (int i = 0; i < count; i++)
             {
                 int j = i % nObjectsInTree;
                 if (i >= nObjectsInTree)
@@ -102,10 +95,6 @@ namespace Volante
             }
             root.index.Clear();
             db.Close();
-
-            res.ExecutionTime = DateTime.Now - tStart;
-            res.Ok = Tests.FinalizeTest();
-            return res;
         }
     }
 }

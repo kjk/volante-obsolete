@@ -3074,16 +3074,12 @@ namespace Volante.Impl
             {
                 noFlush = value;
                 if (opened)
-                {
                     pool.file.NoFlush = value;
-                }
             }
             get
             {
                 if (opened)
-                {
                     return pool.file.NoFlush;
-                }
                 return noFlush;
             }
         }

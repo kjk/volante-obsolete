@@ -33,6 +33,7 @@ public class TestConfig
     public FileType FileKind = FileType.File;
     public bool AltBtree = false;
     public bool Serializable = false;
+    public bool SerializeTransient = false;
     public Encoding Encoding; // if not null will use this encoding for storing strings
     public int Count; // number of iterations
 
@@ -98,6 +99,7 @@ public class TestConfig
             }
         }
         db.AlternativeBtree = AltBtree || Serializable;
+        db.SerializeTransientObjects = SerializeTransient;
         return db;
     }
 
@@ -112,6 +114,7 @@ public class TestConfig
         FileKind = tc.FileKind;
         AltBtree = tc.AltBtree;
         Serializable = tc.Serializable;
+        SerializeTransient = tc.SerializeTransient;
         Encoding = tc.Encoding;
         Count = tc.Count;
         Result = tc.Result;
@@ -263,6 +266,18 @@ public class TestsMain
             new TestConfig{ InMemory = TestConfig.InMemoryType.Full, AltBtree=true }
         };
 
+    static TestConfig[] ConfigsR2 = new TestConfig[] {
+            new TestConfig{ InMemory = TestConfig.InMemoryType.Full },
+            // TODO: should have a separate NoFlush flag
+            new TestConfig{ InMemory = TestConfig.InMemoryType.Full, AltBtree=true }
+        };
+
+    static TestConfig[] ConfigsRaw = new TestConfig[] {
+            new TestConfig{ InMemory = TestConfig.InMemoryType.Full, SerializeTransient = true },
+            new TestConfig{ InMemory = TestConfig.InMemoryType.Full, AltBtree=true, SerializeTransient = true }
+        };
+
+
     static TestConfig[] ConfigsNoAlt = new TestConfig[] {
             new TestConfig{ InMemory = TestConfig.InMemoryType.Full }
         };
@@ -323,6 +338,10 @@ public class TestsMain
         new TestInfo("TestIndex3"),
         new TestInfo("TestIndex4", ConfigIndex4, Counts1),
         new TestInfo("TestBit", ConfigsNoAlt, new int[2] { 2000, 20000 }),
+        new TestInfo("TestR2", ConfigsR2, new int[2] { 1000, 20000 }),
+        new TestInfo("TestRaw", ConfigsRaw, new int[2] { 1000, 10000 }),
+        new TestInfo("TestRtree", ConfigsDefault, new int[2] { 800, 20000 }),
+        new TestInfo("TestTtree"),
 
         /*
         new TestInfo("TestBlob"),
@@ -331,10 +350,6 @@ public class TestsMain
         new TestInfo("TestEnumerator"),
         new TestInfo("TestGc"),
         new TestInfo("TestList"),
-        new TestInfo("TestR2"),
-        new TestInfo("TestRaw"),
-        new TestInfo("TestRtree"),
-        new TestInfo("TestTtree"),
         new TestInfo("TestTimeSeries"),
         new TestInfo("TestXml"),
         new TestInfo("TestBackup")
@@ -345,11 +360,8 @@ public class TestsMain
         new Dictionary<string, int[]>
         {
             { "TestEnumerator", new int[2] { 200, 2000 } },
-            { "TestRtree", new int[2] { 800, 20000 } },
-            { "TestR2", new int[2] { 1000, 20000 } },
             { "TestGC", new int[2] { 5000, 50000 } },
             { "TestXml", new int[2] { 2000, 20000 } },
-            { "TestRaw", new int[2] { 1000, 10000 } },
             // TODO: figure out why when it's 2000 instead of 2001 we fail
             { "TestTimeSeries", new int[2] { 2001, 100000 } }
         };
@@ -451,43 +463,10 @@ public class TestsMain
         r.Print();
     }
 
-    static void RunTestR2()
-    {
-        int n = GetIterCount("TestR2");
-        var r = TestR2.Run(n, false);
-        r.Print();
-        r = TestR2.Run(n, true);
-        r.Print();
-    }
-
-    static void RunTestRaw()
-    {
-        int n = GetIterCount("TestRaw");
-        Tests.SafeDeleteFile(TestRaw.dbName);
-        var r = TestRaw.Run(n);
-        r.Print();
-        r = TestRaw.Run(n);
-        r.Print();
-    }
-
-    static void RunTestRtree()
-    {
-        int n = GetIterCount("TestRtree");
-        var r = TestRtree.Run(n);
-        r.Print();
-    }
-
     static void RunTestTimeSeries()
     {
         int n = GetIterCount("TestTimeSeries");
         var r = TestTimeSeries.Run(n);
-        r.Print();
-    }
-
-    static void RunTestTtree()
-    {
-        int n = GetIterCount("TestTtree");
-        var r = TestTtree.Run(n);
         r.Print();
     }
 
@@ -550,7 +529,9 @@ public class TestsMain
             "TestIndexGuid", "TestIndexObject",
             "TestIndexDateTime", "TestIndex",
             "TestIndex2", "TestIndex3",
-            "TestIndex4", "TestBit"
+            "TestIndex4", "TestBit",
+            "TestRaw", "TestR2", "TestRtree",
+            "TestTtree"
         };
 
         foreach (var t in tests)
@@ -564,10 +545,6 @@ public class TestsMain
         RunTestEnumerator();
         RunTestGc();
         RunTestList();
-        RunTestR2();
-        RunTestRaw();
-        RunTestRtree();
-        RunTestTtree();
         RunTestTimeSeries();
         RunTestXml();
         RunTestBackup();
