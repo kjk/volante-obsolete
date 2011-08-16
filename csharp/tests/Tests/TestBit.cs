@@ -70,22 +70,14 @@ namespace Volante
             internal IBitIndex<Car> optionIndex;
         }
 
-        public static TestBitResult Run(int count)
+        public void Run(TestConfig config)
         {
-            var res = new TestBitResult()
-            {
-                Count = count,
-                TestName = "TestBit"
-            };
+            int count = config.Count;
+            var res = new TestBitResult();
+            config.Result = res;
 
-            int pagePoolSize = 48 * 1024 * 1024;
-            string dbName = "testbit.dbs";
-            Tests.SafeDeleteFile(dbName);
-
-            DateTime tStart = DateTime.Now;
             DateTime start = DateTime.Now;
-            IStorage db = StorageFactory.CreateStorage();
-            db.Open(dbName, pagePoolSize);
+            IStorage db = config.GetDatabase();
 
             Catalogue root = (Catalogue)db.Root;
             Tests.Assert(root == null);
@@ -144,9 +136,6 @@ namespace Volante
             root.optionIndex.Clear();
             res.RemoveTime = DateTime.Now - start;
             db.Close();
-            res.ExecutionTime = DateTime.Now - tStart;
-            res.Ok = Tests.FinalizeTest();
-            return res;
         }
     }
 }

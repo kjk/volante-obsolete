@@ -263,6 +263,10 @@ public class TestsMain
             new TestConfig{ InMemory = TestConfig.InMemoryType.Full, AltBtree=true }
         };
 
+    static TestConfig[] ConfigsNoAlt = new TestConfig[] {
+            new TestConfig{ InMemory = TestConfig.InMemoryType.Full }
+        };
+
     static TestConfig[] ConfigsIndex = new TestConfig[] {
             new TestConfig{ InMemory = TestConfig.InMemoryType.Full },
             new TestConfig{ InMemory = TestConfig.InMemoryType.Full, Serializable=true },
@@ -318,9 +322,9 @@ public class TestsMain
         new TestInfo("TestIndex2"),
         new TestInfo("TestIndex3"),
         new TestInfo("TestIndex4", ConfigIndex4, Counts1),
+        new TestInfo("TestBit", ConfigsNoAlt, new int[2] { 2000, 20000 }),
 
         /*
-        new TestInfo("TestBit"),
         new TestInfo("TestBlob"),
         new TestInfo("TestCompoundIndex"),
         new TestInfo("TestConcur"),
@@ -345,7 +349,6 @@ public class TestsMain
             { "TestR2", new int[2] { 1000, 20000 } },
             { "TestGC", new int[2] { 5000, 50000 } },
             { "TestXml", new int[2] { 2000, 20000 } },
-            { "TestBit", new int[2] { 2000, 20000 } },
             { "TestRaw", new int[2] { 1000, 10000 } },
             // TODO: figure out why when it's 2000 instead of 2001 we fail
             { "TestTimeSeries", new int[2] { 2001, 100000 } }
@@ -397,15 +400,6 @@ public class TestsMain
         TestBackup.Init();
         var r = TestBackup.Run(n);
         r.Print();
-    }
-
-    static void RunTestBit()
-    {
-#if !OMIT_BTREE
-        int n = GetIterCount("TestBit");
-        var r = TestBit.Run(n);
-        r.Print();
-#endif
     }
 
     static void RunTestBlob()
@@ -519,6 +513,11 @@ public class TestsMain
         int count = GetCount(testClassName);
         foreach (TestConfig configTmp in GetTestConfigs(testClassName))
         {
+#if OMIT_BTREE
+            bool useAltBtree = configTmp.AltBtree || configTmp.Serializable;
+            if (!useAltBtree)
+                continue;
+#endif
             // make a copy because we modify it
             var config = new TestConfig(configTmp);
             config.Count = count;
@@ -551,7 +550,7 @@ public class TestsMain
             "TestIndexGuid", "TestIndexObject",
             "TestIndexDateTime", "TestIndex",
             "TestIndex2", "TestIndex3",
-            "TestIndex4"
+            "TestIndex4", "TestBit"
         };
 
         foreach (var t in tests)
@@ -559,7 +558,6 @@ public class TestsMain
             RunTests(t);
         }
 
-        RunTestBit();
         RunTestBlob();
         RunTestCompoundIndex();
         RunTestConcur();
