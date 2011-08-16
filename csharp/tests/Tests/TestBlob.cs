@@ -11,8 +11,6 @@ namespace Volante
 
     public class TestBlob
     {
-        static string DbName = "testblob.dbs";
-
         static string IsSrcImpl(string d)
         {
             d = Path.Combine(d, "src");
@@ -34,12 +32,11 @@ namespace Volante
             return null;
         }
 
-        static void InsertFiles(string[] files)
+        void InsertFiles(TestConfig config, string[] files)
         {
             int rc;
             byte[] buf = new byte[1024];
-            IStorage db = StorageFactory.CreateStorage();
-            db.Open(DbName);
+            IStorage db = config.GetDatabase();
             Index<string, IBlob> root = (Index<string, IBlob>)db.Root;
             Tests.Assert(root == null);
             root = db.CreateIndex<string, IBlob>(true);
@@ -60,12 +57,11 @@ namespace Volante
             db.Close();
         }
 
-        static void VerifyFiles(string[] files)
+        void VerifyFiles(TestConfig config, string[] files)
         {
             int rc;
             byte[] buf = new byte[1024];
-            IStorage db = StorageFactory.CreateStorage();
-            db.Open(DbName);
+            IStorage db = config.GetDatabase(false);
             Index<string, IBlob> root = (Index<string, IBlob>)db.Root;
             Tests.Assert(root != null);
             foreach (string file in files)
@@ -92,34 +88,26 @@ namespace Volante
             db.Close();
         }
 
-        public static TestBlobResult Run()
+        public void Run(TestConfig config)
         {
-            Tests.SafeDeleteFile(DbName);
-            var res = new TestBlobResult()
-            {
-                TestName = "TestBlob"
-            };
+            var res = new TestBlobResult();
+            config.Result = res;
             string dir = FindSrcImplDirectory();
             if (null == dir)
             {
                 res.Ok = false;
-                return res;
+                return;
             }
             string[] files = Directory.GetFiles(dir, "*.cs");
             res.Count = files.Length;
 
-            var tStart = DateTime.Now;
             var start = DateTime.Now;
-            InsertFiles(files);
+            InsertFiles(config, files);
             res.InsertTime = DateTime.Now - start;
 
             start = DateTime.Now;
-            VerifyFiles(files);
+            VerifyFiles(config, files);
             res.ReadTime = DateTime.Now - start;
-
-            res.ExecutionTime = DateTime.Now - tStart;
-            res.Ok = Tests.FinalizeTest();
-            return res;
         }
     }
 

@@ -291,7 +291,7 @@ public class TestsMain
             new TestConfig{ InMemory = TestConfig.InMemoryType.No, FileKind = TestConfig.FileType.Stream, AltBtree=true }
         };
 
-    static TestConfig[] ConfigIndex4 = new TestConfig[] {
+    static TestConfig[] ConfigsDefaultFile = new TestConfig[] {
             new TestConfig{ InMemory = TestConfig.InMemoryType.No },
             new TestConfig{ InMemory = TestConfig.InMemoryType.No, AltBtree=true }
         };
@@ -336,15 +336,15 @@ public class TestsMain
         new TestInfo("TestIndex", ConfigsIndex, Counts1),
         new TestInfo("TestIndex2"),
         new TestInfo("TestIndex3"),
-        new TestInfo("TestIndex4", ConfigIndex4, Counts1),
+        new TestInfo("TestIndex4", ConfigsDefaultFile, Counts1),
         new TestInfo("TestBit", ConfigsNoAlt, new int[2] { 2000, 20000 }),
         new TestInfo("TestR2", ConfigsR2, new int[2] { 1000, 20000 }),
         new TestInfo("TestRaw", ConfigsRaw, new int[2] { 1000, 10000 }),
         new TestInfo("TestRtree", ConfigsDefault, new int[2] { 800, 20000 }),
         new TestInfo("TestTtree"),
+        new TestInfo("TestBlob", ConfigsDefaultFile),
 
         /*
-        new TestInfo("TestBlob"),
         new TestInfo("TestCompoundIndex"),
         new TestInfo("TestConcur"),
         new TestInfo("TestEnumerator"),
@@ -411,12 +411,6 @@ public class TestsMain
         int n = GetIterCount("TestBackup");
         TestBackup.Init();
         var r = TestBackup.Run(n);
-        r.Print();
-    }
-
-    static void RunTestBlob()
-    {
-        var r = TestBlob.Run();
         r.Print();
     }
 
@@ -530,8 +524,9 @@ public class TestsMain
             "TestIndexDateTime", "TestIndex",
             "TestIndex2", "TestIndex3",
             "TestIndex4", "TestBit",
-            "TestRaw", "TestR2", "TestRtree",
-            "TestTtree"
+            "TestRaw", "TestR2", 
+            "TestRtree", "TestTtree",
+            "TestBlob"
         };
 
         foreach (var t in tests)
@@ -539,7 +534,6 @@ public class TestsMain
             RunTests(t);
         }
 
-        RunTestBlob();
         RunTestCompoundIndex();
         RunTestConcur();
         RunTestEnumerator();
