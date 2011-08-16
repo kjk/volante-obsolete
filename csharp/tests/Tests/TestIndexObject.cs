@@ -34,12 +34,12 @@ namespace Volante
             long val = 1999;
             for (i = 0; i < count; i++)
             {
-                val = (3141592621L * val + 2718281829L) % 1000000007L;
                 r = new Record(val);
                 r.MakePersistent(db);
                 idx.Put(r, r);
                 if (i % 100 == 0)
                     db.Commit();
+                val = (3141592621L * val + 2718281829L) % 1000000007L;
             }
 
             Tests.Assert(idx.Count == count);

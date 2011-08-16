@@ -36,11 +36,11 @@ namespace Volante
 
         internal static int pagePoolSize = 32 * 1024 * 1024;
 
-        public static TestXmlResult Run(int nRecords, bool useAltBtree)
+        public static TestXmlResult Run(int count, bool useAltBtree)
         {
             var res = new TestXmlResult()
             {
-                Count = nRecords,
+                Count = count,
                 TestName = String.Format("TestXml(altBtree={0})", useAltBtree)
             };
 
@@ -73,16 +73,16 @@ namespace Volante
 
             long key = 1999;
             int i;
-            for (i = 0; i < nRecords; i++)
+            for (i = 0; i < count; i++)
             {
                 Record rec = new Record();
-                key = (3141592621L * key + 2718281829L) % 1000000007L;
                 rec.intKey = key;
                 rec.strKey = System.Convert.ToString(key);
                 rec.realKey = (double)key;
                 strIndex.Put(new Key(rec.strKey), rec);
                 intIndex.Put(rec);
                 compoundIndex.Put(rec);
+                key = (3141592621L * key + 2718281829L) % 1000000007L;
             }
             db.Commit();
             res.InsertTime = DateTime.Now - start;
@@ -110,9 +110,8 @@ namespace Volante
             Tests.Assert(root.point.x == 1 && root.point.y == 2);
 
             key = 1999;
-            for (i = 0; i < nRecords; i++)
+            for (i = 0; i < count; i++)
             {
-                key = (3141592621L * key + 2718281829L) % 1000000007L;
                 String strKey = System.Convert.ToString(key);
                 Record rec1 = strIndex[strKey];
                 Record rec2 = intIndex[key];
@@ -123,6 +122,7 @@ namespace Volante
                 Tests.Assert(rec1.intKey == key);
                 Tests.Assert(rec1.realKey == (double)key);
                 Tests.Assert(strKey.Equals(rec1.strKey));
+                key = (3141592621L * key + 2718281829L) % 1000000007L;
             }
             res.IndexSearchTime = DateTime.Now - start;
             db.Close();

@@ -26,31 +26,14 @@ namespace Volante
             public Index<long, Record> intIndex;
         }
 
-        internal static int pagePoolSize = 32 * 1024 * 1024;
-
-        static public TestIndexResult Run(int count, bool altBtree, bool inMemory, bool serializableTransaction)
+        public void Run(TestConfig config)
         {
             int i;
-            string dbName = "testidx.dbs";
-            Tests.SafeDeleteFile(dbName);
-
-            var res = new TestIndexResult()
-            {
-                Count = count,
-                TestName = String.Format("TestIndex(altBtree={0},inMemory={1},serializable={2}", altBtree, inMemory, serializableTransaction)
-            };
-            var tStart = DateTime.Now;
-
-            IStorage db = StorageFactory.CreateStorage();
-            if (altBtree || serializableTransaction)
-                db.AlternativeBtree = true;
-
-            if (inMemory)
-                pagePoolSize = 0;
-
-            db.Open(dbName, pagePoolSize);
-
-            if (serializableTransaction)
+            int count = config.Count;
+            var res = new TestIndexResult();
+            config.Result = res;
+            IStorage db = config.GetDatabase();
+            if (config.Serializable)
                 db.BeginThreadTransaction(TransactionMode.Serializable);
 
             Root root = (Root)db.Root;
@@ -69,18 +52,16 @@ namespace Volante
             for (i = 0; i < count; i++)
             {
                 Record rec = new Record();
-                key = (3141592621L * key + 2718281829L) % 1000000007L;
                 rec.intKey = key;
                 rec.strKey = System.Convert.ToString(key);
                 intIndex[rec.intKey] = rec;
                 strIndex[rec.strKey] = rec;
-                if (i % 100000 == 0)
-                {
+                if (i % 100 == 0)
                     db.Commit();
-                }
+                key = (3141592621L * key + 2718281829L) % 1000000007L;
             }
 
-            if (serializableTransaction)
+            if (config.Serializable)
             {
                 db.EndThreadTransaction();
                 db.BeginThreadTransaction(TransactionMode.Serializable);
@@ -96,10 +77,10 @@ namespace Volante
             key = 1999;
             for (i = 0; i < count; i++)
             {
-                key = (3141592621L * key + 2718281829L) % 1000000007L;
                 Record rec1 = intIndex[key];
                 Record rec2 = strIndex[Convert.ToString(key)];
                 Tests.Assert(rec1 != null && rec1 == rec2);
+                key = (3141592621L * key + 2718281829L) % 1000000007L;
             }
             res.IndexSearchTime = DateTime.Now - start;
             start = System.DateTime.Now;
@@ -138,20 +119,17 @@ namespace Volante
             key = 1999;
             for (i = 0; i < count; i++)
             {
-                key = (3141592621L * key + 2718281829L) % 1000000007L;
                 Record rec = intIndex.Get(key);
                 Record removed = intIndex.RemoveKey(key);
                 Tests.Assert(removed == rec);
                 strIndex.Remove(new Key(System.Convert.ToString(key)), rec);
                 rec.Deallocate();
+                key = (3141592621L * key + 2718281829L) % 1000000007L;
             }
             res.RemoveTime = DateTime.Now - start;
             db.Close();
-
-            res.ExecutionTime = DateTime.Now - tStart;
-            res.Ok = Tests.FinalizeTest();
-            return res;
         }
+
         static int VerifyDictionaryEnumerator(IDictionaryEnumerator de, IterationOrder order)
         {
             long prev = long.MinValue;

@@ -54,25 +54,15 @@ namespace Volante
             }
         }
 
-        internal static int pagePoolSize = 0; // infine page pool
-
-        static public TestIndex2Result Run(int nRecords)
+        public void Run(TestConfig config)
         {
             int i;
-            string dbName = "testidx2.dbs";
-            Tests.SafeDeleteFile(dbName);
-
-            var res = new TestIndex2Result()
-            {
-                Count = nRecords,
-                TestName = "TestIndex2"
-            };
-
-            var tStart = DateTime.Now;
+            int count = config.Count;
+            var res = new TestIndex2Result();
+            config.Result = res;
             var start = DateTime.Now;
 
-            IStorage db = StorageFactory.CreateStorage();
-            db.Open(dbName, pagePoolSize);
+            IStorage db = config.GetDatabase();
             Root root = (Root)db.Root;
             Tests.Assert(root == null);
             root = new Root();
@@ -83,26 +73,26 @@ namespace Volante
             ISortedCollection<long, Record> intIndex = root.intIndex;
             ISortedCollection<string, Record> strIndex = root.strIndex;
             long key = 1999;
-            for (i = 0; i < nRecords; i++)
+            for (i = 0; i < count; i++)
             {
                 Record rec = new Record();
-                key = (3141592621L * key + 2718281829L) % 1000000007L;
                 rec.intKey = key;
                 rec.strKey = System.Convert.ToString(key);
                 intIndex.Add(rec);
                 strIndex.Add(rec);
+                key = (3141592621L * key + 2718281829L) % 1000000007L;
             }
             db.Commit();
             res.InsertTime = DateTime.Now - start;
 
             start = System.DateTime.Now;
             key = 1999;
-            for (i = 0; i < nRecords; i++)
+            for (i = 0; i < count; i++)
             {
-                key = (3141592621L * key + 2718281829L) % 1000000007L;
                 Record rec1 = intIndex[key];
                 Record rec2 = strIndex[Convert.ToString(key)];
                 Tests.Assert(rec1 != null && rec1 == rec2);
+                key = (3141592621L * key + 2718281829L) % 1000000007L;
             }
             res.IndexSearch = DateTime.Now - start;
 
@@ -115,7 +105,7 @@ namespace Volante
                 key = rec.intKey;
                 i += 1;
             }
-            Tests.Assert(i == nRecords);
+            Tests.Assert(i == count);
             i = 0;
             String strKey = "";
             foreach (Record rec in strIndex)
@@ -124,7 +114,7 @@ namespace Volante
                 strKey = rec.strKey;
                 i += 1;
             }
-            Tests.Assert(i == nRecords);
+            Tests.Assert(i == count);
             res.IterationTime = DateTime.Now - start;
 
             start = DateTime.Now;
@@ -140,20 +130,16 @@ namespace Volante
 
             start = System.DateTime.Now;
             key = 1999;
-            for (i = 0; i < nRecords; i++)
+            for (i = 0; i < count; i++)
             {
-                key = (3141592621L * key + 2718281829L) % 1000000007L;
                 Record rec = intIndex[key];
                 intIndex.Remove(rec);
                 strIndex.Remove(rec);
                 rec.Deallocate();
+                key = (3141592621L * key + 2718281829L) % 1000000007L;
             }
             res.RemoveTime = DateTime.Now - start;
             db.Close();
-
-            res.ExecutionTime = DateTime.Now - tStart;
-            res.Ok = Tests.FinalizeTest();
-            return res;
         }
     }
 

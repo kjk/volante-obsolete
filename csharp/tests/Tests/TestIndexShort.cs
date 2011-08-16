@@ -72,21 +72,22 @@ namespace Volante
                 Tests.Assert(r2.lval >= mid && r2.lval <= max);
             }
 
-            //TODO: figure out why this doesn't work
-            if (false)
-            {
-                recs = idx[min, min];
-                Tests.Assert(1 == idx.Count);
 
-                recs = idx[1999, 1999];
-                Tests.Assert(1 == idx.Count);
+            //TODO: figure out why this doesn't work (returns all
+            // items instead of just 1)
+#if NOT_USED
+            recs = idx[min, min];
+            Tests.Assert(1 == idx.Count);
 
-                recs = idx[max, max];
-                Tests.Assert(1 == idx.Count);
+            recs = idx[1999, 1999];
+            Tests.Assert(1 == idx.Count);
 
-                recs = idx[min + 1, min + 1];
-                Tests.Assert(0 == idx.Count);
-            }
+            recs = idx[max, max];
+            Tests.Assert(1 == idx.Count);
+
+            recs = idx[min + 1, min + 1];
+            Tests.Assert(0 == idx.Count);
+#endif
 
             short prev = min;
             var e1 = idx.GetEnumerator();

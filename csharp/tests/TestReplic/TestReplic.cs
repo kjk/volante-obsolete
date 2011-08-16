@@ -20,7 +20,7 @@ public class TestReplic
     }
 
     const int nIterations = 1000000;
-    const int nRecords = 1000;
+    const int count = 1000;
     const int transSize = 100;
     const int defaultPort = 6000;
     const int asyncBufSize = 1024 * 1024;
@@ -82,14 +82,14 @@ public class TestReplic
             DateTime start = DateTime.Now;
             for (i = 0; i < nIterations; i++)
             {
-                if (i >= nRecords)
+                if (i >= count)
                 {
-                    root.Remove(new Key(i - nRecords));
+                    root.Remove(new Key(i - count));
                 }
                 Record rec = new Record();
                 rec.key = i;
                 root.Put(rec);
-                if (i >= nRecords && i % transSize == 0)
+                if (i >= count && i % transSize == 0)
                 {
                     db.Commit();
                 }
@@ -112,7 +112,7 @@ public class TestReplic
                 db.WaitForModification();
                 db.BeginThreadTransaction(TransactionMode.ReplicationSlave);
                 IFieldIndex<int, Record> root = (IFieldIndex<int, Record>)db.Root;
-                if (root != null && root.Count == nRecords)
+                if (root != null && root.Count == count)
                 {
                     DateTime start = DateTime.Now;
                     int prevKey = -1;
@@ -124,7 +124,7 @@ public class TestReplic
                         prevKey = key;
                         i += 1;
                     }
-                    Debug.Assert(i == nRecords);
+                    Debug.Assert(i == count);
                     n += 1;
                     total += (DateTime.Now - start);
                 }

@@ -24,11 +24,11 @@ namespace Volante
             internal Index<long, Record> intIndex;
         }
 
-        static public TestEnumeratorResult Run(int nRecords, bool altBtree)
+        static public TestEnumeratorResult Run(int count, bool altBtree)
         {
             var res = new TestEnumeratorResult()
             {
-                Count = nRecords,
+                Count = count,
                 TestName = String.Format("TestEnumerator(altBtree={0})", altBtree)
             };
 
@@ -53,10 +53,10 @@ namespace Volante
 
             long key = 1999;
             int i, j;
-            for (i = 0; i < nRecords; i++)
+            for (i = 0; i < count; i++)
             {
-                Record rec = new Record();
                 key = (3141592621L * key + 2718281829L) % 1000000007L;
+                Record rec = new Record();
                 rec.intKey = key;
                 rec.strKey = Convert.ToString(key);
                 for (j = (int)(key % 10); --j >= 0; )
@@ -70,7 +70,7 @@ namespace Volante
 
             start = DateTime.Now;
             key = 1999;
-            for (i = 0; i < nRecords; i++)
+            for (i = 0; i < count; i++)
             {
                 key = (3141592621L * key + 2718281829L) % 1000000007L;
                 Key fromInclusive = new Key(key);

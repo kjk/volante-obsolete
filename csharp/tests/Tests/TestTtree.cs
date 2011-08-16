@@ -63,12 +63,12 @@ namespace Volante
 
         const int pagePoolSize = 32 * 1024 * 1024;
 
-        static public TestTtreeResult Run(int nRecords)
+        static public TestTtreeResult Run(int count)
         {
             int i;
             var res = new TestTtreeResult()
             {
-                Count = nRecords,
+                Count = count,
                 TestName = "TestTtree"
             };
 
@@ -86,9 +86,8 @@ namespace Volante
             db.Root = root;
             ISortedCollection<Name, Person> list = root.list;
             long key = 1999;
-            for (i = 0; i < nRecords; i++)
+            for (i = 0; i < count; i++)
             {
-                key = (3141592621L * key + 2718281829L) % 1000000007L;
                 String str = Convert.ToString(key);
                 int m = str.Length / 2;
                 String firstName = str.Substring(0, m);
@@ -96,15 +95,15 @@ namespace Volante
                 int age = (int)key % 100;
                 Person p = new Person(firstName, lastName, age);
                 list.Add(p);
+                key = (3141592621L * key + 2718281829L) % 1000000007L;
             }
             db.Commit();
             res.InsertTime = DateTime.Now - start;
 
             start = DateTime.Now;
             key = 1999;
-            for (i = 0; i < nRecords; i++)
+            for (i = 0; i < count; i++)
             {
-                key = (3141592621L * key + 2718281829L) % 1000000007L;
                 String str = Convert.ToString(key);
                 int m = str.Length / 2;
                 Name name = new Name();
@@ -116,6 +115,7 @@ namespace Volante
                 Tests.Assert(p != null);
                 Tests.Assert(list.Contains(p));
                 Tests.Assert(p.age == age);
+                key = (3141592621L * key + 2718281829L) % 1000000007L;
             }
             res.IndexSearchTime = DateTime.Now - start;
 
@@ -132,7 +132,7 @@ namespace Volante
                 list.Remove(p);
                 i += 1;
             }
-            Tests.Assert(i == nRecords);
+            Tests.Assert(i == count);
             res.RemoveTime = DateTime.Now - start;
             Tests.Assert(list.Count == 0);
             db.Close();

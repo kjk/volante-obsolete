@@ -37,7 +37,6 @@ namespace Volante
             for (i = 0; i < count; i++)
             {
                 r = new Record();
-                val = (3141592621L * val + 2718281829L) % 1000000007L;
                 r.val = val;
                 idx.Put(r.ToBool(), r);
                 if (r.ToBool())
@@ -46,6 +45,7 @@ namespace Volante
                     falseCount += 1;
                 if (i % 1000 == 0)
                     db.Commit();
+                val = (3141592621L * val + 2718281829L) % 1000000007L;
             }
             Tests.Assert(count == trueCount + falseCount);
             db.Commit();

@@ -70,11 +70,11 @@ namespace Volante
             internal IBitIndex<Car> optionIndex;
         }
 
-        public static TestBitResult Run(int nRecords)
+        public static TestBitResult Run(int count)
         {
             var res = new TestBitResult()
             {
-                Count = nRecords,
+                Count = count,
                 TestName = "TestBit"
             };
 
@@ -100,9 +100,8 @@ namespace Volante
             Options selectedOptions = Options.TURBO | Options.DISEL | Options.FWD | Options.ABS | Options.EBD | Options.ESP | Options.AIR_COND | Options.HATCHBACK | Options.CLASS_C;
             Options unselectedOptions = Options.AUTOMATIC;
 
-            for (i = 0, n = 0; i < nRecords; i++)
+            for (i = 0, n = 0; i < count; i++)
             {
-                rnd = (3141592621L * rnd + 2718281829L) % 1000000007L;
                 Options options = (Options)rnd;
                 Car car = new Car();
                 car.hps = i;
@@ -118,6 +117,7 @@ namespace Volante
                 {
                     n += 1;
                 }
+                rnd = (3141592621L * rnd + 2718281829L) % 1000000007L;
             }
             res.InsertTime = DateTime.Now - start;
 
@@ -140,7 +140,7 @@ namespace Volante
                 car.Deallocate();
                 i += 1;
             }
-            Tests.Assert(i == nRecords);
+            Tests.Assert(i == count);
             root.optionIndex.Clear();
             res.RemoveTime = DateTime.Now - start;
             db.Close();

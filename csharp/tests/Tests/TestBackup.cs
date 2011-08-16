@@ -36,13 +36,13 @@ namespace Volante
             Tests.SafeDeleteFile(DbName2);
         }
 
-        static public TestBackupResult Run(int nRecords)
+        static public TestBackupResult Run(int count)
         {
             int i;
 
             var res = new TestBackupResult()
             {
-                Count = nRecords,
+                Count = count,
                 TestName = "TestBackup"
             };
 
@@ -64,21 +64,21 @@ namespace Volante
             IMultiFieldIndex<Record> compoundIndex = root.compoundIndex;
             Index<string, Record> strIndex = root.strIndex;
             long key = 1999;
-            for (i = 0; i < nRecords; i++)
+            for (i = 0; i < count; i++)
             {
                 Record rec = new Record();
-                key = (3141592621L * key + 2718281829L) % 1000000007L;
                 rec.intKey = key;
                 rec.strKey = System.Convert.ToString(key);
                 rec.realKey = (double)key;
                 intIndex.Put(rec);
                 strIndex.Put(new Key(rec.strKey), rec);
                 compoundIndex.Put(rec);
+                key = (3141592621L * key + 2718281829L) % 1000000007L;
             }
             db.Commit();
-            Tests.Assert(intIndex.Count == nRecords);
-            Tests.Assert(strIndex.Count == nRecords);
-            Tests.Assert(compoundIndex.Count == nRecords);
+            Tests.Assert(intIndex.Count == count);
+            Tests.Assert(strIndex.Count == count);
+            Tests.Assert(compoundIndex.Count == count);
             res.InsertTime = DateTime.Now - start;
 
             start = DateTime.Now;
@@ -96,9 +96,8 @@ namespace Volante
             compoundIndex = root.compoundIndex;
 
             key = 1999;
-            for (i = 0; i < nRecords; i++)
+            for (i = 0; i < count; i++)
             {
-                key = (3141592621L * key + 2718281829L) % 1000000007L;
                 String strKey = System.Convert.ToString(key);
                 Record rec1 = intIndex.Get(key);
                 Record rec2 = strIndex.Get(strKey);
@@ -110,6 +109,7 @@ namespace Volante
                 Tests.Assert(rec1.intKey == key);
                 Tests.Assert(rec1.realKey == (double)key);
                 Tests.Assert(strKey.Equals(rec1.strKey));
+                key = (3141592621L * key + 2718281829L) % 1000000007L;
             }
             db.Close();
             res.ExecutionTime = DateTime.Now - tStart;

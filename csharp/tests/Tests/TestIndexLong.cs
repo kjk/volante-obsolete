@@ -44,12 +44,12 @@ namespace Volante
             long val = 1999;
             for (i = 0; i < count; i++)
             {
-                val = (3141592621L * val + 2718281829L) % 1000000007L;
                 long idxVal = Clamp(val);
                 r = new Record(idxVal);
                 idx.Put(idxVal, r);
                 if (i % 100 == 0)
                     db.Commit();
+                val = (3141592621L * val + 2718281829L) % 1000000007L;
             }
             idx.Put(min, new Record(min));
             idx.Put(max, new Record(max));

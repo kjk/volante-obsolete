@@ -29,10 +29,10 @@ public class TestConfig
     };
 
     public string TestName;
-    public InMemoryType InMemory;
-    public FileType FileKind;
-    public bool AltBtree;
-    public bool Serializable;
+    public InMemoryType InMemory = InMemoryType.No;
+    public FileType FileKind = FileType.File;
+    public bool AltBtree = false;
+    public bool Serializable = false;
     public Encoding Encoding; // if not null will use this encoding for storing strings
     public int Count; // number of iterations
 
@@ -45,9 +45,13 @@ public class TestConfig
         {
             string p1 = AltBtree ? "_alt" : "";
             string p2 = Serializable ? "_ser" : "";
-            string p3 = (null == Encoding) ? "" : "_enc-" + Encoding.EncodingName;
-            string p4 = String.Format("_{0}", Count);
-            return String.Format("{0}{1}{2}{3}{4}.dbs", TestName, p1, p2, p3, p4);
+            string p3 = (InMemory == InMemoryType.Full) ? "_mem" : "";
+            string p4 = "";
+            if (InMemory != InMemoryType.Full)
+                p4 = (FileKind == FileType.File) ? "_file" : "_stream";
+            string p5 = (null == Encoding) ? "" : "_enc-" + Encoding.EncodingName;
+            string p6 = String.Format("_{0}", Count);
+            return String.Format("{0}{1}{2}{3}{4}{5}{6}.dbs", TestName, p1, p2, p3, p4, p5, p6);
         }
     }
 
@@ -251,9 +255,20 @@ public class TestsMain
     const int CountsIdxSlow = 1;
     static int CountsIdx = CountsIdxFast;
     static int[] CountsDefault = new int[2] { 1000, 100000 };
-    static TestConfig[] ConfigsDefault = new TestConfig[] { 
+    static int[] Counts1 = new int[2] { 200, 10000 };
+
+    static TestConfig[] ConfigsDefault = new TestConfig[] {
             new TestConfig{ InMemory = TestConfig.InMemoryType.Full },
             new TestConfig{ InMemory = TestConfig.InMemoryType.Full, AltBtree=true }
+        };
+
+    static TestConfig[] ConfigsIndex = new TestConfig[] {
+            new TestConfig{ InMemory = TestConfig.InMemoryType.Full },
+            new TestConfig{ InMemory = TestConfig.InMemoryType.Full, Serializable=true },
+            new TestConfig{ InMemory = TestConfig.InMemoryType.No, AltBtree=false },
+            new TestConfig{ InMemory = TestConfig.InMemoryType.No, AltBtree=true },
+            new TestConfig{ InMemory = TestConfig.InMemoryType.Full, AltBtree=true },
+            new TestConfig{ InMemory = TestConfig.InMemoryType.No, FileKind = TestConfig.FileType.Stream, AltBtree=true }
         };
 
     public class TestInfo
@@ -292,8 +307,45 @@ public class TestsMain
         new TestInfo("TestIndexDouble"),
         new TestInfo("TestIndexGuid"),
         new TestInfo("TestIndexObject"),
-        new TestInfo("TestIndexDateTime")
+        new TestInfo("TestIndexDateTime"),
+        new TestInfo("TestIndex", ConfigsIndex, Counts1),
+        new TestInfo("TestIndex2"),
+
+        /*
+        new TestInfo("TestBit"),
+        new TestInfo("TestBlob"),
+        new TestInfo("TestCompoundIndex"),
+        new TestInfo("TestConcur"),
+        new TestInfo("TestEnumerator"),
+        new TestInfo("TestGc"),
+        new TestInfo("TestIndex3"),
+        new TestInfo("TestIndex4"),
+        new TestInfo("TestList"),
+        new TestInfo("TestR2"),
+        new TestInfo("TestRaw"),
+        new TestInfo("TestRtree"),
+        new TestInfo("TestTtree"),
+        new TestInfo("TestTimeSeries"),
+        new TestInfo("TestXml"),
+        new TestInfo("TestBackup")
+         */
     };
+
+    static Dictionary<string, int[]> IterCounts =
+        new Dictionary<string, int[]>
+        {
+            { "TestIndex3", new int[2] { 200, 10000 } },
+            { "TestIndex4", new int[2] { 200, 10000 } },
+            { "TestEnumerator", new int[2] { 200, 2000 } },
+            { "TestRtree", new int[2] { 800, 20000 } },
+            { "TestR2", new int[2] { 1000, 20000 } },
+            { "TestGC", new int[2] { 5000, 50000 } },
+            { "TestXml", new int[2] { 2000, 20000 } },
+            { "TestBit", new int[2] { 2000, 20000 } },
+            { "TestRaw", new int[2] { 1000, 10000 } },
+            // TODO: figure out why when it's 2000 instead of 2001 we fail
+            { "TestTimeSeries", new int[2] { 2001, 100000 } }
+        };
 
     public static TestConfig[] GetTestConfigs(string testName)
     {
@@ -314,23 +366,6 @@ public class TestsMain
         }
         return CountsDefault[CountsIdx];
     }
-
-    static Dictionary<string, int[]> IterCounts =
-        new Dictionary<string, int[]>
-        {
-            { "TestIndex", CountsDefault },
-            { "TestIndex3", new int[2] { 200, 10000 } },
-            { "TestIndex4", new int[2] { 200, 10000 } },
-            { "TestEnumerator", new int[2] { 200, 2000 } },
-            { "TestRtree", new int[2] { 800, 20000 } },
-            { "TestR2", new int[2] { 1000, 20000 } },
-            { "TestGC", new int[2] { 5000, 50000 } },
-            { "TestXml", new int[2] { 2000, 20000 } },
-            { "TestBit", new int[2] { 2000, 20000 } },
-            { "TestRaw", new int[2] { 1000, 10000 } },
-            // TODO: figure out why when it's 2000 instead of 2001 we fail
-            { "TestTimeSeries", new int[2] { 2001, 100000 } }
-        };
 
     static int GetIterCount(string test)
     {
@@ -408,26 +443,6 @@ public class TestsMain
         r = TestGC.Run(n, true, false);
         r.Print();
         r = TestGC.Run(n, true, true);
-        r.Print();
-    }
-
-    static void RunTestIndex()
-    {
-        int n = GetIterCount("TestIndex");
-        var r = TestIndex.Run(n, false, false, false);
-        r.Print();
-        r = TestIndex.Run(n, true, false, false);
-        r.Print();
-        r = TestIndex.Run(n, true, false, true);
-        r.Print();
-        r = TestIndex.Run(n, false, true, false);
-        r.Print();
-    }
-
-    static void RunTestIndex2()
-    {
-        int n = GetIterCount("TestIndex2");
-        var r = TestIndex2.Run(n);
         r.Print();
     }
 
@@ -548,7 +563,8 @@ public class TestsMain
             "TestIndexULong", "TestIndexDecimal",
             "TestIndexFloat", "TestIndexDouble",
             "TestIndexGuid", "TestIndexObject",
-            "TestIndexDateTime"
+            "TestIndexDateTime", "TestIndex",
+            "TestIndex2"
         };
 
         foreach (var t in tests)
@@ -556,15 +572,12 @@ public class TestsMain
             RunTests(t);
         }
 
-        RunTestBackup();
         RunTestBit();
         RunTestBlob();
         RunTestCompoundIndex();
         RunTestConcur();
         RunTestEnumerator();
         RunTestGc();
-        RunTestIndex();
-        RunTestIndex2();
         RunTestIndex3();
         RunTestIndex4();
         RunTestList();
@@ -574,6 +587,7 @@ public class TestsMain
         RunTestTtree();
         RunTestTimeSeries();
         RunTestXml();
+        RunTestBackup();
 
         var tEnd = DateTime.Now;
         var executionTime = tEnd - tStart;
