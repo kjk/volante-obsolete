@@ -127,33 +127,13 @@ namespace Volante
             start = System.DateTime.Now;
 
             IDictionaryEnumerator de = intIndex.GetDictionaryEnumerator();
-            long prev = long.MinValue;
-            i = 0;
-            while (de.MoveNext())
-            {
-                DictionaryEntry e1 = (DictionaryEntry)de.Current;
-                DictionaryEntry e2 = de.Entry;
-                Tests.Assert(e1.Equals(e2));
-                long k = (long)e1.Key;
-                long k2 = (long)de.Key;
-                Tests.Assert(k == k2);
-                Record v1 = (Record)e1.Value;
-                Record v2 = (Record)de.Value;
-                Tests.Assert(v1.Equals(v2));
-                Tests.Assert(v1.intKey == k);
-                Tests.Assert(k >= prev);
-                prev = k;
-                i++;
-            }
+            i = VerifyDictionaryEnumerator(de, IterationOrder.AscentOrder);
             Tests.Assert(i == count);
-            Tests.AssertException<InvalidOperationException>(
-                () => { var tmp = de.Current; });
-            Tests.AssertException<InvalidOperationException>(
-                () => { var tmp = de.Entry; });
-            Tests.AssertException<InvalidOperationException>(
-                () => { var tmp = de.Key; });
-            Tests.AssertException<InvalidOperationException>(
-                () => { var tmp = de.Value; });
+
+            long mid = 0;
+            long max = long.MaxValue;
+            de = intIndex.GetDictionaryEnumerator(new Key(mid), new Key(max), IterationOrder.DescentOrder);
+            VerifyDictionaryEnumerator(de, IterationOrder.DescentOrder);
 
             key = 1999;
             for (i = 0; i < count; i++)
@@ -172,7 +152,33 @@ namespace Volante
             res.Ok = Tests.FinalizeTest();
             return res;
         }
+        static int VerifyDictionaryEnumerator(IDictionaryEnumerator de, IterationOrder order)
+        {
+            long prev = long.MinValue;
+            if (order == IterationOrder.DescentOrder)
+                prev = long.MaxValue;
+            int i = 0;
+            while (de.MoveNext())
+            {
+                DictionaryEntry e1 = (DictionaryEntry)de.Current;
+                DictionaryEntry e2 = de.Entry;
+                Tests.Assert(e1.Equals(e2));
+                long k = (long)e1.Key;
+                long k2 = (long)de.Key;
+                Tests.Assert(k == k2);
+                Record v1 = (Record)e1.Value;
+                Record v2 = (Record)de.Value;
+                Tests.Assert(v1.Equals(v2));
+                Tests.Assert(v1.intKey == k);
+                if (order == IterationOrder.AscentOrder)
+                    Tests.Assert(k >= prev);
+                else
+                    Tests.Assert(k <= prev);
+                prev = k;
+                i++;
+            }
+            Tests.VerifyDictionaryEnumeratorDone(de);
+            return i;
+        }
     }
-
-
 }

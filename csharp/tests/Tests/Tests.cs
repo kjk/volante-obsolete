@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -120,6 +121,25 @@ public class Tests
         NullFile dbFile = new NullFile();
         db.Open(dbFile, INFINITE_PAGE_POOL_SIZE);
         return db;
+    }
+
+    public static void VerifyDictionaryEnumeratorDone(IDictionaryEnumerator de)
+    {
+        AssertException<InvalidOperationException>(
+            () => { var tmp = de.Current; });
+        AssertException<InvalidOperationException>(
+            () => { var tmp = de.Entry; });
+        AssertException<InvalidOperationException>(
+            () => { var tmp = de.Key; });
+        AssertException<InvalidOperationException>(
+            () => { var tmp = de.Value; });
+    }
+
+    public static void VerifyEnumeratorDone(IEnumerator e)
+    {
+        AssertException<InvalidOperationException>(
+            () => { var tmp = e.Current; });
+        Tests.Assert(!e.MoveNext());
     }
 }
 
