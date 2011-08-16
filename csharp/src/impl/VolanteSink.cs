@@ -4,9 +4,9 @@ using System.Runtime.Remoting.Messaging;
 
 namespace Volante.Impl
 {
-    public class PerstSink : IMessageSink
+    public class VolanteSink : IMessageSink
     {
-        internal PerstSink(PersistentContext target, IMessageSink next)
+        internal VolanteSink(PersistentContext target, IMessageSink next)
         {
             this.next = next;
             this.target = target;

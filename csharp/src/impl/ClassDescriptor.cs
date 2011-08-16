@@ -263,7 +263,7 @@ namespace Volante.Impl
             return t.FullName;
         }
 
-        static bool isPerstInternalType(Type t)
+        static bool isVolanteInternalType(Type t)
         {
             return t.Namespace == typeof(IPersistent).Namespace
                 && t != typeof(IPersistent) && t != typeof(PersistentContext) && t != typeof(Persistent);
@@ -316,7 +316,7 @@ namespace Volante.Impl
                         case FieldType.tpArrayOfObject:
                         case FieldType.tpObject:
                             hasReferences = true;
-                            if (hasTransparentAttribute && isPerstInternalType(fieldType))
+                            if (hasTransparentAttribute && isVolanteInternalType(fieldType))
                             {
                                 fd.recursiveLoading = true;
                             }
@@ -588,7 +588,7 @@ namespace Volante.Impl
                 FieldDescriptor fd = allFields[i];
                 fd.Load();
                 fd.field = cls.GetField(fd.fieldName, BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
-                if (hasTransparentAttribute && fd.type == FieldType.tpObject && isPerstInternalType(fd.field.FieldType))
+                if (hasTransparentAttribute && fd.type == FieldType.tpObject && isVolanteInternalType(fd.field.FieldType))
                 {
                     fd.recursiveLoading = true;
                 }

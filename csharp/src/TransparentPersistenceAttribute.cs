@@ -26,7 +26,7 @@ namespace Volante
         }
         public IMessageSink GetObjectSink(MarshalByRefObject target, IMessageSink next)
         {
-            return new PerstSink((PersistentContext)target, next);
+            return new VolanteSink((PersistentContext)target, next);
         }
     }
 }
