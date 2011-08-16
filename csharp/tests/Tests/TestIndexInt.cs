@@ -150,22 +150,39 @@ namespace Volante
             res.Ok = Tests.FinalizeTest();
             return res;
         }
+    }
 
-        // Test for BtreePageOfInt.compare() bug
-        static public void TestIndexInt00()
+    // Test for BtreePageOfInt.compare() bug
+    public class TestIndexInt00
+    {
+        public class Record : Persistent
+        {
+            public long lval;
+            public int nval; // native value
+            public Record(int v)
+            {
+                nval = v;
+                lval = (long)v;
+            }
+            public Record()
+            {
+            }
+        }
+
+        const int min = int.MinValue;
+        const int max = int.MaxValue;
+
+        public void Run(TestConfig tc)
         {
             Record r;
-            int i;
-            IStorage db = Tests.GetTransientStorage(true);
+            IStorage db = tc.GetDatabase();
             Tests.Assert(null == db.Root);
             var idx = db.CreateIndex<int, Record>(false);
             db.Root = idx;
-
             idx.Put(min, new Record(min));
             idx.Put(max, new Record(max));
-
             int prev = min;
-            i = 0;
+            int i = 0;
             var e1 = idx.GetEnumerator();
             while (e1.MoveNext())
             {
@@ -174,7 +191,10 @@ namespace Volante
                 prev = r.nval;
                 i++;
             }
+            Tests.Assert(i == 2);
+            Tests.Assert(i == idx.Count);
             db.Close();
         }
     }
+
 }

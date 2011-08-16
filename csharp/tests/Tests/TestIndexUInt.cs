@@ -2,6 +2,52 @@ namespace Volante
 {
     using System;
 
+    public class TestIndexUInt00
+    {
+        public class Record : Persistent
+        {
+            public long lval;
+            public uint nval; // native value
+            public Record(uint v)
+            {
+                nval = v;
+                lval = (long)v;
+            }
+            public Record()
+            {
+            }
+        }
+
+        const uint min = uint.MinValue;
+        const uint max = uint.MaxValue;
+        const uint mid = max / 2;
+
+        public void Run(TestConfig tc)
+        {
+            Record r;
+            int i;
+            IStorage db = tc.GetDatabase();
+            Tests.Assert(null == db.Root);
+            var idx = db.CreateIndex<uint, Record>(false);
+            db.Root = idx;
+
+            idx.Put(min, new Record(min));
+            idx.Put(max, new Record(max));
+
+            uint prev = min;
+            i = 0;
+            var e1 = idx.GetEnumerator();
+            while (e1.MoveNext())
+            {
+                r = e1.Current;
+                Tests.Assert(r.nval >= prev);
+                prev = r.nval;
+                i++;
+            }
+            db.Close();
+        }
+    }
+
     public class TestIndexUInt
     {
         public class Record : Persistent
@@ -150,32 +196,6 @@ namespace Volante
             res.Ok = Tests.FinalizeTest();
             return res;
         }
-
-        static public void TestIndexUInt00()
-        {
-            Record r;
-            int i;
-            IStorage db = Tests.GetTransientStorage(true);
-            Tests.Assert(null == db.Root);
-            var idx = db.CreateIndex<uint, Record>(false);
-            db.Root = idx;
-
-            idx.Put(min, new Record(min));
-            idx.Put(max, new Record(max));
-
-            uint prev = min;
-            i = 0;
-            var e1 = idx.GetEnumerator();
-            while (e1.MoveNext())
-            {
-                r = e1.Current;
-                Tests.Assert(r.nval >= prev);
-                prev = r.nval;
-                i++;
-            }
-            db.Close();
-        }
-
     }
 }
 

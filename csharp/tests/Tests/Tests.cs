@@ -3,21 +3,133 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Reflection;
+using System.Text;
 using Volante;
+
+public class TestConfig
+{
+    const int INFINITE_PAGE_POOL = 0;
+
+    public enum InMemoryType
+    {
+        // uses a file
+        No,
+        // uses NullFile and infinite page pool
+        Full,
+        // uses a real file and infinite page pool. The work is done
+        // in memory but on closing dta is persisted to a file
+        File
+    };
+
+    public enum FileType
+    {
+        File, // use IFile
+        Stream // use StreamFile
+    };
+
+    public string TestName;
+    public InMemoryType InMemory;
+    public FileType FileKind;
+    public bool AltBtree;
+    public bool Serializable;
+    public Encoding Encoding; // if not null will use this encoding for storing strings
+    public int Count; // number of iterations
+
+    // Set by the test. Can be a subclass of TestResult
+    public TestResult Result;
+
+    public string DatabaseName
+    {
+        get
+        {
+            string p1 = AltBtree ? "_alt" : "";
+            string p2 = Serializable ? "_ser" : "";
+            string p3 = (null == Encoding) ? "" : "_enc-" + Encoding.EncodingName;
+            string p4 = String.Format("_{0}", Count);
+            return String.Format("{0}{1}{2}{3}{4}.dbs", TestName, p1, p2, p3, p4);
+        }
+    }
+
+    IStorage GetTransientStorage()
+    {
+        IStorage db = StorageFactory.CreateStorage();
+        NullFile dbFile = new NullFile();
+        db.Open(dbFile, INFINITE_PAGE_POOL);
+        return db;
+    }
+
+    public IStorage GetDatabase()
+    {
+        IStorage db = null;
+        if (InMemory == InMemoryType.Full)
+            db = GetTransientStorage();
+        else
+        {
+            var name = DatabaseName;
+            Tests.SafeDeleteFile(name);
+            db = StorageFactory.CreateStorage();
+            if (InMemory == InMemoryType.File)
+            {
+                if (FileKind == FileType.File)
+                    db.Open(name, INFINITE_PAGE_POOL);
+                else
+                {
+                    var f = File.Open(name, FileMode.CreateNew, FileAccess.ReadWrite, FileShare.None);
+                    var sf = new StreamFile(f);
+                    db.Open(sf, INFINITE_PAGE_POOL);
+                }
+            }
+            else
+            {
+                if (FileKind == FileType.File)
+                    db.Open(name);
+                else
+                {
+                    var f = File.Open(name, FileMode.CreateNew, FileAccess.ReadWrite, FileShare.None);
+                    var sf = new StreamFile(f);
+                    db.Open(sf);
+                }
+            }
+        }
+        db.AlternativeBtree = AltBtree;
+        return db;
+    }
+
+    public TestConfig()
+    {
+    }
+
+    public TestConfig(TestConfig tc)
+    {
+        TestName = tc.TestName;
+        InMemory = tc.InMemory;
+        FileKind = tc.FileKind;
+        AltBtree = tc.AltBtree;
+        Serializable = tc.Serializable;
+        Encoding = tc.Encoding;
+        Count = tc.Count;
+        Result = tc.Result;
+    }
+};
 
 public class TestResult
 {
     public bool Ok;
-    public string TestName;
+    public TestConfig Config;
+    public string TestName; // TODO: get rid of it after converting all tests to TestConfig
     public int Count;
     public TimeSpan ExecutionTime;
 
     public override string ToString()
     {
+        string name = TestName;
+        if (null != Config)
+            name = Config.DatabaseName;
         if (Ok)
-            return String.Format("{0} OK, {1} ms, n = {2}", TestName, (int)ExecutionTime.TotalMilliseconds, Count);
+            return String.Format("OK, {0,6} ms {1}", (int)ExecutionTime.TotalMilliseconds, name);
         else
-            return String.Format("{0} FAILED", TestName);
+            return String.Format("FAILED {0}", name);
     }
 
     public void Print()
@@ -113,16 +225,6 @@ public class Tests
         catch { }
     }
 
-    public static IStorage GetTransientStorage(bool altBtree)
-    {
-        const int INFINITE_PAGE_POOL_SIZE = 0;
-        IStorage db = StorageFactory.CreateStorage();
-        db.AlternativeBtree = true;
-        NullFile dbFile = new NullFile();
-        db.Open(dbFile, INFINITE_PAGE_POOL_SIZE);
-        return db;
-    }
-
     public static void VerifyDictionaryEnumeratorDone(IDictionaryEnumerator de)
     {
         AssertException<InvalidOperationException>(
@@ -148,12 +250,60 @@ public class TestsMain
     const int CountsIdxFast = 0;
     const int CountsIdxSlow = 1;
     static int CountsIdx = CountsIdxFast;
-    static int[] DefaultCounts = new int[2] { 1000, 100000 };
+    static int[] CountsDefault = new int[2] { 1000, 100000 };
+    static TestConfig[] ConfigsDefault = new TestConfig[] { 
+            new TestConfig{ InMemory = TestConfig.InMemoryType.Full },
+            new TestConfig{ InMemory = TestConfig.InMemoryType.Full, AltBtree=true }
+        };
+
+    public class TestInfo
+    {
+        public string Name;
+        public TestConfig[] Configs;
+        public int[] Counts;
+
+        public TestInfo(string name, TestConfig[] configs = null, int[] counts=null)
+        {
+            Name = name;
+            if (null == configs)
+                configs = ConfigsDefault;
+            Configs = configs;
+            if (null == counts)
+                counts = CountsDefault;
+            Counts = counts;
+        }
+    };
+
+    static TestInfo[] TestInfos = new TestInfo[] 
+    {
+        new TestInfo("TestIndexUInt00"),
+        new TestInfo("TestIndexInt00")
+    };
+
+    public static TestConfig[] GetTestConfigs(string testName)
+    {
+        foreach (var ti in TestInfos)
+        {
+            if (testName == ti.Name)
+                return ti.Configs;
+        }
+        return null;
+    }
+
+    public static int GetCount(string testName)
+    {
+        foreach (var ti in TestInfos)
+        {
+            if (testName == ti.Name)
+                return ti.Counts[CountsIdx];
+        }
+        return CountsDefault[CountsIdx];
+    }
 
     static Dictionary<string, int[]> IterCounts =
         new Dictionary<string, int[]>
         {
-            { "TestIndex", DefaultCounts },
+            { "TestIndex", CountsDefault },
             { "TestIndex3", new int[2] { 200, 10000 } },
             { "TestIndex4", new int[2] { 200, 10000 } },
             { "TestEnumerator", new int[2] { 200, 2000 } },
@@ -172,7 +322,7 @@ public class TestsMain
         int[] counts;
         bool ok = IterCounts.TryGetValue(test, out counts);
         if (!ok)
-            counts = DefaultCounts;
+            counts = CountsDefault;
         return counts[CountsIdx];
     }
 
@@ -491,14 +641,46 @@ public class TestsMain
 #endif
     }
 
+    public static void RunTests(string testClassName)
+    {
+        var assembly = Assembly.GetExecutingAssembly();
+        object obj = assembly.CreateInstance(testClassName);
+        if (obj == null)
+            obj = assembly.CreateInstance("Volante." + testClassName);
+        Type tp = obj.GetType();
+        MethodInfo mi = tp.GetMethod("Run");
+        int count = GetCount(testClassName);
+        foreach (TestConfig configTmp in GetTestConfigs(testClassName))
+        {
+            // make a copy because we modify it
+            var config = new TestConfig(configTmp);
+            config.Count = count;
+            config.TestName = testClassName;
+            config.Result = new TestResult(); // can be over-written by a test
+            var dbname = config.DatabaseName;
+            DateTime start = DateTime.Now;
+            mi.Invoke(obj, new object[] { config });
+            config.Result.ExecutionTime = DateTime.Now - start;
+            config.Result.Config = config; // so that we Print() nicely
+            config.Result.Ok = Tests.FinalizeTest();
+            config.Result.Print();
+        }
+    }
+
     public static void Main(string[] args)
     {
         ParseCmdLineArgs(args);
 
         var tStart = DateTime.Now;
 
-        TestIndexUInt.TestIndexUInt00();
-        TestIndexInt.TestIndexInt00();
+        string[] tests = new string[] {
+            "TestIndexUInt00", "TestIndexInt00"
+        };
+        foreach (var t in tests)
+        {
+            RunTests(t);
+        }
+
         RunTestBackup();
         RunTestBit();
         RunTestBlob();

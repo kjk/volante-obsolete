@@ -1,7 +1,7 @@
 namespace Volante
 {
     /// <summary> Interface of file.
-    /// Prorgemmer can provide its own impleentation of this interface, adding such features
+    /// Programmer can provide its own implementation of this interface, adding such features
     /// as support of flash cards, encrypted files,...
     /// Implentation of this interface should throw StorageError exception in case of failure
     /// </summary>

@@ -5,7 +5,7 @@ namespace Volante
     /// <summary>
     /// IFile implementation which to store databases on <see cref="System.IO.Stream"/> instances.
     /// </summary>
-    internal class StreamFile : IFile
+    public class StreamFile : IFile
     {
         private long offset = 0;
         private bool noFlush = false;
