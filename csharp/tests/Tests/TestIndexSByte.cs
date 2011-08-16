@@ -29,24 +29,17 @@ namespace Volante
             return (sbyte)val;
         }
 
-        static public TestIndexNumericResult Run(int count, bool altBtree)
+        public void Run(TestConfig config)
         {
             int i;
             Record r = null;
-            string dbName = "testnumsbyte.dbs";
-            Tests.SafeDeleteFile(dbName);
-            var res = new TestIndexNumericResult()
-            {
-                Count = count,
-                TestName = String.Format("TestIndexSByte, count={0}", count)
-            };
+            int count = config.Count;
+            var res = new TestIndexNumericResult();
+            config.Result = res;
 
-            var tStart = DateTime.Now;
             var start = DateTime.Now;
 
-            IStorage db = StorageFactory.CreateStorage();
-            db.AlternativeBtree = altBtree;
-            db.Open(dbName);
+            IStorage db = config.GetDatabase();
             Tests.Assert(null == db.Root);
             var idx = db.CreateIndex<sbyte, Record>(false);
             db.Root = idx;
@@ -87,6 +80,7 @@ namespace Volante
                 Tests.Assert(r.nval >= prev);
                 prev = r.nval;
             }
+            Tests.VerifyEnumeratorDone(e1);
 
             prev = min;
             foreach (var r2 in idx)
@@ -130,9 +124,6 @@ namespace Volante
             db.Commit();
             long usedAfterGc = db.UsedSize;
             db.Close();
-            res.ExecutionTime = DateTime.Now - tStart;
-            res.Ok = Tests.FinalizeTest();
-            return res;
         }
     }
 }

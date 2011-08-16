@@ -18,25 +18,15 @@ namespace Volante
             }
         }
 
-        static public TestIndexBooleanResult Run(int count, bool altBtree)
+        public void Run(TestConfig config)
         {
             int i;
             Record r=null;
-
-            string dbName = "testidxbool.dbs";
-            Tests.SafeDeleteFile(dbName);
-
-            var res = new TestIndexBooleanResult()
-            {
-                Count = count,
-                TestName = String.Format("TestIndexBoolean(count={0}, altBtree={1}", count, altBtree)
-            };
-            var tStart = DateTime.Now;
+            int count = config.Count;
+            var res = new TestIndexBooleanResult();
+            config.Result = res;
             var start = DateTime.Now;
-
-            IStorage db = StorageFactory.CreateStorage();
-            db.AlternativeBtree = altBtree;
-            db.Open(dbName);
+            IStorage db = config.GetDatabase();
             Tests.Assert(null == db.Root);
             var idx = db.CreateIndex<Boolean, Record>(false);
             db.Root = idx;
@@ -107,6 +97,7 @@ namespace Volante
                     Tests.Assert(r.ToBool());
                 i++;
             }
+            Tests.VerifyEnumeratorDone(e1);
 
             e1 = idx.GetEnumerator(false, true, IterationOrder.DescentOrder);
             i = 0;
@@ -120,6 +111,7 @@ namespace Volante
                 i++;
             }
             Tests.Assert(first.val == r.val);
+            Tests.VerifyEnumeratorDone(e1);
 
             i = 0;
             foreach (var r2 in idx.Range(false, true))
@@ -185,9 +177,6 @@ namespace Volante
             trueCount -= removedTrue;
             Tests.Assert(idx.Count == count);
             db.Close();
-            res.ExecutionTime = DateTime.Now - tStart;
-            res.Ok = Tests.FinalizeTest();
-            return res;
         }
 
     }

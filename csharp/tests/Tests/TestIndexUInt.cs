@@ -22,11 +22,11 @@ namespace Volante
         const uint max = uint.MaxValue;
         const uint mid = max / 2;
 
-        public void Run(TestConfig tc)
+        public void Run(TestConfig config)
         {
             Record r;
             int i;
-            IStorage db = tc.GetDatabase();
+            IStorage db = config.GetDatabase();
             Tests.Assert(null == db.Root);
             var idx = db.CreateIndex<uint, Record>(false);
             db.Root = idx;
@@ -75,24 +75,17 @@ namespace Volante
             return (byte)val;
         }
 
-        static public TestIndexNumericResult Run(int count, bool altBtree)
+        public void Run(TestConfig config)
         {
             int i;
             Record r = null;
-            string dbName = "testnumushort.dbs";
-            Tests.SafeDeleteFile(dbName);
-            var res = new TestIndexNumericResult()
-            {
-                Count = count,
-                TestName = String.Format("TestIndexUInt, count={0}", count)
-            };
+            int count = config.Count;
+            var res = new TestIndexNumericResult();
+            config.Result = res;
 
-            var tStart = DateTime.Now;
             var start = DateTime.Now;
 
-            IStorage db = StorageFactory.CreateStorage();
-            db.AlternativeBtree = altBtree;
-            db.Open(dbName);
+            IStorage db = config.GetDatabase();
             Tests.Assert(null == db.Root);
             var idx = db.CreateIndex<uint, Record>(false);
             db.Root = idx;
@@ -139,6 +132,7 @@ namespace Volante
                 prev = r.nval;
                 i++;
             }
+            Tests.VerifyEnumeratorDone(e1);
 
             prev = min;
             i = 0;
@@ -192,9 +186,6 @@ namespace Volante
             db.Commit();
             long usedAfterGc = db.UsedSize;
             db.Close();
-            res.ExecutionTime = DateTime.Now - tStart;
-            res.Ok = Tests.FinalizeTest();
-            return res;
         }
     }
 }

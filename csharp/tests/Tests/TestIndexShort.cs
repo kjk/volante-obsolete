@@ -29,36 +29,28 @@ namespace Volante
             return (short)val;
         }
 
-        static public TestIndexNumericResult Run(int count, bool altBtree)
+        public void Run(TestConfig config)
         {
             int i;
             Record r = null;
-            string dbName = "testnumshort.dbs";
-            Tests.SafeDeleteFile(dbName);
-            var res = new TestIndexNumericResult()
-            {
-                Count = count,
-                TestName = String.Format("TestIndexShort, count={0}", count)
-            };
-
-            var tStart = DateTime.Now;
+            int count = config.Count;
+            var res = new TestIndexNumericResult();
+            config.Result = res;
             var start = DateTime.Now;
 
-            IStorage db = StorageFactory.CreateStorage();
-            db.AlternativeBtree = altBtree;
-            db.Open(dbName);
+            IStorage db = config.GetDatabase();
             Tests.Assert(null == db.Root);
             var idx = db.CreateIndex<short, Record>(false);
             db.Root = idx;
             long val = 1999;
             for (i = 0; i < count; i++)
             {
-                val = (3141592621L * val + 2718281829L) % 1000000007L;
                 short idxVal = Clamp(val);
                 r = new Record(idxVal);
                 idx.Put(idxVal, r);
                 if (i % 100 == 0)
                     db.Commit();
+                val = (3141592621L * val + 2718281829L) % 1000000007L;
             }
             idx.Put(min, new Record(min));
             idx.Put(max, new Record(max));
@@ -79,6 +71,23 @@ namespace Volante
             {
                 Tests.Assert(r2.lval >= mid && r2.lval <= max);
             }
+
+            //TODO: figure out why this doesn't work
+            if (false)
+            {
+                recs = idx[min, min];
+                Tests.Assert(1 == idx.Count);
+
+                recs = idx[1999, 1999];
+                Tests.Assert(1 == idx.Count);
+
+                recs = idx[max, max];
+                Tests.Assert(1 == idx.Count);
+
+                recs = idx[min + 1, min + 1];
+                Tests.Assert(0 == idx.Count);
+            }
+
             short prev = min;
             var e1 = idx.GetEnumerator();
             while (e1.MoveNext())
@@ -87,6 +96,7 @@ namespace Volante
                 Tests.Assert(r.nval >= prev);
                 prev = r.nval;
             }
+            Tests.VerifyEnumeratorDone(e1);
 
             prev = min;
             foreach (var r2 in idx)
@@ -130,9 +140,6 @@ namespace Volante
             db.Commit();
             long usedAfterGc = db.UsedSize;
             db.Close();
-            res.ExecutionTime = DateTime.Now - tStart;
-            res.Ok = Tests.FinalizeTest();
-            return res;
         }
     }
 }

@@ -92,7 +92,7 @@ public class TestConfig
                 }
             }
         }
-        db.AlternativeBtree = AltBtree;
+        db.AlternativeBtree = AltBtree || Serializable;
         return db;
     }
 
@@ -277,7 +277,22 @@ public class TestsMain
     static TestInfo[] TestInfos = new TestInfo[] 
     {
         new TestInfo("TestIndexUInt00"),
-        new TestInfo("TestIndexInt00")
+        new TestInfo("TestIndexInt00"),
+        new TestInfo("TestIndexInt"),
+        new TestInfo("TestIndexUInt"),
+        new TestInfo("TestIndexBoolean"),
+        new TestInfo("TestIndexByte"),
+        new TestInfo("TestIndexSByte"),
+        new TestInfo("TestIndexShort"),
+        new TestInfo("TestIndexUShort"),
+        new TestInfo("TestIndexLong"),
+        new TestInfo("TestIndexULong"),
+        new TestInfo("TestIndexDecimal"),
+        new TestInfo("TestIndexFloat"),
+        new TestInfo("TestIndexDouble"),
+        new TestInfo("TestIndexGuid"),
+        new TestInfo("TestIndexObject"),
+        new TestInfo("TestIndexDateTime")
     };
 
     public static TestConfig[] GetTestConfigs(string testName)
@@ -434,155 +449,6 @@ public class TestsMain
         r.Print();
     }
 
-    static void RunTestIndexBoolean()
-    {
-        int n = GetIterCount("TestIndexBoolean");
-        var r = TestIndexBoolean.Run(n, false);
-        r.Print();
-        r = TestIndexBoolean.Run(n, true);
-        r.Print();
-    }
-
-    static void RunTestIndexByte()
-    {
-        TestResult r;
-        int n = GetIterCount("TestIndexByte");
-        r = TestIndexByte.Run(n, false);
-        r.Print();
-        r = TestIndexByte.Run(n, true);
-        r.Print();
-    }
-
-    static void RunTestIndexSByte()
-    {
-        TestResult r;
-        int n = GetIterCount("TestIndexSByte");
-        r = TestIndexSByte.Run(n, false);
-        r.Print();
-        r = TestIndexSByte.Run(n, true);
-        r.Print();
-    }
-
-    static void RunTestIndexShort()
-    {
-        TestResult r;
-        int n = GetIterCount("TestIndexShort");
-        r = TestIndexShort.Run(n, false);
-        r.Print();
-        r = TestIndexShort.Run(n, true);
-        r.Print();
-    }
-
-    static void RunTestIndexUShort()
-    {
-        TestResult r;
-        int n = GetIterCount("TestIndexUShort");
-        r = TestIndexUShort.Run(n, false);
-        r.Print();
-        r = TestIndexUShort.Run(n, true);
-        r.Print();
-    }
-
-    static void RunTestIndexInt()
-    {
-        TestResult r;
-        int n = GetIterCount("RunTestIndexInt");
-        r = TestIndexInt.Run(n, false);
-        r.Print();
-        r = TestIndexInt.Run(n, true);
-        r.Print();
-    }
-
-    static void RunTestIndexUInt()
-    {
-        TestResult r;
-        int n = GetIterCount("RunTestIndexUInt");
-        r = TestIndexUInt.Run(n, false);
-        r.Print();
-        r = TestIndexUInt.Run(n, true);
-        r.Print();
-    }
-
-    static void RunTestIndexLong()
-    {
-        TestResult r;
-        int n = GetIterCount("RunTestIndexLong");
-        r = TestIndexLong.Run(n, false);
-        r.Print();
-        r = TestIndexLong.Run(n, true);
-        r.Print();
-    }
-
-    static void RunTestIndexULong()
-    {
-        TestResult r;
-        int n = GetIterCount("RunTestIndexULong");
-        r = TestIndexULong.Run(n, false);
-        r.Print();
-        r = TestIndexULong.Run(n, true);
-        r.Print();
-    }
-
-    static void RunTestIndexDecimal()
-    {
-        TestResult r;
-        int n = GetIterCount("RunTestIndexDecimal");
-        r = TestIndexDecimal.Run(n, false);
-        r.Print();
-        r = TestIndexDecimal.Run(n, true);
-        r.Print();
-    }
-
-    static void RunTestIndexFloat()
-    {
-        TestResult r;
-        int n = GetIterCount("RunTestIndexFloat");
-        r = TestIndexFloat.Run(n, false);
-        r.Print();
-        r = TestIndexFloat.Run(n, true);
-        r.Print();
-    }
-
-    static void RunTestIndexDouble()
-    {
-        TestResult r;
-        int n = GetIterCount("RunTestIndexDouble");
-        r = TestIndexDouble.Run(n, false);
-        r.Print();
-        r = TestIndexDouble.Run(n, true);
-        r.Print();
-    }
-
-    static void RunTestIndexGuid()
-    {
-        TestResult r;
-        int n = GetIterCount("RunTestIndexGuid");
-        r = TestIndexGuid.Run(n, false);
-        r.Print();
-        r = TestIndexGuid.Run(n, true);
-        r.Print();
-    }
-
-    static void RunTestIndexObject()
-    {
-        TestResult r;
-        int n = GetIterCount("RunTestIndexObject");
-        r = TestIndexObject.Run(n, false);
-        r.Print();
-        r = TestIndexObject.Run(n, true);
-        r.Print();
-    }
-
-    static void RunTestIndexDateTime()
-    {
-        TestResult r;
-        int n = GetIterCount("RunTestIndexDateTime");
-        r = TestIndexDateTime.Run(n, false);
-        r.Print();
-        r = TestIndexDateTime.Run(n, true);
-        r.Print();
-    }
-
     static void RunTestList()
     {
         int n = GetIterCount("TestList");
@@ -674,8 +540,17 @@ public class TestsMain
         var tStart = DateTime.Now;
 
         string[] tests = new string[] {
-            "TestIndexUInt00", "TestIndexInt00"
+            "TestIndexUInt00", "TestIndexInt00",
+            "TestIndexInt", "TestIndexUInt",
+            "TestIndexBoolean", "TestIndexByte",
+            "TestIndexSByte", "TestIndexShort",
+            "TestIndexUShort", "TestIndexLong",
+            "TestIndexULong", "TestIndexDecimal",
+            "TestIndexFloat", "TestIndexDouble",
+            "TestIndexGuid", "TestIndexObject",
+            "TestIndexDateTime"
         };
+
         foreach (var t in tests)
         {
             RunTests(t);
@@ -692,21 +567,6 @@ public class TestsMain
         RunTestIndex2();
         RunTestIndex3();
         RunTestIndex4();
-        RunTestIndexBoolean();
-        RunTestIndexByte();
-        RunTestIndexSByte();
-        RunTestIndexShort();
-        RunTestIndexUShort();
-        RunTestIndexInt();
-        RunTestIndexUInt();
-        RunTestIndexLong();
-        RunTestIndexULong();
-        RunTestIndexDecimal();
-        RunTestIndexFloat();
-        RunTestIndexDouble();
-        RunTestIndexGuid();
-        RunTestIndexObject();
-        RunTestIndexDateTime();
         RunTestList();
         RunTestR2();
         RunTestRaw();
