@@ -71,6 +71,4 @@ namespace Volante
             db.Close();
         }
     }
-
-
 }

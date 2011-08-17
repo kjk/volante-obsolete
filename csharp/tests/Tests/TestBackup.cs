@@ -25,41 +25,23 @@ namespace Volante
             internal IMultiFieldIndex<Record> compoundIndex;
         }
 
-        internal static int pagePoolSize = 32 * 1024 * 1024;
-
-        static string DbName1 = "testbck1.dbs";
-        static string DbName2 = "testbck2.dbs";
-
-        static public void Init()
-        {
-            Tests.SafeDeleteFile(DbName1);
-            Tests.SafeDeleteFile(DbName2);
-        }
-
-        static public TestBackupResult Run(int count)
+        public void Run(TestConfig config)
         {
             int i;
+            int count = config.Count;
+            var res = new TestBackupResult();
 
-            var res = new TestBackupResult()
-            {
-                Count = count,
-                TestName = "TestBackup"
-            };
-
-            DateTime tStart = DateTime.Now;
             DateTime start = DateTime.Now;
 
-            IStorage db = StorageFactory.CreateStorage();
-            db.Open(DbName1, pagePoolSize);
+            string dbNameBackup = config.DatabaseName + ".backup.dbs";
+            IStorage db = config.GetDatabase();
             Root root = (Root)db.Root;
-            if (root == null)
-            {
-                root = new Root();
-                root.strIndex = db.CreateIndex<string, Record>(true);
-                root.intIndex = db.CreateFieldIndex<long, Record>("intKey", true);
-                root.compoundIndex = db.CreateFieldIndex<Record>(new String[] { "strKey", "intKey" }, true);
-                db.Root = root;
-            }
+            Tests.Assert(root == null);
+            root = new Root();
+            root.strIndex = db.CreateIndex<string, Record>(true);
+            root.intIndex = db.CreateFieldIndex<long, Record>("intKey", true);
+            root.compoundIndex = db.CreateFieldIndex<Record>(new String[] { "strKey", "intKey" }, true);
+            db.Root = root;
             IFieldIndex<long, Record> intIndex = root.intIndex;
             IMultiFieldIndex<Record> compoundIndex = root.compoundIndex;
             Index<string, Record> strIndex = root.strIndex;
@@ -82,14 +64,14 @@ namespace Volante
             res.InsertTime = DateTime.Now - start;
 
             start = DateTime.Now;
-            System.IO.FileStream stream = new System.IO.FileStream(DbName2, FileMode.Create, FileAccess.Write);
+            System.IO.FileStream stream = new System.IO.FileStream(dbNameBackup, FileMode.Create, FileAccess.Write);
             db.Backup(stream);
             stream.Close();
             db.Close();
             res.BackupTime = DateTime.Now - start;
 
             start = DateTime.Now;
-            db.Open(DbName2, pagePoolSize);
+            db.Open(dbNameBackup);
             root = (Root)db.Root;
             intIndex = root.intIndex;
             strIndex = root.strIndex;
@@ -112,9 +94,6 @@ namespace Volante
                 key = (3141592621L * key + 2718281829L) % 1000000007L;
             }
             db.Close();
-            res.ExecutionTime = DateTime.Now - tStart;
-            res.Ok = Tests.FinalizeTest();
-            return res;
         }
     }
 }

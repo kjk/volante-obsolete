@@ -89,23 +89,16 @@ namespace Volante
 #endif
         }
 
-        public static TestConcurResult Run(int nEls)
+        public void Run(TestConfig config)
         {
-            var res = new TestConcurResult
-            {
-                Count = nEls,
-                TestName = "TestConcur"
-            };
+            int count = config.Count;
+            var res = new TestConcurResult();
+            config.Result = res;
 
-            string dbName = "testconcur.dbs";
-            Tests.SafeDeleteFile(dbName);
-            TestConcur.nElements = nEls;
-
-            var tStart = DateTime.Now;
+            TestConcur.nElements = count;
             var start = DateTime.Now;
 
-            db = StorageFactory.CreateStorage();
-            db.Open(dbName);
+            db = config.GetDatabase();
             L2List list = (L2List)db.Root;
             Tests.Assert(list == null);
             list = new L2List();
@@ -135,10 +128,6 @@ namespace Volante
 #endif
             db.Close();
             res.AccessTime = DateTime.Now - start;
-
-            res.ExecutionTime = DateTime.Now - tStart;
-            res.Ok = Tests.FinalizeTest();
-            return res;
         }
     }
 

@@ -38,27 +38,17 @@ namespace Volante
             public ITimeSeries<Quote> quotes;
         }
 
-        const int pagePoolSize = 32 * 1024 * 1024;
-
-        static public TestTimeSeriesResult Run(int nElements)
+        public void Run(TestConfig config)
         {
             Stock stock;
             int i;
+            int count = config.Count;
+            var res = new TestTimeSeriesResult();
+            config.Result = res;
 
-            var res = new TestTimeSeriesResult()
-            {
-                Count = nElements,
-                TestName = "TestTimeSeries"
-            };
-
-            string dbName = "testts.dbs";
-            Tests.SafeDeleteFile(dbName);
-
-            var tStart = DateTime.Now;
             var start = DateTime.Now;
+            IStorage db = config.GetDatabase();
 
-            IStorage db = StorageFactory.CreateStorage();
-            db.Open(dbName, pagePoolSize);
             IFieldIndex<string, Stock> stocks = (IFieldIndex<string, Stock>)db.Root;
             Tests.Assert(stocks == null);
             stocks = db.CreateFieldIndex<string, Stock>("name", true);
@@ -69,8 +59,8 @@ namespace Volante
             db.Root = stocks;
 
             Random rand = new Random(2004);
-            int time = getSeconds(start) - nElements;
-            for (i = 0; i < nElements; i++)
+            int time = getSeconds(start) - count;
+            for (i = 0; i < count; i++)
             {
                 Quote quote = new Quote();
                 quote.timestamp = time + i;
@@ -100,33 +90,29 @@ namespace Volante
                 Tests.Assert(quote.volume == rand.Next(1000));
                 i += 1;
             }
-            Tests.Assert(i == nElements);
+            Tests.Assert(i == count);
             res.SearchTime1 = DateTime.Now - start;
 
             start = DateTime.Now;
-            Tests.Assert(stock.quotes.Count == nElements);
+            Tests.Assert(stock.quotes.Count == count);
             long from = getTicks(time + 1000);
-            int count = 1000;
+            int count2 = 1000;
             start = DateTime.Now;
             i = 0;
-            foreach (Quote quote in stock.quotes.Range(new DateTime(from), new DateTime(from + count * TICKS_PER_SECOND), IterationOrder.DescentOrder))
+            foreach (Quote quote in stock.quotes.Range(new DateTime(from), new DateTime(from + count2 * TICKS_PER_SECOND), IterationOrder.DescentOrder))
             {
-                Tests.Assert(quote.timestamp == time + 1000 + count - i);
+                Tests.Assert(quote.timestamp == time + 1000 + count2 - i);
                 i += 1;
             }
-            Tests.Assert(i == count + 1);
+            Tests.Assert(i == count2 + 1);
             res.SearchTime2 = DateTime.Now - start;
             start = DateTime.Now;
 
             long n = stock.quotes.Remove(stock.quotes.FirstTime, stock.quotes.LastTime);
-            Tests.Assert(n == nElements);
+            Tests.Assert(n == count);
             res.RemoveTime = DateTime.Now - start;
             Tests.Assert(stock.quotes.Count == 0);
             db.Close();
-
-            res.ExecutionTime = DateTime.Now - tStart;
-            res.Ok = Tests.FinalizeTest();
-            return res;
         }
 
         const long TICKS_PER_SECOND = 10000000L;

@@ -27,27 +27,19 @@ namespace Volante
             }
         }
 
-        static public TestListResult Run(int totalNumber)
+        public void Run(TestConfig config)
         {
-            var res = new TestListResult()
-            {
-                Count = totalNumber,
-                TestName = "TestList"
-            };
+            int count = config.Count;
+            var res = new TestListResult();
+            config.Result = res;
 
-            string dbName = "linkedlist.dbs";
-            Tests.SafeDeleteFile(dbName);
-
-            var tStart = DateTime.Now;
             var start = DateTime.Now;
-
-            IStorage db = StorageFactory.CreateStorage();
-            db.Open(dbName, 10 * 1024 * 1024, "LinkedList"); // 10M cache
+            IStorage db = config.GetDatabase();
             db.Root = db.CreateClass(typeof(LinkNode));
             LinkNode header = (LinkNode)db.Root;
             LinkNode current;
             current = header;
-            for (int i = 0; i < totalNumber; i++)
+            for (int i = 0; i < count; i++)
             {
                 current.Next = (LinkNode)db.CreateClass(typeof(LinkNode));
                 current = current.Next;
@@ -76,11 +68,6 @@ namespace Volante
             }
             res.TraverseModifyTime = DateTime.Now - start;
             db.Close();
-            res.ExecutionTime = DateTime.Now - tStart;
-            res.Ok = Tests.FinalizeTest();
-            return res;
         }
-
     }
-
 }

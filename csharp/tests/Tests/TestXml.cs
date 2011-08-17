@@ -1,6 +1,6 @@
+#if !OMIT_XML
 namespace Volante
 {
-#if !OMIT_XML
     using System;
 
     public class TestXmlResult : TestResult
@@ -34,28 +34,16 @@ namespace Volante
             internal Point point;
         }
 
-        internal static int pagePoolSize = 32 * 1024 * 1024;
-
-        public static TestXmlResult Run(int count, bool useAltBtree)
+        public void Run(TestConfig config)
         {
-            var res = new TestXmlResult()
-            {
-                Count = count,
-                TestName = String.Format("TestXml(altBtree={0})", useAltBtree)
-            };
+            int count = config.Count;
+            var res = new TestXmlResult();
+            config.Result = res;
 
-            string dbName1 = @"testxml1.dbs";
-            string dbName2 = @"testxml2.dbs";
-            Tests.SafeDeleteFile(dbName1);
-            Tests.SafeDeleteFile(dbName2);
-
-            string xmlName = useAltBtree ? @"testalt.xml" : @"test.xml";
-
-            DateTime tStart = DateTime.Now;
             DateTime start = DateTime.Now;
-            IStorage db = StorageFactory.CreateStorage();
-            db.AlternativeBtree = useAltBtree;
-            db.Open(dbName1, pagePoolSize);
+            IStorage db = config.GetDatabase();
+            string xmlName = config.DatabaseName + ".xml";
+            string dbNameImported = config.DatabaseName + ".imported.dbs";
 
             Root root = (Root)db.Root;
             Tests.Assert(null == root);
@@ -95,7 +83,7 @@ namespace Volante
             res.ExportTime = DateTime.Now - start;
 
             start = DateTime.Now;
-            db.Open(dbName2, pagePoolSize);
+            db.Open(dbNameImported);
             System.IO.StreamReader reader = new System.IO.StreamReader(xmlName);
             db.ImportXML(reader);
             reader.Close();
@@ -126,12 +114,7 @@ namespace Volante
             }
             res.IndexSearchTime = DateTime.Now - start;
             db.Close();
-
-            res.ExecutionTime = DateTime.Now - tStart;
-            res.Ok = Tests.FinalizeTest();
-            return res;
         }
     }
-#endif
-
 }
+#endif

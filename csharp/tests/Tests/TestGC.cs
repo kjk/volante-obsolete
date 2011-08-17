@@ -24,23 +24,12 @@ namespace Volante
 
         const int nObjectsInTree = 10000;
 
-        static public TestGCResult Run(int nIterations, bool altBtree, bool backgroundGc)
+        public void Run(TestConfig config)
         {
-            var res = new TestGCResult()
-            {
-                Count = nIterations,
-                TestName = String.Format("TestGC(altBtree={0}, bakcgroundGC={1}", altBtree, backgroundGc)
-            };
-
-            string dbName = "testgc.dbs";
-            Tests.SafeDeleteFile(dbName);
-            var tStart = DateTime.Now;
-
-            IStorage db = StorageFactory.CreateStorage();
-            db.AlternativeBtree = altBtree;
-            db.BackgroundGc = backgroundGc;
-            db.Open(dbName);
-            db.GcThreshold = 1000000;
+            int count = config.Count;
+            var res = new TestGCResult();
+            config.Result = res;
+            IStorage db = config.GetDatabase();
             StorageRoot root = new StorageRoot();
             Index<string, PObject> strIndex = root.strIndex = db.CreateIndex<string, PObject>(true);
             Index<long, PObject> intIndex = root.intIndex = db.CreateIndex<long, PObject>(true);
@@ -48,7 +37,7 @@ namespace Volante
             long insKey = 1999;
             long remKey = 1999;
 
-            for (int i = 0; i < nIterations; i++)
+            for (int i = 0; i < count; i++)
             {
                 if (i > nObjectsInTree)
                 {
@@ -71,15 +60,9 @@ namespace Volante
                 root.list.intKey = i;
                 root.Store();
                 if (i % 1000 == 0)
-                {
                     db.Commit();
-                }
             }
             db.Close();
-            res.ExecutionTime = DateTime.Now - tStart;
-            res.Ok = Tests.FinalizeTest();
-            return res;
         }
     }
-
 }

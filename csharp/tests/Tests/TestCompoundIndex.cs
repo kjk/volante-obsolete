@@ -12,37 +12,27 @@ namespace Volante
 
     public class TestCompoundIndex
     {
-        const int pagePoolSize = 32 * 1024 * 1024;
-
         class Record : Persistent
         {
             internal String strKey;
             internal int intKey;
         }
 
-        public static TestCompoundResult Run(int count, bool altBtree)
+        public void Run(TestConfig config)
         {
             int i;
-            string dbName = "testcidx.dbs";
-            var res = new TestCompoundResult()
-            {
-                Count = count,
-                TestName = String.Format("TestCompoundResult(altBtree={0})", altBtree)
-            };
-            Tests.SafeDeleteFile(dbName);
+            int count = config.Count;
+            var res = new TestCompoundResult();
+            config.Result = res;
 
-            DateTime tStart = DateTime.Now;
             DateTime start = DateTime.Now;
 
-            IStorage db = StorageFactory.CreateStorage();
-            db.AlternativeBtree = altBtree;
-            db.Open(dbName, pagePoolSize);
+            IStorage db = config.GetDatabase();
             IMultiFieldIndex<Record> root = (IMultiFieldIndex<Record>)db.Root;
-            if (root == null)
-            {
-                root = db.CreateFieldIndex<Record>(new string[] { "intKey", "strKey" }, true);
-                db.Root = root;
-            }
+            Tests.Assert(root == null);
+            root = db.CreateFieldIndex<Record>(new string[] { "intKey", "strKey" }, true);
+            db.Root = root;
+
             long key = 1999;
             for (i = 0; i < count; i++)
             {
@@ -118,10 +108,6 @@ namespace Volante
             Tests.Assert(!root.Reverse().GetEnumerator().MoveNext());
             res.RemoveTime = DateTime.Now - start;
             db.Close();
-
-            res.ExecutionTime = DateTime.Now - tStart;
-            res.Ok = Tests.FinalizeTest();
-            return res;
         }
     }
 

@@ -10,8 +10,6 @@ namespace Volante
 
     public class TestEnumerator
     {
-        const int pagePoolSize = 32 * 1024 * 1024;
-
         class Record : Persistent
         {
             internal String strKey;
@@ -24,23 +22,15 @@ namespace Volante
             internal Index<long, Record> intIndex;
         }
 
-        static public TestEnumeratorResult Run(int count, bool altBtree)
+        public void Run(TestConfig config)
         {
-            var res = new TestEnumeratorResult()
-            {
-                Count = count,
-                TestName = String.Format("TestEnumerator(altBtree={0})", altBtree)
-            };
+            int count = config.Count;
+            var res = new TestEnumeratorResult();
+            config.Result = res;
 
-            string dbName = "testenum.dbs";
-            Tests.SafeDeleteFile(dbName);
-
-            var tStart = DateTime.Now;
             var start = DateTime.Now;
 
-            IStorage db = StorageFactory.CreateStorage();
-            db.AlternativeBtree = altBtree;
-            db.Open(dbName, pagePoolSize);
+            IStorage db = config.GetDatabase();
             Indices root = (Indices)db.Root;
             Tests.Assert(root == null);
             root = new Indices();
@@ -388,11 +378,6 @@ namespace Volante
             db.Commit();
             db.Gc();
             db.Close();
-
-            res.ExecutionTime = DateTime.Now - tStart;
-            res.Ok = Tests.FinalizeTest();
-            return res;
         }
     }
-
 }
