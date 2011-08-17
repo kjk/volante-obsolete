@@ -17,24 +17,22 @@
 
 	<p>Volante is a continuation of <a href="http://en.wikipedia.org/wiki/Perst">Perst</a> database originally created by <a href="http://www.garret.ru/">Konstantin Knizhnik</a>.<p>
 
-	<p>Up to version 2.49 Perst was licensed under BSD. Konstantin (apparently) sold the code to McObject and starting with version 2.50 the license was changed to GPL. McObject sells Perst under a commercial license for people who can't use GPL.<p>
+	<p>Up to version 2.49 Perst was licensed under BSD. Konstantin (I assume) sold the code to McObject. Starting with version 2.50 the license was changed to GPL and McObject sells a commercial license for people who can't use GPL code.<p>
 
-	<p>Volante is based on the latest BSD version (2.49) and retains its BSD license which allows free use even in commercial software.</p>
+	<p>Volante is based on the latest BSD version (2.49) and retains its BSD license, which allows free use even in commercial software.</p>
 
 	<p>Pers 2.49 was released in 2005 so I used it as an opportunity to make some changes, without worrying about backwards compatibility with Perst.</p>
 	
-	<p>You can read a <a href="https://github.com/kjk/volante/blob/master/csharp/changelog-volante.txt">detailed changelog</a> but to summarize the changes and why they were made:
+	<p>You can read a <a href="https://github.com/kjk/volante/blob/master/csharp/changelog-volante.txt">detailed changelog</a> but to summarize most important changes and why they were made:
 	<ul>
 		<li>renamed interfaces to follow C# naming style</li>
 		<li>renamed Storage class to Database</li>
 		<li>excluded XML import/export and replication functionality from official build. My focus is to best support the use case of using Volante as a storage engine for desktop/mobile applications and those </li>
-		<li>excluded old btree code from official build. Perst used to have 2 versions of btree code. I don't know why (possibly for backwards compatibility with old databases) but the new btree code seems to be better (faster) so I removed the old btree. The result is smaller dll and less code to maintain.</li>
+		<li>excluded old btree code from official build. Perst has 2 versions of btree code. I don't know why (probably so that programs can read databases created with older versions of Perst) but the new btree code seems to be better (faster) so I removed the old btree. The result is smaller dll and less code to maintain</li>
 	</ul>
 	</p>
 
-	<p>My focus with Volante is reliability and documention. This means that most of my work, at least initially, is spent writing documentation, automated test framework, writing more tests and fixing bugs exposed by tests.</p>
-
-	<center><a href=intro.html>← introduction</a> &nbsp;&bull;&nbsp; this is the end →
+	<center><a href=getting_started.html>← getting started</a> &nbsp;&bull;&nbsp;  <a href=future.html>future →</a>
 </div>
 
 </body>
