@@ -1,0 +1,42 @@
+<!doctype HTML> 
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<link href="main.css" type="text/css" rel="stylesheet">
+	<title>Introduction to Volante</title>
+</head>
+<body>
+<div id=left-bar>
+	<div id=sections>
+		<center><div><a href="index.html">Volante</a></div><center>
+	</div>
+</div>
+
+<div class=content>
+	<p><a href=index.html>Volante</a> : Introduction</p>
+
+	<p>Volante is a small, object-oriented, embeddable database for C#, designed for seamless integration with C# programs.</p>
+
+	<p>Volante is BSD-licensed (free to use even for commercial projects)</p>
+
+	<p>Volante is designed for similar use cases as <a href="http://sqlite.org/">SQLite</a>. The difference is that Volante is written in C# and is not a SQL database. C# is object-oriented languages and objects are at its core. Storing objects in SQL databases requires converting objects to and from SQL tables (a process sometimes automated by ORMs (object-relational mappers)). This conversion process is cumbersome and slows things down. Volante understands .NET objects and can store them natively, which is faster and allows for a better integration with the host program.</p>
+
+	<p>Volante is not a datbase server, like MySQL. The primary use case is using Volante as a convenient way to persist and manipulate data in your .NET software (C# or any other language that targets .NET). To use Volante you add Volante.dll and it provides an API for manipulating databases.</p>
+
+	<p>Few things to know to understand Volante:</p>
+	<ul>
+		<li>Volante stores objects</li>
+		<li>each stored objects gets a unique oid (object identifer)</li>
+		<li>oid is a 32-bit integer</li>
+		<li>objects can refer to other objects (via their oid)</li>
+		<li>there is a special root object</li>
+		<li>all other objects must be reachable from root object</li>
+		<li>you can think of Volante as a graph database: root object is a root of a graph, it points to other objects which in turn point to other objects etc.)</li>
+		<li>objects that are no longer reachable from root object will eventually be deleated (via database garbage collection process)</li>
+	</ul>
+
+	<center><a href=index.html>← home</a> &nbsp;&bull;&nbsp; <a href=getting_started.html>getting started →</a>
+</div>
+
+</body>
+</html>
