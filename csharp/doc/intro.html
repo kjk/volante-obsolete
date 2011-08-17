@@ -15,17 +15,19 @@
 <div class=content>
 	<p><a href=index.html>Volante</a> : Introduction to Volante</p>
 
-	<p>Volante is a small, object-oriented, embeddable database for C#, designed for seamless integration with C# programs.</p>
+	<p>Volante is a small, object-oriented, NoSQL, embeddable database for C#, designed for seamless integration with C# programs.</p>
 
 	<p>Volante is BSD-licensed (free to use even for commercial projects)</p>
 
-	<p>Volante is designed for similar use cases as <a href="http://sqlite.org/">SQLite</a>. The difference is that Volante is written in C# and is not a SQL database. C# is object-oriented languages and objects are at its core. Storing objects in SQL databases requires converting objects to and from SQL tables (a process sometimes automated by ORMs (object-relational mappers)). This conversion process is cumbersome and slows things down. Volante understands .NET objects and can store them natively, which is faster and allows for a better integration with the host program.</p>
+	<p>Volante is designed for similar use cases as <a href="http://sqlite.org/">SQLite</a>. The difference is that Volante is written in C# and is not a SQL database (which makes it a NoSQL database).</p>
+
+	<p>C# is object-oriented languages and objects are at its core. Storing objects in SQL databases requires converting objects to and from SQL tables (a process sometimes automated by ORMs (object-relational mappers)). This conversion process is cumbersome and slows things down. Volante understands .NET objects and can store them natively, which is faster and allows for a better integration with the host program.</p>
 
 	<p>Volante is not a datbase server, like MySQL. The primary use case is using Volante as a convenient way to persist and manipulate data in your .NET software (C# or any other language that targets .NET). To use Volante you add Volante.dll and it provides an API for manipulating databases.</p>
 
 	<p>Few things to know to understand Volante:</p>
 	<ul>
-		<li>Volante stores objects</li>
+		<li>Volante stores .NET objects</li>
 		<li>each stored objects gets a unique oid (object identifer)</li>
 		<li>oid is a 32-bit integer</li>
 		<li>objects can refer to other objects (via their oid)</li>

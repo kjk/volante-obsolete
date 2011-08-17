@@ -1,0 +1,54 @@
+<!doctype HTML> 
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<link href="main.css" type="text/css" rel="stylesheet">
+	<title>Using Volante as in-memory database</title>
+</head>
+<body>
+<div id=left-bar>
+	<div id=sections>
+		<center><div><a href="index.html">Volante</a></div><center>
+	</div>
+</div>
+
+<div class=content>
+	<p><a href=index.html>Volante</a> : Using Volante as in-memory database</p>
+
+	<p>The main use case for Volante is to easily persist application's data between session. It can also be used as an in-memory database. Because writing to disk is the slowest part of any database system, in-memory use offers dramatically higher performance.</p>
+
+	<p>There are two possibilities:
+	<ul>
+		<li>no persistence</li>
+		<li>with persistence</li>
+	</ul>
+	</p>
+
+	<p>In both cases the whole data set has to fit in RAM.</p>
+
+	<h3>In-memory use without persistence</h3>
+
+	<p>In that mode the data is gone after application quits. Good for completely transient data.</p>
+
+	<p>This mode is enabled by passing NullFile() instance and 0 for pagePoolSize to Database.Open().</p>
+
+	<p>TODO: code example</p>
+
+	<h3>In-memory use with persistence</h3>
+
+	<p>In this mode all the operations are done in memory but the database is persisted to disk when database is closed. This is faster than standard mode because there's less disk I/O during the operations.</p>
+
+	<p>The downside is that if the application crashes and the database is not closed, all the data will be lost.</p>
+
+	<p>This mode is enabled by passing 0 for pagePoolSize to Database.Open().</p>
+
+	<p>TODO: code example</p>
+
+	<center><a href=intro.html>← introduction</a> &nbsp;&bull;&nbsp; <a href=history.html>history →</a>
+
+	<hr style="margin-top:28px">
+	<center style="font-size:10pt;color:gray">Volante is maintained by <a href="http://blog.kowalczyk.info">Krzysztof Kowalczyk</a></center>
+</div>
+
+</body>
+</html>

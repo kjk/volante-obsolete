@@ -15,12 +15,5 @@
 11. Fixed uint and ulong indexes in AltBtree
 12. Fixed int indexes in AltBtree
 13. Added support for DateTime for AltBtree index
-14. Rename Storage => IStorage, PatriciaKey => IPatriciaKey
-15. Rename GenericPArray => IGenericPArray, Blob => IBlob
-16. Rename PArray => IParray, Link => ILink
-17. Rename ClassLoader => IClassLoader, TimeSeries => ITimeSeries
-18. Rename TimeSeriesTick => ITimeSeriesTick, SortedCollection => ISortedCollection
-19. Rename SpatialIndex => ISpatialIndex, SpatialIndexR2 => ISpatialIndexR2
-20. Rename BitIndex => IBitIndex, MultiFieldIndex => IMultiFieldIndex
-21. Rename FieldIndex => IFieldIndex, GenericIndex => IGenericIndex
-22. Rename GenericLink => IGenericLink
+14. Renamed Storage => IStorage, PatriciaKey => IPatriciaKey, GenericPArray => IGenericPArray, Blob => IBlob, PArray => IParray, Link => ILink, ClassLoader => IClassLoader, TimeSeries => ITimeSeries, TimeSeriesTick => ITimeSeriesTick, SortedCollection => ISortedCollection, SpatialIndex => ISpatialIndex, SpatialIndexR2 => ISpatialIndexR2, BitIndex => IBitIndex, MultiFieldIndex => IMultiFieldIndex, FieldIndex => IFieldIndex, GenericIndex => IGenericIndex, GenericLink => IGenericLink
+15. Changed uses of Hashtable to Dictionary<>
