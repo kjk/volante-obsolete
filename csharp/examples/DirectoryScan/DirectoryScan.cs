@@ -25,21 +25,7 @@ namespace DirectoryScan
 
     class DirectoryScan
     {
-        static string StartDir = "c:\\";
         const int LIMIT = 5;
-
-        static void GcDatabase(IStorage db)
-        {
-            Console.WriteLine(String.Format("Size before: {0} bytes", db.UsedSize));
-            db.Gc();
-            db.Commit();
-            Console.WriteLine(String.Format("Size after : {0} bytes", db.UsedSize));
-            if (true)
-            {
-                db.Close();
-                return;
-            }
-        }
 
         static void Main(string[] args)
         {
@@ -62,7 +48,7 @@ namespace DirectoryScan
                 // changing the root marks database as modified but it's
                 // only modified in memory. Commit to persist changes to disk.
                 db.Commit();
-                PopulateDatabase(db, StartDir);
+                PopulateDatabase(db, "c:\\");
             }
 
             ListSmallestFiles(dbRoot, LIMIT);
