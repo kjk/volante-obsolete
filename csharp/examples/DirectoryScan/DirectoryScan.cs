@@ -25,7 +25,7 @@ namespace DirectoryScan
 
     class DirectoryScan
     {
-        static string StartDir = @"c:\";
+        static string StartDir = "c:\\";
         const int LIMIT = 5;
 
         static void GcDatabase(IStorage db)
