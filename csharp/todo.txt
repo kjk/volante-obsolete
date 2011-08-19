@@ -1,16 +1,15 @@
 Things to do for c# version:
 
-* benchmark altbtree vs. old btree and remove the old 
-  if altbtree proves to be always faster. Note: requires
-  either removing BinIndex.cs or re-implementing BitIndexImp.cs
-  in terms of AltBtree
 * make a release script that builds and uploads .zip with the Volante.dll
 * write docs
 * silverlight and wp7 versions
-* make a 0.9 release
 * get rid of Storage.StringEncoding and always use utf8 for storing strings (?)
 * remove CacheType - just use the best cache (?)
 * always set SerializeTransientObjects = true (?)
+* make a 0.9 release
+
+After 0.9:
+* re-implement BitIndexImp.cs using AltBtree
 
 Notes:
 * building without (old) Btree code saves 48kB (264 => 216)
