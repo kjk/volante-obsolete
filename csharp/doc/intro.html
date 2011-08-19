@@ -28,13 +28,13 @@
 	<p>Few things to know to understand Volante:</p>
 	<ul>
 		<li>Volante stores .NET objects</li>
-		<li>each stored objects gets a unique oid (object identifer)</li>
-		<li>oid is a 32-bit integer</li>
+		<li>each stored objects gets a unique oid (object identifer, a 32-bit integer)</li>
 		<li>objects can refer to other objects (via their oid)</li>
 		<li>there is a special root object</li>
 		<li>all other objects must be reachable from root object</li>
 		<li>you can think of Volante as a graph database: root object is a root of a graph, it points to other objects which in turn point to other objects etc.)</li>
 		<li>objects that are no longer reachable from root object will eventually be deleated (via database garbage collection process)</li>
+		<li>indexes are used to quickly locate the data</li>
 	</ul>
 
 	<center><a href=index.html>← home</a> &nbsp;&bull;&nbsp; <a href=getting_started.html>getting started →</a>
