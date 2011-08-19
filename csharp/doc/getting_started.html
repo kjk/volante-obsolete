@@ -18,7 +18,7 @@
 <div class=content>
 	<p><a href=index.html>Volante</a> : Getting started programming with Volante</p>
 
-	<p>This tutorial will show basics of working with Volante. We'll develop an application that stores information about files on a given volume in the database and uses this information to show the largest files, files with duplicate names and most recently modified files. You can see the <a href="https://github.com/kjk/volante/blob/master/csharp/examples/DirectoryScan/DirectoryScan.cs">whole code</a>.</p>
+	<p>This tutorial will show basics of working with Volante. We'll develop an application that stores information about files on a given volume in the database and uses this information to show the largest files, files with duplicate names and most recently modified files. You can read the whole code <a href="https://github.com/kjk/volante/blob/master/csharp/examples/DirectoryScan/DirectoryScan.cs">here</a>.</p>
 
 	<p>The first thing you need to do is to <a href="download.html">download</a> Volante and add Volante.dll to your project</p>
 
@@ -73,7 +73,7 @@ class FileEntry : Persistent
 
 	<h3>Opening the database and creating root object</h3>
 
-	<p>Before anything else we need to open a database. In the simplest case, a database is a single file.<p>
+	<p>First, we open the database. In the simplest case a database is a file on disk:<p>
 
 	<pre class="prettyprint lang-cs">IStorage db = StorageFactory.CreateStorage();
 db.Open("fileinfo.dbs");</pre>

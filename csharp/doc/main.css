@@ -27,9 +27,13 @@ a:visited {
 
 .content {
 	margin-left: 110px;
-	width: 650px;
+	margin-right: 24px;
 	margin-bottom: 50px;
 	font-size: 11pt;
+}
+
+.content p {
+	width: 680px;
 }
 
 .toc ul {
