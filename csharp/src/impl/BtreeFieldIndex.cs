@@ -1,4 +1,4 @@
-#if !OMIT_BTREE
+#if WITH_OLD_BTREE
 namespace Volante.Impl
 {
     using System;

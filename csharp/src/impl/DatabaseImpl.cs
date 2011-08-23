@@ -1794,12 +1794,12 @@ namespace Volante.Impl
             lock (this)
             {
                 ensureOpened();
-#if !OMIT_BTREE
+#if WITH_OLD_BTREE
                 IIndex<K, V> index = alternativeBtree
                     ? new AltBtree<K, V>(indexType)
                     : (IIndex<K, V>)new Btree<K, V>(indexType);
 #else
-                Index<K, V> index = new AltBtree<K, V>(unique);
+                IIndex<K, V> index = new AltBtree<K, V>(indexType);
 #endif
                 index.AssignOid(this, 0, false);
                 return index;
@@ -1815,7 +1815,7 @@ namespace Volante.Impl
             }
         }
 
-#if !OMIT_BTREE
+#if WITH_OLD_BTREE
         public IBitIndex<T> CreateBitIndex<T>() where T : class,IPersistent
         {
             lock (this)
@@ -1850,15 +1850,17 @@ namespace Volante.Impl
             }
         }
 
-        public ISortedCollection<K, V> CreateSortedCollection<K, V>(PersistentComparator<K, V> comparator, bool unique) where V : class,IPersistent
+        public ISortedCollection<K, V> CreateSortedCollection<K, V>(PersistentComparator<K, V> comparator, IndexType indexType) where V : class,IPersistent
         {
             ensureOpened();
+            bool unique = (indexType == IndexType.Unique);
             return new Ttree<K, V>(comparator, unique);
         }
 
-        public ISortedCollection<K, V> CreateSortedCollection<K, V>(bool unique) where V : class,IPersistent, IComparable<K>, IComparable<V>
+        public ISortedCollection<K, V> CreateSortedCollection<K, V>(IndexType indexType) where V : class,IPersistent, IComparable<K>, IComparable<V>
         {
             ensureOpened();
+            bool unique = (indexType == IndexType.Unique);
             return new Ttree<K, V>(new DefaultPersistentComparator<K, V>(), unique);
         }
 
@@ -1867,7 +1869,7 @@ namespace Volante.Impl
             lock (this)
             {
                 ensureOpened();
-#if !OMIT_BTREE
+#if WITH_OLD_BTREE
                 ISet<T> s = alternativeBtree
                     ? (ISet<T>)new AltPersistentSet<T>()
                     : (ISet<T>)new PersistentSet<T>();
@@ -1900,7 +1902,7 @@ namespace Volante.Impl
             {
                 ensureOpened();
                 bool unique = (indexType == IndexType.Unique);
-#if !OMIT_BTREE
+#if WITH_OLD_BTREE
                 IFieldIndex<K, V> index = alternativeBtree
                     ? (IFieldIndex<K, V>)new AltBtreeFieldIndex<K, V>(fieldName, unique)
                     : (IFieldIndex<K, V>)new BtreeFieldIndex<K, V>(fieldName, unique);
@@ -1925,7 +1927,7 @@ namespace Volante.Impl
                 }
                 MultiFieldIndex<T> index = new BtreeMultiFieldIndex<T>(fieldNames, unique);
 #else
-#if !OMIT_BTREE
+#if WITH_OLD_BTREE
                 IMultiFieldIndex<T> index = alternativeBtree
                     ? (IMultiFieldIndex<T>)new AltBtreeMultiFieldIndex<T>(fieldNames, unique)
                     : (IMultiFieldIndex<T>)new BtreeMultiFieldIndex<T>(fieldNames, unique);
@@ -2015,7 +2017,7 @@ namespace Volante.Impl
             return new BlobImpl(Page.pageSize - ObjectHeader.Sizeof - 16);
         }
 
-#if !OMIT_XML
+#if WITH_XML
         public void ExportXML(System.IO.StreamWriter writer)
         {
             lock (this)
@@ -2080,7 +2082,7 @@ namespace Volante.Impl
             }
         }
 
-#if !OMIT_BTREE
+#if WITH_OLD_BTREE
         internal Btree createBtreeStub(byte[] data, int offs)
         {
             return new Btree<int, IPersistent>(data, ObjectHeader.Sizeof + offs);
@@ -2127,7 +2129,7 @@ namespace Volante.Impl
                                     if (typeOid != 0)
                                     {
                                         ClassDescriptor desc = (ClassDescriptor)lookupObject(typeOid, typeof(ClassDescriptor));
-#if !OMIT_BTREE
+#if WITH_OLD_BTREE
                                         if (typeof(Btree).IsAssignableFrom(desc.cls))
                                         {
                                             Btree btree = createBtreeStub(pg.data, offs);
@@ -2176,7 +2178,7 @@ namespace Volante.Impl
                         {
                             ClassDescriptor desc = findClassDescriptor(typeOid);
                             nDeallocated += 1;
-#if !OMIT_BTREE
+#if WITH_OLD_BTREE
                             if (desc != null
                                 && (typeof(Btree).IsAssignableFrom(desc.cls)))
                             {
@@ -2339,7 +2341,7 @@ namespace Volante.Impl
                                             {
                                                 markOid(typeOid);
                                                 ClassDescriptor desc = findClassDescriptor(typeOid);
-#if !OMIT_BTREE
+#if WITH_OLD_BTREE
                                                 if (typeof(Btree).IsAssignableFrom(desc.cls))
                                                 {
                                                     Btree btree = createBtreeStub(pg.data, offs);
@@ -3018,7 +3020,7 @@ namespace Volante.Impl
             descList = null;
         }
 
-#if !OMIT_BTREE
+#if WITH_OLD_BTREE
         public bool AlternativeBtree
         {
             set { alternativeBtree = value; }
@@ -3092,11 +3094,13 @@ namespace Volante.Impl
             get { return backgroundGc; }
         }
 
+#if WITH_REPLICATION
         public bool ReplicationAck
         {
             set { replicationAck = value; }
             get { return replicationAck; }
         }
+#endif
 
         // TODO: needs tests
         public int ObjectCacheInitSize
@@ -4896,12 +4900,14 @@ namespace Volante.Impl
         private CacheType cacheKind = CacheType.Lru;
         private bool readOnly = false;
         private bool noFlush = false;
-#if !OMIT_BTREE
+#if WITH_OLD_BTREE
         private bool alternativeBtree = false;
 #endif
         private bool backgroundGc = false;
 
+#if WITH_REPLICATION
         internal bool replicationAck = false;
+#endif
 
         internal PagePool pool;
         internal Header header; // base address of database file mapping

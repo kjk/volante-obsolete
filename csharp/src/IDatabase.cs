@@ -175,7 +175,7 @@ namespace Volante
         /// </exception>
         IMultiFieldIndex<V> CreateFieldIndex<V>(string[] fieldNames, IndexType indexType) where V : class,IPersistent;
 
-#if !OMIT_BTREE
+#if WITH_OLD_BTREE
         /// <summary>
         /// Create new bit index. Bit index is used to select object 
         /// with specified set of (boolean) properties.
@@ -206,7 +206,7 @@ namespace Volante
         /// <param name="comparator">comparator class specifying order in the collection</param>
         /// <param name="unique"> whether collection is unique (members with the same key value are not allowed)</param>
         /// <returns> persistent object implementing sorted collection</returns>
-        ISortedCollection<K, V> CreateSortedCollection<K, V>(PersistentComparator<K, V> comparator, bool unique) where V : class,IPersistent;
+        ISortedCollection<K, V> CreateSortedCollection<K, V>(PersistentComparator<K, V> comparator, IndexType indexType) where V : class,IPersistent;
 
         /// <summary>
         /// Create new sorted collection. Members of this collections should implement 
@@ -215,7 +215,7 @@ namespace Volante
         /// </summary>
         /// <param name="unique"> whether collection is unique (members with the same key value are not allowed)</param>
         /// <returns> persistent object implementing sorted collection</returns>
-        ISortedCollection<K, V> CreateSortedCollection<K, V>(bool unique) where V : class,IPersistent, IComparable<K>, IComparable<V>;
+        ISortedCollection<K, V> CreateSortedCollection<K, V>(IndexType indexType) where V : class,IPersistent, IComparable<K>, IComparable<V>;
 
         /// <summary>
         /// Create new object set
@@ -380,7 +380,7 @@ namespace Volante
         /// <returns>number of collected (deallocated) objects</returns>
         int Gc();
 
-#if !OMIT_XML
+#if WITH_XML
         /// <summary> Export database in XML format 
         /// </summary>
         /// <param name="writer">writer for generated XML document
@@ -414,8 +414,8 @@ namespace Volante
         /// <returns>OID assigned to the object</returns>
         int MakePersistent(IPersistent obj);
 
-#if !OMIT_BTREE
-        /// <TD>Use aternative implementation of B-Tree (not using direct access to database
+#if WITH_OLD_BTREE
+        /// Use aternative implementation of B-Tree (not using direct access to database
         /// file pages). This implementation should be used in case of serialized per thread transctions.
         /// New implementation of B-Tree will be used instead of old implementation
         /// if AlternativeBtree property is set. New B-Tree has incompatible format with 
@@ -508,18 +508,20 @@ namespace Volante
         /// Default value: false
         bool FileNoFlush { get; set; }
 
+#if WITH_REPLICATION
         /// Request acknowledgement from slave that it receives all data before transaction
         /// commit. If this option is not set, then replication master node just writes
         /// data to the socket not warring whether it reaches slave node or not.
         /// When this option is set to true, master not will wait during each transaction commit acknowledgement
-        /// from slave node. Please notice that this option should be either set or not set both
-        /// at slave and master node. If it is set only on one of this nodes then behavior of
+        /// from slave node. This option must be either set or not set at both
+        /// slave and master nodes. If it is set only on one of this nodes then behavior of
         /// the system is unpredicted. This option can be used both in synchronous and asynchronous replication
         /// mode. The only difference is that in first case main application thread will be blocked waiting
         /// for acknowledgment, while in the asynchronous mode special replication thread will be blocked
         /// allowing thread performing commit to proceed.
         /// Default value: false
         bool ReplicationAck { get; set; }
+#endif
 
         /// <TD>Specifies encoding of storing strings in the database. By default Volante stores 
         /// strings as sequence of chars (two bytes per char). If all strings in application are in 

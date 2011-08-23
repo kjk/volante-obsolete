@@ -1,4 +1,4 @@
-#if !OMIT_BTREE
+#if WITH_OLD_BTREE
 using System;
 using System.Collections;
 using System.Collections.Generic;

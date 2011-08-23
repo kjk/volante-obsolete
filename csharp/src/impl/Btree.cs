@@ -1,4 +1,4 @@
-#if !OMIT_BTREE
+#if WITH_OLD_BTREE
 namespace Volante.Impl
 {
     using System;
@@ -20,7 +20,7 @@ namespace Volante.Impl
     interface Btree : IPersistent
     {
         int markTree();
-#if !OMIT_XML
+#if WITH_XML
         void export(XMLExporter exporter);
 #endif
         int insert(Key key, IPersistent obj, bool overwrite);
@@ -456,7 +456,7 @@ namespace Volante.Impl
             base.Deallocate();
         }
 
-#if !OMIT_XML
+#if WITH_XML
         public void export(XMLExporter exporter)
         {
             if (root != 0)

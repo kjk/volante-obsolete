@@ -66,8 +66,8 @@ namespace Volante
             Root root = (Root)db.Root;
             Tests.Assert(root == null);
             root = new Root();
-            root.strIndex = db.CreateSortedCollection<string, Record>(new StrRecordComparator(), true);
-            root.intIndex = db.CreateSortedCollection<long, Record>(new IntRecordComparator(), true);
+            root.strIndex = db.CreateSortedCollection<string, Record>(new StrRecordComparator(), IndexType.Unique);
+            root.intIndex = db.CreateSortedCollection<long, Record>(new IntRecordComparator(), IndexType.Unique);
             db.Root = root;
 
             ISortedCollection<long, Record> intIndex = root.intIndex;

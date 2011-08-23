@@ -71,7 +71,7 @@ namespace Volante
             PersonList root = (PersonList)db.Root;
             Tests.Assert(root == null);
             root = new PersonList();
-            root.list = db.CreateSortedCollection<Name, Person>(new NameComparator(), true);
+            root.list = db.CreateSortedCollection<Name, Person>(new NameComparator(), IndexType.Unique);
             db.Root = root;
             ISortedCollection<Name, Person> list = root.list;
             long key = 1999;

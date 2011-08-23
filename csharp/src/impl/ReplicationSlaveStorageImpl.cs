@@ -1,4 +1,4 @@
-#if !OMIT_REPLICATION
+#if WITH_REPLICATION
 namespace Volante.Impl
 {
     using System;

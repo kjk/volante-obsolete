@@ -2,7 +2,7 @@ using System;
 using Volante;
 using System.Diagnostics;
 
-#if OMIT_REPLICATION
+#if !WITH_REPLICATION
 public class TestReplic 
 { 
     static public void Main(string[] args)

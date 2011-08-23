@@ -1,4 +1,4 @@
-#if !OMIT_BTREE
+#if WITH_OLD_BTREE
 namespace Volante.Impl
 {
     using System;
@@ -2172,7 +2172,7 @@ namespace Volante.Impl
             return nPages;
         }
 
-#if !OMIT_XML
+#if WITH_XML
         internal static void exportPage(DatabaseImpl db, XMLExporter exporter, int pageId, ClassDescriptor.FieldType type, int height)
         {
             Page pg = db.getPage(pageId);

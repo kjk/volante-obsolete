@@ -1,4 +1,4 @@
-#if !OMIT_XML
+#if WITH_XML
 namespace Volante.Impl
 {
     using System;
@@ -552,7 +552,7 @@ namespace Volante.Impl
                 throwException("ID is not specified or index");
             }
             ClassDescriptor desc = storage.getClassDescriptor(findClassByName(indexType));
-#if !OMIT_BTREE
+#if WITH_OLD_BTREE
             Btree btree = (Btree)desc.newInstance();
             if (className != null)
             {
@@ -602,7 +602,7 @@ namespace Volante.Impl
                 {
                     throwException("<ref> element expected");
                 }
-#if !OMIT_BTREE
+#if WITH_OLD_BTREE
                 XMLElement refElem = readElement("ref");
                 Key key;
                 if (fieldNames != null)
@@ -630,7 +630,7 @@ namespace Volante.Impl
             {
                 throwException("Element is not closed");
             }
-#if !OMIT_BTREE
+#if WITH_OLD_BTREE
             ByteBuffer buf = new ByteBuffer(storage.encoding);
             buf.extend(ObjectHeader.Sizeof);
             int size = storage.packObject(btree, desc, ObjectHeader.Sizeof, buf, null);

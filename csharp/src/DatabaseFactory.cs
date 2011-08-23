@@ -18,7 +18,7 @@ namespace Volante
 #endif
         }
 
-#if !CF && !OMIT_REPLICATION
+#if !CF && WITH_REPLICATION
         /// <summary>
         /// Create new instance of the master node of replicated storage
         /// </summary>

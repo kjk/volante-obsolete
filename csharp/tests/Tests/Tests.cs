@@ -99,7 +99,9 @@ public class TestConfig
                 }
             }
         }
+#if WITH_OLD_BTRE
         db.AlternativeBtree = AltBtree || Serializable;
+#endif
         db.SerializeTransientObjects = SerializeTransient;
         db.BackgroundGc = BackgroundGc;
         // TODO: make it configurable?
@@ -457,7 +459,7 @@ public class TestsMain
             "TestBlob", "TestCompoundIndex",
             "TestConcur", "TestEnumerator",
             "TestList", "TestGC",
-#if !OMIT_XML
+#if WITH_XML
             "TestXml",
 #endif
             "TestTimeSeries", "TestBackup"

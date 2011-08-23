@@ -1,4 +1,4 @@
-#if !OMIT_XML
+#if WITH_XML
 namespace Volante
 {
     using System;
