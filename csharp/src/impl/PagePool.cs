@@ -140,7 +140,6 @@ namespace Volante.Impl
             return pg;
         }
 
-
         internal void copy(long dst, long src, long size)
         {
             int dstOffs = (int)dst & (Page.pageSize - 1);
@@ -200,7 +199,6 @@ namespace Volante.Impl
                 dstPos += Page.pageSize;
             }
         }
-
 
         internal void open(IFile f)
         {
@@ -335,7 +333,6 @@ namespace Volante.Impl
         }
         static PageComparator pageComparator = new PageComparator();
 #endif
-
 
         internal virtual void flush()
         {

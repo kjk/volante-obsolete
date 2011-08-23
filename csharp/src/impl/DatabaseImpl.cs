@@ -4942,7 +4942,7 @@ namespace Volante.Impl
         internal int[] bitmapPageAvailableSpace;
         internal bool opened;
 
-        internal int[] greyBitmap; // bitmap of visited during GC but not yet marked object
+        internal int[] greyBitmap; // bitmap of objects visited but not yet marked during GC
         internal int[] blackBitmap;    // bitmap of objects marked during GC 
         internal long gcThreshold;
         internal long allocatedDelta;
