@@ -3,9 +3,9 @@ namespace Volante.Impl
 {
     using Volante;
 
-    public class ReplicationMasterStorageImpl : DatabaseImpl, ReplicationMasterStorage
+    public class ReplicationMasterDatabaseImpl : DatabaseImpl, ReplicationMasterDatabase
     {
-        public ReplicationMasterStorageImpl(string[] hosts, int asyncBufSize)
+        public ReplicationMasterDatabaseImpl(string[] hosts, int asyncBufSize)
         {
             this.hosts = hosts;
             this.asyncBufSize = asyncBufSize;

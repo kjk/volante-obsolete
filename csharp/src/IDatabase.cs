@@ -31,11 +31,13 @@ namespace Volante
         /// Lock should be preserved until the end of transaction.
         /// </summary>
         Serializable,
+#if WITH_REPLICATION
         /// <summary>
         /// Read only transaction which can be started at replication slave node.
         /// It runs concurrently with receiving updates from master node.
         /// </summary>
         ReplicationSlave
+#endif
     }
 
     public enum CacheType

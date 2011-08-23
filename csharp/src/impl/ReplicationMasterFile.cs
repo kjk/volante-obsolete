@@ -17,7 +17,7 @@ namespace Volante.Impl
         /// </summary>
         /// <param name="storage">replication storage</param>
         /// <param name="file">local file used to store data locally</param>
-        public ReplicationMasterFile(ReplicationMasterStorageImpl storage, IFile file)
+        public ReplicationMasterFile(ReplicationMasterDatabaseImpl storage, IFile file)
             : this(file, storage.hosts, storage.replicationAck)
         {
             this.storage = storage;
@@ -181,7 +181,7 @@ namespace Volante.Impl
         protected int nHosts;
         protected bool ack;
 
-        protected ReplicationMasterStorageImpl storage;
+        protected ReplicationMasterDatabaseImpl storage;
     }
 }
 #endif

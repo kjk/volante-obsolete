@@ -18,7 +18,7 @@ namespace Volante.Impl
         /// <param name="file">local file used to store data locally</param>
         /// <param name="asyncBufSize">size of asynchronous buffer</param>
         /// </summary>
-        public AsyncReplicationMasterFile(ReplicationMasterStorageImpl storage, IFile file, int asyncBufSize)
+        public AsyncReplicationMasterFile(ReplicationMasterDatabaseImpl storage, IFile file, int asyncBufSize)
             : base(storage, file)
         {
             this.asyncBufSize = asyncBufSize;

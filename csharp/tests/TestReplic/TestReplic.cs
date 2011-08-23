@@ -66,8 +66,8 @@ public class TestReplic
         }
         if ("master" == args[0])
         {
-            ReplicationMasterStorage db =
-                DatabaseFactory.CreateReplicationMasterStorage(new string[] { "localhost:" + port },
+            ReplicationMasterDatabase db =
+                DatabaseFactory.CreateReplicationMasterDatabase(new string[] { "localhost:" + port },
                                                                        async ? asyncBufSize : 0);
             db.FileNoFlush = true;
             db.ReplicationAck = ack;
@@ -100,8 +100,8 @@ public class TestReplic
         }
         else if ("slave" == args[0])
         {
-            ReplicationSlaveStorage db =
-                DatabaseFactory.CreateReplicationSlaveStorage(port);
+            ReplicationSlaveDatabase db =
+                DatabaseFactory.CreateReplicationSlaveDatabase(port);
             db.FileNoFlush = true;
             db.ReplicationAck = ack;
             db.Open("slave.dbs", pagePoolSize);

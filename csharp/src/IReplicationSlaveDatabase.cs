@@ -4,7 +4,7 @@ namespace Volante
     /// Storage reciving modified pages from replication master and 
     /// been able to run read-only transactions 
     /// </summary>
-    public interface ReplicationSlaveStorage : IDatabase
+    public interface ReplicationSlaveDatabase : IDatabase
     {
         /// <summary>
         /// Check if socket is connected to the master host

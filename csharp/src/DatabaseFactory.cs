@@ -31,9 +31,9 @@ namespace Volante
         /// data is send.</param>
         /// <returns>new instance of the master storage (unopened, you should explicitely invoke open method)</returns>
         ///
-        public static ReplicationMasterStorage CreateReplicationMasterStorage(string[] replicationSlaveNodes, int asyncBufSize)
+        public static ReplicationMasterDatabase CreateReplicationMasterDatabase(string[] replicationSlaveNodes, int asyncBufSize)
         {
-            return new ReplicationMasterStorageImpl(replicationSlaveNodes, asyncBufSize);
+            return new ReplicationMasterDatabaseImpl(replicationSlaveNodes, asyncBufSize);
         }
 
         /// <summary>
@@ -42,9 +42,9 @@ namespace Volante
         /// <param name="port">socket port at which connection from master will be established</param>
         /// <returns>new instance of the slave storage (unopened, you should explicitely invoke open method)</returns>
         ////
-        public static ReplicationSlaveStorage CreateReplicationSlaveStorage(int port)
+        public static ReplicationSlaveDatabase CreateReplicationSlaveDatabase(int port)
         {
-            return new ReplicationSlaveStorageImpl(port);
+            return new ReplicationSlaveDatabaseImpl(port);
         }
 #endif
     }
