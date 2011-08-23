@@ -154,7 +154,7 @@ namespace Volante
         /// </summary>
         /// <param name="fieldName">name of the index field. Field with such name should be present in specified class <code>type</code>
         /// </param>
-        /// <param name="unique">whether index is unique (duplicate value of keys are not allowed)
+        /// <param name="indexType">whether index is unique (duplicate value of keys are not allowed)
         /// </param>
         /// <returns>persistent object implementing field index
         /// </returns>
@@ -168,7 +168,7 @@ namespace Volante
         /// </summary>
         /// <param name="fieldNames">array of names of the fields. Field with such name should be present in specified class <code>type</code>
         /// </param>
-        /// <param name="unique">whether index is unique (duplicate value of keys are not allowed)
+        /// <param name="indexType">whether index is unique (duplicate value of keys are not allowed)
         /// </param>
         /// <returns>persistent object implementing field index
         /// </returns>
@@ -206,7 +206,7 @@ namespace Volante
         /// Create new sorted collection with specified comparator
         /// </summary>
         /// <param name="comparator">comparator class specifying order in the collection</param>
-        /// <param name="unique"> whether collection is unique (members with the same key value are not allowed)</param>
+        /// <param name="indexType"> whether collection is unique (members with the same key value are not allowed)</param>
         /// <returns> persistent object implementing sorted collection</returns>
         ISortedCollection<K, V> CreateSortedCollection<K, V>(PersistentComparator<K, V> comparator, IndexType indexType) where V : class,IPersistent;
 
@@ -215,7 +215,7 @@ namespace Volante
         /// <code>System.IComparable</code> interface and make it possible to compare 
         /// collection members with each other as well as with serch key.
         /// </summary>
-        /// <param name="unique"> whether collection is unique (members with the same key value are not allowed)</param>
+        /// <param name="indexType"> whether collection is unique (members with the same key value are not allowed)</param>
         /// <returns> persistent object implementing sorted collection</returns>
         ISortedCollection<K, V> CreateSortedCollection<K, V>(IndexType indexType) where V : class,IPersistent, IComparable<K>, IComparable<V>;
 
