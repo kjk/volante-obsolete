@@ -76,7 +76,7 @@ public class TestReplic
             IFieldIndex<int, Record> root = (IFieldIndex<int, Record>)db.Root;
             if (root == null)
             {
-                root = db.CreateFieldIndex<int, Record>("key", true);
+                root = db.CreateFieldIndex<int, Record>("key", IndexType.Unique);
                 db.Root = root;
             }
             DateTime start = DateTime.Now;

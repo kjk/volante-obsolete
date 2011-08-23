@@ -601,7 +601,7 @@ namespace Volante.Impl
         {
             this.blockSize = blockSize;
             this.maxBlockTimeInterval = maxBlockTimeInterval;
-            index = storage.CreateIndex<long, TimeSeriesBlock>(true);
+            index = storage.CreateIndex<long, TimeSeriesBlock>(IndexType.Unique);
         }
         internal TimeSeriesImpl() { }
 

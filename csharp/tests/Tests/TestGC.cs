@@ -31,8 +31,8 @@ namespace Volante
             config.Result = res;
             IDatabase db = config.GetDatabase();
             StorageRoot root = new StorageRoot();
-            IIndex<string, PObject> strIndex = root.strIndex = db.CreateIndex<string, PObject>(true);
-            IIndex<long, PObject> intIndex = root.intIndex = db.CreateIndex<long, PObject>(true);
+            IIndex<string, PObject> strIndex = root.strIndex = db.CreateIndex<string, PObject>(IndexType.Unique);
+            IIndex<long, PObject> intIndex = root.intIndex = db.CreateIndex<long, PObject>(IndexType.Unique);
             db.Root = root;
             long insKey = 1999;
             long remKey = 1999;

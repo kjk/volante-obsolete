@@ -15,7 +15,7 @@ namespace Volante.Impl
         internal ThickIndex(DatabaseImpl db)
             : base(db)
         {
-            index = db.CreateIndex<K, IPersistent>(true);
+            index = db.CreateIndex<K, IPersistent>(IndexType.Unique);
         }
 
         ThickIndex() { }

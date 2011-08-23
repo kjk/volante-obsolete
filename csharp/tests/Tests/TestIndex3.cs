@@ -25,7 +25,7 @@ namespace Volante
             Root root = (Root)db.Root;
             Tests.Assert(null == root);
             root = new Root();
-            root.strIndex = db.CreateIndex<string, Record>(true);
+            root.strIndex = db.CreateIndex<string, Record>(IndexType.Unique);
             db.Root = root;
             string[] strs = new string[] { "one", "two", "three", "four" };
             int no = 0;

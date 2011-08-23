@@ -39,7 +39,7 @@ namespace Volante
             IDatabase db = config.GetDatabase();
             IIndex<string, IBlob> root = (IIndex<string, IBlob>)db.Root;
             Tests.Assert(root == null);
-            root = db.CreateIndex<string, IBlob>(true);
+            root = db.CreateIndex<string, IBlob>(IndexType.Unique);
             db.Root = root;
             foreach (string file in files)
             {

@@ -15,5 +15,6 @@
 11. Fixed uint and ulong indexes in AltBtree
 12. Fixed int indexes in AltBtree
 13. Added support for DateTime for AltBtree index
-14. Renamed Storage => IStorage, PatriciaKey => IPatriciaKey, GenericPArray => IGenericPArray, Blob => IBlob, PArray => IParray, Link => ILink, ClassLoader => IClassLoader, TimeSeries => ITimeSeries, TimeSeriesTick => ITimeSeriesTick, SortedCollection => ISortedCollection, SpatialIndex => ISpatialIndex, SpatialIndexR2 => ISpatialIndexR2, BitIndex => IBitIndex, MultiFieldIndex => IMultiFieldIndex, FieldIndex => IFieldIndex, GenericIndex => IGenericIndex, GenericLink => IGenericLink
+14. Renamed Storage => IDatabase, PatriciaKey => IPatriciaKey, GenericPArray => IGenericPArray, Blob => IBlob, PArray => IParray, Link => ILink, ClassLoader => IClassLoader, TimeSeries => ITimeSeries, TimeSeriesTick => ITimeSeriesTick, SortedCollection => ISortedCollection, SpatialIndex => ISpatialIndex, SpatialIndexR2 => ISpatialIndexR2, BitIndex => IBitIndex, MultiFieldIndex => IMultiFieldIndex, FieldIndex => IFieldIndex, GenericIndex => IGenericIndex, GenericLink => IGenericLink
 15. Changed uses of Hashtable to Dictionary<>
+16. Introduce enum IndexType and use it instead of bool unique param to IDatabase.CreateIndex() methods

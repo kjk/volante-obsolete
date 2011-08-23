@@ -1392,10 +1392,10 @@ namespace Volante.Impl
             return elemType;
         }
 
-        internal AltBtree(bool unique)
+        internal AltBtree(IndexType indexType)
         {
             type = checkType(typeof(K));
-            this.unique = unique;
+            this.unique = (indexType == IndexType.Unique);
         }
 
         internal AltBtree(ClassDescriptor.FieldType type, bool unique)

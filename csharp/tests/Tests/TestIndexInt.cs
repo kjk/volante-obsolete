@@ -40,7 +40,7 @@ namespace Volante
             var start = DateTime.Now;
             IDatabase db = config.GetDatabase();
             Tests.Assert(null == db.Root);
-            var idx = db.CreateIndex<int, Record>(false);
+            var idx = db.CreateIndex<int, Record>(IndexType.NonUnique);
             db.Root = idx;
             long val = 1999;
             for (i = 0; i < count; i++)
@@ -167,7 +167,7 @@ namespace Volante
             Record r;
             IDatabase db = config.GetDatabase();
             Tests.Assert(null == db.Root);
-            var idx = db.CreateIndex<int, Record>(false);
+            var idx = db.CreateIndex<int, Record>(IndexType.NonUnique);
             db.Root = idx;
             idx.Put(min, new Record(min));
             idx.Put(max, new Record(max));

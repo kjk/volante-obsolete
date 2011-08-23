@@ -104,8 +104,8 @@ public class TestSOD : Persistent
         if (root == null) 
         { 
             root = new TestSOD();
-            root.supplierName = db.CreateFieldIndex<string,Supplier>("name", true);
-            root.detailId = db.CreateFieldIndex<string,Detail>("id", true);
+            root.supplierName = db.CreateFieldIndex<string, Supplier>("name", IndexType.Unique);
+            root.detailId = db.CreateFieldIndex<string, Detail>("id", IndexType.Unique);
             db.Root = root;
         }
         while (true) 

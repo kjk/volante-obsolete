@@ -4,6 +4,12 @@ namespace Volante
     using System.Collections.Generic;
     using System.Text;
 
+    public enum IndexType
+    {
+        Unique,
+        NonUnique
+    }
+
     public enum TransactionMode
     {
         /// <summary>
@@ -121,14 +127,14 @@ namespace Volante
 
         /// <summary> Create new index. K parameter specifies key type, V - associated object type.
         /// </summary>
-        /// <param name="unique">whether index is unique (duplicate value of keys are not allowed)
+        /// <param name="indexType">whether index is unique (duplicate value of keys are not allowed)
         /// </param>
         /// <returns>persistent object implementing index
         /// </returns>
         /// <exception cref="Volante.StorageError">StorageError(StorageError.ErrorCode.UNSUPPORTED_INDEX_TYPE) exception if 
         /// specified key type is not supported by implementation.
         /// </exception>
-        IIndex<K, V> CreateIndex<K, V>(bool unique) where V : class,IPersistent;
+        IIndex<K, V> CreateIndex<K, V>(IndexType indexType) where V : class,IPersistent;
 
         /// <summary> Create new thick index (index with large number of duplicated keys).
         /// K parameter specifies key type, V - associated object type.
@@ -153,7 +159,7 @@ namespace Volante
         /// <exception cref="Volante.StorageError">StorageError(StorageError.INDEXED_FIELD_NOT_FOUND) if there is no such field in specified class,
         /// StorageError(StorageError.UNSUPPORTED_INDEX_TYPE) exception if type of specified field is not supported by implementation
         /// </exception>
-        IFieldIndex<K, V> CreateFieldIndex<K, V>(string fieldName, bool unique) where V : class,IPersistent;
+        IFieldIndex<K, V> CreateFieldIndex<K, V>(string fieldName, IndexType indexType) where V : class,IPersistent;
 
         /// <summary> 
         /// Create new multi-field index
@@ -167,7 +173,7 @@ namespace Volante
         /// <exception cref="Volante.StorageError">StorageError(StorageError.INDEXED_FIELD_NOT_FOUND) if there is no such field in specified class,
         /// StorageError(StorageError.UNSUPPORTED_INDEX_TYPE) exception if type of specified field is not supported by implementation
         /// </exception>
-        IMultiFieldIndex<V> CreateFieldIndex<V>(string[] fieldNames, bool unique) where V : class,IPersistent;
+        IMultiFieldIndex<V> CreateFieldIndex<V>(string[] fieldNames, IndexType indexType) where V : class,IPersistent;
 
 #if !OMIT_BTREE
         /// <summary>
@@ -409,27 +415,25 @@ namespace Volante
         int MakePersistent(IPersistent obj);
 
 #if !OMIT_BTREE
-        /// <TR><TD><code>perst.alternative.btree</code></TD><TD>bool</TD><TD>false</TD>
         /// <TD>Use aternative implementation of B-Tree (not using direct access to database
         /// file pages). This implementation should be used in case of serialized per thread transctions.
         /// New implementation of B-Tree will be used instead of old implementation
-        /// if "perst.alternative.btree" property is set. New B-Tree has incompatible format with 
+        /// if AlternativeBtree property is set. New B-Tree has incompatible format with 
         /// old B-Tree, so you could not use old database or XML export file with new indices. 
         /// Alternative B-Tree is needed to provide serializable transaction (old one could not be used).
         /// Also it provides better performance (about 3 times comaring with old implementation) because
         /// of object caching. And B-Tree supports keys of user defined types. 
-        /// </TD></TR>
+        /// Default value: false
         bool AlternativeBtree { get; set; }
 #endif
 
-        /// <TR><TD><code>perst.serialize.transient.objects</code></TD><TD>bool</TD><TD>false</TD>
-        /// <TD>Serialize any class not derived from IPersistent or IValue using standard Java serialization
+        /// Serialize any class not derived from IPersistent or IValue using standard .NET serialization
         /// mechanism. Packed object closure is stored in database as byte array. Latter the same mechanism is used
         /// to unpack the objects. To be able to use this mechanism, object and all objects referenced from it
         /// should be marked with Serializable attribute and should not contain references
         /// to persistent objects. If such object is referenced from N persistent object, N instances of this object
         /// will be stored in the database and after loading there will be N instances in memory.
-        /// </TD></TR>
+        /// Default value: false
         bool SerializeTransientObjects { get; set; }
 
         /// <summary>Set/get initial size of object index. Bigger values increase
@@ -460,7 +464,6 @@ namespace Volante
         /// </summary>
         long ExtensionQuantum { get; set; }
 
-        /// <TD><code>perst.gc.threshold</code></TD><TD>long</TD><TD>long.MaxValue</TD>
         /// <TD>Threshold for initiation of garbage collection. 
         /// If it is set to the value different from long.MaxValue, GC will be started each time 
         /// when delta between total size of allocated and deallocated objects exceeds specified threashold OR
@@ -473,6 +476,7 @@ namespace Volante
         /// </summary>
         /// <param>delta between total size of allocated and deallocated object since last GC or storage opening
         /// </param>
+        /// Default value: long.MaxValue
         long GcThreshold { get; set; }
 
         /// <summary>Set/get whether garbage collection is performed in a
@@ -495,18 +499,16 @@ namespace Volante
         /// </summary>
         bool FileReadOnly { get; set; }
 
-        /// <TR><TD><code>perst.file.noflush</code></TD><TD>bool</TD><TD>false</TD>
-        /// <TD>To not flush file during transaction commit. It will greatly increase performance because
-        /// eliminate synchronous write to the disk (when program has to wait until all changed
+        /// To not flush file during transaction commit. It will greatly increase performance because
+        /// eliminate synchronous write to the disk (when program has to wait until all changes
         /// are actually written to the disk). But it can cause database corruption in case of 
         /// OS or power failure (but abnormal termination of application itself should not cause
         /// the problem, because all data which were written to the file, but is not yet saved to the disk is 
         /// stored in OS file buffers and sooner or later them will be written to the disk)
-        /// </TD></TR>
+        /// Default value: false
         bool FileNoFlush { get; set; }
 
-        /// <TR><TD><code>perst.replication.ack</code></TD><TD>Boolean</TD><TD>false</TD>
-        /// <TD>Request acknowledgement from slave that it receives all data before transaction
+        /// Request acknowledgement from slave that it receives all data before transaction
         /// commit. If this option is not set, then replication master node just writes
         /// data to the socket not warring whether it reaches slave node or not.
         /// When this option is set to true, master not will wait during each transaction commit acknowledgement
@@ -516,17 +518,16 @@ namespace Volante
         /// mode. The only difference is that in first case main application thread will be blocked waiting
         /// for acknowledgment, while in the asynchronous mode special replication thread will be blocked
         /// allowing thread performing commit to proceed.
-        /// </TD></TR>
+        /// Default value: false
         bool ReplicationAck { get; set; }
 
-        /// <TR><TD><code>perst.string.encoding</code></TD><TD>String</TD><TD>null</TD>
         /// <TD>Specifies encoding of storing strings in the database. By default Volante stores 
         /// strings as sequence of chars (two bytes per char). If all strings in application are in 
         /// the same language, then using encoding  can signifficantly reduce space needed
         /// to store string (about two times). But please notice, that this option has influence
         /// on all strings  stored in database. So if you already have some data in the storage
         /// and then change encoding, then it can cause incorrect fetching of strings and even database crash.
-        /// </TD></TR>
+        /// Default value: null
         Encoding StringEncoding { get; set; }
 
         /// <summary>
@@ -584,7 +585,7 @@ namespace Volante
         /// containers (since them are based on B-Tree and B-Tree directly access database pages
         /// and use <code>store()</code> method to assign OID to inserted object. 
         /// You should use <code>SortedCollection</code> based on T-Tree instead or alternative
-        /// B-Tree implemenataion (set "perst.alternative.btree" property).
+        /// B-Tree implemenataion (set AlternativeBtree property).
         /// </summary>
         /// <param name="mode"><code>TransactionMode.Exclusive</code>,  <code>TransactionMode.Cooperative</code>,
         /// <code>TransactionMode.ReplicationSlave</code> or <code>TransactionMode.Serializable</code>

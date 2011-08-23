@@ -38,9 +38,9 @@ namespace Volante
             Root root = (Root)db.Root;
             Tests.Assert(root == null);
             root = new Root();
-            root.strIndex = db.CreateIndex<string, Record>(true);
-            root.intIndex = db.CreateFieldIndex<long, Record>("intKey", true);
-            root.compoundIndex = db.CreateFieldIndex<Record>(new String[] { "strKey", "intKey" }, true);
+            root.strIndex = db.CreateIndex<string, Record>(IndexType.Unique);
+            root.intIndex = db.CreateFieldIndex<long, Record>("intKey", IndexType.Unique);
+            root.compoundIndex = db.CreateFieldIndex<Record>(new String[] { "strKey", "intKey" }, IndexType.Unique);
             db.Root = root;
             IFieldIndex<long, Record> intIndex = root.intIndex;
             IMultiFieldIndex<Record> compoundIndex = root.compoundIndex;

@@ -30,7 +30,7 @@ namespace Volante
             IDatabase db = config.GetDatabase();
             IMultiFieldIndex<Record> root = (IMultiFieldIndex<Record>)db.Root;
             Tests.Assert(root == null);
-            root = db.CreateFieldIndex<Record>(new string[] { "intKey", "strKey" }, true);
+            root = db.CreateFieldIndex<Record>(new string[] { "intKey", "strKey" }, IndexType.Unique);
             db.Root = root;
 
             long key = 1999;

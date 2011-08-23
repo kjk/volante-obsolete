@@ -83,7 +83,7 @@ namespace Volante
             Tests.Assert(root == null);
             root = new Catalogue();
             root.optionIndex = db.CreateBitIndex<Car>();
-            root.modelIndex = db.CreateFieldIndex<string, Car>("model", true);
+            root.modelIndex = db.CreateFieldIndex<string, Car>("model", IndexType.Unique);
             db.Root = root;
 
             long rnd = 1999;

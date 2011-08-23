@@ -34,8 +34,8 @@ namespace Volante
             Indices root = (Indices)db.Root;
             Tests.Assert(root == null);
             root = new Indices();
-            root.strIndex = db.CreateIndex<string, Record>(false);
-            root.intIndex = db.CreateIndex<long, Record>(false);
+            root.strIndex = db.CreateIndex<string, Record>(IndexType.NonUnique);
+            root.intIndex = db.CreateIndex<long, Record>(IndexType.NonUnique);
             db.Root = root;
             IIndex<long, Record> intIndex = root.intIndex;
             IIndex<string, Record> strIndex = root.strIndex;

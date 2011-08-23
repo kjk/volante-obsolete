@@ -75,10 +75,10 @@ public class TestSSD : Persistent {
         TestSSD root = (TestSSD)db.Root;
         if (root == null) { 
             root = new TestSSD();
-            root.supplierName = db.CreateFieldIndex<string,Supplier>("name", true);
-            root.detailId = db.CreateFieldIndex<string,Detail>("id", true);
-            root.shipmentSupplier = db.CreateFieldIndex<Supplier,Shipment>("supplier", false);
-            root.shipmentDetail = db.CreateFieldIndex<Detail,Shipment>("detail", false);
+            root.supplierName = db.CreateFieldIndex<string, Supplier>("name", IndexType.Unique);
+            root.detailId = db.CreateFieldIndex<string, Detail>("id", IndexType.Unique);
+            root.shipmentSupplier = db.CreateFieldIndex<Supplier, Shipment>("supplier", IndexType.NonUnique);
+            root.shipmentDetail = db.CreateFieldIndex<Detail, Shipment>("detail", IndexType.NonUnique);
             db.Root = root;
         }
         while (true) { 

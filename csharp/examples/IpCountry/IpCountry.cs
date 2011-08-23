@@ -30,7 +30,7 @@ public class IpCountry
         Root root = (Root)db.Root;
         if (root == null) { 
             root = new Root();
-            root.countries = db.CreateIndex<string,Country>(true);
+            root.countries = db.CreateIndex<string,Country>(IndexType.Unique);
             root.trie = db.CreatePatriciaTrie<Country>();
             loadCountries(root.countries);
             db.Root = root;

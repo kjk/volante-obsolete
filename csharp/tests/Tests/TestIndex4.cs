@@ -41,7 +41,7 @@ namespace Volante
             IDatabase db = config.GetDatabase();
             IIndex<string, StringInt> root = (IIndex<string, StringInt>)db.Root;
             Tests.Assert(null == root);
-            root = db.CreateIndex<string, StringInt>(true);
+            root = db.CreateIndex<string, StringInt>(IndexType.Unique);
             db.Root = root;
 
             string[] strs = new string[] { "one", "two", "three", "four" };

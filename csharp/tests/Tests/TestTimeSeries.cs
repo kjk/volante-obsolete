@@ -51,7 +51,7 @@ namespace Volante
 
             IFieldIndex<string, Stock> stocks = (IFieldIndex<string, Stock>)db.Root;
             Tests.Assert(stocks == null);
-            stocks = db.CreateFieldIndex<string, Stock>("name", true);
+            stocks = db.CreateFieldIndex<string, Stock>("name", IndexType.Unique);
             stock = new Stock();
             stock.name = "BORL";
             stock.quotes = db.CreateTimeSeries<Quote>(N_ELEMS_PER_BLOCK, N_ELEMS_PER_BLOCK * TICKS_PER_SECOND * 2);

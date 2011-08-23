@@ -40,10 +40,10 @@ namespace DirectoryScan
             else
             {
                 // only create root once
-                dbRoot = new DatabaseRoot(); 
-                dbRoot.FileSizeIndex = db.CreateIndex<Int64, FileEntry>(false);
-                dbRoot.FileNameIndex = db.CreateIndex<string, FileEntry>(false);
-                dbRoot.FileLastWriteTimeIndex = db.CreateIndex<DateTime, FileEntry>(false);
+                dbRoot = new DatabaseRoot();
+                dbRoot.FileSizeIndex = db.CreateIndex<Int64, FileEntry>(IndexType.NonUnique);
+                dbRoot.FileNameIndex = db.CreateIndex<string, FileEntry>(IndexType.NonUnique);
+                dbRoot.FileLastWriteTimeIndex = db.CreateIndex<DateTime, FileEntry>(IndexType.NonUnique);
                 db.Root = dbRoot;
                 // changing the root marks database as modified but it's
                 // only modified in memory. Commit to persist changes to disk.

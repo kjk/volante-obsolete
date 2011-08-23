@@ -40,7 +40,7 @@ namespace Volante
 
             IDatabase db = config.GetDatabase();
             Tests.Assert(null == db.Root);
-            var idx = db.CreateIndex<byte, Record>(false);
+            var idx = db.CreateIndex<byte, Record>(IndexType.NonUnique);
             db.Root = idx;
             long val = 1999;
             for (i = 0; i < count; i++)

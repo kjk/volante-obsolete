@@ -74,8 +74,8 @@ public class TestLink
         
         if (root == null) { 
             root = new Root();
-            root.details = db.CreateFieldIndex<string,Detail>("name", true);
-            root.suppliers = db.CreateFieldIndex<string,Supplier>("name", true);
+            root.details = db.CreateFieldIndex<string,Detail>("name", IndexType.Unique);
+            root.suppliers = db.CreateFieldIndex<string, Supplier>("name", IndexType.Unique);
             db.Root = root;
         }
         while (true) { 

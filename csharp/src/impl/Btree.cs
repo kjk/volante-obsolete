@@ -61,10 +61,10 @@ namespace Volante.Impl
             unique = obj[offs] != 0;
         }
 
-        internal Btree(bool unique)
+        internal Btree(IndexType indexType)
         {
             type = checkType(typeof(K));
-            this.unique = unique;
+            this.unique = (indexType == IndexType.Unique);
         }
 
         public override void OnLoad()

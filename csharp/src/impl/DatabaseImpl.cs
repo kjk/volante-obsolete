@@ -1789,15 +1789,15 @@ namespace Volante.Impl
             }
         }
 
-        public IIndex<K, V> CreateIndex<K, V>(bool unique) where V : class,IPersistent
+        public IIndex<K, V> CreateIndex<K, V>(IndexType indexType) where V : class,IPersistent
         {
             lock (this)
             {
                 ensureOpened();
 #if !OMIT_BTREE
                 IIndex<K, V> index = alternativeBtree
-                    ? new AltBtree<K, V>(unique)
-                    : (IIndex<K, V>)new Btree<K, V>(unique);
+                    ? new AltBtree<K, V>(indexType)
+                    : (IIndex<K, V>)new Btree<K, V>(indexType);
 #else
                 Index<K, V> index = new AltBtree<K, V>(unique);
 #endif
@@ -1894,11 +1894,12 @@ namespace Volante.Impl
             }
         }
 
-        public IFieldIndex<K, V> CreateFieldIndex<K, V>(String fieldName, bool unique) where V : class,IPersistent
+        public IFieldIndex<K, V> CreateFieldIndex<K, V>(String fieldName, IndexType indexType) where V : class,IPersistent
         {
             lock (this)
             {
                 ensureOpened();
+                bool unique = (indexType == IndexType.Unique);
 #if !OMIT_BTREE
                 IFieldIndex<K, V> index = alternativeBtree
                     ? (IFieldIndex<K, V>)new AltBtreeFieldIndex<K, V>(fieldName, unique)
@@ -1911,12 +1912,12 @@ namespace Volante.Impl
             }
         }
 
-        public IMultiFieldIndex<T> CreateFieldIndex<T>(string[] fieldNames, bool unique) where T : class,IPersistent
+        public IMultiFieldIndex<T> CreateFieldIndex<T>(string[] fieldNames, IndexType indexType) where T : class,IPersistent
         {
             lock (this)
             {
                 ensureOpened();
-
+                bool unique = (indexType == IndexType.Unique);
 #if CF
                 if (alternativeBtree) 
                 {

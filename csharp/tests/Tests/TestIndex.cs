@@ -39,8 +39,8 @@ namespace Volante
             Root root = (Root)db.Root;
             Tests.Assert(null == root);
             root = new Root();
-            root.strIndex = db.CreateIndex<string, Record>(true);
-            root.intIndex = db.CreateIndex<long, Record>(true);
+            root.strIndex = db.CreateIndex<string, Record>(IndexType.Unique);
+            root.intIndex = db.CreateIndex<long, Record>(IndexType.Unique);
             db.Root = root;
             var strIndex = root.strIndex;
             Tests.Assert(typeof(string) == strIndex.KeyType);

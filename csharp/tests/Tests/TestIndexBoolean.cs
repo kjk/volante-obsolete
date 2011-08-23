@@ -28,7 +28,7 @@ namespace Volante
             var start = DateTime.Now;
             IDatabase db = config.GetDatabase();
             Tests.Assert(null == db.Root);
-            var idx = db.CreateIndex<Boolean, Record>(false);
+            var idx = db.CreateIndex<Boolean, Record>(IndexType.NonUnique);
             db.Root = idx;
 
             long val = 1999;
