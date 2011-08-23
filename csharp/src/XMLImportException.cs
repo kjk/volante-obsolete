@@ -1,3 +1,4 @@
+#if WITH_XML
 namespace Volante
 {
     using System;
@@ -43,3 +44,4 @@ namespace Volante
         private String message;
     }
 }
+#endif
