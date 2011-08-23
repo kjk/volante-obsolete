@@ -51,7 +51,7 @@ namespace Volante
         /// <summary>
         /// Get wrapping rectangle 
         /// </summary>
-        /// <returns>Minimal rectangle containing all rectangles in the index     
+        /// <returns>Minimal rectangle containing all rectangles in the index
         /// If index is empty <i>empty rectangle</i> (double.MaxValue, double.MaxValue, double.MinValue, double.MinValue)
         /// is returned.
         /// </returns>

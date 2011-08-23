@@ -1,7 +1,5 @@
 namespace Volante
 {
-    #region StreamFile
-
     /// <summary>
     /// IFile implementation which to store databases on <see cref="System.IO.Stream"/> instances.
     /// </summary>
@@ -94,5 +92,4 @@ namespace Volante
             get { return stream.Length; }
         }
     }
-    #endregion
 }

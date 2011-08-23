@@ -5,7 +5,7 @@ namespace Volante
     using System.ComponentModel;
     using System.Diagnostics;
 
-    /// <summary> Base class for persistent capable objects with marshal be reference semantic
+    /// <summary> Base class for persistent capable objects with marshal by reference semantic
     /// </summary>
     public abstract class MarshalByRefPersistent : MarshalByRefObject, IPersistent
     {

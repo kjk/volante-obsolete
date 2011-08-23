@@ -80,6 +80,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ITimeSeries.cs" />
     <Compile Include="src\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -91,6 +92,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="src\IGenericIndex.cs" />
+    <Compile Include="src\IIndex.cs" />
     <Compile Include="src\ILink.cs" />
     <Compile Include="src\impl\AltBtree.cs">
       <SubType>Code</SubType>
@@ -245,18 +247,22 @@
     <Compile Include="src\impl\XMLImporter.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="src\Index.cs">
-      <SubType>Code</SubType>
-    </Compile>
+    <Compile Include="src\IPArray.cs" />
+    <Compile Include="src\IPatriciaTrie.cs" />
     <Compile Include="src\IPersistent.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="src\IReplicationMasterStorage.cs" />
+    <Compile Include="src\IReplicationSlaveStorage.cs" />
     <Compile Include="src\IResource.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="src\ISet.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="src\ISortedCollection.cs" />
+    <Compile Include="src\ISpatialIndex.cs" />
+    <Compile Include="src\ISpatialIndexR2.cs" />
     <Compile Include="src\Key.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -273,12 +279,6 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="src\NullFile.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="src\PArray.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="src\PatriciaTrie.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="src\PatriciaTrieKey.cs">
@@ -314,21 +314,6 @@
     <Compile Include="src\Relation.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="src\ReplicationMasterStorage.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="src\ReplicationSlaveStorage.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="src\SortedCollection.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="src\SpatialIndex.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="src\SpatialIndexR2.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="src\Storage.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -342,9 +327,6 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="src\StreamFile.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="src\TimeSeries.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="src\TransparentPersistenceAttribute.cs">
