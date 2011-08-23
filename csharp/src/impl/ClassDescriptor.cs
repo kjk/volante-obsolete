@@ -48,8 +48,6 @@ namespace Volante.Impl
         [NonSerialized()]
         internal GeneratedSerializer serializer;
 
-        internal static bool serializeNonPersistentObjects;
-
         public enum FieldType
         {
             tpBoolean,
@@ -434,14 +432,7 @@ namespace Volante.Impl
             }
             else
             {
-                if (serializeNonPersistentObjects || c == typeof(object) || c == typeof(IComparable))
-                {
-                    type = FieldType.tpRaw;
-                }
-                else
-                {
-                    throw new DatabaseError(DatabaseError.ErrorCode.UNSUPPORTED_TYPE, c);
-                }
+                type = FieldType.tpRaw;
             }
             return type;
         }

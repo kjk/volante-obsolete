@@ -33,7 +33,6 @@ public class TestConfig
     public FileType FileKind = FileType.File;
     public bool AltBtree = false;
     public bool Serializable = false;
-    public bool SerializeTransient = false;
     public bool BackgroundGc = false;
     public Encoding Encoding; // if not null will use this encoding for storing strings
     public int Count; // number of iterations
@@ -102,7 +101,6 @@ public class TestConfig
 #if WITH_OLD_BTRE
         db.AlternativeBtree = AltBtree || Serializable;
 #endif
-        db.SerializeTransientObjects = SerializeTransient;
         db.BackgroundGc = BackgroundGc;
         // TODO: make it configurable?
         // TODO: make it bigger (1000000 - the original value for h)
@@ -122,7 +120,6 @@ public class TestConfig
         FileKind = tc.FileKind;
         AltBtree = tc.AltBtree;
         Serializable = tc.Serializable;
-        SerializeTransient = tc.SerializeTransient;
         BackgroundGc = tc.BackgroundGc;
         Encoding = tc.Encoding;
         Count = tc.Count;
@@ -282,8 +279,8 @@ public class TestsMain
         };
 
     static TestConfig[] ConfigsRaw = new TestConfig[] {
-            new TestConfig{ InMemory = TestConfig.InMemoryType.Full, SerializeTransient = true },
-            new TestConfig{ InMemory = TestConfig.InMemoryType.Full, AltBtree=true, SerializeTransient = true }
+            new TestConfig{ InMemory = TestConfig.InMemoryType.Full },
+            new TestConfig{ InMemory = TestConfig.InMemoryType.Full, AltBtree=true }
         };
 
     static TestConfig[] ConfigsNoAlt = new TestConfig[] {
@@ -452,7 +449,10 @@ public class TestsMain
             "TestIndexGuid", "TestIndexObject",
             "TestIndexDateTime", "TestIndex",
             "TestIndex2", "TestIndex3",
-            "TestIndex4", "TestBit",
+            "TestIndex4", 
+#if WITH_OLD_BTREE
+            "TestBit",
+#endif
             "TestRaw", "TestR2", 
             "TestRtree", "TestTtree",
             "TestBlob", "TestCompoundIndex",

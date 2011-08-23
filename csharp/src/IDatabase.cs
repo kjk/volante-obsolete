@@ -429,15 +429,6 @@ namespace Volante
         bool AlternativeBtree { get; set; }
 #endif
 
-        /// Serialize any class not derived from IPersistent or IValue using standard .NET serialization
-        /// mechanism. Packed object closure is stored in database as byte array. Latter the same mechanism is used
-        /// to unpack the objects. To be able to use this mechanism, object and all objects referenced from it
-        /// should be marked with Serializable attribute and should not contain references
-        /// to persistent objects. If such object is referenced from N persistent object, N instances of this object
-        /// will be stored in the database and after loading there will be N instances in memory.
-        /// Default value: false
-        bool SerializeTransientObjects { get; set; }
-
         /// <summary>Set/get initial size of object index. Bigger values increase
         /// initial size of database but reduce number of index reallocations.
         /// Default value: 1024

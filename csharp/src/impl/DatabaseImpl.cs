@@ -3028,12 +3028,6 @@ namespace Volante.Impl
         }
 #endif
 
-        public bool SerializeTransientObjects
-        {
-            set { ClassDescriptor.serializeNonPersistentObjects = value; }
-            get { return ClassDescriptor.serializeNonPersistentObjects; }
-        }
-
         // TODO: needs tests
         public int ObjectIndexInitSize
         {

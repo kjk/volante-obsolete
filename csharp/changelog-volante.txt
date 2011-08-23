@@ -18,3 +18,4 @@
 14. Renamed Storage => IDatabase, PatriciaKey => IPatriciaKey, GenericPArray => IGenericPArray, Blob => IBlob, PArray => IParray, Link => ILink, ClassLoader => IClassLoader, TimeSeries => ITimeSeries, TimeSeriesTick => ITimeSeriesTick, SortedCollection => ISortedCollection, SpatialIndex => ISpatialIndex, SpatialIndexR2 => ISpatialIndexR2, BitIndex => IBitIndex, MultiFieldIndex => IMultiFieldIndex, FieldIndex => IFieldIndex, GenericIndex => IGenericIndex, GenericLink => IGenericLink
 15. Changed uses of Hashtable to Dictionary<>
 16. Introduce enum IndexType and use it instead of bool unique param to IDatabase.CreateIndex() methods
+17. Remove bool IDatabase.SerializeTransientObjects property and act as it's always true
