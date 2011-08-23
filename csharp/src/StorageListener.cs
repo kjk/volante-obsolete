@@ -4,9 +4,9 @@ namespace Volante
 {
     /// <summary>
     /// Listener of database events. Programmer should derive his own subclass and register
-    /// it using Storage.setListener method.
+    /// it using Database.SetListener method.
     /// </summary>
-    public abstract class StorageListener
+    public abstract class DatabaseListener
     {
         /// <summary>
         /// This metod is called during database open when database was not

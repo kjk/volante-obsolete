@@ -53,13 +53,13 @@ namespace Volante.Impl
         {
             if (root == null)
             {
-                throw new StorageError(StorageError.ErrorCode.KEY_NOT_FOUND);
+                throw new DatabaseError(DatabaseError.ErrorCode.KEY_NOT_FOUND);
             }
             ArrayList reinsertList = new ArrayList();
             int reinsertLevel = root.remove(r, obj, height, reinsertList);
             if (reinsertLevel < 0)
             {
-                throw new StorageError(StorageError.ErrorCode.KEY_NOT_FOUND);
+                throw new DatabaseError(DatabaseError.ErrorCode.KEY_NOT_FOUND);
             }
             for (int i = reinsertList.Count; --i >= 0; )
             {

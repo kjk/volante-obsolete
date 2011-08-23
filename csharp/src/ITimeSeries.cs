@@ -106,20 +106,20 @@ namespace Volante
         /// <summary>
         /// Get timestamp of first time series element
         /// </summary>
-        /// <exception cref="Volante.StorageError">StorageError(StorageError.ErrorClass.KEY_NOT_FOUND) if time series is empy</exception>
+        /// <exception cref="Volante.DatabaseError">DatabaseError(DatabaseError.ErrorClass.KEY_NOT_FOUND) if time series is empy</exception>
         DateTime FirstTime { get; }
 
         /// <summary>
         /// Get timestamp of last time series element
         /// </summary>
-        /// <exception cref="Volante.StorageError">StorageError(StorageError.ErrorClass.KEY_NOT_FOUND) if time series is empy</exception>
+        /// <exception cref="Volante.DatabaseError">DatabaseError(DatabaseError.ErrorClass.KEY_NOT_FOUND) if time series is empy</exception>
         DateTime LastTime { get; }
 
         /// <summary> 
         /// Get tick for specified data
         /// </summary>
         /// <param name="timestamp">time series element timestamp</param>
-        /// <exception cref="Volante.StorageError">StorageError(StorageError.ErrorClass.KEY_NOT_FOUND) if no element with such timestamp exists</exception>
+        /// <exception cref="Volante.DatabaseError">DatabaseError(DatabaseError.ErrorClass.KEY_NOT_FOUND) if no element with such timestamp exists</exception>
         T this[DateTime timestamp]
         {
             get;

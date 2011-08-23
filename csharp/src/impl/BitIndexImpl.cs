@@ -43,7 +43,7 @@ namespace Volante.Impl
             DatabaseImpl db = (DatabaseImpl)Storage;
             if (root == 0)
             {
-                throw new StorageError(StorageError.ErrorCode.KEY_NOT_FOUND);
+                throw new DatabaseError(DatabaseError.ErrorCode.KEY_NOT_FOUND);
             }
             return BitIndexPage.find(db, root, obj.Oid, height);
         }
@@ -53,7 +53,7 @@ namespace Volante.Impl
             DatabaseImpl db = (DatabaseImpl)Storage;
             if (db == null)
             {
-                throw new StorageError(StorageError.ErrorCode.DELETED_OBJECT);
+                throw new DatabaseError(DatabaseError.ErrorCode.DELETED_OBJECT);
             }
             if (!obj.IsPersistent())
             {
@@ -84,7 +84,7 @@ namespace Volante.Impl
             DatabaseImpl db = (DatabaseImpl)Storage;
             if (db == null)
             {
-                throw new StorageError(StorageError.ErrorCode.DELETED_OBJECT);
+                throw new DatabaseError(DatabaseError.ErrorCode.DELETED_OBJECT);
             }
             if (root == 0)
             {
@@ -151,7 +151,7 @@ namespace Volante.Impl
                 db = (DatabaseImpl)index.Storage;
                 if (db == null)
                 {
-                    throw new StorageError(StorageError.ErrorCode.DELETED_OBJECT);
+                    throw new DatabaseError(DatabaseError.ErrorCode.DELETED_OBJECT);
                 }
                 this.index = index;
                 this.setBits = setBits;
@@ -335,7 +335,7 @@ namespace Volante.Impl
                         {
                             return getItem(pg, r);
                         }
-                        throw new StorageError(StorageError.ErrorCode.KEY_NOT_FOUND);
+                        throw new DatabaseError(DatabaseError.ErrorCode.KEY_NOT_FOUND);
                     }
                     else
                     {

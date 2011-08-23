@@ -33,7 +33,7 @@ namespace Volante.Impl
         {
             if (type != ClassDescriptor.getTypeCode(typeof(K)))
             {
-                throw new StorageError(StorageError.ErrorCode.INCOMPATIBLE_KEY_TYPE, typeof(K));
+                throw new DatabaseError(DatabaseError.ErrorCode.INCOMPATIBLE_KEY_TYPE, typeof(K));
             }
         }
 
@@ -1387,7 +1387,7 @@ namespace Volante.Impl
                 && elemType != ClassDescriptor.FieldType.tpRaw
                 && elemType != ClassDescriptor.FieldType.tpGuid)
             {
-                throw new StorageError(StorageError.ErrorCode.UNSUPPORTED_INDEX_TYPE, c);
+                throw new DatabaseError(DatabaseError.ErrorCode.UNSUPPORTED_INDEX_TYPE, c);
             }
             return elemType;
         }
@@ -1449,13 +1449,13 @@ namespace Volante.Impl
 
             if (key.type != type)
             {
-                throw new StorageError(StorageError.ErrorCode.INCOMPATIBLE_KEY_TYPE);
+                throw new DatabaseError(DatabaseError.ErrorCode.INCOMPATIBLE_KEY_TYPE);
             }
             if ((type == ClassDescriptor.FieldType.tpObject
                     || type == ClassDescriptor.FieldType.tpOid)
                 && key.ival == 0 && key.oval != null)
             {
-                throw new StorageError(StorageError.ErrorCode.INVALID_OID);
+                throw new DatabaseError(DatabaseError.ErrorCode.INVALID_OID);
             }
             if (key.oval is char[])
             {
@@ -1473,7 +1473,7 @@ namespace Volante.Impl
             ArrayList list = new ArrayList();
             root.find(key, key, height, list);
             if (list.Count > 1)
-                throw new StorageError(StorageError.ErrorCode.KEY_NOT_UNIQUE);
+                throw new DatabaseError(DatabaseError.ErrorCode.KEY_NOT_UNIQUE);
             else if (list.Count == 0)
                 return null;
             else
@@ -1491,7 +1491,7 @@ namespace Volante.Impl
         {
             if (ClassDescriptor.FieldType.tpString != type)
             {
-                throw new StorageError(StorageError.ErrorCode.INCOMPATIBLE_KEY_TYPE);
+                throw new DatabaseError(DatabaseError.ErrorCode.INCOMPATIBLE_KEY_TYPE);
             }
             if (root != null)
             {
@@ -1670,12 +1670,12 @@ namespace Volante.Impl
         {
             if (root == null)
             {
-                throw new StorageError(StorageError.ErrorCode.KEY_NOT_FOUND);
+                throw new DatabaseError(DatabaseError.ErrorCode.KEY_NOT_FOUND);
             }
             OperationResult result = root.remove(rem, height);
             if (result == OperationResult.NotFound)
             {
-                throw new StorageError(StorageError.ErrorCode.KEY_NOT_FOUND);
+                throw new DatabaseError(DatabaseError.ErrorCode.KEY_NOT_FOUND);
             }
             nElems -= 1;
             if (result == OperationResult.Underflow)
@@ -1700,7 +1700,7 @@ namespace Volante.Impl
         {
             if (!unique)
             {
-                throw new StorageError(StorageError.ErrorCode.KEY_NOT_UNIQUE);
+                throw new DatabaseError(DatabaseError.ErrorCode.KEY_NOT_UNIQUE);
             }
             BtreeKey rk = new BtreeKey(checkKey(key), null);
             Remove(rk);

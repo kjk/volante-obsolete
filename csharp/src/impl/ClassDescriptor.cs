@@ -186,7 +186,7 @@ namespace Volante.Impl
             }
             catch (System.Exception x)
             {
-                throw new StorageError(StorageError.ErrorCode.CONSTRUCTOR_FAILURE, cls, x);
+                throw new DatabaseError(DatabaseError.ErrorCode.CONSTRUCTOR_FAILURE, cls, x);
             }
         }
 
@@ -428,7 +428,7 @@ namespace Volante.Impl
                 type = getTypeCode(c.GetElementType());
                 if ((int)type >= (int)FieldType.tpLink)
                 {
-                    throw new StorageError(StorageError.ErrorCode.UNSUPPORTED_TYPE, c);
+                    throw new DatabaseError(DatabaseError.ErrorCode.UNSUPPORTED_TYPE, c);
                 }
                 type = (FieldType)((int)type + (int)FieldType.tpArrayOfBoolean);
             }
@@ -440,7 +440,7 @@ namespace Volante.Impl
                 }
                 else
                 {
-                    throw new StorageError(StorageError.ErrorCode.UNSUPPORTED_TYPE, c);
+                    throw new DatabaseError(DatabaseError.ErrorCode.UNSUPPORTED_TYPE, c);
                 }
             }
             return type;
@@ -460,7 +460,7 @@ namespace Volante.Impl
             defaultConstructor = cls.GetConstructor(BindingFlags.Instance | BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly, null, defaultConstructorProfile, null);
             if (defaultConstructor == null && !typeof(ValueType).IsAssignableFrom(cls))
             {
-                throw new StorageError(StorageError.ErrorCode.DESCRIPTOR_FAILURE, cls);
+                throw new DatabaseError(DatabaseError.ErrorCode.DESCRIPTOR_FAILURE, cls);
             }
             resolved = true;
         }
@@ -519,7 +519,7 @@ namespace Volante.Impl
                                     cls = genericType.MakeGenericType(genericParams);
                                     if (cls == null)
                                     {
-                                        throw new StorageError(StorageError.ErrorCode.CLASS_NOT_FOUND, name);
+                                        throw new DatabaseError(DatabaseError.ErrorCode.CLASS_NOT_FOUND, name);
                                     }
                                     resolvedTypes[name] = cls;
                                     return cls;
@@ -549,7 +549,7 @@ namespace Volante.Impl
                         {
                             if (cls != null)
                             {
-                                throw new StorageError(StorageError.ErrorCode.AMBIGUITY_CLASS, name);
+                                throw new DatabaseError(DatabaseError.ErrorCode.AMBIGUITY_CLASS, name);
                             }
                             else
                             {
@@ -571,7 +571,7 @@ namespace Volante.Impl
 #endif
                 if (cls == null)
                 {
-                    throw new StorageError(StorageError.ErrorCode.CLASS_NOT_FOUND, name);
+                    throw new DatabaseError(DatabaseError.ErrorCode.CLASS_NOT_FOUND, name);
                 }
                 resolvedTypes[name] = cls;
                 return cls;
@@ -609,7 +609,7 @@ namespace Volante.Impl
             defaultConstructor = cls.GetConstructor(BindingFlags.Instance | BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly, null, defaultConstructorProfile, null);
             if (defaultConstructor == null && !typeof(ValueType).IsAssignableFrom(cls))
             {
-                throw new StorageError(StorageError.ErrorCode.DESCRIPTOR_FAILURE, cls);
+                throw new DatabaseError(DatabaseError.ErrorCode.DESCRIPTOR_FAILURE, cls);
             }
             DatabaseImpl s = (DatabaseImpl)Storage;
             if (!s.classDescMap.ContainsKey(cls))

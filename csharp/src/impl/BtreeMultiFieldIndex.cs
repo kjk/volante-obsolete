@@ -33,7 +33,7 @@ namespace Volante.Impl
                     mbr[i] = cls.GetProperty(fieldNames[i], BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
                     if (mbr[i] == null)
                     {
-                        throw new StorageError(StorageError.ErrorCode.INDEXED_FIELD_NOT_FOUND, className + "." + fieldNames[i]);
+                        throw new DatabaseError(DatabaseError.ErrorCode.INDEXED_FIELD_NOT_FOUND, className + "." + fieldNames[i]);
                     }
                 }
             }
@@ -76,7 +76,7 @@ namespace Volante.Impl
             cls = ClassDescriptor.lookup(Storage, className);
             if (cls != typeof(V))
             {
-                throw new StorageError(StorageError.ErrorCode.INCOMPATIBLE_VALUE_TYPE, cls);
+                throw new DatabaseError(DatabaseError.ErrorCode.INCOMPATIBLE_VALUE_TYPE, cls);
             }
             locateFields();
         }
@@ -422,7 +422,7 @@ namespace Volante.Impl
             }
             if (key.type != ClassDescriptor.FieldType.tpArrayOfObject)
             {
-                throw new StorageError(StorageError.ErrorCode.INCOMPATIBLE_KEY_TYPE);
+                throw new DatabaseError(DatabaseError.ErrorCode.INCOMPATIBLE_KEY_TYPE);
             }
             Object[] values = (Object[])key.oval;
             ByteBuffer buf = new ByteBuffer(null);
@@ -533,9 +533,9 @@ namespace Volante.Impl
             {
                 base.remove(new BtreeKey(extractKey(obj), obj.Oid));
             }
-            catch (StorageError x)
+            catch (DatabaseError x)
             {
-                if (x.Code == StorageError.ErrorCode.KEY_NOT_FOUND)
+                if (x.Code == DatabaseError.ErrorCode.KEY_NOT_FOUND)
                 {
                     return false;
                 }
@@ -573,7 +573,7 @@ namespace Volante.Impl
 
         public void Append(V obj)
         {
-            throw new StorageError(StorageError.ErrorCode.UNSUPPORTED_INDEX_TYPE);
+            throw new DatabaseError(DatabaseError.ErrorCode.UNSUPPORTED_INDEX_TYPE);
         }
 
         public override V Get(Key key)

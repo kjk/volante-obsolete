@@ -29,7 +29,7 @@ namespace DirectoryScan
 
         static void Main(string[] args)
         {
-            IDatabase db = StorageFactory.CreateStorage();
+            IDatabase db = DatabaseFactory.CreateDatabase();
             string dbName = "fileinfo.dbs";
             db.Open(dbName);
             DatabaseRoot dbRoot = null;

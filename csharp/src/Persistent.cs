@@ -70,7 +70,7 @@ namespace Volante
         {
             if ((state & ObjectState.RAW) != 0)
             {
-                throw new StorageError(StorageError.ErrorCode.ACCESS_TO_STUB);
+                throw new DatabaseError(DatabaseError.ErrorCode.ACCESS_TO_STUB);
             }
             if (storage != null)
             {
@@ -85,7 +85,7 @@ namespace Volante
             {
                 if ((state & ObjectState.RAW) != 0)
                 {
-                    throw new StorageError(StorageError.ErrorCode.ACCESS_TO_STUB);
+                    throw new DatabaseError(DatabaseError.ErrorCode.ACCESS_TO_STUB);
                 }
                 Debug.Assert((state & ObjectState.DELETED) == 0);
                 storage.modifyObject(this);

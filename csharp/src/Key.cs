@@ -583,7 +583,7 @@ namespace Volante
             {
                 return new Key((IComparable)o);
             }
-            throw new StorageError(StorageError.ErrorCode.UNSUPPORTED_TYPE);
+            throw new DatabaseError(DatabaseError.ErrorCode.UNSUPPORTED_TYPE);
         }
     }
 }

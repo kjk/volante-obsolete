@@ -62,7 +62,7 @@ namespace Volante.Impl
                 root.find(comparator, key, BoundaryKind.Inclusive, key, BoundaryKind.Inclusive, list);
                 if (list.Count > 1)
                 {
-                    throw new StorageError(StorageError.ErrorCode.KEY_NOT_UNIQUE);
+                    throw new DatabaseError(DatabaseError.ErrorCode.KEY_NOT_UNIQUE);
                 }
                 else if (list.Count == 0)
                 {
@@ -124,7 +124,7 @@ namespace Volante.Impl
             TtreePage<K, V> newRoot = root;
             if (root.remove(comparator, obj, ref newRoot) == TtreePage<K, V>.NOT_FOUND)
             {
-                throw new StorageError(StorageError.ErrorCode.KEY_NOT_FOUND);
+                throw new DatabaseError(DatabaseError.ErrorCode.KEY_NOT_FOUND);
             }
             Modify();
             root = newRoot;

@@ -100,7 +100,7 @@ public abstract class Guess : Persistent
 	
     static public void Main(string[] args)
     {
-        IDatabase db = StorageFactory.CreateStorage();
+        IDatabase db = DatabaseFactory.CreateDatabase();
 		
         db.Open("guess.dbs", 4*1024*1024, "GUESS");
         Guess root = (Guess) db.Root;

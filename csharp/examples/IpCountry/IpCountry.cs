@@ -25,7 +25,7 @@ public class IpCountry
 
     public static void Main(string[] args) 
     { 
-        IDatabase db = StorageFactory.CreateStorage();        
+        IDatabase db = DatabaseFactory.CreateDatabase();        
         db.Open("ipcountry.dbs", PagePoolSize);
         Root root = (Root)db.Root;
         if (root == null) { 

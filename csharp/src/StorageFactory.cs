@@ -3,13 +3,13 @@ namespace Volante
     using System;
     using Volante.Impl;
 
-    /// <summary> Storage factory
+    /// <summary> Database factory
     /// </summary>
-    public class StorageFactory
+    public class DatabaseFactory
     {
         /// <summary> Create new instance of the storage
         /// </summary>
-        public static IDatabase CreateStorage()
+        public static IDatabase CreateDatabase()
         {
 #if CF
             return new StorageImpl(System.Reflection.Assembly.GetCallingAssembly());

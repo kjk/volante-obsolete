@@ -63,7 +63,7 @@ public class TestSSD : Persistent {
     }
 
     static public void Main(String[] args) {	
-        IDatabase db = StorageFactory.CreateStorage();
+        IDatabase db = DatabaseFactory.CreateDatabase();
         Supplier   supplier;
         Detail     detail;
         Shipment   shipment;
@@ -165,7 +165,7 @@ public class TestSSD : Persistent {
                     return;
                 }
                 skip("Press ENTER to continue...");
-            } catch (StorageError x) { 
+            } catch (DatabaseError x) { 
                 Console.WriteLine("Error: " + x.Message);
                 skip("Press ENTER to continue...");
             }

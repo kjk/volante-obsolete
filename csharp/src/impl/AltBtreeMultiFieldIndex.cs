@@ -31,7 +31,7 @@ namespace Volante.Impl
                     mbr[i] = cls.GetProperty(fieldNames[i], BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
                     if (mbr[i] == null)
                     {
-                        throw new StorageError(StorageError.ErrorCode.INDEXED_FIELD_NOT_FOUND, className + "." + fieldNames[i]);
+                        throw new DatabaseError(DatabaseError.ErrorCode.INDEXED_FIELD_NOT_FOUND, className + "." + fieldNames[i]);
                     }
                 }
             }
@@ -66,7 +66,7 @@ namespace Volante.Impl
             cls = ClassDescriptor.lookup(Storage, className);
             if (cls != typeof(T))
             {
-                throw new StorageError(StorageError.ErrorCode.INCOMPATIBLE_VALUE_TYPE, cls);
+                throw new DatabaseError(DatabaseError.ErrorCode.INCOMPATIBLE_VALUE_TYPE, cls);
             }
             locateFields();
         }
@@ -115,7 +115,7 @@ namespace Volante.Impl
             }
             if (key.type != ClassDescriptor.FieldType.tpArrayOfObject)
             {
-                throw new StorageError(StorageError.ErrorCode.INCOMPATIBLE_KEY_TYPE);
+                throw new DatabaseError(DatabaseError.ErrorCode.INCOMPATIBLE_KEY_TYPE);
             }
             return new Key(new CompoundKey((System.Object[])key.oval), key.inclusion != 0);
         }
@@ -146,9 +146,9 @@ namespace Volante.Impl
             {
                 base.Remove(new BtreeKey(extractKey(obj), obj));
             }
-            catch (StorageError x)
+            catch (DatabaseError x)
             {
-                if (x.Code == StorageError.ErrorCode.KEY_NOT_FOUND)
+                if (x.Code == DatabaseError.ErrorCode.KEY_NOT_FOUND)
                 {
                     return false;
                 }
@@ -187,7 +187,7 @@ namespace Volante.Impl
 
         public void Append(T obj)
         {
-            throw new StorageError(StorageError.ErrorCode.UNSUPPORTED_INDEX_TYPE);
+            throw new DatabaseError(DatabaseError.ErrorCode.UNSUPPORTED_INDEX_TYPE);
         }
 
         public override T[] Get(Key from, Key till)

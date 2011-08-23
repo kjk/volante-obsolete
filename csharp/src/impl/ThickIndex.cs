@@ -63,7 +63,7 @@ namespace Volante.Impl
                     return r[0];
                 }
             }
-            throw new StorageError(StorageError.ErrorCode.KEY_NOT_UNIQUE);
+            throw new DatabaseError(DatabaseError.ErrorCode.KEY_NOT_UNIQUE);
         }
 
         public V[] Get(Key from, Key till)
@@ -411,7 +411,7 @@ namespace Volante.Impl
                     return prev;
                 }
             }
-            throw new StorageError(StorageError.ErrorCode.KEY_NOT_UNIQUE);
+            throw new DatabaseError(DatabaseError.ErrorCode.KEY_NOT_UNIQUE);
         }
 
         public void Remove(Key key, V obj)
@@ -449,12 +449,12 @@ namespace Volante.Impl
                     return;
                 }
             }
-            throw new StorageError(StorageError.ErrorCode.KEY_NOT_FOUND);
+            throw new DatabaseError(DatabaseError.ErrorCode.KEY_NOT_FOUND);
         }
 
         public V Remove(Key key)
         {
-            throw new StorageError(StorageError.ErrorCode.KEY_NOT_UNIQUE);
+            throw new DatabaseError(DatabaseError.ErrorCode.KEY_NOT_UNIQUE);
         }
 
         public bool Put(K key, V obj)
@@ -474,7 +474,7 @@ namespace Volante.Impl
 
         public V RemoveKey(K key)
         {
-            throw new StorageError(StorageError.ErrorCode.KEY_NOT_UNIQUE);
+            throw new DatabaseError(DatabaseError.ErrorCode.KEY_NOT_UNIQUE);
         }
 
         public override void Deallocate()

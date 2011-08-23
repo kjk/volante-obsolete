@@ -59,7 +59,7 @@ public class TestConfig
 
     IDatabase GetTransientStorage()
     {
-        IDatabase db = StorageFactory.CreateStorage();
+        IDatabase db = DatabaseFactory.CreateDatabase();
         NullFile dbFile = new NullFile();
         db.Open(dbFile, INFINITE_PAGE_POOL);
         return db;
@@ -75,7 +75,7 @@ public class TestConfig
             var name = DatabaseName;
             if (delete)
                 Tests.SafeDeleteFile(name);
-            db = StorageFactory.CreateStorage();
+            db = DatabaseFactory.CreateDatabase();
             if (InMemory == InMemoryType.File)
             {
                 if (FileKind == FileType.File)
@@ -196,14 +196,14 @@ public class Tests
         Assert(gotException);
     }
 
-    public static void AssertStorageException(Action func, StorageError.ErrorCode expectedCode)
+    public static void AssertStorageException(Action func, DatabaseError.ErrorCode expectedCode)
     {
         bool gotException = false;
         try
         {
             func();
         }
-        catch (StorageError exc)
+        catch (DatabaseError exc)
         {
             gotException = exc.Code == expectedCode;
         }

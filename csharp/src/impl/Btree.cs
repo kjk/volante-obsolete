@@ -71,7 +71,7 @@ namespace Volante.Impl
         {
             if (type != ClassDescriptor.getTypeCode(typeof(K)))
             {
-                throw new StorageError(StorageError.ErrorCode.INCOMPATIBLE_KEY_TYPE, typeof(K));
+                throw new DatabaseError(DatabaseError.ErrorCode.INCOMPATIBLE_KEY_TYPE, typeof(K));
             }
         }
 
@@ -95,7 +95,7 @@ namespace Volante.Impl
                 && elemType != ClassDescriptor.FieldType.tpDecimal
                 && elemType != ClassDescriptor.FieldType.tpGuid)
             {
-                throw new StorageError(StorageError.ErrorCode.UNSUPPORTED_INDEX_TYPE, c);
+                throw new DatabaseError(DatabaseError.ErrorCode.UNSUPPORTED_INDEX_TYPE, c);
             }
             return elemType;
         }
@@ -189,13 +189,13 @@ namespace Volante.Impl
 
             if (key.type != type)
             {
-                throw new StorageError(StorageError.ErrorCode.INCOMPATIBLE_KEY_TYPE);
+                throw new DatabaseError(DatabaseError.ErrorCode.INCOMPATIBLE_KEY_TYPE);
             }
             if ((type == ClassDescriptor.FieldType.tpObject
                     || type == ClassDescriptor.FieldType.tpOid)
                 && key.ival == 0 && key.oval != null)
             {
-                throw new StorageError(StorageError.ErrorCode.INVALID_OID);
+                throw new DatabaseError(DatabaseError.ErrorCode.INVALID_OID);
             }
             if (type == ClassDescriptor.FieldType.tpString && key.oval is string)
             {
@@ -213,7 +213,7 @@ namespace Volante.Impl
                 BtreePage.find((DatabaseImpl)Storage, root, key, key, this, height, list);
                 if (list.Count > 1)
                 {
-                    throw new StorageError(StorageError.ErrorCode.KEY_NOT_UNIQUE);
+                    throw new DatabaseError(DatabaseError.ErrorCode.KEY_NOT_UNIQUE);
                 }
                 else if (list.Count == 0)
                 {
@@ -252,7 +252,7 @@ namespace Volante.Impl
         {
             if (ClassDescriptor.FieldType.tpString != type)
             {
-                throw new StorageError(StorageError.ErrorCode.INCOMPATIBLE_KEY_TYPE);
+                throw new DatabaseError(DatabaseError.ErrorCode.INCOMPATIBLE_KEY_TYPE);
             }
             if (root != 0)
             {
@@ -303,7 +303,7 @@ namespace Volante.Impl
             DatabaseImpl db = (DatabaseImpl)Storage;
             if (db == null)
             {
-                throw new StorageError(Volante.StorageError.ErrorCode.DELETED_OBJECT);
+                throw new DatabaseError(Volante.DatabaseError.ErrorCode.DELETED_OBJECT);
             }
             if (!obj.IsPersistent())
             {
@@ -353,16 +353,16 @@ namespace Volante.Impl
             DatabaseImpl db = (DatabaseImpl)Storage;
             if (db == null)
             {
-                throw new StorageError(Volante.StorageError.ErrorCode.DELETED_OBJECT);
+                throw new DatabaseError(Volante.DatabaseError.ErrorCode.DELETED_OBJECT);
             }
             if (root == 0)
             {
-                throw new StorageError(StorageError.ErrorCode.KEY_NOT_FOUND);
+                throw new DatabaseError(DatabaseError.ErrorCode.KEY_NOT_FOUND);
             }
             BtreeResult result = BtreePage.remove(db, root, this, rem, height);
             if (result == BtreeResult.NotFound)
             {
-                throw new StorageError(StorageError.ErrorCode.KEY_NOT_FOUND);
+                throw new DatabaseError(DatabaseError.ErrorCode.KEY_NOT_FOUND);
             }
             nElems -= 1;
             if (result == BtreeResult.Underflow)
@@ -396,7 +396,7 @@ namespace Volante.Impl
         {
             if (!unique)
             {
-                throw new StorageError(StorageError.ErrorCode.KEY_NOT_UNIQUE);
+                throw new DatabaseError(DatabaseError.ErrorCode.KEY_NOT_UNIQUE);
             }
             BtreeKey rk = new BtreeKey(checkKey(key), 0);
             DatabaseImpl db = (DatabaseImpl)Storage;
@@ -659,7 +659,7 @@ namespace Volante.Impl
                 db = (DatabaseImpl)tree.Storage;
                 if (db == null)
                 {
-                    throw new StorageError(Volante.StorageError.ErrorCode.DELETED_OBJECT);
+                    throw new DatabaseError(Volante.DatabaseError.ErrorCode.DELETED_OBJECT);
                 }
                 sp = 0;
                 int height = tree.height;
@@ -850,7 +850,7 @@ namespace Volante.Impl
                 db = (DatabaseImpl)tree.Storage;
                 if (db == null)
                 {
-                    throw new StorageError(Volante.StorageError.ErrorCode.DELETED_OBJECT);
+                    throw new DatabaseError(Volante.DatabaseError.ErrorCode.DELETED_OBJECT);
                 }
                 pageStack = new int[height];
                 posStack = new int[height];

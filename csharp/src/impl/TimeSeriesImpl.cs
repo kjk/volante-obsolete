@@ -399,7 +399,7 @@ namespace Volante.Impl
                 {
                     return new DateTime(block.timestamp);
                 }
-                throw new StorageError(StorageError.ErrorCode.KEY_NOT_FOUND);
+                throw new DatabaseError(DatabaseError.ErrorCode.KEY_NOT_FOUND);
             }
         }
 
@@ -411,7 +411,7 @@ namespace Volante.Impl
                 {
                     return new DateTime(block[block.used - 1].Time);
                 }
-                throw new StorageError(StorageError.ErrorCode.KEY_NOT_FOUND);
+                throw new DatabaseError(DatabaseError.ErrorCode.KEY_NOT_FOUND);
             }
         }
 
@@ -455,7 +455,7 @@ namespace Volante.Impl
                         return block[l];
                     }
                 }
-                throw new StorageError(StorageError.ErrorCode.KEY_NOT_FOUND);
+                throw new DatabaseError(DatabaseError.ErrorCode.KEY_NOT_FOUND);
             }
         }
 

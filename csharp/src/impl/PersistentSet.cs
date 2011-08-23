@@ -45,9 +45,9 @@ namespace Volante.Impl
             {
                 Remove(new Key(o), o);
             }
-            catch (StorageError x)
+            catch (DatabaseError x)
             {
-                if (x.Code == StorageError.ErrorCode.KEY_NOT_FOUND)
+                if (x.Code == DatabaseError.ErrorCode.KEY_NOT_FOUND)
                 {
                     return false;
                 }

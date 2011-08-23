@@ -89,7 +89,7 @@ public class TestSOD : Persistent
 
     static public void Main(String[] args) 
     {	
-        IDatabase db = StorageFactory.CreateStorage();
+        IDatabase db = DatabaseFactory.CreateDatabase();
         Supplier   supplier;
         Detail     detail;
         Order      order;
@@ -223,7 +223,7 @@ public class TestSOD : Persistent
                 }
                 skip("Press ENTER to continue...");
             }
-            catch (StorageError x) 
+            catch (DatabaseError x) 
             { 
                 Console.WriteLine("Error: " + x.Message);
                 skip("Press ENTER to continue...");
