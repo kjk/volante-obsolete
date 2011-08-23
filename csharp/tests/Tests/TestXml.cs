@@ -41,7 +41,7 @@ namespace Volante
             config.Result = res;
 
             DateTime start = DateTime.Now;
-            IStorage db = config.GetDatabase();
+            IDatabase db = config.GetDatabase();
             string xmlName = config.DatabaseName + ".xml";
             string dbNameImported = config.DatabaseName + ".imported.dbs";
 

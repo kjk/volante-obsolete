@@ -40,7 +40,7 @@ namespace Volante.Impl
 
         public int Get(T obj)
         {
-            StorageImpl db = (StorageImpl)Storage;
+            DatabaseImpl db = (DatabaseImpl)Storage;
             if (root == 0)
             {
                 throw new StorageError(StorageError.ErrorCode.KEY_NOT_FOUND);
@@ -50,7 +50,7 @@ namespace Volante.Impl
 
         public void Put(T obj, int mask)
         {
-            StorageImpl db = (StorageImpl)Storage;
+            DatabaseImpl db = (DatabaseImpl)Storage;
             if (db == null)
             {
                 throw new StorageError(StorageError.ErrorCode.DELETED_OBJECT);
@@ -81,7 +81,7 @@ namespace Volante.Impl
 
         public override bool Remove(T obj)
         {
-            StorageImpl db = (StorageImpl)Storage;
+            DatabaseImpl db = (DatabaseImpl)Storage;
             if (db == null)
             {
                 throw new StorageError(StorageError.ErrorCode.DELETED_OBJECT);
@@ -148,7 +148,7 @@ namespace Volante.Impl
                 {
                     return;
                 }
-                db = (StorageImpl)index.Storage;
+                db = (DatabaseImpl)index.Storage;
                 if (db == null)
                 {
                     throw new StorageError(StorageError.ErrorCode.DELETED_OBJECT);
@@ -269,7 +269,7 @@ namespace Volante.Impl
             }
 
             BitIndexImpl<T> index;
-            StorageImpl db;
+            DatabaseImpl db;
             int[] pageStack;
             int[] posStack;
             int sp;
@@ -292,7 +292,7 @@ namespace Volante.Impl
                 Bytes.pack4(pg.data, firstKeyOffs + index * 4, mask);
             }
 
-            internal static int allocate(StorageImpl db, int root, Key ins)
+            internal static int allocate(DatabaseImpl db, int root, Key ins)
             {
                 int pageId = db.allocatePage();
                 Page pg = db.putPage(pageId);
@@ -311,7 +311,7 @@ namespace Volante.Impl
                     len * 4);
             }
 
-            internal static int find(StorageImpl db, int pageId, int oid, int height)
+            internal static int find(DatabaseImpl db, int pageId, int oid, int height)
             {
                 Page pg = db.getPage(pageId);
                 try
@@ -363,7 +363,7 @@ namespace Volante.Impl
                 }
             }
 
-            internal static BtreeResult insert(StorageImpl db, int pageId, Key ins, int height)
+            internal static BtreeResult insert(DatabaseImpl db, int pageId, Key ins, int height)
             {
                 Page pg = db.getPage(pageId);
                 int l = 0, n = getnItems(pg), r = n;
@@ -483,7 +483,7 @@ namespace Volante.Impl
                 }
             }
 
-            internal static BtreeResult handlePageUnderflow(StorageImpl db, Page pg, int r, int height)
+            internal static BtreeResult handlePageUnderflow(DatabaseImpl db, Page pg, int r, int height)
             {
                 int nItems = getnItems(pg);
                 Page a = db.putPage(getItem(pg, maxItems - r - 1));
@@ -594,7 +594,7 @@ namespace Volante.Impl
                 }
             }
 
-            internal static BtreeResult remove(StorageImpl db, int pageId, int oid, int height)
+            internal static BtreeResult remove(DatabaseImpl db, int pageId, int oid, int height)
             {
                 Page pg = db.getPage(pageId);
                 try

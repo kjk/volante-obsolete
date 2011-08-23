@@ -29,7 +29,7 @@ namespace Volante
             int count = config.Count;
             var res = new TestGCResult();
             config.Result = res;
-            IStorage db = config.GetDatabase();
+            IDatabase db = config.GetDatabase();
             StorageRoot root = new StorageRoot();
             IIndex<string, PObject> strIndex = root.strIndex = db.CreateIndex<string, PObject>(true);
             IIndex<long, PObject> intIndex = root.intIndex = db.CreateIndex<long, PObject>(true);

@@ -30,7 +30,7 @@ namespace Volante
 
             var start = DateTime.Now;
 
-            IStorage db = config.GetDatabase();
+            IDatabase db = config.GetDatabase();
             Indices root = (Indices)db.Root;
             Tests.Assert(root == null);
             root = new Indices();

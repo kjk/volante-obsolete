@@ -57,17 +57,17 @@ public class TestConfig
         }
     }
 
-    IStorage GetTransientStorage()
+    IDatabase GetTransientStorage()
     {
-        IStorage db = StorageFactory.CreateStorage();
+        IDatabase db = StorageFactory.CreateStorage();
         NullFile dbFile = new NullFile();
         db.Open(dbFile, INFINITE_PAGE_POOL);
         return db;
     }
 
-    public IStorage GetDatabase(bool delete=true)
+    public IDatabase GetDatabase(bool delete=true)
     {
-        IStorage db = null;
+        IDatabase db = null;
         if (InMemory == InMemoryType.Full)
             db = GetTransientStorage();
         else

@@ -38,7 +38,7 @@ namespace Volante
             int count = config.Count;
             var res = new TestResult();
             config.Result = res;
-            IStorage db = config.GetDatabase();
+            IDatabase db = config.GetDatabase();
             IIndex<string, StringInt> root = (IIndex<string, StringInt>)db.Root;
             Tests.Assert(null == root);
             root = db.CreateIndex<string, StringInt>(true);

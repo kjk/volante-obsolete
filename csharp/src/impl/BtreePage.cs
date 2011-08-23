@@ -161,7 +161,7 @@ namespace Volante.Impl
             return alen - blen;
         }
 
-        internal static bool find(StorageImpl db, int pageId, Key firstKey, Key lastKey, Btree tree, int height, ArrayList result)
+        internal static bool find(DatabaseImpl db, int pageId, Key firstKey, Key lastKey, Btree tree, int height, ArrayList result)
         {
             Page pg = db.getPage(pageId);
             int l = 0, n = getnItems(pg), r = n;
@@ -416,7 +416,7 @@ namespace Volante.Impl
             return minlen - blen;
         }
 
-        internal static bool prefixSearch(StorageImpl db, int pageId, string key,
+        internal static bool prefixSearch(DatabaseImpl db, int pageId, string key,
                                     int height, ArrayList result)
         {
             Page pg = db.getPage(pageId);
@@ -474,7 +474,7 @@ namespace Volante.Impl
             return true;
         }
 
-        internal static int allocate(StorageImpl db, int root, ClassDescriptor.FieldType type, BtreeKey ins)
+        internal static int allocate(DatabaseImpl db, int root, ClassDescriptor.FieldType type, BtreeKey ins)
         {
             int pageId = db.allocatePage();
             Page pg = db.putPage(pageId);
@@ -515,7 +515,7 @@ namespace Volante.Impl
             Array.Copy(src_pg.data, firstKeyOffs + src_idx * itemSize, dst_pg.data, firstKeyOffs + dst_idx * itemSize, len * itemSize);
         }
 
-        internal static BtreeResult insert(StorageImpl db, int pageId, Btree tree, BtreeKey ins, int height, bool unique, bool overwrite)
+        internal static BtreeResult insert(DatabaseImpl db, int pageId, Btree tree, BtreeKey ins, int height, bool unique, bool overwrite)
         {
             Page pg = db.getPage(pageId);
             BtreeResult result;
@@ -713,7 +713,7 @@ namespace Volante.Impl
             }
         }
 
-        internal static BtreeResult insertStrKey(StorageImpl db, Page pg, int r, BtreeKey ins, int height)
+        internal static BtreeResult insertStrKey(DatabaseImpl db, Page pg, int r, BtreeKey ins, int height)
         {
             int nItems = getnItems(pg);
             int size = getSize(pg);
@@ -842,7 +842,7 @@ namespace Volante.Impl
             return size + strKeySize * (nItems + 1) < keySpace / 2 ? BtreeResult.Underflow : BtreeResult.Done;
         }
 
-        internal static BtreeResult insertByteArrayKey(StorageImpl db, Page pg, int r, BtreeKey ins, int height)
+        internal static BtreeResult insertByteArrayKey(DatabaseImpl db, Page pg, int r, BtreeKey ins, int height)
         {
             int nItems = getnItems(pg);
             int size = getSize(pg);
@@ -1207,21 +1207,21 @@ namespace Volante.Impl
             return size + strKeySize * nItems < keySpace / 2 ? BtreeResult.Underflow : BtreeResult.Done;
         }
 
-        internal static BtreeResult replaceStrKey(StorageImpl db, Page pg, int r, BtreeKey ins, int height)
+        internal static BtreeResult replaceStrKey(DatabaseImpl db, Page pg, int r, BtreeKey ins, int height)
         {
             ins.oid = getKeyStrOid(pg, r);
             removeStrKey(pg, r);
             return insertStrKey(db, pg, r, ins, height);
         }
 
-        internal static BtreeResult replaceByteArrayKey(StorageImpl db, Page pg, int r, BtreeKey ins, int height)
+        internal static BtreeResult replaceByteArrayKey(DatabaseImpl db, Page pg, int r, BtreeKey ins, int height)
         {
             ins.oid = getKeyStrOid(pg, r);
             removeByteArrayKey(pg, r);
             return insertByteArrayKey(db, pg, r, ins, height);
         }
 
-        internal static BtreeResult handlePageUnderflow(StorageImpl db, Page pg, int r, ClassDescriptor.FieldType type, BtreeKey rem, int height)
+        internal static BtreeResult handlePageUnderflow(DatabaseImpl db, Page pg, int r, ClassDescriptor.FieldType type, BtreeKey rem, int height)
         {
             int nItems = getnItems(pg);
             if (type == ClassDescriptor.FieldType.tpString)
@@ -1840,7 +1840,7 @@ namespace Volante.Impl
             }
         }
 
-        internal static BtreeResult remove(StorageImpl db, int pageId, Btree tree, BtreeKey rem, int height)
+        internal static BtreeResult remove(DatabaseImpl db, int pageId, Btree tree, BtreeKey rem, int height)
         {
             Page pg = db.getPage(pageId);
             try
@@ -2043,7 +2043,7 @@ namespace Volante.Impl
             }
         }
 
-        internal static void purge(StorageImpl db, int pageId, ClassDescriptor.FieldType type, int height)
+        internal static void purge(DatabaseImpl db, int pageId, ClassDescriptor.FieldType type, int height)
         {
             if (--height != 0)
             {
@@ -2069,7 +2069,7 @@ namespace Volante.Impl
             db.freePage(pageId);
         }
 
-        internal static int traverseForward(StorageImpl db, int pageId, ClassDescriptor.FieldType type, int height, IPersistent[] result, int pos)
+        internal static int traverseForward(DatabaseImpl db, int pageId, ClassDescriptor.FieldType type, int height, IPersistent[] result, int pos)
         {
             Page pg = db.getPage(pageId);
             int oid;
@@ -2123,7 +2123,7 @@ namespace Volante.Impl
             }
         }
 
-        internal static int markPage(StorageImpl db, int pageId, ClassDescriptor.FieldType type, int height)
+        internal static int markPage(DatabaseImpl db, int pageId, ClassDescriptor.FieldType type, int height)
         {
             Page pg = db.getGCPage(pageId);
             int nPages = 1;
@@ -2173,7 +2173,7 @@ namespace Volante.Impl
         }
 
 #if !OMIT_XML
-        internal static void exportPage(StorageImpl db, XMLExporter exporter, int pageId, ClassDescriptor.FieldType type, int height)
+        internal static void exportPage(DatabaseImpl db, XMLExporter exporter, int pageId, ClassDescriptor.FieldType type, int height)
         {
             Page pg = db.getPage(pageId);
             try

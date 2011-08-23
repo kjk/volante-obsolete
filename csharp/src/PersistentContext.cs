@@ -22,7 +22,7 @@ namespace Volante
         }
 
         [Browsable(false)]
-        public virtual IStorage Storage
+        public virtual IDatabase Storage
         {
             get
             {
@@ -58,7 +58,7 @@ namespace Volante
             return oid != 0;
         }
 
-        public virtual int MakePersistent(IStorage storage)
+        public virtual int MakePersistent(IDatabase storage)
         {
             if (oid == 0)
             {
@@ -136,7 +136,7 @@ namespace Volante
 
         protected PersistentContext() { }
 
-        protected PersistentContext(IStorage storage)
+        protected PersistentContext(IDatabase storage)
         {
             this.storage = storage;
         }
@@ -150,7 +150,7 @@ namespace Volante
             state = ObjectState.DELETED;
         }
 
-        public void AssignOid(IStorage storage, int oid, bool raw)
+        public void AssignOid(IDatabase storage, int oid, bool raw)
         {
             this.oid = oid;
             this.storage = storage;
@@ -165,7 +165,7 @@ namespace Volante
         }
 
         [NonSerialized()]
-        IStorage storage;
+        IDatabase storage;
         [NonSerialized()]
         int oid;
         [NonSerialized()]

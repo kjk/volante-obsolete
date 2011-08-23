@@ -24,7 +24,7 @@ namespace Volante.Impl
         {
             if (!o.IsPersistent())
             {
-                ((StorageImpl)Storage).MakePersistent(o);
+                ((DatabaseImpl)Storage).MakePersistent(o);
             }
             base.Put(new Key(o), o);
         }

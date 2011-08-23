@@ -89,7 +89,7 @@ public class TestSOD : Persistent
 
     static public void Main(String[] args) 
     {	
-        IStorage db = StorageFactory.CreateStorage();
+        IDatabase db = StorageFactory.CreateStorage();
         Supplier   supplier;
         Detail     detail;
         Order      order;

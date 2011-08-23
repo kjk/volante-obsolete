@@ -35,7 +35,7 @@ namespace Volante
 
             var start = DateTime.Now;
 
-            IStorage db = config.GetDatabase();
+            IDatabase db = config.GetDatabase();
             Tests.Assert(null == db.Root);
             var idx = db.CreateIndex<double, Record>(false);
             db.Root = idx;

@@ -67,7 +67,7 @@ namespace Volante
             int count = config.Count;
             var res = new TestTtreeResult();
             DateTime start = DateTime.Now;
-            IStorage db = config.GetDatabase();
+            IDatabase db = config.GetDatabase();
             PersonList root = (PersonList)db.Root;
             Tests.Assert(root == null);
             root = new PersonList();

@@ -15,7 +15,7 @@ namespace Volante
 
         /// <summary> Get storage in which this object is stored
         /// </summary>
-        IStorage Storage
+        IDatabase Storage
         {
             get;
         }
@@ -58,7 +58,7 @@ namespace Volante
         /// <param name="storage">storage in which object should be stored 
         /// </param>
         /// <returns>OID assigned to the object</returns>
-        int MakePersistent(IStorage storage);
+        int MakePersistent(IDatabase storage);
 
         /// <summary> Save object in the database
         /// </summary>
@@ -112,6 +112,6 @@ namespace Volante
         /// <param name="storage">storage to be assigned to</param>
         /// <param name="oid">assigned OID</param>
         /// <param name="raw">if object is already loaded</param>
-        void AssignOid(IStorage storage, int oid, bool raw);
+        void AssignOid(IDatabase storage, int oid, bool raw);
     }
 }

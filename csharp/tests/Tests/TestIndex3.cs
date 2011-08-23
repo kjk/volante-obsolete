@@ -21,7 +21,7 @@ namespace Volante
             int count = config.Count;
             var res = new TestResult();
             config.Result = res;
-            IStorage db = config.GetDatabase();
+            IDatabase db = config.GetDatabase();
             Root root = (Root)db.Root;
             Tests.Assert(null == root);
             root = new Root();

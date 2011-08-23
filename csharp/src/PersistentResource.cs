@@ -335,7 +335,7 @@ namespace Volante
 #endif
         internal protected PersistentResource() { }
 
-        internal protected PersistentResource(IStorage storage)
+        internal protected PersistentResource(IDatabase storage)
             : base(storage) { }
 
         [NonSerialized()]

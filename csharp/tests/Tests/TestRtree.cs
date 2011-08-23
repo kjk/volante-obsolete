@@ -25,7 +25,7 @@ namespace Volante
             var res = new TestRtreeResult();
             config.Result = res;
 
-            IStorage db = config.GetDatabase();
+            IDatabase db = config.GetDatabase();
             TestRtree root = (TestRtree)db.Root;
             Tests.Assert(root == null);
             root = new TestRtree();

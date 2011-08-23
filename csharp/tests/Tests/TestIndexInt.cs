@@ -38,7 +38,7 @@ namespace Volante
             config.Result = res;
 
             var start = DateTime.Now;
-            IStorage db = config.GetDatabase();
+            IDatabase db = config.GetDatabase();
             Tests.Assert(null == db.Root);
             var idx = db.CreateIndex<int, Record>(false);
             db.Root = idx;
@@ -165,7 +165,7 @@ namespace Volante
         public void Run(TestConfig config)
         {
             Record r;
-            IStorage db = config.GetDatabase();
+            IDatabase db = config.GetDatabase();
             Tests.Assert(null == db.Root);
             var idx = db.CreateIndex<int, Record>(false);
             db.Root = idx;

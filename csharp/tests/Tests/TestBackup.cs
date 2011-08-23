@@ -34,7 +34,7 @@ namespace Volante
             DateTime start = DateTime.Now;
 
             string dbNameBackup = config.DatabaseName + ".backup.dbs";
-            IStorage db = config.GetDatabase();
+            IDatabase db = config.GetDatabase();
             Root root = (Root)db.Root;
             Tests.Assert(root == null);
             root = new Root();

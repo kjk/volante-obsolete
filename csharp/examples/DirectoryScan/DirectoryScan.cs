@@ -29,7 +29,7 @@ namespace DirectoryScan
 
         static void Main(string[] args)
         {
-            IStorage db = StorageFactory.CreateStorage();
+            IDatabase db = StorageFactory.CreateStorage();
             string dbName = "fileinfo.dbs";
             db.Open(dbName);
             DatabaseRoot dbRoot = null;
@@ -58,7 +58,7 @@ namespace DirectoryScan
             db.Close();
         }
 
-        static void PopulateDatabase(IStorage db, string startDir)
+        static void PopulateDatabase(IDatabase db, string startDir)
         {
             DatabaseRoot dbRoot = (DatabaseRoot)db.Root;
             // scan all directories starting with startDir

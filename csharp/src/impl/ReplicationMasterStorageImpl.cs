@@ -3,7 +3,7 @@ namespace Volante.Impl
 {
     using Volante;
 
-    public class ReplicationMasterStorageImpl : StorageImpl, ReplicationMasterStorage
+    public class ReplicationMasterStorageImpl : DatabaseImpl, ReplicationMasterStorage
     {
         public ReplicationMasterStorageImpl(string[] hosts, int asyncBufSize)
         {

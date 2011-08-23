@@ -12,7 +12,7 @@ namespace Volante.Impl
 
         const int BTREE_THRESHOLD = 128;
 
-        internal ThickIndex(StorageImpl db)
+        internal ThickIndex(DatabaseImpl db)
             : base(db)
         {
             index = db.CreateIndex<K, IPersistent>(true);

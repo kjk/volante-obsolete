@@ -261,7 +261,7 @@ namespace Volante.Impl
             ArrayList list = new ArrayList();
             if (root != 0)
             {
-                BtreePage.find((StorageImpl)Storage, root, checkKey(from), checkKey(till), this, height, list);
+                BtreePage.find((DatabaseImpl)Storage, root, checkKey(from), checkKey(till), this, height, list);
             }
             return (V[])list.ToArray(cls);
         }
@@ -271,7 +271,7 @@ namespace Volante.Impl
             V[] arr = (V[])Array.CreateInstance(cls, nElems);
             if (root != 0)
             {
-                BtreePage.traverseForward((StorageImpl)Storage, root, type, height, arr, 0);
+                BtreePage.traverseForward((DatabaseImpl)Storage, root, type, height, arr, 0);
             }
             return arr;
         }

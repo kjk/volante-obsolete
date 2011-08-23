@@ -27,7 +27,7 @@ namespace Volante
 
             DateTime start = DateTime.Now;
 
-            IStorage db = config.GetDatabase();
+            IDatabase db = config.GetDatabase();
             IMultiFieldIndex<Record> root = (IMultiFieldIndex<Record>)db.Root;
             Tests.Assert(root == null);
             root = db.CreateFieldIndex<Record>(new string[] { "intKey", "strKey" }, true);

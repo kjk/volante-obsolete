@@ -80,7 +80,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ITimeSeries.cs" />
     <Compile Include="src\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -263,6 +262,9 @@
     <Compile Include="src\ISortedCollection.cs" />
     <Compile Include="src\ISpatialIndex.cs" />
     <Compile Include="src\ISpatialIndexR2.cs" />
+    <Compile Include="src\ITimeSeries.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="src\Key.cs">
       <SubType>Code</SubType>
     </Compile>

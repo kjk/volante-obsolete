@@ -210,7 +210,7 @@ namespace Volante.Impl
             if (root != 0)
             {
                 ArrayList list = new ArrayList();
-                BtreePage.find((StorageImpl)Storage, root, key, key, this, height, list);
+                BtreePage.find((DatabaseImpl)Storage, root, key, key, this, height, list);
                 if (list.Count > 1)
                 {
                     throw new StorageError(StorageError.ErrorCode.KEY_NOT_UNIQUE);
@@ -239,7 +239,7 @@ namespace Volante.Impl
             if (root != 0)
             {
                 ArrayList list = new ArrayList();
-                BtreePage.find((StorageImpl)Storage, root, checkKey(from), checkKey(till), this, height, list);
+                BtreePage.find((DatabaseImpl)Storage, root, checkKey(from), checkKey(till), this, height, list);
                 if (list.Count != 0)
                 {
                     return (V[])list.ToArray(typeof(V));
@@ -257,7 +257,7 @@ namespace Volante.Impl
             if (root != 0)
             {
                 ArrayList list = new ArrayList();
-                BtreePage.prefixSearch((StorageImpl)Storage, root, key, height, list);
+                BtreePage.prefixSearch((DatabaseImpl)Storage, root, key, height, list);
                 if (list.Count != 0)
                 {
                     return (V[])list.ToArray(typeof(V));
@@ -290,7 +290,7 @@ namespace Volante.Impl
         public virtual V Set(Key key, V obj)
         {
             int oid = insert(key, obj, true);
-            return (oid != 0) ? (V)((StorageImpl)Storage).lookupObject(oid, null) : null;
+            return (oid != 0) ? (V)((DatabaseImpl)Storage).lookupObject(oid, null) : null;
         }
 
         public virtual V Set(K key, V obj)
@@ -300,7 +300,7 @@ namespace Volante.Impl
 
         public int insert(Key key, IPersistent obj, bool overwrite)
         {
-            StorageImpl db = (StorageImpl)Storage;
+            DatabaseImpl db = (DatabaseImpl)Storage;
             if (db == null)
             {
                 throw new StorageError(Volante.StorageError.ErrorCode.DELETED_OBJECT);
@@ -350,7 +350,7 @@ namespace Volante.Impl
 
         internal virtual void remove(BtreeKey rem)
         {
-            StorageImpl db = (StorageImpl)Storage;
+            DatabaseImpl db = (DatabaseImpl)Storage;
             if (db == null)
             {
                 throw new StorageError(Volante.StorageError.ErrorCode.DELETED_OBJECT);
@@ -399,7 +399,7 @@ namespace Volante.Impl
                 throw new StorageError(StorageError.ErrorCode.KEY_NOT_UNIQUE);
             }
             BtreeKey rk = new BtreeKey(checkKey(key), 0);
-            StorageImpl db = (StorageImpl)Storage;
+            DatabaseImpl db = (DatabaseImpl)Storage;
             remove(rk);
             return (V)db.lookupObject(rk.oldOid, null);
         }
@@ -418,7 +418,7 @@ namespace Volante.Impl
         {
             if (root != 0)
             {
-                BtreePage.purge((StorageImpl)Storage, root, type, height);
+                BtreePage.purge((DatabaseImpl)Storage, root, type, height);
                 root = 0;
                 nElems = 0;
                 height = 0;
@@ -432,7 +432,7 @@ namespace Volante.Impl
             V[] arr = new V[nElems];
             if (root != 0)
             {
-                BtreePage.traverseForward((StorageImpl)Storage, root, type, height, arr, 0);
+                BtreePage.traverseForward((DatabaseImpl)Storage, root, type, height, arr, 0);
             }
             return arr;
         }
@@ -442,7 +442,7 @@ namespace Volante.Impl
             Array arr = Array.CreateInstance(elemType, nElems);
             if (root != 0)
             {
-                BtreePage.traverseForward((StorageImpl)Storage, root, type, height, (IPersistent[])arr, 0);
+                BtreePage.traverseForward((DatabaseImpl)Storage, root, type, height, (IPersistent[])arr, 0);
             }
             return arr;
         }
@@ -451,7 +451,7 @@ namespace Volante.Impl
         {
             if (root != 0)
             {
-                BtreePage.purge((StorageImpl)Storage, root, type, height);
+                BtreePage.purge((DatabaseImpl)Storage, root, type, height);
             }
             base.Deallocate();
         }
@@ -461,14 +461,14 @@ namespace Volante.Impl
         {
             if (root != 0)
             {
-                BtreePage.exportPage((StorageImpl)Storage, exporter, root, type, height);
+                BtreePage.exportPage((DatabaseImpl)Storage, exporter, root, type, height);
             }
         }
 #endif
 
         public int markTree()
         {
-            return (root != 0) ? BtreePage.markPage((StorageImpl)Storage, root, type, height) : 0;
+            return (root != 0) ? BtreePage.markPage((DatabaseImpl)Storage, root, type, height) : 0;
         }
 
         protected virtual object unpackEnum(int val)
@@ -478,7 +478,7 @@ namespace Volante.Impl
             return val;
         }
 
-        internal object unpackKey(StorageImpl db, Page pg, int pos)
+        internal object unpackKey(DatabaseImpl db, Page pg, int pos)
         {
             int offs = BtreePage.firstKeyOffs + pos * ClassDescriptor.Sizeof[(int)type];
             byte[] data = pg.data;
@@ -656,7 +656,7 @@ namespace Volante.Impl
 
             public void Reset()
             {
-                db = (StorageImpl)tree.Storage;
+                db = (DatabaseImpl)tree.Storage;
                 if (db == null)
                 {
                     throw new StorageError(Volante.StorageError.ErrorCode.DELETED_OBJECT);
@@ -680,7 +680,7 @@ namespace Volante.Impl
                 hasCurrent = false;
             }
 
-            protected StorageImpl db;
+            protected DatabaseImpl db;
             protected Btree<K, V> tree;
             protected int[] pageStack;
             protected int[] posStack;
@@ -847,7 +847,7 @@ namespace Volante.Impl
                 {
                     return;
                 }
-                db = (StorageImpl)tree.Storage;
+                db = (DatabaseImpl)tree.Storage;
                 if (db == null)
                 {
                     throw new StorageError(Volante.StorageError.ErrorCode.DELETED_OBJECT);
@@ -1615,7 +1615,7 @@ namespace Volante.Impl
                 db.pool.unfix(pg);
             }
 
-            protected StorageImpl db;
+            protected DatabaseImpl db;
             protected int[] pageStack;
             protected int[] posStack;
             protected Btree<K, V> tree;

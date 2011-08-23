@@ -51,7 +51,7 @@ namespace Volante
         const int nThreads = 4;
         static int nElements = 0;
 
-        static IStorage db;
+        static IDatabase db;
 #if CF
         static int nFinishedThreads;
 #endif

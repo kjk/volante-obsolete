@@ -236,7 +236,7 @@ namespace Volante.Impl
 
         MethodInfo GetConstructor(FieldInfo f, string name)
         {
-            MethodInfo mi = typeof(StorageImpl).GetMethod(name, BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.DeclaredOnly);
+            MethodInfo mi = typeof(DatabaseImpl).GetMethod(name, BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.DeclaredOnly);
             //return mi.BindGenericParameters(f.FieldType.GetGenericArguments());
             //TODO: verify it's MakeGenericMethod
             return mi.MakeGenericMethod(f.FieldType.GetGenericArguments());
@@ -269,7 +269,7 @@ namespace Volante.Impl
                 && t != typeof(IPersistent) && t != typeof(PersistentContext) && t != typeof(Persistent);
         }
 
-        internal void buildFieldList(StorageImpl storage, System.Type cls, ArrayList list)
+        internal void buildFieldList(DatabaseImpl storage, System.Type cls, ArrayList list)
         {
             System.Type superclass = cls.BaseType;
             if (superclass != null && superclass != typeof(MarshalByRefObject))
@@ -450,7 +450,7 @@ namespace Volante.Impl
         {
         }
 
-        internal ClassDescriptor(StorageImpl storage, Type cls)
+        internal ClassDescriptor(DatabaseImpl storage, Type cls)
         {
             this.cls = cls;
             name = getTypeName(cls);
@@ -465,9 +465,9 @@ namespace Volante.Impl
             resolved = true;
         }
 
-        internal static Type lookup(IStorage storage, String name)
+        internal static Type lookup(IDatabase storage, String name)
         {
-            var resolvedTypes = ((StorageImpl)storage).resolvedTypes;
+            var resolvedTypes = ((DatabaseImpl)storage).resolvedTypes;
             lock (resolvedTypes)
             {
                 Type cls;
@@ -565,7 +565,7 @@ namespace Volante.Impl
                     Type originalType = lookup(storage, name.Substring(0, name.Length - 7));
                     lock (storage)
                     {
-                        cls = ((StorageImpl)storage).getWrapper(originalType);
+                        cls = ((DatabaseImpl)storage).getWrapper(originalType);
                     }
                 }
 #endif
@@ -611,10 +611,10 @@ namespace Volante.Impl
             {
                 throw new StorageError(StorageError.ErrorCode.DESCRIPTOR_FAILURE, cls);
             }
-            StorageImpl s = (StorageImpl)Storage;
+            DatabaseImpl s = (DatabaseImpl)Storage;
             if (!s.classDescMap.ContainsKey(cls))
             {
-                ((StorageImpl)Storage).classDescMap.Add(cls, this);
+                ((DatabaseImpl)Storage).classDescMap.Add(cls, this);
             }
         }
 
@@ -623,7 +623,7 @@ namespace Volante.Impl
             if (resolved)
                 return;
 
-            StorageImpl classStorage = (StorageImpl)Storage;
+            DatabaseImpl classStorage = (DatabaseImpl)Storage;
             ClassDescriptor desc = new ClassDescriptor(classStorage, cls);
             resolved = true;
             if (!desc.equals(this))

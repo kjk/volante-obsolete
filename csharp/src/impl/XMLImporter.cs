@@ -8,7 +8,7 @@ namespace Volante.Impl
 
     public class XMLImporter
     {
-        public XMLImporter(StorageImpl storage, System.IO.StreamReader reader)
+        public XMLImporter(DatabaseImpl storage, System.IO.StreamReader reader)
         {
             this.storage = storage;
             scanner = new XMLScanner(reader);
@@ -638,9 +638,9 @@ namespace Volante.Impl
             ObjectHeader.setSize(data, 0, size);
             ObjectHeader.setType(data, 0, desc.Oid);
             long pos = storage.allocate(size, 0);
-            storage.setPos(oid, pos | StorageImpl.dbModifiedFlag);
+            storage.setPos(oid, pos | DatabaseImpl.dbModifiedFlag);
 
-            storage.pool.put(pos & ~StorageImpl.dbFlagsMask, data, size);
+            storage.pool.put(pos & ~DatabaseImpl.dbFlagsMask, data, size);
 #endif
         }
 
@@ -658,7 +658,7 @@ namespace Volante.Impl
             ObjectHeader.setType(buf.arr, 0, desc.Oid);
 
             long pos = storage.allocate(offs, 0);
-            storage.setPos(oid, pos | StorageImpl.dbModifiedFlag);
+            storage.setPos(oid, pos | DatabaseImpl.dbModifiedFlag);
             storage.pool.put(pos, buf.arr, offs);
         }
 
@@ -1653,7 +1653,7 @@ namespace Volante.Impl
             throw new XMLImportException(scanner.Line, scanner.Column, message);
         }
 
-        internal StorageImpl storage;
+        internal DatabaseImpl storage;
         internal XMLScanner scanner;
         internal Hashtable classMap;
         internal int[] idMap;

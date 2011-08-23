@@ -47,7 +47,7 @@ namespace Volante
             config.Result = res;
 
             var start = DateTime.Now;
-            IStorage db = config.GetDatabase();
+            IDatabase db = config.GetDatabase();
 
             IFieldIndex<string, Stock> stocks = (IFieldIndex<string, Stock>)db.Root;
             Tests.Assert(stocks == null);

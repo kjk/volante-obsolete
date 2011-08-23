@@ -328,7 +328,7 @@ namespace Volante.Impl
                     case ClassDescriptor.FieldType.tpObject:
                         {
                             int oid = Bytes.unpack4(data, offs);
-                            v = oid == 0 ? null : ((StorageImpl)Storage).lookupObject(oid, null);
+                            v = oid == 0 ? null : ((DatabaseImpl)Storage).lookupObject(oid, null);
                             offs += 4;
                             break;
                         }

@@ -77,7 +77,7 @@ namespace Volante
             config.Result = res;
 
             DateTime start = DateTime.Now;
-            IStorage db = config.GetDatabase();
+            IDatabase db = config.GetDatabase();
 
             Catalogue root = (Catalogue)db.Root;
             Tests.Assert(root == null);

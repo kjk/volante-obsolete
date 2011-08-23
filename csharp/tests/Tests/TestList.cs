@@ -34,7 +34,7 @@ namespace Volante
             config.Result = res;
 
             var start = DateTime.Now;
-            IStorage db = config.GetDatabase();
+            IDatabase db = config.GetDatabase();
             db.Root = db.CreateClass(typeof(LinkNode));
             LinkNode header = (LinkNode)db.Root;
             LinkNode current;

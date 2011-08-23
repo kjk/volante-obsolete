@@ -9,7 +9,7 @@ namespace Volante.Impl
 
     public class XMLExporter
     {
-        public XMLExporter(StorageImpl storage, System.IO.StreamWriter writer)
+        public XMLExporter(DatabaseImpl storage, System.IO.StreamWriter writer)
         {
             this.storage = storage;
             this.writer = writer;
@@ -961,7 +961,7 @@ namespace Volante.Impl
             return offs;
         }
 
-        private StorageImpl storage;
+        private DatabaseImpl storage;
         private System.IO.StreamWriter writer;
         private int[] markedBitmap;
         private int[] exportedBitmap;

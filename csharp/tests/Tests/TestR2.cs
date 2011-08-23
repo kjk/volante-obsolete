@@ -25,7 +25,7 @@ namespace Volante
             bool noFlush = config.AltBtree; // a hack
             var res = new TestR2Result();
             config.Result = res;
-            IStorage db = config.GetDatabase();
+            IDatabase db = config.GetDatabase();
             TestR2 root = (TestR2)db.Root;
             Tests.Assert(root == null);
             root = new TestR2();

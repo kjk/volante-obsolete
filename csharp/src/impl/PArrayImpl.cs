@@ -358,13 +358,13 @@ namespace Volante.Impl
         {
         }
 
-        internal PArrayImpl(StorageImpl storage, int initSize)
+        internal PArrayImpl(DatabaseImpl storage, int initSize)
         {
             this.storage = storage;
             arr = new int[initSize];
         }
 
-        internal PArrayImpl(StorageImpl storage, int[] oids, IPersistent owner)
+        internal PArrayImpl(DatabaseImpl storage, int[] oids, IPersistent owner)
         {
             this.storage = storage;
             this.owner = owner;
@@ -374,7 +374,7 @@ namespace Volante.Impl
 
         int[] arr;
         int used;
-        StorageImpl storage;
+        DatabaseImpl storage;
         [NonSerialized()]
         IPersistent owner;
     }

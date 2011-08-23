@@ -9,12 +9,12 @@ namespace Volante
     {
         /// <summary> Create new instance of the storage
         /// </summary>
-        public static IStorage CreateStorage()
+        public static IDatabase CreateStorage()
         {
 #if CF
             return new StorageImpl(System.Reflection.Assembly.GetCallingAssembly());
 #else
-            return new StorageImpl();
+            return new DatabaseImpl();
 #endif
         }
 

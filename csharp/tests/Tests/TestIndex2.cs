@@ -62,7 +62,7 @@ namespace Volante
             config.Result = res;
             var start = DateTime.Now;
 
-            IStorage db = config.GetDatabase();
+            IDatabase db = config.GetDatabase();
             Root root = (Root)db.Root;
             Tests.Assert(root == null);
             root = new Root();

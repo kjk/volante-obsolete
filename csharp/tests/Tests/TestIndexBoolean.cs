@@ -26,7 +26,7 @@ namespace Volante
             var res = new TestIndexBooleanResult();
             config.Result = res;
             var start = DateTime.Now;
-            IStorage db = config.GetDatabase();
+            IDatabase db = config.GetDatabase();
             Tests.Assert(null == db.Root);
             var idx = db.CreateIndex<Boolean, Record>(false);
             db.Root = idx;

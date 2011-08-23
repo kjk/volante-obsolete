@@ -10,7 +10,7 @@ namespace Volante.Impl
         ISet<T> pset;
         const int BTREE_THRESHOLD = 128;
 
-        internal ScalableSet(StorageImpl storage, int initialSize)
+        internal ScalableSet(DatabaseImpl storage, int initialSize)
             : base(storage)
         {
             if (initialSize <= BTREE_THRESHOLD)

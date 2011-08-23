@@ -32,7 +32,7 @@ namespace Volante
             int count = config.Count;
             var res = new TestIndexResult();
             config.Result = res;
-            IStorage db = config.GetDatabase();
+            IDatabase db = config.GetDatabase();
             if (config.Serializable)
                 db.BeginThreadTransaction(TransactionMode.Serializable);
 

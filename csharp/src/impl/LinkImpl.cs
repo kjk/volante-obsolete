@@ -350,7 +350,7 @@ namespace Volante.Impl
             IPersistent elem = arr[i];
             if (elem != null && elem.IsRaw())
             {
-                elem = ((StorageImpl)elem.Storage).lookupObject(elem.Oid, null);
+                elem = ((DatabaseImpl)elem.Storage).lookupObject(elem.Oid, null);
             }
             return (T)elem;
         }

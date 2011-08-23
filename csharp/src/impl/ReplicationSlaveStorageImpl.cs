@@ -7,7 +7,7 @@ namespace Volante.Impl
     using System.Threading;
     using Volante;
 
-    public class ReplicationSlaveStorageImpl : StorageImpl, ReplicationSlaveStorage
+    public class ReplicationSlaveStorageImpl : DatabaseImpl, ReplicationSlaveStorage
     {
         public ReplicationSlaveStorageImpl(int port)
         {

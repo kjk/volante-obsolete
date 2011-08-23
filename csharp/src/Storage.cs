@@ -41,7 +41,7 @@ namespace Volante
 
     /// <summary> Object storage
     /// </summary>
-    public interface IStorage
+    public interface IDatabase
     {
         /// <summary> Get/set storage root. Storage can have exactly one root object. 
         /// If you need to have several root object and access them by name (as is possible 

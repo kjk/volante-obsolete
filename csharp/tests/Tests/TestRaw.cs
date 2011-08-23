@@ -37,7 +37,7 @@ namespace Volante
             int nHashMembers = count * 10;
             var start = DateTime.Now;
 
-            IStorage db = config.GetDatabase();
+            IDatabase db = config.GetDatabase();
             TestRaw root = (TestRaw)db.Root;
             Tests.Assert(null == root);
 

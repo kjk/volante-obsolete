@@ -594,7 +594,7 @@ namespace Volante.Impl
         private MethodInfo packGuid = typeof(ByteBuffer).GetMethod("packGuid");
         private MethodInfo packDate = typeof(ByteBuffer).GetMethod("packDate");
         private MethodInfo packString = typeof(ByteBuffer).GetMethod("packString");
-        private MethodInfo packField = typeof(StorageImpl).GetMethod("packField");
+        private MethodInfo packField = typeof(DatabaseImpl).GetMethod("packField");
 
         private MethodInfo unpackI2 = typeof(Bytes).GetMethod("unpack2");
         private MethodInfo unpackI4 = typeof(Bytes).GetMethod("unpack4");
@@ -605,13 +605,13 @@ namespace Volante.Impl
         private MethodInfo unpackGuid = typeof(Bytes).GetMethod("unpackGuid");
         private MethodInfo unpackDate = typeof(Bytes).GetMethod("unpackDate");
         private MethodInfo unpackString = typeof(Bytes).GetMethod("unpackString");
-        private MethodInfo unpackField = typeof(StorageImpl).GetMethod("unpackField");
-        private MethodInfo skipField = typeof(StorageImpl).GetMethod("skipField");
+        private MethodInfo unpackField = typeof(DatabaseImpl).GetMethod("unpackField");
+        private MethodInfo skipField = typeof(DatabaseImpl).GetMethod("skipField");
 
         private MethodInfo modify = typeof(IPersistent).GetMethod("Modify");
         private MethodInfo getStorage = typeof(IPersistent).GetProperty("Storage").GetGetMethod();
-        private MethodInfo getByOid = typeof(IStorage).GetMethod("GetObjectByOID");
-        private MethodInfo makePersistent = typeof(IStorage).GetMethod("MakePersistent");
+        private MethodInfo getByOid = typeof(IDatabase).GetMethod("GetObjectByOID");
+        private MethodInfo makePersistent = typeof(IDatabase).GetMethod("MakePersistent");
 
         private ModuleBuilder dynamicModule;
         private int counter;

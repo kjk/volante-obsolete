@@ -33,7 +33,7 @@ namespace Volante
             var res = new TestIndexNumericResult();
             config.Result = res;
             var start = DateTime.Now;
-            IStorage db = config.GetDatabase();
+            IDatabase db = config.GetDatabase();
             Tests.Assert(null == db.Root);
             var idx = db.CreateIndex<float, Record>(false);
             db.Root = idx;

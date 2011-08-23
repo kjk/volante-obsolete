@@ -6,7 +6,7 @@ namespace Volante.Impl
     public interface GeneratedSerializer
     {
         IPersistent newInstance();
-        int pack(StorageImpl store, IPersistent obj, ByteBuffer buf);
-        void unpack(StorageImpl store, IPersistent obj, byte[] body, bool recursiveLoading, Encoding encoding);
+        int pack(DatabaseImpl store, IPersistent obj, ByteBuffer buf);
+        void unpack(DatabaseImpl store, IPersistent obj, byte[] body, bool recursiveLoading, Encoding encoding);
     }
 }
