@@ -83,6 +83,9 @@
     <Compile Include="src\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="src\DatabaseError.cs" />
+    <Compile Include="src\DatabaseFactory.cs" />
+    <Compile Include="src\DatabaseListener.cs" />
     <Compile Include="src\IBitIndex.cs" />
     <Compile Include="src\IBlob.cs" />
     <Compile Include="src\IClassLoader.cs" />
@@ -313,15 +316,6 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="src\Relation.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="src\StorageError.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="src\StorageFactory.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="src\StorageListener.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="src\StreamFile.cs">
