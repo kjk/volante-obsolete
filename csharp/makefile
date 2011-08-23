@@ -8,11 +8,15 @@
 
 CSC=gmcs
 
-CSC_FLAGS =-debug+ -d:MONO
+CSC_FLAGS = -debug -d:MONO
 MONO_FLAGS = --gc=sgen
 
 ifeq ($(CFG),)
 CFG=rel
+endif
+
+ifeq ($(CFG),relfull)
+WITH_ALL=yes
 endif
 
 O=bin/$(CFG)
