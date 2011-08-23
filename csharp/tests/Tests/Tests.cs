@@ -416,7 +416,7 @@ public class TestsMain
         int count = GetCount(testClassName);
         foreach (TestConfig configTmp in GetTestConfigs(testClassName))
         {
-#if OMIT_BTREE
+#if !WITH_OLD_BTREE
             bool useAltBtree = configTmp.AltBtree || configTmp.Serializable;
             if (!useAltBtree)
                 continue;
