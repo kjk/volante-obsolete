@@ -464,10 +464,10 @@ namespace Volante
         /// </summary>
         long ExtensionQuantum { get; set; }
 
-        /// <TD>Threshold for initiation of garbage collection. 
+        /// Threshold for initiation of garbage collection. 
         /// If it is set to the value different from long.MaxValue, GC will be started each time 
         /// when delta between total size of allocated and deallocated objects exceeds specified threashold OR
-        /// after reaching end of allocation bitmap in allocator.</TD>
+        /// after reaching end of allocation bitmap in allocator.
         /// ---
         /// <summary>Set threshold for initiation of garbage collection. By default garbage collection is disable (threshold is set to
         /// Int64.MaxValue). If it is set to the value different fro Long.MAX_VALUE, GC will be started each time when
@@ -523,7 +523,7 @@ namespace Volante
         bool ReplicationAck { get; set; }
 #endif
 
-        /// <TD>Specifies encoding of storing strings in the database. By default Volante stores 
+        /// Specifies encoding of storing strings in the database. By default Volante stores 
         /// strings as sequence of chars (two bytes per char). If all strings in application are in 
         /// the same language, then using encoding  can signifficantly reduce space needed
         /// to store string (about two times). But please notice, that this option has influence
@@ -551,7 +551,7 @@ namespace Volante
         /// Compact.NET framework doesn't allow to get list of assemblies loaded
         /// in application domain. Without it I do not know how to locate
         /// class from foreign assembly by name. 
-        /// Assembly which creates Storare is automatically registered.
+        /// Assembly which creates Database is automatically registered.
         /// Other assemblies has to explicitely registered by programmer.
         /// </summary>
         /// <param name="assembly">registered assembly</param>

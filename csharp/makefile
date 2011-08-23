@@ -1,9 +1,10 @@
 # Makefile for building Volante
 # Valid options:
 # CFG=[rel|dbg] - default: rel
-# OMIT_XML=[yes|no] - default: no
-# OMIT_REPLICATION=[yes|no] - default: no
-# OMIT_ALL=[yes|no] - default: no
+# WITH_XML=[yes|no] - default: no
+# WITH_OLD_BTREE=[yes|no] - default: no
+# WITH_REPLICATION=[yes|no] - default: no
+# WITH_ALL=[yes|no] - default: no
 
 CSC=gmcs
 
@@ -16,18 +17,23 @@ endif
 
 O=bin/$(CFG)
 
-ifeq ($(OMIT_XML),yes)
-CSC_FLAGS += -d:OMIT_XML
+ifeq ($(WITH_XML),yes)
+CSC_FLAGS += -d:WITH_XML
 O:=$(O)-noxml
 endif
 
-ifeq ($(OMIT_REPLICATION),yes)
-CSC_FLAGS += -d:OMIT_REPLICATION
+ifeq ($(WITH_OLD_BTREE),yes)
+CSC_FLAGS += -d:WITH_OLD_BTREE
+O:=$(O)-noxml
+endif
+
+ifeq ($(WITH_REPLICATION),yes)
+CSC_FLAGS += -d:WITH_REPLICATION
 O:=$(O)-norepl
 endif
 
-ifeq ($(OMIT_ALL),yes)
-CSC_FLAGS += -d:OMIT_REPLICATION -d:OMIT_XML
+ifeq ($(WITH_ALL),yes)
+CSC_FLAGS += -d:WITH_REPLICATION -d:WITH_XML -D:WITH_OLD_BTREE
 O:=$(O)-noraw
 endif
 
