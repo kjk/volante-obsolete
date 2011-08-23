@@ -37,7 +37,7 @@ namespace Volante
             int rc;
             byte[] buf = new byte[1024];
             IStorage db = config.GetDatabase();
-            Index<string, IBlob> root = (Index<string, IBlob>)db.Root;
+            IIndex<string, IBlob> root = (IIndex<string, IBlob>)db.Root;
             Tests.Assert(root == null);
             root = db.CreateIndex<string, IBlob>(true);
             db.Root = root;
@@ -62,7 +62,7 @@ namespace Volante
             int rc;
             byte[] buf = new byte[1024];
             IStorage db = config.GetDatabase(false);
-            Index<string, IBlob> root = (Index<string, IBlob>)db.Root;
+            IIndex<string, IBlob> root = (IIndex<string, IBlob>)db.Root;
             Tests.Assert(root != null);
             foreach (string file in files)
             {

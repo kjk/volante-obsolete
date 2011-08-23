@@ -13,7 +13,7 @@ namespace Volante
 
         public class Root : Persistent
         {
-            public Index<string, Record> strIndex;
+            public IIndex<string, Record> strIndex;
         }
 
         public void Run(TestConfig config)

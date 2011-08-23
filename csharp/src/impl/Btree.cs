@@ -32,7 +32,7 @@ namespace Volante.Impl
         void init(Type cls, ClassDescriptor.FieldType type, string[] fieldNames, bool unique, long autoincCount);
     }
 
-    class Btree<K, V> : PersistentCollection<V>, Index<K, V>, Btree where V : class,IPersistent
+    class Btree<K, V> : PersistentCollection<V>, IIndex<K, V>, Btree where V : class,IPersistent
     {
         internal int root;
         internal int height;

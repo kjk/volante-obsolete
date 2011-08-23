@@ -18,9 +18,9 @@ namespace DirectoryScan
 
     class DatabaseRoot : Persistent
     {
-        public Index<long, FileEntry> FileSizeIndex;
-        public Index<string, FileEntry> FileNameIndex;
-        public Index<DateTime, FileEntry> FileLastWriteTimeIndex;
+        public IIndex<long, FileEntry> FileSizeIndex;
+        public IIndex<string, FileEntry> FileNameIndex;
+        public IIndex<DateTime, FileEntry> FileLastWriteTimeIndex;
     }
 
     class DirectoryScan
@@ -61,8 +61,8 @@ namespace DirectoryScan
         static void PopulateDatabase(IStorage db, string startDir)
         {
             DatabaseRoot dbRoot = (DatabaseRoot)db.Root;
-            // scan all directories starting with StartDir
-            var dirsToVisit = new List<string>() { StartDir };
+            // scan all directories starting with startDir
+            var dirsToVisit = new List<string>() { startDir };
             int insertedCount = 0;
             while (dirsToVisit.Count > 0)
             {

@@ -1789,15 +1789,15 @@ namespace Volante.Impl
             }
         }
 
-        public Index<K, V> CreateIndex<K, V>(bool unique) where V : class,IPersistent
+        public IIndex<K, V> CreateIndex<K, V>(bool unique) where V : class,IPersistent
         {
             lock (this)
             {
                 ensureOpened();
 #if !OMIT_BTREE
-                Index<K, V> index = alternativeBtree
+                IIndex<K, V> index = alternativeBtree
                     ? new AltBtree<K, V>(unique)
-                    : (Index<K, V>)new Btree<K, V>(unique);
+                    : (IIndex<K, V>)new Btree<K, V>(unique);
 #else
                 Index<K, V> index = new AltBtree<K, V>(unique);
 #endif
@@ -1806,7 +1806,7 @@ namespace Volante.Impl
             }
         }
 
-        public Index<K, V> CreateThickIndex<K, V>() where V : class,IPersistent
+        public IIndex<K, V> CreateThickIndex<K, V>() where V : class,IPersistent
         {
             lock (this)
             {

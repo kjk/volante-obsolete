@@ -5,9 +5,9 @@ using Volante;
 
 namespace Volante.Impl
 {
-    class ThickIndex<K, V> : PersistentCollection<V>, Index<K, V> where V : class,IPersistent
+    class ThickIndex<K, V> : PersistentCollection<V>, IIndex<K, V> where V : class,IPersistent
     {
-        private Index<K, IPersistent> index;
+        private IIndex<K, IPersistent> index;
         private int nElems;
 
         const int BTREE_THRESHOLD = 128;

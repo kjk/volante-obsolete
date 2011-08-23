@@ -7,7 +7,7 @@ namespace Volante.Impl
     using System.Collections.Generic;
     using ILink = ILink<IPersistent>;
 
-    class AltBtree<K, V> : PersistentCollection<V>, Index<K, V> where V : class, IPersistent
+    class AltBtree<K, V> : PersistentCollection<V>, IIndex<K, V> where V : class, IPersistent
     {
         public Type KeyType
         {

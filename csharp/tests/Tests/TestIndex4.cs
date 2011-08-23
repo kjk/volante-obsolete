@@ -19,7 +19,7 @@ namespace Volante
             }
         }
 
-        public static void CheckStrings(Index<string, StringInt> root, string[] strs, int count)
+        public static void CheckStrings(IIndex<string, StringInt> root, string[] strs, int count)
         {
             int no = 1;
             for (var i = 0; i < count; i++)
@@ -39,7 +39,7 @@ namespace Volante
             var res = new TestResult();
             config.Result = res;
             IStorage db = config.GetDatabase();
-            Index<string, StringInt> root = (Index<string, StringInt>)db.Root;
+            IIndex<string, StringInt> root = (IIndex<string, StringInt>)db.Root;
             Tests.Assert(null == root);
             root = db.CreateIndex<string, StringInt>(true);
             db.Root = root;
@@ -60,7 +60,7 @@ namespace Volante
             db.Close();
 
             db = config.GetDatabase(false);
-            root = (Index<string, StringInt>)db.Root;
+            root = (IIndex<string, StringInt>)db.Root;
             Tests.Assert(null != root);
             CheckStrings(root, strs, count);
             db.Close();

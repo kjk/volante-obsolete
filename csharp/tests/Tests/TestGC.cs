@@ -18,8 +18,8 @@ namespace Volante
         class StorageRoot : Persistent
         {
             internal PObject list;
-            internal Index<string, PObject> strIndex;
-            internal Index<long, PObject> intIndex;
+            internal IIndex<string, PObject> strIndex;
+            internal IIndex<long, PObject> intIndex;
         }
 
         const int nObjectsInTree = 10000;
@@ -31,8 +31,8 @@ namespace Volante
             config.Result = res;
             IStorage db = config.GetDatabase();
             StorageRoot root = new StorageRoot();
-            Index<string, PObject> strIndex = root.strIndex = db.CreateIndex<string, PObject>(true);
-            Index<long, PObject> intIndex = root.intIndex = db.CreateIndex<long, PObject>(true);
+            IIndex<string, PObject> strIndex = root.strIndex = db.CreateIndex<string, PObject>(true);
+            IIndex<long, PObject> intIndex = root.intIndex = db.CreateIndex<long, PObject>(true);
             db.Root = root;
             long insKey = 1999;
             long remKey = 1999;

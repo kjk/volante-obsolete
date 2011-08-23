@@ -28,7 +28,7 @@ namespace Volante
 
         class Root : Persistent
         {
-            internal Index<string, Record> strIndex;
+            internal IIndex<string, Record> strIndex;
             internal IFieldIndex<long, Record> intIndex;
             internal IMultiFieldIndex<Record> compoundIndex;
             internal Point point;
@@ -55,7 +55,7 @@ namespace Volante
             root.point.y = 2;
             db.Root = root;
 
-            Index<string, Record> strIndex = root.strIndex;
+            IIndex<string, Record> strIndex = root.strIndex;
             IFieldIndex<long, Record> intIndex = root.intIndex;
             IMultiFieldIndex<Record> compoundIndex = root.compoundIndex;
 

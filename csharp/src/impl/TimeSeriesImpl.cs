@@ -615,7 +615,7 @@ namespace Volante.Impl
             base.Deallocate();
         }
 
-        private Index<long, TimeSeriesBlock> index;
+        private IIndex<long, TimeSeriesBlock> index;
         private long maxBlockTimeInterval;
         private int blockSize;
     }

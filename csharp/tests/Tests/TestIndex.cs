@@ -22,8 +22,8 @@ namespace Volante
 
         public class Root : Persistent
         {
-            public Index<string, Record> strIndex;
-            public Index<long, Record> intIndex;
+            public IIndex<string, Record> strIndex;
+            public IIndex<long, Record> intIndex;
         }
 
         public void Run(TestConfig config)

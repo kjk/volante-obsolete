@@ -18,8 +18,8 @@ namespace Volante
 
         class Indices : Persistent
         {
-            internal Index<string, Record> strIndex;
-            internal Index<long, Record> intIndex;
+            internal IIndex<string, Record> strIndex;
+            internal IIndex<long, Record> intIndex;
         }
 
         public void Run(TestConfig config)
@@ -37,8 +37,8 @@ namespace Volante
             root.strIndex = db.CreateIndex<string, Record>(false);
             root.intIndex = db.CreateIndex<long, Record>(false);
             db.Root = root;
-            Index<long, Record> intIndex = root.intIndex;
-            Index<string, Record> strIndex = root.strIndex;
+            IIndex<long, Record> intIndex = root.intIndex;
+            IIndex<string, Record> strIndex = root.strIndex;
             Record[] records;
 
             long key = 1999;

@@ -10,7 +10,7 @@ public class IpCountry
     const int PagePoolSize = 32*1024*1024;
 
     class Root : Persistent { 
-        internal Index<string,Country> countries;
+        internal IIndex<string,Country> countries;
         internal IPatriciaTrie<Country> trie;
     }
 
@@ -75,11 +75,11 @@ public class IpCountry
         }
     }
 
-    static void addCountry(Index<string,Country> countries, string country, string iso) { 
+    static void addCountry(IIndex<string,Country> countries, string country, string iso) { 
         countries[iso] = new Country(country);
     }
 
-    static void loadCountries(Index<string,Country> countries) { 
+    static void loadCountries(IIndex<string,Country> countries) { 
         addCountry(countries, "Burundi", "BI");
         addCountry(countries, "Central African Republic", "CF");
         addCountry(countries, "Chad", "TD");

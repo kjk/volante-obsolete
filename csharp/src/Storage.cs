@@ -128,7 +128,7 @@ namespace Volante
         /// <exception cref="Volante.StorageError">StorageError(StorageError.ErrorCode.UNSUPPORTED_INDEX_TYPE) exception if 
         /// specified key type is not supported by implementation.
         /// </exception>
-        Index<K, V> CreateIndex<K, V>(bool unique) where V : class,IPersistent;
+        IIndex<K, V> CreateIndex<K, V>(bool unique) where V : class,IPersistent;
 
         /// <summary> Create new thick index (index with large number of duplicated keys).
         /// K parameter specifies key type, V - associated object type.
@@ -138,7 +138,7 @@ namespace Volante
         /// <exception cref="Volante.StorageError">StorageError(StorageError.ErrorCode.UNSUPPORTED_INDEX_TYPE) exception if 
         /// specified key type is not supported by implementation.
         /// </exception>
-        Index<K, V> CreateThickIndex<K, V>() where V : class,IPersistent;
+        IIndex<K, V> CreateThickIndex<K, V>() where V : class,IPersistent;
 
         /// <summary> 
         /// Create new field index
