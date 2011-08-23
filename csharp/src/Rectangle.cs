@@ -8,10 +8,10 @@ namespace Volante
     /// </summary>
     public struct Rectangle
     {
-        private int _top;
-        private int _left;
-        private int _bottom;
-        private int _right;
+        private int top;
+        private int left;
+        private int bottom;
+        private int right;
 
         /// <summary>
         /// Smallest Y coordinate of the rectangle
@@ -20,7 +20,7 @@ namespace Volante
         {
             get
             {
-                return _top;
+                return top;
             }
         }
 
@@ -31,7 +31,7 @@ namespace Volante
         {
             get
             {
-                return _left;
+                return left;
             }
         }
 
@@ -42,7 +42,7 @@ namespace Volante
         {
             get
             {
-                return _bottom;
+                return bottom;
             }
         }
 
@@ -53,7 +53,7 @@ namespace Volante
         {
             get
             {
-                return _right;
+                return right;
             }
         }
 
@@ -62,7 +62,7 @@ namespace Volante
         /// </summary>
         public long Area()
         {
-            return (long)(_bottom - _top) * (_right - _left);
+            return (long)(bottom - top) * (right - left);
         }
 
         /// <summary>
@@ -70,35 +70,34 @@ namespace Volante
         /// </summary>
         public static long JoinArea(Rectangle a, Rectangle b)
         {
-            int _left = (a._left < b._left) ? a._left : b._left;
-            int _right = (a._right > b._right) ? a._right : b._right;
-            int _top = (a._top < b._top) ? a._top : b._top;
-            int _bottom = (a._bottom > b._bottom) ? a._bottom : b._bottom;
-            return (long)(_bottom - _top) * (_right - _left);
+            int left = (a.left < b.left) ? a.left : b.left;
+            int right = (a.right > b.right) ? a.right : b.right;
+            int top = (a.top < b.top) ? a.top : b.top;
+            int bottom = (a.bottom > b.bottom) ? a.bottom : b.bottom;
+            return (long)(bottom - top) * (right - left);
         }
-
 
         /// <summary>
         /// Create copy of the rectangle
         /// </summary>
         public Rectangle(Rectangle r)
         {
-            this._top = r._top;
-            this._left = r._left;
-            this._bottom = r._bottom;
-            this._right = r._right;
+            this.top = r.top;
+            this.left = r.left;
+            this.bottom = r.bottom;
+            this.right = r.right;
         }
 
         /// <summary>
         /// Construct rectangle with specified coordinates
         /// </summary>
-        public Rectangle(int _top, int _left, int _bottom, int _right)
+        public Rectangle(int top, int left, int bottom, int right)
         {
-            Debug.Assert(_top <= _bottom && _left <= _right);
-            this._top = _top;
-            this._left = _left;
-            this._bottom = _bottom;
-            this._right = _right;
+            Debug.Assert(top <= bottom && left <= right);
+            this.top = top;
+            this.left = left;
+            this.bottom = bottom;
+            this.right = right;
         }
 
         /// <summary>
@@ -108,24 +107,23 @@ namespace Volante
         /// </param>
         public void Join(Rectangle r)
         {
-            if (_left > r._left)
+            if (left > r.left)
             {
-                _left = r._left;
+                left = r.left;
             }
-            if (_right < r._right)
+            if (right < r.right)
             {
-                _right = r._right;
+                right = r.right;
             }
-            if (_top > r._top)
+            if (top > r.top)
             {
-                _top = r._top;
+                top = r.top;
             }
-            if (_bottom < r._bottom)
+            if (bottom < r.bottom)
             {
-                _bottom = r._bottom;
+                bottom = r.bottom;
             }
         }
-
 
         /// <summary>
         ///  Non destructive join of two rectangles. 
@@ -148,7 +146,7 @@ namespace Volante
         /// </summary>
         public bool Intersects(Rectangle r)
         {
-            return _left <= r._right && _top <= r._bottom && _right >= r._left && _bottom >= r._top;
+            return left <= r.right && top <= r.bottom && right >= r.left && bottom >= r.top;
         }
 
         /// <summary>
@@ -156,7 +154,7 @@ namespace Volante
         /// </summary>
         public bool Contains(Rectangle r)
         {
-            return _left <= r._left && _top <= r._top && _right >= r._right && _bottom >= r._bottom;
+            return left <= r.left && top <= r.top && right >= r.right && bottom >= r.bottom;
         }
 
         /// <summary>
@@ -164,7 +162,7 @@ namespace Volante
         /// </summary>
         public bool IsEmpty()
         {
-            return _left > _right;
+            return left > right;
         }
     }
 }
