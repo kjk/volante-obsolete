@@ -2026,7 +2026,7 @@ namespace Volante.Impl
                 int rootOid = header.root[1 - currIndex].rootObject;
                 if (rootOid != 0)
                 {
-                    XMLExporter xmlExporter = new XMLExporter(this, writer);
+                    XmlExporter xmlExporter = new XmlExporter(this, writer);
                     xmlExporter.exportDatabase(rootOid);
                 }
             }
@@ -2037,7 +2037,7 @@ namespace Volante.Impl
             lock (this)
             {
                 ensureOpened();
-                XMLImporter xmlImporter = new XMLImporter(this, reader);
+                XmlImporter xmlImporter = new XmlImporter(this, reader);
                 xmlImporter.importDatabase();
             }
         }

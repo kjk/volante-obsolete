@@ -7,9 +7,9 @@ namespace Volante.Impl
     using System.Text;
     using Volante;
 
-    public class XMLExporter
+    public class XmlExporter
     {
-        public XMLExporter(DatabaseImpl storage, System.IO.StreamWriter writer)
+        public XmlExporter(DatabaseImpl storage, System.IO.StreamWriter writer)
         {
             this.storage = storage;
             this.writer = writer;

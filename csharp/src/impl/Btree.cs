@@ -21,7 +21,7 @@ namespace Volante.Impl
     {
         int markTree();
 #if WITH_XML
-        void export(XMLExporter exporter);
+        void export(XmlExporter exporter);
 #endif
         int insert(Key key, IPersistent obj, bool overwrite);
         ClassDescriptor.FieldType FieldType { get; }
@@ -457,7 +457,7 @@ namespace Volante.Impl
         }
 
 #if WITH_XML
-        public void export(XMLExporter exporter)
+        public void export(XmlExporter exporter)
         {
             if (root != 0)
             {

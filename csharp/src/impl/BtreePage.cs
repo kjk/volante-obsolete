@@ -2173,7 +2173,7 @@ namespace Volante.Impl
         }
 
 #if WITH_XML
-        internal static void exportPage(DatabaseImpl db, XMLExporter exporter, int pageId, ClassDescriptor.FieldType type, int height)
+        internal static void exportPage(DatabaseImpl db, XmlExporter exporter, int pageId, ClassDescriptor.FieldType type, int height)
         {
             Page pg = db.getPage(pageId);
             try

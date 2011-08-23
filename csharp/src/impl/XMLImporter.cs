@@ -6,9 +6,9 @@ namespace Volante.Impl
     using System.Reflection;
     using Volante;
 
-    public class XMLImporter
+    public class XmlImporter
     {
-        public XMLImporter(DatabaseImpl storage, System.IO.StreamReader reader)
+        public XmlImporter(DatabaseImpl storage, System.IO.StreamReader reader)
         {
             this.storage = storage;
             scanner = new XMLScanner(reader);
@@ -1650,7 +1650,7 @@ namespace Volante.Impl
 
         internal void throwException(System.String message)
         {
-            throw new XMLImportException(scanner.Line, scanner.Column, message);
+            throw new XmlImportException(scanner.Line, scanner.Column, message);
         }
 
         internal DatabaseImpl storage;
@@ -1807,12 +1807,12 @@ namespace Volante.Impl
                                 {
                                     if (ch < 0)
                                     {
-                                        throw new XMLImportException(line, column, "Bad XML file format");
+                                        throw new XmlImportException(line, column, "Bad XML file format");
                                     }
                                 }
                                 if ((ch = get()) != '>')
                                 {
-                                    throw new XMLImportException(line, column, "Bad XML file format");
+                                    throw new XmlImportException(line, column, "Bad XML file format");
                                 }
                                 continue;
                             }
@@ -1831,7 +1831,7 @@ namespace Volante.Impl
                             if (ch != '>')
                             {
                                 unget(ch);
-                                throw new XMLImportException(line, column, "Bad XML file format");
+                                throw new XmlImportException(line, column, "Bad XML file format");
                             }
                             return Token.GTS;
 
@@ -1845,7 +1845,7 @@ namespace Volante.Impl
                                 ch = get();
                                 if (ch < 0)
                                 {
-                                    throw new XMLImportException(line, column, "Bad XML file format");
+                                    throw new XmlImportException(line, column, "Bad XML file format");
                                 }
                                 else if (ch == '&')
                                 {
@@ -1854,7 +1854,7 @@ namespace Volante.Impl
                                         case 'a':
                                             if (get() != 'm' || get() != 'p' || get() != ';')
                                             {
-                                                throw new XMLImportException(line, column, "Bad XML file format");
+                                                throw new XmlImportException(line, column, "Bad XML file format");
                                             }
                                             ch = '&';
                                             break;
@@ -1862,7 +1862,7 @@ namespace Volante.Impl
                                         case 'l':
                                             if (get() != 't' || get() != ';')
                                             {
-                                                throw new XMLImportException(line, column, "Bad XML file format");
+                                                throw new XmlImportException(line, column, "Bad XML file format");
                                             }
                                             ch = '<';
                                             break;
@@ -1870,7 +1870,7 @@ namespace Volante.Impl
                                         case 'g':
                                             if (get() != 't' || get() != ';')
                                             {
-                                                throw new XMLImportException(line, column, "Bad XML file format");
+                                                throw new XmlImportException(line, column, "Bad XML file format");
                                             }
                                             ch = '>';
                                             break;
@@ -1878,13 +1878,13 @@ namespace Volante.Impl
                                         case 'q':
                                             if (get() != 'u' || get() != 'o' || get() != 't' || get() != ';')
                                             {
-                                                throw new XMLImportException(line, column, "Bad XML file format");
+                                                throw new XmlImportException(line, column, "Bad XML file format");
                                             }
                                             ch = '"';
                                             break;
 
                                         default:
-                                            throw new XMLImportException(line, column, "Bad XML file format");
+                                            throw new XmlImportException(line, column, "Bad XML file format");
 
                                     }
                                 }
@@ -1936,12 +1936,12 @@ namespace Volante.Impl
                                     }
                                     catch (System.FormatException)
                                     {
-                                        throw new XMLImportException(line, column, "Bad XML file format");
+                                        throw new XmlImportException(line, column, "Bad XML file format");
                                     }
                                 }
                                 if (i == size)
                                 {
-                                    throw new XMLImportException(line, column, "Bad XML file format");
+                                    throw new XmlImportException(line, column, "Bad XML file format");
                                 }
                                 sconst[i++] = (char)ch;
                                 if (ch == '.')
@@ -1957,7 +1957,7 @@ namespace Volante.Impl
                             {
                                 if (i == size)
                                 {
-                                    throw new XMLImportException(line, column, "Bad XML file format");
+                                    throw new XmlImportException(line, column, "Bad XML file format");
                                 }
                                 if (ch == '-')
                                 {
@@ -1969,7 +1969,7 @@ namespace Volante.Impl
                             unget(ch);
                             if (i == 0)
                             {
-                                throw new XMLImportException(line, column, "Bad XML file format");
+                                throw new XmlImportException(line, column, "Bad XML file format");
                             }
                             ident = new String(sconst, 0, i);
                             ident = ident.Replace(".1", "`");

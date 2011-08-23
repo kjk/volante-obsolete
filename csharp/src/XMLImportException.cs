@@ -5,7 +5,7 @@ namespace Volante
 
     /// <summary> Exception thrown during import of data from XML file in database
     /// </summary>
-    public class XMLImportException : ApplicationException
+    public class XmlImportException : ApplicationException
     {
         public virtual System.String MessageText
         {
@@ -31,7 +31,7 @@ namespace Volante
             }
 
         }
-        public XMLImportException(int line, int column, String message)
+        public XmlImportException(int line, int column, String message)
             : base("In line " + line + " column " + column + ": " + message)
         {
             this.line = line;
