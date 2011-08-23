@@ -245,19 +245,19 @@ public class Tests
     public static void VerifyDictionaryEnumeratorDone(IDictionaryEnumerator de)
     {
         AssertException<InvalidOperationException>(
-            () => { var tmp = de.Current; });
+            () => { Console.WriteLine(de.Current); });
         AssertException<InvalidOperationException>(
-            () => { var tmp = de.Entry; });
+            () => { Console.WriteLine(de.Entry); });
         AssertException<InvalidOperationException>(
-            () => { var tmp = de.Key; });
+            () => { Console.WriteLine(de.Key); });
         AssertException<InvalidOperationException>(
-            () => { var tmp = de.Value; });
+            () => { Console.WriteLine(de.Value); });
     }
 
     public static void VerifyEnumeratorDone(IEnumerator e)
     {
         AssertException<InvalidOperationException>(
-            () => { var tmp = e.Current; });
+            () => { Console.WriteLine(e.Current); });
         Tests.Assert(!e.MoveNext());
     }
 }
@@ -426,7 +426,6 @@ public class TestsMain
             config.Count = count;
             config.TestName = testClassName;
             config.Result = new TestResult(); // can be over-written by a test
-            var dbname = config.DatabaseName;
             DateTime start = DateTime.Now;
             mi.Invoke(obj, new object[] { config });
             config.Result.ExecutionTime = DateTime.Now - start;

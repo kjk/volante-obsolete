@@ -22,7 +22,6 @@ namespace Volante
             SpatialObject so;
             RectangleR2 r;
             int count = config.Count;
-            bool noFlush = config.AltBtree; // a hack
             var res = new TestR2Result();
             config.Result = res;
             IDatabase db = config.GetDatabase();
