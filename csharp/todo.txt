@@ -3,7 +3,7 @@ Things to do for c# version:
 * make a release script that builds and uploads .zip with the Volante.dll
 * write docs
 * silverlight and wp7 versions
-* get rid of Storage.StringEncoding and always use utf8 for storing strings (?)
+* get rid of Database.StringEncoding and always use utf8 for storing strings (?)
 * remove CacheType - just use the best cache (?)
 * always set SerializeTransientObjects = true (?)
 * make a 0.9 release

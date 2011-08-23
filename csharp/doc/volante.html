@@ -61,15 +61,13 @@ persistent and stored in the storage when it is referenced from some other persi
 assign object to the storage.<P>
 
 The storage has one special <I>root</I> object. Root object is the only persistent object accessed in the special
-way (using <code>Storage.getRoot</code> method). All other persistent objects are accessed in normal way:
-either by traversing by references from another persistent objects, either using object containers (<code>Index</code>, 
+way (using <code>IDatabase.Root</code> property). All other persistent objects are accessed in normal way:
+either by traversing by references from another persistent objects, using object containers (<code>IIndex</code>, 
 <code>Link</code> or <code>Relation</code>). Unlike many other OODBMS, there can be only one root in the storage.
-If you need to have several named roots, you should create <code>Index</code> object and use it as root object.<P>
+If you need to have several named roots, you should create <code>IIndex</code> object and use it as root object.<P>
 
 Volante requires that each persistent capable class should be derived from <code>Persistent</code> class.
-It makes not possible to store "foreign" classes in the storage. This is the cost of easy use of Volante and lack
-of any specialized preprocessors or compilers. Also components of persistent capable object are restricted to have 
-the following types:
+It makes not possible to store "foreign" classes in the storage. This is the cost of easy use of Volante and lack of any specialized preprocessors or compilers. Also components of persistent capable object are restricted to have the following types:
 
 <DL>
 <DT>Scalar types
@@ -81,18 +79,17 @@ the following types:
 <DT>Reference to the persistent object
 <DD>Any class inherited from <code>Persistent</code> or any interface extending <code>IPersistent</code> interface.
 <DT>Value type
-<DD>Any C-Sharp value type with the same restrictions for types of components as for persitent capable objects.
-Values are stored inside the persistent object containing them. 
+<DD>Any C# value type with the same restrictions for types of components as for persitent capable objects. Values are stored inside the persistent object containing them. 
 <DT>Raw binary type
-<DD>Any CSharp class not derived from <code>IPersistent</code> or  <code>IValue</code> interfaces and marked as Serializable.
-Standard CSharp serialization mechanism will be used to pack cluster of such objects into byte array which will be 
+<DD>Any C# class not derived from <code>IPersistent</code> or  <code>IValue</code> interfaces and marked as Serializable.
+Standard C# serialization mechanism will be used to pack cluster of such objects into byte array which will be 
 stored in the database. The class should be marked with <code>Serializable</code> attribute
 and should not contain references to persistent objects. 
 <DT>Array type
 <DD>One dimensional array with type of the components described above
 <DT>Link type
 <DD>One-to-many link or from implementation point of view - dynamic array of persistent object.
-Links are created using <code>Storage.createLink</code> method.
+Links are created using <code>IDatabase.CreateLink()</code> method.
 </DL><P>
 
 Unfortunately it is not possible to detect if object is changed or not without saving old state of the object
@@ -171,7 +168,7 @@ Volante is able to handle the following scheme changes:
 For example it is possible to change <code>int</code> type to <code>long</code> or 
 <code>int</code> to <code>float</code>. But changing type from <code>int</code> to
 <code>short</code> is not possible. More precisely, Volante is able to perform any conversion
-which is supported by Java reflection mechanism (field type XXX can be changed to YYY
+which is supported by .NET reflection mechanism (field type XXX can be changed to YYY
 if <code>java.lang.reflect.Field.setXXX</code> method can be applied to the component with type YYY).
 <LI>Reordering components within class or moving component to base or derived class.
 <LI>Adding/removing classes from class inheritance hierarchy.
@@ -1120,7 +1117,7 @@ fetching single object will cause loading of all other objects from this collect
 
 <dt><i>How to store classes not derived from Persistent?</i></dt>
 <dd>
-Volante allows to store transient objects using standard Java serialization mechanism. 
+Volante allows to store transient objects using standard .NET serialization mechanism. 
 To enable this feature, you should set <code>Storage.setProperty("perst.serialize.transient.objects")</code>. 
 Volante will correctly handle reference to persistent object from serialized transient objects. 
 But it is important to notice, that identity of saved transient objects is not preserved. 
@@ -1163,9 +1160,8 @@ if there is garbage in the database.
 <dt><i>Why applicsation normally working in single-threaded mode got
 assertion failures or some other exceptions if database is updated by mode than one thread?</i></dt>
 <dd>
-Volante doesn't synchronize itself access
-of application to the persistent objects. It is responsibility of
-application to set proper lock to avoid concurrent access to the same
+Volante by itself doesn't synchronize access to the persistent objects. It is responsibility of
+application to set proper locks to avoid concurrent access to the same
 object. So just using beginThreadTransaction and endThreadTransaction
 is not enough for correct concurrent work with persistent objects.
 So the following alternatives are possible:
