@@ -17,7 +17,7 @@ namespace Volante
         int Size();
 
         /// <summary> Get related object by index without loading it.
-        /// Returned object can be used only to get it OID or to compare with other objects using
+        /// Returned object can be used only to get its oid or to compare with other objects using
         /// <code>equals</code> method
         /// </summary>
         /// <param name="i">index of the object in the relation
@@ -54,12 +54,12 @@ namespace Volante
     }
 
     /// <summary> Interface for one-to-many relation. There are two types of relations:
-    /// embedded (when references to the relarted objects are stored in lreation
-    /// owner object itself) and standalone (when relation is separate object, which contains
+    /// embedded (when references to the related objects are stored in relation
+    /// owner object itself) and standalone (when relation is a separate object, which contains
     /// the reference to the relation owner and relation members). Both kinds of relations
-    /// implements Link interface. Embedded relation is created by Storage.createLink method
+    /// implements Link interface. Embedded relation is created by IDatabase.CreateLink() method
     /// and standalone relation is represented by Relation persistent class created by
-    /// Storage.createRelation method.
+    /// IDatabase.CreateRelation() method.
     /// </summary>
     public interface ILink<T> : IList<T>, IGenericLink where T : class,IPersistent
     {

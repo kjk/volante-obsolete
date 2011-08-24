@@ -19,7 +19,7 @@ namespace Volante
         /// <param name="key">object key wrapper
         /// </param>
         /// <param name="obj">object associated with this key. Object can be not yet peristent, in this case
-        /// its forced to become persistent by assigning OID to it.
+        /// its forced to become persistent by assigning oid to it.
         /// </param>
         /// <returns><code>true</code> if object is successfully inserted in the index, 
         /// <code>false</code> if index was declared as unique and there is already object with such value
@@ -32,7 +32,7 @@ namespace Volante
         /// <param name="key">object key value
         /// </param>
         /// <param name="obj">object associated with this key. Object can be not yet peristent, in this case
-        /// its forced to become persistent by assigning OID to it.
+        /// its forced to become persistent by assigning oid to it.
         /// </param>
         /// <returns><code>true</code> if object is successfully inserted in the index, 
         /// <code>false</code> if index was declared as unique and there is already object with such value
@@ -47,7 +47,7 @@ namespace Volante
         /// <param name="key">object key wrapper
         /// </param>
         /// <param name="obj">object associated with this key. Object can be not yet peristent, in this case
-        /// its forced to become persistent by assigning OID to it.
+        /// its forced to become persistent by assigning oid to it.
         /// </param>
         /// <returns>object previously associated with this key, <code>null</code> if there was no such object
         /// </returns>
@@ -59,7 +59,7 @@ namespace Volante
         /// <param name="key">object key value
         /// </param>
         /// <param name="obj">object associated with this key. Object can be not yet peristent, in this case
-        /// its forced to become persistent by assigning OID to it.
+        /// its forced to become persistent by assigning oid to it.
         /// </param>
         /// <returns>object previously associated with this key, <code>null</code> if there was no such object
         /// </returns>

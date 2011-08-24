@@ -397,23 +397,23 @@ namespace Volante
 #endif
 
         /// <summary> 
-        /// Retrieve object by OID. This method should be used with care because
-        /// if object is deallocated, its OID can be reused. In this case
-        /// getObjectByOID will return reference to the new object with may be
+        /// Retrieve object by oid. This method should be used with care because
+        /// if object is deallocated, its oid can be reused. In this case
+        /// GetObjectByOid() will return reference to the new object with may be
         /// different type.
         /// </summary>
         /// <param name="oid">object oid</param>
-        /// <returns>reference to the object with specified OID</returns>
-        IPersistent GetObjectByOID(int oid);
+        /// <returns>reference to the object with specified oid</returns>
+        IPersistent GetObjectByOid(int oid);
 
         /// <summary> 
-        /// Explicitely make object peristent. Usually objects are made persistent
-        /// implicitly using "persistency on reachability apporach", but this
+        /// Explicitly make object peristent. Usually objects are made persistent
+        /// implicitly using "persistency on reachability approach", but this
         /// method allows to do it explicitly. If object is already persistent, execution of
         /// this method has no effect.
         /// </summary>
         /// <param name="obj">object to be made persistent</param>
-        /// <returns>OID assigned to the object</returns>
+        /// <returns>oid assigned to the object</returns>
         int MakePersistent(IPersistent obj);
 
 #if WITH_OLD_BTREE
@@ -578,7 +578,7 @@ namespace Volante
         /// It is not possible to use <code>IPersistent.store()</code> method in
         /// serializable transactions. That is why it is also not possible to use Index and FieldIndex
         /// containers (since them are based on B-Tree and B-Tree directly access database pages
-        /// and use <code>store()</code> method to assign OID to inserted object. 
+        /// and use <code>Store()</code> method to assign oid to inserted object. 
         /// You should use <code>SortedCollection</code> based on T-Tree instead or alternative
         /// B-Tree implemenataion (set AlternativeBtree property).
         /// </summary>
@@ -630,7 +630,7 @@ namespace Volante
         /// of stored objects and value - MemoryUsage object which specifies number of instances
         /// of particular class in the storage and total size of memory used by these instance.
         /// Size of internal database structures (object index, memory allocation bitmap) is associated with 
-        /// <code>Storage</code> class. Size of class descriptors  - with <code>System.Type</code> class.
+        /// <code>IDatabase</code> class. Size of class descriptors  - with <code>System.Type</code> class.
         /// <p>This method traverse the storage as garbage collection do - starting from the root object
         /// and recursively visiting all reachable objects. So it reports statistic only for visible objects.
         /// If total database size is significantly larger than total size of all instances reported

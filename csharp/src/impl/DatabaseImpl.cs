@@ -61,7 +61,7 @@ namespace Volante.Impl
         /// </summary>
         const int dbDefaultObjectCacheInitSize = 1319;
 
-        /// <summary> Database extension quantum. Memory is allocate by scanning bitmap. If there is no
+        /// <summary> Database extension quantum. Memory is allocated by scanning bitmap. If there is no
         /// large enough hole, then database is extended by the value of dbDefaultExtensionQuantum 
         /// This parameter should not be smaller than dbFirstUserId
         /// </summary>
@@ -236,14 +236,13 @@ namespace Volante.Impl
         internal void setDirty()
         {
             modified = true;
-            if (!header.dirty)
-            {
-                header.dirty = true;
-                Page pg = pool.putPage(0);
-                header.pack(pg.data);
-                pool.flush();
-                pool.unfix(pg);
-            }
+            if (header.dirty)
+                return;
+            header.dirty = true;
+            Page pg = pool.putPage(0);
+            header.pack(pg.data);
+            pool.flush();
+            pool.unfix(pg);
         }
 
         internal int allocateId()
@@ -972,9 +971,8 @@ namespace Volante.Impl
             lock (this)
             {
                 if (opened)
-                {
                     throw new DatabaseError(DatabaseError.ErrorCode.DATABASE_ALREADY_OPENED);
-                }
+
                 file.Lock();
                 Page pg;
                 int i;
@@ -1891,7 +1889,6 @@ namespace Volante.Impl
             lock (this)
             {
                 ensureOpened();
-
                 return new ScalableSet<T>(this, initialSize);
             }
         }
@@ -2054,18 +2051,17 @@ namespace Volante.Impl
 
         internal void markOid(int oid)
         {
-            if (oid != 0)
+            if (0 == oid)
+                return;
+            long pos = getGCPos(oid);
+            if ((pos & (dbFreeHandleFlag | dbPageObjectFlag)) != 0)
             {
-                long pos = getGCPos(oid);
-                if ((pos & (dbFreeHandleFlag | dbPageObjectFlag)) != 0)
-                {
-                    throw new DatabaseError(DatabaseError.ErrorCode.INVALID_OID);
-                }
-                int bit = (int)((ulong)pos >> dbAllocationQuantumBits);
-                if ((blackBitmap[(uint)bit >> 5] & (1 << (bit & 31))) == 0)
-                {
-                    greyBitmap[(uint)bit >> 5] |= 1 << (bit & 31);
-                }
+                throw new DatabaseError(DatabaseError.ErrorCode.INVALID_OID);
+            }
+            int bit = (int)((ulong)pos >> dbAllocationQuantumBits);
+            if ((blackBitmap[(uint)bit >> 5] & (1 << (bit & 31))) == 0)
+            {
+                greyBitmap[(uint)bit >> 5] |= 1 << (bit & 31);
             }
         }
 
@@ -2310,107 +2306,106 @@ namespace Volante.Impl
                     blackBitmap = new int[bitmapSize];
                     int rootOid = header.root[currIndex].rootObject;
                     var map = new Dictionary<Type, MemoryUsage>();
+                    if (0 == rootOid)
+                        return map;
 
-                    if (rootOid != 0)
+                    MemoryUsage indexUsage = new MemoryUsage(typeof(IGenericIndex));
+                    MemoryUsage classUsage = new MemoryUsage(typeof(Type));
+
+                    markOid(rootOid);
+                    do
                     {
-                        MemoryUsage indexUsage = new MemoryUsage(typeof(IGenericIndex));
-                        MemoryUsage classUsage = new MemoryUsage(typeof(Type));
-
-                        markOid(rootOid);
-                        do
+                        existsNotMarkedObjects = false;
+                        for (i = 0; i < bitmapSize; i++)
                         {
-                            existsNotMarkedObjects = false;
-                            for (i = 0; i < bitmapSize; i++)
+                            if (greyBitmap[i] != 0)
                             {
-                                if (greyBitmap[i] != 0)
+                                existsNotMarkedObjects = true;
+                                for (j = 0; j < 32; j++)
                                 {
-                                    existsNotMarkedObjects = true;
-                                    for (j = 0; j < 32; j++)
+                                    if ((greyBitmap[i] & (1 << j)) != 0)
                                     {
-                                        if ((greyBitmap[i] & (1 << j)) != 0)
+                                        pos = (((long)i << 5) + j) << dbAllocationQuantumBits;
+                                        greyBitmap[i] &= ~(1 << j);
+                                        blackBitmap[i] |= 1 << j;
+                                        int offs = (int)pos & (Page.pageSize - 1);
+                                        Page pg = pool.getPage(pos - offs);
+                                        int typeOid = ObjectHeader.getType(pg.data, offs);
+                                        int objSize = ObjectHeader.getSize(pg.data, offs);
+                                        int alignedSize = (objSize + dbAllocationQuantum - 1) & ~(dbAllocationQuantum - 1);
+                                        if (typeOid != 0)
                                         {
-                                            pos = (((long)i << 5) + j) << dbAllocationQuantumBits;
-                                            greyBitmap[i] &= ~(1 << j);
-                                            blackBitmap[i] |= 1 << j;
-                                            int offs = (int)pos & (Page.pageSize - 1);
-                                            Page pg = pool.getPage(pos - offs);
-                                            int typeOid = ObjectHeader.getType(pg.data, offs);
-                                            int objSize = ObjectHeader.getSize(pg.data, offs);
-                                            int alignedSize = (objSize + dbAllocationQuantum - 1) & ~(dbAllocationQuantum - 1);
-                                            if (typeOid != 0)
-                                            {
-                                                markOid(typeOid);
-                                                ClassDescriptor desc = findClassDescriptor(typeOid);
+                                            markOid(typeOid);
+                                            ClassDescriptor desc = findClassDescriptor(typeOid);
 #if WITH_OLD_BTREE
-                                                if (typeof(Btree).IsAssignableFrom(desc.cls))
-                                                {
-                                                    Btree btree = createBtreeStub(pg.data, offs);
-                                                    btree.AssignOid(this, 0, false);
-                                                    int nPages = btree.markTree();
-                                                    indexUsage.nInstances += 1;
-                                                    indexUsage.totalSize += (long)nPages * Page.pageSize + objSize;
-                                                    indexUsage.allocatedSize += (long)nPages * Page.pageSize + alignedSize;
-                                                }
-                                                else
-#endif
-                                                {
-                                                    MemoryUsage usage;
-                                                    var ok = map.TryGetValue(desc.cls, out usage);
-                                                    if (!ok)
-                                                    {
-                                                        usage = new MemoryUsage(desc.cls);
-                                                        map[desc.cls] = usage;
-                                                    }
-                                                    usage.nInstances += 1;
-                                                    usage.totalSize += objSize;
-                                                    usage.allocatedSize += alignedSize;
-
-                                                    if (desc.hasReferences)
-                                                    {
-                                                        markObject(pool.get(pos), ObjectHeader.Sizeof, desc);
-                                                    }
-                                                }
+                                            if (typeof(Btree).IsAssignableFrom(desc.cls))
+                                            {
+                                                Btree btree = createBtreeStub(pg.data, offs);
+                                                btree.AssignOid(this, 0, false);
+                                                int nPages = btree.markTree();
+                                                indexUsage.nInstances += 1;
+                                                indexUsage.totalSize += (long)nPages * Page.pageSize + objSize;
+                                                indexUsage.allocatedSize += (long)nPages * Page.pageSize + alignedSize;
                                             }
                                             else
+#endif
                                             {
-                                                classUsage.nInstances += 1;
-                                                classUsage.totalSize += objSize;
-                                                classUsage.allocatedSize += alignedSize;
+                                                MemoryUsage usage;
+                                                var ok = map.TryGetValue(desc.cls, out usage);
+                                                if (!ok)
+                                                {
+                                                    usage = new MemoryUsage(desc.cls);
+                                                    map[desc.cls] = usage;
+                                                }
+                                                usage.nInstances += 1;
+                                                usage.totalSize += objSize;
+                                                usage.allocatedSize += alignedSize;
+
+                                                if (desc.hasReferences)
+                                                {
+                                                    markObject(pool.get(pos), ObjectHeader.Sizeof, desc);
+                                                }
                                             }
-                                            pool.unfix(pg);
                                         }
+                                        else
+                                        {
+                                            classUsage.nInstances += 1;
+                                            classUsage.totalSize += objSize;
+                                            classUsage.allocatedSize += alignedSize;
+                                        }
+                                        pool.unfix(pg);
                                     }
                                 }
                             }
-                        } while (existsNotMarkedObjects);
+                        }
+                    } while (existsNotMarkedObjects);
 
-                        if (indexUsage.nInstances != 0)
-                        {
-                            map[typeof(IGenericIndex)] = indexUsage;
-                        }
-                        if (classUsage.nInstances != 0)
-                        {
-                            map[typeof(Type)] = classUsage;
-                        }
-                        MemoryUsage system = new MemoryUsage(typeof(IDatabase));
-                        system.totalSize += header.root[0].indexSize * 8L;
-                        system.totalSize += header.root[1].indexSize * 8L;
-                        system.totalSize += (long)(header.root[currIndex].bitmapEnd - dbBitmapId) * Page.pageSize;
-                        system.totalSize += Page.pageSize; // root page
-
-                        if (header.root[currIndex].bitmapExtent != 0)
-                        {
-                            system.allocatedSize = getBitmapUsedSpace(dbBitmapId, dbBitmapId + dbBitmapPages)
-                                + getBitmapUsedSpace(header.root[currIndex].bitmapExtent,
-                                header.root[currIndex].bitmapExtent + header.root[currIndex].bitmapEnd - dbBitmapId);
-                        }
-                        else
-                        {
-                            system.allocatedSize = getBitmapUsedSpace(dbBitmapId, header.root[currIndex].bitmapEnd);
-                        }
-                        system.nInstances = header.root[currIndex].indexSize;
-                        map[typeof(IDatabase)] = system;
+                    if (indexUsage.nInstances != 0)
+                    {
+                        map[typeof(IGenericIndex)] = indexUsage;
                     }
+                    if (classUsage.nInstances != 0)
+                    {
+                        map[typeof(Type)] = classUsage;
+                    }
+                    MemoryUsage system = new MemoryUsage(typeof(IDatabase));
+                    system.totalSize += header.root[0].indexSize * 8L;
+                    system.totalSize += header.root[1].indexSize * 8L;
+                    system.totalSize += (long)(header.root[currIndex].bitmapEnd - dbBitmapId) * Page.pageSize;
+                    system.totalSize += Page.pageSize; // root page
+
+                    if (header.root[currIndex].bitmapExtent != 0)
+                    {
+                        system.allocatedSize = getBitmapUsedSpace(dbBitmapId, dbBitmapId + dbBitmapPages)
+                            + getBitmapUsedSpace(header.root[currIndex].bitmapExtent,
+                            header.root[currIndex].bitmapExtent + header.root[currIndex].bitmapEnd - dbBitmapId);
+                    }
+                    else
+                    {
+                        system.allocatedSize = getBitmapUsedSpace(dbBitmapId, header.root[currIndex].bitmapEnd);
+                    }
+                    system.nInstances = header.root[currIndex].indexSize;
+                    map[typeof(IDatabase)] = system;
                     return map;
                 }
             }
@@ -3124,7 +3119,7 @@ namespace Volante.Impl
             return prevListener;
         }
 
-        public IPersistent GetObjectByOID(int oid)
+        public IPersistent GetObjectByOid(int oid)
         {
             lock (this)
             {
@@ -4976,10 +4971,10 @@ namespace Volante.Impl
         internal long usedSize; // size used by objects
         internal int indexSize; // size of object index
         internal int shadowIndexSize; // size of object index
-        internal int indexUsed; // userd part of the index   
+        internal int indexUsed; // used part of the index   
         internal int freeList; // L1 list of free descriptors
         internal int bitmapEnd; // index of last allocated bitmap page
-        internal int rootObject; // OID of root object
+        internal int rootObject; // oid of root object
         internal int classDescList; // List of class descriptors
         internal int bitmapExtent;     // Allocation bitmap offset and size
 

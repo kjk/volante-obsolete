@@ -14,11 +14,11 @@ namespace Volante
         /// </returns>
         int Size();
 
-        /// <summary> Get OID of array element.
+        /// <summary> Get oid of array element.
         /// </summary>
         /// <param name="i">index of the object in the relation
         /// </param>
-        /// <returns>OID of the object (0 if array contains <code>null</code> reference)
+        /// <returns>oid of the object (0 if array contains <code>null</code> reference)
         /// </returns>
         int GetOid(int i);
 

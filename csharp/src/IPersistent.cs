@@ -2,11 +2,11 @@ namespace Volante
 {
     using System;
 
-    /// <summary> Interface of all persistent capable objects
+    /// <summary> Interface of all objects that can be persisted
     /// </summary>
     public interface IPersistent
     {
-        /// <summary> Get object identifier (OID)
+        /// <summary> Get object identifier (oid)
         /// </summary>
         int Oid
         {
@@ -33,7 +33,7 @@ namespace Volante
 
         /// <summary> Check if object is persistent 
         /// </summary>
-        /// <returns><code>true</code> if object has assigned OID
+        /// <returns><code>true</code> if object has assigned oid
         /// 
         /// </returns>
         bool IsPersistent();
@@ -51,13 +51,13 @@ namespace Volante
         /// </returns>
         bool IsModified();
 
-        /// <summary> Explicitely make object peristent. Usually objects are made persistent
-        /// implicitlely using "persistency on reachability apporach", but this
+        /// <summary> Explicitly make object peristent. Usually objects are made persistent
+        /// implicitlely using "persistency on reachability approach", but this
         /// method allows to do it explicitly 
         /// </summary>
         /// <param name="storage">storage in which object should be stored 
         /// </param>
-        /// <returns>OID assigned to the object</returns>
+        /// <returns>oid assigned to the object</returns>
         int MakePersistent(IDatabase storage);
 
         /// <summary> Save object in the database
@@ -110,7 +110,7 @@ namespace Volante
         /// This method is used by Storage class and you should not use it explicitly.
         /// </summary>
         /// <param name="storage">storage to be assigned to</param>
-        /// <param name="oid">assigned OID</param>
+        /// <param name="oid">assigned oid</param>
         /// <param name="raw">if object is already loaded</param>
         void AssignOid(IDatabase storage, int oid, bool raw);
     }

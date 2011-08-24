@@ -29,7 +29,7 @@ namespace Volante
         /// mask will be rewritten 
         /// </summary>
         /// <param name="obj">object to be placed in the index. Object can be not yet peristent, in this case
-        /// its forced to become persistent by assigning OID to it.
+        /// its forced to become persistent by assigning oid to it.
         /// </param>
         /// <param name="mask">bit mask associated with this objects</param>
         void Put(T obj, int mask);

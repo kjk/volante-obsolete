@@ -171,6 +171,15 @@ public class Tests
         CurrAssertsFailed = 0;
     }
 
+    public static void DumpMemoryUsage(ICollection<MemoryUsage> usages)
+    {
+        Console.WriteLine("Memory usage");
+        foreach (MemoryUsage usage in usages)
+        {
+            Console.WriteLine(" " + usage.type.Name + ": instances=" + usage.nInstances + ", total size=" + usage.totalSize + ", allocated size=" + usage.allocatedSize);
+        }
+    }
+
     public static void Assert(bool cond)
     {
         CurrAssertsCount += 1;

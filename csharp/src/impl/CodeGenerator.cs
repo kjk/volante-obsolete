@@ -579,7 +579,6 @@ namespace Volante.Impl
 
         private static CodeGenerator instance;
 
-
         private LocalBuilder obj;
         private LocalBuilder offs;
 
@@ -610,7 +609,7 @@ namespace Volante.Impl
 
         private MethodInfo modify = typeof(IPersistent).GetMethod("Modify");
         private MethodInfo getStorage = typeof(IPersistent).GetProperty("Storage").GetGetMethod();
-        private MethodInfo getByOid = typeof(IDatabase).GetMethod("GetObjectByOID");
+        private MethodInfo getByOid = typeof(IDatabase).GetMethod("GetObjectByOid");
         private MethodInfo makePersistent = typeof(IDatabase).GetMethod("MakePersistent");
 
         private ModuleBuilder dynamicModule;

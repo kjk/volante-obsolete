@@ -25,7 +25,7 @@ namespace Volante
         /// <param name="r">enveloping rectangle for the object
         /// </param>
         /// <param name="obj"> object associated with this rectangle. Object can be not yet persistent, in this case
-        /// its forced to become persistent by assigning OID to it.
+        /// its forced to become persistent by assigning oid to it.
         /// </param>
         void Put(RectangleR2 r, T obj);
 

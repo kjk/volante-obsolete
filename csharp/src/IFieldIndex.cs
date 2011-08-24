@@ -19,7 +19,7 @@ namespace Volante
         /// <summary> Put new object in the index. 
         /// </summary>
         /// <param name="obj">object to be inserted in index. Object should contain indexed field. 
-        /// Object can be not yet persistent, in this case its forced to become persistent by assigning OID to it.
+        /// Object can be not yet persistent, in this case its forced to become persistent by assigning oid to it.
         /// </param>
         /// <returns><code>true</code> if object is successfully inserted in the index, 
         /// <code>false</code> if index was declared as unique and there is already object with such value
@@ -35,7 +35,7 @@ namespace Volante
         /// </summary>
         /// <param name="obj">object to be inserted in index. Object should contain indexed field. 
         /// Object can be not yet peristent, in this case
-        /// its forced to become persistent by assigning OID to it.
+        /// its forced to become persistent by assigning oid to it.
         /// </param>
         /// <returns>object previously associated with this key, <code>null</code> if there was no such object
         /// </returns>
@@ -50,7 +50,7 @@ namespace Volante
         /// This field is assigned unique value (which will not be reused while 
         /// this index exists) and object is marked as modified.
         /// Object can be not yet peristent, in this case
-        /// its forced to become persistent by assigning OID to it.
+        /// its forced to become persistent by assigning oid to it.
         /// </param>
         /// <exception cref="Volante.DatabaseError"><code>DatabaseError(DatabaseError.ErrorCode.INCOMPATIBLE_KEY_TYPE)</code> 
         /// is thrown when indexed field has type other than <code>int</code> or <code>long</code></exception>

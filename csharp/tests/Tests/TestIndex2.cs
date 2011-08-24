@@ -2,6 +2,7 @@ namespace Volante
 {
     using System;
     using System.Collections;
+    using System.Collections.Generic;
 
     public class TestIndex2Result : TestResult
     {
@@ -9,7 +10,7 @@ namespace Volante
         public TimeSpan IndexSearch;
         public TimeSpan IterationTime;
         public TimeSpan RemoveTime;
-        public ICollection MemoryUsage; // elements are of MemoryUsage type
+        public ICollection<MemoryUsage> MemoryUsage; // elements are of MemoryUsage type
     }
 
     public class TestIndex2
@@ -119,14 +120,6 @@ namespace Volante
 
             start = DateTime.Now;
             res.MemoryUsage = db.GetMemoryDump().Values;
-#if NOT_ENABLED
-            Console.WriteLine("Memory usage");
-            foreach (MemoryUsage usage in db.GetMemoryDump().Values)
-            {
-                Console.WriteLine(" " + usage.type.Name + ": instances=" + usage.nInstances + ", total size=" + usage.totalSize + ", allocated size=" + usage.allocatedSize);
-            }
-            Console.WriteLine("Elapsed time for memory dump: " + (DateTime.Now - start));
-#endif
 
             start = System.DateTime.Now;
             key = 1999;
@@ -140,6 +133,7 @@ namespace Volante
             }
             res.RemoveTime = DateTime.Now - start;
             db.Close();
+            //Tests.DumpMemoryUsage(res.MemoryUsage);
         }
     }
 
