@@ -7,10 +7,10 @@ call "%ProgramFiles(x86)%\Microsoft Visual Studio 10.0\Common7\Tools\vsvars32.ba
 @IF ERRORLEVEL 1 GOTO NEEDSVS
 
 :BUILD
-devenv Volante.sln /Rebuild Release /Project Tests
+devenv Volante.sln /Rebuild ReleaseFull /Project Tests
 @IF ERRORLEVEL 1 GOTO FAILEDCOMPILE
 
-@set O=bin\Release
+@set O=bin\ReleaseFull
 @cd %O%
 
 ..\..\..\thirdparty\opencover\OpenCover.Console -target:Tests.exe -register:user -filter:+[Volante*]* -output:opencover.xml >opencover.out.txt

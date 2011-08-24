@@ -34,7 +34,7 @@ public class TestConfig
     public bool AltBtree = false;
     public bool Serializable = false;
     public bool BackgroundGc = false;
-    public Encoding Encoding; // if not null will use this encoding for storing strings
+    public Encoding Encoding = null; // if not null will use this encoding for storing strings
     public int Count; // number of iterations
 
     // Set by the test. Can be a subclass of TestResult
@@ -56,25 +56,32 @@ public class TestConfig
         }
     }
 
-    IDatabase GetTransientStorage()
+    void OpenTransientDatabase(IDatabase db)
     {
-        IDatabase db = DatabaseFactory.CreateDatabase();
         NullFile dbFile = new NullFile();
         db.Open(dbFile, INFINITE_PAGE_POOL);
-        return db;
     }
 
     public IDatabase GetDatabase(bool delete=true)
     {
-        IDatabase db = null;
+        IDatabase db = DatabaseFactory.CreateDatabase();
+#if WITH_OLD_BTREE
+        db.AlternativeBtree = AltBtree || Serializable;
+#endif
+        db.BackgroundGc = BackgroundGc;
+        // TODO: make it configurable?
+        // TODO: make it bigger (1000000 - the original value for h)
+        if (BackgroundGc)
+            db.GcThreshold = 100000;
+        db.StringEncoding = Encoding;
+
         if (InMemory == InMemoryType.Full)
-            db = GetTransientStorage();
+            OpenTransientDatabase(db);
         else
         {
             var name = DatabaseName;
             if (delete)
                 Tests.SafeDeleteFile(name);
-            db = DatabaseFactory.CreateDatabase();
             if (InMemory == InMemoryType.File)
             {
                 if (FileKind == FileType.File)
@@ -98,14 +105,6 @@ public class TestConfig
                 }
             }
         }
-#if WITH_OLD_BTRE
-        db.AlternativeBtree = AltBtree || Serializable;
-#endif
-        db.BackgroundGc = BackgroundGc;
-        // TODO: make it configurable?
-        // TODO: make it bigger (1000000 - the original value for h)
-        if (BackgroundGc)
-            db.GcThreshold = 100000;
         return db;
     }
 
