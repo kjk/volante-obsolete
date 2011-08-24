@@ -53,10 +53,13 @@ namespace Volante
 
             Tests.Assert(idx.Count == count + 2);
             db.Commit();
+            db.Close();
             res.InsertTime = DateTime.Now - start;
             Tests.Assert(idx.Size() == count + 2);
 
             start = System.DateTime.Now;
+            db = config.GetDatabase(false);
+            idx = (IIndex<DateTime, Record>)db.Root;
             Record[] recs = idx[min, mid];
             i = 0;
             foreach (var r2 in recs)

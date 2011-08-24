@@ -344,7 +344,6 @@ public class TestsMain
 
     static TestInfo[] TestInfos = new TestInfo[]
     {
-        new TestInfo("TestIndex"),
         new TestInfo("TestIndexUInt00"),
         new TestInfo("TestIndexInt00"),
         new TestInfo("TestIndexInt"),
@@ -361,7 +360,7 @@ public class TestsMain
         new TestInfo("TestIndexDouble"),
         new TestInfo("TestIndexGuid"),
         new TestInfo("TestIndexObject"),
-        new TestInfo("TestIndexDateTime"),
+        new TestInfo("TestIndexDateTime", ConfigsDefaultFile),
         new TestInfo("TestIndex", ConfigsIndex, Counts1),
         new TestInfo("TestIndex2"),
         new TestInfo("TestIndex3"),
