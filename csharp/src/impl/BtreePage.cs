@@ -406,14 +406,15 @@ namespace Volante.Impl
             byte[] b = pg.data;
             for (int j = 0; j < minlen; j++)
             {
-                int diff = key[j] - (char)Bytes.unpack2(b, offs);
+                char c = (char)Bytes.unpack2(b, offs);
+                int diff = key[j] - c;
                 if (diff != 0)
                 {
                     return diff;
                 }
                 offs += 2;
             }
-            return minlen - blen;
+            return minlen - alen;
         }
 
         internal static bool prefixSearch(DatabaseImpl db, int pageId, string key,

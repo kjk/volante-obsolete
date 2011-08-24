@@ -19,3 +19,5 @@
 15. Changed uses of Hashtable to Dictionary<>
 16. Introduce enum IndexType and use it instead of bool unique param to IDatabase.CreateIndex() methods
 17. Remove bool IDatabase.SerializeTransientObjects property and act as it's always true
+18. Fixed a bug in BtreePage.PrefixSearch()
+19. Fixed a bug in AltBtree.PrefixSearch()

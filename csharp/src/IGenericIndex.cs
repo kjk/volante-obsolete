@@ -97,10 +97,10 @@ namespace Volante
         V[] GetPrefix(string prefix);
 
         /// <summary> 
-        /// Locate all objects which key is prefix of specified word.
+        /// Locate all objects whose key is prefix of specified word.
         /// </summary>
-        /// <param name="word">string which prefixes are located in index</param>
-        /// <returns>array of objects which key is prefix of specified word, ordered by key value
+        /// <param name="word">string whose prefixes are located in index</param>
+        /// <returns>array of objects whose key is prefix of specified word, ordered by key value
         /// </returns>
         V[] PrefixSearch(string word);
 

@@ -49,11 +49,23 @@ namespace Volante
 
             DateTime start = DateTime.Now;
             long key = 1999;
+            int startWithOne = 0;
+            int startWithFive = 0;
+            string strFirst = "z";
+            string strLast  = "0";
             for (i = 0; i < count; i++)
             {
                 Record rec = new Record();
                 rec.intKey = key;
                 rec.strKey = System.Convert.ToString(key);
+                if (rec.strKey[0] == '1')
+                    startWithOne += 1;
+                else if (rec.strKey[0] == '5')
+                    startWithFive += 1;
+                if (rec.strKey.CompareTo(strFirst) < 0)
+                    strFirst = rec.strKey;
+                else if (rec.strKey.CompareTo(strLast) > 0)
+                    strLast = rec.strKey;
                 intIndex[rec.intKey] = rec;
                 strIndex[rec.strKey] = rec;
                 if (i % 100 == 0)
@@ -115,6 +127,39 @@ namespace Volante
             long max = long.MaxValue;
             de = intIndex.GetDictionaryEnumerator(new Key(mid), new Key(max), IterationOrder.DescentOrder);
             VerifyDictionaryEnumerator(de, IterationOrder.DescentOrder);
+
+            Tests.AssertStorageException(() => intIndex.PrefixSearch("1"),
+                DatabaseError.ErrorCode.INCOMPATIBLE_KEY_TYPE);
+            Record[] recs;
+            recs = strIndex.PrefixSearch("1");
+            Tests.Assert(startWithOne == recs.Length);
+            foreach (var r in recs)
+            {
+                Tests.Assert(r.strKey.StartsWith("1"));
+            }
+            recs = strIndex.PrefixSearch("5");
+            Tests.Assert(startWithFive == recs.Length);
+            foreach (var r in recs)
+            {
+                Tests.Assert(r.strKey.StartsWith("5"));
+            }
+            recs = strIndex.PrefixSearch("0");
+            Tests.Assert(0 == recs.Length);
+
+            recs = strIndex.PrefixSearch("a");
+            Tests.Assert(0 == recs.Length);
+
+            recs = strIndex.PrefixSearch(strFirst);
+            Tests.Assert(recs.Length >= 1);
+            Tests.Assert(recs[0].strKey == strFirst);
+            foreach (var r in recs)
+            {
+                Tests.Assert(r.strKey.StartsWith(strFirst));
+            }
+
+            recs = strIndex.PrefixSearch(strLast);
+            Tests.Assert(recs.Length == 1);
+            Tests.Assert(recs[0].strKey == strLast);
 
             key = 1999;
             for (i = 0; i < count; i++)

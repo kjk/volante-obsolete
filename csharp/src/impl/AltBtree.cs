@@ -1265,14 +1265,16 @@ namespace Volante.Impl
                 }
             }
 
-            internal virtual bool prefixSearch(string key, int height, ArrayList result)
+            internal virtual bool prefixSearch(string prefix, int height, ArrayList result)
             {
                 int l = 0, n = nItems, r = n;
                 height -= 1;
                 while (l < r)
                 {
                     int i = (l + r) >> 1;
-                    if (!key.StartsWith(data[i]) && key.CompareTo(data[i]) > 0)
+                    string s = data[i];
+                    // TODO: is s.StartsWith(prefix) needed at all?
+                    if (!s.StartsWith(prefix) && prefix.CompareTo(s) > 0)
                     {
                         l = i + 1;
                     }
@@ -1286,10 +1288,9 @@ namespace Volante.Impl
                 {
                     while (l < n)
                     {
-                        if (key.CompareTo(data[l]) < 0)
-                        {
+                        if (!data[l].StartsWith(prefix))
                             return false;
-                        }
+
                         result.Add(items[l]);
                         l += 1;
                     }
@@ -1298,16 +1299,14 @@ namespace Volante.Impl
                 {
                     do
                     {
-                        if (!((BtreePageOfString)items[l]).prefixSearch(key, height, result))
+                        if (!((BtreePageOfString)items[l]).prefixSearch(prefix, height, result))
                         {
                             return false;
                         }
                         if (l == n)
-                        {
                             return true;
-                        }
                     }
-                    while (key.CompareTo(data[l++]) >= 0);
+                    while (data[l++].StartsWith(prefix));
                     return false;
                 }
                 return true;

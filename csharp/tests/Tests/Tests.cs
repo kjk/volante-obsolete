@@ -342,9 +342,9 @@ public class TestsMain
         }
     };
 
-    static TestInfo[] TestInfos = new TestInfo[] 
+    static TestInfo[] TestInfos = new TestInfo[]
     {
-        new TestInfo("TestEncoding", ConfigsEncoding, new int[2] { 50000, 50000 }),
+        new TestInfo("TestIndex"),
         new TestInfo("TestIndexUInt00"),
         new TestInfo("TestIndexInt00"),
         new TestInfo("TestIndexInt"),
@@ -377,6 +377,7 @@ public class TestsMain
         new TestInfo("TestCompoundIndex"),
         new TestInfo("TestConcur"),
         new TestInfo("TestEnumerator", ConfigsDefault, new int[2] { 50, 1000 }),
+        new TestInfo("TestEncoding", ConfigsEncoding, new int[2] { 50000, 50000 }),
         // TODO: figure out why running it twice throws an exception from reflection
         // about trying to create a duplicate wrapper class
         new TestInfo("TestList", ConfigsOnlyAlt),

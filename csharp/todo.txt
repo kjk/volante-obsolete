@@ -5,6 +5,7 @@ Things to do for c# version:
 * wp7 versions
 * get rid of IDatabase.StringEncoding and always use utf8 for storing strings (?)
 * make a release script that builds and uploads .zip with the Volante.dll
+* fix a bug where index enumerator for range where being and end are the same value returns all values instead of 1 (if a key is in the database) or 0 (if the key isn't in the database)
 * make a 0.9 release
 
 After 0.9:
