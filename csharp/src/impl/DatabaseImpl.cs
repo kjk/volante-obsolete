@@ -93,9 +93,7 @@ namespace Volante.Impl
         internal void ensureOpened()
         {
             if (!opened)
-            {
                 throw new DatabaseError(DatabaseError.ErrorCode.DATABASE_NOT_OPENED);
-            }
         }
 
         int getBitmapPageId(int i)
@@ -252,7 +250,8 @@ namespace Volante.Impl
                 int oid;
                 int curr = 1 - currIndex;
                 setDirty();
-                if ((oid = header.root[curr].freeList) != 0)
+                oid = header.root[curr].freeList;
+                if (oid != 0)
                 {
                     header.root[curr].freeList = (int)(getPos(oid) >> dbFlagsBits);
                     Debug.Assert(header.root[curr].freeList >= 0);
@@ -1576,13 +1575,10 @@ namespace Volante.Impl
         public int MakePersistent(IPersistent obj)
         {
             if (obj == null)
-            {
                 return 0;
-            }
             if (obj.Oid != 0)
-            {
                 return obj.Oid;
-            }
+
             lock (this)
             {
                 ensureOpened();

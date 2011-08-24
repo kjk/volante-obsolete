@@ -361,7 +361,9 @@ public class TestsMain
         new TestInfo("TestIndex2"),
         new TestInfo("TestIndex3"),
         new TestInfo("TestIndex4", ConfigsDefaultFile, Counts1),
+#if WITH_OLD_BTREE
         new TestInfo("TestBit", ConfigsNoAlt, new int[2] { 2000, 20000 }),
+#endif
         new TestInfo("TestR2", ConfigsR2, new int[2] { 1000, 20000 }),
         new TestInfo("TestRaw", ConfigsRaw, new int[2] { 1000, 10000 }),
         new TestInfo("TestRtree", ConfigsDefault, new int[2] { 800, 20000 }),
@@ -373,22 +375,14 @@ public class TestsMain
         // TODO: figure out why running it twice throws an exception from reflection
         // about trying to create a duplicate wrapper class
         new TestInfo("TestList", ConfigsOnlyAlt),
+#if WITH_XML
         new TestInfo("TestXml", ConfigsDefaultFile, new int[2] { 2000, 20000 }),
+#endif
         // TODO: figure out why when it's 2000 instead of 2001 we fail
         new TestInfo("TestTimeSeries", ConfigsDefault, new int[2] { 2001, 100000 }),
         new TestInfo("TestBackup", ConfigsDefaultFile),
-        new TestInfo("TestGC", ConfigsGc, new int[2] { 5000, 50000 })
+        new TestInfo("TestGc", ConfigsGc, new int[2] { 5000, 50000 })
     };
-
-    public static TestConfig[] GetTestConfigs(string testName)
-    {
-        foreach (var ti in TestInfos)
-        {
-            if (testName == ti.Name)
-                return ti.Configs;
-        }
-        return null;
-    }
 
     public static int GetCount(string testName)
     {
@@ -411,8 +405,14 @@ public class TestsMain
         }
     }
 
-    public static void RunTests(string testClassName)
+    public static TestConfig[] GetTestConfigs(TestInfo testInfo)
     {
+        return testInfo.Configs ?? ConfigsDefault;
+    }
+
+    public static void RunTests(TestInfo testInfo)
+    {
+        string testClassName = testInfo.Name;
         var assembly = Assembly.GetExecutingAssembly();
         object obj = assembly.CreateInstance(testClassName);
         if (obj == null)
@@ -420,7 +420,7 @@ public class TestsMain
         Type tp = obj.GetType();
         MethodInfo mi = tp.GetMethod("Run");
         int count = GetCount(testClassName);
-        foreach (TestConfig configTmp in GetTestConfigs(testClassName))
+        foreach (TestConfig configTmp in GetTestConfigs(testInfo))
         {
 #if !WITH_OLD_BTREE
             bool useAltBtree = configTmp.AltBtree || configTmp.Serializable;
@@ -447,33 +447,7 @@ public class TestsMain
 
         var tStart = DateTime.Now;
 
-        string[] tests = new string[] {
-            "TestIndexUInt00", "TestIndexInt00",
-            "TestIndexInt", "TestIndexUInt",
-            "TestIndexBoolean", "TestIndexByte",
-            "TestIndexSByte", "TestIndexShort",
-            "TestIndexUShort", "TestIndexLong",
-            "TestIndexULong", "TestIndexDecimal",
-            "TestIndexFloat", "TestIndexDouble",
-            "TestIndexGuid", "TestIndexObject",
-            "TestIndexDateTime", "TestIndex",
-            "TestIndex2", "TestIndex3",
-            "TestIndex4", 
-#if WITH_OLD_BTREE
-            "TestBit",
-#endif
-            "TestRaw", "TestR2", 
-            "TestRtree", "TestTtree",
-            "TestBlob", "TestCompoundIndex",
-            "TestConcur", "TestEnumerator",
-            "TestList", "TestGC",
-#if WITH_XML
-            "TestXml",
-#endif
-            "TestTimeSeries", "TestBackup"
-        };
-
-        foreach (var t in tests)
+        foreach (var t in TestInfos)
         {
             RunTests(t);
         }

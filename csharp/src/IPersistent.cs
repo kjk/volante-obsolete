@@ -77,7 +77,7 @@ namespace Volante
         /// by other loaded peristent object. Default implementation of this method
         /// returns <code>true</code> making all cluster of referenced objects loaded together. 
         /// To avoid main memory overflow you should stop recursive loading of all objects
-        /// from the database to main memory by redefining this method in some classes and returing
+        /// from the database to main memory by redefining this method in some classes and returning
         /// <code>false</code> in it. In this case object has to be loaded explicitely 
         /// using Persistent.load method.
         /// </summary>
@@ -88,13 +88,13 @@ namespace Volante
 
         /// <summary> This method is  called by the database after loading of the object.
         /// It can be used to initialize transient fields of the object. 
-        /// Default implementation of this method do nothing 
+        /// Default implementation of this method does nothing 
         /// </summary>
         void OnLoad();
 
         /// <summary> This method is  called by the database befire storing of the object.
         /// It can be used to initialize transient fields of the object. 
-        /// Default implementation of this method do nothing 
+        /// Default implementation of this method does nothing 
         /// </summary>
         void OnStore();
 
@@ -107,11 +107,11 @@ namespace Volante
 
         /// <summary>
         /// Method used to associate object with storage.
-        /// This method is used by Storage class and you should not use it explicitly.
+        /// This method is used by IDictionary class and you should not use it explicitly.
         /// </summary>
-        /// <param name="storage">storage to be assigned to</param>
+        /// <param name="db">database to be assigned to</param>
         /// <param name="oid">assigned oid</param>
         /// <param name="raw">if object is already loaded</param>
-        void AssignOid(IDatabase storage, int oid, bool raw);
+        void AssignOid(IDatabase db, int oid, bool raw);
     }
 }

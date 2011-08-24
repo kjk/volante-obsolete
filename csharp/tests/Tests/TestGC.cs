@@ -1,12 +1,13 @@
 namespace Volante
 {
     using System;
+    using System.Collections.Generic;
 
-    public class TestGCResult : TestResult
+    public class TestGcResult : TestResult
     {
     }
 
-    public class TestGC
+    public class TestGc
     {
         class PObject : Persistent
         {
@@ -27,7 +28,7 @@ namespace Volante
         public void Run(TestConfig config)
         {
             int count = config.Count;
-            var res = new TestGCResult();
+            var res = new TestGcResult();
             config.Result = res;
             IDatabase db = config.GetDatabase();
             StorageRoot root = new StorageRoot();
