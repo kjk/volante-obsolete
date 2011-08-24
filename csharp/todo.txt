@@ -3,8 +3,8 @@ Things to do for c# version:
 * make a release script that builds and uploads .zip with the Volante.dll
 * write docs
 * silverlight and wp7 versions
-* get rid of Database.StringEncoding and always use utf8 for storing strings (?)
-* remove CacheType - just use the best cache (?)
+* get rid of IDatabase.StringEncoding and always use utf8 for storing strings (?)
+* figure out why using UTF8 StringEncoding is faster (but doesn't use less memory) when using memory but slower when storing to disk
 * make a 0.9 release
 
 After 0.9:

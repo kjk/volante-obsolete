@@ -277,48 +277,53 @@ public class TestsMain
     static int[] Counts1 = new int[2] { 200, 10000 };
 
     static TestConfig[] ConfigsDefault = new TestConfig[] {
-            new TestConfig{ InMemory = TestConfig.InMemoryType.Full },
-            new TestConfig{ InMemory = TestConfig.InMemoryType.Full, AltBtree=true }
-        };
+        new TestConfig{ InMemory = TestConfig.InMemoryType.Full },
+        new TestConfig{ InMemory = TestConfig.InMemoryType.Full, AltBtree=true }
+    };
+
+    static TestConfig[] ConfigsEncoding = new TestConfig[] {
+        new TestConfig{ InMemory = TestConfig.InMemoryType.File, AltBtree = true },
+        new TestConfig{ InMemory = TestConfig.InMemoryType.File, AltBtree = true, Encoding = Encoding.UTF8 }
+    };
 
     static TestConfig[] ConfigsR2 = new TestConfig[] {
-            new TestConfig{ InMemory = TestConfig.InMemoryType.Full },
-            // TODO: should have a separate NoFlush flag
-            new TestConfig{ InMemory = TestConfig.InMemoryType.Full, AltBtree=true }
-        };
+        new TestConfig{ InMemory = TestConfig.InMemoryType.Full },
+        // TODO: should have a separate NoFlush flag
+        new TestConfig{ InMemory = TestConfig.InMemoryType.Full, AltBtree=true }
+    };
 
     static TestConfig[] ConfigsRaw = new TestConfig[] {
-            new TestConfig{ InMemory = TestConfig.InMemoryType.Full },
-            new TestConfig{ InMemory = TestConfig.InMemoryType.Full, AltBtree=true }
-        };
+        new TestConfig{ InMemory = TestConfig.InMemoryType.Full },
+        new TestConfig{ InMemory = TestConfig.InMemoryType.Full, AltBtree=true }
+    };
 
     static TestConfig[] ConfigsNoAlt = new TestConfig[] {
-            new TestConfig{ InMemory = TestConfig.InMemoryType.Full }
-        };
+        new TestConfig{ InMemory = TestConfig.InMemoryType.Full }
+    };
 
     static TestConfig[] ConfigsOnlyAlt = new TestConfig[] {
-            new TestConfig{ InMemory = TestConfig.InMemoryType.Full, AltBtree=true }
-        };
+        new TestConfig{ InMemory = TestConfig.InMemoryType.Full, AltBtree=true }
+    };
 
     static TestConfig[] ConfigsIndex = new TestConfig[] {
-            new TestConfig{ InMemory = TestConfig.InMemoryType.Full },
-            new TestConfig{ InMemory = TestConfig.InMemoryType.Full, Serializable=true },
-            new TestConfig{ InMemory = TestConfig.InMemoryType.No, AltBtree=false },
-            new TestConfig{ InMemory = TestConfig.InMemoryType.No, AltBtree=true },
-            new TestConfig{ InMemory = TestConfig.InMemoryType.Full, AltBtree=true },
-            new TestConfig{ InMemory = TestConfig.InMemoryType.No, FileKind = TestConfig.FileType.Stream, AltBtree=true }
-        };
+        new TestConfig{ InMemory = TestConfig.InMemoryType.Full },
+        new TestConfig{ InMemory = TestConfig.InMemoryType.Full, Serializable=true },
+        new TestConfig{ InMemory = TestConfig.InMemoryType.No, AltBtree=false },
+        new TestConfig{ InMemory = TestConfig.InMemoryType.No, AltBtree=true },
+        new TestConfig{ InMemory = TestConfig.InMemoryType.Full, AltBtree=true },
+        new TestConfig{ InMemory = TestConfig.InMemoryType.No, FileKind = TestConfig.FileType.Stream, AltBtree=true }
+    };
 
     static TestConfig[] ConfigsDefaultFile = new TestConfig[] {
-            new TestConfig{ InMemory = TestConfig.InMemoryType.No },
-            new TestConfig{ InMemory = TestConfig.InMemoryType.No, AltBtree=true }
-        };
+        new TestConfig{ InMemory = TestConfig.InMemoryType.No },
+        new TestConfig{ InMemory = TestConfig.InMemoryType.No, AltBtree=true }
+    };
 
     static TestConfig[] ConfigsGc = new TestConfig[] {
-            new TestConfig{ InMemory = TestConfig.InMemoryType.No },
-            new TestConfig{ InMemory = TestConfig.InMemoryType.No, AltBtree=true },
-            new TestConfig{ InMemory = TestConfig.InMemoryType.No, AltBtree=true, BackgroundGc = true }
-        };
+        new TestConfig{ InMemory = TestConfig.InMemoryType.No },
+        new TestConfig{ InMemory = TestConfig.InMemoryType.No, AltBtree=true },
+        new TestConfig{ InMemory = TestConfig.InMemoryType.No, AltBtree=true, BackgroundGc = true }
+    };
 
     public class TestInfo
     {
@@ -340,6 +345,7 @@ public class TestsMain
 
     static TestInfo[] TestInfos = new TestInfo[] 
     {
+        new TestInfo("TestEncoding", ConfigsEncoding, new int[2] { 50000, 50000 }),
         new TestInfo("TestIndexUInt00"),
         new TestInfo("TestIndexInt00"),
         new TestInfo("TestIndexInt"),
@@ -420,7 +426,8 @@ public class TestsMain
         Type tp = obj.GetType();
         MethodInfo mi = tp.GetMethod("Run");
         int count = GetCount(testClassName);
-        foreach (TestConfig configTmp in GetTestConfigs(testInfo))
+        TestConfig[] configs = GetTestConfigs(testInfo);
+        foreach (TestConfig configTmp in configs)
         {
 #if !WITH_OLD_BTREE
             bool useAltBtree = configTmp.AltBtree || configTmp.Serializable;

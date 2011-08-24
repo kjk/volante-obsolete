@@ -1,0 +1,36 @@
+<!doctype HTML> 
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<link href="main.css" type="text/css" rel="stylesheet">
+	<title>Miscalenious info about Volante</title>
+</head>
+<body>
+<div id=left-bar>
+	<div id=sections>
+		<center><div><a href="index.html">Volante</a></div><center>
+	</div>
+</div>
+
+<div class=content>
+	<p><a href=index.html>Volante</a> : Miscalenious info</p>
+
+	<h3>Storage overhead</h3>
+
+	<p>When objects are stored on disk, they are serialized to byte array using a compact, binary encoding. There is overhead added on top of serialied object data:
+	<ul>
+		<li>8 bytes for object header (to record object size and oid, both 32-bit integers)</li>
+		<li>the size is rounded up to the 32 bytes (i.e. object of size between 0 and 32 bytes will take 32 bytes)</li>
+	</ul>
+	There's also less significant overhead for maintaining database structure.</p>
+
+	<center><a href=history.html>← history</a> &nbsp;&bull;&nbsp; <span style="color: gray">the end</span>
+
+	<hr style="margin-top:28px">
+	<center style="font-size:10pt;color:gray">Volante is maintained by <a href="http://blog.kowalczyk.info">Krzysztof Kowalczyk</a></center>
+
+</div>
+
+<span id=adsense></span>
+</body>
+</html>

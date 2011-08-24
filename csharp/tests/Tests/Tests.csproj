@@ -100,6 +100,7 @@
     <Compile Include="TestBlob.cs" />
     <Compile Include="TestCompoundIndex.cs" />
     <Compile Include="TestConcur.cs" />
+    <Compile Include="TestEncoding.cs" />
     <Compile Include="TestEnumerator.cs" />
     <Compile Include="TestGC.cs" />
     <Compile Include="TestIndex.cs" />
