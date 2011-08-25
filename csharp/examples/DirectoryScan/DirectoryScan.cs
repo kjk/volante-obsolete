@@ -55,7 +55,44 @@ namespace DirectoryScan
             ListBiggestFiles(dbRoot, LIMIT);
             ListMostRecentlyWrittenToFiles(dbRoot, LIMIT);
             ListDuplicateNamesFiles(dbRoot, LIMIT);
+            RemoveOneFileEntry(db, dbRoot);
             db.Close();
+        }
+
+        static void RemoveOneFileEntry(IDatabase db, DatabaseRoot dbRoot)
+        {
+            // change to true to see object stats on the console
+            // before and after removal
+            const bool showMemoryStats = false;
+            if (showMemoryStats)
+            {
+                Console.WriteLine("Memory stats before removal:");
+                DumpMemoryUsage(db.GetMemoryDump().Values);
+            }
+            // we pick one object and remove it from all 3 indexes
+            if (dbRoot.FileSizeIndex.Count == 0)
+                return;
+            FileEntry toRemove = null;
+            foreach (var fe in dbRoot.FileSizeIndex)
+            {
+                toRemove = fe;
+                break;
+            }
+            // Remove an object with a given key from all 3 indexes.
+            // We still need to provide the object because those are
+            // non-unique indexes, so the same key might point to many
+            // objects and we only want to remove this specific object.
+            string name = Path.GetFileName(toRemove.Path);
+            dbRoot.FileNameIndex.Remove(name, toRemove);
+            dbRoot.FileSizeIndex.Remove(toRemove.Size, toRemove);
+            dbRoot.FileLastWriteTimeIndex.Remove(toRemove.LastWriteTimeUtc, toRemove);
+            // changes are not reflected in the database until we commit
+            db.Commit();
+            if (showMemoryStats)
+            {
+                Console.WriteLine("Memory stats after removal:");
+                DumpMemoryUsage(db.GetMemoryDump().Values);
+            }
         }
 
         static void PopulateDatabase(IDatabase db, string startDir)
@@ -87,8 +124,9 @@ namespace DirectoryScan
                             LastAccessTimeUtc = fi.LastAccessTimeUtc,
                             LastWriteTimeUtc = fi.LastWriteTimeUtc
                         };
+                        string name = Path.GetFileName(fe.Path);
                         dbRoot.FileSizeIndex.Put(fe.Size, fe);
-                        dbRoot.FileNameIndex.Put(fi.Name, fe);
+                        dbRoot.FileNameIndex.Put(name, fe);
                         dbRoot.FileLastWriteTimeIndex.Put(fe.LastWriteTimeUtc, fe);
                         ++insertedCount;
                         if (insertedCount % 10000 == 0)
@@ -106,9 +144,9 @@ namespace DirectoryScan
             db.Commit();
             // when we're finished, each index should have the same
             // number of items in it, equal to number of inserted objects
-            //Debug.Assert(dbRoot.FileSizeIndex.Count == insertedCount);
-            //Debug.Assert(dbRoot.FileNameIndex.Count == insertedCount);
-            //Debug.Assert(dbRoot.FileLastWriteTimeIndex.Count == insertedCount);
+            Debug.Assert(dbRoot.FileSizeIndex.Count == insertedCount);
+            Debug.Assert(dbRoot.FileNameIndex.Count == insertedCount);
+            Debug.Assert(dbRoot.FileLastWriteTimeIndex.Count == insertedCount);
         }
 
         static void ListSmallestFiles(DatabaseRoot dbRoot, int limit)
@@ -186,5 +224,15 @@ namespace DirectoryScan
                 prevPath = fe.Path;
             }
         }
+
+        public static void DumpMemoryUsage(ICollection<MemoryUsage> usages)
+        {
+            Console.WriteLine("Memory usage");
+            foreach (MemoryUsage usage in usages)
+            {
+                Console.WriteLine(" " + usage.type.Name + ": instances=" + usage.nInstances + ", total size=" + usage.totalSize + ", allocated size=" + usage.allocatedSize);
+            }
+        }
+
     }
 }
