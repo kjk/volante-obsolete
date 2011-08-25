@@ -35,7 +35,7 @@ namespace Volante
     /// It is inteded to be used in classes using virtual properties to 
     /// access components of persistent objects. You can not use standard
     /// C# array here, instead you should use PArray class.
-    /// PArray is created by Storage.createArray method
+    /// PArray is created by IDatabase.CreateArray method
     /// </summary>
     public interface IPArray<T> : IGenericPArray, ILink<T> where T : class,IPersistent
     {

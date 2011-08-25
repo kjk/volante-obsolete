@@ -1,8 +1,21 @@
 Things to do for c# version:
 
 * finish manual:
- * chapter on transactions
- * chapter on 
+ * transactions
+ * CreateIndex()
+ * CreateThickIndex()
+ * CreateFieldIndex()
+ * CreateSpatialIndex() / CreateSpatialIndexR2()
+ * CreateSortedCollection()
+ * CreateSet()
+ * CreateLink()
+ * CreateScalableSet()
+ * CreateArray()
+ * CreateRelation()
+ * CreateBlob()
+ * CreateTimeSeries()
+ * CreatePatriciaTree()
+* change naming on MemoryUsage class
 * make a reference API from .xml extracted during build process
 * silverlight version
 * wp7 versions

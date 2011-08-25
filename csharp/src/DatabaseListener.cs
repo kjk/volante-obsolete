@@ -21,7 +21,7 @@ namespace Volante
 
         /// <summary>
         /// This method is called when garbage collection is  started (ether explicitly
-        /// by invocation of Storage.gc() method, either implicitly  after allocation
+        /// by invocation of IDatabase.Gc() method, either implicitly  after allocation
         /// of some amount of memory)).
         /// </summary>
         public void GcStarted() { }
@@ -29,7 +29,7 @@ namespace Volante
         /// <summary>
         /// This method is called  when unreferenced object is deallocated from 
         /// database. It is possible to get instance of the object using
-        /// <code>Storage.getObjectByOid()</code> method.
+        /// <code>IDatabase.GetObjectByOid()</code> method.
         /// </summary>
         /// <param name="cls">class of deallocated object</param>
         /// <param name="oid">object identifier of deallocated object</param>

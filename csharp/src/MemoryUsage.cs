@@ -4,7 +4,7 @@ namespace Volante
 {
     /// <summary>
     /// Information about memory usage for the correspondent class. 
-    /// Instances of this class are created by Storage.getMemoryDump method.
+    /// Instances of this class are created by IDatabase.GetMemoryDump method.
     /// Size of internal database structures (object index,* memory allocation bitmap) is associated with 
     /// <code>Storage</code> class. Size of class descriptors  - with <code>System.Type</code> class.
     /// </summary>

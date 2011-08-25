@@ -23,7 +23,7 @@ namespace Volante
         /// 
         /// Only persistent object (object which were assigned to the the storage either implicitly by
         /// saving some other persistent object referencing this object, either explicitly by 
-        /// <code>Storage.makeObjectPersistent</code> method.
+        /// <code>IDatabase.MakeObjectPersistent</code> method.
         /// </summary>
         void SharedLock();
 
@@ -42,7 +42,7 @@ namespace Volante
         ///
         /// Only persistent object (object which were assigned to the the storage either implicitly by
         /// saving some other persistent object referencing this object, either explicitly by 
-        /// <code>Storage.makeObjectPersistent</code> method.   
+        /// <code>IDatabase.MakeObjectPersistent</code> method.   
         /// </summary>
         void ExclusiveLock();
 
@@ -65,7 +65,7 @@ namespace Volante
         /// 
         /// Only persistent object (object which were assigned to the the storage either implicitly by
         /// saving some other persistent object referencing this object, either explicitly by 
-        /// <code>Storage.makeObjectPersistent</code> method.
+        /// <code>IDatabase.MakeObjectPersistent</code> method.
         /// </summary>
         /// <param name="timeout">timeout of operation in milliseconds. If timeout is 0 and
         /// lock can not be granted, the request will fail immediately. Otherwise the system will try
@@ -94,7 +94,7 @@ namespace Volante
         ///
         /// Only persistent object (object which were assigned to the the storage either implicitly by
         /// saving some other persistent object referencing this object, either explicitly by 
-        /// <code>Storage.makeObjectPersistent</code> method.   
+        /// <code>IDatabase.MakeObjectPersistent</code> method.   
         /// </summary>
         /// <param name="timeout">timeout of operation in milliseconds. If timeout is 0 and
         /// lock can not be granted, the request will fail immediately. Otherwise the system will try

@@ -81,7 +81,7 @@ namespace Volante
         /// <summary>
         /// Get class object objects which can be inserted in this index
         /// </summary>
-        /// <returns>class specified in Storage.createFielIndex method</returns>
+        /// <returns>class specified in IDatabase.CreateFielIndex method</returns>
         Type IndexedClass { get; }
 
         /// <summary>

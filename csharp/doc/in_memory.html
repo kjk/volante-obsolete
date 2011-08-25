@@ -3,9 +3,11 @@
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 	<link href="main.css" type="text/css" rel="stylesheet">
+	<link  href="http://blog.kowalczyk.info/js/prettify.css" type="text/css" rel="stylesheet"> 
+	<script src="http://blog.kowalczyk.info/js/prettify.js" type="text/javascript"></script>
 	<title>Using Volante as in-memory database</title>
 </head>
-<body>
+<body onload="prettyPrint()">
 <div id=left-bar>
 	<div id=sections>
 		<center><div><a href="index.html">Volante</a></div><center>
@@ -30,9 +32,10 @@
 
 	<p>In that mode the data is gone after application quits. Good for completely transient data.</p>
 
-	<p>This mode is enabled by passing NullFile() instance and 0 for pagePoolSize to Database.Open().</p>
+	<p>This mode is enabled by passing <code>NullFile()</code> instance and 0 for <code>pagePoolSize to IDatabase.Open()</code>.</p>
 
-	<p>TODO: code example</p>
+	<pre class="prettyprint lang-cs">NullFile dbFile = new NullFile();
+db.Open(dbFile, 0);</pre>
 
 	<h3>In-memory use with persistence</h3>
 
@@ -40,9 +43,8 @@
 
 	<p>The downside is that if the application crashes and the database is not closed, all the data will be lost.</p>
 
-	<p>This mode is enabled by passing 0 for pagePoolSize to Database.Open().</p>
-
-	<p>TODO: code example</p>
+	<p>This mode is enabled by passing 0 for <code>pagePoolSize</code> to <code>IDatabase.Open()</code>.</p>
+	<pre class="prettyprint lang-cs">db.Open("mydb.dbs", 0);</pre>
 
 	<center><a href=intro.html>← introduction</a> &nbsp;&bull;&nbsp; <a href=history.html>history →</a>
 
