@@ -1,6 +1,9 @@
 Things to do for c# version:
 
-* write docs
+* finish manual:
+ * chapter on transactions
+ * chapter on 
+* make a reference API from .xml extracted during build process
 * silverlight version
 * wp7 versions
 * get rid of IDatabase.StringEncoding and always use utf8 for storing strings (?)
@@ -13,3 +16,7 @@ After 0.9:
 
 Notes:
 * building without (old) Btree code saves 48kB (264 => 216)
+
+Test coverage notes:
+* 52%   on 2011-08-06
+* 59.5% on 2011-08-24

@@ -144,6 +144,7 @@
     <Compile Include="TestIndexULong.cs" />
     <Compile Include="TestIndexUShort.cs" />
     <Compile Include="TestList.cs" />
+    <Compile Include="TestMisc.cs" />
     <Compile Include="TestR2.cs" />
     <Compile Include="TestRaw.cs" />
     <Compile Include="TestRtree.cs" />

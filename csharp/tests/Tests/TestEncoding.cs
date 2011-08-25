@@ -1,3 +1,6 @@
+// Copyright: Krzysztof Kowalczyk
+// License: BSD
+
 namespace Volante
 {
     using System;

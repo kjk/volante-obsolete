@@ -128,7 +128,7 @@ namespace Volante
             de = intIndex.GetDictionaryEnumerator(new Key(mid), new Key(max), IterationOrder.DescentOrder);
             VerifyDictionaryEnumerator(de, IterationOrder.DescentOrder);
 
-            Tests.AssertStorageException(() => intIndex.PrefixSearch("1"),
+            Tests.AssertDatabaseException(() => intIndex.PrefixSearch("1"),
                 DatabaseError.ErrorCode.INCOMPATIBLE_KEY_TYPE);
             Record[] recs;
             recs = strIndex.PrefixSearch("1");

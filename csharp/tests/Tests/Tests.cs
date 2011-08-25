@@ -1,3 +1,6 @@
+// Copyright: Krzysztof Kowalczyk
+// License: BSD
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -170,6 +173,16 @@ public class Tests
         CurrAssertsFailed = 0;
     }
 
+    public static int DbInstanceCount(IDatabase db, Type type)
+    {
+        var mem = db.GetMemoryDump();
+        MemoryUsage mu;
+        bool ok = mem.TryGetValue(type, out mu);
+        if (!ok)
+            return 0;
+        return mu.nInstances;
+    }
+
     public static void DumpMemoryUsage(ICollection<MemoryUsage> usages)
     {
         Console.WriteLine("Memory usage");
@@ -203,7 +216,7 @@ public class Tests
         Assert(gotException);
     }
 
-    public static void AssertStorageException(Action func, DatabaseError.ErrorCode expectedCode)
+    public static void AssertDatabaseException(Action func, DatabaseError.ErrorCode expectedCode)
     {
         bool gotException = false;
         try
@@ -344,6 +357,7 @@ public class TestsMain
 
     static TestInfo[] TestInfos = new TestInfo[]
     {
+        new TestInfo("TestRemove00"),
         new TestInfo("TestIndexUInt00"),
         new TestInfo("TestIndexInt00"),
         new TestInfo("TestIndexInt"),

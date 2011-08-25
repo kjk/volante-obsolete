@@ -1,6 +1,11 @@
 <HTML>
 <HEAD>
 <TITLE>Volante - Simple, Fast, Convenient Object Oriented Database</TITLE>
+<BODY>
+
+<p><b>Note:</b> this is an older docs from Perst days. It might contain some
+additional information but also might no longer reflect the code.</p>
+
 <UL>
 <LI> <A HREF = "#introduction">Introduction</A>
 
@@ -33,7 +38,6 @@
 </UL>
 </UL>
 
-<BODY>
 <HR>
 <H2><A NAME = "introduction">Introduction</A></H2>
 
@@ -501,7 +505,7 @@ object is loaded from the storage.
 <LI>It is not possible to have arrays of references. You have to use 
 <code>Volante.PArray</code> class instead.
 <LI>Generation of wrapper classes is not cheap operations, so if there are many classes
-in your applications, then it can take significant time during database open.
+in your applications, then it can take significant time when opening a database .
 <LI>This mechanism will not work in Compact.Net framework 
 because it doesn't support code generation at runtime.
 </OL><P>
@@ -529,7 +533,7 @@ if specified interface extends <code>Volante.IResource</code> interface).
 Wrapper class will implement specified interface and contains correspondent fields:
 
 <pre>
-class NodeWrapper:Persistent, Node {
+class NodeWrapper : Persistent, Node {
     public int Weight {
         get {
             return weight;
@@ -599,7 +603,7 @@ allocation quantum is 64 byte. It means that size of all allocated objects is
 aligned on 64 byte boundary. Each 64 byte of database memory is represented by
 one bit in the bitmap. To locate hole of requested size in bitmap, Volante
 sequentially searches bitmap pages for correspondent number of successive
-cleared bits. Volante use three arrays indexed by bitmap byte, which
+cleared bits. Volante uses three arrays indexed by bitmap byte, which
 makes possible fast calculation of hole offset and size within the byte.<P>
 
 Volante performs cyclic scanning of bitmap pages. It keeps identifier

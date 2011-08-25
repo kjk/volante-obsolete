@@ -112,8 +112,8 @@ dbRoot.FileLastWriteTimeIndex.Put(fe.LastWriteTimeUtc, fe);</pre>
 
 	<p>Things to note in the above code:
 	<ul>
-		<li>the index key can be of any value, it doesn't have to be part of the persisted object. The key of FileNameIndex is name of the file even though the name is not part of FileEntry object.</li>
-		<li>the indexes all point to the same FileEntry object and it's not duplicated. Internally the indexes store only 32-bit oid, which is a unique identifier of the object (which is enough information needed to locate the object).</li>
+		<li>the index key can be of any value, it's completely independent of the persisted object. The key of FileNameIndex is name of the file even though the name is not part of FileEntry object. That being said, most of the time the key would also be part of persisted object.</li>
+		<li>the indexes all point to the same FileEntry object - it's not duplicated. Internally the indexes store only 32-bit oid, which is a unique identifier of the object. Oid is enough information to load the object from database into memory.</li>
 	</ul>
 	</p>
 
@@ -134,7 +134,7 @@ dbRoot.FileLastWriteTimeIndex.Put(fe.LastWriteTimeUtc, fe);</pre>
 
 	<p>An index can be traversed in ascending (small values first, the default order) or descending order.</p>
 
-	<p>To list the smallest files we traverse <code>FileSizeIndex</code> in default, ascending order. IIndex implements <code>GetEnumerator()</code> function which we can use in foreach loop:
+	<p>To list the smallest files we traverse <code>FileSizeIndex</code> in default, ascending order. <code>IIndex</code> implements <code>GetEnumerator()</code> function which we can use in <code>foreach</code> loop:
 	<pre class="prettyprint lang-cs">foreach (var fe in dbRoot.FileSizeIndex)
 {
     Console.WriteLine(String.Format("{0}: {1} bytes", fe.Path, fe.Size));
@@ -152,9 +152,9 @@ dbRoot.FileLastWriteTimeIndex.Put(fe.LastWriteTimeUtc, fe);</pre>
 }</pre>
 	We use <code>Reverse()</code> to also list the most recently written to files, this time using <code>FileLastWriteTimeIndex</code> index.</p>
 
-	<p>To list files with duplicate names we traverse the whole FileNameIndex and we detect duplicate names by comparing current file name with previous name.</p>
+	<p>To list files with duplicate names we traverse the whole <code>FileNameIndex</code> and we detect duplicate names by comparing current file name with previous name.</p>
 
-	<p>Name of the file is not part of the stored object but it is stored in the index. We can access both key and value using GetDictionaryEnumerator() which returns IDictionaryEnumerator:
+	<p>Name of the file is not part of the stored object but it is stored in the index. We can access both key and value using <code>GetDictionaryEnumerator()</code> which returns <code>IDictionaryEnumerator</code>:
 	<pre class="prettyprint lang-cs">IDictionaryEnumerator de = dbRoot.FileNameIndex.GetDictionaryEnumerator();
 string name = "";
 // not totally correct: doesn't show the first duplicate file
@@ -171,12 +171,36 @@ while (de.MoveNext())
     prevName = name;
 }
 </pre>
+	<h3>Removing the data</h3>
+
+	<p>Volante will automatically remove all objects that are no longer reachable from root object during database garbate collection.</p>
+
+	<p>In our case the root object points to 3 indexes, each index points to many objects. To remove an object from the database, we need to remove it from all three indexes.</p>
+
+	<p>To remove an object from the index, we use <code>IIndex.Remove(K key, V obj)</code> method. There's also <code>IIndex.Remove(K key)</code> but it only works on unique indexes (it throws <code>DatabaseError</code> exception when used on non-unique index). In our case all indexes are non-unique i.e. the same key can point to multiple objects, so we have pass the exact object to be removed to disambiguate.</p>
+
+	<p>The changes are not reflected in the database until we <code>IDatabase.Commit()</code></p>
+
+	<p>You can see complete code for removal <a href="https://github.com/kjk/volante/blob/master/csharp/examples/DirectoryScan/DirectoryScan.cs#L62">here</a>. If you change <code>showMemoryStats</code> to <code>true</code> you'll be able to see that the object has indeed been removed from the database by comparing the number of <code>FileEntry</code> instances before and after removal.</p>
+
+	<h3>Updating the data</h3>
+
+	<p>This is not something we do in the sample program, but we can change the objects. After changing the object in memory we need to call <code>IPersistent.Modify()</code> on the object to notify the database engine that the object has changed and <code>IDatabase.Commit()</code> to persist all the changes.</p>
+
+	<p>It might seem inconvenient to explicitly tell the database about object changes. It's done that way for efficiency: there is no fast way to intercept generic object state changes.</p>
+
+	<p>Even though the indexes also implement <code>IPersistent</code> interface, you don't need to call <code>IPersistent.Modify()</code> after e.g. adding new values to the index. This is because the index classes provided by Volante take care of calling <code>Modify()</code> internally.</p>
+
+	<p>You can do the same in your own objects e.g. you could implement all your object state as properties and call <code>Modify()</code> in the property setter.</p>
+
+	<p>It's worth repeating that every object (as identified by its oid) has only one copy in the database even if they're referenced by multiple other objects (in our case a single <code>FileEntry</code> object is referenced from 3 indexes). Changing that object will affect references from all 3 indexes.</p>
 
 	<h3>Closing the database</h3>
 
 	<p>When we're done, we should close the database:
 	<pre class="prettyprint lang-cs">db.Close();</pre>
 	</p>
+	<p>It implicitly commits the changes.</p>
 
 	<center><a href=intro.html>← introduction</a> &nbsp;&bull;&nbsp; <a href=history.html>history →</a>
 
