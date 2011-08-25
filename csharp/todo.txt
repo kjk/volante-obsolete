@@ -15,6 +15,7 @@ Things to do for c# version:
  * CreateBlob()
  * CreateTimeSeries()
  * CreatePatriciaTree()
+ * who uses Volante?
 * change naming on MemoryUsage class
 * make a reference API from .xml extracted during build process
 * silverlight version

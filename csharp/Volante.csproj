@@ -53,7 +53,7 @@
     <BaseAddress>285212672</BaseAddress>
     <CheckForOverflowUnderflow>false</CheckForOverflowUnderflow>
     <ConfigurationOverrideFile />
-    <DocumentationFile>bin\Release\Volante.XML</DocumentationFile>
+    <DocumentationFile>doc\Volante.xml</DocumentationFile>
     <DebugSymbols>true</DebugSymbols>
     <FileAlignment>4096</FileAlignment>
     <NoStdLib>false</NoStdLib>
@@ -92,7 +92,7 @@
     <DebugSymbols>true</DebugSymbols>
     <OutputPath>bin\ReleaseFull\</OutputPath>
     <BaseAddress>285212672</BaseAddress>
-    <DocumentationFile>bin\Release\Volante.XML</DocumentationFile>
+    <DocumentationFile>bin\Release\Volante.xml</DocumentationFile>
     <Optimize>true</Optimize>
     <FileAlignment>4096</FileAlignment>
     <NoWarn>1591</NoWarn>

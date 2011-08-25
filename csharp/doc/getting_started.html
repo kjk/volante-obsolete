@@ -31,11 +31,11 @@
 
 	<h3>Defining objects to be stored</h3>
 
-	<p>Since we need to store information about files, we'll define FileEntry class with information about the file.</p>
+	<p>Since we need to store information about files, we'll define <code>FileEntry</code> class with information about the file.</p>
 
-	<p>It's a simplification of reality, but for the purpose of this tutorial let's say that persisted objects must implement IPersistent interface. The simplest way to satisfy this is to derive our objects from Persistent class, and that's what we'll do:</p>
+	<p>It's a simplification of reality, but for the purpose of this tutorial let's say that persisted objects must implement <code>IPersistent</code> interface. The simplest way to satisfy this is to derive our objects from <code>Persistent</code> class, and that's what we'll do:</p>
 
-	<pre class="prettyprint lang-cs">using Volante; // don't forget this
+	<pre class="prettyprint lang-cs">using Volante;
 class FileEntry : Persistent
 {
     public string Path;
@@ -55,7 +55,7 @@ class FileEntry : Persistent
 		<li>index whose key is DateTime (file last write time)</li>
 		<li>index whose key is string (file name)</li>
 	</ul>
-	All those indexes will point to persisted objects of FileEntry type.
+	All those indexes will point to persisted objects of <code>FileEntry</code> type.
 	</p>
 
 	<h3>Defining database root object</h3>
@@ -69,7 +69,7 @@ class FileEntry : Persistent
     public Index&lt;DateTime, FileEntry&gt; FileLastWriteTimeIndex;
 }</pre>	
 
-	<p>Notice that our root object is also a persisted object (i.e. implements IPersistent interface). Index is an interface <code>IIndex&lt;K,V&gt;</code> whose V type is a persisted object (another simplification of reality). Index is also a persisted object. That way every V object that is part of the index satisfies reachability requirement.</p> 
+	<p>Notice that our root object is also a persisted object (i.e. implements <code>IPersistent</code> interface). Index is a class implementing an interface <code>IIndex&lt;K,V&gt;</code> whose V type is a persisted object (another simplification of reality). Index is also a persisted object. That way every V object that is part of the index satisfies reachability requirement.</p> 
 
 	<h3>Opening the database and creating root object</h3>
 
@@ -200,7 +200,8 @@ while (de.MoveNext())
 	<p>When we're done, we should close the database:
 	<pre class="prettyprint lang-cs">db.Close();</pre>
 	</p>
-	<p>It implicitly commits the changes.</p>
+
+	<p>Closing the database also commits the changes.</p>
 
 	<center><a href=intro.html>← introduction</a> &nbsp;&bull;&nbsp; <a href=history.html>history →</a>
 
