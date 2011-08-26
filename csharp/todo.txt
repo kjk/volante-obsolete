@@ -1,5 +1,6 @@
 Things to do for c# version:
 
+* fix a bug where index enumerator for range where being and end are the same value returns all values instead of 1 (if a key is in the database) or 0 (if the key isn't in the database)
 * finish manual:
  * transactions
  * CreateIndex()
@@ -18,15 +19,15 @@ Things to do for c# version:
  * who uses Volante?
 * change naming on MemoryUsage class
 * make a reference API from .xml extracted during build process
-* silverlight version
-* wp7 versions
 * get rid of IDatabase.StringEncoding and always use utf8 for storing strings (?)
 * make a release script that builds and uploads .zip with the Volante.dll
-* fix a bug where index enumerator for range where being and end are the same value returns all values instead of 1 (if a key is in the database) or 0 (if the key isn't in the database)
 * make a 0.9 release
 
 After 0.9:
+* silverlight version
+* wp7 versions
 * re-implement BitIndexImp.cs using AltBtree
+* implement MemFile : IFile which to use for tests that need database to be closed and re-opened (and currently use file on disk for that)
 
 Notes:
 * building without (old) Btree code saves 48kB (264 => 216)

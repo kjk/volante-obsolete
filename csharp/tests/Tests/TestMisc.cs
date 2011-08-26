@@ -60,4 +60,58 @@ namespace Volante
         }
     }
 
+    // test that deleting an object referenced by another objects
+    // corrupts the database
+    public class TestCorrupt00
+    {
+        public class Record : Persistent
+        {
+            public DateTime dt;
+            public long lval;
+
+            // persistent objects require empty constructor
+            public Record()
+            {
+            }
+
+            public Record(long val)
+            {
+                this.lval = val;
+                this.dt = DateTime.Now;
+            }
+        }
+
+        public class Root : Persistent
+        {
+            public Record r;
+        }
+
+        public void Run(TestConfig config)
+        {
+            int n;
+            IDatabase db = config.GetDatabase();
+            Root root = new Root();
+            Record r = new Record();
+            root.r = r;
+            db.Root = root;
+            db.Commit();
+            // delete the object from the database
+            r.Deallocate();
+            db.Commit();
+            db.Close();
+
+            db = config.GetDatabase(false);
+            // r was explicitly deleted from the database but it's
+            // still referenced by db.Root. Loading root object will
+            // try to recursively load Record object but since it's
+            // been deleted, we should get an exception
+            Tests.AssertDatabaseException(() =>
+            {
+                root = (Root)db.Root;
+            }, DatabaseError.ErrorCode.DELETED_OBJECT);
+            r = root.r;
+            db.Close();
+        }
+    }
+
 }

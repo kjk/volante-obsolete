@@ -317,6 +317,10 @@ public class TestsMain
         new TestConfig{ InMemory = TestConfig.InMemoryType.Full, AltBtree=true }
     };
 
+    static TestConfig[] ConfigsOneFileAlt = new TestConfig[] {
+        new TestConfig{ InMemory = TestConfig.InMemoryType.File, AltBtree=true }
+    };
+
     static TestConfig[] ConfigsIndex = new TestConfig[] {
         new TestConfig{ InMemory = TestConfig.InMemoryType.Full },
         new TestConfig{ InMemory = TestConfig.InMemoryType.Full, Serializable=true },
@@ -357,6 +361,7 @@ public class TestsMain
 
     static TestInfo[] TestInfos = new TestInfo[]
     {
+        new TestInfo("TestCorrupt00", ConfigsOneFileAlt),
         new TestInfo("TestRemove00"),
         new TestInfo("TestIndexUInt00"),
         new TestInfo("TestIndexInt00"),
