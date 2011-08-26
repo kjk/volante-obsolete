@@ -2,6 +2,7 @@ namespace Volante
 {
     using System;
     using System.Collections;
+    using System.Diagnostics;
 
     public class TestRawResult : TestResult
     {
@@ -39,9 +40,17 @@ namespace Volante
 
             IDatabase db = config.GetDatabase();
             TestRaw root = (TestRaw)db.Root;
-            Tests.Assert(null == root);
+            if (count % 2 != 0)
+            {
+                // Silence compiler about unused nil variable.
+                // This shouldn't happen since we never pass count
+                // that is an odd number
+                Debug.Assert(false);
+                root.nil = new object();
+            }
 
             root = new TestRaw();
+            Tests.Assert(root.nil == null);
             L1List list = null;
             for (int i = 0; i < count; i++)
             {

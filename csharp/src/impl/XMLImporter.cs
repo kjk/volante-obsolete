@@ -8,9 +8,9 @@ namespace Volante.Impl
 
     public class XmlImporter
     {
-        public XmlImporter(DatabaseImpl storage, System.IO.StreamReader reader)
+        public XmlImporter(DatabaseImpl db, System.IO.StreamReader reader)
         {
-            this.storage = storage;
+            this.db = db;
             scanner = new XMLScanner(reader);
             classMap = new Hashtable();
         }
@@ -35,8 +35,8 @@ namespace Volante.Impl
                 throwException("Incorrect root object specification");
             }
             idMap = new int[rootId * 2];
-            idMap[rootId] = storage.allocateId();
-            storage.header.root[1 - storage.currIndex].rootObject = idMap[rootId];
+            idMap[rootId] = db.allocateId();
+            db.header.root[1 - db.currIndex].rootObject = idMap[rootId];
 
             XMLScanner.Token tkn;
             while ((tkn = scanner.scan()) == XMLScanner.Token.LT)
@@ -271,14 +271,14 @@ namespace Volante.Impl
                     int[] newMap = new int[id * 2];
                     Array.Copy(idMap, 0, newMap, 0, idMap.Length);
                     idMap = newMap;
-                    idMap[id] = oid = storage.allocateId();
+                    idMap[id] = oid = db.allocateId();
                 }
                 else
                 {
                     oid = idMap[id];
                     if (oid == 0)
                     {
-                        idMap[id] = oid = storage.allocateId();
+                        idMap[id] = oid = db.allocateId();
                     }
                 }
             }
@@ -422,7 +422,7 @@ namespace Volante.Impl
                 case ClassDescriptor.FieldType.tpOid:
                     return new Key(ClassDescriptor.FieldType.tpOid, mapId((int)UInt32.Parse(val)));
                 case ClassDescriptor.FieldType.tpObject:
-                    return new Key(new PersistentStub(storage, mapId((int)UInt32.Parse(val))));
+                    return new Key(new PersistentStub(db, mapId((int)UInt32.Parse(val))));
 
                 case ClassDescriptor.FieldType.tpLong:
                     return new Key(Int64.Parse(val));
@@ -476,7 +476,7 @@ namespace Volante.Impl
             Type type = (Type)classMap[className];
             if (type == null)
             {
-                type = ClassDescriptor.lookup(storage, className);
+                type = ClassDescriptor.lookup(db, className);
                 classMap[className] = type;
             }
             return type;
@@ -551,7 +551,7 @@ namespace Volante.Impl
             {
                 throwException("ID is not specified or index");
             }
-            ClassDescriptor desc = storage.getClassDescriptor(findClassByName(indexType));
+            ClassDescriptor desc = db.getClassDescriptor(findClassByName(indexType));
 #if WITH_OLD_BTREE
             Btree btree = (Btree)desc.newInstance();
             if (className != null)
@@ -593,7 +593,7 @@ namespace Volante.Impl
                     }
                 }
             }
-            storage.assignOid(btree, oid);
+            db.assignOid(btree, oid);
 #endif
 
             while ((tkn = scanner.scan()) == XMLScanner.Token.LT)
@@ -619,7 +619,7 @@ namespace Volante.Impl
                 {
                     key = createKey(btree.FieldType, getAttribute(refElem, "key"));
                 }
-                IPersistent obj = new PersistentStub(storage, mapId(getIntAttribute(refElem, "id")));
+                IPersistent obj = new PersistentStub(db, mapId(getIntAttribute(refElem, "id")));
                 btree.insert(key, obj, false);
 #endif
             }
@@ -631,24 +631,24 @@ namespace Volante.Impl
                 throwException("Element is not closed");
             }
 #if WITH_OLD_BTREE
-            ByteBuffer buf = new ByteBuffer(storage.encoding);
+            ByteBuffer buf = new ByteBuffer(db.encoding);
             buf.extend(ObjectHeader.Sizeof);
-            int size = storage.packObject(btree, desc, ObjectHeader.Sizeof, buf, null);
+            int size = db.packObject(btree, desc, ObjectHeader.Sizeof, buf, null);
             byte[] data = buf.arr;
             ObjectHeader.setSize(data, 0, size);
             ObjectHeader.setType(data, 0, desc.Oid);
-            long pos = storage.allocate(size, 0);
-            storage.setPos(oid, pos | DatabaseImpl.dbModifiedFlag);
+            long pos = db.allocate(size, 0);
+            db.setPos(oid, pos | DatabaseImpl.dbModifiedFlag);
 
-            storage.pool.put(pos & ~DatabaseImpl.dbFlagsMask, data, size);
+            db.pool.put(pos & ~DatabaseImpl.dbFlagsMask, data, size);
 #endif
         }
 
         internal void createObject(XMLElement elem)
         {
-            ClassDescriptor desc = storage.getClassDescriptor(findClassByName(elem.Name));
+            ClassDescriptor desc = db.getClassDescriptor(findClassByName(elem.Name));
             int oid = mapId(getIntAttribute(elem, "id"));
-            ByteBuffer buf = new ByteBuffer(storage.encoding);
+            ByteBuffer buf = new ByteBuffer(db.encoding);
             int offs = ObjectHeader.Sizeof;
             buf.extend(offs);
 
@@ -657,9 +657,9 @@ namespace Volante.Impl
             ObjectHeader.setSize(buf.arr, 0, offs);
             ObjectHeader.setType(buf.arr, 0, desc.Oid);
 
-            long pos = storage.allocate(offs, 0);
-            storage.setPos(oid, pos | DatabaseImpl.dbModifiedFlag);
-            storage.pool.put(pos, buf.arr, offs);
+            long pos = db.allocate(offs, 0);
+            db.setPos(oid, pos | DatabaseImpl.dbModifiedFlag);
+            db.pool.put(pos, buf.arr, offs);
         }
 
         internal int getHexValue(char ch)
@@ -1653,7 +1653,7 @@ namespace Volante.Impl
             throw new XmlImportException(scanner.Line, scanner.Column, message);
         }
 
-        internal DatabaseImpl storage;
+        internal DatabaseImpl db;
         internal XMLScanner scanner;
         internal Hashtable classMap;
         internal int[] idMap;

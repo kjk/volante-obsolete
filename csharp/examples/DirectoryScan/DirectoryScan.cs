@@ -59,11 +59,10 @@ namespace DirectoryScan
             db.Close();
         }
 
-        static void RemoveOneFileEntry(IDatabase db, DatabaseRoot dbRoot)
+        // change showMemoryStatsto true to see object stats on the console
+        // before and after removal
+        static void RemoveOneFileEntry(IDatabase db, DatabaseRoot dbRoot, bool showMemoryStats = false)
         {
-            // change to true to see object stats on the console
-            // before and after removal
-            const bool showMemoryStats = false;
             if (showMemoryStats)
             {
                 Console.WriteLine("Memory stats before removal:");

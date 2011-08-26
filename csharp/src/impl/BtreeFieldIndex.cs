@@ -66,7 +66,7 @@ namespace Volante.Impl
 
         public override void OnLoad()
         {
-            cls = ClassDescriptor.lookup(Storage, className);
+            cls = ClassDescriptor.lookup(Database, className);
             if (cls != typeof(V))
             {
                 throw new DatabaseError(DatabaseError.ErrorCode.INCOMPATIBLE_VALUE_TYPE, cls);
@@ -261,7 +261,7 @@ namespace Volante.Impl
             ArrayList list = new ArrayList();
             if (root != 0)
             {
-                BtreePage.find((DatabaseImpl)Storage, root, checkKey(from), checkKey(till), this, height, list);
+                BtreePage.find((DatabaseImpl)Database, root, checkKey(from), checkKey(till), this, height, list);
             }
             return (V[])list.ToArray(cls);
         }
@@ -271,7 +271,7 @@ namespace Volante.Impl
             V[] arr = (V[])Array.CreateInstance(cls, nElems);
             if (root != 0)
             {
-                BtreePage.traverseForward((DatabaseImpl)Storage, root, type, height, arr, 0);
+                BtreePage.traverseForward((DatabaseImpl)Database, root, type, height, arr, 0);
             }
             return arr;
         }

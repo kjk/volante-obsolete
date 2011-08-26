@@ -12,7 +12,7 @@ namespace Volante
         public static IDatabase CreateDatabase()
         {
 #if CF
-            return new StorageImpl(System.Reflection.Assembly.GetCallingAssembly());
+            return new DatabaseImpl(System.Reflection.Assembly.GetCallingAssembly());
 #else
             return new DatabaseImpl();
 #endif
@@ -20,7 +20,7 @@ namespace Volante
 
 #if !CF && WITH_REPLICATION
         /// <summary>
-        /// Create new instance of the master node of replicated storage
+        /// Create new instance of the master node of replicated db
         /// </summary>
         /// <param name="replicationSlaveNodes">addresses of hosts to which replication will be performed. 
         /// Address as specified as NAME:PORT</param>
@@ -29,7 +29,7 @@ namespace Volante
         /// Otherwise data is send to the slave nodes by the same thread which updates the database.
         /// If space asynchronous buffer is exhausted, then main thread willbe also blocked until the
         /// data is send.</param>
-        /// <returns>new instance of the master storage (unopened, you should explicitely invoke open method)</returns>
+        /// <returns>new instance of the master db (unopened, you should explicitely invoke open method)</returns>
         ///
         public static ReplicationMasterDatabase CreateReplicationMasterDatabase(string[] replicationSlaveNodes, int asyncBufSize)
         {
@@ -37,10 +37,10 @@ namespace Volante
         }
 
         /// <summary>
-        /// Create new instance of the slave node of replicated storage
+        /// Create new instance of the slave node of replicated db
         /// </summary>
         /// <param name="port">socket port at which connection from master will be established</param>
-        /// <returns>new instance of the slave storage (unopened, you should explicitely invoke open method)</returns>
+        /// <returns>new instance of the slave db (unopened, you should explicitely invoke open method)</returns>
         ////
         public static ReplicationSlaveDatabase CreateReplicationSlaveDatabase(int port)
         {

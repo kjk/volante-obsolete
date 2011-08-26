@@ -519,7 +519,7 @@ namespace Volante.Impl
                     if (fieldType != returnType)
                     {
                         il.Emit(OpCodes.Ldarg_0);
-                        il.Emit(OpCodes.Callvirt, getStorage);
+                        il.Emit(OpCodes.Callvirt, getDatabase);
                         il.Emit(OpCodes.Ldarg_0);
                         il.Emit(OpCodes.Ldfld, fb);
                         il.Emit(OpCodes.Callvirt, getByOid);
@@ -545,7 +545,7 @@ namespace Volante.Impl
                     if (fieldType != returnType)
                     {
                         il.Emit(OpCodes.Ldarg_0);
-                        il.Emit(OpCodes.Callvirt, getStorage);
+                        il.Emit(OpCodes.Callvirt, getDatabase);
                         il.Emit(OpCodes.Ldarg_1);
                         il.Emit(OpCodes.Callvirt, makePersistent);
                     }
@@ -608,7 +608,7 @@ namespace Volante.Impl
         private MethodInfo skipField = typeof(DatabaseImpl).GetMethod("skipField");
 
         private MethodInfo modify = typeof(IPersistent).GetMethod("Modify");
-        private MethodInfo getStorage = typeof(IPersistent).GetProperty("Database").GetGetMethod();
+        private MethodInfo getDatabase = typeof(IPersistent).GetProperty("Database").GetGetMethod();
         private MethodInfo getByOid = typeof(IDatabase).GetMethod("GetObjectByOid");
         private MethodInfo makePersistent = typeof(IDatabase).GetMethod("MakePersistent");
 

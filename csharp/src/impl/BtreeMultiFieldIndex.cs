@@ -73,7 +73,7 @@ namespace Volante.Impl
 
         public override void OnLoad()
         {
-            cls = ClassDescriptor.lookup(Storage, className);
+            cls = ClassDescriptor.lookup(Database, className);
             if (cls != typeof(V))
             {
                 throw new DatabaseError(DatabaseError.ErrorCode.INCOMPATIBLE_VALUE_TYPE, cls);
@@ -328,7 +328,7 @@ namespace Volante.Impl
                     case ClassDescriptor.FieldType.tpObject:
                         {
                             int oid = Bytes.unpack4(data, offs);
-                            v = oid == 0 ? null : ((DatabaseImpl)Storage).lookupObject(oid, null);
+                            v = oid == 0 ? null : ((DatabaseImpl)Database).lookupObject(oid, null);
                             offs += 4;
                             break;
                         }

@@ -24,6 +24,7 @@ Things to do for c# version:
 * get rid of IDatabase.StringEncoding and always use utf8 for storing strings (?)
 * make a release script that builds and uploads .zip with the Volante.dll
 * make a 0.9 release
+* benchmark Bytes.unpack*() using unsafe fixed vs. bit fiddling
 
 After 0.9:
 * silverlight version

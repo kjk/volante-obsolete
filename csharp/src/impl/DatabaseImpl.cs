@@ -14,11 +14,11 @@ namespace Volante.Impl
         public const int DEFAULT_PAGE_POOL_SIZE = 4 * 1024 * 1024;
 
 #if CF
-        static StorageImpl() 
+        static DatabaseImpl() 
         {
             assemblies = new System.Collections.ArrayList();
         }
-        public StorageImpl(Assembly callingAssembly) 
+        public DatabaseImpl(Assembly callingAssembly) 
         {
             assemblies.Add(callingAssembly);
             assemblies.Add(Assembly.GetExecutingAssembly());

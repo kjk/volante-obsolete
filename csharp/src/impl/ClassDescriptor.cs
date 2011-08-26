@@ -528,7 +528,7 @@ namespace Volante.Impl
                 }
 
 #if CF
-                foreach (Assembly ass in StorageImpl.assemblies) 
+                foreach (Assembly ass in DatabaseImpl.assemblies) 
 #else
                 foreach (Assembly ass in AppDomain.CurrentDomain.GetAssemblies())
 #endif

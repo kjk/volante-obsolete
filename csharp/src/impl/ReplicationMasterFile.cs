@@ -86,8 +86,8 @@ namespace Volante.Impl
         /// </returns>
         public bool HandleError(string host)
         {
-            return (storage != null && storage.listener != null)
-                ? storage.listener.ReplicationError(host)
+            return (db != null && db.listener != null)
+                ? db.listener.ReplicationError(host)
                 : false;
         }
 
@@ -181,7 +181,7 @@ namespace Volante.Impl
         protected int nHosts;
         protected bool ack;
 
-        protected ReplicationMasterDatabaseImpl storage;
+        protected ReplicationMasterDatabaseImpl db;
     }
 }
 #endif

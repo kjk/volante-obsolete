@@ -40,7 +40,7 @@ namespace Volante.Impl
 
         public int Get(T obj)
         {
-            DatabaseImpl db = (DatabaseImpl)Storage;
+            DatabaseImpl db = (DatabaseImpl)Database;
             if (root == 0)
             {
                 throw new DatabaseError(DatabaseError.ErrorCode.KEY_NOT_FOUND);
@@ -50,7 +50,7 @@ namespace Volante.Impl
 
         public void Put(T obj, int mask)
         {
-            DatabaseImpl db = (DatabaseImpl)Storage;
+            DatabaseImpl db = (DatabaseImpl)Database;
             if (db == null)
             {
                 throw new DatabaseError(DatabaseError.ErrorCode.DELETED_OBJECT);
@@ -81,7 +81,7 @@ namespace Volante.Impl
 
         public override bool Remove(T obj)
         {
-            DatabaseImpl db = (DatabaseImpl)Storage;
+            DatabaseImpl db = (DatabaseImpl)Database;
             if (db == null)
             {
                 throw new DatabaseError(DatabaseError.ErrorCode.DELETED_OBJECT);
@@ -148,7 +148,7 @@ namespace Volante.Impl
                 {
                     return;
                 }
-                db = (DatabaseImpl)index.Storage;
+                db = (DatabaseImpl)index.Database;
                 if (db == null)
                 {
                     throw new DatabaseError(DatabaseError.ErrorCode.DELETED_OBJECT);

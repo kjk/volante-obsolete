@@ -16,7 +16,7 @@ namespace Volante
             internal String strKey;
         }
 
-        class StorageRoot : Persistent
+        class Root : Persistent
         {
             internal PObject list;
             internal IIndex<string, PObject> strIndex;
@@ -31,7 +31,7 @@ namespace Volante
             var res = new TestGcResult();
             config.Result = res;
             IDatabase db = config.GetDatabase();
-            StorageRoot root = new StorageRoot();
+            Root root = new Root();
             IIndex<string, PObject> strIndex = root.strIndex = db.CreateIndex<string, PObject>(IndexType.Unique);
             IIndex<long, PObject> intIndex = root.intIndex = db.CreateIndex<long, PObject>(IndexType.Unique);
             db.Root = root;

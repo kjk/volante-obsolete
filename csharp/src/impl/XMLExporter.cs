@@ -11,7 +11,7 @@ namespace Volante.Impl
     {
         public XmlExporter(DatabaseImpl db, System.IO.StreamWriter writer)
         {
-            this.storage = db;
+            this.db = db;
             this.writer = writer;
         }
 
@@ -19,8 +19,8 @@ namespace Volante.Impl
         {
             writer.Write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
             writer.Write("<database root=\"" + rootOid + "\">\n");
-            exportedBitmap = new int[(storage.currIndexSize + 31) / 32];
-            markedBitmap = new int[(storage.currIndexSize + 31) / 32];
+            exportedBitmap = new int[(db.currIndexSize + 31) / 32];
+            markedBitmap = new int[(db.currIndexSize + 31) / 32];
             markedBitmap[rootOid >> 5] |= 1 << (rootOid & 31);
             int nExportedObjects;
             do
@@ -38,9 +38,9 @@ namespace Volante.Impl
                                 int oid = (i << 5) + j;
                                 exportedBitmap[i] |= bit;
                                 markedBitmap[i] &= ~bit;
-                                byte[] obj = storage.get(oid);
+                                byte[] obj = db.get(oid);
                                 int typeOid = ObjectHeader.getType(obj, 0);
-                                ClassDescriptor desc = storage.findClassDescriptor(typeOid);
+                                ClassDescriptor desc = db.findClassDescriptor(typeOid);
                                 string name = desc.name;
 #if WITH_OLD_BTREE
                                 if (typeof(Btree).IsAssignableFrom(desc.cls))
@@ -95,8 +95,8 @@ namespace Volante.Impl
 #if WITH_OLD_BTREE
         Btree createBtree(int oid, byte[] data)
         {
-            Btree btree = storage.createBtreeStub(data, 0);
-            storage.assignOid(btree, oid);
+            Btree btree = db.createBtreeStub(data, 0);
+            db.assignOid(btree, oid);
             return btree;
         }
 
@@ -356,9 +356,9 @@ namespace Volante.Impl
             {
                 writer.Write("\"");
                 string s;
-                if (storage.encoding != null)
+                if (db.encoding != null)
                 {
-                    s = storage.encoding.GetString(body, offs, -len - 2);
+                    s = db.encoding.GetString(body, offs, -len - 2);
                 }
                 else
                 {
@@ -960,7 +960,7 @@ namespace Volante.Impl
             return offs;
         }
 
-        private DatabaseImpl storage;
+        private DatabaseImpl db;
         private System.IO.StreamWriter writer;
         private int[] markedBitmap;
         private int[] exportedBitmap;
