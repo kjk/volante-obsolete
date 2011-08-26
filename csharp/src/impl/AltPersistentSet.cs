@@ -41,9 +41,9 @@ namespace Volante.Impl
             {
                 Remove(new Key(o), o);
             }
-            catch (DatabaseError x)
+            catch (DatabaseException x)
             {
-                if (x.Code == DatabaseError.ErrorCode.KEY_NOT_FOUND)
+                if (x.Code == DatabaseException.ErrorCode.KEY_NOT_FOUND)
                 {
                     return false;
                 }

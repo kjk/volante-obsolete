@@ -504,7 +504,7 @@ namespace Volante.Impl
                     }
                     if (fieldType.IsArray && typeof(IPersistent).IsAssignableFrom(fieldType.GetElementType()))
                     {
-                        throw new DatabaseError(DatabaseError.ErrorCode.UNSUPPORTED_TYPE);
+                        throw new DatabaseException(DatabaseException.ErrorCode.UNSUPPORTED_TYPE);
                     }
 
                     FieldBuilder fb = wrapperType.DefineField(fieldName, fieldType, FieldAttributes.Private);

@@ -3,13 +3,13 @@ using Volante;
 
 public abstract class Guess : Persistent
 {
-    public abstract Guess Yes 
+    public abstract Guess Yes
     {
         set;
         get;
     }
 
-    public abstract Guess No 
+    public abstract Guess No
     {
         set;
         get;
@@ -29,33 +29,33 @@ public abstract class Guess : Persistent
         guess.No = no;
         return guess;
     }
-	
+
     internal static string input(string prompt)
     {
         while (true)
         {
             Console.Write(prompt);
             String line = Console.ReadLine().Trim();
-            if (line.Length != 0) 
-            { 
+            if (line.Length != 0)
+            {
                 return line;
             }
         }
     }
-	
+
     internal static bool askQuestion(System.String question)
     {
         string answer = input(question);
         return answer.ToUpper().Equals("Y") || answer.ToUpper().Equals("YES");
     }
-	
+
     internal static Guess whoIsIt(IDatabase db, Guess parent)
     {
         System.String animal = input("What is it ? ");
         System.String difference = input("What is a difference from other ? ");
         return Create(db, parent, difference, Create(db, null, animal, null));
     }
-	
+
     internal Guess dialog()
     {
         if (askQuestion("May be, " + Question + " (y/n) ? "))
@@ -97,14 +97,14 @@ public abstract class Guess : Persistent
         }
         return null;
     }
-	
+
     static public void Main(string[] args)
     {
         IDatabase db = DatabaseFactory.CreateDatabase();
-		
-        db.Open("guess.dbs", 4*1024*1024, "GUESS");
-        Guess root = (Guess) db.Root;
-		
+
+        db.Open("guess.dbs", 4 * 1024 * 1024, "GUESS");
+        Guess root = (Guess)db.Root;
+
         while (askQuestion("Think of an animal. Ready (y/n) ? "))
         {
             if (root == null)
@@ -118,7 +118,7 @@ public abstract class Guess : Persistent
             }
             db.Commit();
         }
-		
+
         System.Console.WriteLine("End of the game");
         db.Close();
     }

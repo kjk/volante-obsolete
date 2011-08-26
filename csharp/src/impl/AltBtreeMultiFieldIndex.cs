@@ -31,7 +31,7 @@ namespace Volante.Impl
                     mbr[i] = cls.GetProperty(fieldNames[i], BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
                     if (mbr[i] == null)
                     {
-                        throw new DatabaseError(DatabaseError.ErrorCode.INDEXED_FIELD_NOT_FOUND, className + "." + fieldNames[i]);
+                        throw new DatabaseException(DatabaseException.ErrorCode.INDEXED_FIELD_NOT_FOUND, className + "." + fieldNames[i]);
                     }
                 }
             }
@@ -66,7 +66,7 @@ namespace Volante.Impl
             cls = ClassDescriptor.lookup(Database, className);
             if (cls != typeof(T))
             {
-                throw new DatabaseError(DatabaseError.ErrorCode.INCOMPATIBLE_VALUE_TYPE, cls);
+                throw new DatabaseException(DatabaseException.ErrorCode.INCOMPATIBLE_VALUE_TYPE, cls);
             }
             locateFields();
         }
@@ -115,7 +115,7 @@ namespace Volante.Impl
             }
             if (key.type != ClassDescriptor.FieldType.tpArrayOfObject)
             {
-                throw new DatabaseError(DatabaseError.ErrorCode.INCOMPATIBLE_KEY_TYPE);
+                throw new DatabaseException(DatabaseException.ErrorCode.INCOMPATIBLE_KEY_TYPE);
             }
             return new Key(new CompoundKey((System.Object[])key.oval), key.inclusion != 0);
         }
@@ -146,9 +146,9 @@ namespace Volante.Impl
             {
                 base.Remove(new BtreeKey(extractKey(obj), obj));
             }
-            catch (DatabaseError x)
+            catch (DatabaseException x)
             {
-                if (x.Code == DatabaseError.ErrorCode.KEY_NOT_FOUND)
+                if (x.Code == DatabaseException.ErrorCode.KEY_NOT_FOUND)
                 {
                     return false;
                 }
@@ -187,7 +187,7 @@ namespace Volante.Impl
 
         public void Append(T obj)
         {
-            throw new DatabaseError(DatabaseError.ErrorCode.UNSUPPORTED_INDEX_TYPE);
+            throw new DatabaseException(DatabaseException.ErrorCode.UNSUPPORTED_INDEX_TYPE);
         }
 
         public override T[] Get(Key from, Key till)

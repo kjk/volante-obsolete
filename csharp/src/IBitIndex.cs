@@ -20,7 +20,7 @@ namespace Volante
         /// </summary>
         /// <param name="obj">object which properties are requested</param>
         /// <returns>bit mask associated with this objects</returns>
-        /// <exception cref="Volante.DatabaseError">DatabaseError(DatabaseError.ErrorCode.KEY_NOT_FOUND) exception if there is no such object in the index
+        /// <exception cref="Volante.DatabaseException">DatabaseException(DatabaseException.ErrorCode.KEY_NOT_FOUND) exception if there is no such object in the index
         /// </exception>
         int Get(T obj);
 

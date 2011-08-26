@@ -71,7 +71,7 @@ namespace Volante
         /// </param>
         /// <param name="obj">object removed from the index
         /// </param>
-        /// <exception cref="Volante.DatabaseError">DatabaseError(DatabaseError.ErrorCode.KEY_NOT_FOUND) exception if there is no such key in the index
+        /// <exception cref="Volante.DatabaseException">DatabaseException(DatabaseException.ErrorCode.KEY_NOT_FOUND) exception if there is no such key in the index
         /// 
         /// </exception>
         void Remove(Key key, V obj);
@@ -82,7 +82,7 @@ namespace Volante
         /// </param>
         /// <param name="obj">object removed from the index
         /// </param>
-        /// <exception cref="Volante.DatabaseError">DatabaseError(DatabaseError.ErrorCode.KEY_NOT_FOUND) exception if there is no such key in the index
+        /// <exception cref="Volante.DatabaseException">DatabaseException(DatabaseException.ErrorCode.KEY_NOT_FOUND) exception if there is no such key in the index
         /// 
         /// </exception>
         void Remove(K key, V obj);
@@ -92,8 +92,8 @@ namespace Volante
         /// <param name="key">wrapper of removed key
         /// </param>
         /// <returns>removed object</returns>
-        /// <exception cref="Volante.DatabaseError">DatabaseError(DatabaseError.ErrorCode.KEY_NOT_FOUND) exception if there is no such key in the index,
-        /// or DatabaseError(DatabaseError.ErrorCode.KEY_NOT_UNIQUE) if index is not unique.
+        /// <exception cref="Volante.DatabaseException">DatabaseException(DatabaseException.ErrorCode.KEY_NOT_FOUND) exception if there is no such key in the index,
+        /// or DatabaseException(DatabaseException.ErrorCode.KEY_NOT_UNIQUE) if index is not unique.
         /// 
         /// </exception>
         V Remove(Key key);
@@ -103,8 +103,8 @@ namespace Volante
         /// <param name="key">value of removed key
         /// </param>
         /// <returns>removed object</returns>
-        /// <exception cref="Volante.DatabaseError">DatabaseError(DatabaseError.ErrorCode.KEY_NOT_FOUND) exception if there is no such key in the index,
-        /// or DatabaseError(DatabaseError.ErrorCode.KEY_NOV_UNIQUE) if index is not unique.
+        /// <exception cref="Volante.DatabaseException">DatabaseException(DatabaseException.ErrorCode.KEY_NOT_FOUND) exception if there is no such key in the index,
+        /// or DatabaseException(DatabaseException.ErrorCode.KEY_NOV_UNIQUE) if index is not unique.
         /// 
         /// </exception>
         V RemoveKey(K key);

@@ -17,13 +17,15 @@ Things to do for c# version:
  * CreateTimeSeries()
  * CreatePatriciaTree()
  * an example of persisted double-linked list
+ * creating an encrypted using Rc4File
  * who uses Volante?
-* make OSFile.cs and Rc4File.cs public, remove the IDatabase.Open() which takes encryption password
+* benchmark using standard stream vs. compressed (gzip) stream for database file
 * make a reference API from .xml extracted during build process
 * get rid of IDatabase.StringEncoding and always use utf8 for storing strings (?)
 * make a release script that builds and uploads .zip with the Volante.dll
 * make a 0.9 release
 * benchmark Bytes.unpack*() using unsafe fixed vs. bit fiddling
+* make OSFile and Rc4File publc, remove IDatabase.Open() that takes encryption password
 
 After 0.9:
 * silverlight version
@@ -37,3 +39,31 @@ Notes:
 Test coverage notes:
 * 52%   on 2011-08-06
 * 59.5% on 2011-08-24
+
+Rc4 doc notes:
+        /// <summary> Open the encrypted db
+        /// </summary>
+        /// <param name="filePath">path to the database file
+        /// </param>
+        /// <param name="pagePoolSize">size of page pool (in bytes). Page pool should contain
+        /// at least ten 4kb pages, so minimal page pool size should be at least 40Kb.
+        /// But larger page pool ussually leads to better performance (unless it could not fit
+        /// in memory and cause swapping).
+        /// </param>
+        /// <param name="cipherKey">cipher key</param>
+        void Open(String filePath, int pagePoolSize, String cipherKey);
+
+        public void Open(String filePath, int pagePoolSize, String cipherKey)
+        {
+            Rc4File file = new Rc4File(filePath, readOnly, noFlush, cipherKey);
+            try
+            {
+                Open(file, pagePoolSize);
+            }
+            catch (DatabaseError)
+            {
+                file.Close();
+                throw;
+            }
+        }
+

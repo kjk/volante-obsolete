@@ -50,7 +50,7 @@ namespace Volante
             Tests.AssertDatabaseException(() =>
             {
                 root.idx.Remove(new Key((long)1));
-            }, DatabaseError.ErrorCode.KEY_NOT_UNIQUE);
+            }, DatabaseException.ErrorCode.KEY_NOT_UNIQUE);
             root.idx = null;
             root.Modify();
             db.Commit();
@@ -107,7 +107,7 @@ namespace Volante
             Tests.AssertDatabaseException(() =>
             {
                 root = (Root)db.Root;
-            }, DatabaseError.ErrorCode.DELETED_OBJECT);
+            }, DatabaseException.ErrorCode.DELETED_OBJECT);
             r = root.r;
             db.Close();
         }

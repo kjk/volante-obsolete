@@ -93,7 +93,7 @@ namespace Volante.Impl
         internal void ensureOpened()
         {
             if (!opened)
-                throw new DatabaseError(DatabaseError.ErrorCode.DATABASE_NOT_OPENED);
+                throw new DatabaseException(DatabaseException.ErrorCode.DATABASE_NOT_OPENED);
         }
 
         int getBitmapPageId(int i)
@@ -107,7 +107,7 @@ namespace Volante.Impl
             {
                 if (oid == 0 || oid >= currIndexSize)
                 {
-                    throw new DatabaseError(DatabaseError.ErrorCode.INVALID_OID);
+                    throw new DatabaseException(DatabaseException.ErrorCode.INVALID_OID);
                 }
                 Page pg = pool.getPage(header.root[1 - currIndex].index + ((long)(oid >> dbHandlesPerPageBits) << Page.pageBits));
                 long pos = Bytes.unpack8(pg.data, (oid & (dbHandlesPerPage - 1)) << 3);
@@ -132,7 +132,7 @@ namespace Volante.Impl
             long pos = getPos(oid);
             if ((pos & (dbFreeHandleFlag | dbPageObjectFlag)) != 0)
             {
-                throw new DatabaseError(DatabaseError.ErrorCode.INVALID_OID);
+                throw new DatabaseException(DatabaseException.ErrorCode.INVALID_OID);
             }
             return pool.get(pos & ~dbFlagsMask);
         }
@@ -142,7 +142,7 @@ namespace Volante.Impl
             long pos = getPos(oid);
             if ((pos & (dbFreeHandleFlag | dbPageObjectFlag)) != dbPageObjectFlag)
             {
-                throw new DatabaseError(DatabaseError.ErrorCode.DELETED_OBJECT);
+                throw new DatabaseException(DatabaseException.ErrorCode.DELETED_OBJECT);
             }
             return pool.getPage(pos & ~dbFlagsMask);
         }
@@ -154,7 +154,7 @@ namespace Volante.Impl
                 long pos = getPos(oid);
                 if ((pos & (dbFreeHandleFlag | dbPageObjectFlag)) != dbPageObjectFlag)
                 {
-                    throw new DatabaseError(DatabaseError.ErrorCode.DELETED_OBJECT);
+                    throw new DatabaseException(DatabaseException.ErrorCode.DELETED_OBJECT);
                 }
                 if ((pos & dbModifiedFlag) == 0)
                 {
@@ -191,7 +191,7 @@ namespace Volante.Impl
                     int offs = (int)pos & (Page.pageSize - 1);
                     if ((offs & (dbFreeHandleFlag | dbPageObjectFlag)) != 0)
                     {
-                        throw new DatabaseError(DatabaseError.ErrorCode.DELETED_OBJECT);
+                        throw new DatabaseException(DatabaseException.ErrorCode.DELETED_OBJECT);
                     }
                     Page pg = pool.getPage(pos - offs);
                     offs &= ~dbFlagsMask;
@@ -269,7 +269,7 @@ namespace Volante.Impl
                         newIndexSize = int.MaxValue & ~(dbHandlesPerPage - 1);
                         if (newIndexSize <= oldIndexSize)
                         {
-                            throw new DatabaseError(DatabaseError.ErrorCode.NOT_ENOUGH_SPACE);
+                            throw new DatabaseException(DatabaseException.ErrorCode.NOT_ENOUGH_SPACE);
                         }
                     }
                     long newIndex = allocate(newIndexSize * 8L, 0);
@@ -642,7 +642,7 @@ namespace Volante.Impl
                             / (Page.pageSize * (dbAllocationQuantum * 8 - 1)));
                         if (i + morePages > dbLargeBitmapPages)
                         {
-                            throw new DatabaseError(DatabaseError.ErrorCode.NOT_ENOUGH_SPACE);
+                            throw new DatabaseException(DatabaseException.ErrorCode.NOT_ENOUGH_SPACE);
                         }
                         if (i <= dbBitmapPages && i + morePages > dbBitmapPages)
                         {
@@ -660,7 +660,7 @@ namespace Volante.Impl
                                         newIndexSize = int.MaxValue & ~(dbHandlesPerPage - 1);
                                         if (newIndexSize < currIndexSize + dbLargeBitmapPages - dbBitmapPages)
                                         {
-                                            throw new DatabaseError(DatabaseError.ErrorCode.NOT_ENOUGH_SPACE);
+                                            throw new DatabaseException(DatabaseException.ErrorCode.NOT_ENOUGH_SPACE);
                                         }
                                         break;
                                     }
@@ -930,7 +930,7 @@ namespace Volante.Impl
             {
                 Open(file, pagePoolSize);
             }
-            catch (DatabaseError)
+            catch (DatabaseException)
             {
                 file.Close();
                 throw;
@@ -958,7 +958,7 @@ namespace Volante.Impl
             {
                 Open(file, pagePoolSize);
             }
-            catch (DatabaseError)
+            catch (DatabaseException)
             {
                 file.Close();
                 throw;
@@ -970,7 +970,7 @@ namespace Volante.Impl
             lock (this)
             {
                 if (opened)
-                    throw new DatabaseError(DatabaseError.ErrorCode.DATABASE_ALREADY_OPENED);
+                    throw new DatabaseException(DatabaseException.ErrorCode.DATABASE_ALREADY_OPENED);
 
                 file.Lock();
                 Page pg;
@@ -1019,12 +1019,12 @@ namespace Volante.Impl
                 int rc = file.Read(0, buf);
                 if (rc > 0 && rc < Header.Sizeof)
                 {
-                    throw new DatabaseError(DatabaseError.ErrorCode.DATABASE_CORRUPTED);
+                    throw new DatabaseException(DatabaseException.ErrorCode.DATABASE_CORRUPTED);
                 }
                 header.unpack(buf);
                 if (header.curr < 0 || header.curr > 1)
                 {
-                    throw new DatabaseError(DatabaseError.ErrorCode.DATABASE_CORRUPTED);
+                    throw new DatabaseException(DatabaseException.ErrorCode.DATABASE_CORRUPTED);
                 }
                 if (pool == null)
                 {
@@ -1107,7 +1107,7 @@ namespace Volante.Impl
                     currIndex = curr;
                     if (header.root[curr].indexSize != header.root[curr].shadowIndexSize)
                     {
-                        throw new DatabaseError(DatabaseError.ErrorCode.DATABASE_CORRUPTED);
+                        throw new DatabaseException(DatabaseException.ErrorCode.DATABASE_CORRUPTED);
                     }
                     if (isDirty())
                     {
@@ -2052,7 +2052,7 @@ namespace Volante.Impl
             long pos = getGCPos(oid);
             if ((pos & (dbFreeHandleFlag | dbPageObjectFlag)) != 0)
             {
-                throw new DatabaseError(DatabaseError.ErrorCode.INVALID_OID);
+                throw new DatabaseException(DatabaseException.ErrorCode.INVALID_OID);
             }
             int bit = (int)((ulong)pos >> dbAllocationQuantumBits);
             if ((blackBitmap[(uint)bit >> 5] & (1 << (bit & 31))) == 0)
@@ -2161,7 +2161,7 @@ namespace Volante.Impl
                         // object is not accessible
                         if (getPos(i) != pos)
                         {
-                            throw new DatabaseError(DatabaseError.ErrorCode.INVALID_OID);
+                            throw new DatabaseException(DatabaseException.ErrorCode.INVALID_OID);
                         }
                         int offs = (int)pos & (Page.pageSize - 1);
                         Page pg = pool.getPage(pos - offs);
@@ -3216,7 +3216,7 @@ namespace Volante.Impl
                 int offs = (int)pos & (Page.pageSize - 1);
                 if ((offs & (dbFreeHandleFlag | dbPageObjectFlag)) != 0)
                 {
-                    throw new DatabaseError(DatabaseError.ErrorCode.DELETED_OBJECT);
+                    throw new DatabaseException(DatabaseException.ErrorCode.DELETED_OBJECT);
                 }
                 Page pg = pool.getPage(pos - offs);
                 offs &= ~dbFlagsMask;
@@ -3310,7 +3310,7 @@ namespace Volante.Impl
                 int offs = (int)pos & (Page.pageSize - 1);
                 if ((offs & (dbFreeHandleFlag | dbPageObjectFlag)) != 0)
                 {
-                    throw new DatabaseError(DatabaseError.ErrorCode.DELETED_OBJECT);
+                    throw new DatabaseException(DatabaseException.ErrorCode.DELETED_OBJECT);
                 }
                 Page pg = pool.getPage(pos - offs);
                 int typeOid = ObjectHeader.getType(pg.data, offs & ~dbFlagsMask);
@@ -3335,7 +3335,7 @@ namespace Volante.Impl
             long pos = getPos(oid);
             if ((pos & (dbFreeHandleFlag | dbPageObjectFlag)) != 0)
             {
-                throw new DatabaseError(DatabaseError.ErrorCode.DELETED_OBJECT);
+                throw new DatabaseException(DatabaseException.ErrorCode.DELETED_OBJECT);
             }
             byte[] body = pool.get(pos & ~dbFlagsMask);
             ClassDescriptor desc;

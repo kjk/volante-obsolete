@@ -74,7 +74,7 @@ namespace Volante
             field = type.GetField(fieldName, BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
             if (field == null)
             {
-                throw new DatabaseError(DatabaseError.ErrorCode.KEY_NOT_FOUND);
+                throw new DatabaseException(DatabaseException.ErrorCode.KEY_NOT_FOUND);
             }
         }
 

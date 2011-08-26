@@ -53,10 +53,10 @@ namespace Volante
             res.InsertTime = DateTime.Now - start;
 
             start = System.DateTime.Now;
-            Tests.AssertDatabaseException(() => { r = idx[true]; }, DatabaseError.ErrorCode.KEY_NOT_UNIQUE );
+            Tests.AssertDatabaseException(() => { r = idx[true]; }, DatabaseException.ErrorCode.KEY_NOT_UNIQUE );
 
             Tests.AssertDatabaseException(() => { r = idx[false]; },
- DatabaseError.ErrorCode.KEY_NOT_UNIQUE );
+ DatabaseException.ErrorCode.KEY_NOT_UNIQUE );
 
             Record[] recs = idx[true, true];
             Tests.Assert(recs.Length == trueCount);
@@ -147,8 +147,8 @@ namespace Volante
             Tests.Assert(i == count);
 
             Tests.Assert(idx.KeyType == typeof(Boolean));
-            Tests.AssertDatabaseException(() => idx.Remove(new Key(true)), DatabaseError.ErrorCode.KEY_NOT_UNIQUE);
-            Tests.AssertDatabaseException(() => idx.RemoveKey(true), DatabaseError.ErrorCode.KEY_NOT_UNIQUE);
+            Tests.AssertDatabaseException(() => idx.Remove(new Key(true)), DatabaseException.ErrorCode.KEY_NOT_UNIQUE);
+            Tests.AssertDatabaseException(() => idx.RemoveKey(true), DatabaseException.ErrorCode.KEY_NOT_UNIQUE);
 
             recs = idx[false, true];
             Tests.Assert(recs.Length == idx.Count);

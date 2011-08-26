@@ -133,7 +133,7 @@ namespace Volante
         /// </param>
         /// <returns>persistent object implementing index
         /// </returns>
-        /// <exception cref="Volante.DatabaseError">DatabaseError(DatabaseError.ErrorCode.UNSUPPORTED_INDEX_TYPE) exception if 
+        /// <exception cref="Volante.DatabaseException">DatabaseException(DatabaseException.ErrorCode.UNSUPPORTED_INDEX_TYPE) exception if 
         /// specified key type is not supported by implementation.
         /// </exception>
         IIndex<K, V> CreateIndex<K, V>(IndexType indexType) where V : class,IPersistent;
@@ -143,7 +143,7 @@ namespace Volante
         /// </summary>
         /// <returns>persistent object implementing thick index
         /// </returns>
-        /// <exception cref="Volante.DatabaseError">DatabaseError(DatabaseError.ErrorCode.UNSUPPORTED_INDEX_TYPE) exception if 
+        /// <exception cref="Volante.DatabaseException">DatabaseException(DatabaseException.ErrorCode.UNSUPPORTED_INDEX_TYPE) exception if 
         /// specified key type is not supported by implementation.
         /// </exception>
         IIndex<K, V> CreateThickIndex<K, V>() where V : class,IPersistent;
@@ -158,8 +158,8 @@ namespace Volante
         /// </param>
         /// <returns>persistent object implementing field index
         /// </returns>
-        /// <exception cref="Volante.DatabaseError">DatabaseError(DatabaseError.INDEXED_FIELD_NOT_FOUND) if there is no such field in specified class,
-        /// DatabaseError(DatabaseError.UNSUPPORTED_INDEX_TYPE) exception if type of specified field is not supported by implementation
+        /// <exception cref="Volante.DatabaseException">DatabaseException(DatabaseException.INDEXED_FIELD_NOT_FOUND) if there is no such field in specified class,
+        /// DatabaseException(DatabaseException.UNSUPPORTED_INDEX_TYPE) exception if type of specified field is not supported by implementation
         /// </exception>
         IFieldIndex<K, V> CreateFieldIndex<K, V>(string fieldName, IndexType indexType) where V : class,IPersistent;
 
@@ -172,8 +172,8 @@ namespace Volante
         /// </param>
         /// <returns>persistent object implementing field index
         /// </returns>
-        /// <exception cref="Volante.DatabaseError">DatabaseError(DatabaseError.INDEXED_FIELD_NOT_FOUND) if there is no such field in specified class,
-        /// DatabaseError(DatabaseError.UNSUPPORTED_INDEX_TYPE) exception if type of specified field is not supported by implementation
+        /// <exception cref="Volante.DatabaseException">DatabaseException(DatabaseException.INDEXED_FIELD_NOT_FOUND) if there is no such field in specified class,
+        /// DatabaseException(DatabaseException.UNSUPPORTED_INDEX_TYPE) exception if type of specified field is not supported by implementation
         /// </exception>
         IMultiFieldIndex<V> CreateFieldIndex<V>(string[] fieldNames, IndexType indexType) where V : class,IPersistent;
 

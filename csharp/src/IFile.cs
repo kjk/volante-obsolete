@@ -3,7 +3,7 @@ namespace Volante
     /// <summary> Interface of file.
     /// Programmer can provide its own implementation of this interface, adding such features
     /// as support of flash cards, encrypted files,...
-    /// Implentation of this interface should throw DatabaseError exception in case of failure
+    /// Implentation of this interface should throw DatabaseException exception in case of failure
     /// </summary>
     public interface IFile
     {

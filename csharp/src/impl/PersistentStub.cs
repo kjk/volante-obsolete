@@ -22,7 +22,7 @@ namespace Volante.Impl
 
         public virtual void Load()
         {
-            throw new DatabaseError(DatabaseError.ErrorCode.ACCESS_TO_STUB);
+            throw new DatabaseException(DatabaseException.ErrorCode.ACCESS_TO_STUB);
         }
 
         public bool IsRaw()
@@ -47,22 +47,22 @@ namespace Volante.Impl
 
         public virtual int MakePersistent(IDatabase db)
         {
-            throw new DatabaseError(DatabaseError.ErrorCode.ACCESS_TO_STUB);
+            throw new DatabaseException(DatabaseException.ErrorCode.ACCESS_TO_STUB);
         }
 
         public virtual void Store()
         {
-            throw new DatabaseError(DatabaseError.ErrorCode.ACCESS_TO_STUB);
+            throw new DatabaseException(DatabaseException.ErrorCode.ACCESS_TO_STUB);
         }
 
         public void Modify()
         {
-            throw new DatabaseError(DatabaseError.ErrorCode.ACCESS_TO_STUB);
+            throw new DatabaseException(DatabaseException.ErrorCode.ACCESS_TO_STUB);
         }
 
         public virtual void Deallocate()
         {
-            throw new DatabaseError(DatabaseError.ErrorCode.ACCESS_TO_STUB);
+            throw new DatabaseException(DatabaseException.ErrorCode.ACCESS_TO_STUB);
         }
 
         public virtual bool RecursiveLoading()
@@ -90,7 +90,7 @@ namespace Volante.Impl
 
         public virtual void Invalidate()
         {
-            throw new DatabaseError(DatabaseError.ErrorCode.ACCESS_TO_STUB);
+            throw new DatabaseException(DatabaseException.ErrorCode.ACCESS_TO_STUB);
         }
 
         internal PersistentStub(IDatabase db, int oid)
@@ -101,7 +101,7 @@ namespace Volante.Impl
 
         public void AssignOid(IDatabase db, int oid, bool raw)
         {
-            throw new DatabaseError(DatabaseError.ErrorCode.ACCESS_TO_STUB);
+            throw new DatabaseException(DatabaseException.ErrorCode.ACCESS_TO_STUB);
         }
 
         private IDatabase db;

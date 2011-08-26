@@ -165,7 +165,7 @@ public class TestSSD : Persistent {
                     return;
                 }
                 skip("Press ENTER to continue...");
-            } catch (DatabaseError x) { 
+            } catch (DatabaseException x) { 
                 Console.WriteLine("Error: " + x.Message);
                 skip("Press ENTER to continue...");
             }

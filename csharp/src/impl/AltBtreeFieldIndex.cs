@@ -31,7 +31,7 @@ namespace Volante.Impl
                 PropertyInfo prop = cls.GetProperty(fieldName, BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
                 if (prop == null)
                 {
-                    throw new DatabaseError(DatabaseError.ErrorCode.INDEXED_FIELD_NOT_FOUND, className + "." + fieldName);
+                    throw new DatabaseException(DatabaseException.ErrorCode.INDEXED_FIELD_NOT_FOUND, className + "." + fieldName);
                 }
                 mbrType = prop.PropertyType;
                 mbr = prop;
@@ -43,7 +43,7 @@ namespace Volante.Impl
             }
             if (mbrType != typeof(K))
             {
-                throw new DatabaseError(DatabaseError.ErrorCode.INCOMPATIBLE_KEY_TYPE, mbrType);
+                throw new DatabaseException(DatabaseException.ErrorCode.INCOMPATIBLE_KEY_TYPE, mbrType);
             }
         }
 
@@ -68,7 +68,7 @@ namespace Volante.Impl
             cls = ClassDescriptor.lookup(Database, className);
             if (cls != typeof(V))
             {
-                throw new DatabaseError(DatabaseError.ErrorCode.INCOMPATIBLE_VALUE_TYPE, mbrType);
+                throw new DatabaseException(DatabaseException.ErrorCode.INCOMPATIBLE_VALUE_TYPE, mbrType);
             }
             lookupField(fieldName);
         }
@@ -169,9 +169,9 @@ namespace Volante.Impl
             {
                 base.Remove(new BtreeKey(extractKey(obj), obj));
             }
-            catch (DatabaseError x)
+            catch (DatabaseException x)
             {
-                if (x.Code == DatabaseError.ErrorCode.KEY_NOT_FOUND)
+                if (x.Code == DatabaseException.ErrorCode.KEY_NOT_FOUND)
                 {
                     return false;
                 }
@@ -218,7 +218,7 @@ namespace Volante.Impl
                         val = autoincCount;
                         break;
                     default:
-                        throw new DatabaseError(DatabaseError.ErrorCode.UNSUPPORTED_INDEX_TYPE, mbrType);
+                        throw new DatabaseException(DatabaseException.ErrorCode.UNSUPPORTED_INDEX_TYPE, mbrType);
                 }
                 if (mbr is FieldInfo)
                 {

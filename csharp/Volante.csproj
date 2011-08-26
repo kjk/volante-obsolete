@@ -125,7 +125,7 @@
     <Compile Include="src\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="src\DatabaseError.cs" />
+    <Compile Include="src\DatabaseException.cs" />
     <Compile Include="src\DatabaseFactory.cs" />
     <Compile Include="src\DatabaseListener.cs" />
     <Compile Include="src\IBitIndex.cs" />

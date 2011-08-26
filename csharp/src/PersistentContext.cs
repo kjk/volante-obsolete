@@ -69,7 +69,7 @@ namespace Volante
         {
             if ((state & ObjectState.RAW) != 0)
             {
-                throw new DatabaseError(DatabaseError.ErrorCode.ACCESS_TO_STUB);
+                throw new DatabaseException(DatabaseException.ErrorCode.ACCESS_TO_STUB);
             }
             if (db != null)
             {
@@ -84,7 +84,7 @@ namespace Volante
             {
                 if ((state & ObjectState.RAW) != 0)
                 {
-                    throw new DatabaseError(DatabaseError.ErrorCode.ACCESS_TO_STUB);
+                    throw new DatabaseException(DatabaseException.ErrorCode.ACCESS_TO_STUB);
                 }
                 Debug.Assert((state & ObjectState.DELETED) == 0);
                 db.modifyObject(this);

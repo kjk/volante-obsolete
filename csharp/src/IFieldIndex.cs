@@ -52,7 +52,7 @@ namespace Volante
         /// Object can be not yet peristent, in this case
         /// its forced to become persistent by assigning oid to it.
         /// </param>
-        /// <exception cref="Volante.DatabaseError"><code>DatabaseError(DatabaseError.ErrorCode.INCOMPATIBLE_KEY_TYPE)</code> 
+        /// <exception cref="Volante.DatabaseException"><code>DatabaseException(DatabaseException.ErrorCode.INCOMPATIBLE_KEY_TYPE)</code> 
         /// is thrown when indexed field has type other than <code>int</code> or <code>long</code></exception>
         void Append(V obj);
 
@@ -61,8 +61,8 @@ namespace Volante
         /// <param name="key">wrapper of removed key
         /// </param>
         /// <returns>removed object</returns>
-        /// <exception cref="Volante.DatabaseError">DatabaseError(DatabaseError.ErrorCode.KEY_NOT_FOUND) exception if there is no such key in the index,
-        /// or DatabaseError(DatabaseError.ErrorCode.KEY_NOT_UNIQUE) if index is not unique.
+        /// <exception cref="Volante.DatabaseException">DatabaseException(DatabaseException.ErrorCode.KEY_NOT_FOUND) exception if there is no such key in the index,
+        /// or DatabaseException(DatabaseException.ErrorCode.KEY_NOT_UNIQUE) if index is not unique.
         /// 
         /// </exception>
         V Remove(Key key);
@@ -72,8 +72,8 @@ namespace Volante
         /// <param name="key">value of removed key
         /// </param>
         /// <returns>removed object</returns>
-        /// <exception cref="Volante.DatabaseError">DatabaseError(DatabaseError.ErrorCode.KEY_NOT_FOUND) exception if there is no such key in the index,
-        /// or DatabaseError(DatabaseError.ErrorCode.KEY_NOT_UNIQUE) if index is not unique.
+        /// <exception cref="Volante.DatabaseException">DatabaseException(DatabaseException.ErrorCode.KEY_NOT_FOUND) exception if there is no such key in the index,
+        /// or DatabaseException(DatabaseException.ErrorCode.KEY_NOT_UNIQUE) if index is not unique.
         /// 
         /// </exception>
         V RemoveKey(K key);

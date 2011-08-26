@@ -216,14 +216,14 @@ public class Tests
         Assert(gotException);
     }
 
-    public static void AssertDatabaseException(Action func, DatabaseError.ErrorCode expectedCode)
+    public static void AssertDatabaseException(Action func, DatabaseException.ErrorCode expectedCode)
     {
         bool gotException = false;
         try
         {
             func();
         }
-        catch (DatabaseError exc)
+        catch (DatabaseException exc)
         {
             gotException = exc.Code == expectedCode;
         }

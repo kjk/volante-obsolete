@@ -129,7 +129,7 @@ namespace Volante
             VerifyDictionaryEnumerator(de, IterationOrder.DescentOrder);
 
             Tests.AssertDatabaseException(() => intIndex.PrefixSearch("1"),
-                DatabaseError.ErrorCode.INCOMPATIBLE_KEY_TYPE);
+                DatabaseException.ErrorCode.INCOMPATIBLE_KEY_TYPE);
             Record[] recs;
             recs = strIndex.PrefixSearch("1");
             Tests.Assert(startWithOne == recs.Length);

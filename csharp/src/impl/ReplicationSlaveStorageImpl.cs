@@ -28,7 +28,7 @@ namespace Volante.Impl
                     prevIndex = rootPage[DB_HDR_CURR_INDEX_OFFSET];
                     initialized = rootPage[DB_HDR_INITIALIZED_OFFSET] != 0;
                 }
-                catch (DatabaseError)
+                catch (DatabaseException)
                 {
                     initialized = false;
                     prevIndex = -1;

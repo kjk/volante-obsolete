@@ -101,7 +101,7 @@ namespace Volante
         /// <summary>
         /// Invalidate object. Invalidated object has to be explicitly
         /// reloaded using load() method. Attempt to store invalidated object
-        /// will cause DatabaseError exception.
+        /// will cause DatabaseException exception.
         /// </summary>
         void Invalidate();
 
