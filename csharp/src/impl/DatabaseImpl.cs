@@ -2284,7 +2284,7 @@ namespace Volante.Impl
             }
         }
 
-        public Dictionary<Type, MemoryUsage> GetMemoryDump()
+        public Dictionary<Type, TypeMemoryUsage> GetMemoryUsage()
         {
             lock (this)
             {
@@ -2301,12 +2301,12 @@ namespace Volante.Impl
                     greyBitmap = new int[bitmapSize];
                     blackBitmap = new int[bitmapSize];
                     int rootOid = header.root[currIndex].rootObject;
-                    var map = new Dictionary<Type, MemoryUsage>();
+                    var map = new Dictionary<Type, TypeMemoryUsage>();
                     if (0 == rootOid)
                         return map;
 
-                    MemoryUsage indexUsage = new MemoryUsage(typeof(IGenericIndex));
-                    MemoryUsage classUsage = new MemoryUsage(typeof(Type));
+                    TypeMemoryUsage indexUsage = new TypeMemoryUsage(typeof(IGenericIndex));
+                    TypeMemoryUsage classUsage = new TypeMemoryUsage(typeof(Type));
 
                     markOid(rootOid);
                     do
@@ -2339,23 +2339,23 @@ namespace Volante.Impl
                                                 Btree btree = createBtreeStub(pg.data, offs);
                                                 btree.AssignOid(this, 0, false);
                                                 int nPages = btree.markTree();
-                                                indexUsage.nInstances += 1;
-                                                indexUsage.totalSize += (long)nPages * Page.pageSize + objSize;
-                                                indexUsage.allocatedSize += (long)nPages * Page.pageSize + alignedSize;
+                                                indexUsage.Count += 1;
+                                                indexUsage.TotalSize += (long)nPages * Page.pageSize + objSize;
+                                                indexUsage.AllocatedSize += (long)nPages * Page.pageSize + alignedSize;
                                             }
                                             else
 #endif
                                             {
-                                                MemoryUsage usage;
+                                                TypeMemoryUsage usage;
                                                 var ok = map.TryGetValue(desc.cls, out usage);
                                                 if (!ok)
                                                 {
-                                                    usage = new MemoryUsage(desc.cls);
+                                                    usage = new TypeMemoryUsage(desc.cls);
                                                     map[desc.cls] = usage;
                                                 }
-                                                usage.nInstances += 1;
-                                                usage.totalSize += objSize;
-                                                usage.allocatedSize += alignedSize;
+                                                usage.Count += 1;
+                                                usage.TotalSize += objSize;
+                                                usage.AllocatedSize += alignedSize;
 
                                                 if (desc.hasReferences)
                                                 {
@@ -2365,9 +2365,9 @@ namespace Volante.Impl
                                         }
                                         else
                                         {
-                                            classUsage.nInstances += 1;
-                                            classUsage.totalSize += objSize;
-                                            classUsage.allocatedSize += alignedSize;
+                                            classUsage.Count += 1;
+                                            classUsage.TotalSize += objSize;
+                                            classUsage.AllocatedSize += alignedSize;
                                         }
                                         pool.unfix(pg);
                                     }
@@ -2376,31 +2376,31 @@ namespace Volante.Impl
                         }
                     } while (existsNotMarkedObjects);
 
-                    if (indexUsage.nInstances != 0)
+                    if (indexUsage.Count != 0)
                     {
                         map[typeof(IGenericIndex)] = indexUsage;
                     }
-                    if (classUsage.nInstances != 0)
+                    if (classUsage.Count != 0)
                     {
                         map[typeof(Type)] = classUsage;
                     }
-                    MemoryUsage system = new MemoryUsage(typeof(IDatabase));
-                    system.totalSize += header.root[0].indexSize * 8L;
-                    system.totalSize += header.root[1].indexSize * 8L;
-                    system.totalSize += (long)(header.root[currIndex].bitmapEnd - dbBitmapId) * Page.pageSize;
-                    system.totalSize += Page.pageSize; // root page
+                    TypeMemoryUsage system = new TypeMemoryUsage(typeof(IDatabase));
+                    system.TotalSize += header.root[0].indexSize * 8L;
+                    system.TotalSize += header.root[1].indexSize * 8L;
+                    system.TotalSize += (long)(header.root[currIndex].bitmapEnd - dbBitmapId) * Page.pageSize;
+                    system.TotalSize += Page.pageSize; // root page
 
                     if (header.root[currIndex].bitmapExtent != 0)
                     {
-                        system.allocatedSize = getBitmapUsedSpace(dbBitmapId, dbBitmapId + dbBitmapPages)
+                        system.AllocatedSize = getBitmapUsedSpace(dbBitmapId, dbBitmapId + dbBitmapPages)
                             + getBitmapUsedSpace(header.root[currIndex].bitmapExtent,
                             header.root[currIndex].bitmapExtent + header.root[currIndex].bitmapEnd - dbBitmapId);
                     }
                     else
                     {
-                        system.allocatedSize = getBitmapUsedSpace(dbBitmapId, header.root[currIndex].bitmapEnd);
+                        system.AllocatedSize = getBitmapUsedSpace(dbBitmapId, header.root[currIndex].bitmapEnd);
                     }
-                    system.nInstances = header.root[currIndex].indexSize;
+                    system.Count = header.root[currIndex].indexSize;
                     map[typeof(IDatabase)] = system;
                     return map;
                 }

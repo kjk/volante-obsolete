@@ -175,20 +175,20 @@ public class Tests
 
     public static int DbInstanceCount(IDatabase db, Type type)
     {
-        var mem = db.GetMemoryDump();
-        MemoryUsage mu;
+        var mem = db.GetMemoryUsage();
+        TypeMemoryUsage mu;
         bool ok = mem.TryGetValue(type, out mu);
         if (!ok)
             return 0;
-        return mu.nInstances;
+        return mu.Count;
     }
 
-    public static void DumpMemoryUsage(ICollection<MemoryUsage> usages)
+    public static void DumpMemoryUsage(ICollection<TypeMemoryUsage> usages)
     {
         Console.WriteLine("Memory usage");
-        foreach (MemoryUsage usage in usages)
+        foreach (TypeMemoryUsage usage in usages)
         {
-            Console.WriteLine(" " + usage.type.Name + ": instances=" + usage.nInstances + ", total size=" + usage.totalSize + ", allocated size=" + usage.allocatedSize);
+            Console.WriteLine(" " + usage.Type.Name + ": instances=" + usage.Count + ", total size=" + usage.TotalSize + ", allocated size=" + usage.AllocatedSize);
         }
     }
 

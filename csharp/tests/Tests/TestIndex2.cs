@@ -10,7 +10,7 @@ namespace Volante
         public TimeSpan IndexSearch;
         public TimeSpan IterationTime;
         public TimeSpan RemoveTime;
-        public ICollection<MemoryUsage> MemoryUsage; // elements are of MemoryUsage type
+        public ICollection<TypeMemoryUsage> MemoryUsage; // elements are of TypeMemoryUsage type
     }
 
     public class TestIndex2
@@ -119,7 +119,7 @@ namespace Volante
             res.IterationTime = DateTime.Now - start;
 
             start = DateTime.Now;
-            res.MemoryUsage = db.GetMemoryDump().Values;
+            res.MemoryUsage = db.GetMemoryUsage().Values;
 
             start = System.DateTime.Now;
             key = 1999;
@@ -133,7 +133,7 @@ namespace Volante
             }
             res.RemoveTime = DateTime.Now - start;
             db.Close();
-            //Tests.DumpMemoryUsage(res.MemoryUsage);
+            //Tests.DumpMemoryUsage(res.TypeMemoryUsage);
         }
     }
 }

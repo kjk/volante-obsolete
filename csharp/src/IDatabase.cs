@@ -627,7 +627,7 @@ namespace Volante
 
         /// <summary>
         /// Get database memory dump. This function returns hashmap which key is classes
-        /// of stored objects and value - MemoryUsage object which specifies number of instances
+        /// of stored objects and value - TypeMemoryUsage object which specifies number of instances
         /// of particular class in the db and total size of memory used by these instance.
         /// Size of internal database structures (object index, memory allocation bitmap) is associated with 
         /// <code>IDatabase</code> class. Size of class descriptors  - with <code>System.Type</code> class.
@@ -637,7 +637,7 @@ namespace Volante
         /// by this method, it means that there is garbage in the database. You can explicitly invoke
         /// garbage collector in this case.</p> 
         /// </summary>
-        Dictionary<Type, MemoryUsage> GetMemoryDump();
+        Dictionary<Type, TypeMemoryUsage> GetMemoryUsage();
 
         /// <summary>
         /// Get total size of all allocated objects in the database

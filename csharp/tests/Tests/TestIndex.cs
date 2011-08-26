@@ -9,7 +9,7 @@ namespace Volante
         public TimeSpan IndexSearchTime;
         public TimeSpan IterationTime;
         public TimeSpan RemoveTime;
-        public ICollection MemoryUsage; // values are of MemoryUsage type
+        public ICollection MemoryUsage; // values are of TypeMemoryUsage type
     }
 
     public class TestIndex

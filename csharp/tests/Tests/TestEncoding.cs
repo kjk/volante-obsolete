@@ -62,7 +62,7 @@ namespace Volante
                 Tests.Assert(rec.valStr == str);
             }
 
-            var memUsage = db.GetMemoryDump().Values;
+            var memUsage = db.GetMemoryUsage().Values;
             db.Close();
             //Console.WriteLine(config.DatabaseName);
             //Tests.DumpMemoryUsage(memUsage);

@@ -66,7 +66,7 @@ namespace DirectoryScan
             if (showMemoryStats)
             {
                 Console.WriteLine("Memory stats before removal:");
-                DumpMemoryUsage(db.GetMemoryDump().Values);
+                DumpMemoryUsage(db.GetMemoryUsage().Values);
             }
             // we pick one object and remove it from all 3 indexes
             if (dbRoot.FileSizeIndex.Count == 0)
@@ -90,7 +90,7 @@ namespace DirectoryScan
             if (showMemoryStats)
             {
                 Console.WriteLine("Memory stats after removal:");
-                DumpMemoryUsage(db.GetMemoryDump().Values);
+                DumpMemoryUsage(db.GetMemoryUsage().Values);
             }
         }
 
@@ -224,12 +224,12 @@ namespace DirectoryScan
             }
         }
 
-        public static void DumpMemoryUsage(ICollection<MemoryUsage> usages)
+        public static void DumpMemoryUsage(ICollection<TypeMemoryUsage> usages)
         {
             Console.WriteLine("Memory usage");
-            foreach (MemoryUsage usage in usages)
+            foreach (TypeMemoryUsage usage in usages)
             {
-                Console.WriteLine(" " + usage.type.Name + ": instances=" + usage.nInstances + ", total size=" + usage.totalSize + ", allocated size=" + usage.allocatedSize);
+                Console.WriteLine(" " + usage.Type.Name + ": instances=" + usage.Count + ", total size=" + usage.TotalSize + ", allocated size=" + usage.AllocatedSize);
             }
         }
 

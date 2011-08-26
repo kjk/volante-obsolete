@@ -321,9 +321,6 @@
     <Compile Include="src\MarshalByRefPersistent.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="src\MemoryUsage.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="src\NullFile.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -366,6 +363,7 @@
     <Compile Include="src\TransparentPersistenceAttribute.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="src\TypeMemoryUsage.cs" />
     <Compile Include="src\XMLImportException.cs">
       <SubType>Code</SubType>
     </Compile>

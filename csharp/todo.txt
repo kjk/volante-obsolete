@@ -18,7 +18,6 @@ Things to do for c# version:
  * CreatePatriciaTree()
  * an example of persisted double-linked list
  * who uses Volante?
-* change naming on MemoryUsage class
 * make OSFile.cs and Rc4File.cs public, remove the IDatabase.Open() which takes encryption password
 * make a reference API from .xml extracted during build process
 * get rid of IDatabase.StringEncoding and always use utf8 for storing strings (?)
