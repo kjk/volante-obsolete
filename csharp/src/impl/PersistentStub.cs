@@ -12,11 +12,11 @@ namespace Volante.Impl
             }
         }
 
-        public virtual IDatabase Storage
+        public virtual IDatabase Database
         {
             get
             {
-                return storage;
+                return db;
             }
         }
 
@@ -45,7 +45,7 @@ namespace Volante.Impl
             return true;
         }
 
-        public virtual int MakePersistent(IDatabase storage)
+        public virtual int MakePersistent(IDatabase db)
         {
             throw new DatabaseError(DatabaseError.ErrorCode.ACCESS_TO_STUB);
         }
@@ -93,18 +93,18 @@ namespace Volante.Impl
             throw new DatabaseError(DatabaseError.ErrorCode.ACCESS_TO_STUB);
         }
 
-        internal PersistentStub(IDatabase storage, int oid)
+        internal PersistentStub(IDatabase db, int oid)
         {
-            this.storage = storage;
+            this.db = db;
             this.oid = oid;
         }
 
-        public void AssignOid(IDatabase storage, int oid, bool raw)
+        public void AssignOid(IDatabase db, int oid, bool raw)
         {
             throw new DatabaseError(DatabaseError.ErrorCode.ACCESS_TO_STUB);
         }
 
-        private IDatabase storage;
+        private IDatabase db;
         private int oid;
     }
 }

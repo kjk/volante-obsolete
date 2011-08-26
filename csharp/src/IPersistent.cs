@@ -13,9 +13,9 @@ namespace Volante
             get;
         }
 
-        /// <summary> Get storage in which this object is stored
+        /// <summary> Get db in which this object is stored
         /// </summary>
-        IDatabase Storage
+        IDatabase Database
         {
             get;
         }
@@ -52,13 +52,13 @@ namespace Volante
         bool IsModified();
 
         /// <summary> Explicitly make object peristent. Usually objects are made persistent
-        /// implicitlely using "persistency on reachability approach", but this
-        /// method allows to do it explicitly 
+        /// implicitly using "persistency on reachability approach", but this
+        /// method allows you to do it explicitly 
         /// </summary>
-        /// <param name="storage">storage in which object should be stored 
+        /// <param name="db">db in which object should be stored 
         /// </param>
         /// <returns>oid assigned to the object</returns>
-        int MakePersistent(IDatabase storage);
+        int MakePersistent(IDatabase db);
 
         /// <summary> Save object in the database
         /// </summary>
@@ -101,12 +101,12 @@ namespace Volante
         /// <summary>
         /// Invalidate object. Invalidated object has to be explicitly
         /// reloaded using load() method. Attempt to store invalidated object
-        /// will cause StoraegError exception.
+        /// will cause DatabaseError exception.
         /// </summary>
         void Invalidate();
 
         /// <summary>
-        /// Method used to associate object with storage.
+        /// Method used to associate object with db.
         /// This method is used by IDictionary class and you should not use it explicitly.
         /// </summary>
         /// <param name="db">database to be assigned to</param>

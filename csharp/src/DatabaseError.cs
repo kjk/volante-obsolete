@@ -52,7 +52,7 @@ namespace Volante
         private static System.String[] messageText = new System.String[] { "Database not opened", "Database already opened", "File access error", "Key not unique", "Key not found", "Database schema was changed for", "Unsupported type", "Unsupported index type", "Incompatible key type", "Incompatible value type", "Not enough space", "Database file is corrupted", "Failed to instantiate the object of", "Failed to build descriptor for", "Stub object is accessed", "Invalid object reference", "Access to the deleted object", "Object access violation", "Failed to locate", "Ambiguity definition of class", "Could not find indexed field", "No such property", "Bad property value" };
 
         /// <summary> Get original exception if DatabaseError excepotion was thrown as the result 
-        /// of catching some other exception within Storage implementation. 
+        /// of catching some other exception within Database implementation. 
         /// DatabaseError is used as wrapper of other exceptions to avoid cascade propagation
         /// of throws and try/catch constructions.
         /// </summary>

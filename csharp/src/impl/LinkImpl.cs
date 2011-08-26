@@ -340,7 +340,7 @@ namespace Volante.Impl
                 IPersistent elem = arr[i];
                 if (elem != null && !elem.IsRaw() && elem.IsPersistent())
                 {
-                    arr[i] = new PersistentStub(elem.Storage, elem.Oid);
+                    arr[i] = new PersistentStub(elem.Database, elem.Oid);
                 }
             }
         }
@@ -350,7 +350,7 @@ namespace Volante.Impl
             IPersistent elem = arr[i];
             if (elem != null && elem.IsRaw())
             {
-                elem = ((DatabaseImpl)elem.Storage).lookupObject(elem.Oid, null);
+                elem = ((DatabaseImpl)elem.Database).lookupObject(elem.Oid, null);
             }
             return (T)elem;
         }

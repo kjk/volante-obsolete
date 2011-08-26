@@ -21,9 +21,9 @@ public abstract class Guess : Persistent
         get;
     }
 
-    internal static Guess Create(IDatabase storage, Guess no, string question, Guess yes)
+    internal static Guess Create(IDatabase db, Guess no, string question, Guess yes)
     {
-        Guess guess = (Guess)storage.CreateClass(typeof(Guess));
+        Guess guess = (Guess)db.CreateClass(typeof(Guess));
         guess.Yes = yes;
         guess.Question = question;
         guess.No = no;
@@ -49,11 +49,11 @@ public abstract class Guess : Persistent
         return answer.ToUpper().Equals("Y") || answer.ToUpper().Equals("YES");
     }
 	
-    internal static Guess whoIsIt(IDatabase storage, Guess parent)
+    internal static Guess whoIsIt(IDatabase db, Guess parent)
     {
         System.String animal = input("What is it ? ");
         System.String difference = input("What is a difference from other ? ");
-        return Create(storage, parent, difference, Create(storage, null, animal, null));
+        return Create(db, parent, difference, Create(db, null, animal, null));
     }
 	
     internal Guess dialog()
@@ -79,11 +79,11 @@ public abstract class Guess : Persistent
             {
                 if (Yes == null)
                 {
-                    return whoIsIt(Storage, this);
+                    return whoIsIt(Database, this);
                 }
                 else
                 {
-                    No = whoIsIt(Storage, null);
+                    No = whoIsIt(Database, null);
                 }
             }
             else

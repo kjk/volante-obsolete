@@ -15,12 +15,12 @@ namespace Volante.Impl
         /// <summary>
         /// Constructor of replication master file
         /// </summary>
-        /// <param name="storage">replication storage</param>
+        /// <param name="db">replication database</param>
         /// <param name="file">local file used to store data locally</param>
-        public ReplicationMasterFile(ReplicationMasterDatabaseImpl storage, IFile file)
-            : this(file, storage.hosts, storage.replicationAck)
+        public ReplicationMasterFile(ReplicationMasterDatabaseImpl db, IFile file)
+            : this(file, db.hosts, db.replicationAck)
         {
-            this.storage = storage;
+            this.db = db;
         }
 
         /// <summary>

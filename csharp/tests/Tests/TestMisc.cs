@@ -88,7 +88,6 @@ namespace Volante
 
         public void Run(TestConfig config)
         {
-            int n;
             IDatabase db = config.GetDatabase();
             Root root = new Root();
             Record r = new Record();

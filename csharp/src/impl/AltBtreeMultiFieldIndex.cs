@@ -63,7 +63,7 @@ namespace Volante.Impl
 
         public override void OnLoad()
         {
-            cls = ClassDescriptor.lookup(Storage, className);
+            cls = ClassDescriptor.lookup(Database, className);
             if (cls != typeof(T))
             {
                 throw new DatabaseError(DatabaseError.ErrorCode.INCOMPATIBLE_VALUE_TYPE, cls);

@@ -485,7 +485,7 @@ namespace Volante.Impl
 
             internal override BtreePage clonePage()
             {
-                return new BtreePageOfByte(Storage);
+                return new BtreePageOfByte(Database);
             }
 
             internal override int compare(Key key, int i)
@@ -536,7 +536,7 @@ namespace Volante.Impl
 
             internal override BtreePage clonePage()
             {
-                return new BtreePageOfSByte(Storage);
+                return new BtreePageOfSByte(Database);
             }
 
             internal override int compare(Key key, int i)
@@ -575,7 +575,7 @@ namespace Volante.Impl
 
             internal override BtreePage clonePage()
             {
-                return new BtreePageOfBoolean(Storage);
+                return new BtreePageOfBoolean(Database);
             }
 
             internal BtreePageOfBoolean()
@@ -615,7 +615,7 @@ namespace Volante.Impl
 
             internal override BtreePage clonePage()
             {
-                return new BtreePageOfShort(Storage);
+                return new BtreePageOfShort(Database);
             }
 
             internal override int compare(Key key, int i)
@@ -666,7 +666,7 @@ namespace Volante.Impl
 
             internal override BtreePage clonePage()
             {
-                return new BtreePageOfUShort(Storage);
+                return new BtreePageOfUShort(Database);
             }
 
             internal override int compare(Key key, int i)
@@ -717,7 +717,7 @@ namespace Volante.Impl
 
             internal override BtreePage clonePage()
             {
-                return new BtreePageOfInt(Storage);
+                return new BtreePageOfInt(Database);
             }
 
             internal override int compare(Key key, int i)
@@ -774,7 +774,7 @@ namespace Volante.Impl
 
             internal override BtreePage clonePage()
             {
-                return new BtreePageOfUInt(Storage);
+                return new BtreePageOfUInt(Database);
             }
 
             internal override int compare(Key key, int i)
@@ -830,7 +830,7 @@ namespace Volante.Impl
 
             internal override BtreePage clonePage()
             {
-                return new BtreePageOfLong(Storage);
+                return new BtreePageOfLong(Database);
             }
 
             internal override int compare(Key key, int i)
@@ -881,7 +881,7 @@ namespace Volante.Impl
 
             internal override BtreePage clonePage()
             {
-                return new BtreePageOfULong(Storage);
+                return new BtreePageOfULong(Database);
             }
 
             internal override int compare(Key key, int i)
@@ -932,7 +932,7 @@ namespace Volante.Impl
 
             internal override BtreePage clonePage()
             {
-                return new BtreePageOfDate(Storage);
+                return new BtreePageOfDate(Database);
             }
 
             internal override int compare(Key key, int i)
@@ -985,7 +985,7 @@ namespace Volante.Impl
 
             internal override BtreePage clonePage()
             {
-                return new BtreePageOfFloat(Storage);
+                return new BtreePageOfFloat(Database);
             }
 
             internal override int compare(Key key, int i)
@@ -1035,7 +1035,7 @@ namespace Volante.Impl
 
             internal override BtreePage clonePage()
             {
-                return new BtreePageOfDouble(Storage);
+                return new BtreePageOfDouble(Database);
             }
 
             internal override int compare(Key key, int i)
@@ -1085,7 +1085,7 @@ namespace Volante.Impl
 
             internal override BtreePage clonePage()
             {
-                return new BtreePageOfGuid(Storage);
+                return new BtreePageOfGuid(Database);
             }
 
             internal override int compare(Key key, int i)
@@ -1135,7 +1135,7 @@ namespace Volante.Impl
 
             internal override BtreePage clonePage()
             {
-                return new BtreePageOfDecimal(Storage);
+                return new BtreePageOfDecimal(Database);
             }
 
             internal override int compare(Key key, int i)
@@ -1185,7 +1185,7 @@ namespace Volante.Impl
 
             internal override BtreePage clonePage()
             {
-                return new BtreePageOfObject(Storage);
+                return new BtreePageOfObject(Database);
             }
 
             internal override int compare(Key key, int i)
@@ -1241,7 +1241,7 @@ namespace Volante.Impl
 
             internal override BtreePage clonePage()
             {
-                return new BtreePageOfString(Storage);
+                return new BtreePageOfString(Database);
             }
 
             internal override int compare(Key key, int i)
@@ -1353,7 +1353,7 @@ namespace Volante.Impl
 
             internal override BtreePage clonePage()
             {
-                return new BtreePageOfRaw(Storage);
+                return new BtreePageOfRaw(Database);
             }
 
             internal override int compare(Key key, int i)
@@ -1545,7 +1545,7 @@ namespace Volante.Impl
 
         internal void allocateRootPage(BtreeKey ins)
         {
-            IDatabase s = Storage;
+            IDatabase s = Database;
             BtreePage newRoot = null;
             switch (type)
             {

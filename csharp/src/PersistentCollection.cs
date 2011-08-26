@@ -13,8 +13,8 @@ namespace Volante
         {
         }
 
-        public PersistentCollection(IDatabase storage)
-            : base(storage)
+        public PersistentCollection(IDatabase db)
+            : base(db)
         {
         }
 

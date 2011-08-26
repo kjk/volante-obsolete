@@ -1,7 +1,7 @@
 namespace Volante
 {
     /// <summary>
-    /// Storage reciving modified pages from replication master and 
+    /// Database reciving modified pages from replication master and 
     /// been able to run read-only transactions 
     /// </summary>
     public interface ReplicationSlaveDatabase : IDatabase

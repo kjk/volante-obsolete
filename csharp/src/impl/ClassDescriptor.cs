@@ -267,12 +267,12 @@ namespace Volante.Impl
                 && t != typeof(IPersistent) && t != typeof(PersistentContext) && t != typeof(Persistent);
         }
 
-        internal void buildFieldList(DatabaseImpl storage, System.Type cls, ArrayList list)
+        internal void buildFieldList(DatabaseImpl db, System.Type cls, ArrayList list)
         {
             System.Type superclass = cls.BaseType;
             if (superclass != null && superclass != typeof(MarshalByRefObject))
             {
-                buildFieldList(storage, superclass, list);
+                buildFieldList(db, superclass, list);
             }
             System.Reflection.FieldInfo[] flds = cls.GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.DeclaredOnly);
 #if !CF
@@ -320,11 +320,11 @@ namespace Volante.Impl
                             }
                             break;
                         case FieldType.tpValue:
-                            fd.valueDesc = storage.getClassDescriptor(f.FieldType);
+                            fd.valueDesc = db.getClassDescriptor(f.FieldType);
                             hasReferences |= fd.valueDesc.hasReferences;
                             break;
                         case FieldType.tpArrayOfValue:
-                            fd.valueDesc = storage.getClassDescriptor(f.FieldType.GetElementType());
+                            fd.valueDesc = db.getClassDescriptor(f.FieldType.GetElementType());
                             hasReferences |= fd.valueDesc.hasReferences;
                             break;
                     }
@@ -441,12 +441,12 @@ namespace Volante.Impl
         {
         }
 
-        internal ClassDescriptor(DatabaseImpl storage, Type cls)
+        internal ClassDescriptor(DatabaseImpl db, Type cls)
         {
             this.cls = cls;
             name = getTypeName(cls);
             ArrayList list = new ArrayList();
-            buildFieldList(storage, cls, list);
+            buildFieldList(db, cls, list);
             allFields = (FieldDescriptor[])list.ToArray(typeof(FieldDescriptor));
             defaultConstructor = cls.GetConstructor(BindingFlags.Instance | BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly, null, defaultConstructorProfile, null);
             if (defaultConstructor == null && !typeof(ValueType).IsAssignableFrom(cls))
@@ -456,16 +456,16 @@ namespace Volante.Impl
             resolved = true;
         }
 
-        internal static Type lookup(IDatabase storage, String name)
+        internal static Type lookup(IDatabase db, String name)
         {
-            var resolvedTypes = ((DatabaseImpl)storage).resolvedTypes;
+            var resolvedTypes = ((DatabaseImpl)db).resolvedTypes;
             lock (resolvedTypes)
             {
                 Type cls;
                 var ok = resolvedTypes.TryGetValue(name, out cls);
                 if (ok)
                     return cls;
-                IClassLoader loader = storage.Loader;
+                IClassLoader loader = db.Loader;
                 if (loader != null)
                 {
                     cls = loader.LoadClass(name);
@@ -489,7 +489,7 @@ namespace Volante.Impl
                 int p = name.IndexOf('=');
                 if (p >= 0)
                 {
-                    Type genericType = lookup(storage, name.Substring(0, p));
+                    Type genericType = lookup(db, name.Substring(0, p));
                     Type[] genericParams = new Type[genericType.GetGenericArguments().Length];
                     int nest = 0;
                     int i = p += 2;
@@ -505,7 +505,7 @@ namespace Volante.Impl
                             case ']':
                                 if (--nest < 0)
                                 {
-                                    genericParams[n++] = lookup(storage, name.Substring(p, i - p - 1));
+                                    genericParams[n++] = lookup(db, name.Substring(p, i - p - 1));
                                     Debug.Assert(n == genericParams.Length);
                                     cls = genericType.MakeGenericType(genericParams);
                                     if (cls == null)
@@ -519,7 +519,7 @@ namespace Volante.Impl
                             case ',':
                                 if (nest == 0)
                                 {
-                                    genericParams[n++] = lookup(storage, name.Substring(p, i - p - 1));
+                                    genericParams[n++] = lookup(db, name.Substring(p, i - p - 1));
                                     p = i;
                                 }
                                 break;
@@ -553,10 +553,10 @@ namespace Volante.Impl
 #if !CF
                 if (cls == null && name.EndsWith("Wrapper"))
                 {
-                    Type originalType = lookup(storage, name.Substring(0, name.Length - 7));
-                    lock (storage)
+                    Type originalType = lookup(db, name.Substring(0, name.Length - 7));
+                    lock (db)
                     {
-                        cls = ((DatabaseImpl)storage).getWrapper(originalType);
+                        cls = ((DatabaseImpl)db).getWrapper(originalType);
                     }
                 }
 #endif
@@ -571,7 +571,7 @@ namespace Volante.Impl
 
         public override void OnLoad()
         {
-            cls = lookup(Storage, name);
+            cls = lookup(Database, name);
             int n = allFields.Length;
             bool hasTransparentAttribute = cls.GetCustomAttributes(typeof(TransparentPersistenceAttribute), true).Length != 0;
             for (int i = n; --i >= 0; )
@@ -602,10 +602,10 @@ namespace Volante.Impl
             {
                 throw new DatabaseError(DatabaseError.ErrorCode.DESCRIPTOR_FAILURE, cls);
             }
-            DatabaseImpl s = (DatabaseImpl)Storage;
+            DatabaseImpl s = (DatabaseImpl)Database;
             if (!s.classDescMap.ContainsKey(cls))
             {
-                ((DatabaseImpl)Storage).classDescMap.Add(cls, this);
+                ((DatabaseImpl)Database).classDescMap.Add(cls, this);
             }
         }
 
@@ -614,7 +614,7 @@ namespace Volante.Impl
             if (resolved)
                 return;
 
-            DatabaseImpl classStorage = (DatabaseImpl)Storage;
+            DatabaseImpl classStorage = (DatabaseImpl)Database;
             ClassDescriptor desc = new ClassDescriptor(classStorage, cls);
             resolved = true;
             if (!desc.equals(this))

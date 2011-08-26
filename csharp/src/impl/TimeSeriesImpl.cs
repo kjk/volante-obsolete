@@ -597,11 +597,11 @@ namespace Volante.Impl
             block.Modify();
         }
 
-        internal TimeSeriesImpl(IDatabase storage, int blockSize, long maxBlockTimeInterval)
+        internal TimeSeriesImpl(IDatabase db, int blockSize, long maxBlockTimeInterval)
         {
             this.blockSize = blockSize;
             this.maxBlockTimeInterval = maxBlockTimeInterval;
-            index = storage.CreateIndex<long, TimeSeriesBlock>(IndexType.Unique);
+            index = db.CreateIndex<long, TimeSeriesBlock>(IndexType.Unique);
         }
         internal TimeSeriesImpl() { }
 

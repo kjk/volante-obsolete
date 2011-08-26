@@ -27,15 +27,15 @@ namespace Volante.Impl
         {
             if (root == null)
             {
-                root = new RtreeR2Page(Storage, obj, r);
+                root = new RtreeR2Page(Database, obj, r);
                 height = 1;
             }
             else
             {
-                RtreeR2Page p = root.insert(Storage, r, obj, height);
+                RtreeR2Page p = root.insert(Database, r, obj, height);
                 if (p != null)
                 {
-                    root = new RtreeR2Page(Storage, root, p);
+                    root = new RtreeR2Page(Database, root, p);
                     height += 1;
                 }
             }
@@ -66,11 +66,11 @@ namespace Volante.Impl
                 RtreeR2Page p = (RtreeR2Page)reinsertList[i];
                 for (int j = 0, pn = p.n; j < pn; j++)
                 {
-                    RtreeR2Page q = root.insert(Storage, p.b[j], p.branch[j], height - reinsertLevel);
+                    RtreeR2Page q = root.insert(Database, p.b[j], p.branch[j], height - reinsertLevel);
                     if (q != null)
                     {
                         // root splitted
-                        root = new RtreeR2Page(Storage, root, q);
+                        root = new RtreeR2Page(Database, root, q);
                         height += 1;
                     }
                 }

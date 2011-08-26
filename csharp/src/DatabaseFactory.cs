@@ -7,7 +7,7 @@ namespace Volante
     /// </summary>
     public class DatabaseFactory
     {
-        /// <summary> Create new instance of the storage
+        /// <summary> Create new instance of the db
         /// </summary>
         public static IDatabase CreateDatabase()
         {

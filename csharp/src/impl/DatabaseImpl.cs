@@ -1916,7 +1916,7 @@ namespace Volante.Impl
 #if CF
                 if (alternativeBtree) 
                 {
-                    throw new StorageError(StorageError.ErrorCode.UNSUPPORTED_INDEX_TYPE);
+                    throw new DatabaseError(DatabaseError.ErrorCode.UNSUPPORTED_INDEX_TYPE);
                 }
                 MultiFieldIndex<T> index = new BtreeMultiFieldIndex<T>(fieldNames, unique);
 #else

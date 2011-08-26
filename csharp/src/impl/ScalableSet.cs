@@ -10,16 +10,16 @@ namespace Volante.Impl
         ISet<T> pset;
         const int BTREE_THRESHOLD = 128;
 
-        internal ScalableSet(DatabaseImpl storage, int initialSize)
-            : base(storage)
+        internal ScalableSet(DatabaseImpl db, int initialSize)
+            : base(db)
         {
             if (initialSize <= BTREE_THRESHOLD)
             {
-                link = storage.CreateLink<T>(initialSize);
+                link = db.CreateLink<T>(initialSize);
             }
             else
             {
-                pset = storage.CreateSet<T>();
+                pset = db.CreateSet<T>();
             }
         }
 
@@ -81,7 +81,7 @@ namespace Volante.Impl
                 }
                 if (link.Count == BTREE_THRESHOLD)
                 {
-                    pset = Storage.CreateSet<T>();
+                    pset = Database.CreateSet<T>();
                     for (int i = 0, n = link.Count; i < n; i++)
                     {
                         pset.Add(link[i]);

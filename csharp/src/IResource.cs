@@ -21,7 +21,7 @@ namespace Volante
         /// If object is concurrently accessed by several threads in read-only mode, then explicit locking
         /// of this object is not needed, because language API provides consistent retrieving of objects itself.
         /// 
-        /// Only persistent object (object which were assigned to the the storage either implicitly by
+        /// Only persistent object (object which were assigned to the the db either implicitly by
         /// saving some other persistent object referencing this object, either explicitly by 
         /// <code>IDatabase.MakeObjectPersistent</code> method.
         /// </summary>
@@ -40,7 +40,7 @@ namespace Volante
         /// it only has influence on <code>sharedLock</code> and <code>exclusiveLock</code> methods.
         /// So programmer should set proper lock before accessing the object in multithreaded application.
         ///
-        /// Only persistent object (object which were assigned to the the storage either implicitly by
+        /// Only persistent object (object which were assigned to the the db either implicitly by
         /// saving some other persistent object referencing this object, either explicitly by 
         /// <code>IDatabase.MakeObjectPersistent</code> method.   
         /// </summary>
@@ -63,7 +63,7 @@ namespace Volante
         /// If object is concurrently accessed by several threads in read-only mode, then explicit locking
         /// of this object is not needed, because language API provides consistent retrieving of objects itself.
         /// 
-        /// Only persistent object (object which were assigned to the the storage either implicitly by
+        /// Only persistent object (object which were assigned to the the db either implicitly by
         /// saving some other persistent object referencing this object, either explicitly by 
         /// <code>IDatabase.MakeObjectPersistent</code> method.
         /// </summary>
@@ -92,7 +92,7 @@ namespace Volante
         /// it only has influence on <code>sharedLock</code> and <code>exclusiveLock</code> methods.
         ///So programmer should set proper lock before accessing the object in multithreaded application.
         ///
-        /// Only persistent object (object which were assigned to the the storage either implicitly by
+        /// Only persistent object (object which were assigned to the the db either implicitly by
         /// saving some other persistent object referencing this object, either explicitly by 
         /// <code>IDatabase.MakeObjectPersistent</code> method.   
         /// </summary>

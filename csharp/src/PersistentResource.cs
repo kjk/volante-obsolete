@@ -180,9 +180,9 @@ namespace Volante
                     }
                     else if (nWriters == 0)
                     {
-                        if (nReaders == 0 && storage != null)
+                        if (nReaders == 0 && db != null)
                         {
-                            storage.lockObject(this);
+                            db.lockObject(this);
                         }
                         nReaders += 1;
                         break;
@@ -211,9 +211,9 @@ namespace Volante
                     }
                     else if (nWriters == 0)
                     {
-                        if (nReaders == 0 && storage != null)
+                        if (nReaders == 0 && db != null)
                         {
-                            storage.lockObject(this);
+                            db.lockObject(this);
                         }
                         nReaders += 1;
                         return true;
@@ -248,9 +248,9 @@ namespace Volante
                     {
                         nWriters = 1;
                         owner = currThread;
-                        if (storage != null)
+                        if (db != null)
                         {
-                            storage.lockObject(this);
+                            db.lockObject(this);
                         }
                         break;
                     }
@@ -280,9 +280,9 @@ namespace Volante
                     {
                         nWriters = 1;
                         owner = currThread;
-                        if (storage != null)
+                        if (db != null)
                         {
-                            storage.lockObject(this);
+                            db.lockObject(this);
                         }
                         return true;
                     }
@@ -335,8 +335,8 @@ namespace Volante
 #endif
         internal protected PersistentResource() { }
 
-        internal protected PersistentResource(IDatabase storage)
-            : base(storage) { }
+        internal protected PersistentResource(IDatabase db)
+            : base(db) { }
 
         [NonSerialized()]
         private Thread owner;

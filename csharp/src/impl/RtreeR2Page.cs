@@ -15,9 +15,9 @@ namespace Volante.Impl
         internal RectangleR2[] b;
         internal Link branch;
 
-        internal RtreeR2Page(IDatabase storage, IPersistent obj, RectangleR2 r)
+        internal RtreeR2Page(IDatabase db, IPersistent obj, RectangleR2 r)
         {
-            branch = storage.CreateLink(card);
+            branch = db.CreateLink(card);
             branch.Length = card;
             b = new RectangleR2[card];
             setBranch(0, new RectangleR2(r), obj);
@@ -28,9 +28,9 @@ namespace Volante.Impl
             }
         }
 
-        internal RtreeR2Page(IDatabase storage, RtreeR2Page root, RtreeR2Page p)
+        internal RtreeR2Page(IDatabase db, RtreeR2Page root, RtreeR2Page p)
         {
-            branch = storage.CreateLink(card);
+            branch = db.CreateLink(card);
             branch.Length = card;
             b = new RectangleR2[card];
             n = 2;
@@ -44,7 +44,7 @@ namespace Volante.Impl
 
         internal RtreeR2Page() { }
 
-        internal RtreeR2Page insert(IDatabase storage, RectangleR2 r, IPersistent obj, int level)
+        internal RtreeR2Page insert(IDatabase db, RectangleR2 r, IPersistent obj, int level)
         {
             Modify();
             if (--level != 0)
@@ -70,7 +70,7 @@ namespace Volante.Impl
                     }
                 }
                 RtreeR2Page p = (RtreeR2Page)branch[mini];
-                RtreeR2Page q = p.insert(storage, r, obj, level);
+                RtreeR2Page q = p.insert(db, r, obj, level);
                 if (q == null)
                 {
                     // child was not split
@@ -81,12 +81,12 @@ namespace Volante.Impl
                 {
                     // child was split
                     setBranch(mini, p.cover(), p);
-                    return addBranch(storage, q.cover(), q);
+                    return addBranch(db, q.cover(), q);
                 }
             }
             else
             {
-                return addBranch(storage, new RectangleR2(r), obj);
+                return addBranch(db, new RectangleR2(r), obj);
             }
         }
 
@@ -184,7 +184,7 @@ namespace Volante.Impl
             Modify();
         }
 
-        RtreeR2Page addBranch(IDatabase storage, RectangleR2 r, IPersistent obj)
+        RtreeR2Page addBranch(IDatabase db, RectangleR2 r, IPersistent obj)
         {
             if (n < card)
             {
@@ -193,11 +193,11 @@ namespace Volante.Impl
             }
             else
             {
-                return splitPage(storage, r, obj);
+                return splitPage(db, r, obj);
             }
         }
 
-        RtreeR2Page splitPage(IDatabase storage, RectangleR2 r, IPersistent obj)
+        RtreeR2Page splitPage(IDatabase db, RectangleR2 r, IPersistent obj)
         {
             int i, j, seed0 = 0, seed1 = 0;
             double[] rectArea = new double[card + 1];
@@ -239,12 +239,12 @@ namespace Volante.Impl
             if (seed0 == 0)
             {
                 group0 = new RectangleR2(r);
-                pg = new RtreeR2Page(storage, obj, r);
+                pg = new RtreeR2Page(db, obj, r);
             }
             else
             {
                 group0 = new RectangleR2(b[seed0 - 1]);
-                pg = new RtreeR2Page(storage, branch.GetRaw(seed0 - 1), group0);
+                pg = new RtreeR2Page(db, branch.GetRaw(seed0 - 1), group0);
                 setBranch(seed0 - 1, r, obj);
             }
             groupCard0 = groupCard1 = 1;

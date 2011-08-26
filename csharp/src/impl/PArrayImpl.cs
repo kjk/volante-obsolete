@@ -108,7 +108,7 @@ namespace Volante.Impl
             {
                 throw new IndexOutOfRangeException();
             }
-            return new PersistentStub(storage, arr[i]);
+            return new PersistentStub(db, arr[i]);
         }
 
         public virtual int GetOid(int i)
@@ -126,7 +126,7 @@ namespace Volante.Impl
             {
                 throw new IndexOutOfRangeException();
             }
-            arr[i] = storage.MakePersistent(obj);
+            arr[i] = db.MakePersistent(obj);
             Modify();
         }
 
@@ -177,14 +177,14 @@ namespace Volante.Impl
             }
             reserveSpace(1);
             Array.Copy(arr, i, arr, i + 1, used - i);
-            arr[i] = storage.MakePersistent(obj);
+            arr[i] = db.MakePersistent(obj);
             used += 1;
         }
 
         public virtual void Add(T obj)
         {
             reserveSpace(1);
-            arr[used++] = storage.MakePersistent(obj);
+            arr[used++] = db.MakePersistent(obj);
         }
 
         public virtual void AddAll(T[] a)
@@ -198,7 +198,7 @@ namespace Volante.Impl
             reserveSpace(length);
             for (i = from, j = used; --length >= 0; i++, j++)
             {
-                arr[j] = storage.MakePersistent(a[i]);
+                arr[j] = db.MakePersistent(a[i]);
             }
             used = j;
         }
@@ -219,7 +219,7 @@ namespace Volante.Impl
             {
                 for (int i = 0, j = used; i < n; i++, j++)
                 {
-                    arr[j] = storage.MakePersistent(link.GetRaw(i));
+                    arr[j] = db.MakePersistent(link.GetRaw(i));
                 }
             }
             used += n;
@@ -346,7 +346,7 @@ namespace Volante.Impl
 
         private T loadElem(int i)
         {
-            return (T)storage.lookupObject(arr[i], null);
+            return (T)db.lookupObject(arr[i], null);
         }
 
         public void SetOwner(IPersistent owner)
@@ -358,15 +358,15 @@ namespace Volante.Impl
         {
         }
 
-        internal PArrayImpl(DatabaseImpl storage, int initSize)
+        internal PArrayImpl(DatabaseImpl db, int initSize)
         {
-            this.storage = storage;
+            this.db = db;
             arr = new int[initSize];
         }
 
-        internal PArrayImpl(DatabaseImpl storage, int[] oids, IPersistent owner)
+        internal PArrayImpl(DatabaseImpl db, int[] oids, IPersistent owner)
         {
-            this.storage = storage;
+            this.db = db;
             this.owner = owner;
             arr = oids;
             used = oids.Length;
@@ -374,7 +374,7 @@ namespace Volante.Impl
 
         int[] arr;
         int used;
-        DatabaseImpl storage;
+        DatabaseImpl db;
         [NonSerialized()]
         IPersistent owner;
     }

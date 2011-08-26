@@ -1,9 +1,8 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
-
 namespace Volante.Impl
 {
+    using System;
+    using System.Collections;
+    using System.Collections.Generic;
 
     class TtreePage<K, V> : Persistent where V : class,IPersistent
     {
@@ -175,7 +174,6 @@ namespace Volante.Impl
             }
             return false;
         }
-
 
         internal const int OK = 0;
         internal const int NOT_UNIQUE = 1;
@@ -634,7 +632,6 @@ namespace Volante.Impl
             return NOT_FOUND;
         }
 
-
         internal int toArray(IPersistent[] arr, int index)
         {
             Load();
@@ -666,6 +663,5 @@ namespace Volante.Impl
             }
             Deallocate();
         }
-
     }
 }

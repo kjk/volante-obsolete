@@ -138,7 +138,7 @@ namespace Volante.Impl
                         continue;
 
                     default:
-                        il.Emit(OpCodes.Ldarg_1); // storage
+                        il.Emit(OpCodes.Ldarg_1); // db
                         il.Emit(OpCodes.Ldarg_3); // buf
                         il.Emit(OpCodes.Ldloc_1, offs);
                         il.Emit(OpCodes.Ldloc_0, obj);
@@ -224,7 +224,7 @@ namespace Volante.Impl
                             continue;
 
                         default:
-                            il.Emit(OpCodes.Ldarg_1); // storage
+                            il.Emit(OpCodes.Ldarg_1); // db
                             il.Emit(OpCodes.Ldarg_3); // body
                             il.Emit(OpCodes.Ldloc_1, offs);
                             il.Emit(OpCodes.Ldnull); // fd
@@ -399,7 +399,7 @@ namespace Volante.Impl
                             continue;
 
                         default:
-                            il.Emit(OpCodes.Ldarg_1); // storage
+                            il.Emit(OpCodes.Ldarg_1); // db
                             il.Emit(OpCodes.Ldarg_3); // body
                             il.Emit(OpCodes.Ldloc_1, offs);
                             il.Emit(OpCodes.Ldarg_S, 4); // recursiveLoading
@@ -608,7 +608,7 @@ namespace Volante.Impl
         private MethodInfo skipField = typeof(DatabaseImpl).GetMethod("skipField");
 
         private MethodInfo modify = typeof(IPersistent).GetMethod("Modify");
-        private MethodInfo getStorage = typeof(IPersistent).GetProperty("Storage").GetGetMethod();
+        private MethodInfo getStorage = typeof(IPersistent).GetProperty("Database").GetGetMethod();
         private MethodInfo getByOid = typeof(IDatabase).GetMethod("GetObjectByOid");
         private MethodInfo makePersistent = typeof(IDatabase).GetMethod("MakePersistent");
 

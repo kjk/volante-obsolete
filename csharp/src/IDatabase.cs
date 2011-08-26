@@ -47,18 +47,18 @@ namespace Volante
         Weak
     }
 
-    /// <summary> Object storage
+    /// <summary> Object db
     /// </summary>
     public interface IDatabase
     {
-        /// <summary> Get/set storage root. Storage can have exactly one root object. 
+        /// <summary> Get/set db root. Database can have exactly one root object. 
         /// If you need to have several root object and access them by name (as is possible 
         /// in many other OODBMSes), you should create index and use it as root object.
         /// Previous reference to the root object is rewritten but old root is not automatically deallocated.
         /// </summary>
         IPersistent Root { get; set; }
 
-        /// <summary> Open the storage
+        /// <summary> Open the db
         /// </summary>
         /// <param name="filePath">path to the database file
         /// </param>
@@ -70,13 +70,13 @@ namespace Volante
         /// </param>
         void Open(String filePath, int pagePoolSize);
 
-        /// <summary> Open the storage with default page pool size
+        /// <summary> Open the db with default page pool size
         /// </summary>
         /// <param name="filePath">path to the database file
         /// </param>
         void Open(String filePath);
 
-        /// <summary> Open the storage
+        /// <summary> Open the db
         /// </summary>
         /// <param name="file">user specific implementation of IFile interface
         /// </param>
@@ -87,13 +87,13 @@ namespace Volante
         /// </param>
         void Open(IFile file, int pagePoolSize);
 
-        /// <summary> Open the storage with default page pool size
+        /// <summary> Open the db with default page pool size
         /// </summary>
         /// <param name="file">user specific implementation of IFile interface
         /// </param>
         void Open(IFile file);
 
-        /// <summary> Open the encrypted storage
+        /// <summary> Open the encrypted db
         /// </summary>
         /// <param name="filePath">path to the database file
         /// </param>
@@ -373,7 +373,7 @@ namespace Volante
         /// </returns>
         IPArray<IPersistent> CreateArray(int initialSize);
 
-        /// <summary> Commit transaction (if needed) and close the storage
+        /// <summary> Commit transaction (if needed) and close the db
         /// </summary>
         void Close();
 
@@ -467,7 +467,7 @@ namespace Volante
         /// delta between total size of allocated and deallocated objects exceeds specified threashold OR
         /// after reaching end of allocation bitmap in allocator. 
         /// </summary>
-        /// <param>delta between total size of allocated and deallocated object since last GC or storage opening
+        /// <param>delta between total size of allocated and deallocated object since last GC or db opening
         /// </param>
         /// Default value: long.MaxValue
         long GcThreshold { get; set; }
@@ -520,16 +520,16 @@ namespace Volante
         /// strings as sequence of chars (two bytes per char). If all strings in application are in 
         /// the same language, then using encoding  can signifficantly reduce space needed
         /// to store string (about two times). But please notice, that this option has influence
-        /// on all strings  stored in database. So if you already have some data in the storage
+        /// on all strings  stored in database. So if you already have some data in the db
         /// and then change encoding, then it can cause incorrect fetching of strings and even database crash.
         /// Default value: null
         Encoding StringEncoding { get; set; }
 
         /// <summary>
-        /// Set storage listener.
+        /// Set db listener.
         /// </summary>summary>
-        /// <param name="listener">new storage listener (may be null)</param>
-        /// <returns>previous storage listener</returns>
+        /// <param name="listener">new db listener (may be null)</param>
+        /// <returns>previous db listener</returns>
         DatabaseListener SetListener(DatabaseListener listener);
 
         /// <summary>
@@ -628,10 +628,10 @@ namespace Volante
         /// <summary>
         /// Get database memory dump. This function returns hashmap which key is classes
         /// of stored objects and value - MemoryUsage object which specifies number of instances
-        /// of particular class in the storage and total size of memory used by these instance.
+        /// of particular class in the db and total size of memory used by these instance.
         /// Size of internal database structures (object index, memory allocation bitmap) is associated with 
         /// <code>IDatabase</code> class. Size of class descriptors  - with <code>System.Type</code> class.
-        /// <p>This method traverse the storage as garbage collection do - starting from the root object
+        /// <p>This method traverse the db as garbage collection do - starting from the root object
         /// and recursively visiting all reachable objects. So it reports statistic only for visible objects.
         /// If total database size is significantly larger than total size of all instances reported
         /// by this method, it means that there is garbage in the database. You can explicitly invoke

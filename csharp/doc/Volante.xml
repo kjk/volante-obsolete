@@ -147,10 +147,10 @@
         </member>
         <member name="M:Volante.IPersistent.MakePersistent(Volante.IDatabase)">
             <summary> Explicitly make object peristent. Usually objects are made persistent
-            implicitlely using "persistency on reachability approach", but this
-            method allows to do it explicitly 
+            implicitly using "persistency on reachability approach", but this
+            method allows you to do it explicitly 
             </summary>
-            <param name="storage">storage in which object should be stored 
+            <param name="db">db in which object should be stored 
             </param>
             <returns>oid assigned to the object</returns>
         </member>
@@ -196,12 +196,12 @@
             <summary>
             Invalidate object. Invalidated object has to be explicitly
             reloaded using load() method. Attempt to store invalidated object
-            will cause StoraegError exception.
+            will cause DatabaseError exception.
             </summary>
         </member>
         <member name="M:Volante.IPersistent.AssignOid(Volante.IDatabase,System.Int32,System.Boolean)">
             <summary>
-            Method used to associate object with storage.
+            Method used to associate object with db.
             This method is used by IDictionary class and you should not use it explicitly.
             </summary>
             <param name="db">database to be assigned to</param>
@@ -212,8 +212,8 @@
             <summary> Get object identifier (oid)
             </summary>
         </member>
-        <member name="P:Volante.IPersistent.Storage">
-            <summary> Get storage in which this object is stored
+        <member name="P:Volante.IPersistent.Database">
+            <summary> Get db in which this object is stored
             </summary>
         </member>
         <member name="T:Volante.Relation`2">
@@ -251,7 +251,7 @@
             If object is concurrently accessed by several threads in read-only mode, then explicit locking
             of this object is not needed, because language API provides consistent retrieving of objects itself.
             
-            Only persistent object (object which were assigned to the the storage either implicitly by
+            Only persistent object (object which were assigned to the the db either implicitly by
             saving some other persistent object referencing this object, either explicitly by 
             <code>IDatabase.MakeObjectPersistent</code> method.
             </summary>
@@ -270,7 +270,7 @@
              it only has influence on <code>sharedLock</code> and <code>exclusiveLock</code> methods.
              So programmer should set proper lock before accessing the object in multithreaded application.
             
-             Only persistent object (object which were assigned to the the storage either implicitly by
+             Only persistent object (object which were assigned to the the db either implicitly by
              saving some other persistent object referencing this object, either explicitly by 
              <code>IDatabase.MakeObjectPersistent</code> method.   
              </summary>
@@ -292,7 +292,7 @@
             If object is concurrently accessed by several threads in read-only mode, then explicit locking
             of this object is not needed, because language API provides consistent retrieving of objects itself.
             
-            Only persistent object (object which were assigned to the the storage either implicitly by
+            Only persistent object (object which were assigned to the the db either implicitly by
             saving some other persistent object referencing this object, either explicitly by 
             <code>IDatabase.MakeObjectPersistent</code> method.
             </summary>
@@ -321,7 +321,7 @@
              it only has influence on <code>sharedLock</code> and <code>exclusiveLock</code> methods.
             So programmer should set proper lock before accessing the object in multithreaded application.
             
-             Only persistent object (object which were assigned to the the storage either implicitly by
+             Only persistent object (object which were assigned to the the db either implicitly by
              saving some other persistent object referencing this object, either explicitly by 
              <code>IDatabase.MakeObjectPersistent</code> method.   
              </summary>
@@ -384,7 +384,7 @@
         <member name="M:Volante.IGenericLink.SetOwner(Volante.IPersistent)">
             <summary>
             Set owner object for this link. Owner is persistent object contaning this link.
-            This method is mostly used by storage itself, but can also used explicityl by programmer if
+            This method is mostly used by db itself, but can also used explicityl by programmer if
             link component of one persistent object is assigned to component of another persistent object
             </summary>
             <param name="owner">link owner</param>
@@ -529,7 +529,7 @@
         <member name="M:Volante.IGenericPArray.SetOwner(Volante.IPersistent)">
             <summary>
             Set owner objeet for this PArray. Owner is persistent object contaning this PArray.
-            This method is mostly used by storage itself, but can also used explicityl by programmer if
+            This method is mostly used by db itself, but can also used explicityl by programmer if
             Parray component of one persistent object is assigned to component of another persistent object
             </summary>
             <param name="owner">link owner</param>
@@ -1055,11 +1055,11 @@
             <exception cref="T:Volante.DatabaseError">DatabaseError(DatabaseError.ErrorClass.KEY_NOT_FOUND) if no element with such timestamp exists</exception>
         </member>
         <member name="T:Volante.IDatabase">
-            <summary> Object storage
+            <summary> Object db
             </summary>
         </member>
         <member name="M:Volante.IDatabase.Open(System.String,System.Int32)">
-            <summary> Open the storage
+            <summary> Open the db
             </summary>
             <param name="filePath">path to the database file
             </param>
@@ -1071,13 +1071,13 @@
             </param>
         </member>
         <member name="M:Volante.IDatabase.Open(System.String)">
-            <summary> Open the storage with default page pool size
+            <summary> Open the db with default page pool size
             </summary>
             <param name="filePath">path to the database file
             </param>
         </member>
         <member name="M:Volante.IDatabase.Open(Volante.IFile,System.Int32)">
-            <summary> Open the storage
+            <summary> Open the db
             </summary>
             <param name="file">user specific implementation of IFile interface
             </param>
@@ -1088,13 +1088,13 @@
             </param>
         </member>
         <member name="M:Volante.IDatabase.Open(Volante.IFile)">
-            <summary> Open the storage with default page pool size
+            <summary> Open the db with default page pool size
             </summary>
             <param name="file">user specific implementation of IFile interface
             </param>
         </member>
         <member name="M:Volante.IDatabase.Open(System.String,System.Int32,System.String)">
-            <summary> Open the encrypted storage
+            <summary> Open the encrypted db
             </summary>
             <param name="filePath">path to the database file
             </param>
@@ -1363,7 +1363,7 @@
             </returns>
         </member>
         <member name="M:Volante.IDatabase.Close">
-            <summary> Commit transaction (if needed) and close the storage
+            <summary> Commit transaction (if needed) and close the db
             </summary>
         </member>
         <member name="M:Volante.IDatabase.Gc">
@@ -1393,10 +1393,10 @@
         </member>
         <member name="M:Volante.IDatabase.SetListener(Volante.DatabaseListener)">
             <summary>
-            Set storage listener.
+            Set db listener.
             </summary>summary>
-            <param name="listener">new storage listener (may be null)</param>
-            <returns>previous storage listener</returns>
+            <param name="listener">new db listener (may be null)</param>
+            <returns>previous db listener</returns>
         </member>
         <member name="M:Volante.IDatabase.CreateClass(System.Type)">
             <summary>
@@ -1476,10 +1476,10 @@
             <summary>
             Get database memory dump. This function returns hashmap which key is classes
             of stored objects and value - MemoryUsage object which specifies number of instances
-            of particular class in the storage and total size of memory used by these instance.
+            of particular class in the db and total size of memory used by these instance.
             Size of internal database structures (object index, memory allocation bitmap) is associated with 
             <code>IDatabase</code> class. Size of class descriptors  - with <code>System.Type</code> class.
-            <p>This method traverse the storage as garbage collection do - starting from the root object
+            <p>This method traverse the db as garbage collection do - starting from the root object
             and recursively visiting all reachable objects. So it reports statistic only for visible objects.
             If total database size is significantly larger than total size of all instances reported
             by this method, it means that there is garbage in the database. You can explicitly invoke
@@ -1487,7 +1487,7 @@
             </summary>
         </member>
         <member name="P:Volante.IDatabase.Root">
-            <summary> Get/set storage root. Storage can have exactly one root object. 
+            <summary> Get/set db root. Database can have exactly one root object. 
             If you need to have several root object and access them by name (as is possible 
             in many other OODBMSes), you should create index and use it as root object.
             Previous reference to the root object is rewritten but old root is not automatically deallocated.
@@ -1532,7 +1532,7 @@
             delta between total size of allocated and deallocated objects exceeds specified threashold OR
             after reaching end of allocation bitmap in allocator. 
             </summary>
-            <param>delta between total size of allocated and deallocated object since last GC or storage opening
+            <param>delta between total size of allocated and deallocated object since last GC or db opening
             </param>
             Default value: long.MaxValue
         </member>
@@ -1570,7 +1570,7 @@
             strings as sequence of chars (two bytes per char). If all strings in application are in 
             the same language, then using encoding  can signifficantly reduce space needed
             to store string (about two times). But please notice, that this option has influence
-            on all strings  stored in database. So if you already have some data in the storage
+            on all strings  stored in database. So if you already have some data in the db
             and then change encoding, then it can cause incorrect fetching of strings and even database crash.
             Default value: null
         </member>
@@ -1894,7 +1894,7 @@
         </member>
         <member name="T:Volante.ReplicationSlaveDatabase">
             <summary>
-            Storage reciving modified pages from replication master and 
+            Database reciving modified pages from replication master and 
             been able to run read-only transactions 
             </summary>
         </member>
@@ -1969,7 +1969,7 @@
         </member>
         <member name="M:Volante.DatabaseError.#ctor(Volante.DatabaseError.ErrorCode)">
             <summary> Get original exception if DatabaseError excepotion was thrown as the result 
-            of catching some other exception within Storage implementation. 
+            of catching some other exception within Database implementation. 
             DatabaseError is used as wrapper of other exceptions to avoid cascade propagation
             of throws and try/catch constructions.
             </summary>
@@ -2058,7 +2058,7 @@
             </summary>
         </member>
         <member name="M:Volante.DatabaseFactory.CreateDatabase">
-            <summary> Create new instance of the storage
+            <summary> Create new instance of the db
             </summary>
         </member>
         <member name="T:Volante.Rectangle">
@@ -2144,12 +2144,12 @@
             Information about memory usage for the correspondent class. 
             Instances of this class are created by IDatabase.GetMemoryDump method.
             Size of internal database structures (object index,* memory allocation bitmap) is associated with 
-            <code>Storage</code> class. Size of class descriptors  - with <code>System.Type</code> class.
+            <code>Database</code> class. Size of class descriptors  - with <code>System.Type</code> class.
             </summary>
         </member>
         <member name="F:Volante.MemoryUsage.type">
             <summary>
-            Class of persistent object or Storage for database internal data
+            Class of persistent object or Database for database internal data
             </summary>
         </member>
         <member name="F:Volante.MemoryUsage.nInstances">
@@ -2165,8 +2165,8 @@
         <member name="F:Volante.MemoryUsage.allocatedSize">
             <summary>
             Real allocated size of all instances. Database allocates space for th objects using quantums,
-            for example object wilth size 25 bytes will use 32 bytes in the storage.
-            In item associated with Storage class this field contains size of all allocated
+            for example object wilth size 25 bytes will use 32 bytes in the db.
+            In item associated with Database class this field contains size of all allocated
             space in the database (marked as used in bitmap) 
             </summary>
         </member>
@@ -2181,7 +2181,7 @@
         </member>
         <member name="T:Volante.ReplicationMasterDatabase">
             <summary>
-            Storage performing replication of changed pages to specified slave nodes.
+            Database performing replication of changed pages to specified slave nodes.
             </summary>
         </member>
         <member name="M:Volante.ReplicationMasterDatabase.GetNumberOfAvailableHosts">
@@ -2920,7 +2920,7 @@
             <summary>
             This implementation of <code>IFile</code> interface can be used
             to make Volante as an main-memory database. It should be used when
-            pagePoolSize is set to <code>Storage.INFINITE_PAGE_POOL</code>.
+            pagePoolSize is set to <code>Database.INFINITE_PAGE_POOL</code>.
             In this case all pages are cached in memory and <code>NullFile</code>
             is used just as a stub.
             <code>NullFile</code> should be used only when data is transient

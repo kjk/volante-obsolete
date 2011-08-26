@@ -22,11 +22,11 @@ namespace Volante
         }
 
         [Browsable(false)]
-        public virtual IDatabase Storage
+        public virtual IDatabase Database
         {
             get
             {
-                return storage;
+                return db;
             }
         }
 
@@ -34,7 +34,7 @@ namespace Volante
         {
             if (oid != 0 && (state & ObjectState.RAW) != 0)
             {
-                storage.loadObject(this);
+                db.loadObject(this);
             }
         }
 
@@ -58,12 +58,10 @@ namespace Volante
             return oid != 0;
         }
 
-        public virtual int MakePersistent(IDatabase storage)
+        public virtual int MakePersistent(IDatabase db)
         {
             if (oid == 0)
-            {
-                storage.MakePersistent(this);
-            }
+                db.MakePersistent(this);
             return oid;
         }
 
@@ -73,9 +71,9 @@ namespace Volante
             {
                 throw new DatabaseError(DatabaseError.ErrorCode.ACCESS_TO_STUB);
             }
-            if (storage != null)
+            if (db != null)
             {
-                storage.storeObject(this);
+                db.storeObject(this);
                 state &= ~ObjectState.DIRTY;
             }
         }
@@ -89,7 +87,7 @@ namespace Volante
                     throw new DatabaseError(DatabaseError.ErrorCode.ACCESS_TO_STUB);
                 }
                 Debug.Assert((state & ObjectState.DELETED) == 0);
-                storage.modifyObject(this);
+                db.modifyObject(this);
                 state |= ObjectState.DIRTY;
             }
         }
@@ -98,8 +96,8 @@ namespace Volante
         {
             if (oid != 0)
             {
-                storage.deallocateObject(this);
-                storage = null;
+                db.deallocateObject(this);
+                db = null;
                 state = 0;
                 oid = 0;
             }
@@ -136,24 +134,24 @@ namespace Volante
 
         protected PersistentContext() { }
 
-        protected PersistentContext(IDatabase storage)
+        protected PersistentContext(IDatabase db)
         {
-            this.storage = storage;
+            this.db = db;
         }
 
         ~PersistentContext()
         {
             if ((state & ObjectState.DIRTY) != 0 && oid != 0)
             {
-                storage.storeFinalizedObject(this);
+                db.storeFinalizedObject(this);
             }
             state = ObjectState.DELETED;
         }
 
-        public void AssignOid(IDatabase storage, int oid, bool raw)
+        public void AssignOid(IDatabase db, int oid, bool raw)
         {
             this.oid = oid;
-            this.storage = storage;
+            this.db = db;
             if (raw)
             {
                 state |= ObjectState.RAW;
@@ -165,7 +163,7 @@ namespace Volante
         }
 
         [NonSerialized()]
-        IDatabase storage;
+        IDatabase db;
         [NonSerialized()]
         int oid;
         [NonSerialized()]

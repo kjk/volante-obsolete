@@ -357,7 +357,7 @@ namespace Volante.Impl
             IPersistent s = index.Get(key);
             if (s == null)
             {
-                Relation<V, V> r = Storage.CreateRelation<V, V>(null);
+                Relation<V, V> r = Database.CreateRelation<V, V>(null);
                 r.Add(obj);
                 index.Put(key, r);
             }
@@ -366,7 +366,7 @@ namespace Volante.Impl
                 Relation<V, V> r = (Relation<V, V>)s;
                 if (r.Count == BTREE_THRESHOLD)
                 {
-                    ISet<V> ps = Storage.CreateSet<V>();
+                    ISet<V> ps = Database.CreateSet<V>();
                     for (int i = 0; i < BTREE_THRESHOLD; i++)
                     {
                         ps.Add(r[i]);
@@ -394,7 +394,7 @@ namespace Volante.Impl
             IPersistent s = index.Get(key);
             if (s == null)
             {
-                Relation<V, V> r = Storage.CreateRelation<V, V>(null);
+                Relation<V, V> r = Database.CreateRelation<V, V>(null);
                 r.Add(obj);
                 index.Put(key, r);
                 nElems += 1;

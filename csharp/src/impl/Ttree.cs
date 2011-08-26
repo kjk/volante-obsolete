@@ -157,7 +157,6 @@ namespace Volante.Impl
             base.Deallocate();
         }
 
-
         public V[] ToArray()
         {
             V[] arr = new V[nMembers];
