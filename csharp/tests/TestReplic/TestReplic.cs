@@ -69,9 +69,10 @@ public class TestReplic
             ReplicationMasterDatabase db =
                 DatabaseFactory.CreateReplicationMasterDatabase(new string[] { "localhost:" + port },
                                                                        async ? asyncBufSize : 0);
-            db.FileNoFlush = true;
             db.ReplicationAck = ack;
-            db.Open("master.dbs", pagePoolSize);
+            var dbFile = new OsFile("master.dbs");
+            dbFile.NoFlush = true;
+            db.Open(dbFile, pagePoolSize);
 
             IFieldIndex<int, Record> root = (IFieldIndex<int, Record>)db.Root;
             if (root == null)
@@ -102,9 +103,12 @@ public class TestReplic
         {
             ReplicationSlaveDatabase db =
                 DatabaseFactory.CreateReplicationSlaveDatabase(port);
-            db.FileNoFlush = true;
+
             db.ReplicationAck = ack;
-            db.Open("slave.dbs", pagePoolSize);
+            var dbFile = new OsFile("slave.dbs");
+            dbFile.NoFlush = true;
+            db.Open(dbFile, pagePoolSize);
+
             DateTime total = new DateTime(0);
             int n = 0;
             while (db.IsConnected())

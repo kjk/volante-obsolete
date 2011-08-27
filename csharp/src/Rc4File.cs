@@ -1,8 +1,9 @@
-namespace Volante.Impl
+namespace Volante
 {
     using System;
+    using Volante.Impl;
 
-    public class Rc4File : OSFile
+    public class Rc4File : OsFile
     {
         public override void Write(long pos, byte[] buf)
         {
@@ -37,8 +38,13 @@ namespace Volante.Impl
             return 0;
         }
 
-        public Rc4File(String filePath, bool readOnly, bool noFlush, String key)
-            : base(filePath, readOnly, noFlush)
+        public Rc4File(String filePath, String key)
+            : this(filePath, key, false)
+        {
+        }
+
+        public Rc4File(String filePath, String key, bool readOnly)
+            : base(filePath, readOnly)
         {
             length = file.Length & ~(Page.pageSize - 1);
             setKey(key);

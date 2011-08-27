@@ -925,7 +925,7 @@ namespace Volante.Impl
 
         public void Open(String filePath, int pagePoolSize)
         {
-            OSFile file = new OSFile(filePath, readOnly, noFlush);
+            OsFile file = new OsFile(filePath);
             try
             {
                 Open(file, pagePoolSize);
@@ -953,7 +953,7 @@ namespace Volante.Impl
 
         public void Open(String filePath, int pagePoolSize, String cipherKey)
         {
-            Rc4File file = new Rc4File(filePath, readOnly, noFlush, cipherKey);
+            Rc4File file = new Rc4File(filePath, cipherKey);
             try
             {
                 Open(file, pagePoolSize);
@@ -3048,31 +3048,6 @@ namespace Volante.Impl
         }
 
         // TODO: needs tests
-        public bool FileReadOnly
-        {
-            set { readOnly = value; }
-            get { return readOnly; }
-        }
-
-        // TODO: needs tests
-        //TODO: won't work for Open(IFile) method. Java code has the same problem
-        public bool FileNoFlush
-        {
-            set
-            {
-                noFlush = value;
-                if (opened)
-                    pool.file.NoFlush = value;
-            }
-            get
-            {
-                if (opened)
-                    return pool.file.NoFlush;
-                return noFlush;
-            }
-        }
-
-        // TODO: needs tests
         public bool BackgroundGc
         {
             set { backgroundGc = value; }
@@ -4883,8 +4858,6 @@ namespace Volante.Impl
         private int objectCacheInitSize = dbDefaultObjectCacheInitSize;
         private long extensionQuantum = dbDefaultExtensionQuantum;
         private CacheType cacheKind = CacheType.Lru;
-        private bool readOnly = false;
-        private bool noFlush = false;
 #if WITH_OLD_BTREE
         private bool alternativeBtree = false;
 #endif

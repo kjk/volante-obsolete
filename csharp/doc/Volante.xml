@@ -13,7 +13,7 @@
             <summary> Interface of file.
             Programmer can provide its own implementation of this interface, adding such features
             as support of flash cards, encrypted files,...
-            Implentation of this interface should throw DatabaseError exception in case of failure
+            Implentation of this interface should throw DatabaseException exception in case of failure
             </summary>
         </member>
         <member name="M:Volante.IFile.Write(System.Int64,System.Byte[])">
@@ -196,7 +196,7 @@
             <summary>
             Invalidate object. Invalidated object has to be explicitly
             reloaded using load() method. Attempt to store invalidated object
-            will cause DatabaseError exception.
+            will cause DatabaseException exception.
             </summary>
         </member>
         <member name="M:Volante.IPersistent.AssignOid(Volante.IDatabase,System.Int32,System.Boolean)">
@@ -561,7 +561,7 @@
             </param>
             <returns>object with this value of the key or <code>null</code> if key not found
             </returns>
-            <exception cref="T:Volante.DatabaseError">DatabaseError(DatabaseError.ErrorCode.KEY_NOT_UNIQUE) exception if there are more than 
+            <exception cref="T:Volante.DatabaseException">DatabaseException(DatabaseException.ErrorCode.KEY_NOT_UNIQUE) exception if there are more than 
             one objects in the index with specified value of the key.
             
             </exception>
@@ -573,7 +573,7 @@
             </param>
             <returns>object with this value of the key or <code>null</code> if key not found
             </returns>
-            <exception cref="T:Volante.DatabaseError">DatabaseError(DatabaseError.ErrorCode.KEY_NOT_UNIQUE) exception if there are more than 
+            <exception cref="T:Volante.DatabaseException">DatabaseException(DatabaseException.ErrorCode.KEY_NOT_UNIQUE) exception if there are more than 
             one objects in the index with specified value of the key.
             
             </exception>
@@ -853,7 +853,7 @@
             </param>
             <param name="obj">object removed from the index
             </param>
-            <exception cref="T:Volante.DatabaseError">DatabaseError(DatabaseError.ErrorCode.KEY_NOT_FOUND) exception if there is no such key in the index
+            <exception cref="T:Volante.DatabaseException">DatabaseException(DatabaseException.ErrorCode.KEY_NOT_FOUND) exception if there is no such key in the index
             
             </exception>
         </member>
@@ -864,7 +864,7 @@
             </param>
             <param name="obj">object removed from the index
             </param>
-            <exception cref="T:Volante.DatabaseError">DatabaseError(DatabaseError.ErrorCode.KEY_NOT_FOUND) exception if there is no such key in the index
+            <exception cref="T:Volante.DatabaseException">DatabaseException(DatabaseException.ErrorCode.KEY_NOT_FOUND) exception if there is no such key in the index
             
             </exception>
         </member>
@@ -874,8 +874,8 @@
             <param name="key">wrapper of removed key
             </param>
             <returns>removed object</returns>
-            <exception cref="T:Volante.DatabaseError">DatabaseError(DatabaseError.ErrorCode.KEY_NOT_FOUND) exception if there is no such key in the index,
-            or DatabaseError(DatabaseError.ErrorCode.KEY_NOT_UNIQUE) if index is not unique.
+            <exception cref="T:Volante.DatabaseException">DatabaseException(DatabaseException.ErrorCode.KEY_NOT_FOUND) exception if there is no such key in the index,
+            or DatabaseException(DatabaseException.ErrorCode.KEY_NOT_UNIQUE) if index is not unique.
             
             </exception>
         </member>
@@ -885,8 +885,8 @@
             <param name="key">value of removed key
             </param>
             <returns>removed object</returns>
-            <exception cref="T:Volante.DatabaseError">DatabaseError(DatabaseError.ErrorCode.KEY_NOT_FOUND) exception if there is no such key in the index,
-            or DatabaseError(DatabaseError.ErrorCode.KEY_NOV_UNIQUE) if index is not unique.
+            <exception cref="T:Volante.DatabaseException">DatabaseException(DatabaseException.ErrorCode.KEY_NOT_FOUND) exception if there is no such key in the index,
+            or DatabaseException(DatabaseException.ErrorCode.KEY_NOV_UNIQUE) if index is not unique.
             
             </exception>
         </member>
@@ -935,7 +935,7 @@
             <summary>
             Get forward iterator for time series elements belonging to the specified range
             </summary>
-            <param name="from">inclusive time of the begging of interval</param>
+            <param name="from">inclusive time of the beginning of interval</param>
             <param name="till">inclusive time of the ending of interval</param>
             <returns>forward iterator within specified range</returns>
         </member>
@@ -950,7 +950,7 @@
             <summary>
             Get forward iterator for time series elements belonging to the specified range
             </summary>
-            <param name="from">inclusive time of the begging of interval</param>
+            <param name="from">inclusive time of the beginning  of interval</param>
             <param name="till">inclusive time of the ending of interval</param>
             <param name="order">direction of iteration</param>
             <returns>iterator within specified range in specified direction</returns>
@@ -959,7 +959,7 @@
             <summary>
             Get forward iterator for time series elements belonging to the specified range
             </summary>
-            <param name="from">inclusive time of the begging of interval</param>
+            <param name="from">inclusive time of the beginning  of interval</param>
             <param name="till">inclusive time of the ending of interval</param>
             <returns>forward iterator within specified range</returns>
         </member>
@@ -974,7 +974,7 @@
             <summary>
             Get iterator for time series elements belonging to the specified range
             </summary>
-            <param name="from">inclusive time of the begging of interval</param>
+            <param name="from">inclusive time of the beginning  of interval</param>
             <param name="till">inclusive time of the ending of interval</param>
             <param name="order">direction of iteration</param>
             <returns>iterator within specified range in specified direction</returns>
@@ -983,7 +983,7 @@
             <summary>
             Get forward iterator for time series elements with timestamp greater or equal than specified
             </summary>
-            <param name="from">inclusive time of the begging of interval</param>
+            <param name="from">inclusive time of the beginning of interval</param>
             <returns>forward iterator</returns>
         </member>
         <member name="M:Volante.ITimeSeries`1.Till(System.DateTime)">
@@ -1011,7 +1011,7 @@
             <summary>
             Remove time series elements belonging to the specified range
             </summary>
-            <param name="from">inclusive time of the begging of interval</param>
+            <param name="from">inclusive time of the beginning  of interval</param>
             <param name="till">inclusive time of the ending of interval</param>
             <returns>number of removed elements</returns>
         </member>
@@ -1019,7 +1019,7 @@
             <summary>
             Remove time series elements with timestamp greater or equal then specified
             </summary>
-            <param name="from">inclusive time of the begging of interval</param>
+            <param name="from">inclusive time of the beginning of interval</param>
             <returns>number of removed elements</returns>
         </member>
         <member name="M:Volante.ITimeSeries`1.RemoveTill(System.DateTime)">
@@ -1039,20 +1039,20 @@
             <summary>
             Get timestamp of first time series element
             </summary>
-            <exception cref="T:Volante.DatabaseError">DatabaseError(DatabaseError.ErrorClass.KEY_NOT_FOUND) if time series is empy</exception>
+            <exception cref="T:Volante.DatabaseException">DatabaseException(DatabaseException.ErrorClass.KEY_NOT_FOUND) if time series is empy</exception>
         </member>
         <member name="P:Volante.ITimeSeries`1.LastTime">
             <summary>
             Get timestamp of last time series element
             </summary>
-            <exception cref="T:Volante.DatabaseError">DatabaseError(DatabaseError.ErrorClass.KEY_NOT_FOUND) if time series is empy</exception>
+            <exception cref="T:Volante.DatabaseException">DatabaseException(DatabaseException.ErrorClass.KEY_NOT_FOUND) if time series is empy</exception>
         </member>
         <member name="P:Volante.ITimeSeries`1.Item(System.DateTime)">
             <summary> 
             Get tick for specified data
             </summary>
             <param name="timestamp">time series element timestamp</param>
-            <exception cref="T:Volante.DatabaseError">DatabaseError(DatabaseError.ErrorClass.KEY_NOT_FOUND) if no element with such timestamp exists</exception>
+            <exception cref="T:Volante.DatabaseException">DatabaseException(DatabaseException.ErrorClass.KEY_NOT_FOUND) if no element with such timestamp exists</exception>
         </member>
         <member name="T:Volante.IDatabase">
             <summary> Object db
@@ -1077,7 +1077,7 @@
             </param>
         </member>
         <member name="M:Volante.IDatabase.Open(Volante.IFile,System.Int32)">
-            <summary> Open the db
+            <summary>Open the db
             </summary>
             <param name="file">user specific implementation of IFile interface
             </param>
@@ -1094,7 +1094,7 @@
             </param>
         </member>
         <member name="M:Volante.IDatabase.Open(System.String,System.Int32,System.String)">
-            <summary> Open the encrypted db
+            <summary>Open the encrypted db
             </summary>
             <param name="filePath">path to the database file
             </param>
@@ -1134,7 +1134,7 @@
             </param>
             <returns>persistent object implementing index
             </returns>
-            <exception cref="T:Volante.DatabaseError">DatabaseError(DatabaseError.ErrorCode.UNSUPPORTED_INDEX_TYPE) exception if 
+            <exception cref="T:Volante.DatabaseException">DatabaseException(DatabaseException.ErrorCode.UNSUPPORTED_INDEX_TYPE) exception if 
             specified key type is not supported by implementation.
             </exception>
         </member>
@@ -1144,7 +1144,7 @@
             </summary>
             <returns>persistent object implementing thick index
             </returns>
-            <exception cref="T:Volante.DatabaseError">DatabaseError(DatabaseError.ErrorCode.UNSUPPORTED_INDEX_TYPE) exception if 
+            <exception cref="T:Volante.DatabaseException">DatabaseException(DatabaseException.ErrorCode.UNSUPPORTED_INDEX_TYPE) exception if 
             specified key type is not supported by implementation.
             </exception>
         </member>
@@ -1159,8 +1159,8 @@
             </param>
             <returns>persistent object implementing field index
             </returns>
-            <exception cref="T:Volante.DatabaseError">DatabaseError(DatabaseError.INDEXED_FIELD_NOT_FOUND) if there is no such field in specified class,
-            DatabaseError(DatabaseError.UNSUPPORTED_INDEX_TYPE) exception if type of specified field is not supported by implementation
+            <exception cref="T:Volante.DatabaseException">DatabaseException(DatabaseException.INDEXED_FIELD_NOT_FOUND) if there is no such field in specified class,
+            DatabaseException(DatabaseException.UNSUPPORTED_INDEX_TYPE) exception if type of specified field is not supported by implementation
             </exception>
         </member>
         <member name="M:Volante.IDatabase.CreateFieldIndex``1(System.String[],Volante.IndexType)">
@@ -1173,8 +1173,8 @@
             </param>
             <returns>persistent object implementing field index
             </returns>
-            <exception cref="T:Volante.DatabaseError">DatabaseError(DatabaseError.INDEXED_FIELD_NOT_FOUND) if there is no such field in specified class,
-            DatabaseError(DatabaseError.UNSUPPORTED_INDEX_TYPE) exception if type of specified field is not supported by implementation
+            <exception cref="T:Volante.DatabaseException">DatabaseException(DatabaseException.INDEXED_FIELD_NOT_FOUND) if there is no such field in specified class,
+            DatabaseException(DatabaseException.UNSUPPORTED_INDEX_TYPE) exception if type of specified field is not supported by implementation
             </exception>
         </member>
         <member name="M:Volante.IDatabase.CreateSpatialIndex``1">
@@ -1232,7 +1232,7 @@
             </returns>
         </member>
         <member name="M:Volante.IDatabase.CreateScalableSet``1">
-            <summary>  Create new scalable set references to persistent objects.
+            <summary>Create new scalable set references to persistent objects.
             This container can effciently store small number of references as well 
             as very large number references. When number of memers is small, 
             Link class is used to store set members. When number of members exceed 
@@ -1242,7 +1242,7 @@
             </returns>
         </member>
         <member name="M:Volante.IDatabase.CreateScalableSet``1(System.Int32)">
-            <summary>  Create new scalable set references to persistent objects.
+            <summary>Create new scalable set references to persistent objects.
             This container can effciently store small number of references as well 
             as very large number references. When number of memers is small, 
             Link class is used to store set members. When number of members exceed 
@@ -1253,15 +1253,15 @@
             </returns>
         </member>
         <member name="M:Volante.IDatabase.CreateArray``1">
-            <summary> Create dynamcially extended array of reference to persistent objects.
-            It is inteded to be used in classes using virtual properties to 
+            <summary>Create dynamically extended array of referencess to persistent objects.
+            It is intended to be used in classes using virtual properties to 
             access components of persistent objects.  
             </summary>
             <returns>new empty array, new members can be added to the array later.
             </returns>
         </member>
         <member name="M:Volante.IDatabase.CreateArray``1(System.Int32)">
-            <summary> Create dynamcially extended array of reference to persistent objects.
+            <summary>Create dynamcially extended array of reference to persistent objects.
             It is inteded to be used in classes using virtual properties to 
             access components of persistent objects.  
             </summary>
@@ -1472,10 +1472,10 @@
             In case of cooperative transactions, this method rollback results of all transactions.
             </summary>
         </member>
-        <member name="M:Volante.IDatabase.GetMemoryDump">
+        <member name="M:Volante.IDatabase.GetMemoryUsage">
             <summary>
             Get database memory dump. This function returns hashmap which key is classes
-            of stored objects and value - MemoryUsage object which specifies number of instances
+            of stored objects and value - TypeMemoryUsage object which specifies number of instances
             of particular class in the db and total size of memory used by these instance.
             Size of internal database structures (object index, memory allocation bitmap) is associated with 
             <code>IDatabase</code> class. Size of class descriptors  - with <code>System.Type</code> class.
@@ -1545,25 +1545,11 @@
         <member name="P:Volante.IDatabase.CodeGeneration">
             <summary>Set/get whether dynamic code generation is used to generate
             pack/unpack methods for persisted classes.
-            If used, serialization/deserialization of classed with public fields
-            only will be faster. On the downside, those methods must be generated
+            If used, serialization/deserialization of classes that only have public
+            fields will be faster. On the downside, those methods must be generated
             at startup, increasing startup time.
             Default value: false
             </summary>
-        </member>
-        <member name="P:Volante.IDatabase.FileReadOnly">
-            <summary>Set/get whether a file is opened in read-only mode.
-            Default value: false
-            </summary>
-        </member>
-        <member name="P:Volante.IDatabase.FileNoFlush">
-            To not flush file during transaction commit. It will greatly increase performance because
-            eliminate synchronous write to the disk (when program has to wait until all changes
-            are actually written to the disk). But it can cause database corruption in case of 
-            OS or power failure (but abnormal termination of application itself should not cause
-            the problem, because all data which were written to the file, but is not yet saved to the disk is 
-            stored in OS file buffers and sooner or later them will be written to the disk)
-            Default value: false
         </member>
         <member name="P:Volante.IDatabase.StringEncoding">
             Specifies encoding of storing strings in the database. By default Volante stores 
@@ -1690,7 +1676,7 @@
             </param>
             <param name="obj">object removed from the index
             </param>
-            <exception cref="T:Volante.DatabaseError">DatabaseError(DatabaseError.KEY_NOT_FOUND) exception if there is no such key in the index
+            <exception cref="T:Volante.DatabaseException">DatabaseException(DatabaseException.KEY_NOT_FOUND) exception if there is no such key in the index
             </exception>
         </member>
         <member name="M:Volante.ISpatialIndex`1.Size">
@@ -1732,6 +1718,24 @@
             is returned.
             </returns>
         </member>
+        <member name="T:Volante.DatabaseException">
+            <summary> Exception throw by database implementation
+            </summary>
+        </member>
+        <member name="M:Volante.DatabaseException.#ctor(Volante.DatabaseException.ErrorCode)">
+            <summary> Get original exception if DatabaseException excepotion was thrown as the result 
+            of catching some other exception within Database implementation. 
+            DatabaseException is used as wrapper of other exceptions to avoid cascade propagation
+            of throws and try/catch constructions.
+            </summary>
+            <returns>original exception or <code>null</code> if there is no such exception
+            
+            </returns>
+        </member>
+        <member name="P:Volante.DatabaseException.Code">
+            <summary> Get exception error code (see definitions above)
+            </summary>
+        </member>
         <member name="T:Volante.ISpatialIndexR2`1">
             <summary> Interface of object spatial index.
             Spatial index is used to allow fast selection of spatial objects belonging to the specified rectangle.
@@ -1765,7 +1769,7 @@
             </param>
             <param name="obj">object removed from the index
             </param>
-            <exception cref="T:Volante.DatabaseError">DatabaseError(DatabaseError.KEY_NOT_FOUND) exception 
+            <exception cref="T:Volante.DatabaseException">DatabaseException(DatabaseException.KEY_NOT_FOUND) exception 
             if there is no such key in the index
             </exception>
         </member>
@@ -1855,7 +1859,7 @@
             Object can be not yet peristent, in this case
             its forced to become persistent by assigning oid to it.
             </param>
-            <exception cref="T:Volante.DatabaseError"><code>DatabaseError(DatabaseError.ErrorCode.INCOMPATIBLE_KEY_TYPE)</code> 
+            <exception cref="T:Volante.DatabaseException"><code>DatabaseException(DatabaseException.ErrorCode.INCOMPATIBLE_KEY_TYPE)</code> 
             is thrown when indexed field has type other than <code>int</code> or <code>long</code></exception>
         </member>
         <member name="M:Volante.IFieldIndex`2.Remove(Volante.Key)">
@@ -1864,8 +1868,8 @@
             <param name="key">wrapper of removed key
             </param>
             <returns>removed object</returns>
-            <exception cref="T:Volante.DatabaseError">DatabaseError(DatabaseError.ErrorCode.KEY_NOT_FOUND) exception if there is no such key in the index,
-            or DatabaseError(DatabaseError.ErrorCode.KEY_NOT_UNIQUE) if index is not unique.
+            <exception cref="T:Volante.DatabaseException">DatabaseException(DatabaseException.ErrorCode.KEY_NOT_FOUND) exception if there is no such key in the index,
+            or DatabaseException(DatabaseException.ErrorCode.KEY_NOT_UNIQUE) if index is not unique.
             
             </exception>
         </member>
@@ -1875,8 +1879,8 @@
             <param name="key">value of removed key
             </param>
             <returns>removed object</returns>
-            <exception cref="T:Volante.DatabaseError">DatabaseError(DatabaseError.ErrorCode.KEY_NOT_FOUND) exception if there is no such key in the index,
-            or DatabaseError(DatabaseError.ErrorCode.KEY_NOT_UNIQUE) if index is not unique.
+            <exception cref="T:Volante.DatabaseException">DatabaseException(DatabaseException.ErrorCode.KEY_NOT_FOUND) exception if there is no such key in the index,
+            or DatabaseException(DatabaseException.ErrorCode.KEY_NOT_UNIQUE) if index is not unique.
             
             </exception>
         </member>
@@ -1962,24 +1966,6 @@
             </summary>
             <param name="key">bit vector</param>
             <returns>object associated with removed key or <code>null</code> if such key is not found</returns>
-        </member>
-        <member name="T:Volante.DatabaseError">
-            <summary> Exception throw by database implementation
-            </summary>
-        </member>
-        <member name="M:Volante.DatabaseError.#ctor(Volante.DatabaseError.ErrorCode)">
-            <summary> Get original exception if DatabaseError excepotion was thrown as the result 
-            of catching some other exception within Database implementation. 
-            DatabaseError is used as wrapper of other exceptions to avoid cascade propagation
-            of throws and try/catch constructions.
-            </summary>
-            <returns>original exception or <code>null</code> if there is no such exception
-            
-            </returns>
-        </member>
-        <member name="P:Volante.DatabaseError.Code">
-            <summary> Get exception error code (see definitions above)
-            </summary>
         </member>
         <member name="T:Volante.TransparentPersistenceAttribute">
             <summary>
@@ -2139,42 +2125,6 @@
             Greatest X coordinate  of the rectangle
             </summary>
         </member>
-        <member name="T:Volante.MemoryUsage">
-            <summary>
-            Information about memory usage for the correspondent class. 
-            Instances of this class are created by IDatabase.GetMemoryDump method.
-            Size of internal database structures (object index,* memory allocation bitmap) is associated with 
-            <code>Database</code> class. Size of class descriptors  - with <code>System.Type</code> class.
-            </summary>
-        </member>
-        <member name="F:Volante.MemoryUsage.type">
-            <summary>
-            Class of persistent object or Database for database internal data
-            </summary>
-        </member>
-        <member name="F:Volante.MemoryUsage.nInstances">
-            <summary>
-            Number of reachable instance of the particular class in the database.
-            </summary>
-        </member>
-        <member name="F:Volante.MemoryUsage.totalSize">
-            <summary>
-            Total size of all reachable instances
-            </summary>
-        </member>
-        <member name="F:Volante.MemoryUsage.allocatedSize">
-            <summary>
-            Real allocated size of all instances. Database allocates space for th objects using quantums,
-            for example object wilth size 25 bytes will use 32 bytes in the db.
-            In item associated with Database class this field contains size of all allocated
-            space in the database (marked as used in bitmap) 
-            </summary>
-        </member>
-        <member name="M:Volante.MemoryUsage.#ctor(System.Type)">
-            <summary>
-            MemoryUsage constructor
-            </summary>
-        </member>
         <member name="T:Volante.MarshalByRefPersistent">
             <summary> Base class for persistent capable objects with marshal by reference semantic
             </summary>
@@ -2207,7 +2157,7 @@
              </summary>
              <param name="key"> specified key. It should match with type of the index and should be inclusive.</param>
              <returns> object with this value of the key or <code>null</code> if key not found</returns>
-             <exception cref="T:Volante.DatabaseError">DatabaseError(DatabaseError.KEY_NOT_UNIQUE) exception if there are more than 
+             <exception cref="T:Volante.DatabaseException">DatabaseException(DatabaseException.KEY_NOT_UNIQUE) exception if there are more than 
              one objects in the collection with specified value of the key.  
              </exception>
             
@@ -2862,6 +2812,42 @@
             </summary>
             <param name="name">full name of the class to be loaded</param>
             <returns>loaded class or <code>null</code> if class can not be loaded</returns>
+        </member>
+        <member name="T:Volante.TypeMemoryUsage">
+            <summary>
+            Information about memory usage for one type. 
+            Instances of this class are created by IDatabase.GetMemoryUsage method.
+            Size of internal database structures (object index,* memory allocation bitmap) is associated with 
+            <code>Database</code> class. Size of class descriptors  - with <code>System.Type</code> class.
+            </summary>
+        </member>
+        <member name="F:Volante.TypeMemoryUsage.Type">
+            <summary>
+            Class of persistent object or Database for database internal data
+            </summary>
+        </member>
+        <member name="F:Volante.TypeMemoryUsage.Count">
+            <summary>
+            Number of reachable instance of the particular class in the database.
+            </summary>
+        </member>
+        <member name="F:Volante.TypeMemoryUsage.TotalSize">
+            <summary>
+            Total size of all reachable instances
+            </summary>
+        </member>
+        <member name="F:Volante.TypeMemoryUsage.AllocatedSize">
+            <summary>
+            Real allocated size of all instances. Database allocates space for th objects using quantums,
+            for example object wilth size 25 bytes will use 32 bytes in the db.
+            In item associated with Database class this field contains size of all allocated
+            space in the database (marked as used in bitmap) 
+            </summary>
+        </member>
+        <member name="M:Volante.TypeMemoryUsage.#ctor(System.Type)">
+            <summary>
+            TypeMemoryUsage constructor
+            </summary>
         </member>
         <member name="T:Volante.PersistentString">
             <summary>

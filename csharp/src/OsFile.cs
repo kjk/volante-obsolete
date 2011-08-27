@@ -1,11 +1,11 @@
-namespace Volante.Impl
+namespace Volante
 {
     using System;
     using System.IO;
     using System.Runtime.InteropServices;
-    using Volante;
+    using Volante.Impl;
 
-    public class OSFile : IFile
+    public class OsFile : IFile
     {
 #if !MONO && !CF && !SILVERLIGHT
 #if NET_4_0
@@ -33,18 +33,14 @@ namespace Volante.Impl
         {
             file.Flush();
 #if !CF && !MONO && !SILVERLIGHT
-            if (!noFlush)
+            if (!NoFlush)
             {
                 FlushFileBuffers(file.SafeFileHandle);
             }
 #endif
         }
 
-        public bool NoFlush
-        {
-            get { return this.noFlush; }
-            set { this.noFlush = value; }
-        }
+        public bool NoFlush { get; set; }
 
         public virtual void Close()
         {
@@ -63,14 +59,18 @@ namespace Volante.Impl
             get { return file.Length; }
         }
 
-        internal OSFile(String filePath, bool readOnly, bool noFlush)
+
+        public OsFile(String filePath)
+            : this(filePath, false)
         {
-            this.noFlush = noFlush;
+        }
+
+        public OsFile(String filePath, bool readOnly)
+        {
             file = new FileStream(filePath, FileMode.OpenOrCreate,
                                   readOnly ? FileAccess.Read : FileAccess.ReadWrite);
         }
 
         protected FileStream file;
-        protected bool noFlush;
     }
 }

@@ -209,9 +209,6 @@
     <Compile Include="src\impl\OidHashTable.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="src\impl\OSFile.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="src\impl\Page.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -234,9 +231,6 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="src\impl\PTrie.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="src\impl\Rc4File.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="src\impl\RelationImpl.cs">
@@ -324,6 +318,7 @@
     <Compile Include="src\NullFile.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="src\OsFile.cs" />
     <Compile Include="src\PatriciaTrieKey.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -348,6 +343,7 @@
     <Compile Include="src\Projection.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="src\Rc4File.cs" />
     <Compile Include="src\Rectangle.cs">
       <SubType>Code</SubType>
     </Compile>

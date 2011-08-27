@@ -487,20 +487,6 @@ namespace Volante
         /// </summary>
         bool CodeGeneration { get; set; }
 
-        /// <summary>Set/get whether a file is opened in read-only mode.
-        /// Default value: false
-        /// </summary>
-        bool FileReadOnly { get; set; }
-
-        /// To not flush file during transaction commit. It will greatly increase performance because
-        /// eliminate synchronous write to the disk (when program has to wait until all changes
-        /// are actually written to the disk). But it can cause database corruption in case of 
-        /// OS or power failure (but abnormal termination of application itself should not cause
-        /// the problem, because all data which were written to the file, but is not yet saved to the disk is 
-        /// stored in OS file buffers and sooner or later them will be written to the disk)
-        /// Default value: false
-        bool FileNoFlush { get; set; }
-
 #if WITH_REPLICATION
         /// Request acknowledgement from slave that it receives all data before transaction
         /// commit. If this option is not set, then replication master node just writes
