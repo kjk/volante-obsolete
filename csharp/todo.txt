@@ -1,6 +1,6 @@
 Things to do for c# version:
 
-* fix a bug where index enumerator for range where being and end are the same value returns all values instead of 1 (if a key is in the database) or 0 (if the key isn't in the database)
+* fix a TestInsertShort and TestInsertUShort bug where can't find short.MaxValue and 1999 in the index (grep for FAILED_TEST)
 * finish manual:
  * transactions
  * CreateIndex()
@@ -16,15 +16,14 @@ Things to do for c# version:
  * CreateBlob()
  * CreateTimeSeries()
  * CreatePatriciaTree()
- * an example of persisted double-linked list
+ * benchmarks
  * creating an encrypted using Rc4File
+ * an example of persisted double-linked list
  * who uses Volante?
-* benchmark using standard stream vs. compressed (gzip) stream for database file
 * make a reference API from .xml extracted during build process
 * get rid of IDatabase.StringEncoding and always use utf8 for storing strings (?)
 * make a release script that builds and uploads .zip with the Volante.dll
 * make a 0.9 release
-* benchmark Bytes.unpack*() using unsafe fixed vs. bit fiddling
 * make OSFile and Rc4File publc, remove IDatabase.Open() that takes encryption password
 
 After 0.9:
@@ -32,6 +31,8 @@ After 0.9:
 * wp7 versions
 * re-implement BitIndexImp.cs using AltBtree
 * implement MemFile : IFile which to use for tests that need database to be closed and re-opened (and currently use file on disk for that)
+* benchmark Bytes.unpack*() using unsafe fixed vs. bit fiddling
+* benchmark using standard stream vs. compressed (gzip) stream for database file
 
 Notes:
 * building without (old) Btree code saves 48kB (264 => 216)

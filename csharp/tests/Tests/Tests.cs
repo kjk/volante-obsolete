@@ -361,6 +361,7 @@ public class TestsMain
 
     static TestInfo[] TestInfos = new TestInfo[]
     {
+        new TestInfo("TestIndexRangeSearch"),
         new TestInfo("TestCorrupt00", ConfigsOneFileAlt),
         new TestInfo("TestRemove00"),
         new TestInfo("TestIndexUInt00"),

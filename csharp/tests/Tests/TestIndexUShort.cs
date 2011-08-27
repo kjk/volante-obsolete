@@ -71,6 +71,22 @@ namespace Volante
             {
                 Tests.Assert(r2.lval >= mid && r2.lval <= max);
             }
+
+            recs = idx[min, max];
+            Tests.Assert(recs.Length == count + 2);
+
+            recs = idx[min, min];
+            Tests.Assert(recs.Length >= 1);
+
+            recs = idx[max, max];
+            Tests.Assert(1 == recs.Length);
+
+#if FAILED_TEST
+            // TODO: figure out why returns no values
+            recs = idx[1999, 1999];
+            Tests.Assert(1 == recs.Length);
+#endif
+
             ushort prev = min;
             var e1 = idx.GetEnumerator();
             while (e1.MoveNext())

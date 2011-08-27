@@ -76,7 +76,7 @@ namespace Volante
         /// </param>
         void Open(String filePath);
 
-        /// <summary> Open the db
+        /// <summary>Open the db
         /// </summary>
         /// <param name="file">user specific implementation of IFile interface
         /// </param>
@@ -93,7 +93,7 @@ namespace Volante
         /// </param>
         void Open(IFile file);
 
-        /// <summary> Open the encrypted db
+        /// <summary>Open the encrypted db
         /// </summary>
         /// <param name="filePath">path to the database file
         /// </param>
@@ -240,7 +240,7 @@ namespace Volante
         /// </returns>
         ILink<T> CreateLink<T>(int initialSize) where T : class,IPersistent;
 
-        /// <summary>  Create new scalable set references to persistent objects.
+        /// <summary>Create new scalable set references to persistent objects.
         /// This container can effciently store small number of references as well 
         /// as very large number references. When number of memers is small, 
         /// Link class is used to store set members. When number of members exceed 
@@ -250,7 +250,7 @@ namespace Volante
         /// </returns>
         ISet<T> CreateScalableSet<T>() where T : class,IPersistent;
 
-        /// <summary>  Create new scalable set references to persistent objects.
+        /// <summary>Create new scalable set references to persistent objects.
         /// This container can effciently store small number of references as well 
         /// as very large number references. When number of memers is small, 
         /// Link class is used to store set members. When number of members exceed 
@@ -261,15 +261,15 @@ namespace Volante
         /// </returns>
         ISet<T> CreateScalableSet<T>(int initialSize) where T : class,IPersistent;
 
-        /// <summary> Create dynamcially extended array of reference to persistent objects.
-        /// It is inteded to be used in classes using virtual properties to 
+        /// <summary>Create dynamically extended array of referencess to persistent objects.
+        /// It is intended to be used in classes using virtual properties to 
         /// access components of persistent objects.  
         /// </summary>
         /// <returns>new empty array, new members can be added to the array later.
         /// </returns>
         IPArray<T> CreateArray<T>() where T : class,IPersistent;
 
-        /// <summary> Create dynamcially extended array of reference to persistent objects.
+        /// <summary>Create dynamcially extended array of reference to persistent objects.
         /// It is inteded to be used in classes using virtual properties to 
         /// access components of persistent objects.  
         /// </summary>
@@ -480,8 +480,8 @@ namespace Volante
 
         /// <summary>Set/get whether dynamic code generation is used to generate
         /// pack/unpack methods for persisted classes.
-        /// If used, serialization/deserialization of classed with public fields
-        /// only will be faster. On the downside, those methods must be generated
+        /// If used, serialization/deserialization of classes that only have public
+        /// fields will be faster. On the downside, those methods must be generated
         /// at startup, increasing startup time.
         /// Default value: false
         /// </summary>

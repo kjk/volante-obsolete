@@ -46,6 +46,7 @@ namespace Volante
             for (i = 0; i < count; i++)
             {
                 short idxVal = Clamp(val);
+                Tests.Assert(idxVal != max);
                 r = new Record(idxVal);
                 idx.Put(idxVal, r);
                 if (i % 100 == 0)
@@ -71,23 +72,25 @@ namespace Volante
             {
                 Tests.Assert(r2.lval >= mid && r2.lval <= max);
             }
+            recs = idx[min, max];
+            Tests.Assert(recs.Length == count + 2);
 
-
-            //TODO: figure out why this doesn't work (returns all
-            // items instead of just 1)
-#if NOT_USED
             recs = idx[min, min];
-            Tests.Assert(1 == idx.Count);
+            Tests.Assert(1 == recs.Length);
 
-            recs = idx[1999, 1999];
-            Tests.Assert(1 == idx.Count);
-
+#if FAILED_TEST
+            // TODO: figure out why returns no values
             recs = idx[max, max];
-            Tests.Assert(1 == idx.Count);
+            Tests.Assert(1 == recs.Length);
+
+            // TODO: figure out why returns no values
+            recs = idx[1999, 1999];
+            Tests.Assert(1 == recs.Length);
+
+#endif
 
             recs = idx[min + 1, min + 1];
-            Tests.Assert(0 == idx.Count);
-#endif
+            Tests.Assert(0 == recs.Length);
 
             short prev = min;
             var e1 = idx.GetEnumerator();

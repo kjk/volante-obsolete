@@ -5,6 +5,8 @@
 namespace Volante
 {
     using System;
+    using System.Collections;
+    using System.Collections.Generic;
 
     public class TestRemove00
     {
@@ -61,7 +63,7 @@ namespace Volante
     }
 
     // test that deleting an object referenced by another objects
-    // corrupts the database
+    // corrupts the database.
     public class TestCorrupt00
     {
         public class Record : Persistent
@@ -112,5 +114,86 @@ namespace Volante
             db.Close();
         }
     }
+
+
+    // Corner cases for key search
+    public class TestIndexRangeSearch
+    {
+        public class Record : Persistent
+        {
+            public long lval;
+        }
+
+        public class Root : Persistent
+        {
+            public IIndex<long, Record> idx;
+        }
+
+        public void Run(TestConfig config)
+        {
+            Record[] recs;
+
+            IDatabase db = config.GetDatabase();
+            Root root = new Root();
+            root.idx = db.CreateIndex<long, Record>(IndexType.Unique);
+            db.Root = root;
+            root.idx[1] = new Record { lval = 1 };
+            root.idx[2] = new Record { lval = 2 };
+            root.idx[4] = new Record { lval = 4 };
+            root.idx[5] = new Record { lval = 5 };
+            db.Commit();
+
+            recs = root.idx[-1, -1];
+            Tests.Assert(recs.Length == 0);
+            recs = root.idx[0, 0];
+            Tests.Assert(recs.Length == 0);
+            recs = root.idx[1, 1];
+            Tests.Assert(recs.Length == 1);
+            recs = root.idx[2, 2];
+            Tests.Assert(recs.Length == 1);
+            recs = root.idx[3, 3];
+            Tests.Assert(recs.Length == 0);
+            recs = root.idx[5, 5];
+            Tests.Assert(recs.Length == 1);
+            recs = root.idx[6, 6];
+            Tests.Assert(recs.Length == 0);
+            recs = root.idx[long.MinValue, long.MaxValue];
+            Tests.Assert(recs.Length == 4);
+            recs = root.idx[1, 5];
+            Tests.Assert(recs.Length == 4);
+            recs = root.idx[long.MinValue, long.MinValue];
+            Tests.Assert(recs.Length == 0);
+            recs = root.idx[long.MaxValue, long.MaxValue];
+            Tests.Assert(recs.Length == 0);
+
+            recs = GetInRange(root.idx, -1);
+            Tests.Assert(recs.Length == 0);
+            recs = GetInRange(root.idx, 0);
+            Tests.Assert(recs.Length == 0);
+            recs = GetInRange(root.idx, 1);
+            Tests.Assert(recs.Length == 1);
+            recs = GetInRange(root.idx, 2);
+            Tests.Assert(recs.Length == 1);
+            recs = GetInRange(root.idx, 3);
+            Tests.Assert(recs.Length == 0);
+            recs = GetInRange(root.idx, 5);
+            Tests.Assert(recs.Length == 1);
+            recs = GetInRange(root.idx, 6);
+            Tests.Assert(recs.Length == 0);
+
+            db.Close();
+        }
+
+        Record[] GetInRange(IIndex<long,Record> idx, long range)
+        {
+            List<Record> recs = new List<Record>();
+            foreach (var r in idx.Range(range, range))
+            {
+                recs.Add(r);
+            }
+            return recs.ToArray();
+        }
+    }
+
 
 }

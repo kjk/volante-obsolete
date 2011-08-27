@@ -236,16 +236,15 @@ namespace Volante.Impl
 
         public virtual V[] Get(Key from, Key till)
         {
-            if (root != 0)
-            {
-                ArrayList list = new ArrayList();
-                BtreePage.find((DatabaseImpl)Database, root, checkKey(from), checkKey(till), this, height, list);
-                if (list.Count != 0)
-                {
-                    return (V[])list.ToArray(typeof(V));
-                }
-            }
-            return emptySelection;
+            if (0 == root)
+                return emptySelection;
+
+            ArrayList list = new ArrayList();
+            BtreePage.find((DatabaseImpl)Database, root, checkKey(from), checkKey(till), this, height, list);
+            if (0 == list.Count)
+                return emptySelection;
+
+            return (V[])list.ToArray(typeof(V));
         }
 
         public V[] PrefixSearch(string key)

@@ -38,7 +38,7 @@ namespace Volante
         /// <summary>
         /// Get forward iterator for time series elements belonging to the specified range
         /// </summary>
-        /// <param name="from">inclusive time of the begging of interval</param>
+        /// <param name="from">inclusive time of the beginning of interval</param>
         /// <param name="till">inclusive time of the ending of interval</param>
         /// <returns>forward iterator within specified range</returns>
         IEnumerator<T> GetEnumerator(DateTime from, DateTime till);
@@ -53,7 +53,7 @@ namespace Volante
         /// <summary>
         /// Get forward iterator for time series elements belonging to the specified range
         /// </summary>
-        /// <param name="from">inclusive time of the begging of interval</param>
+        /// <param name="from">inclusive time of the beginning  of interval</param>
         /// <param name="till">inclusive time of the ending of interval</param>
         /// <param name="order">direction of iteration</param>
         /// <returns>iterator within specified range in specified direction</returns>
@@ -62,7 +62,7 @@ namespace Volante
         /// <summary>
         /// Get forward iterator for time series elements belonging to the specified range
         /// </summary>
-        /// <param name="from">inclusive time of the begging of interval</param>
+        /// <param name="from">inclusive time of the beginning  of interval</param>
         /// <param name="till">inclusive time of the ending of interval</param>
         /// <returns>forward iterator within specified range</returns>
         IEnumerable<T> Range(DateTime from, DateTime till);
@@ -77,7 +77,7 @@ namespace Volante
         /// <summary>
         /// Get iterator for time series elements belonging to the specified range
         /// </summary>
-        /// <param name="from">inclusive time of the begging of interval</param>
+        /// <param name="from">inclusive time of the beginning  of interval</param>
         /// <param name="till">inclusive time of the ending of interval</param>
         /// <param name="order">direction of iteration</param>
         /// <returns>iterator within specified range in specified direction</returns>
@@ -86,7 +86,7 @@ namespace Volante
         /// <summary>
         /// Get forward iterator for time series elements with timestamp greater or equal than specified
         /// </summary>
-        /// <param name="from">inclusive time of the begging of interval</param>
+        /// <param name="from">inclusive time of the beginning of interval</param>
         /// <returns>forward iterator</returns>
         IEnumerable<T> From(DateTime from);
 
@@ -136,7 +136,7 @@ namespace Volante
         /// <summary>
         /// Remove time series elements belonging to the specified range
         /// </summary>
-        /// <param name="from">inclusive time of the begging of interval</param>
+        /// <param name="from">inclusive time of the beginning  of interval</param>
         /// <param name="till">inclusive time of the ending of interval</param>
         /// <returns>number of removed elements</returns>
         int Remove(DateTime from, DateTime till);
@@ -144,7 +144,7 @@ namespace Volante
         /// <summary>
         /// Remove time series elements with timestamp greater or equal then specified
         /// </summary>
-        /// <param name="from">inclusive time of the begging of interval</param>
+        /// <param name="from">inclusive time of the beginning of interval</param>
         /// <returns>number of removed elements</returns>
         int RemoveFrom(DateTime from);
 
