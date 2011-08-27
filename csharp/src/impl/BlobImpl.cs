@@ -160,7 +160,7 @@ namespace Volante.Impl
                         newPos = currPos + offset;
                         break;
                     case SeekOrigin.End:
-                        newPos = size - offset;
+                        newPos = size + offset;
                         break;
                 }
                 if (newPos < 0)

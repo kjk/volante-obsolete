@@ -23,3 +23,5 @@
 19. Fixed a bug in AltBtree.PrefixSearch()
 20. Renamed DatabaseError => DatabaseException
 21. Removed IDatabase.FileReadOnly and IDatabase.FileNoFlush and pushed them to specific IFile implementation; made OsFile and Rc4File public
+22. Fixed a bug in PArrayImpl.Length if setting length to a value smaller than current length
+23. Fixed a bug in BlobImpl.Seek() when SeekOrigin.End is used

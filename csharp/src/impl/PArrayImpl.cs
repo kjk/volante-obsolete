@@ -23,22 +23,6 @@ namespace Volante.Impl
             }
         }
 
-        public bool IsSynchronized
-        {
-            get
-            {
-                return false;
-            }
-        }
-
-        public object SyncRoot
-        {
-            get
-            {
-                return null;
-            }
-        }
-
         public bool IsReadOnly
         {
             get
@@ -68,7 +52,7 @@ namespace Volante.Impl
             {
                 if (value < used)
                 {
-                    Array.Clear(arr, value, used);
+                    Array.Clear(arr, value, used - value);
                     Modify();
                 }
                 else
@@ -257,13 +241,13 @@ namespace Volante.Impl
 
         public virtual int IndexOf(T obj)
         {
-            int oid = obj == null ? 0 : ((IPersistent)obj).Oid;
-            for (int i = used; --i >= 0; )
+            int oid = 0;
+            if (null != obj)
+                oid = ((IPersistent)obj).Oid;
+            for (int i = 0; i < used; i++)
             {
                 if (arr[i] == oid)
-                {
                     return i;
-                }
             }
             return -1;
         }

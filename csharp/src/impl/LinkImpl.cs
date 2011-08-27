@@ -23,22 +23,6 @@ namespace Volante.Impl
             }
         }
 
-        public bool IsSynchronized
-        {
-            get
-            {
-                return false;
-            }
-        }
-
-        public object SyncRoot
-        {
-            get
-            {
-                return null;
-            }
-        }
-
         public bool IsReadOnly
         {
             get

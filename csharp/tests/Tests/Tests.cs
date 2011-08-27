@@ -10,6 +10,49 @@ using System.Reflection;
 using System.Text;
 using Volante;
 
+public struct SimpleStruct
+{
+    public int v1;
+    public long v2;
+}
+
+public class RecordFull : Persistent
+{
+    public string StrVal;
+    public Boolean BoolVal;
+    public byte ByteVal;
+    public sbyte SByteVal;
+    public Int16 Int16Val;
+    public UInt16 UInt16Val;
+    public Int32 Int32Val;
+    public UInt32 UInt32Val;
+    public Int64 Int64Val;
+    public UInt64 UInt64Val;
+    public DateTime DateTimeVal;
+    public SimpleStruct StructVal;
+
+    public RecordFull()
+    {
+    }
+
+    public RecordFull(Int64 v)
+    {
+        StrVal = v.ToString();
+        BoolVal = (v % 2 == 0) ? false : true;
+        ByteVal = (byte)v;
+        SByteVal = (sbyte)v;
+        Int16Val = (Int16)v;
+        UInt16Val = (UInt16)v;
+        Int32Val = (Int32)v;
+        UInt32Val = (UInt32)v;
+        Int64Val = (Int64)v;
+        UInt64Val = (UInt64)v;
+        DateTimeVal = DateTime.Now;
+        StructVal.v1 = (int)(v + 1);
+        StructVal.v2 = (long)(v + 1);
+    }
+}
+
 public class TestConfig
 {
     const int INFINITE_PAGE_POOL = 0;
@@ -77,7 +120,10 @@ public class TestConfig
         if (BackgroundGc)
             db.GcThreshold = 100000;
         db.StringEncoding = Encoding;
-
+        // TODO: could make CodeGeneration an explicit in TestConfig
+        // but this is simpler
+        if (AltBtree)
+            db.CodeGeneration = true;
         if (InMemory == InMemoryType.Full)
             OpenTransientDatabase(db);
         else
@@ -364,6 +410,7 @@ public class TestsMain
         new TestInfo("TestIndexRangeSearch"),
         new TestInfo("TestCorrupt00", ConfigsOneFileAlt),
         new TestInfo("TestRemove00"),
+        new TestInfo("TestPArray"),
         new TestInfo("TestIndexUInt00"),
         new TestInfo("TestIndexInt00"),
         new TestInfo("TestIndexInt"),
@@ -392,7 +439,7 @@ public class TestsMain
         new TestInfo("TestRaw", ConfigsRaw, new int[2] { 1000, 10000 }),
         new TestInfo("TestRtree", ConfigsDefault, new int[2] { 800, 20000 }),
         new TestInfo("TestTtree"),
-        new TestInfo("TestBlob", ConfigsDefaultFile),
+        new TestInfo("TestBlob", ConfigsOneFileAlt),
         new TestInfo("TestCompoundIndex"),
         new TestInfo("TestConcur"),
         new TestInfo("TestEnumerator", ConfigsDefault, new int[2] { 50, 1000 }),

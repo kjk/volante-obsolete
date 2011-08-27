@@ -23,7 +23,7 @@ namespace Volante
         int GetOid(int i);
 
         /// <summary>
-        /// Set owner objeet for this PArray. Owner is persistent object contaning this PArray.
+        /// Set owner object for this PArray. Owner is persistent object contaning this PArray.
         /// This method is mostly used by db itself, but can also used explicityl by programmer if
         /// Parray component of one persistent object is assigned to component of another persistent object
         /// </summary>

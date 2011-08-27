@@ -9,22 +9,6 @@ namespace Volante.Impl
 
     class TimeSeriesImpl<T> : PersistentResource, ITimeSeries<T> where T : ITimeSeriesTick
     {
-        public virtual bool IsSynchronized
-        {
-            get
-            {
-                return true;
-            }
-        }
-
-        public virtual object SyncRoot
-        {
-            get
-            {
-                return this;
-            }
-        }
-
         public void Clear()
         {
             foreach (TimeSeriesBlock block in index)

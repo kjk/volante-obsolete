@@ -47,7 +47,7 @@ class FileEntry : Persistent
 
 	<h3>Defining indexes</h3>
 
-	<p>Just storing FileEntry objects in the database is not sufficient. We need to quickly locate FileEntry objects of desired properties. This is a job of indexes. Volante has several kinds of indexes but in this program we'll only need the most frequently used B-Tree index which offers an ordered access to objects. An index is like a C# <code>Dictionary&lt;Key,Value&gt;</code>. There are many types of supported keys (integers, strings, DateTime etc.). A value is a persisted object.</p>
+	<p>Just storing <code>FileEntry</code> objects in the database is not sufficient. We need to quickly locate <code>FileEntry</code> objects of desired properties. This is a job of indexes. Volante has several kinds of indexes but in this program we'll only need the most frequently used B-Tree index which offers an ordered access to objects. An index is like a C# <code>Dictionary&lt;Key,Value&gt;</code>. There are many types of supported keys (integers, strings, DateTime etc.). A value is a persisted object.</p>
 
 	<p>Everything that we want to do (list largest files, files with duplicate name and most recently modified files) can be done efficiently if we can enumerate objects in order (respectively by file size, file name and file last write time). Therefore we'll build 3 indexes:
 	<ul>
@@ -112,8 +112,8 @@ dbRoot.FileLastWriteTimeIndex.Put(fe.LastWriteTimeUtc, fe);</pre>
 
 	<p>Things to note in the above code:
 	<ul>
-		<li>the index key can be of any value, it's completely independent of the persisted object. The key of FileNameIndex is name of the file even though the name is not part of FileEntry object. That being said, most of the time the key would also be part of persisted object.</li>
-		<li>the indexes all point to the same FileEntry object - it's not duplicated. Internally the indexes store only 32-bit oid, which is a unique identifier of the object. Oid is enough information to load the object from database into memory.</li>
+		<li>the index key can be of any value, it's completely independent of the persisted object. The key of FileNameIndex is name of the file even though the name is not part of <code>FileEntry</code> object. That being said, most of the time the key would also be part of persisted object.</li>
+		<li>the indexes all point to the same <code>FileEntry</code> object - it's not duplicated. Internally the indexes store only 32-bit oid, which is a unique identifier of the object. Oid is enough information to load the object from database into memory.</li>
 	</ul>
 	</p>
 

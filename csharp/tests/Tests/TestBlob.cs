@@ -1,6 +1,7 @@
 namespace Volante
 {
     using System;
+    using System.Collections;
     using System.IO;
 
     public class TestBlobResult : TestResult
@@ -85,7 +86,72 @@ namespace Volante
                 fin.Close();
                 bin.Close();
             }
+            db.Commit();
             db.Close();
+        }
+
+        public bool ByteArraysEqual(byte[] b1, byte[] b2)
+        {
+            if (b1 == b2) return true;
+            if (b1 == null || b2 == null) return false;
+            if (b1.Length != b2.Length) return false;
+            for (int i = 0; i < b1.Length; i++)
+            {
+                if (b1[i] != b2[i]) return false;
+            }
+            return true;
+        }
+
+        public void TestBlobImpl(TestConfig config)
+        {
+            int n;
+            IDatabase db = config.GetDatabase(false);
+            IBlob blob = db.CreateBlob();
+            Stream blobStrm = blob.GetStream();
+
+            byte[] b = new byte[] { 1, 2, 3, 4, 5, 6};
+            byte[] b2 = new byte[6];
+            blobStrm.Write(b, 0, b.Length);
+            Tests.Assert(blobStrm.CanRead);
+            Tests.Assert(blobStrm.CanSeek);
+            Tests.Assert(blobStrm.CanWrite);
+            long len = 6;
+            long pos = 3;
+            Tests.Assert(blobStrm.Length == len);
+            blobStrm.Flush();
+            Tests.Assert(6 == blobStrm.Position);
+            blobStrm.Position = pos;
+            Tests.Assert(pos == blobStrm.Position);
+            Tests.AssertException<ArgumentException>(() =>
+                { blobStrm.Position = -1; });
+            blobStrm.Seek(0, SeekOrigin.Begin);
+            Tests.Assert(0 == blobStrm.Position);
+            n = blobStrm.Read(b2, 0, 6);
+            Tests.Assert(n == 6);
+            Tests.Assert(ByteArraysEqual(b, b2));
+            Tests.Assert(6 == blobStrm.Position);
+            n = blobStrm.Read(b2, 0, 1);
+            Tests.Assert(n == 0);
+            blobStrm.Seek(0, SeekOrigin.Begin);
+            blobStrm.Seek(3, SeekOrigin.Current);
+            Tests.Assert(3 == blobStrm.Position);
+            blobStrm.Read(b2, 0, 3);
+            Tests.Assert(6 == blobStrm.Position);
+            Tests.Assert(b2[0] == 4);
+            blobStrm.Seek(-3, SeekOrigin.End);
+            Tests.Assert(3 == blobStrm.Position);
+            Tests.AssertException<ArgumentException>(() =>
+                { blobStrm.Seek(-10, SeekOrigin.Current); });
+            blobStrm.Seek(0, SeekOrigin.End);
+            Tests.Assert(len == blobStrm.Position);
+            blobStrm.Write(b, 0, b.Length);
+            len += b.Length;
+            Tests.Assert(blobStrm.Length == len);
+            blobStrm.SetLength(8);
+            Tests.Assert(blobStrm.Length == 8);
+            blobStrm.SetLength(20);
+            Tests.Assert(blobStrm.Length == 20);
+            blob.Deallocate();
         }
 
         public void Run(TestConfig config)
@@ -108,6 +174,8 @@ namespace Volante
             start = DateTime.Now;
             VerifyFiles(config, files);
             res.ReadTime = DateTime.Now - start;
+
+            TestBlobImpl(config);
         }
     }
 
