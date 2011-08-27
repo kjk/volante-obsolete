@@ -40,6 +40,12 @@ namespace Volante
 #endif
         }
 
+        /// Whether to not flush file buffers during transaction commit. It will increase performance because
+        /// it eliminates synchronous write to the disk. It can cause database corruption in case of 
+        /// OS or power failure. Abnormal termination of application itself should not cause
+        /// the problem, because all data written to a file but not yet saved to the disk is 
+        /// stored in OS file buffers andwill be written to the disk.
+        /// Default value: false
         public bool NoFlush { get; set; }
 
         public virtual void Close()
@@ -67,6 +73,7 @@ namespace Volante
 
         public OsFile(String filePath, bool readOnly)
         {
+            NoFlush = false;
             file = new FileStream(filePath, FileMode.OpenOrCreate,
                                   readOnly ? FileAccess.Read : FileAccess.ReadWrite);
         }

@@ -2981,5 +2981,13 @@
             Lock should be preserved until the end of transaction.
             </summary>
         </member>
+        <member name="P:Volante.OsFile.NoFlush">
+            Whether to not flush file buffers during transaction commit. It will increase performance because
+            it eliminates synchronous write to the disk. It can cause database corruption in case of 
+            OS or power failure. Abnormal termination of application itself should not cause
+            the problem, because all data written to a file but not yet saved to the disk is 
+            stored in OS file buffers andwill be written to the disk.
+            Default value: false
+        </member>
     </members>
 </doc>

@@ -21,4 +21,5 @@
 17. Remove bool IDatabase.SerializeTransientObjects property and act as it's always true
 18. Fixed a bug in BtreePage.PrefixSearch()
 19. Fixed a bug in AltBtree.PrefixSearch()
-20. Rename DatabaseError => DatabaseException
+20. Renamed DatabaseError => DatabaseException
+21. Removed IDatabase.FileReadOnly and IDatabase.FileNoFlush and pushed them to specific IFile implementation; made OsFile and Rc4File public
