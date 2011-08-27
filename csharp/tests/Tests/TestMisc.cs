@@ -134,6 +134,10 @@ namespace Volante
             Record[] recs;
 
             IDatabase db = config.GetDatabase();
+            Tests.Assert(db.IsOpened());
+            Tests.AssertDatabaseException(() =>
+                { db.Open(new NullFile(), 0); }, DatabaseException.ErrorCode.DATABASE_ALREADY_OPENED);
+
             Root root = new Root();
             root.idx = db.CreateIndex<long, Record>(IndexType.Unique);
             db.Root = root;
@@ -142,6 +146,7 @@ namespace Volante
             root.idx[4] = new Record { lval = 4 };
             root.idx[5] = new Record { lval = 5 };
             db.Commit();
+            Tests.Assert(db.DatabaseSize > 0);
 
             recs = root.idx[-1, -1];
             Tests.Assert(recs.Length == 0);
@@ -182,6 +187,7 @@ namespace Volante
             Tests.Assert(recs.Length == 0);
 
             db.Close();
+            Tests.Assert(!db.IsOpened());
         }
 
         Record[] GetInRange(IIndex<long,Record> idx, long range)

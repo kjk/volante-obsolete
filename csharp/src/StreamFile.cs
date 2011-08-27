@@ -6,7 +6,6 @@ namespace Volante
     public class StreamFile : IFile
     {
         private long offset = 0;
-        private bool noFlush = false;
         private System.IO.Stream stream;
 
         /// <summary>
@@ -57,10 +56,8 @@ namespace Volante
 
         public void Sync()
         {
-            if (noFlush == false)
-            {
+            if (NoFlush == false)
                 stream.Flush();
-            }
         }
 
         /// <summary>
@@ -81,11 +78,7 @@ namespace Volante
         /// <summary>
         /// Boolean property. Set to <c>true</c> to avoid flushing the stream, or <c>false</c> to flush the stream with every calls to <see cref="Sync"/>
         /// </summary>
-        public bool NoFlush
-        {
-            get { return this.noFlush; }
-            set { this.noFlush = value; }
-        }
+        public bool NoFlush { get; set; }
 
         public long Length
         {
