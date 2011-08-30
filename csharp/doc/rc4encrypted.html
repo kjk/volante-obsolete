@@ -1,0 +1,47 @@
+<!doctype HTML> 
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<link href="main.css" type="text/css" rel="stylesheet">
+	<link  href="http://blog.kowalczyk.info/js/prettify.css" type="text/css" rel="stylesheet"> 
+	<script src="http://blog.kowalczyk.info/js/prettify.js" type="text/javascript"></script>
+	<title>Encrypted database</title>
+</head>
+
+<body onload="prettyPrint()">
+<div id=left-bar>
+	<div id=sections>
+		<center><div><a href="index.html">Volante</a></div><center>
+	</div>
+</div>
+
+<div class=content>
+	<p><a href=index.html>Volante</a> : Encrypted database</p>
+
+	<p>You can use a simple <a href="http://en.wikipedia.org/wiki/RC4">RC4 encryption</a> for your database files by using <code>Rc4File</code> implememntation of <code>IFile</code> interface:</p>
+	
+<pre class="prettyprint lang-cs">string password="mypassword";
+Rc4File file = new Rc4File(filePath, password);
+try
+{
+    Open(file);
+}
+catch (DatabaseException)
+{
+    file.Close();
+    throw;
+}
+</pre> 
+
+	<p>You can also implement your own encryption schemes. You can use <a href="https://github.com/kjk/volante/blob/master/csharp/src/Rc4File.cs">Rc4File.cs</a> as a reference.</p>
+
+	<center><a href=history.html>← history</a> &nbsp;&bull;&nbsp; <span style="color: gray">the end</span>
+
+	<hr style="margin-top:28px">
+	<center style="font-size:10pt;color:gray">Volante is maintained by <a href="http://blog.kowalczyk.info">Krzysztof Kowalczyk</a></center>
+
+</div>
+
+<span id=adsense></span>
+</body>
+</html>
