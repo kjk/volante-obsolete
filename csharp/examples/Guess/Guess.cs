@@ -1,49 +1,49 @@
 using System;
 using Volante;
 
-public class Guess:Persistent
+public class Guess : Persistent
 {
-    public Guess  yes;
-    public Guess  no;
+    public Guess yes;
+    public Guess no;
     public string question;
-	
+
     public Guess(Guess no, string question, Guess yes)
     {
         this.yes = yes;
         this.question = question;
         this.no = no;
     }
-	
+
     internal Guess()
     {
     }
-	
+
     internal static string input(string prompt)
     {
         while (true)
         {
             Console.Write(prompt);
             string line = Console.ReadLine().Trim();
-            if (line.Length != 0) 
-            { 
+            if (line.Length != 0)
+            {
                 return line;
             }
         }
     }
-	
+
     internal static bool askQuestion(string question)
     {
         string answer = input(question);
         return answer.ToUpper().Equals("y".ToUpper()) || answer.ToUpper().Equals("yes".ToUpper());
     }
-	
+
     internal static Guess whoIsIt(Guess parent)
     {
         string animal = input("What is it ? ");
         string difference = input("What is a difference from other ? ");
         return new Guess(parent, difference, new Guess(null, animal, null));
     }
-	
+
     internal Guess dialog()
     {
         if (askQuestion("May be, " + question + " (y/n) ? "))
@@ -88,14 +88,15 @@ public class Guess:Persistent
         }
         return null;
     }
-	
-    static public void  Main(string[] args)
+
+    static public void Main(string[] args)
     {
         IDatabase db = DatabaseFactory.CreateDatabase();
-		
-        db.Open("guess.dbs", 4*1024*1024, "GUESS");
-        Guess root = (Guess) db.Root;
-		
+
+        Rc4File dbFile = new Rc4File("guess.db", "GUESS");
+        db.Open(dbFile, 4 * 1024 * 1024);
+        Guess root = (Guess)db.Root;
+
         while (askQuestion("Think of an animal. Ready (y/n) ? "))
         {
             if (root == null)
@@ -109,7 +110,7 @@ public class Guess:Persistent
             }
             db.Commit();
         }
-		
+
         Console.WriteLine("End of the game");
         db.Close();
     }

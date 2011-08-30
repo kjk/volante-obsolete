@@ -93,18 +93,6 @@ namespace Volante
         /// </param>
         void Open(IFile file);
 
-        /// <summary>Open the encrypted db
-        /// </summary>
-        /// <param name="filePath">path to the database file
-        /// </param>
-        /// <param name="pagePoolSize">size of page pool (in bytes). Page pool should contain
-        /// at least ten 4kb pages, so minimal page pool size should be at least 40Kb.
-        /// But larger page pool ussually leads to better performance (unless it could not fit
-        /// in memory and cause swapping).
-        /// </param>
-        /// <param name="cipherKey">cipher key</param>
-        void Open(String filePath, int pagePoolSize, String cipherKey);
-
         /// <summary>Check if database is opened
         /// </summary>
         /// <returns><code>true</code> if database was opened by <code>open</code> method, 

@@ -951,20 +951,6 @@ namespace Volante.Impl
             return new LruObjectCache(objectCacheSize);
         }
 
-        public void Open(String filePath, int pagePoolSize, String cipherKey)
-        {
-            Rc4File file = new Rc4File(filePath, cipherKey);
-            try
-            {
-                Open(file, pagePoolSize);
-            }
-            catch (DatabaseException)
-            {
-                file.Close();
-                throw;
-            }
-        }
-
         public virtual void Open(IFile file, int pagePoolSize)
         {
             lock (this)

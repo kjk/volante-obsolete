@@ -102,7 +102,8 @@ public abstract class Guess : Persistent
     {
         IDatabase db = DatabaseFactory.CreateDatabase();
 
-        db.Open("guess.dbs", 4 * 1024 * 1024, "GUESS");
+        Rc4File dbFile = new Rc4File("guess.db", "GUESS");
+        db.Open(dbFile, 4 * 1024 * 1024);
         Guess root = (Guess)db.Root;
 
         while (askQuestion("Think of an animal. Ready (y/n) ? "))
