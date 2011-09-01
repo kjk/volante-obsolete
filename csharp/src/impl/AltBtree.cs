@@ -449,7 +449,7 @@ namespace Volante.Impl
             internal BtreePage(IDatabase s, int n)
                 : base(s)
             {
-                items = s.CreateLink(n);
+                items = s.CreateLink<IPersistent>(n);
                 items.Length = n;
             }
 
@@ -1202,7 +1202,7 @@ namespace Volante.Impl
             internal BtreePageOfObject(IDatabase s)
                 : base(s, MAX_ITEMS)
             {
-                data = s.CreateLink(MAX_ITEMS);
+                data = s.CreateLink<IPersistent>(MAX_ITEMS);
                 data.Length = MAX_ITEMS;
             }
 

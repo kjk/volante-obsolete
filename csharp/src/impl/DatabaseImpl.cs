@@ -1966,31 +1966,6 @@ namespace Volante.Impl
             return new PTrie<T>();
         }
 
-        public ISet<IPersistent> CreateSet()
-        {
-            return CreateSet<IPersistent>();
-        }
-
-        public ILink<IPersistent> CreateLink()
-        {
-            return CreateLink<IPersistent>(8);
-        }
-
-        public ILink<IPersistent> CreateLink(int initialSize)
-        {
-            return CreateLink<IPersistent>(initialSize);
-        }
-
-        public IPArray<IPersistent> CreateArray()
-        {
-            return CreateArray<IPersistent>(8);
-        }
-
-        public IPArray<IPersistent> CreateArray(int initialSize)
-        {
-            return CreateArray<IPersistent>(initialSize);
-        }
-
         public IBlob CreateBlob()
         {
             return new BlobImpl(Page.pageSize - ObjectHeader.Sizeof - 16);

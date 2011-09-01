@@ -14,7 +14,7 @@ namespace Volante
     /// </summary>
     public interface IIndex<K, V> : IGenericIndex<K, V> where V : class,IPersistent
     {
-        /// <summary> Put new object in the index. 
+        /// <summary>Put new object in the index. 
         /// </summary>
         /// <param name="key">object key wrapper
         /// </param>
@@ -27,7 +27,7 @@ namespace Volante
         /// </returns>
         bool Put(Key key, V obj);
 
-        /// <summary> Put new object in the index. 
+        /// <summary>Put new object in the index. 
         /// </summary>
         /// <param name="key">object key value
         /// </param>
@@ -41,7 +41,7 @@ namespace Volante
         /// </returns>
         bool Put(K key, V obj);
 
-        /// <summary> Associate new value with the key. If there is already object with such key in the index, 
+        /// <summary>Associate new value with the key. If there is already object with such key in the index, 
         /// then it will be removed from the index and new value associated with this key.
         /// </summary>
         /// <param name="key">object key wrapper
@@ -53,7 +53,7 @@ namespace Volante
         /// </returns>
         V Set(Key key, V obj);
 
-        /// <summary> Associate new value with the key. If there is already object with such key in the index, 
+        /// <summary>Associate new value with the key. If there is already object with such key in the index, 
         /// then it will be removed from the index and new value associated with this key.
         /// </summary>
         /// <param name="key">object key value
@@ -65,7 +65,7 @@ namespace Volante
         /// </returns>
         V Set(K key, V obj);
 
-        /// <summary> Remove object with specified key from the tree.
+        /// <summary>Remove object with specified key from the tree.
         /// </summary>
         /// <param name="key">wrapper of the value of the key of removed object
         /// </param>
@@ -76,7 +76,7 @@ namespace Volante
         /// </exception>
         void Remove(Key key, V obj);
 
-        /// <summary> Remove object with specified key from the tree.
+        /// <summary>Remove object with specified key from the tree.
         /// </summary>
         /// <param name="key">value of the key of removed object
         /// </param>
@@ -87,7 +87,7 @@ namespace Volante
         /// </exception>
         void Remove(K key, V obj);
 
-        /// <summary> Remove key from the unique index.
+        /// <summary>Remove key from the unique index.
         /// </summary>
         /// <param name="key">wrapper of removed key
         /// </param>
@@ -98,7 +98,7 @@ namespace Volante
         /// </exception>
         V Remove(Key key);
 
-        /// <summary> Remove key from the unique index.
+        /// <summary>Remove key from the unique index.
         /// </summary>
         /// <param name="key">value of removed key
         /// </param>

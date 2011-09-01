@@ -17,7 +17,7 @@ namespace Volante.Impl
 
         internal RtreePage(IDatabase db, IPersistent obj, Rectangle r)
         {
-            branch = db.CreateLink(card);
+            branch = db.CreateLink<IPersistent>(card);
             branch.Length = card;
             b = new Rectangle[card];
             setBranch(0, new Rectangle(r), obj);
@@ -30,7 +30,7 @@ namespace Volante.Impl
 
         internal RtreePage(IDatabase db, RtreePage root, RtreePage p)
         {
-            branch = db.CreateLink(card);
+            branch = db.CreateLink<IPersistent>(card);
             branch.Length = card;
             b = new Rectangle[card];
             n = 2;

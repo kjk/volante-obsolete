@@ -207,14 +207,6 @@ namespace Volante
         /// <returns> persistent object implementing sorted collection</returns>
         ISortedCollection<K, V> CreateSortedCollection<K, V>(IndexType indexType) where V : class,IPersistent, IComparable<K>, IComparable<V>;
 
-        /// <summary>
-        /// Create new object set
-        /// </summary>
-        /// <returns>
-        /// empty set of persistent objects
-        /// </returns>
-        ISet<T> CreateSet<T>() where T : class,IPersistent;
-
         /// <summary> Create one-to-many link.
         /// </summary>
         /// <returns>new empty link, new members can be added to the link later.
@@ -227,6 +219,14 @@ namespace Volante
         /// <returns>new link with specified size
         /// </returns>
         ILink<T> CreateLink<T>(int initialSize) where T : class,IPersistent;
+
+        /// <summary>
+        /// Create new object set
+        /// </summary>
+        /// <returns>
+        /// empty set of persistent objects
+        /// </returns>
+        ISet<T> CreateSet<T>() where T : class,IPersistent;
 
         /// <summary>Create new scalable set references to persistent objects.
         /// This container can effciently store small number of references as well 
@@ -318,48 +318,6 @@ namespace Volante
         /// </summary>
         /// <returns>created PATRICIA trie</returns>
         IPatriciaTrie<T> CreatePatriciaTrie<T>() where T : class,IPersistent;
-
-        /// <summary>
-        /// Create new generic set of objects
-        /// </summary>
-        /// <returns>
-        /// empty set of persistent objects
-        /// </returns>
-        ISet<IPersistent> CreateSet();
-
-        /// <summary>
-        /// Create new generic link
-        /// </summary>
-        /// <returns>
-        /// link of IPersistent references
-        /// </returns>
-        ILink<IPersistent> CreateLink();
-
-        /// <summary>
-        /// Create new generic link with specified initial size
-        /// </summary>
-        /// <param name="initialSize">Initial link size</param>
-        /// <returns>
-        /// link of IPersistent references
-        /// </returns>
-        ILink<IPersistent> CreateLink(int initialSize);
-
-        /// <summary>
-        /// Create new generic array of reference
-        /// </summary>
-        /// <returns>
-        /// array of IPersistent references
-        /// </returns>
-        IPArray<IPersistent> CreateArray();
-
-        /// <summary>
-        /// Create new generic array of reference
-        /// </summary>
-        /// <param name="initialSize">Initial array size</param>
-        /// <returns>
-        /// array of IPersistent references
-        /// </returns>
-        IPArray<IPersistent> CreateArray(int initialSize);
 
         /// <summary> Commit transaction (if needed) and close the db
         /// </summary>
