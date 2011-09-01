@@ -16,6 +16,7 @@ Things to do for c# version:
  * transactions.html
  * garbage_collection.html
  * on_load_save.html
+ * schema evolution
  * benchmarks
  * an example of persisted double-linked list
  * who uses Volante?
