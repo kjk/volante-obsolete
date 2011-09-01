@@ -1,0 +1,68 @@
+<!doctype HTML> 
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<link href="main.css" type="text/css" rel="stylesheet">
+	<title>Indexes</title>
+</head>
+
+<body>
+<div id=left-bar>
+	<div id=sections>
+		<center><div><a href="index.html">Volante</a></div><center>
+	</div>
+</div>
+
+<div class=content>
+	<p><a href=index.html>Volante</a> : Indexes</p>
+
+	<p>Storing objects is just half of the job. The other half is (quickly) retrieving objects based on some criteria. That's the job of indexes.</p>
+
+	<p>Similar to relational (SQL) databases, indexes need to be explicitly created. Unlike SQL, you have to add objects to indexes explicitly.</p>
+	
+	<p>A given object can belong to multiple indexes.</p>
+
+	<p>Indexes only store object's oid (32-bit integer) to refer to the object, so no duplicate data is created when an object is inserted into multiple indexes.</p>
+
+	<p>Indexes are usually part of the root object.</p>
+
+	<p>Indexes are persistent objects (objects implementing IPersistent interface) themselves, so they can be used in all context where IPersistent class can be used.</p>
+
+	<p>Inserting an object into index makes it reachable (assuming the index itself is reachable from other reachable object e.g. root object) which means inserting object into index is enough to persist the object. The colorally is: removing the index entries referring to an object from all indexes will also de-allocate the obbject during the next <a href=garbage_collection.html>garbage collection cycle</a> (assuming it's not reachable from other reachable persistent objects).</p>
+
+	<p>Most index creation functions are generic and require providing type of the value, which must implement <code>IPersistent</code> interface. Most of the time you'll create homogenous index (i.e. indexes where all values are of the same type). You can create heterogenous indexes (i.e. allowing values of different types) by using <code>IPersistent</code> as the type of the value.</p>
+
+	<h3>Types of indexes</h3>
+
+	<p>Volante offers several kinds of indexes so it's important to choose the right index for your needs.</p>
+
+	<p><a href=index_btree.html>B-Tree indexe</a> is the most widely used. It keeps the objects sorted by a key. A key can be of any basic type (e.g. short, int, string, DateTime). That allows quickly finding an object having a given key or find all objects in a given range. Indexes can be unique (do not allow duplicate keys) or non-unique (allow duplicate keys). A thick index offers a more efficient implementation if there are many duplicate keys.</p>
+
+	<p>In a generic B-Tree index the key can be of any value, not necessarily related to the object stored under that key. <a href=index_field.html>Field and multi-field indexes</a> are different in that the key value must be part of the object.</p>
+
+	<p><a href=index_spatial.html>Spatial index</a> is for geometric data. The key is a rectangle (either with integer or floating-point coordinates).</p>
+
+	<p><a href=index_sorted_collection.html>Sorted collections</a> is similar to generic B-Tree index but it allows (and requires) providing a custom comparator which determines the order of keys.</p>
+
+	<p><a href=index_set.html>Set</a> is used to store a set of objects (i.e. a collection of objects without duplicates). Scalable set is just another implementation that efficiently supports both small and large number of 
+
+	<p><a href=index_link.html>Link</a> provides one-to-many mapping.</p>
+
+	<p><a href=index_array.html>Array</a> is an array of persistent objects. Like in regular array, objects are reffered to by an index within array.</p>
+
+	<p><a href=index_relation.html>Relation</a> is used to represent a relation between objects. It allows performing what in relational terms is called a join.</p>
+
+	<p><a href=index_time_series.html>Time series</a> is used to efficientl store time series data.</p>
+
+	<p><a href=index_patricia.html>Patricia tree</a> offers memory-efficient storage of keys by compressing common paths of the key.</p>
+
+	<center><a href=getting_started.html>← getting started</a> &nbsp;&bull;&nbsp; <a href=index_btree.html>b-tree index →</a></center>
+
+	<hr style="margin-top:28px">
+	<center style="font-size:10pt;color:gray">Volante is maintained by <a href="http://blog.kowalczyk.info">Krzysztof Kowalczyk</a></center>
+
+</div>
+
+<span id=adsense></span>
+</body>
+</html>

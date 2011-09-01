@@ -43,10 +43,14 @@ a:visited {
 
 .toc li {
 	list-style: none;
-	padding: 5px 0px;
+	padding: 2px 0px;
 	margin: 0;
 	color: #777;
-	border-bottom: 1px solid #EEE;
+	// border-bottom: 1px solid #EEE;
+}
+
+.toc2 li {
+	padding: 2px 1em;
 }
 
 #left-bar #sections a {

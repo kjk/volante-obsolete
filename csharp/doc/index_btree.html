@@ -1,0 +1,130 @@
+<!doctype HTML> 
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<link href="main.css" type="text/css" rel="stylesheet">
+	<title>Indexes</title>
+</head>
+
+<body>
+<div id=left-bar>
+	<div id=sections>
+		<center><div><a href="index.html">Volante</a></div><center>
+	</div>
+</div>
+
+<div class=content>
+	<p><a href=index.html>Volante</a> : B-Tree index (regular and thick index)</p>
+
+	<p>B-Tree index entry has a key and a value. Value is usually a persistent object (implementing <code>IPersistent</code> interface), although using <a href=plain_objects.html>plain objects</a> is possible.</p>
+
+	<p>Values are sorted by a key. That allows quickly finding value by its key or all values within a given range.</p>
+
+	<p>The key can be any of the standard .NET types: byte, int, string, DateTime, Guid etc. Sort order is the natural sort order for a given key type.</p>
+	
+	<p>When the key is a string, sorting is done with <a href="http://msdn.microsoft.com/en-us/library/system.string.compareto.aspx">String.CompareTo()</a>.</p>
+
+	<p>Index can be unique (doesn't allow duplicate keys) or non-unique (allows duplicate keys).</p>
+
+	<p>A thick index is optimized for the case of many duplicte keys (so it's a non-unique index by definition)</p>
+
+	<p>Index implements <a href="https://github.com/kjk/volante/blob/master/csharp/src/IIndex.cs">IIndex</a> interface, which derives from <a href="https://github.com/kjk/volante/blob/master/csharp/src/IGenericIndex.cs">IGenericIndex</a> interface.</p>
+
+	<h3>Key class</h3>
+
+	<p>Many index functions take objects of class <a href=""><code>Key</code></a> as an argument. <code>Key</code> class describes the type and value of the index key. In many cases you can just use the raw value for the key and it'll be implicitly converted to the proper <code>Key</code> object. There are cases where you need to explicitly provide <code>Key</code> object.</p>
+
+	<p>Volante supports searches for inclusive and exclusive ranges. For example, if the index key is an integer and we've inserted objects with keys 1, 2, 3, 4, 5, inclusive search for objects in (2,4) range will return objects whose key is 2, 3 or 4. Search exclusive on both sides in the same (2,4) range will return only objects whose key is 3.</p>
+
+	<p>The inclusivity is encoded by the <code>Key</code>. When doing a range search, we provide the <code>Key</code> for the lower and upper range. Either key can be inclusive or exclusive so we have 4 possibilities (both inlusive, both exclusive, one of the exclusive while the other inclusive).</p>
+
+	<p>To create a <code>Key</code> marked as exclusive you have to use the 2 argument constructor and pass <code>false</code> for the second argument which is <code>bool</code> indicating inclusivity.</p>
+
+	<p>By default this argument is <code>true</code>, which means by default the <code>Key</code> objects, including those created implicitly, are inclusive.</p>
+
+	<p>Another case where you need to explicitly use <code>Key</code> constructor is to disambiguate between integer types. If you have an index whose key is e.g. of type <code>short</code>, if you create a key with integer constant like <code>var k = new Key(5)</code>, it'll create a <code>Key</code> with type <code>int</code>, which won't be compatible with your index. The right way to create a <code>Key</code> with a specific integer type is to force the right constructor with a cast: <code>var k = new Key((short)5)</code>.
+
+	<h3>Creating an index</h3>
+
+	<p>To create an index call <code>IDatabase.CreateIndex&lt;K, V&gt;(IndexType indexType)</code>. <code>IndexType</code> is an enum that can be <code>IndexType.Unique</code> or <code>IndexType.NonQunique</code>.</p>
+
+	<p><code>K</code> is type of the key, <code>V</code> is type of the value.</p>
+
+	<p>The result is an object implementing <code>IIndex&lt;K,V&gt;</code> interface. This object is used for all operations on the index.</p>
+
+	<p>To create a thick index use <code>IDatabase.CreateThickIndex&lt;K, V&gt;()</code>. It also returns <code>IIndex&lt;K,V&gt;</code> interface.</p>
+
+	<h3>Inserting objects into an index</h3>
+
+	<p>To insert an object with a given key, you have several options:
+	<ul>
+		<li><code>bool Put(Key key, V obj)</code></li>
+		<li><code>bool Put(K key, V obj)</code></li>
+		<li><code>V Set(Key key, V obj)</code></li>
+		<li><code>V Set(K key, V obj)</code></li>
+		<li><code>V this[K key] { set; }</code></li>
+	</ul>
+
+	<p>You can either provide the <code>Key</code> objects explicitly or the vale of the index type (in which case the <code>Key</code> will be created implicitly).</p>
+
+	<p><code>Put()</code> adds a new object to the index, <code>Set()</code> associates an object with a given key. <code>V this[K key] { set; }</code> is equivalent to <code>Set()</code>.</p>
+ 
+	<p>In the unique index, if an object with a given key already exists:
+	<ul>
+		<li><code>Put()</code> returns false and does not add the object ot the index</li>
+		<li><code>Set()</code> will associate new object with the key (i.e. will overwrite the old object) and return the old object associated with the key</li>
+	</ul>
+
+	If the key doesn't exist, the result of <code>Put()</code> and <code>Set()</code> is the same.</p>
+
+	<p>In the non-unique index, if an object with a given key already exists:
+	<ul>
+		<li><code>Put()</code> will add another object with the key</li>
+		<li><code>Set()</code> will overwrite the object with this key, i.e. old object will be removed. TODO: what happens when there were 2 objects with this key?</li>
+	</ul>
+	If the key doesn't exist, the result is the same.</p>
+
+	<h3>Removing objects from the index</h3>
+
+	<p>To remove an object from non-unique index, you can use:
+	<ul>
+		<li><code>void Remove(Key key, V obj)</code></li>
+		<li><code>void Remove(K key, V obj)</code></li>
+	</ul>
+	Notice that you have to provide object to be removed to disambiguate between (possibly) many objects with the same key in non-uniqe index.</p>
+
+	<p>To remove an object for unique index you can use the above functions as well as:
+	<ul>
+		<li><code>V Remove(Key key)</code></li>
+		<li><code>V RemoveKey(K key)</code></li>
+	</ul>
+	Since there's at most one object with a given key, we only need the key to uniquely identify the object. Calling those methods on non-unique index will throw an exception.</p>
+
+	<p>Calling any of the above functions with a key that doesn't exist in the index, will throw an exception (TODO: verify that)</p>
+
+	<p>What if you want to remove all objects with a given key from non-unique index? It's easy:
+<pre>IPersistent[] objs = index.Get(key,key);
+foreach (var obj in objs) {
+    index.Remove(key, obj);
+}</pre>
+
+	<h3>Retrieving objects by key</h3>
+
+	<h3>Retrieving objects within a range</h3>
+
+	<h3>Misc operations</h3>
+
+	<p>You can get number of objects in the index with <code>int Size()</code></p>
+
+	<p>You can get type of the key with <code>Type KeyType</code> property.</p>
+
+	<center><a href=indexes.html>← indexes</a> &nbsp;&bull;&nbsp; <a href=index_field.html>field index →</a></center>
+
+	<hr style="margin-top:28px">
+	<center style="font-size:10pt;color:gray">Volante is maintained by <a href="http://blog.kowalczyk.info">Krzysztof Kowalczyk</a></center>
+
+</div>
+
+<span id=adsense></span>
+</body>
+</html>
