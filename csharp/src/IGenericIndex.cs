@@ -89,40 +89,6 @@ namespace Volante
         /// </returns>
         V[] Get(K from, K till);
 
-        /// <summary> Get objects which key starts with specifid prefix.
-        /// </summary>
-        /// <param name="prefix">String key prefix</param>
-        /// <returns>array of objects which key starts with specifid prefix, ordered by key value 
-        /// </returns>
-        V[] GetPrefix(string prefix);
-
-        /// <summary> 
-        /// Locate all objects whose key is prefix of a specified word.
-        /// </summary>
-        /// <param name="word">string whose prefixes are located in index</param>
-        /// <returns>array of objects whose key is prefix of specified word, ordered by key value
-        /// </returns>
-        V[] PrefixSearch(string word);
-
-        /// <summary> Get number of objects in the index
-        /// </summary>
-        /// <returns>number of objects in the index
-        /// </returns>
-        int Size();
-
-        /// <summary> Get all objects in the index as array orderd by index key
-        /// </summary>
-        /// <returns>array of objects in the index ordered by key value
-        /// </returns>
-        V[] ToArray();
-
-        /// <summary> Get all objects in the index as array of specified type orderd by index key
-        /// </summary>
-        /// <param name="elemType">type of array element</param>
-        /// <returns>array of objects in the index ordered by key value
-        /// </returns>
-        Array ToArray(Type elemType);
-
         /// <summary>
         /// Get iterator for traversing objects in the index with key belonging to the specified range. 
         /// You should not update/remove or add members to the index during iteration
@@ -173,15 +139,6 @@ namespace Volante
         IEnumerator<V> GetEnumerator(K from, K till);
 
         /// <summary>
-        /// Get iterator for traversing objects in ascent order which key starts with specified prefix. 
-        /// You should not update/remove or add members to the index during iteration
-        /// </summary>
-        /// <param name="prefix">String key prefix</param>
-        /// <returns>selection iterator</returns>
-        ///
-        IEnumerator<V> GetEnumerator(string prefix);
-
-        /// <summary>
         /// Get enumerable collection of objects in the index with key belonging to the specified range. 
         /// You should not update/remove or add members to the index during iteration
         /// </summary>
@@ -218,13 +175,6 @@ namespace Volante
         IEnumerable<V> Range(K from, K till, IterationOrder order);
 
         /// <summary>
-        /// Get enumerable collection of objects in descending order
-        /// </summary>
-        /// <returns>enumerable collection</returns>
-        ///
-        IEnumerable<V> Reverse();
-
-        /// <summary>
         /// Get enumerable ascent ordered collection of objects in the index with key belonging to the specified range. 
         /// You should not update/remove or add members to the index during iteration
         /// </summary>
@@ -235,13 +185,11 @@ namespace Volante
         IEnumerable<V> Range(K from, K till);
 
         /// <summary>
-        /// Get enumerable ascent ordered collection of objects in the index which key starts with specified prefix. 
-        /// You should not update/remove or add members to the index during iteration
+        /// Get enumerable collection of objects in descending order
         /// </summary>
-        /// <param name="prefix">String key prefix</param>
         /// <returns>enumerable collection</returns>
         ///
-        IEnumerable<V> StartsWith(string prefix);
+        IEnumerable<V> Reverse();
 
         /// <summary>
         /// Get iterator for traversing all entries in the index 
@@ -263,6 +211,58 @@ namespace Volante
         /// <returns>selection iterator</returns>
         ///
         IDictionaryEnumerator GetDictionaryEnumerator(Key from, Key till, IterationOrder order);
+
+        /// <summary> Get objects whose key starts with specifid prefix.
+        /// </summary>
+        /// <param name="prefix">String key prefix</param>
+        /// <returns>array of objects which key starts with specifid prefix, ordered by key value 
+        /// </returns>
+        V[] GetPrefix(string prefix);
+
+        /// Get iterator for traversing objects in ascending order whose key starts with specified prefix. 
+        /// You should not update/remove or add members to the index during iteration
+        /// </summary>
+        /// <param name="prefix">String key prefix</param>
+        /// <returns>selection iterator</returns>
+        ///
+        IEnumerator<V> GetEnumerator(string prefix);
+
+        /// <summary>
+        /// <summary>
+        /// Get enumerable in ascending ordered of objects whose key starts with specified prefix. 
+        /// You should not update/remove or add members to the index during iteration
+        /// </summary>
+        /// <param name="prefix">String key prefix</param>
+        /// <returns>enumerable collection</returns>
+        ///
+        IEnumerable<V> StartsWith(string prefix);
+
+        /// <summary> 
+        /// Locate all objects whose key is prefix of a specified word.
+        /// </summary>
+        /// <param name="word">string whose prefixes are located in index</param>
+        /// <returns>array of objects whose key is prefix of specified word, ordered by key value
+        /// </returns>
+        V[] PrefixSearch(string word);
+
+        /// <summary> Get all objects in the index as array orderd by index key
+        /// </summary>
+        /// <returns>array of objects in the index ordered by key value
+        /// </returns>
+        V[] ToArray();
+
+        /// <summary> Get all objects in the index as array of specified type orderd by index key
+        /// </summary>
+        /// <param name="elemType">type of array element</param>
+        /// <returns>array of objects in the index ordered by key value
+        /// </returns>
+        Array ToArray(Type elemType);
+
+        /// <summary> Get number of objects in the index
+        /// </summary>
+        /// <returns>number of objects in the index
+        /// </returns>
+        int Size();
 
         /// <summary>
         /// Get type of index key

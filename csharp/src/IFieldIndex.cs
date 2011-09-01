@@ -42,7 +42,7 @@ namespace Volante
         V Set(V obj);
 
         /// <summary>
-        /// Assign to the integer indexed field unique autoicremented value and 
+        /// Assign to the integer indexed field unique auto-icremented value and 
         /// insert object in the index. 
         /// </summary>
         /// <param name="obj">object to be inserted in index. Object should contain indexed field

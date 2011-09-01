@@ -3,10 +3,12 @@
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 	<link href="main.css" type="text/css" rel="stylesheet">
+	<link  href="http://blog.kowalczyk.info/js/prettify.css" type="text/css" rel="stylesheet"> 
+	<script src="http://blog.kowalczyk.info/js/prettify.js" type="text/javascript"></script>
 	<title>Indexes</title>
 </head>
 
-<body>
+<body onload="prettyPrint()">
 <div id=left-bar>
 	<div id=sections>
 		<center><div><a href="index.html">Volante</a></div><center>
@@ -30,7 +32,7 @@
 
 	<p>Index implements <a href="https://github.com/kjk/volante/blob/master/csharp/src/IIndex.cs">IIndex</a> interface, which derives from <a href="https://github.com/kjk/volante/blob/master/csharp/src/IGenericIndex.cs">IGenericIndex</a> interface.</p>
 
-	<h3>Key class</h3>
+	<h3 id=key>Key class</h3>
 
 	<p>Many index functions take objects of class <a href=""><code>Key</code></a> as an argument. <code>Key</code> class describes the type and value of the index key. In many cases you can just use the raw value for the key and it'll be implicitly converted to the proper <code>Key</code> object. There are cases where you need to explicitly provide <code>Key</code> object.</p>
 
@@ -44,7 +46,7 @@
 
 	<p>Another case where you need to explicitly use <code>Key</code> constructor is to disambiguate between integer types. If you have an index whose key is e.g. of type <code>short</code>, if you create a key with integer constant like <code>var k = new Key(5)</code>, it'll create a <code>Key</code> with type <code>int</code>, which won't be compatible with your index. The right way to create a <code>Key</code> with a specific integer type is to force the right constructor with a cast: <code>var k = new Key((short)5)</code>.
 
-	<h3>Creating an index</h3>
+	<h3 id=create-index>Creating an index</h3>
 
 	<p>To create an index call <code>IDatabase.CreateIndex&lt;K, V&gt;(IndexType indexType)</code>. <code>IndexType</code> is an enum that can be <code>IndexType.Unique</code> or <code>IndexType.NonQunique</code>.</p>
 
@@ -84,7 +86,7 @@
 	</ul>
 	If the key doesn't exist, the result is the same.</p>
 
-	<h3>Removing objects from the index</h3>
+	<h3 id=remove>Removing objects from the index</h3>
 
 	<p>To remove an object from non-unique index, you can use:
 	<ul>
@@ -103,20 +105,80 @@
 	<p>Calling any of the above functions with a key that doesn't exist in the index, will throw an exception (TODO: verify that)</p>
 
 	<p>What if you want to remove all objects with a given key from non-unique index? It's easy:
-<pre>IPersistent[] objs = index.Get(key,key);
+<pre class="prettyprint lang-cs">IPersistent[] objs = index.Get(key,key);
 foreach (var obj in objs) {
     index.Remove(key, obj);
 }</pre>
 
-	<h3>Retrieving objects by key</h3>
+	<h3 id=retrieve>Retrieving objects by key</h3>
 
-	<h3>Retrieving objects within a range</h3>
+	<p>To retrieve an object by key:
+	<ul>
+		<li><code>V Get(Key key)</code></li>
+		<li><code>V Get(K key)</code></li>
+		<li><code>V this[K key] { get; }</code></li>
+	</ul>
+	If you use <code>Get(Key key)</code>, the key object should be inclusive.</p>
 
-	<h3>Misc operations</h3>
+	<p>If the value with a given key is not found, they return <code>null</code>. If there is more than one value with a given key, they'll throw <code>DatabaseException</code> exception with <code>DatabaseException.Code</code> equal to <code>DatabaseException.ErrorCode.KEY_NOT_UNIQUE</code>.</p>
+
+	<h3 id=retrieve-range>Retrieving objects within a key range</h3>
+
+	<p>There is a number of functions that returns the values for keys within an inclusive or exclusive range.
+	<ul>
+		<li><code>V[] Get(Key from, Key till)</code></li>
+		<li><code>V[] Get(K from, K till)</code></li>
+		<li><code>V[] this[K from, K till] { get; }</code></li>
+	</ul>
+	Those functions return the result as an array of objects.</p>
+
+	<p>
+	<ul>
+		<li><code>IEnumerator&lt;V&gt; GetEnumerator(Key from, Key till, IterationOrder order)</code></li>
+		<li><code>IEnumerator&lt;V&gt; GetEnumerator(Key from, Key till)</code></li>
+		<li><code>IEnumerator&lt;V&gt; GetEnumerator(K from, K till, IterationOrder order)</code></li>
+		<li><code>IEnumerator&lt;V&gt; GetEnumerator(K from, K till)</code></li>
+	</ul>
+	Those functions return an enumerator that can be explicitly traversed with <code>IEnumerator.MoveNext()</code> and whose current value can be accessed with <code>IEnumerator.Current</code>. Iteration order can be specified as <code>IterationOrder.AscentOrder</code> (from low values to high values, the default value if not provided) or <code>IterationOrder.DescentOrder</code>.</p>
+
+	<p>
+	<ul>
+		<li><code>IEnumerable&lt;V&gt; Range(Key from, Key till, IterationOrder order)</code></li>
+		<li><code>IEnumerable&lt;V&gt; Range(Key from, Key till)</code></li>
+		<li><code>IEnumerable&lt;V&gt; Range(K from, K till, IterationOrder order)</code></li>
+		<li><code>IEnumerable&lt;V&gt; Range(K from, K till)</code></li>
+		<li><code>IEnumerable&lt;V&gt; Reverse()</code></li>
+	</ul>
+	Those functions return an <code>IEnumerable</code> which can be used in <code>foreach</code> loop. <code>Reverse()</code> returns all elements backwards (in descending order).</p>
+
+	<p>Changing the index (by adding/removing/changing) values invalidates <code>IEnumerator</code> and <code>IEnumerable</code>, so you can't e.g. use those values to delete them from the index. If you modify the index while iterating </p>
+
+	<p>
+	<ul>
+		<li><code>IDictionaryEnumerator GetDictionaryEnumerator(Key from, Key till, IterationOrder order)</code></li>
+		<li><code>IDictionaryEnumerator GetDictionaryEnumerator()</code></li>
+	</ul>
+	Those functions return <code>IDictionaryEnumerator</code>.</p>
+
+	<h3 id=prefix-search>Prefix search</h3>
+
+	<p>If the key is a string, we can ask for all values whose key starts with a given prefix:
+	<ul>
+		<li><code>V[] GetPrefix(string prefix)</code></li>
+		<li><code>IEnumerator<V> GetEnumerator(string prefix)</code></li>
+		<li><code>IEnumerable<V> StartsWith(string prefix)</code></li>
+	</ul>
+	We can also ask for all objects whose key is a prefix of a given word with <code>V[] PrefixSearch(string word)</code>.</p>
+
+	<p>Calling those functions on an index whose key type is not a string will throw an exception.</p>
+
+	<h3 id=misc>Misc operations</h3>
 
 	<p>You can get number of objects in the index with <code>int Size()</code></p>
 
 	<p>You can get type of the key with <code>Type KeyType</code> property.</p>
+
+	<p><code>V[] ToArray()</code> returns all objects in the index as an array. <code>Array ToArray(Type elemType)</code> returns an array or objects in the index matching a given type. It's inefficient for indexes with a large number of objects.</p>
 
 	<center><a href=indexes.html>← indexes</a> &nbsp;&bull;&nbsp; <a href=index_field.html>field index →</a></center>
 
