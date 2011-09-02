@@ -207,19 +207,6 @@ namespace Volante
         /// <returns> persistent object implementing sorted collection</returns>
         ISortedCollection<K, V> CreateSortedCollection<K, V>(IndexType indexType) where V : class,IPersistent, IComparable<K>, IComparable<V>;
 
-        /// <summary> Create one-to-many link.
-        /// </summary>
-        /// <returns>new empty link, new members can be added to the link later.
-        /// </returns>
-        ILink<T> CreateLink<T>() where T : class,IPersistent;
-
-        /// <summary> Create one-to-many link with specified initial size.
-        /// </summary>
-        /// <param name="initialSize">initial size of the array</param>
-        /// <returns>new link with specified size
-        /// </returns>
-        ILink<T> CreateLink<T>(int initialSize) where T : class,IPersistent;
-
         /// <summary>
         /// Create new object set
         /// </summary>
@@ -248,6 +235,19 @@ namespace Volante
         /// <returns>new empty set, new members can be added to the set later.
         /// </returns>
         ISet<T> CreateScalableSet<T>(int initialSize) where T : class,IPersistent;
+
+        /// <summary> Create one-to-many link.
+        /// </summary>
+        /// <returns>new empty link, new members can be added to the link later.
+        /// </returns>
+        ILink<T> CreateLink<T>() where T : class,IPersistent;
+
+        /// <summary> Create one-to-many link with specified initial size.
+        /// </summary>
+        /// <param name="initialSize">initial size of the array</param>
+        /// <returns>new link with specified size
+        /// </returns>
+        ILink<T> CreateLink<T>(int initialSize) where T : class,IPersistent;
 
         /// <summary>Create dynamically extended array of referencess to persistent objects.
         /// It is intended to be used in classes using virtual properties to 

@@ -19,12 +19,12 @@ namespace Volante
 
     /// <summary>
     /// Interface of sorted collection.
-    /// Sorted collections keeps in members in order specified by comparator.
-    /// Members in the collections can be located using key or range of keys.
+    /// Sorted collection keeps members in order specified by comparator.
+    /// Members in the collections can be located using key or a range.
     /// The SortedCollection is efficient container of objects for in-memory databases.
-    /// For databases which size is significatly larger than size of page pool, operation with SortedList
-    /// can cause trashing and so very bad performance. Unlike other index structures SortedCollection
-    /// doesn't store values of keys and so search in the collection requires fetching all of its members.
+    /// For databases whose size is significantly larger than size of page pool, operations
+    /// can cause disk trashing and very bad performance. Unlike other index structures, sorted collection
+    /// doesn't store values of keys so searching requires fetching all of the objects.
     /// </summary>
     public interface ISortedCollection<K, V> : IPersistent, IResource, ICollection<V> where V : class,IPersistent
     {

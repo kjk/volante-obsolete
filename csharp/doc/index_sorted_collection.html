@@ -1,0 +1,86 @@
+<!doctype HTML> 
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<link href="main.css" type="text/css" rel="stylesheet">
+	<link  href="http://blog.kowalczyk.info/js/prettify.css" type="text/css" rel="stylesheet"> 
+	<script src="http://blog.kowalczyk.info/js/prettify.js" type="text/javascript"></script>
+	<title>Sorted collection in Volante</title>
+</head>
+
+<body onload="prettyPrint()">
+<div id=left-bar>
+	<div id=sections>
+		<center><div><a href="index.html">Volante</a></div></center>
+	</div>
+</div>
+
+<div class=content>
+	<p><a href=index.html>Volante</a> : <a href=devguideindex.html>Volante Developer's Guide</a> : Sorted collection</p>
+
+	<p>Sorted collection is implemented using <a href="http://en.wikipedia.org/wiki/T-tree">T-Tree</a> and is optimized for <a href=in_memory.html>in-memory</a> use. It's not recommended if the database is on disk. For databases whose size is significantly larger than size of page pool, operations can cause disk trashing and very bad performance. Unlike other index structures, sorted collection doesn't store values of keys so searching requires fetching all of the objects.</p>
+
+	<p>Sorted collection requires you to provide a custom compare function which determines how the objects are sorted. This is different from a regular <a href=index_btree.html>B-Tree index</a> which only allows keys to be built-in .NET types and uses their standard compare semantics.</p>
+
+	<h3 id=create>Creating sorted collection</h3>
+
+	<p>To create a sorted collection you can use:
+	<ul>
+		<li><code>ISortedCollection&lt;K, V&gt; CreateSortedCollection&lt;K, V&gt;(PersistentComparator&lt;K, V&gt; comparator, IndexType indexType) where V : class,IPersistent</code></li>
+		<li><code>ISortedCollection&ltK, V&gt; CreateSortedCollection&lt;K, V&gt;(IndexType indexType) where V : class,IPersistent, IComparable&lt;K&gt;, IComparable&lt;V&gt</code></li>
+	</ul>
+	</p>
+
+	<p>As with other index creation functions, <code>IndexType.Unique</code> asks for an unique index (no duplicate keys) and <code>IndexType.NonUnique</code> creates non-unique index which allows duplicate keys.</p>
+
+	<p>You can provide your own comparator class by inheriting it from abstract <a href=""><code>PersistentComparator</code></a>:</p>
+
+<pre class="prettyprint lang-cs">public abstract class PersistentComparator<K, V> : Persistent where V : class,IPersistent
+{
+    public abstract int CompareMembers(V m1, V m2);
+    public abstract int CompareMemberWithKey(V mbr, K key);
+}</pre>
+
+	<p>Alternatively, you can make sure that <code>V</code> class implements <a href="http://msdn.microsoft.com/en-us/library/4d7sx9hd.aspx"><code>IComparable&lt;T&gt;</code></a> interface for both key and value. This interface consists of only one function <a href="http://msdn.microsoft.com/en-us/library/43hc6wht.aspx"><code>int CompareTo(T other)</code></a>.</p>
+
+	<p>The object inserted into the index must be comparable both with other objects as well as with keys. The simplest way to achieve that is by using one of the object's fields as the key and writing a compare function that only uses that field.</p>
+
+	<h3>Sorted collection operations</h3>
+
+	<p><a href=""><code>ISortedCollection</code></a> implements standard <a href="http://msdn.microsoft.com/en-us/library/92t2ye13.aspx"><code>ICollection&lt;T&gt;</code></a> interface as well as providing some additional functionality:
+	<ul>
+		<li><code>V this[K key] { get; }</code></li>
+		<li><code>V[] this[K low, K high] { get; }</code></li>
+		<li><code>V Get(K key)</code></li>
+		<li><code>V[] Get(K from, K till)</code></li>
+		<li><code>V[] Get(K from, BoundaryKind fromKind, K till, BoundaryKind tillKind)</code></li>
+		<li><code>IEnumerator&lt;V&gt; GetEnumerator(K from, K till)</code></li>
+		<li><code>IEnumerator&lt;V&gt; GetEnumerator(K from, BoundaryKind fromKind, K till, BoundaryKind tillKind)</code></li>
+		<li><code>IEnumerable&lt;V&gt; Range(K from, K till)</code></li>
+		<li><code>IEnumerable&lt;V&gt; Range(K from, BoundaryKind fromKind, K till, BoundaryKind tillKind)</code></li>
+		<li><code>PersistentComparator&lt;K, V&gt; GetComparator()</code></li>
+		<li><code>int Size()</code></li>
+		<li><code>V[] ToArray()</code></li>
+		<li><code>Array ToArray(Type elemType)</code></li>		
+	</ul>
+	</p>
+
+	<p>Unlike <a href="index_btree.html">B-Tree index</a>, which encodes whether a range search is inclusive or exclusive in the <code>Key</code> class, sorted collection requires explicitly providing it as <code>BoundaryKind</code> enumeration:</p>
+<pre class="prettyprint lang-cs">public enum BoundaryKind
+{
+    Exclusive = 0,
+    Inclusive = 1,
+    None = -1 // open interval
+}</pre>
+	<p>If not given, it defaults to inclusive search.</p>
+
+	<center><a href=indexes_spatial.html>← spatial indexe</a> &nbsp;&bull;&nbsp; <a href=index_set.html>set and scalable set →</a></center>
+
+	<hr style="margin-top:28px">
+	<center style="font-size:10pt;color:gray">Volante is maintained by <a href="http://blog.kowalczyk.info">Krzysztof Kowalczyk</a></center>
+
+</div>
+
+<span id=adsense></span>
+</body>
+</html>
