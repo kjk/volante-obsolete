@@ -219,7 +219,7 @@ namespace Volante
         /// </returns>
         V[] GetPrefix(string prefix);
 
-        /// Get iterator for traversing objects in ascending order whose key starts with specified prefix. 
+        /// <summary>Get iterator for traversing objects in ascending order whose key starts with specified prefix. 
         /// You should not update/remove or add members to the index during iteration
         /// </summary>
         /// <param name="prefix">String key prefix</param>
@@ -228,13 +228,11 @@ namespace Volante
         IEnumerator<V> GetEnumerator(string prefix);
 
         /// <summary>
-        /// <summary>
         /// Get enumerable in ascending ordered of objects whose key starts with specified prefix. 
         /// You should not update/remove or add members to the index during iteration
         /// </summary>
         /// <param name="prefix">String key prefix</param>
         /// <returns>enumerable collection</returns>
-        ///
         IEnumerable<V> StartsWith(string prefix);
 
         /// <summary> 

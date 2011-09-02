@@ -13,9 +13,9 @@ Things to do for c# version:
  * index_patricia.html
  * transactions.html
  * garbage_collection.html
- * on_load_save.html
  * schema evolution
  * benchmarks
+ * document recursive loading somewhere (?)
  * an example of persisted double-linked list
  * who uses Volante?
 * script that copies docs to my website (i.e. my blog repository)

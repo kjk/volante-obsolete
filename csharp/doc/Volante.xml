@@ -111,43 +111,43 @@
             </summary>
         </member>
         <member name="T:Volante.IPersistent">
-            <summary> Interface of all objects that can be persisted
+            <summary>Interface for persisted objects
             </summary>
         </member>
         <member name="M:Volante.IPersistent.Load">
-            <summary> Load object from the database (if needed)
+            <summary>Load object from the database (if needed)
             </summary>
         </member>
         <member name="M:Volante.IPersistent.IsRaw">
             
-            <summary> Check if object is stub and has to be loaded from the database
+            <summary>Check if object is stub and has to be loaded from the database
             </summary>
             <returns><code>true</code> if object has to be loaded from the database
             </returns>
         </member>
         <member name="M:Volante.IPersistent.IsPersistent">
-            <summary> Check if object is persistent 
+            <summary>Check if object is persistent 
             </summary>
             <returns><code>true</code> if object has assigned oid
             
             </returns>
         </member>
         <member name="M:Volante.IPersistent.IsDeleted">
-            <summary>  Check if object is deleted by GC from process memory
+            <summary>Check if object is deleted by GC
             </summary>
             <returns> <code>true</code> if object is deleted by GC
             </returns>
         </member>
         <member name="M:Volante.IPersistent.IsModified">
-            <summary> Check if object was modified within current transaction
+            <summary>Check if object was modified within current transaction
             </summary>
             <returns><code>true</code> if object is persistent and was modified within current transaction
             
             </returns>
         </member>
         <member name="M:Volante.IPersistent.MakePersistent(Volante.IDatabase)">
-            <summary> Explicitly make object peristent. Usually objects are made persistent
-            implicitly using "persistency on reachability approach", but this
+            <summary>Usually objects are made persistent
+            implicitly using "persistency on reachability" approach. This
             method allows you to do it explicitly 
             </summary>
             <param name="db">db in which object should be stored 
@@ -155,20 +155,20 @@
             <returns>oid assigned to the object</returns>
         </member>
         <member name="M:Volante.IPersistent.Store">
-            <summary> Save object in the database
+            <summary>Save object in the database
             </summary>
         </member>
         <member name="M:Volante.IPersistent.Modify">
             <summary>
-            Mark object as modified. Object will be saved to the database during transaction commit.
+            Mark object as modified. Object will be saved to the database during transaction commit
             </summary>
         </member>
         <member name="M:Volante.IPersistent.Deallocate">
-            <summary> Deallocate persistent object from the database
+            <summary>Deallocate persistent object from the database
             </summary>
         </member>
         <member name="M:Volante.IPersistent.RecursiveLoading">
-            <summary> Specified whether object should be automatically loaded when it is referenced
+            <summary>Specified whether object should be automatically loaded when it is referenced
             by other loaded peristent object. Default implementation of this method
             returns <code>true</code> making all cluster of referenced objects loaded together. 
             To avoid main memory overflow you should stop recursive loading of all objects
@@ -181,14 +181,13 @@
             </returns>
         </member>
         <member name="M:Volante.IPersistent.OnLoad">
-            <summary> This method is  called by the database after loading of the object.
+            <summary>Called by the database after loading the object.
             It can be used to initialize transient fields of the object. 
             Default implementation of this method does nothing 
             </summary>
         </member>
         <member name="M:Volante.IPersistent.OnStore">
-            <summary> This method is  called by the database befire storing of the object.
-            It can be used to initialize transient fields of the object. 
+            <summary>Called by the database before storing the object.
             Default implementation of this method does nothing 
             </summary>
         </member>
@@ -201,7 +200,7 @@
         </member>
         <member name="M:Volante.IPersistent.AssignOid(Volante.IDatabase,System.Int32,System.Boolean)">
             <summary>
-            Method used to associate object with db.
+            Associate object with db.
             This method is used by IDictionary class and you should not use it explicitly.
             </summary>
             <param name="db">database to be assigned to</param>
@@ -209,7 +208,7 @@
             <param name="raw">if object is already loaded</param>
         </member>
         <member name="P:Volante.IPersistent.Oid">
-            <summary> Get object identifier (oid)
+            <summary>Get object identifier
             </summary>
         </member>
         <member name="P:Volante.IPersistent.Database">
@@ -528,7 +527,7 @@
         </member>
         <member name="M:Volante.IGenericPArray.SetOwner(Volante.IPersistent)">
             <summary>
-            Set owner objeet for this PArray. Owner is persistent object contaning this PArray.
+            Set owner object for this PArray. Owner is persistent object contaning this PArray.
             This method is mostly used by db itself, but can also used explicityl by programmer if
             Parray component of one persistent object is assigned to component of another persistent object
             </summary>
@@ -606,40 +605,6 @@
             
             </returns>
         </member>
-        <member name="M:Volante.IGenericIndex`2.GetPrefix(System.String)">
-            <summary> Get objects which key starts with specifid prefix.
-            </summary>
-            <param name="prefix">String key prefix</param>
-            <returns>array of objects which key starts with specifid prefix, ordered by key value 
-            </returns>
-        </member>
-        <member name="M:Volante.IGenericIndex`2.PrefixSearch(System.String)">
-            <summary> 
-            Locate all objects whose key is prefix of specified word.
-            </summary>
-            <param name="word">string whose prefixes are located in index</param>
-            <returns>array of objects whose key is prefix of specified word, ordered by key value
-            </returns>
-        </member>
-        <member name="M:Volante.IGenericIndex`2.Size">
-            <summary> Get number of objects in the index
-            </summary>
-            <returns>number of objects in the index
-            </returns>
-        </member>
-        <member name="M:Volante.IGenericIndex`2.ToArray">
-            <summary> Get all objects in the index as array orderd by index key
-            </summary>
-            <returns>array of objects in the index ordered by key value
-            </returns>
-        </member>
-        <member name="M:Volante.IGenericIndex`2.ToArray(System.Type)">
-            <summary> Get all objects in the index as array of specified type orderd by index key
-            </summary>
-            <param name="elemType">type of array element</param>
-            <returns>array of objects in the index ordered by key value
-            </returns>
-        </member>
         <member name="M:Volante.IGenericIndex`2.GetEnumerator(Volante.Key,Volante.Key,Volante.IterationOrder)">
              <summary>
              Get iterator for traversing objects in the index with key belonging to the specified range. 
@@ -689,15 +654,6 @@
             High boundary can be inclusive or exclusive.</param>
             <returns>selection iterator</returns>
         </member>
-        <member name="M:Volante.IGenericIndex`2.GetEnumerator(System.String)">
-             <summary>
-             Get iterator for traversing objects in ascent order which key starts with specified prefix. 
-             You should not update/remove or add members to the index during iteration
-             </summary>
-             <param name="prefix">String key prefix</param>
-             <returns>selection iterator</returns>
-            
-        </member>
         <member name="M:Volante.IGenericIndex`2.Range(Volante.Key,Volante.Key,Volante.IterationOrder)">
              <summary>
              Get enumerable collection of objects in the index with key belonging to the specified range. 
@@ -734,13 +690,6 @@
              <returns>enumerable collection</returns>
             
         </member>
-        <member name="M:Volante.IGenericIndex`2.Reverse">
-             <summary>
-             Get enumerable collection of objects in descending order
-             </summary>
-             <returns>enumerable collection</returns>
-            
-        </member>
         <member name="M:Volante.IGenericIndex`2.Range(`0,`0)">
              <summary>
              Get enumerable ascent ordered collection of objects in the index with key belonging to the specified range. 
@@ -751,12 +700,10 @@
              <returns>enumerable collection</returns>
             
         </member>
-        <member name="M:Volante.IGenericIndex`2.StartsWith(System.String)">
+        <member name="M:Volante.IGenericIndex`2.Reverse">
              <summary>
-             Get enumerable ascent ordered collection of objects in the index which key starts with specified prefix. 
-             You should not update/remove or add members to the index during iteration
+             Get enumerable collection of objects in descending order
              </summary>
-             <param name="prefix">String key prefix</param>
              <returns>enumerable collection</returns>
             
         </member>
@@ -781,6 +728,56 @@
              <returns>selection iterator</returns>
             
         </member>
+        <member name="M:Volante.IGenericIndex`2.GetPrefix(System.String)">
+            <summary> Get objects whose key starts with specifid prefix.
+            </summary>
+            <param name="prefix">String key prefix</param>
+            <returns>array of objects which key starts with specifid prefix, ordered by key value 
+            </returns>
+        </member>
+        <member name="M:Volante.IGenericIndex`2.GetEnumerator(System.String)">
+             <summary>Get iterator for traversing objects in ascending order whose key starts with specified prefix. 
+             You should not update/remove or add members to the index during iteration
+             </summary>
+             <param name="prefix">String key prefix</param>
+             <returns>selection iterator</returns>
+            
+        </member>
+        <member name="M:Volante.IGenericIndex`2.StartsWith(System.String)">
+            <summary>
+            Get enumerable in ascending ordered of objects whose key starts with specified prefix. 
+            You should not update/remove or add members to the index during iteration
+            </summary>
+            <param name="prefix">String key prefix</param>
+            <returns>enumerable collection</returns>
+        </member>
+        <member name="M:Volante.IGenericIndex`2.PrefixSearch(System.String)">
+            <summary> 
+            Locate all objects whose key is prefix of a specified word.
+            </summary>
+            <param name="word">string whose prefixes are located in index</param>
+            <returns>array of objects whose key is prefix of specified word, ordered by key value
+            </returns>
+        </member>
+        <member name="M:Volante.IGenericIndex`2.ToArray">
+            <summary> Get all objects in the index as array orderd by index key
+            </summary>
+            <returns>array of objects in the index ordered by key value
+            </returns>
+        </member>
+        <member name="M:Volante.IGenericIndex`2.ToArray(System.Type)">
+            <summary> Get all objects in the index as array of specified type orderd by index key
+            </summary>
+            <param name="elemType">type of array element</param>
+            <returns>array of objects in the index ordered by key value
+            </returns>
+        </member>
+        <member name="M:Volante.IGenericIndex`2.Size">
+            <summary> Get number of objects in the index
+            </summary>
+            <returns>number of objects in the index
+            </returns>
+        </member>
         <member name="P:Volante.IGenericIndex`2.Item(`0)">
             <summary> Access element by key
             </summary>
@@ -796,7 +793,7 @@
             <returns>type of index key</returns>
         </member>
         <member name="M:Volante.IIndex`2.Put(Volante.Key,`1)">
-            <summary> Put new object in the index. 
+            <summary>Put new object in the index. 
             </summary>
             <param name="key">object key wrapper
             </param>
@@ -809,7 +806,7 @@
             </returns>
         </member>
         <member name="M:Volante.IIndex`2.Put(`0,`1)">
-            <summary> Put new object in the index. 
+            <summary>Put new object in the index. 
             </summary>
             <param name="key">object key value
             </param>
@@ -823,7 +820,7 @@
             </returns>
         </member>
         <member name="M:Volante.IIndex`2.Set(Volante.Key,`1)">
-            <summary> Associate new value with the key. If there is already object with such key in the index, 
+            <summary>Associate new value with the key. If there is already object with such key in the index, 
             then it will be removed from the index and new value associated with this key.
             </summary>
             <param name="key">object key wrapper
@@ -835,7 +832,7 @@
             </returns>
         </member>
         <member name="M:Volante.IIndex`2.Set(`0,`1)">
-            <summary> Associate new value with the key. If there is already object with such key in the index, 
+            <summary>Associate new value with the key. If there is already object with such key in the index, 
             then it will be removed from the index and new value associated with this key.
             </summary>
             <param name="key">object key value
@@ -847,7 +844,7 @@
             </returns>
         </member>
         <member name="M:Volante.IIndex`2.Remove(Volante.Key,`1)">
-            <summary> Remove object with specified key from the tree.
+            <summary>Remove object with specified key from the tree.
             </summary>
             <param name="key">wrapper of the value of the key of removed object
             </param>
@@ -858,7 +855,7 @@
             </exception>
         </member>
         <member name="M:Volante.IIndex`2.Remove(`0,`1)">
-            <summary> Remove object with specified key from the tree.
+            <summary>Remove object with specified key from the tree.
             </summary>
             <param name="key">value of the key of removed object
             </param>
@@ -869,7 +866,7 @@
             </exception>
         </member>
         <member name="M:Volante.IIndex`2.Remove(Volante.Key)">
-            <summary> Remove key from the unique index.
+            <summary>Remove key from the unique index.
             </summary>
             <param name="key">wrapper of removed key
             </param>
@@ -880,7 +877,7 @@
             </exception>
         </member>
         <member name="M:Volante.IIndex`2.RemoveKey(`0)">
-            <summary> Remove key from the unique index.
+            <summary>Remove key from the unique index.
             </summary>
             <param name="key">value of removed key
             </param>
@@ -1093,18 +1090,6 @@
             <param name="file">user specific implementation of IFile interface
             </param>
         </member>
-        <member name="M:Volante.IDatabase.Open(System.String,System.Int32,System.String)">
-            <summary>Open the encrypted db
-            </summary>
-            <param name="filePath">path to the database file
-            </param>
-            <param name="pagePoolSize">size of page pool (in bytes). Page pool should contain
-            at least ten 4kb pages, so minimal page pool size should be at least 40Kb.
-            But larger page pool ussually leads to better performance (unless it could not fit
-            in memory and cause swapping).
-            </param>
-            <param name="cipherKey">cipher key</param>
-        </member>
         <member name="M:Volante.IDatabase.IsOpened">
             <summary>Check if database is opened
             </summary>
@@ -1218,19 +1203,6 @@
             empty set of persistent objects
             </returns>
         </member>
-        <member name="M:Volante.IDatabase.CreateLink``1">
-            <summary> Create one-to-many link.
-            </summary>
-            <returns>new empty link, new members can be added to the link later.
-            </returns>
-        </member>
-        <member name="M:Volante.IDatabase.CreateLink``1(System.Int32)">
-            <summary> Create one-to-many link with specified initial size.
-            </summary>
-            <param name="initialSize">initial size of the array</param>
-            <returns>new link with specified size
-            </returns>
-        </member>
         <member name="M:Volante.IDatabase.CreateScalableSet``1">
             <summary>Create new scalable set references to persistent objects.
             This container can effciently store small number of references as well 
@@ -1250,6 +1222,19 @@
             </summary>
             <param name="initialSize">initial size of the sety</param>
             <returns>new empty set, new members can be added to the set later.
+            </returns>
+        </member>
+        <member name="M:Volante.IDatabase.CreateLink``1">
+            <summary> Create one-to-many link.
+            </summary>
+            <returns>new empty link, new members can be added to the link later.
+            </returns>
+        </member>
+        <member name="M:Volante.IDatabase.CreateLink``1(System.Int32)">
+            <summary> Create one-to-many link with specified initial size.
+            </summary>
+            <param name="initialSize">initial size of the array</param>
+            <returns>new link with specified size
             </returns>
         </member>
         <member name="M:Volante.IDatabase.CreateArray``1">
@@ -1319,48 +1304,6 @@
             to other structures such as hashtables when memory space is of concern.
             </summary>
             <returns>created PATRICIA trie</returns>
-        </member>
-        <member name="M:Volante.IDatabase.CreateSet">
-            <summary>
-            Create new generic set of objects
-            </summary>
-            <returns>
-            empty set of persistent objects
-            </returns>
-        </member>
-        <member name="M:Volante.IDatabase.CreateLink">
-            <summary>
-            Create new generic link
-            </summary>
-            <returns>
-            link of IPersistent references
-            </returns>
-        </member>
-        <member name="M:Volante.IDatabase.CreateLink(System.Int32)">
-            <summary>
-            Create new generic link with specified initial size
-            </summary>
-            <param name="initialSize">Initial link size</param>
-            <returns>
-            link of IPersistent references
-            </returns>
-        </member>
-        <member name="M:Volante.IDatabase.CreateArray">
-            <summary>
-            Create new generic array of reference
-            </summary>
-            <returns>
-            array of IPersistent references
-            </returns>
-        </member>
-        <member name="M:Volante.IDatabase.CreateArray(System.Int32)">
-            <summary>
-            Create new generic array of reference
-            </summary>
-            <param name="initialSize">Initial array size</param>
-            <returns>
-            array of IPersistent references
-            </returns>
         </member>
         <member name="M:Volante.IDatabase.Close">
             <summary> Commit transaction (if needed) and close the db
@@ -1643,6 +1586,14 @@
             <param name="elemType">type of array element</param>
             <returns>array of specified type with members of the set</returns>
         </member>
+        <member name="P:Volante.OsFile.NoFlush">
+            Whether to not flush file buffers during transaction commit. It will increase performance because
+            it eliminates synchronous write to the disk. It can cause database corruption in case of 
+            OS or power failure. Abnormal termination of application itself should not cause
+            the problem, because all data written to a file but not yet saved to the disk is 
+            stored in OS file buffers andwill be written to the disk.
+            Default value: false
+        </member>
         <member name="T:Volante.ISpatialIndex`1">
             <summary> Interface of object spatial index.
             Spatial index is used to allow fast selection of spatial objects belonging to the specified rectangle.
@@ -1849,7 +1800,7 @@
         </member>
         <member name="M:Volante.IFieldIndex`2.Append(`1)">
             <summary>
-            Assign to the integer indexed field unique autoicremented value and 
+            Assign to the integer indexed field unique auto-icremented value and 
             insert object in the index. 
             </summary>
             <param name="obj">object to be inserted in index. Object should contain indexed field
@@ -2143,12 +2094,12 @@
         <member name="T:Volante.ISortedCollection`2">
             <summary>
             Interface of sorted collection.
-            Sorted collections keeps in members in order specified by comparator.
-            Members in the collections can be located using key or range of keys.
+            Sorted collection keeps members in order specified by comparator.
+            Members in the collections can be located using key or a range.
             The SortedCollection is efficient container of objects for in-memory databases.
-            For databases which size is significatly larger than size of page pool, operation with SortedList
-            can cause trashing and so very bad performance. Unlike other index structures SortedCollection
-            doesn't store values of keys and so search in the collection requires fetching all of its members.
+            For databases whose size is significantly larger than size of page pool, operations
+            can cause disk trashing and very bad performance. Unlike other index structures, sorted collection
+            doesn't store values of keys so searching requires fetching all of the objects.
             </summary>
         </member>
         <member name="M:Volante.ISortedCollection`2.Get(`0)">
@@ -2980,14 +2931,6 @@
             When object is updated, exclusive lock should be set, otherwise shared lock is enough.
             Lock should be preserved until the end of transaction.
             </summary>
-        </member>
-        <member name="P:Volante.OsFile.NoFlush">
-            Whether to not flush file buffers during transaction commit. It will increase performance because
-            it eliminates synchronous write to the disk. It can cause database corruption in case of 
-            OS or power failure. Abnormal termination of application itself should not cause
-            the problem, because all data written to a file but not yet saved to the disk is 
-            stored in OS file buffers andwill be written to the disk.
-            Default value: false
         </member>
     </members>
 </doc>

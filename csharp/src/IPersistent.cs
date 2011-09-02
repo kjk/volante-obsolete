@@ -2,11 +2,11 @@ namespace Volante
 {
     using System;
 
-    /// <summary> Interface of all objects that can be persisted
+    /// <summary>Interface for persisted objects
     /// </summary>
     public interface IPersistent
     {
-        /// <summary> Get object identifier (oid)
+        /// <summary>Get object identifier
         /// </summary>
         int Oid
         {
@@ -20,39 +20,39 @@ namespace Volante
             get;
         }
 
-        /// <summary> Load object from the database (if needed)
+        /// <summary>Load object from the database (if needed)
         /// </summary>
         void Load();
 
         /// 
-        /// <summary> Check if object is stub and has to be loaded from the database
+        /// <summary>Check if object is stub and has to be loaded from the database
         /// </summary>
         /// <returns><code>true</code> if object has to be loaded from the database
         /// </returns>
         bool IsRaw();
 
-        /// <summary> Check if object is persistent 
+        /// <summary>Check if object is persistent 
         /// </summary>
         /// <returns><code>true</code> if object has assigned oid
         /// 
         /// </returns>
         bool IsPersistent();
 
-        /// <summary>  Check if object is deleted by GC from process memory
+        /// <summary>Check if object is deleted by GC
         /// </summary>
         /// <returns> <code>true</code> if object is deleted by GC
         /// </returns>
         bool IsDeleted();
 
-        /// <summary> Check if object was modified within current transaction
+        /// <summary>Check if object was modified within current transaction
         /// </summary>
         /// <returns><code>true</code> if object is persistent and was modified within current transaction
         /// 
         /// </returns>
         bool IsModified();
 
-        /// <summary> Explicitly make object peristent. Usually objects are made persistent
-        /// implicitly using "persistency on reachability approach", but this
+        /// <summary>Usually objects are made persistent
+        /// implicitly using "persistency on reachability" approach. This
         /// method allows you to do it explicitly 
         /// </summary>
         /// <param name="db">db in which object should be stored 
@@ -60,20 +60,20 @@ namespace Volante
         /// <returns>oid assigned to the object</returns>
         int MakePersistent(IDatabase db);
 
-        /// <summary> Save object in the database
+        /// <summary>Save object in the database
         /// </summary>
         void Store();
 
         /// <summary>
-        /// Mark object as modified. Object will be saved to the database during transaction commit.
+        /// Mark object as modified. Object will be saved to the database during transaction commit
         /// </summary>
         void Modify();
 
-        /// <summary> Deallocate persistent object from the database
+        /// <summary>Deallocate persistent object from the database
         /// </summary>
         void Deallocate();
 
-        /// <summary> Specified whether object should be automatically loaded when it is referenced
+        /// <summary>Specified whether object should be automatically loaded when it is referenced
         /// by other loaded peristent object. Default implementation of this method
         /// returns <code>true</code> making all cluster of referenced objects loaded together. 
         /// To avoid main memory overflow you should stop recursive loading of all objects
@@ -86,14 +86,13 @@ namespace Volante
         /// </returns>
         bool RecursiveLoading();
 
-        /// <summary> This method is  called by the database after loading of the object.
+        /// <summary>Called by the database after loading the object.
         /// It can be used to initialize transient fields of the object. 
         /// Default implementation of this method does nothing 
         /// </summary>
         void OnLoad();
 
-        /// <summary> This method is  called by the database befire storing of the object.
-        /// It can be used to initialize transient fields of the object. 
+        /// <summary>Called by the database before storing the object.
         /// Default implementation of this method does nothing 
         /// </summary>
         void OnStore();
@@ -106,7 +105,7 @@ namespace Volante
         void Invalidate();
 
         /// <summary>
-        /// Method used to associate object with db.
+        /// Associate object with db.
         /// This method is used by IDictionary class and you should not use it explicitly.
         /// </summary>
         /// <param name="db">database to be assigned to</param>
