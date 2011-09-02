@@ -38,7 +38,7 @@ namespace Volante
         /// </returns>
         bool IsPersistent();
 
-        /// <summary>Check if object is deleted by GC
+        /// <summary>Check if object is deleted by garbage collection
         /// </summary>
         /// <returns> <code>true</code> if object is deleted by GC
         /// </returns>
