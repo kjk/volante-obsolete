@@ -323,7 +323,7 @@ namespace Volante
         /// </summary>
         void Close();
 
-        /// <summary>Explicit start of garbage collector
+        /// <summary>Explicitly start garbage collection
         /// </summary>
         /// <returns>number of collected (deallocated) objects</returns>
         int Gc();
@@ -407,7 +407,6 @@ namespace Volante
         /// If it is set to the value different from long.MaxValue, GC will be started each time 
         /// when delta between total size of allocated and deallocated objects exceeds specified threashold OR
         /// after reaching end of allocation bitmap in allocator.
-        /// ---
         /// <summary>Set threshold for initiation of garbage collection. By default garbage collection is disable (threshold is set to
         /// Int64.MaxValue). If it is set to the value different fro Long.MAX_VALUE, GC will be started each time when
         /// delta between total size of allocated and deallocated objects exceeds specified threashold OR

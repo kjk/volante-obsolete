@@ -12,8 +12,7 @@ Things to do for c# version:
  * index_time_series.html
  * index_patricia.html
  * transactions.html
- * garbage_collection.html
- * schema evolution
+ * schema_evolution.html
  * benchmarks
  * document recursive loading somewhere (?)
  * an example of persisted double-linked list
