@@ -18,6 +18,78 @@
 <div class=content>
 	<p><a href=index.html>Volante</a> : <a href=devguideindex.html>Volante Developer's Guide</a> : Spatial index</p>
 
+	<p>Spatial index allows you to quickly find an object in a given area. Areas are represented by rectangles. There are 2 versions of functionality:
+	<ul>
+		<li>one for rectangles with <code>int</code> coordinates</li>
+		<li>another for rectangles with <code>double</code>coordinates</li>
+	</ul>
+
+	<h3>Rectangle</h3>
+
+	<p>Rectangles are represented by a <a href="https://github.com/kjk/volante/blob/master/csharp/src/Rectangle.cs"><code>Rectangle</code></a> and <a href="https://github.com/kjk/volante/blob/master/csharp/src/RectangleR2.cs"><code>RectangleR2</code></a> classes. <code>Rectangle</code> is:</p>
+
+	<pre class="prettyprint lang-cs">public struct Rectangle
+{
+    public int Top { get; }
+    public int Left { get; }
+    public int Bottom { get; }
+    public int Right { get; }
+    public long Area();
+    public static long JoinArea(Rectangle a, Rectangle b);
+    public Rectangle(Rectangle r);
+    public Rectangle(int top, int left, int bottom, int right);
+    public void Join(Rectangle r);
+    public static Rectangle Join(Rectangle a, Rectangle b);
+    public bool Intersects(Rectangle r);
+    public bool Contains(Rectangle r);
+    public bool IsEmpty();
+}</pre>
+
+	<p><code>RectangleR2</code> has the same methods except that the coordinates are of type <code>double</code></p>
+
+	<h3 id=create>Creating a spatial index</h3>
+
+	<p>To create a spatial index:
+	<ul>
+		<li><code>ISpatialIndex&lt;T&gt; CreateSpatialIndex&lt;T&gt;()</code></li>
+		<li><code>ISpatialIndexR2&lt;T&gt; CreateSpatialIndexR2&lt;T&gt;()</code></li>
+	</ul></p>
+	<p>They return an object implementing either <a href="https://github.com/kjk/volante/blob/master/csharp/src/ISpatialIndex.cs"><code>ISpatialIndex&lt;T&gt;</code></a> or <a href="https://github.com/kjk/volante/blob/master/csharp/src/ISpatialIndexR2.cs"><code>ISpatialIndexR2&lt;T&gt;</code></a>.<p>
+
+	<h3 id=insert>Inserting into spatial index</h3>
+
+	<p>Spatial index associates an object with a given area represented as a rectangle. To do that use:
+	<ul>
+		<li><code>void Put(Rectangle r, T obj)</code> (if index was created with <code>CreateSpatialIndex())</code></li>
+		<li><code>void Put(RectangleR2 r, T obj)</code> (if index was created with <code>CreateSpatialIndexR2())</code></li>
+	</ul>
+
+	<h3 id=remove>Removing from spatial index</h3>
+
+	<p>To remove objects from spatial index use:
+	<ul>
+		<li><code>void Remove(Rectangle r, T obj)</code></li>
+		<li><code>void Remove(RectangleR2 r, T obj)</code></li>
+	</ul>
+	</p>
+
+	<p>If you know the object but not the area, pass rectangle you get from index's <code>WrappingRectangle</code> property, which is the smallest rectangle containing all rectangles in the index.</p>
+
+	<h3 id=retrieve>Retrieving from spatial index</h3>
+
+	<p>The main purpose of spatial index is to quickly find all objects with a given rectangle:
+	<ul>
+		<li><code>T[] Get(RectangleR r)</code></li>
+		<li><code>T[] Get(RectangleR2 r)</code></li>
+		<li><code>IEnumerable&lt;T&gt; Overlaps(Rectangle rect)</code></li>
+		<li><code>IEnumerable&lt;T&gt; Overlaps(RectangleR2 rect)</code></li>
+		<li><code>IDictionaryEnumerator GetDictionaryEnumerator(Rectangle rect)</code></li>
+		<li><code>IDictionaryEnumerator GetDictionaryEnumerator(RectangleR2 rect)</code></li>
+	</ul>
+	</p>
+
+	<p>You can also enumerate all objects in the index with <code>IDictionaryEnumerator GetDictionaryEnumerator()</code> and get number of objects in the index with <code>int Size()</code>.</p>
+
 	<center><a href=indexes_field.html>← b-tree indexe</a> &nbsp;&bull;&nbsp; <a href=index_sorted_collection.html>sorted collection →</a></center>
 
 	<hr style="margin-top:28px">
