@@ -43,6 +43,5 @@ namespace Volante
         /// <param name="elemType">type of array element</param>
         /// <returns>array of specified type with members of the set</returns>
         Array ToArray(Type elemType);
-
     }
 }

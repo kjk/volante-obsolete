@@ -215,7 +215,7 @@ namespace Volante
         /// </returns>
         ISet<T> CreateSet<T>() where T : class,IPersistent;
 
-        /// <summary>Create new scalable set references to persistent objects.
+        /// <summary>Create new scalable set of references to persistent objects.
         /// This container can effciently store small number of references as well 
         /// as very large number references. When number of memers is small, 
         /// Link class is used to store set members. When number of members exceed 
@@ -225,7 +225,7 @@ namespace Volante
         /// </returns>
         ISet<T> CreateScalableSet<T>() where T : class,IPersistent;
 
-        /// <summary>Create new scalable set references to persistent objects.
+        /// <summary>Create new scalable set of references to persistent objects.
         /// This container can effciently store small number of references as well 
         /// as very large number references. When number of memers is small, 
         /// Link class is used to store set members. When number of members exceed 

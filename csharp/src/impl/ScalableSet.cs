@@ -14,13 +14,9 @@ namespace Volante.Impl
             : base(db)
         {
             if (initialSize <= BTREE_THRESHOLD)
-            {
                 link = db.CreateLink<T>(initialSize);
-            }
             else
-            {
                 pset = db.CreateSet<T>();
-            }
         }
 
         ScalableSet() { }
@@ -73,52 +69,46 @@ namespace Volante.Impl
 
         public override void Add(T o)
         {
-            if (link != null)
-            {
-                if (link.IndexOf(o) >= 0)
-                {
-                    return;
-                }
-                if (link.Count == BTREE_THRESHOLD)
-                {
-                    pset = Database.CreateSet<T>();
-                    for (int i = 0, n = link.Count; i < n; i++)
-                    {
-                        pset.Add(link[i]);
-                    }
-                    link = null;
-                    Modify();
-                    pset.Add(o);
-                }
-                else
-                {
-                    Modify();
-                    link.Add(o);
-                }
-            }
-            else
+            if (link == null)
             {
                 pset.Add(o);
+                return;
             }
+
+            if (link.IndexOf(o) >= 0)
+                return;
+
+            if (link.Count <= BTREE_THRESHOLD)
+            {
+                Modify();
+                link.Add(o);
+                return;
+            }
+
+            pset = Database.CreateSet<T>();
+            for (int i = 0, n = link.Count; i < n; i++)
+            {
+                pset.Add(link[i]);
+            }
+            link = null;
+            Modify();
+            pset.Add(o);
         }
 
         public override bool Remove(T o)
         {
-            if (link != null)
-            {
-                int i = link.IndexOf(o);
-                if (i < 0)
-                {
-                    return false;
-                }
-                link.Remove(i);
-                Modify();
-                return true;
-            }
-            else
+            if (link == null)
             {
                 return pset.Remove(o);
             }
+
+            int i = link.IndexOf(o);
+            if (i < 0)
+                return false;
+
+            link.Remove(i);
+            Modify();
+            return true;
         }
 
         public bool ContainsAll(ICollection<T> c)
@@ -126,9 +116,7 @@ namespace Volante.Impl
             foreach (T o in c)
             {
                 if (!Contains(o))
-                {
                     return false;
-                }
             }
             return true;
         }
@@ -160,18 +148,15 @@ namespace Volante.Impl
         public override bool Equals(object o)
         {
             if (o == this)
-            {
                 return true;
-            }
+
             ISet<T> s = o as ISet<T>;
             if (s == null)
-            {
                 return false;
-            }
+
             if (s.Count != Count)
-            {
                 return false;
-            }
+
             return ContainsAll(s);
         }
 
@@ -188,9 +173,8 @@ namespace Volante.Impl
         public override void Deallocate()
         {
             if (pset != null)
-            {
                 pset.Deallocate();
-            }
+
             base.Deallocate();
         }
     }

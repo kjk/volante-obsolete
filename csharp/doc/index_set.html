@@ -1,0 +1,50 @@
+<!doctype HTML> 
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<link href="main.css" type="text/css" rel="stylesheet">
+	<link  href="http://blog.kowalczyk.info/js/prettify.css" type="text/css" rel="stylesheet"> 
+	<script src="http://blog.kowalczyk.info/js/prettify.js" type="text/javascript"></script>
+	<title>Sets</title>
+</head>
+
+<body onload="prettyPrint()">
+<div id=left-bar>
+	<div id=sections>
+		<center><div><a href="index.html">Volante</a></div></center>
+	</div>
+</div>
+
+<div class=content>
+	<p><a href=index.html>Volante</a> : <a href=devguideindex.html>Volante Developer's Guide</a> : Sets</p>
+
+	<p>A set is a unordered collection of non-duplicate objects. To create a set index use one of the following methods:
+	<ul>
+		<li><code>ISet&lt;T&gt; CreateSet&lt;T&gt;()</code></li>
+        <li><code>ISet&lt;T&gt; CreateScalableSet&lt;T&gt;()</code></li>
+        <li><code>ISet&lt;T&gt; CreateScalableSet&lt;T&gt;(int initialSize)</code></li>
+	</ul>
+	</p>
+
+	<p>Basic operation of the set is adding an object to a set and checking if an object in the set exists.</p>
+
+	<p><code>ISet</code> implements the standard <a href="http://msdn.microsoft.com/en-us/library/92t2ye13.aspx"><code>ICollection&lt;T&gt;</code></a> interface and provides a few additions.</p>
+
+	<p>To add objects to the set, use <code>bool AddAll(ICollection&lt;T&gt; c)</code>.  Since this is a set, if object already exists in the set, it won't get added again. <code>AddAll()</code> returns <code>true</code> if at least one object from the collection was added.</p>
+
+	<p>To remove objects from the set, use <code>bool RemoveAll(ICollection&lt;T&gt; c)</code>.</p>
+
+	<p>To check if objects exist in the set, use <code>bool ContainsAll(ICollection&lt;T&gt; c)</code>. It returns <code>true</code> if all objects exist in the collection.</p>
+
+	<p>You can also get all objects as an array with <code>T[] ToArray()</code> and <code>Array ToArray(Type elemType)</code>. Keep in mind that this can be expensive if there are many objects.</p>
+
+	<center><a href=index_sorted_collection.html>← sorted collections</a> &nbsp;&bull;&nbsp; <a href=index_link.html>link →</a></center>
+
+	<hr style="margin-top:28px">
+	<center style="font-size:10pt;color:gray">Volante is maintained by <a href="http://blog.kowalczyk.info">Krzysztof Kowalczyk</a></center>
+
+</div>
+
+<span id=adsense></span>
+</body>
+</html>
