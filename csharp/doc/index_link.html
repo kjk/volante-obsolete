@@ -16,7 +16,42 @@
 </div>
 
 <div class=content>
-	<p><a href=index.html>Volante</a> : <a href=devguideindex.html>Volante Developer's Guide</a> : Link</p>
+	<p><a href=index.html>Volante</a> : <a href=devguideindex.html>Volante Developer's Guide</a> : Link (one-to-many relation)</p>
+
+	<p>Link represents one-to-many relation i.e. an array of objects of a given type that are pointed to from another object (an owner persistent object). <a href=index_array.html>Array</a> and <a href=index_relation.html>relation</a> are a seperset of link functionality.</p>
+
+	<h3>Creating a link</h3>
+
+	<p>To create a link use:
+	<ul>
+		<li><code>ILink&lt;T&gt; CreateLink&lt;T&gt;()</code></li>
+		<li><code>ILink&lt;T&gt; CreateLink&lt;T&gt;(int initialSize)</code></li>
+	</ul></p>
+
+	<p>Link implements standard <a href="http://msdn.microsoft.com/en-us/library/5y536ey6.aspx">IList&lt;T&gt;</a> interface.</p>
+
+	<h3>Adding objects to a link</h3>
+
+	<p>To add objects to a link:
+	<ul>
+		<li><code>void Add(T item)</code></li>
+		<li><code>void AddAll(T[] arr)</code></li>
+		<li><code>void AddAll(T[] arr, int from, int length)</code></li>
+		<li><code>void AddAll(ILink&lt;T&gt; link)</code></li>
+		<li><code>void Insert(int index, T item)</code></li>
+		<li><code>void Set(int index, T obj)</code> - replace an object at a given index</li>
+	</ul>
+	</p>
+
+	<h3>Removing objects from a link</h3>
+
+	<p>To remove objects from a link:
+	<ul>
+		<li><code>bool Remove(T item)</code></li>
+		<li><code>void RemoveAt(int index)</code></li>
+		<li><code>void Clear()</code> - remove all objects</li>
+	</ul>
+	</p>
 
 	<center><a href=index_sorted_collection.html>← sorted collections</a> &nbsp;&bull;&nbsp; <a href=index_link.html>link →</a></center>
 

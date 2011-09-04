@@ -220,16 +220,16 @@ namespace Volante
         /// </returns>
         ISet<T> CreateSet<T>(int initialSize) where T : class,IPersistent;
 
-        /// <summary> Create one-to-many link.
+        /// <summary>Create one-to-many link.
         /// </summary>
-        /// <returns>new empty link, new members can be added to the link later.
+        /// <returns>empty link, members can be added to the link later.
         /// </returns>
         ILink<T> CreateLink<T>() where T : class,IPersistent;
 
-        /// <summary> Create one-to-many link with specified initial size.
+        /// <summary>Create one-to-many link with specified initial size.
         /// </summary>
         /// <param name="initialSize">initial size of the array</param>
-        /// <returns>new link with specified size
+        /// <returns>empty link with specified size
         /// </returns>
         ILink<T> CreateLink<T>(int initialSize) where T : class,IPersistent;
 
