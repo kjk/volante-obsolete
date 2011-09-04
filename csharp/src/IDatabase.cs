@@ -207,34 +207,18 @@ namespace Volante
         /// <returns> persistent object implementing sorted collection</returns>
         ISortedCollection<K, V> CreateSortedCollection<K, V>(IndexType indexType) where V : class,IPersistent, IComparable<K>, IComparable<V>;
 
-        /// <summary>
-        /// Create new object set
+        /// <summary>Create set of references to persistent objects.
         /// </summary>
-        /// <returns>
-        /// empty set of persistent objects
+        /// <returns>empty set, members can be added to the set later.
         /// </returns>
         ISet<T> CreateSet<T>() where T : class,IPersistent;
 
-        /// <summary>Create new scalable set of references to persistent objects.
-        /// This container can effciently store small number of references as well 
-        /// as very large number references. When number of memers is small, 
-        /// Link class is used to store set members. When number of members exceed 
-        /// some threshold, PersistentSet (based on B-Tree) is used instead.
+        /// <summary>Create set of references to persistent objects.
         /// </summary>
-        /// <returns>new empty set, new members can be added to the set later.
+        /// <param name="initialSize">initial size of the set</param>
+        /// <returns>empty set, members can be added to the set later.
         /// </returns>
-        ISet<T> CreateScalableSet<T>() where T : class,IPersistent;
-
-        /// <summary>Create new scalable set of references to persistent objects.
-        /// This container can effciently store small number of references as well 
-        /// as very large number references. When number of memers is small, 
-        /// Link class is used to store set members. When number of members exceed 
-        /// some threshold, PersistentSet (based on B-Tree) is used instead.
-        /// </summary>
-        /// <param name="initialSize">initial size of the sety</param>
-        /// <returns>new empty set, new members can be added to the set later.
-        /// </returns>
-        ISet<T> CreateScalableSet<T>(int initialSize) where T : class,IPersistent;
+        ISet<T> CreateSet<T>(int initialSize) where T : class,IPersistent;
 
         /// <summary> Create one-to-many link.
         /// </summary>

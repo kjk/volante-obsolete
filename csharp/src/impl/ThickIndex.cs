@@ -140,14 +140,9 @@ namespace Volante.Impl
             {
                 while (!inner.MoveNext())
                 {
-                    if (outer.MoveNext())
-                    {
-                        inner = ((IEnumerable<V>)outer.Current).GetEnumerator();
-                    }
-                    else
-                    {
+                    if (!outer.MoveNext())
                         return false;
-                    }
+                    inner = ((IEnumerable<V>)outer.Current).GetEnumerator();
                 }
                 return true;
             }
@@ -236,15 +231,11 @@ namespace Volante.Impl
             {
                 while (!inner.MoveNext())
                 {
-                    if (outer.MoveNext())
-                    {
-                        key = outer.Key;
-                        inner = ((IEnumerable<V>)outer.Value).GetEnumerator();
-                    }
-                    else
-                    {
+                    if (!outer.MoveNext())
                         return false;
-                    }
+
+                    key = outer.Key;
+                    inner = ((IEnumerable<V>)outer.Value).GetEnumerator();
                 }
                 return true;
             }
@@ -366,7 +357,7 @@ namespace Volante.Impl
                 Relation<V, V> r = (Relation<V, V>)s;
                 if (r.Count == BTREE_THRESHOLD)
                 {
-                    ISet<V> ps = Database.CreateSet<V>();
+                    ISet<V> ps = ((DatabaseImpl)Database).CreateBtreeSet<V>();
                     for (int i = 0; i < BTREE_THRESHOLD; i++)
                     {
                         ps.Add(r[i]);

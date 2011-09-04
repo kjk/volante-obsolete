@@ -133,7 +133,7 @@
             </returns>
         </member>
         <member name="M:Volante.IPersistent.IsDeleted">
-            <summary>Check if object is deleted by GC
+            <summary>Check if object is deleted by garbage collection
             </summary>
             <returns> <code>true</code> if object is deleted by GC
             </returns>
@@ -1196,32 +1196,16 @@
             <returns> persistent object implementing sorted collection</returns>
         </member>
         <member name="M:Volante.IDatabase.CreateSet``1">
-            <summary>
-            Create new object set
+            <summary>Create set of references to persistent objects.
             </summary>
-            <returns>
-            empty set of persistent objects
+            <returns>empty set, members can be added to the set later.
             </returns>
         </member>
-        <member name="M:Volante.IDatabase.CreateScalableSet``1">
-            <summary>Create new scalable set references to persistent objects.
-            This container can effciently store small number of references as well 
-            as very large number references. When number of memers is small, 
-            Link class is used to store set members. When number of members exceed 
-            some threshold, PersistentSet (based on B-Tree) is used instead.
+        <member name="M:Volante.IDatabase.CreateSet``1(System.Int32)">
+            <summary>Create set of references to persistent objects.
             </summary>
-            <returns>new empty set, new members can be added to the set later.
-            </returns>
-        </member>
-        <member name="M:Volante.IDatabase.CreateScalableSet``1(System.Int32)">
-            <summary>Create new scalable set references to persistent objects.
-            This container can effciently store small number of references as well 
-            as very large number references. When number of memers is small, 
-            Link class is used to store set members. When number of members exceed 
-            some threshold, PersistentSet (based on B-Tree) is used instead.
-            </summary>
-            <param name="initialSize">initial size of the sety</param>
-            <returns>new empty set, new members can be added to the set later.
+            <param name="initialSize">initial size of the set</param>
+            <returns>empty set, members can be added to the set later.
             </returns>
         </member>
         <member name="M:Volante.IDatabase.CreateLink``1">
@@ -1310,7 +1294,7 @@
             </summary>
         </member>
         <member name="M:Volante.IDatabase.Gc">
-            <summary>Explicit start of garbage collector
+            <summary>Explicitly start garbage collection
             </summary>
             <returns>number of collected (deallocated) objects</returns>
         </member>
@@ -1469,7 +1453,6 @@
             If it is set to the value different from long.MaxValue, GC will be started each time 
             when delta between total size of allocated and deallocated objects exceeds specified threashold OR
             after reaching end of allocation bitmap in allocator.
-            ---
             <summary>Set threshold for initiation of garbage collection. By default garbage collection is disable (threshold is set to
             Int64.MaxValue). If it is set to the value different fro Long.MAX_VALUE, GC will be started each time when
             delta between total size of allocated and deallocated objects exceeds specified threashold OR
