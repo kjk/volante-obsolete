@@ -371,70 +371,63 @@ namespace Volante.Impl
             internal T remove(ulong key, int keyLength)
             {
                 T obj;
-                if (keyLength >= this.keyLength)
-                {
-                    if (key == this.key && keyLength == this.keyLength)
-                    {
-                        obj = this.obj;
-                        this.obj = null;
-                        return obj;
-                    }
-                    else
-                    {
-                        int keyLengthCommon = getCommonPart(key, keyLength, this.key, this.keyLength);
-                        int keyLengthDiff = keyLength - keyLengthCommon;
-                        ulong keyCommon = key >> keyLengthDiff;
-                        ulong keyDiff = key - (keyCommon << keyLengthDiff);
+                if (keyLength < this.keyLength)
+                    return null;
 
-                        if (firstDigit(keyDiff, keyLengthDiff) == 1)
-                        {
-                            if (childOne != null)
-                            {
-                                obj = childOne.findBestMatch(keyDiff, keyLengthDiff);
-                                if (obj != null)
-                                {
-                                    if (childOne.isNotUsed())
-                                    {
-                                        Modify();
-                                        childOne.Deallocate();
-                                        childOne = null;
-                                    }
-                                    return obj;
-                                }
-                            }
-                        }
-                        else
-                        {
-                            if (childZero != null)
-                            {
-                                obj = childZero.findBestMatch(keyDiff, keyLengthDiff);
-                                if (obj != null)
-                                {
-                                    if (childZero.isNotUsed())
-                                    {
-                                        Modify();
-                                        childZero.Deallocate();
-                                        childZero = null;
-                                    }
-                                    return obj;
-                                }
-                            }
-                        }
-                    }
+                if (key == this.key && keyLength == this.keyLength)
+                {
+                    obj = this.obj;
+                    this.obj = null;
+                    return obj;
                 }
-                return null;
+
+                int keyLengthCommon = getCommonPart(key, keyLength, this.key, this.keyLength);
+                int keyLengthDiff = keyLength - keyLengthCommon;
+                ulong keyCommon = key >> keyLengthDiff;
+                ulong keyDiff = key - (keyCommon << keyLengthDiff);
+
+                if (firstDigit(keyDiff, keyLengthDiff) == 1)
+                {
+                    if (childOne == null)
+                        return null;
+
+                    obj = childOne.findBestMatch(keyDiff, keyLengthDiff);
+                    if (obj == null)
+                        return null;
+  
+                    if (childOne.isNotUsed())
+                    {
+                        Modify();
+                        childOne.Deallocate();
+                        childOne = null;
+                    }
+                    return obj;
+                }
+
+                if (childZero == null)
+                    return null;
+
+                obj = childZero.findBestMatch(keyDiff, keyLengthDiff);
+                if (obj == null)
+                    return null;
+
+                if (childZero.isNotUsed())
+                {
+                    Modify();
+                    childZero.Deallocate();
+                    childZero = null;
+                }
+                return obj;
             }
 
             public override void Deallocate()
             {
                 if (childOne != null)
-                {
                     childOne.Deallocate();
-                }
+
                 if (childZero != null)
-                {
                     childZero.Deallocate();
-                }
+
                 base.Deallocate();
             }
         }
