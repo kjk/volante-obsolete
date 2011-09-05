@@ -16,13 +16,22 @@
 </div>
 
 <div class=content>
-	<p><a href=index.html>Volante</a> : <a href=devguideindex.html>Volante Developer's Guide</a> : OnLoad() and OnStore()</p>
+	<p><a href=index.html>Volante</a> : <a href=devguideindex.html>Volante Developer's Guide</a> : IPersistent in depth</p>
 
+	<h3 id=onload-store>OnLoad(), OnStore()</h3>
 	<p>Volante allows executing custom, per-object code when object is loaded or saved. The most common use for this functionality is setting transient (non-persisted) members of the object, assuming that they can be re-created from other members, than have been persisted.</p>
 
 	<p><a href="https://github.com/kjk/volante/blob/master/csharp/src/IPersistent.cs">IPersistent</a> interface provides <code>void OnLoad()</code> and <code>void OnStore()</code> methods. The simplest way to implement them is to derive your object from <a href="https://github.com/kjk/volante/blob/master/csharp/src/Persistent.cs"><code>Persistent</code></a> class and override one (or both) of them. Their default implementation does nothing.</p>
 
 	<p>When <code>OnLoad()</code> is called, all the persisted fields have been fetched so it's a good time to initialize transient (non-persisted) fields that can be derived from persisted fields.</p>
+
+	<h3 id=raw>Raw object</h3>
+
+	<p>TODO: what is a raw object</p>
+
+	<h3 id=recursive-load>Recursive loading</h3>
+
+	<p>TODO: describe</p>
 
 	<center><a href=garbage_collection.html>← garbage collection</a> &nbsp;&bull;&nbsp; <a href=plain_objects.html>storing plain objects →</a></center>
 

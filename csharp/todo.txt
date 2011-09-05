@@ -1,6 +1,7 @@
 Things to do for c# version:
 
 * fix a TestInsertShort and TestInsertUShort bug where can't find short.MaxValue and 1999 in the index (grep for FAILED_TEST)
+* disable patricia tree code under WITH_PATRICIA
 * make a reference API from .xml extracted during build process
 * get rid of IDatabase.StringEncoding and always use utf8 for storing strings (?)
 * make a release script that builds and uploads .zip with the Volante.dll
@@ -9,13 +10,11 @@ Things to do for c# version:
  * index_array.html
  * index_relation.html
  * index_time_series.html
- * index_patricia.html
+ * ipersistent_in_depth.html - recursive loading, raw objects
  * transactions.html
  * schema_evolution.html
  * benchmarks
- * document recursive loading somewhere (?)
  * an example of persisted double-linked list
- * who uses Volante?
 * remove CreateScalableSet() from public API and change to CreateSet, rename CreateSet to CreateBtreeSet
 * script that copies docs to my website (i.e. my blog repository)
 * make a 0.9 release
@@ -23,6 +22,7 @@ Things to do for c# version:
 After 0.9:
 * silverlight version
 * wp7 versions
+* "who uses Volante" section in docs
 * re-implement BitIndexImp.cs using AltBtree
 * implement MemFile : IFile which to use for tests that need database to be closed and re-opened (and currently use file on disk for that)
 * benchmark Bytes.unpack*() using unsafe fixed vs. bit fiddling

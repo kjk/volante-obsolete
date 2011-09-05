@@ -50,7 +50,7 @@ namespace Volante
         void Pin();
     }
 
-    /// <summary> Interface for one-to-many relation. There are two types of relations:
+    /// <summary>Interface for one-to-many relation. There are two types of relations:
     /// embedded (when references to the related objects are stored in relation
     /// owner object itself) and standalone (when relation is a separate object, which contains
     /// the reference to the relation owner and relation members). Both kinds of relations

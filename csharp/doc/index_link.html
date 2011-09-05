@@ -53,6 +53,19 @@
 	</ul>
 	</p>
 
+	<h3>Accessing objects in a link</h3>
+
+	<p>To access objects in a link:
+	<ul>
+		<li><code>int Length { get; set; }</code> - get/set number of elements</li>
+		<li><code>T Get(int i)</code></li>
+		<li><code>bool ContainsElement(int index, T obj)</code> - <code>true</code> if object at a given object is equal to <code>obj</code></li>
+		<li><code>IPersistent GetRaw(int iindex)</code> - get <a href=ipersistent_in_depth.html#raw>a raw</a> object</li>
+		<li><code>T[] ToArray()</code></li>
+		<li><code>Array ToRawArray()</code></li>
+		<li><code>Array ToArray(Type elemType)</code></li>
+	</ul></p>
+
 	<center><a href=index_sorted_collection.html>← sorted collections</a> &nbsp;&bull;&nbsp; <a href=index_link.html>link →</a></center>
 
 	<hr style="margin-top:28px">
