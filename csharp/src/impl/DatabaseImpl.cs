@@ -1961,10 +1961,12 @@ namespace Volante.Impl
             return new TimeSeriesImpl<T>(this, blockSize, maxBlockTimeInterval);
         }
 
+#if WITH_PATRICIA
         public IPatriciaTrie<T> CreatePatriciaTrie<T>() where T : class,IPersistent
         {
             return new PTrie<T>();
         }
+#endif
 
         public IBlob CreateBlob()
         {

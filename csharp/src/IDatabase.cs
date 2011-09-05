@@ -290,6 +290,7 @@ namespace Volante
         /// <returns>new empty time series</returns>
         ITimeSeries<T> CreateTimeSeries<T>(int blockSize, long maxBlockTimeInterval) where T : ITimeSeriesTick;
 
+#if WITH_PATRICIA
         /// <summary>
         /// Create PATRICIA trie (Practical Algorithm To Retrieve Information Coded In Alphanumeric)
         /// Tries are a kind of tree where each node holds a common part of one or more keys. 
@@ -302,6 +303,7 @@ namespace Volante
         /// </summary>
         /// <returns>created PATRICIA trie</returns>
         IPatriciaTrie<T> CreatePatriciaTrie<T>() where T : class,IPersistent;
+#endif
 
         /// <summary> Commit transaction (if needed) and close the db
         /// </summary>

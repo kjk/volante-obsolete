@@ -1,3 +1,4 @@
+#if WITH_PATRICIA
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -433,3 +434,4 @@ namespace Volante.Impl
         }
     }
 }
+#endif

@@ -70,7 +70,7 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'DebugFull|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
     <OutputPath>..\..\bin\DebugFull\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;WITH_REPLICATION;WITH_XML;WITH_OLD_BTREE</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;WITH_REPLICATION;WITH_XML;WITH_OLD_BTREE;WITH_PATRICIA</DefineConstants>
     <BaseAddress>285212672</BaseAddress>
     <FileAlignment>4096</FileAlignment>
     <DebugType>full</DebugType>
@@ -87,7 +87,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'ReleaseFull|AnyCPU'">
     <DebugSymbols>true</DebugSymbols>
     <OutputPath>..\..\bin\ReleaseFull\</OutputPath>
-    <DefineConstants>TRACE;WITH_XML;WITH_REPLICATION;WITH_OLD_BTREE</DefineConstants>
+    <DefineConstants>TRACE;WITH_XML;WITH_REPLICATION;WITH_OLD_BTREE;WITH_PATRICIA</DefineConstants>
     <BaseAddress>285212672</BaseAddress>
     <Optimize>true</Optimize>
     <FileAlignment>4096</FileAlignment>

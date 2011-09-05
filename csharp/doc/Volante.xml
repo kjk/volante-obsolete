@@ -107,7 +107,7 @@
             </summary>
         </member>
         <member name="T:Volante.Persistent">
-            <summary> Base class for all persistent capable objects
+            <summary>Base class for all persistent capable objects
             </summary>
         </member>
         <member name="T:Volante.IPersistent">
@@ -194,7 +194,7 @@
         <member name="M:Volante.IPersistent.Invalidate">
             <summary>
             Invalidate object. Invalidated object has to be explicitly
-            reloaded using load() method. Attempt to store invalidated object
+            reloaded using Load() method. Attempt to store invalidated object
             will cause DatabaseException exception.
             </summary>
         </member>
@@ -348,7 +348,7 @@
             </summary>
         </member>
         <member name="T:Volante.ILink`1">
-            <summary> Interface for one-to-many relation. There are two types of relations:
+            <summary>Interface for one-to-many relation. There are two types of relations:
             embedded (when references to the related objects are stored in relation
             owner object itself) and standalone (when relation is a separate object, which contains
             the reference to the relation owner and relation members). Both kinds of relations
@@ -506,7 +506,7 @@
             </returns>
         </member>
         <member name="M:Volante.IGenericPArray.GetOid(System.Int32)">
-            <summary> Get oid of array element.
+            <summary>Get oid of array element.
             </summary>
             <param name="i">index of the object in the relation
             </param>
@@ -874,16 +874,6 @@
             or DatabaseException(DatabaseException.ErrorCode.KEY_NOV_UNIQUE) if index is not unique.
             
             </exception>
-        </member>
-        <member name="T:Volante.PatriciaTrieKey">
-            Convert different type of keys to 64-bit long value used in Patricia trie 
-        </member>
-        <member name="F:Volante.PatriciaTrieKey.mask">
-            Bit mask representing bit vector.
-            The last digit of the key is the right most bit of the mask
-        </member>
-        <member name="F:Volante.PatriciaTrieKey.length">
-            Length of bit vector (can not be larger than 64)
         </member>
         <member name="T:Volante.ITimeSeriesTick">
             <summary>
@@ -1262,19 +1252,6 @@
             value of maxBlockTimeInterval can be set as 100*(24*60*60*10000000L)*2
             </param>
             <returns>new empty time series</returns>
-        </member>
-        <member name="M:Volante.IDatabase.CreatePatriciaTrie``1">
-            <summary>
-            Create PATRICIA trie (Practical Algorithm To Retrieve Information Coded In Alphanumeric)
-            Tries are a kind of tree where each node holds a common part of one or more keys. 
-            PATRICIA trie is one of the many existing variants of the trie, which adds path compression 
-            by grouping common sequences of nodes together.
-            This structure provides a very efficient way of storing values while maintaining the lookup time 
-            for a key in O(N) in the worst case, where N is the length of the longest key. 
-            This structure has it's main use in IP routing software, but can provide an interesting alternative 
-            to other structures such as hashtables when memory space is of concern.
-            </summary>
-            <returns>created PATRICIA trie</returns>
         </member>
         <member name="M:Volante.IDatabase.Close">
             <summary> Commit transaction (if needed) and close the db
@@ -1845,47 +1822,6 @@
             Get fields used as a key
             </summary>
             <returns>array of index key fields</returns>
-        </member>
-        <member name="T:Volante.IPatriciaTrie`1">
-            <summary> 
-            Trie is a kind of tree where each node holds a common part of one or more keys. 
-            Patricia trie is one of the many existing variants of the trie, which adds path
-            compression by grouping common sequences of nodes together.
-            This structure provides a very efficient way of storing values while maintaining
-            the lookup time for a key in O(N) in the worst case, where N is the length of
-            the longest key. This structure has it's main use in IP routing software, but
-            can provide an interesting alternative to other structures such as hashtables
-            when memory space is of concern.</summary>
-        </member>
-        <member name="M:Volante.IPatriciaTrie`1.Add(Volante.PatriciaTrieKey,`0)">
-            <summary> 
-            Add new key to the trie
-            </summary>
-            <param name="key">bit vector</param>
-            <param name="obj">persistent object associated with this key</param>
-            <returns>previous object associtated with this key or <code>null</code> if there
-            was no such object</returns>
-        </member>
-        <member name="M:Volante.IPatriciaTrie`1.FindBestMatch(Volante.PatriciaTrieKey)">
-            <summary>
-            Find best match with specified key
-            </summary>
-            <param name="key">bit vector</param>
-            <returns>object associated with this deepest possible match with specified key</returns>
-        </member>
-        <member name="M:Volante.IPatriciaTrie`1.FindExactMatch(Volante.PatriciaTrieKey)">
-            <summary>
-            Find exact match with specified key
-            </summary>
-            <param name="key">bit vector</param>
-            <returns>object associated with this key or NULL if match is not found</returns>
-        </member>
-        <member name="M:Volante.IPatriciaTrie`1.Remove(Volante.PatriciaTrieKey)">
-            <summary>
-            Removes key from the triesKFind exact match with specified key
-            </summary>
-            <param name="key">bit vector</param>
-            <returns>object associated with removed key or <code>null</code> if such key is not found</returns>
         </member>
         <member name="T:Volante.TransparentPersistenceAttribute">
             <summary>

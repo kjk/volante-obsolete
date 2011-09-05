@@ -1,3 +1,4 @@
+#if WITH_PATRICIA
 using System;
 using System.Net;
 using System.Diagnostics;
@@ -106,3 +107,4 @@ namespace Volante
         }
     }
 }
+#endif

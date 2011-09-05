@@ -1,3 +1,4 @@
+#if WITH_PATRICIA
 using System;
 using Volante;
 using System.IO;
@@ -25,7 +26,7 @@ public class IpCountry
 
     public static void Main(string[] args) 
     { 
-        IDatabase db = DatabaseFactory.CreateDatabase();        
+        IDatabase db = DatabaseFactory.CreateDatabase();
         db.Open("ipcountry.dbs", PagePoolSize);
         Root root = (Root)db.Root;
         if (root == null) { 
@@ -35,7 +36,7 @@ public class IpCountry
             loadCountries(root.countries);
             db.Root = root;
         }
-        for (int i = 0; i < args.Length; i++) { 
+        for (int i = 0; i < args.Length; i++) {
             loadIpCountryTable(root, args[i]);
         }
 
@@ -49,13 +50,14 @@ public class IpCountry
         db.Close();
     }
 
-    static void loadIpCountryTable(Root root, string fileName) {                                                                                                                                  
+    static void loadIpCountryTable(Root root, string fileName) {
+
         FileStream fs = new FileStream(fileName, FileMode.Open);
-        StreamReader sr = new StreamReader(fs);        
+        StreamReader sr = new StreamReader(fs);
         string line;
         while ((line = sr.ReadLine()) != null) { 
             int sep1 = line.IndexOf('|');
-            if (sep1 >= 0) {                 
+            if (sep1 >= 0) {
                 int sep2 = line.IndexOf('|', sep1+1);
                 int sep3 = line.IndexOf('|', sep2+1);
                 int sep4 = line.IndexOf('|', sep3+1);
@@ -322,4 +324,13 @@ public class IpCountry
         addCountry(countries, "Western Samoa", "WS");
     }
 }
-            
+#else
+using System;
+public class IpCountry
+{
+    public static void Main(string[] args)
+    {
+        Console.WriteLine("IpCountry not available if not compiled with WITH_PATRICIA");
+    }
+}
+#endif
