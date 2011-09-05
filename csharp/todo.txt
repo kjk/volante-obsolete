@@ -1,19 +1,17 @@
 Things to do for c# version:
 
 * fix a TestInsertShort and TestInsertUShort bug where can't find short.MaxValue and 1999 in the index (grep for FAILED_TEST)
-* disable patricia tree code under WITH_PATRICIA
+* remove WITH_OLD_BTREE code, rename AltBtree to Btree
+* figure out why guid tests fail in mono
 * make a reference API from .xml extracted during build process
 * get rid of IDatabase.StringEncoding and always use utf8 for storing strings (?)
 * make a release script that builds and uploads .zip with the Volante.dll
 * finish manual:
- * index_array.html
  * index_relation.html
  * index_time_series.html
  * transactions.html
  * schema_evolution.html
  * blobs.html
- * benchmarks
- * an example of persisted double-linked list
 * script that copies docs to my website (i.e. my blog repository)
 * make a 0.9 release
 
@@ -21,6 +19,8 @@ After 0.9:
 * silverlight version
 * wp7 versions
 * "who uses Volante" section in docs
+* benchmarks info
+* an example of persisted double-linked list
 * re-implement BitIndexImp.cs using AltBtree
 * implement MemFile : IFile which to use for tests that need database to be closed and re-opened (and currently use file on disk for that)
 * benchmark Bytes.unpack*() using unsafe fixed vs. bit fiddling
