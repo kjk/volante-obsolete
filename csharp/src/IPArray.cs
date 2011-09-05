@@ -14,7 +14,7 @@ namespace Volante
         /// </returns>
         int Size();
 
-        /// <summary> Get oid of array element.
+        /// <summary>Get oid of array element.
         /// </summary>
         /// <param name="i">index of the object in the relation
         /// </param>

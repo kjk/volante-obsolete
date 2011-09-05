@@ -18,7 +18,11 @@
 <div class=content>
 	<p><a href=index.html>Volante</a> : <a href=devguideindex.html>Volante Developer's Guide</a> : Link (one-to-many relation)</p>
 
-	<p>Link represents one-to-many relation i.e. an array of objects of a given type that are pointed to from another object (an owner persistent object). <a href=index_array.html>Array</a> and <a href=index_relation.html>relation</a> are a seperset of link functionality.</p>
+	<p>Link represents one-to-many relation i.e. an array of objects of a given type that are pointed to from another object (an owner persistent object). <a href=index_array.html>Persisted array</a> and <a href=index_relation.html>relation</a> are a seperset of link functionality.</p>
+
+	<p>Why use link (or persisted array) instead of using a standard C# array of <code>IPersistent</code> objects? For efficiency.</p>
+	
+	<p>A standard behavior for persisted object is to <a href=ipersistent_in_depth.html#recursive-load>recursively load</a> all referenced objects. Link and array don't do that - they just load oids of the objects and only fully load the object from the database if it's explicitly referenced.</p>
 
 	<h3>Creating a link</h3>
 
@@ -62,7 +66,7 @@
 		<li><code>bool ContainsElement(int index, T obj)</code> - <code>true</code> if object at a given object is equal to <code>obj</code></li>
 		<li><code>IPersistent GetRaw(int iindex)</code> - get <a href=ipersistent_in_depth.html#raw>a raw</a> object</li>
 		<li><code>T[] ToArray()</code></li>
-		<li><code>Array ToRawArray()</code></li>
+		<li><code>Array ToRawArray()</code> - get an array of <a href=ipersistent_in_depth.html#raw>raw</a> object</li>
 		<li><code>Array ToArray(Type elemType)</code></li>
 	</ul></p>
 
