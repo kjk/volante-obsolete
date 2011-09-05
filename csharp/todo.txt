@@ -6,16 +6,14 @@ Things to do for c# version:
 * get rid of IDatabase.StringEncoding and always use utf8 for storing strings (?)
 * make a release script that builds and uploads .zip with the Volante.dll
 * finish manual:
- * index_link.html
  * index_array.html
  * index_relation.html
  * index_time_series.html
- * ipersistent_in_depth.html - recursive loading, raw objects
  * transactions.html
  * schema_evolution.html
+ * blobs.html
  * benchmarks
  * an example of persisted double-linked list
-* remove CreateScalableSet() from public API and change to CreateSet, rename CreateSet to CreateBtreeSet
 * script that copies docs to my website (i.e. my blog repository)
 * make a 0.9 release
 

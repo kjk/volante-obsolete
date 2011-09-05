@@ -7,7 +7,7 @@ namespace Volante
     using System.ComponentModel;
 #endif
 
-    /// <summary> Base class for all persistent capable objects
+    /// <summary>Base class for all persistent capable objects
     /// </summary>
     public class Persistent : IPersistent
     {

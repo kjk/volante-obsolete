@@ -16,17 +16,50 @@
 </div>
 
 <div class=content>
-	<p><a href=index.html>Volante</a> : <a href=devguideindex.html>Volante Developer's Guide</a> : IPersistent in depth</p>
+	<p><a href=index.html>Volante</a> : <a href=devguideindex.html>Volante Developer's Guide</a> : Persistent objects in depth</p>
 
-	<p>In Volante terminology, a persistent object is an object that implements <a href=""><code>IPersistent</code></a> interface.</p>
+	<h3>What is a persistent object?</h3>
+
+	<p>In Volante terminology, a persistent object is an object that implements <a href=""><code>IPersistent</code></a> interface. The simplest way to satisfy this interface is to derive from <a href=""><code>Persistent</code></a> class.</p>
+
+	<p>If you don't want some parts of the object to be stored in the database (i.e. have a transient data in the object), mark the field with <code>[NonSerialized]</code> attribute.</p>
+
+	<p>A persistent object is uniquely identified by an oid (32-bit integer).</p>
+
+	<h3>New objects</h3>
+
+	<p>When a new persistent object is created, it only exists in memory. It is not yet stored in the database and doesn't have an oid assigned to it. You can check for that state by calling <code>bool IsPersistent()</code>.</p>
+
+	<p>You can assign an oid to new object explicitly by calling <code>int MakePersistent(IDatabase db)</code> and store the object in the database by calling <code>void Store()</code> but you rarely have to do it explicitly. This will be handled implicitly for you e.g. when you insert an object into an index, this will be taken care of by the index code.</p>
+
+	<h3>Modifying the object</h3>
+
+	<p>What happens when you load the object from the database and modify it? Well, you have to tell the database about it by calling <code>void Modify()</code> on the object. For performance reasons it's not done automatically. In your own object, you can use properties to automatically call <code>Modify</code> on value changes:
+<pre class="prettyprint lang-cs">class Record : Persistent {
+    int IntVal
+    {
+        get;
+        set
+        {
+            if (IntVal == value)
+                return;
+            IntVal = value;
+            Modify();
+        }
+    }
+}</pre></p>
+
+	<p>You can check if object is modified by calling <code>bool IsModified()</code>.</p>
 
 	<h3 id=raw>Raw object</h3>
 
-	<p>TODO: what is a raw object</p>
+	<p>A raw object is a stub of a persistent object. It only has the oid of the object, but none of its data. You can check if the object is raw with <code>bool IsRaw()</code> and load the object's data with <code>void Load()</code>.</p>
+
+	<p>Raw objects are used for efficiency e.g. <a href=index_link.html>link object</a> can return raw objects.</p>
 
 	<h3 id=recursive-load>Recursive loading</h3>
 
-	<p>TODO: describe</p>
+	<p>If persistent object contains other persistent objects, those objects will be automatically, recursively loaded. You can change that by overriding <code>bool RecursiveLoading()</code> and returning <code>false</code>. In that case the embedded object will be raw.</p>
 
 	<h3 id=onload-store>OnLoad(), OnStore()</h3>
 	<p>Volante allows executing custom, per-object code when object is loaded or saved. The most common use for this functionality is setting transient (non-persisted) members of the object, assuming that they can be re-created from other members, than have been persisted.</p>
@@ -35,6 +68,9 @@
 
 	<p>When <code>OnLoad()</code> is called, all the persisted fields have been fetched so it's a good time to initialize transient (non-persisted) fields that can be derived from persisted fields.</p>
 
+	<h3 id=deleted>Deleted objects</h3>
+
+	<p><a href=garbage_collection.html>Garbage collection</a> can delete an object in the database while it's still present in memory. You can check if an object has been deleted with <code>bool IsDeleted()</code>.</p>
 
 	<center><a href=garbage_collection.html>← garbage collection</a> &nbsp;&bull;&nbsp; <a href=plain_objects.html>storing plain objects →</a></center>
 
