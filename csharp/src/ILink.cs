@@ -86,13 +86,6 @@ namespace Volante
         /// </param>
         void Set(int i, T obj);
 
-        /// <summary>Remove object with specified index from the relation
-        /// </summary>
-        /// <param name="i">index in the relartion
-        /// 
-        /// </param>
-        void Remove(int i);
-
         /// <summary>Add all elements of the array to the relation
         /// </summary>
         /// <param name="arr">array of objects which should be added to the relation

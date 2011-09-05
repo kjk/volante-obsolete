@@ -106,7 +106,7 @@ namespace Volante.Impl
             if (i < 0)
                 return false;
 
-            link.Remove(i);
+            link.RemoveAt(i);
             Modify();
             return true;
         }

@@ -179,7 +179,7 @@ namespace Volante.Impl
         {
             n -= 1;
             Array.Copy(b, i + 1, b, i, n - i);
-            branch.Remove(i);
+            branch.RemoveAt(i);
             branch.Length = card;
             Modify();
         }

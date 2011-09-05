@@ -74,12 +74,7 @@ namespace Volante.Impl
 
         public override void RemoveAt(int i)
         {
-            Remove(i);
-        }
-
-        public override void Remove(int i)
-        {
-            link.Remove(i);
+            link.RemoveAt(i);
         }
 
         public override void Insert(int i, M obj)

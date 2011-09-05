@@ -31,7 +31,6 @@ namespace Volante
         public abstract void Set(int i, M obj);
 
         public abstract void RemoveAt(int i);
-        public abstract void Remove(int i);
 
         public abstract void Insert(int i, M obj);
 

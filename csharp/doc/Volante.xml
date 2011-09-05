@@ -420,13 +420,6 @@
             
             </param>
         </member>
-        <member name="M:Volante.ILink`1.Remove(System.Int32)">
-            <summary>Remove object with specified index from the relation
-            </summary>
-            <param name="i">index in the relartion
-            
-            </param>
-        </member>
         <member name="M:Volante.ILink`1.AddAll(`0[])">
             <summary>Add all elements of the array to the relation
             </summary>
@@ -1203,16 +1196,16 @@
             </returns>
         </member>
         <member name="M:Volante.IDatabase.CreateLink``1">
-            <summary> Create one-to-many link.
+            <summary>Create one-to-many link.
             </summary>
-            <returns>new empty link, new members can be added to the link later.
+            <returns>empty link, members can be added to the link later.
             </returns>
         </member>
         <member name="M:Volante.IDatabase.CreateLink``1(System.Int32)">
-            <summary> Create one-to-many link with specified initial size.
+            <summary>Create one-to-many link with specified initial size.
             </summary>
             <param name="initialSize">initial size of the array</param>
-            <returns>new link with specified size
+            <returns>empty link with specified size
             </returns>
         </member>
         <member name="M:Volante.IDatabase.CreateArray``1">

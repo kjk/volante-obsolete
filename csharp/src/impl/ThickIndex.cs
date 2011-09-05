@@ -414,7 +414,7 @@ namespace Volante.Impl
                 int i = r.IndexOf(obj);
                 if (i >= 0)
                 {
-                    r.Remove(i);
+                    r.RemoveAt(i);
                     if (r.Count == 0)
                     {
                         index.Remove(key, r);

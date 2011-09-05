@@ -119,18 +119,13 @@ namespace Volante.Impl
             int i = IndexOf(obj);
             if (i >= 0)
             {
-                Remove(i);
+                RemoveAt(i);
                 return true;
             }
             return false;
         }
 
         public virtual void RemoveAt(int i)
-        {
-            Remove(i);
-        }
-
-        public virtual void Remove(int i)
         {
             if (i < 0 || i >= used)
             {
