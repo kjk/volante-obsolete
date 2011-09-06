@@ -8,7 +8,6 @@ Things to do for c# version:
 * make a release script that builds and uploads .zip with the Volante.dll
 * finish manual:
  * index_relation.html
- * transactions.html
  * document tweaking performance
 * write download.html page
 * script that copies docs to my website (i.e. my blog repository)

@@ -5,7 +5,7 @@
 	<link href="main.css" type="text/css" rel="stylesheet">
 	<link  href="http://blog.kowalczyk.info/js/prettify.css" type="text/css" rel="stylesheet"> 
 	<script src="http://blog.kowalczyk.info/js/prettify.js" type="text/javascript"></script>
-	<title>Transactions</title>
+	<title>Transactions, multi-threaded database access</title>
 </head>
 
 <body onload="prettyPrint()">
@@ -16,7 +16,29 @@
 </div>
 
 <div class=content>
-	<p><a href=index.html>Volante</a> : <a href=devguideindex.html>Volante Developer's Guide</a> : Transactions</p>
+	<p><a href=index.html>Volante</a> : <a href=devguideindex.html>Volante Developer's Guide</a> : Transactions, multi-threaded database access</p>
+
+	<h3>Transactions</h3>
+
+	<p>Volante maintains consistency of the data in case of system or application crash. Transaction mechanism is used to implement all-or-nothing database updates. Transaction is started implicitly when update operation is performed for the first time and finished explicitly by calling <code>IDatabase.Commit()</code>, <code>IDatabase.Rollback()</code> or <code>IDatabase.Close()</code>.</p>
+
+	<p>Transaction commit causes synchronous write of changed pages to disk. Synchronous write is expensive: application is blocked until all data is flushed to disk. Average seek time for modern disks is about 10ms, so they are not able to perform more than 100 random writes in one second. A transaction usually consists of several page so an average we can do 10 transaction commits per second.</p>
+
+	<p>Performance can be greatly increased if you minimize number of commits (larger transactions). Volante is using shadow mechanism for implementating transactions. When object is changed for the first time during transaction, shadow of the object is created and original object is kept unchanged. If object is updated multiple times during a transaction, shadow object is created only once. Because of using shadows, Volante do not need transaction log file. In Volante long transaction can't cause transaction log overflow as in most other DBMSes. Quite to the contrary, if you do not commit at all, Volante works as if without transaction, adding almost no overhead of supporting transactions.</p>
+
+	<p>The only drawback of long transactions is possibility of loosing a lot of changes in case of a crash. Volante will preserve consistency of the database, but all changes made since last commit will be lost.</p>
+
+	<h3>Multi-threaded access</h3>
+
+	<p>Volante by itself doesn't synchronize access to persistent objects. It's application's responsibility to using proper locking to avoid concurrent access to the same object. Using <code>BeginThreadTransaction()</code> and <code>EndThreadTransaction()</code> is not enough for concurrent access to persistent objects. The following alternatives are possible:
+	<ol>
+		<li>Access database only from one thread</li>
+		<li>Access database from multiple threads but use global lock to ensure mutual exclusion.  In a given thread: lock the mutex, perform database operations, commit transaction and unlock the mutex</li>
+		<li>Use per-thread exclusive transactions by starting transactions with <code>BeginThreadTransaction(TransactionMode.Exclusive)</code>. This approach is similar to 2), but with Volante doing the right locking</li>
+		<li>Use serializable mode by starting transactions with <code>BeginThreadTransaction(TransactionMode.Serializable)</code> and use object level locking</li>
+	</ol>
+
+	<p>Please note that in cases 1-3, only one thread is accessing database at a time, so there is no concurrent execution. It doesn't mean that approach 4) gives the best performance - there is locking overhead. Approach 4) is also more difficult to use because correct locking is responsibility of a programmer and incorrect locking can cause synchronization problems like race conditions (causing e.g. ArrayIndexOutOfBoundsException) or deadlocks (two or more threads mutually blocking each other).</p>
 
 	<center><a href=history.html>← history</a> &nbsp;&bull;&nbsp; <span style="color: gray">the end</span></center>
 

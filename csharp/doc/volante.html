@@ -33,7 +33,6 @@ additional information but also might no longer reflect the code.</p>
 <LI> <A HREF = "#quick">Quick start</A>
 <LI> <A HREF = "#tuning">Tuning</A>
 <LI> <A HREF = "#tips">Tricks and tips</A>
-<LI> <A HREF = "WebPages/Solution_Perst.HTM">Perst API Web Pages</A>
 <LI> <A HREF = "#distribution">Distribution terms</A>
 </UL>
 </UL>
@@ -42,26 +41,17 @@ additional information but also might no longer reflect the code.</p>
 <H2><A NAME = "introduction">Introduction</A></H2>
 
 Volante is very simple object oriented embedded database. It is easy to use and
-provide high performance. It is intended to be used in applications which needs to deal with persistent 
-data in more sophisticated way than load/store object tree provided but standard serialization mechanism.
-Although Volante is very simple, it provides fault tolerant support (ACID transactions) 
-and concurrent access to the database.<P> 
+provide high performance. It is intended to be used in applications which needs to deal with persistent  data in more sophisticated way than load/store object tree provided but standard serialization mechanism. Although Volante is very simple, it provides fault tolerant support (ACID transactions)  and concurrent access to the database.
 
-The main advantage of Volante is tight integration with programming language.
-There is no gap between database and application data models - Volante directly stores language objects.
-So there is no need in packing/unpacking code, which has to be written for traditional relational databases. 
-Also Volante (unlike many other OODBMS) requires no special compiler or preprocessor. And still it is able to 
-provide high level of transparency.<P>
+<P>The main advantage of Volante is tight integration with programming language.
+There is no gap between database and application data models - Volante directly stores language objects. So there is no need in packing/unpacking code, which has to be written for traditional relational databases. Also Volante (unlike many other OODBMS) requires no special compiler or preprocessor. And still it is able to provide high level of transparency.
 
 <H2> <A NAME = "features">Features</A></H2>
 Lets now describe key features of Volante architecture. 
 
 <H3> <A NAME = "pbs">Persistency by reachability</A></H3>
 
-Volante is implementing <I>persistency by reachability</I> approach. Object of any class derived from 
-<code>Persistent</code> base class is considered as persistent capable. It is automatically made
-persistent and stored in the database when it is referenced from some other persistent object and
-<code>store</code> method of that object was invoked. So there is no need (but it is possible) to explicitlyassign object to the database.<P>
+Volante is implementing <I>persistency by reachability</I> approach. Object of any class derived from <code>Persistent</code> base class is capable of being persisted. It is automatically made persistent and stored in the database when it is referenced from some other persistent object and <code>Store()</code> method of that object was invoked. So there is no need (but it is possible) to explicitlyassign object to the database.<P>
 
 The database has one special <I>root</I> object. Root object is the only persistent object accessed in the special way (using <code>IDatabase.Root</code> property). All other persistent objects are accessed in normal way: either by traversing by references from another persistent objects, using object containers (<code>IIndex</code>, <code>Link</code> or <code>Relation</code>). Unlike many other OODBMS, there can be only one root in the database. If you need to have several named roots, you should create <code>IIndex</code> object and use it as root object.<P>
 
@@ -218,13 +208,8 @@ You can use index in <code>foreach</code> construction to iterate through all in
 If you need set of persistent objects you should use <code>IDatabase.CreateSet()</code> method.
 Set is implemented using B+Tree where object OID is used as a key.<P> 
 
-Volante also support spatial indices (<code>org.garret.perst.SpatialIndex</code>) and generic indices with
-user defined comparator (<code>org.garret.perst.SortedCollection</code>). 
-Spatial index is implemented using Guttman's R-Tree with quadratic split algorithm.
-It allows efficient search of R2 objects. Sorted collection provides almost the same methods
-as <code>FieldIndex</code> but it uses user defined comparator to compare collection members.
-Sorted collection is implemented using T-Tree and is especially efficient for main-memory
-databases.</P>
+Volante also support spatial indices (<code>SpatialIndex</code>) and generic indices with
+user defined comparator (<code>SortedCollection</code>).Spatial index is implemented using Guttman's R-Tree with quadratic split algorithm. It allows efficient search of R2 objects. Sorted collection provides almost the same methods as <code>FieldIndex</code> but it uses user defined comparator to compare collection members. Sorted collection is implemented using T-Tree and is especially efficient for main-memory databases.</P>
 
 The table below summarize information about all indeices supported by Volante:
 
@@ -381,29 +366,13 @@ we need to sort orders by price field, it can be done with the following stateme
 
 <H3> <A NAME = "transaction">Transaction model</A></H3>
 
-Volante preserve consistency of the data in case of system or application failure. 
-Transaction mechanism is used to implement all-or-nothing database update. 
-Transaction in Volante are started implicitly when update operation is first time performed 
-and finished explicitly by <code>commit, rollback</code> or <code>close</code> methods.<P>
+<p>Volante maintains consistency of the data in case of system or application crash. Transaction mechanism is used to implement all-or-nothing database update. Transaction in Volante is started implicitly when update operation is performed for the first time and finished explicitly by <code>Commit()</code>, <code>Rollback()</code> or <code>Close()</code> method.</p>
 
-Commit of transaction cause synchronous write of changed pages to the disk.
-Synchronous write (application is blocked until data is really flushed to the disk) is very expensive operation.
-Average positioning time for modern disks is about 10ms, so them are usually not able to perform in one second
-more than 100 writes in random places. As far as transaction usually consists of several updated pages, 
-it leads to average performance about 10 transaction commits per second.<P>
+<p>Transaction commit causes synchronous write of changed pages to the disk. Synchronous write is an expensive operation: application is blocked until all data is flushed to disk. Average seek time for modern disks is about 10ms, so they are usually only able to perform 100 random writes in one second. Since a transaction usually consists of several updated pages, it leads to average performance of about 10 transaction commits per second.</p>
 
-Performance can be greatly increased if you minimize number of commits (larger transactions).
-Volante is using shadow mechanism for transaction implementation. When object is changed first time
-during transaction, shadow of the object is created and original object is kept unchanged. If 
-object is updated multiple times during transaction, shadow is create only once. 
-Because of using shows, Volante do not need transaction log file. So in Volante
-long transaction can not cause transaction log overflow as in most of other DBMSes.
-Quite the contrary, if you do not call commit at all, Volante works as DBMS without transaction
-support, adding almost no overhead of supporting transactions.<P>
+<p>Performance can be greatly increased by minimizing number of commits (larger transactions). Volante is using shadow mechanism for transaction implementation. When object is changed first time during transaction, shadow of the object is created and original object is kept unchanged. If object is updated multiple times during transaction, shadow is create only once. Because of using shows, Volante do not need transaction log file. So in Volante long transaction can not cause transaction log overflow as in most of other DBMSes. Quite the contrary, if you do not call commit at all, Volante works as DBMS without transaction support, adding almost no overhead of supporting transactions.</p>
 
-The only drawback of long transactions is possibility to loose a lot of changes in case of fault.
-Volante will preserve consistency of the database, but all changes made since list commit will be lost.<P> 
-
+<p>The only drawback of long transactions is possibility of loosing a lot of changes in case of a crash. Volante will preserve consistency of the database but all changes made since last commit will be lost.</p>
 
 <H2> <A NAME = "transparent">Transparent API's</A></H2>
 <H3> <A NAME = "remoting">Using .Net remoting API</A></H3>
@@ -432,7 +401,7 @@ But there are two significant restrictions on using remoting API:
 is about 100 times slower than normal method invocation).
 </UL><P>
 
-<code>TransparentGuess</code> example illustrates using of this Volante transparent API.<p>
+<code>TransparentGuess</code> example illustrates using of Volante transparent API.<p>
 
 <H3><A NAME = "props">Using virtual properties</A></H3>
 
@@ -1079,17 +1048,7 @@ fetching single object will cause loading of all other objects from this collect
 
 <dt><i>How to store classes not derived from Persistent?</i></dt>
 <dd>
-Volante allows to store transient objects using standard .NET serialization mechanism. 
-To enable this feature, you should set <code>Storage.setProperty("perst.serialize.transient.objects")</code>. 
-Volante will correctly handle reference to persistent object from serialized transient objects. 
-But it is important to notice, that identity of saved transient objects is not preserved. 
-If there was transient object O referenced from persistent objects P1 and P2, then when
-objects P1 and P2 are stored, instance of O object will be serialized both in P1 and P2 record. 
-And when P1 and P2 object will be reloaded from the database, them will refer to different instances
-O1 and O2. Also please notice, that is impossible to mark transient objects is modified.
-Of some of referenced transient objects is updated, you should also update persistent object
-referencing (directly or indirectly) this object.
-</dd><p>
+Volante allows to store transient objects using standard .NET serialization mechanism. Volante will correctly handle reference to persistent object from serialized transient objects.  But it is important to notice, that identity of saved transient objects is not preserved. If there was transient object O referenced from persistent objects P1 and P2, then when objects P1 and P2 are stored, instance of O object will be serialized both in P1 and P2 record. And when P1 and P2 object will be reloaded from the database, them will refer to different instances O1 and O2. Also please notice, that is impossible to mark transient objects is modified. Of some of referenced transient objects is updated, you should also update persistent object referencing (directly or indirectly) this object.</dd><p>
 
 <dt><i>When commit transaction?</i></dt>
 <dd>
@@ -1119,14 +1078,10 @@ both problems: it will throw <code>DatabaseException(DatabaseError.ErrorCode.INV
 if reference to the deleted object is found and return non zero number of collected objects
 if there is garbage in the database. 
 
-<dt><i>Why applicsation normally working in single-threaded mode got
+<dt><i>Why application normally working in single-threaded mode got
 assertion failures or some other exceptions if database is updated by mode than one thread?</i></dt>
 <dd>
-Volante by itself doesn't synchronize access to the persistent objects. It is responsibility of
-application to set proper locks to avoid concurrent access to the same
-object. So just using beginThreadTransaction and endThreadTransaction
-is not enough for correct concurrent work with persistent objects.
-So the following alternatives are possible:
+Volante by itself doesn't synchronize access to the persistent objects. It is responsibility of application to set proper locks to avoid concurrent access to the same object. So just using <code>BeginThreadTransaction()</code> and <code>EndThreadTransaction()</code> is not enough for correct concurrent work with persistent objects. So the following alternatives are possible:
 
 1. Access database only from one thread
 2. Access database from multiple thread but use global lock to provide
@@ -1135,7 +1090,7 @@ operations with database, commit transaction and unlock mutex.
 3. Use per-thread transactions in EXCLUSIVE_TRANSACTION mode.
 This approach is similar to 2), but Volante will provide exclusion of
 threads itself.
-4. Use per-thread transactions in SERIALIZABLE_TRANSACTION mode +
+4. Use per-thread transactions in application_TRANSACTION mode +
 objet level locking + alternative B-Tree implementation.
 
 Please notice that in alternative 1-3 only one thread is accessing
