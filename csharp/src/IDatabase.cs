@@ -282,7 +282,7 @@ namespace Volante
         /// specified range.
         /// Usually the value of this parameter should be set as
         /// (number of elements in block)*(tick interval)*2. 
-        /// Coefficient 2 here is used to compencate possible holes in time series.
+        /// Coefficient 2 here is used to compact possible holes in time series.
         /// For example, if we collect stocks data, we will have data only for working hours.
         /// If number of element in block is 100, time series period is 1 day, then
         /// value of maxBlockTimeInterval can be set as 100*(24*60*60*10000000L)*2

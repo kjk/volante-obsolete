@@ -10,11 +10,11 @@ Things to do for c# version:
  * index_relation.html
  * index_time_series.html
  * transactions.html
- * blobs.html
 * script that copies docs to my website (i.e. my blog repository)
 * make a 0.9 release
 
 After 0.9:
+* document projection
 * silverlight version
 * wp7 versions
 * "who uses Volante" section in docs
