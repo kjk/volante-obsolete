@@ -519,7 +519,7 @@
             This method is mostly used by db itself, but can also used explicityl by programmer if
             Parray component of one persistent object is assigned to component of another persistent object
             </summary>
-            <param name="owner">link owner</param>
+            <param name="owner">owner of the array</param>
         </member>
         <member name="T:Volante.IIndex`2">
             <summary> Interface of object index.
@@ -2707,7 +2707,7 @@
         </member>
         <member name="T:Volante.PersistentString">
             <summary>
-            Class encapsulating native .Net string. System.String is not persistent object
+            Class encapsulating native .Net string. System.String is not a persistent object
             so it can not be stored in Volante as independent persistent object. 
             But sometimes it is needed. This class sole this problem providing implcit conversion
             operator from System.String to PerisstentString.

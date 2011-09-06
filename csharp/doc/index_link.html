@@ -16,13 +16,14 @@
 </div>
 
 <div class=content>
-	<p><a href=index.html>Volante</a> : <a href=devguideindex.html>Volante Developer's Guide</a> : Link (one-to-many relation)</p>
+	<p><a href=index.html>Volante</a> : <a href=devguideindex.html>Volante Developer's Guide</a> : Link (one-to-many relation) and persistent array</p>
 
-	<p>Link represents one-to-many relation i.e. an array of objects of a given type that are pointed to from another object (an owner persistent object). <a href=index_array.html>Persisted array</a> and <a href=index_relation.html>relation</a> are a seperset of link functionality.</p>
+	<p>Link and persistent array provide almost identical functionality. They can be though of as modeling one-to-many relation i.e. one persistent object (an owner) pointing to several persistent object e.g. an object representing a directory can point to several objects representing a file and several objects representing a directory.</p>
 
-	<p>Why use link (or persisted array) instead of using a standard C# array of <code>IPersistent</code> objects? For efficiency.</p>
-	
-	<p>A standard behavior for persisted object is to <a href=ipersistent_in_depth.html#recursive-load>recursively load</a> all referenced objects. Link and array don't do that - they just load oids of the objects and only fully load the object from the database if it's explicitly referenced.</p>
+	<p>Implementation-wise, link loads its member objects while array only loads their oids and only loads the content of the object on demand. For that reason link is apropriate for storing a small number of objects while array for storing large number of objects.</p>
+
+	<p>A concept related to link is a a href=index_relation.html>relation</a>.</p>
+
 
 	<h3>Creating a link</h3>
 
@@ -69,6 +70,22 @@
 		<li><code>Array ToRawArray()</code> - get an array of <a href=ipersistent_in_depth.html#raw>raw</a> object</li>
 		<li><code>Array ToArray(Type elemType)</code></li>
 	</ul></p>
+
+	<h3>Persistent array</h3>
+
+    <p>Persistent array is inteded to be used in classes that use virtual properties to access components of persistent objects (you can't use standard C# array in that case).</p>
+
+	<p>To create persistent array:
+	<ul>
+		<li><code>IPArray&lt;T&gt; CreateArray&lt;T&gt;() where T : class,IPersistent</code></li>
+		<li><code>IPArray&lt;T&gt; CreateArray&lt;T&gt;(int initialSize) where T : class,IPersistent</code></li>
+	</ul></p>
+
+	<p>Persistent array implements all the same functionality as link plus:
+	<ul>
+		<li><code>int GetOid(int i)</code></li>
+	</ul></p>
+
 
 	<center><a href=index_sorted_collection.html>← sorted collections</a> &nbsp;&bull;&nbsp; <a href=index_link.html>link →</a></center>
 
