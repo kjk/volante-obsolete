@@ -152,13 +152,11 @@ If you need these values to be able to perform initialization of transient field
 <code>onLoad</code> method which is invoked after fetching of all values of non-transient fields of persistent object from the storage. 
 </OL><P>
 
-So summarizing all above, proposed mechanism is convenient and easy to use because it doesn't require programmer
-to explicitly load any referenced object and from another point of view is is flexible above by providing programmer control
-on object loading. Only those classes (usually containers) which explicitly control loading of their
-members (by overloading <code>recursiveLoading</code> to return <code>false</code> value) should be aware
-calling <code>Persistent.load</code> method.<P> 
-
-
+To summarize: the mechanism is convenient and easy to use because it doesn't require programmer
+to explicitly load any referenced objects. It's also flexible by giving the programmer control
+over object loading. Only those classes (usually containers) which explicitly control loading
+of their members (by overloading <code>RecursiveLoading()</code> to return <code>false</code>)
+should need to use <code>Persistent.Load()</code> method.<P>
 
 <H3> <A NAME = "scheme">Automatic scheme evaluation</A></H3>
 

@@ -10,7 +10,6 @@ Things to do for c# version:
  * index_relation.html
  * index_time_series.html
  * transactions.html
- * schema_evolution.html
  * blobs.html
 * script that copies docs to my website (i.e. my blog repository)
 * make a 0.9 release
