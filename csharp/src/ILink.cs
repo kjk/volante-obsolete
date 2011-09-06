@@ -29,7 +29,7 @@ namespace Volante
 
         /// <summary>
         /// Set owner object for this link. Owner is persistent object contaning this link.
-        /// This method is mostly used by db itself, but can also used explicityl by programmer if
+        /// This method is mostly used by db itself, but can also used explicitly by programmer if
         /// link component of one persistent object is assigned to component of another persistent object
         /// </summary>
         /// <param name="owner">link owner</param>
@@ -37,8 +37,8 @@ namespace Volante
 
         /// <summary>
         /// Replace all direct references to linked objects with stubs. 
-        /// This method is needed tyo avoid memory exhaustion in case when 
-        /// there is a large numebr of objectys in databasse, mutually
+        /// This method is needed to avoid memory exhaustion in case when 
+        /// there is a large number of objects in databasse, mutually
         /// refefencing each other (each object can directly or indirectly 
         /// be accessed from other objects).
         /// </summary>

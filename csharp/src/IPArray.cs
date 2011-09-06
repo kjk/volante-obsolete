@@ -24,7 +24,7 @@ namespace Volante
 
         /// <summary>
         /// Set owner object for this PArray. Owner is persistent object contaning this PArray.
-        /// This method is mostly used by db itself, but can also used explicityl by programmer if
+        /// This method is mostly used by db itself, but can also used explicitly by programmer if
         /// Parray component of one persistent object is assigned to component of another persistent object
         /// </summary>
         /// <param name="owner">link owner</param>
