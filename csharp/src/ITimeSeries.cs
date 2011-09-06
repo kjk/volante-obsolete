@@ -6,31 +6,23 @@ namespace Volante
     /// <summary>
     /// Interface for timeseries element.
     /// You should derive your time series element from this class
-    /// and implement Time getter method.
+    /// and implement Ticks getter method.
     /// </summary>
     public interface ITimeSeriesTick
     {
         /// <summary>
         /// Get time series element timestamp (100 nanoseconds)
         /// </summary>
-        long Time { get; }
+        long Ticks { get; }
     }
 
     /// <summary>
-    /// <p>
-    /// Time series interface. Time series class is used for efficient
-    /// handling of time series data. Ussually time series contains a very large number
-    /// if relatively small elements which are ussually acessed in sucessive order. 
+    /// Time series is used for efficient
+    /// handling of time series data. Usually time series contains a very large number
+    /// of relatively small elements which are usually accessed in sucessive order. 
     /// To avoid overhead of loading from the disk each particular time series element, 
     /// this class group several subsequent time series elements together and store them 
     /// as single object (block).
-    /// </p><p> 
-    /// As far as C# currently has no templates and
-    /// Volante need to know format of block class, it is responsibity of prgorammer
-    /// to create block implementation derived from TimeSeriesBlock class
-    /// and containing array of time series elements. Size of this array specifies
-    /// the size of the block.
-    /// </p>
     /// </summary>
     public interface ITimeSeries<T> : IPersistent, IResource, ICollection<T> where T : ITimeSeriesTick
     {

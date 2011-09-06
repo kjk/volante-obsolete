@@ -21,7 +21,7 @@ namespace Volante
             public float close;
             public int volume;
 
-            public long Time
+            public long Ticks
             {
                 get
                 {

@@ -8,8 +8,8 @@ Things to do for c# version:
 * make a release script that builds and uploads .zip with the Volante.dll
 * finish manual:
  * index_relation.html
- * index_time_series.html
  * transactions.html
+ * document tweaking performance
 * script that copies docs to my website (i.e. my blog repository)
 * make a 0.9 release
 

@@ -36,12 +36,12 @@ namespace Volante.Impl
 
         public bool Contains(T obj)
         {
-            return Contains(new DateTime(obj.Time));
+            return Contains(new DateTime(obj.Ticks));
         }
 
         public bool Remove(T obj)
         {
-            DateTime t = new DateTime(obj.Time);
+            DateTime t = new DateTime(obj.Ticks);
             return Remove(t, t) != 0;
         }
 
@@ -75,7 +75,7 @@ namespace Volante.Impl
 
         public void Add(T tick)
         {
-            long time = tick.Time;
+            long time = tick.Ticks;
             foreach (TimeSeriesBlock block in index.Range(time - maxBlockTimeInterval, time, IterationOrder.DescentOrder))
             {
                 insertInBlock(block, tick);
@@ -116,7 +116,7 @@ namespace Volante.Impl
                     while (l < r)
                     {
                         int i = (l + r) >> 1;
-                        if (from > block[i].Time)
+                        if (from > block[i].Ticks)
                         {
                             l = i + 1;
                         }
@@ -125,7 +125,7 @@ namespace Volante.Impl
                             r = i;
                         }
                     }
-                    Debug.Assert(l == r && (l == n || block[l].Time >= from));
+                    Debug.Assert(l == r && (l == n || block[l].Ticks >= from));
                     if (l < n)
                     {
                         pos = l;
@@ -160,7 +160,7 @@ namespace Volante.Impl
                 {
                     return false;
                 }
-                if (currBlock[pos].Time > till)
+                if (currBlock[pos].Ticks > till)
                 {
                     pos = -1;
                     return false;
@@ -230,7 +230,7 @@ namespace Volante.Impl
                     while (l < r)
                     {
                         int i = (l + r) >> 1;
-                        if (till >= block[i].Time)
+                        if (till >= block[i].Ticks)
                         {
                             l = i + 1;
                         }
@@ -239,7 +239,7 @@ namespace Volante.Impl
                             r = i;
                         }
                     }
-                    Debug.Assert(l == r && (l == n || block[l].Time > till));
+                    Debug.Assert(l == r && (l == n || block[l].Ticks > till));
                     if (l > 0)
                     {
                         pos = l - 1;
@@ -274,7 +274,7 @@ namespace Volante.Impl
                 {
                     return false;
                 }
-                if (currBlock[pos].Time < from)
+                if (currBlock[pos].Ticks < from)
                 {
                     pos = -1;
                     return false;
@@ -393,7 +393,7 @@ namespace Volante.Impl
             {
                 foreach (TimeSeriesBlock block in index.Range(null, null, IterationOrder.DescentOrder))
                 {
-                    return new DateTime(block[block.used - 1].Time);
+                    return new DateTime(block[block.used - 1].Ticks);
                 }
                 throw new DatabaseException(DatabaseException.ErrorCode.KEY_NOT_FOUND);
             }
@@ -424,7 +424,7 @@ namespace Volante.Impl
                     while (l < r)
                     {
                         int i = (l + r) >> 1;
-                        if (time > block[i].Time)
+                        if (time > block[i].Ticks)
                         {
                             l = i + 1;
                         }
@@ -433,8 +433,8 @@ namespace Volante.Impl
                             r = i;
                         }
                     }
-                    Debug.Assert(l == r && (l == n || block[l].Time >= time));
-                    if (l < n && block[l].Time == time)
+                    Debug.Assert(l == r && (l == n || block[l].Ticks >= time));
+                    if (l < n && block[l].Ticks == time)
                     {
                         return block[l];
                     }
@@ -481,7 +481,7 @@ namespace Volante.Impl
                 while (l < r)
                 {
                     int i = (l + r) >> 1;
-                    if (from > block[i].Time)
+                    if (from > block[i].Ticks)
                     {
                         l = i + 1;
                     }
@@ -490,8 +490,8 @@ namespace Volante.Impl
                         r = i;
                     }
                 }
-                Debug.Assert(l == r && (l == n || block[l].Time >= from));
-                while (r < n && block[r].Time <= till)
+                Debug.Assert(l == r && (l == n || block[l].Ticks >= from));
+                while (r < n && block[r].Ticks <= till)
                 {
                     r += 1;
                     nRemoved += 1;
@@ -507,7 +507,7 @@ namespace Volante.Impl
                     if (l == 0)
                     {
                         index.Remove(block.timestamp, block);
-                        block.timestamp = block[r].Time;
+                        block.timestamp = block[r].Ticks;
                         index.Put(block.timestamp, block);
                         blockIterator = index.GetEnumerator(from - maxBlockTimeInterval, till);
                     }
@@ -522,7 +522,7 @@ namespace Volante.Impl
         private void addNewBlock(T t)
         {
             TimeSeriesBlock block = new TimeSeriesBlock(blockSize);
-            block.timestamp = t.Time;
+            block.timestamp = t.Ticks;
             block.used = 1;
             block[0] = t;
             index.Put(block.timestamp, block);
@@ -530,14 +530,14 @@ namespace Volante.Impl
 
         private void insertInBlock(TimeSeriesBlock block, T tick)
         {
-            long t = tick.Time;
+            long t = tick.Ticks;
             int i, n = block.used;
 
             int l = 0, r = n;
             while (l < r)
             {
                 i = (l + r) >> 1;
-                if (t > block[i].Time)
+                if (t > block[i].Ticks)
                 {
                     l = i + 1;
                 }
@@ -546,10 +546,10 @@ namespace Volante.Impl
                     r = i;
                 }
             }
-            Debug.Assert(l == r && (l == n || block[l].Time >= t));
+            Debug.Assert(l == r && (l == n || block[l].Ticks >= t));
             if (r == 0)
             {
-                if (block[n - 1].Time - t > maxBlockTimeInterval || n == block.Ticks.Length)
+                if (block[n - 1].Ticks - t > maxBlockTimeInterval || n == block.Ticks.Length)
                 {
                     addNewBlock(tick);
                     return;
@@ -558,7 +558,7 @@ namespace Volante.Impl
             }
             else if (r == n)
             {
-                if (t - block[0].Time > maxBlockTimeInterval || n == block.Ticks.Length)
+                if (t - block[0].Ticks > maxBlockTimeInterval || n == block.Ticks.Length)
                 {
                     addNewBlock(tick);
                     return;

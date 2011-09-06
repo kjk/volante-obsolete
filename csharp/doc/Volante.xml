@@ -381,16 +381,18 @@
             </returns>
         </member>
         <member name="M:Volante.IGenericLink.SetOwner(Volante.IPersistent)">
-            <summary>Set owner object for this link. Owner is persistent object contaning this link.
-            This method is mostly used by db itself, but can also used explicityl by programmer if
+            <summary>
+            Set owner object for this link. Owner is persistent object contaning this link.
+            This method is mostly used by db itself, but can also used explicitly by programmer if
             link component of one persistent object is assigned to component of another persistent object
             </summary>
             <param name="owner">link owner</param>
         </member>
         <member name="M:Volante.IGenericLink.Unpin">
-            <summary>Replace all direct references to linked objects with stubs. 
-            This method is needed tyo avoid memory exhaustion in case when 
-            there is a large numebr of objectys in databasse, mutually
+            <summary>
+            Replace all direct references to linked objects with stubs. 
+            This method is needed to avoid memory exhaustion in case when 
+            there is a large number of objects in database, mutually
             refefencing each other (each object can directly or indirectly 
             be accessed from other objects).
             </summary>
@@ -516,7 +518,7 @@
         <member name="M:Volante.IGenericPArray.SetOwner(Volante.IPersistent)">
             <summary>
             Set owner object for this PArray. Owner is persistent object contaning this PArray.
-            This method is mostly used by db itself, but can also used explicityl by programmer if
+            This method is mostly used by db itself, but can also used explicitly by programmer if
             Parray component of one persistent object is assigned to component of another persistent object
             </summary>
             <param name="owner">owner of the array</param>
@@ -879,30 +881,22 @@
             <summary>
             Interface for timeseries element.
             You should derive your time series element from this class
-            and implement Time getter method.
+            and implement Ticks getter method.
             </summary>
         </member>
-        <member name="P:Volante.ITimeSeriesTick.Time">
+        <member name="P:Volante.ITimeSeriesTick.Ticks">
             <summary>
             Get time series element timestamp (100 nanoseconds)
             </summary>
         </member>
         <member name="T:Volante.ITimeSeries`1">
             <summary>
-            <p>
-            Time series interface. Time series class is used for efficient
-            handling of time series data. Ussually time series contains a very large number
-            if relatively small elements which are ussually acessed in sucessive order. 
+            Time series is used for efficient
+            handling of time series data. Usually time series contains a very large number
+            of relatively small elements which are usually accessed in sucessive order. 
             To avoid overhead of loading from the disk each particular time series element, 
             this class group several subsequent time series elements together and store them 
             as single object (block).
-            </p><p> 
-            As far as C# currently has no templates and
-            Volante need to know format of block class, it is responsibity of prgorammer
-            to create block implementation derived from TimeSeriesBlock class
-            and containing array of time series elements. Size of this array specifies
-            the size of the block.
-            </p>
             </summary>
         </member>
         <member name="M:Volante.ITimeSeries`1.GetEnumerator(System.DateTime,System.DateTime)">
@@ -1246,7 +1240,7 @@
             specified range.
             Usually the value of this parameter should be set as
             (number of elements in block)*(tick interval)*2. 
-            Coefficient 2 here is used to compencate possible holes in time series.
+            Coefficient 2 here is used to compact possible holes in time series.
             For example, if we collect stocks data, we will have data only for working hours.
             If number of element in block is 100, time series period is 1 day, then
             value of maxBlockTimeInterval can be set as 100*(24*60*60*10000000L)*2
