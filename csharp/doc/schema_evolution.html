@@ -1,0 +1,56 @@
+<!doctype HTML> 
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<link href="main.css" type="text/css" rel="stylesheet">
+	<link  href="http://blog.kowalczyk.info/js/prettify.css" type="text/css" rel="stylesheet"> 
+	<script src="http://blog.kowalczyk.info/js/prettify.js" type="text/javascript"></script>
+	<title>Link</title>
+</head>
+
+<body onload="prettyPrint()">
+<div id=left-bar>
+	<div id=sections>
+		<center><div><a href="index.html">Volante</a></div></center>
+	</div>
+</div>
+
+<div class=content>
+	<p><a href=index.html>Volante</a> : <a href=devguideindex.html>Volante Developer's Guide</a> : Schema evolution</p>
+
+	<p>When you chage your code, your objects change. What happens when you store an object in the database and then later change the shape of the object by adding or removing data fields?</p>
+
+	<p>Volante has a support for such schema evolution, but it's important to understand what it can and cannot do.</p>
+
+	<p>Volante can transparently handle following object schema changes:
+
+	<ul>
+		<li>changing the type of a scalar field to a compatible type. You can extend but not truncate values. For example you can change <code>int</code> field to <code>long</code> or <float> but not the other way around. In precise terms, Volante is able to perform any conversio which is supported by .NET reflection mechanism (if <a href="http://msdn.microsoft.com/en-us/library/system.reflection.fieldinfo.setvalue.aspx"><code>FieldInfo.SetValue()</code></a> would succeed).</li>
+		<li>reordering fields within class or moving them to base or derived class</li>
+		<li>adding/removing classes from class inheritance hierarchy</li>
+		<li>changing format of classes with value semantic</li>
+	</ul></p>
+
+	<p>Other modifications (like renaming fields, renaming classes, changing the type to an incompatible type) are not transparently handled.</p>
+	
+	<h3>Pitfalls to keep in mind</h3>
+
+	<p>Volante stores fully qualified (including namespace) class name of all objects stored in the database.</p>
+
+	<p>When Volante loads an object from database, it has to be able to create instances of object's class. That's only possible it can find a description of the class in one of the assemblies of your program. If it can't do that, it'll throw an exception.</p>
+
+	<p>If you rename a class or change its namespace or simply remove its code, the database created with old version of the code will no longer be usable with new version of the code.</p>
+
+	<p>For that reason it's important to get the design of your objects right.</p>
+
+	<p>If you have to make incompatible changes to object schema and want to preserve backwards compatibility with databases created with older versions of the code, you can implement manual database migration in your program.</p>
+
+	<p>The basic idea is that you preserve the old classes that were stored in the database, on startup check if they exist in the database and if they do, you manually convert them to a new schema (or delete altogether).</p>
+
+	<hr style="margin-top:28px">
+	<center style="font-size:10pt;color:gray">Volante is maintained by <a href="http://blog.kowalczyk.info">Krzysztof Kowalczyk</a></center>
+</div>
+
+<span id=adsense></span>
+</body>
+</html>

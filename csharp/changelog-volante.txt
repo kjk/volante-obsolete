@@ -26,3 +26,5 @@
 22. Fixed a bug in PArrayImpl.Length if setting length to a value smaller than current length
 23. Fixed a bug in BlobImpl.Seek() when SeekOrigin.End is used
 24. Removed non-templated CreateSet(), CreateLink(), CreateArray() from public API since they're trivially done with CreateSet<IPersistent>() etc.
+25. Renamed IDatabase.CreateScalableSet() to just CreateSet().
+26. Removed Patricia tree code - of very limited use.

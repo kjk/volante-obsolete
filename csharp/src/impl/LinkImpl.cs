@@ -76,30 +76,27 @@ namespace Volante.Impl
             }
         }
 
-        public virtual T Get(int i)
+        void EnsureValidIndex(int i)
         {
             if (i < 0 || i >= used)
-            {
                 throw new IndexOutOfRangeException();
-            }
+        }
+
+        public virtual T Get(int i)
+        {
+            EnsureValidIndex(i);
             return loadElem(i);
         }
 
         public virtual IPersistent GetRaw(int i)
         {
-            if (i < 0 || i >= used)
-            {
-                throw new IndexOutOfRangeException();
-            }
+            EnsureValidIndex(i);
             return arr[i];
         }
 
         public virtual void Set(int i, T obj)
         {
-            if (i < 0 || i >= used)
-            {
-                throw new IndexOutOfRangeException();
-            }
+            EnsureValidIndex(i);
             arr[i] = obj;
             Modify();
         }
@@ -109,7 +106,7 @@ namespace Volante.Impl
             int i = IndexOf(obj);
             if (i >= 0)
             {
-                Remove(i);
+                RemoveAt(i);
                 return true;
             }
             return false;
@@ -117,15 +114,7 @@ namespace Volante.Impl
 
         public virtual void RemoveAt(int i)
         {
-            Remove(i);
-        }
-
-        public virtual void Remove(int i)
-        {
-            if (i < 0 || i >= used)
-            {
-                throw new IndexOutOfRangeException();
-            }
+            EnsureValidIndex(i);
             used -= 1;
             Array.Copy(arr, i + 1, arr, i, used - i);
             arr[used] = null;
@@ -145,10 +134,7 @@ namespace Volante.Impl
 
         public virtual void Insert(int i, T obj)
         {
-            if (i < 0 || i > used)
-            {
-                throw new IndexOutOfRangeException();
-            }
+            EnsureValidIndex(i);
             reserveSpace(1);
             Array.Copy(arr, i, arr, i + 1, used - i);
             arr[i] = obj;
@@ -243,6 +229,7 @@ namespace Volante.Impl
 
         public virtual bool ContainsElement(int i, T obj)
         {
+            EnsureValidIndex(i);
             IPersistent elem = arr[i];
             return (T)elem == obj || (elem != null && elem.Oid != 0 && elem.Oid == obj.Oid);
         }

@@ -207,45 +207,29 @@ namespace Volante
         /// <returns> persistent object implementing sorted collection</returns>
         ISortedCollection<K, V> CreateSortedCollection<K, V>(IndexType indexType) where V : class,IPersistent, IComparable<K>, IComparable<V>;
 
-        /// <summary>
-        /// Create new object set
+        /// <summary>Create set of references to persistent objects.
         /// </summary>
-        /// <returns>
-        /// empty set of persistent objects
+        /// <returns>empty set, members can be added to the set later.
         /// </returns>
         ISet<T> CreateSet<T>() where T : class,IPersistent;
 
-        /// <summary>Create new scalable set of references to persistent objects.
-        /// This container can effciently store small number of references as well 
-        /// as very large number references. When number of memers is small, 
-        /// Link class is used to store set members. When number of members exceed 
-        /// some threshold, PersistentSet (based on B-Tree) is used instead.
+        /// <summary>Create set of references to persistent objects.
         /// </summary>
-        /// <returns>new empty set, new members can be added to the set later.
+        /// <param name="initialSize">initial size of the set</param>
+        /// <returns>empty set, members can be added to the set later.
         /// </returns>
-        ISet<T> CreateScalableSet<T>() where T : class,IPersistent;
+        ISet<T> CreateSet<T>(int initialSize) where T : class,IPersistent;
 
-        /// <summary>Create new scalable set of references to persistent objects.
-        /// This container can effciently store small number of references as well 
-        /// as very large number references. When number of memers is small, 
-        /// Link class is used to store set members. When number of members exceed 
-        /// some threshold, PersistentSet (based on B-Tree) is used instead.
+        /// <summary>Create one-to-many link.
         /// </summary>
-        /// <param name="initialSize">initial size of the sety</param>
-        /// <returns>new empty set, new members can be added to the set later.
-        /// </returns>
-        ISet<T> CreateScalableSet<T>(int initialSize) where T : class,IPersistent;
-
-        /// <summary> Create one-to-many link.
-        /// </summary>
-        /// <returns>new empty link, new members can be added to the link later.
+        /// <returns>empty link, members can be added to the link later.
         /// </returns>
         ILink<T> CreateLink<T>() where T : class,IPersistent;
 
-        /// <summary> Create one-to-many link with specified initial size.
+        /// <summary>Create one-to-many link with specified initial size.
         /// </summary>
         /// <param name="initialSize">initial size of the array</param>
-        /// <returns>new link with specified size
+        /// <returns>empty link with specified size
         /// </returns>
         ILink<T> CreateLink<T>(int initialSize) where T : class,IPersistent;
 
@@ -298,7 +282,7 @@ namespace Volante
         /// specified range.
         /// Usually the value of this parameter should be set as
         /// (number of elements in block)*(tick interval)*2. 
-        /// Coefficient 2 here is used to compencate possible holes in time series.
+        /// Coefficient 2 here is used to compact possible holes in time series.
         /// For example, if we collect stocks data, we will have data only for working hours.
         /// If number of element in block is 100, time series period is 1 day, then
         /// value of maxBlockTimeInterval can be set as 100*(24*60*60*10000000L)*2
@@ -306,6 +290,7 @@ namespace Volante
         /// <returns>new empty time series</returns>
         ITimeSeries<T> CreateTimeSeries<T>(int blockSize, long maxBlockTimeInterval) where T : ITimeSeriesTick;
 
+#if WITH_PATRICIA
         /// <summary>
         /// Create PATRICIA trie (Practical Algorithm To Retrieve Information Coded In Alphanumeric)
         /// Tries are a kind of tree where each node holds a common part of one or more keys. 
@@ -318,6 +303,7 @@ namespace Volante
         /// </summary>
         /// <returns>created PATRICIA trie</returns>
         IPatriciaTrie<T> CreatePatriciaTrie<T>() where T : class,IPersistent;
+#endif
 
         /// <summary> Commit transaction (if needed) and close the db
         /// </summary>

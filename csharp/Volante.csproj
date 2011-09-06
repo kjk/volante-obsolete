@@ -72,7 +72,7 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'DebugFull|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
     <OutputPath>bin\DebugFull\</OutputPath>
-    <DefineConstants>DEBUG;WITH_REPLICATION;WITH_XML;WITH_OLD_BTREE</DefineConstants>
+    <DefineConstants>DEBUG;WITH_REPLICATION;WITH_XML;WITH_OLD_BTREE;WITH_PATRICIA</DefineConstants>
     <BaseAddress>285212672</BaseAddress>
     <WarningLevel>1</WarningLevel>
     <FileAlignment>4096</FileAlignment>
@@ -107,7 +107,7 @@
     <CodeAnalysisIgnoreBuiltInRuleSets>true</CodeAnalysisIgnoreBuiltInRuleSets>
     <CodeAnalysisRuleDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules</CodeAnalysisRuleDirectories>
     <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
-    <DefineConstants>WITH_XML;WITH_REPLICATION;WITH_OLD_BTREE;USE_UNSAFE_CODE</DefineConstants>
+    <DefineConstants>WITH_XML;WITH_REPLICATION;WITH_OLD_BTREE;USE_UNSAFE_CODE;WITH_PATRICIA</DefineConstants>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>

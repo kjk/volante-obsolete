@@ -107,7 +107,7 @@
             </summary>
         </member>
         <member name="T:Volante.Persistent">
-            <summary> Base class for all persistent capable objects
+            <summary>Base class for all persistent capable objects
             </summary>
         </member>
         <member name="T:Volante.IPersistent">
@@ -133,7 +133,7 @@
             </returns>
         </member>
         <member name="M:Volante.IPersistent.IsDeleted">
-            <summary>Check if object is deleted by GC
+            <summary>Check if object is deleted by garbage collection
             </summary>
             <returns> <code>true</code> if object is deleted by GC
             </returns>
@@ -194,7 +194,7 @@
         <member name="M:Volante.IPersistent.Invalidate">
             <summary>
             Invalidate object. Invalidated object has to be explicitly
-            reloaded using load() method. Attempt to store invalidated object
+            reloaded using Load() method. Attempt to store invalidated object
             will cause DatabaseException exception.
             </summary>
         </member>
@@ -348,7 +348,7 @@
             </summary>
         </member>
         <member name="T:Volante.ILink`1">
-            <summary> Interface for one-to-many relation. There are two types of relations:
+            <summary>Interface for one-to-many relation. There are two types of relations:
             embedded (when references to the related objects are stored in relation
             owner object itself) and standalone (when relation is a separate object, which contains
             the reference to the relation owner and relation members). Both kinds of relations
@@ -363,14 +363,14 @@
             </summary>
         </member>
         <member name="M:Volante.IGenericLink.Size">
-            <summary> Get number of the linked objects 
+            <summary>Get number of the linked objects 
             </summary>
             <returns>the number of related objects
             
             </returns>
         </member>
         <member name="M:Volante.IGenericLink.GetRaw(System.Int32)">
-            <summary> Get related object by index without loading it.
+            <summary>Get related object by index without loading it.
             Returned object can be used only to get its oid or to compare with other objects using
             <code>equals</code> method
             </summary>
@@ -381,16 +381,14 @@
             </returns>
         </member>
         <member name="M:Volante.IGenericLink.SetOwner(Volante.IPersistent)">
-            <summary>
-            Set owner object for this link. Owner is persistent object contaning this link.
+            <summary>Set owner object for this link. Owner is persistent object contaning this link.
             This method is mostly used by db itself, but can also used explicityl by programmer if
             link component of one persistent object is assigned to component of another persistent object
             </summary>
             <param name="owner">link owner</param>
         </member>
         <member name="M:Volante.IGenericLink.Unpin">
-            <summary>
-            Replace all direct references to linked objects with stubs. 
+            <summary>Replace all direct references to linked objects with stubs. 
             This method is needed tyo avoid memory exhaustion in case when 
             there is a large numebr of objectys in databasse, mutually
             refefencing each other (each object can directly or indirectly 
@@ -398,15 +396,14 @@
             </summary>
         </member>
         <member name="M:Volante.IGenericLink.Pin">
-            <summary>
-            Replace references to elements with direct references.
+            <summary>Replace references to elements with direct references.
             It will impove spped of manipulations with links, but it can cause
             recursive loading in memory large number of objects and as a result - memory
             overflow, because garabge collector will not be able to collect them
             </summary>
         </member>
         <member name="M:Volante.ILink`1.Get(System.Int32)">
-            <summary> Get related object by index
+            <summary>Get related object by index
             </summary>
             <param name="i">index of the object in the relation
             </param>
@@ -415,7 +412,7 @@
             </returns>
         </member>
         <member name="M:Volante.ILink`1.Set(System.Int32,`0)">
-            <summary> Replace i-th element of the relation
+            <summary>Replace i-th element of the relation
             </summary>
             <param name="i">index in the relartion
             </param>
@@ -423,53 +420,44 @@
             
             </param>
         </member>
-        <member name="M:Volante.ILink`1.Remove(System.Int32)">
-            <summary> Remove object with specified index from the relation
-            </summary>
-            <param name="i">index in the relartion
-            
-            </param>
-        </member>
         <member name="M:Volante.ILink`1.AddAll(`0[])">
-            <summary> Add all elements of the array to the relation
+            <summary>Add all elements of the array to the relation
             </summary>
-            <param name="arr">array of obects which should be added to the relation
+            <param name="arr">array of objects which should be added to the relation
             
             </param>
         </member>
         <member name="M:Volante.ILink`1.AddAll(`0[],System.Int32,System.Int32)">
-            <summary> Add specified elements of the array to the relation
+            <summary>Add specified elements of the array to the relation
             </summary>
-            <param name="arr">array of obects which should be added to the relation
+            <param name="arr">array of objects which should be added to the relation
             </param>
             <param name="from">index of the first element in the array to be added to the relation
             </param>
             <param name="length">number of elements in the array to be added in the relation
-            
             </param>
         </member>
         <member name="M:Volante.ILink`1.AddAll(Volante.ILink{`0})">
-            <summary> Add all object members of the other relation to this relation
+            <summary>Add all object members of the other relation to this relation
             </summary>
             <param name="link">another relation
             
             </param>
         </member>
         <member name="M:Volante.ILink`1.ToArray">
-            <summary> Get relation members as array of objects
+            <summary>Get relation members as array of objects
             </summary>
             <returns>created array</returns>
         </member>
         <member name="M:Volante.ILink`1.ToRawArray">
-            <summary> 
-            Return array with relation members. Members are not loaded and 
+            <summary>Return array with relation members. Members are not loaded and 
             size of the array can be greater than actual number of members. 
             </summary>
             <returns>array of object with relation members used in implementation of Link class
             </returns>
         </member>
         <member name="M:Volante.ILink`1.ToArray(System.Type)">
-            <summary> Get relation members as array with specifed element type
+            <summary>Get relation members as array with specifed element type
             </summary>
             <param name="elemType">element type of created array</param>
             <returns>created array</returns>
@@ -518,7 +506,7 @@
             </returns>
         </member>
         <member name="M:Volante.IGenericPArray.GetOid(System.Int32)">
-            <summary> Get oid of array element.
+            <summary>Get oid of array element.
             </summary>
             <param name="i">index of the object in the relation
             </param>
@@ -531,7 +519,7 @@
             This method is mostly used by db itself, but can also used explicityl by programmer if
             Parray component of one persistent object is assigned to component of another persistent object
             </summary>
-            <param name="owner">link owner</param>
+            <param name="owner">owner of the array</param>
         </member>
         <member name="T:Volante.IIndex`2">
             <summary> Interface of object index.
@@ -887,17 +875,6 @@
             
             </exception>
         </member>
-        <member name="T:Volante.PatriciaTrieKey">
-            Convert different type of keys to 64-bit long value used in PATRICIA trie 
-            (Practical Algorithm To Retrieve Information Coded In Alphanumeric)
-        </member>
-        <member name="F:Volante.PatriciaTrieKey.mask">
-            Bit mask representing bit vector.
-            The last digit of the key is the right most bit of the mask
-        </member>
-        <member name="F:Volante.PatriciaTrieKey.length">
-            Length of bit vector (can not be larger than 64)
-        </member>
         <member name="T:Volante.ITimeSeriesTick">
             <summary>
             Interface for timeseries element.
@@ -1196,45 +1173,29 @@
             <returns> persistent object implementing sorted collection</returns>
         </member>
         <member name="M:Volante.IDatabase.CreateSet``1">
-            <summary>
-            Create new object set
+            <summary>Create set of references to persistent objects.
             </summary>
-            <returns>
-            empty set of persistent objects
+            <returns>empty set, members can be added to the set later.
             </returns>
         </member>
-        <member name="M:Volante.IDatabase.CreateScalableSet``1">
-            <summary>Create new scalable set references to persistent objects.
-            This container can effciently store small number of references as well 
-            as very large number references. When number of memers is small, 
-            Link class is used to store set members. When number of members exceed 
-            some threshold, PersistentSet (based on B-Tree) is used instead.
+        <member name="M:Volante.IDatabase.CreateSet``1(System.Int32)">
+            <summary>Create set of references to persistent objects.
             </summary>
-            <returns>new empty set, new members can be added to the set later.
-            </returns>
-        </member>
-        <member name="M:Volante.IDatabase.CreateScalableSet``1(System.Int32)">
-            <summary>Create new scalable set references to persistent objects.
-            This container can effciently store small number of references as well 
-            as very large number references. When number of memers is small, 
-            Link class is used to store set members. When number of members exceed 
-            some threshold, PersistentSet (based on B-Tree) is used instead.
-            </summary>
-            <param name="initialSize">initial size of the sety</param>
-            <returns>new empty set, new members can be added to the set later.
+            <param name="initialSize">initial size of the set</param>
+            <returns>empty set, members can be added to the set later.
             </returns>
         </member>
         <member name="M:Volante.IDatabase.CreateLink``1">
-            <summary> Create one-to-many link.
+            <summary>Create one-to-many link.
             </summary>
-            <returns>new empty link, new members can be added to the link later.
+            <returns>empty link, members can be added to the link later.
             </returns>
         </member>
         <member name="M:Volante.IDatabase.CreateLink``1(System.Int32)">
-            <summary> Create one-to-many link with specified initial size.
+            <summary>Create one-to-many link with specified initial size.
             </summary>
             <param name="initialSize">initial size of the array</param>
-            <returns>new link with specified size
+            <returns>empty link with specified size
             </returns>
         </member>
         <member name="M:Volante.IDatabase.CreateArray``1">
@@ -1292,25 +1253,12 @@
             </param>
             <returns>new empty time series</returns>
         </member>
-        <member name="M:Volante.IDatabase.CreatePatriciaTrie``1">
-            <summary>
-            Create PATRICIA trie (Practical Algorithm To Retrieve Information Coded In Alphanumeric)
-            Tries are a kind of tree where each node holds a common part of one or more keys. 
-            PATRICIA trie is one of the many existing variants of the trie, which adds path compression 
-            by grouping common sequences of nodes together.
-            This structure provides a very efficient way of storing values while maintaining the lookup time 
-            for a key in O(N) in the worst case, where N is the length of the longest key. 
-            This structure has it's main use in IP routing software, but can provide an interesting alternative 
-            to other structures such as hashtables when memory space is of concern.
-            </summary>
-            <returns>created PATRICIA trie</returns>
-        </member>
         <member name="M:Volante.IDatabase.Close">
             <summary> Commit transaction (if needed) and close the db
             </summary>
         </member>
         <member name="M:Volante.IDatabase.Gc">
-            <summary>Explicit start of garbage collector
+            <summary>Explicitly start garbage collection
             </summary>
             <returns>number of collected (deallocated) objects</returns>
         </member>
@@ -1469,7 +1417,6 @@
             If it is set to the value different from long.MaxValue, GC will be started each time 
             when delta between total size of allocated and deallocated objects exceeds specified threashold OR
             after reaching end of allocation bitmap in allocator.
-            ---
             <summary>Set threshold for initiation of garbage collection. By default garbage collection is disable (threshold is set to
             Int64.MaxValue). If it is set to the value different fro Long.MAX_VALUE, GC will be started each time when
             delta between total size of allocated and deallocated objects exceeds specified threashold OR
@@ -1875,48 +1822,6 @@
             Get fields used as a key
             </summary>
             <returns>array of index key fields</returns>
-        </member>
-        <member name="T:Volante.IPatriciaTrie`1">
-            <summary> 
-            PATRICIA trie (Practical Algorithm To Retrieve Information Coded In Alphanumeric).
-            Tries are a kind of tree where each node holds a common part of one or more keys. 
-            PATRICIA trie is one of the many existing variants of the trie, which adds path compression 
-            by grouping common sequences of nodes together.
-            This structure provides a very efficient way of storing values while maintaining the lookup time 
-            for a key in O(N) in the worst case, where N is the length of the longest key. 
-            This structure has it's main use in IP routing software, but can provide an interesting alternative 
-            to other structures such as hashtables when memory space is of concern.
-            </summary>
-        </member>
-        <member name="M:Volante.IPatriciaTrie`1.Add(Volante.PatriciaTrieKey,`0)">
-            <summary> 
-            Add new key to the trie
-            </summary>
-            <param name="key">bit vector</param>
-            <param name="obj">persistent object associated with this key</param>
-            <returns>previous object associtated with this key or <code>null</code> if there
-            was no such object</returns>
-        </member>
-        <member name="M:Volante.IPatriciaTrie`1.FindBestMatch(Volante.PatriciaTrieKey)">
-            <summary>
-            Find best match with specified key
-            </summary>
-            <param name="key">bit vector</param>
-            <returns>object associated with this deepest possible match with specified key</returns>
-        </member>
-        <member name="M:Volante.IPatriciaTrie`1.FindExactMatch(Volante.PatriciaTrieKey)">
-            <summary>
-            Find exact match with specified key
-            </summary>
-            <param name="key">bit vector</param>
-            <returns>object associated with this key or NULL if match is not found</returns>
-        </member>
-        <member name="M:Volante.IPatriciaTrie`1.Remove(Volante.PatriciaTrieKey)">
-            <summary>
-            Removes key from the triesKFind exact match with specified key
-            </summary>
-            <param name="key">bit vector</param>
-            <returns>object associated with removed key or <code>null</code> if such key is not found</returns>
         </member>
         <member name="T:Volante.TransparentPersistenceAttribute">
             <summary>
@@ -2802,7 +2707,7 @@
         </member>
         <member name="T:Volante.PersistentString">
             <summary>
-            Class encapsulating native .Net string. System.String is not persistent object
+            Class encapsulating native .Net string. System.String is not a persistent object
             so it can not be stored in Volante as independent persistent object. 
             But sometimes it is needed. This class sole this problem providing implcit conversion
             operator from System.String to PerisstentString.

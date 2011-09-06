@@ -1,11 +1,11 @@
+#if WITH_PATRICIA
 using System;
 using System.Net;
 using System.Diagnostics;
 
 namespace Volante
 {
-    /// Convert different type of keys to 64-bit long value used in PATRICIA trie 
-    /// (Practical Algorithm To Retrieve Information Coded In Alphanumeric)
+    /// Convert different type of keys to 64-bit long value used in Patricia trie 
     public class PatriciaTrieKey
     {
         /// Bit mask representing bit vector.
@@ -107,3 +107,4 @@ namespace Volante
         }
     }
 }
+#endif

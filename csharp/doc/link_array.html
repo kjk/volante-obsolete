@@ -1,0 +1,98 @@
+<!doctype HTML> 
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<link href="main.css" type="text/css" rel="stylesheet">
+	<link  href="http://blog.kowalczyk.info/js/prettify.css" type="text/css" rel="stylesheet"> 
+	<script src="http://blog.kowalczyk.info/js/prettify.js" type="text/javascript"></script>
+	<title>Link</title>
+</head>
+
+<body onload="prettyPrint()">
+<div id=left-bar>
+	<div id=sections>
+		<center><div><a href="index.html">Volante</a></div></center>
+	</div>
+</div>
+
+<div class=content>
+	<p><a href=index.html>Volante</a> : <a href=devguideindex.html>Volante Developer's Guide</a> : Link (one-to-many relation) and persistent array</p>
+
+	<p>Link and persistent array provide almost identical functionality. They can be though of as modeling one-to-many relation i.e. one persistent object (an owner) pointing to several persistent object e.g. an object representing a directory can point to several objects representing a file and several objects representing a directory.</p>
+
+	<p>Implementation-wise, link loads its member objects while array only loads their oids and only loads the content of the object on demand. For that reason link is apropriate for storing a small number of objects while array for storing large number of objects.</p>
+
+	<p>A concept related to link is a a href=index_relation.html>relation</a>.</p>
+
+
+	<h3>Creating a link</h3>
+
+	<p>To create a link use:
+	<ul>
+		<li><code>ILink&lt;T&gt; CreateLink&lt;T&gt;()</code></li>
+		<li><code>ILink&lt;T&gt; CreateLink&lt;T&gt;(int initialSize)</code></li>
+	</ul></p>
+
+	<p>Link implements standard <a href="http://msdn.microsoft.com/en-us/library/5y536ey6.aspx">IList&lt;T&gt;</a> interface.</p>
+
+	<h3>Adding objects to a link</h3>
+
+	<p>To add objects to a link:
+	<ul>
+		<li><code>void Add(T item)</code></li>
+		<li><code>void AddAll(T[] arr)</code></li>
+		<li><code>void AddAll(T[] arr, int from, int length)</code></li>
+		<li><code>void AddAll(ILink&lt;T&gt; link)</code></li>
+		<li><code>void Insert(int index, T item)</code></li>
+		<li><code>void Set(int index, T obj)</code> - replace an object at a given index</li>
+	</ul>
+	</p>
+
+	<h3>Removing objects from a link</h3>
+
+	<p>To remove objects from a link:
+	<ul>
+		<li><code>bool Remove(T item)</code></li>
+		<li><code>void RemoveAt(int index)</code></li>
+		<li><code>void Clear()</code> - remove all objects</li>
+	</ul>
+	</p>
+
+	<h3>Accessing objects in a link</h3>
+
+	<p>To access objects in a link:
+	<ul>
+		<li><code>int Length { get; set; }</code> - get/set number of elements</li>
+		<li><code>T Get(int i)</code></li>
+		<li><code>bool ContainsElement(int index, T obj)</code> - <code>true</code> if object at a given object is equal to <code>obj</code></li>
+		<li><code>IPersistent GetRaw(int iindex)</code> - get <a href=ipersistent_in_depth.html#raw>a raw</a> object</li>
+		<li><code>T[] ToArray()</code></li>
+		<li><code>Array ToRawArray()</code> - get an array of <a href=ipersistent_in_depth.html#raw>raw</a> object</li>
+		<li><code>Array ToArray(Type elemType)</code></li>
+	</ul></p>
+
+	<h3>Persistent array</h3>
+
+    <p>Persistent array is inteded to be used in classes that use virtual properties to access components of persistent objects (you can't use standard C# array in that case).</p>
+
+	<p>To create persistent array:
+	<ul>
+		<li><code>IPArray&lt;T&gt; CreateArray&lt;T&gt;() where T : class,IPersistent</code></li>
+		<li><code>IPArray&lt;T&gt; CreateArray&lt;T&gt;(int initialSize) where T : class,IPersistent</code></li>
+	</ul></p>
+
+	<p>Persistent array implements all the same functionality as link plus:
+	<ul>
+		<li><code>int GetOid(int i)</code></li>
+	</ul></p>
+
+
+	<center><a href=index_sorted_collection.html>← sorted collections</a> &nbsp;&bull;&nbsp; <a href=index_link.html>link →</a></center>
+
+	<hr style="margin-top:28px">
+	<center style="font-size:10pt;color:gray">Volante is maintained by <a href="http://blog.kowalczyk.info">Krzysztof Kowalczyk</a></center>
+</div>
+
+<span id=adsense></span>
+</body>
+</html>

@@ -75,7 +75,7 @@ It makes not possible to store "foreign" classes in the storage. This is the cos
 
 <DL>
 <DT>Scalar types
-<DD>Any valid CSharp scalar type: boolean, integer, real or enum. For example <code>bool, int, short, double,...</code>
+<DD>Any valid C# scalar type: boolean, integer, real or enum. For example <code>bool, int, short, double,...</code>
 <DT>String type
 <DD><code>System.String</code> type
 <DT>Date type
@@ -85,7 +85,7 @@ It makes not possible to store "foreign" classes in the storage. This is the cos
 <DT>Value type
 <DD>Any C# value type with the same restrictions for types of components as for persitent capable objects. Values are stored inside the persistent object containing them. 
 <DT>Raw binary type
-<DD>Any C# class not derived from <code>IPersistent</code> or  <code>IValue</code> interfaces and marked as Serializable.
+<DD>Any C# class not derived from <code>IPersistent</code> or <code>IValue</code> interfaces and marked as Serializable.
 Standard C# serialization mechanism will be used to pack cluster of such objects into byte array which will be 
 stored in the database. The class should be marked with <code>Serializable</code> attribute
 and should not contain references to persistent objects. 
@@ -99,18 +99,18 @@ Links are created using <code>IDatabase.CreateLink()</code> method.
 Unfortunately it is not possible to detect if object is changed or not without saving old state of the object
 and performing field-by-field comparison with new state of the object. But overhead of such solution 
 (both space and CPU) is very high. In Volante it is responsibility of programmer to save object in the storage.
-It can be done by <code>Persistent.store</code> method. or <code>Persistent.modify</code> methods.<P>
+It can be done by <code>Persistent.Store()</code> method. or <code>Persistent.Modify()</code> methods.<P>
 
-<code>Persistent.store</code> method writes object in the storage as well
+<code>Persistent.Store()</code> method writes object in the storage as well
 as all objects referenced from this object which are not yet persistent. So if you create tree of objects
 and assign reference to the root of this tree to some persistent object <B>X</B>, it is only necessary to 
-invoke <code>store()</code> method in this object <B>X</B>. But then if you update one of the elements in this tree, 
-you should invoke <code>store()</code> individually for each such element (<code>X.store()</code> will
+invoke <code>Store()</code> method in this object <B>X</B>. But then if you update one of the elements in this tree, 
+you should invoke <code>Store()</code> individually for each such element (<code>X.Store()</code> will
 NOT now automatically save referenced objects).<P>
 
-<code>Persistent.modify</code> method mark object is modified but doesn't immediately write it to the storage.
-All objects marked as modified will be stored to the storage during transaction commit (<code>store</code> method
-will be invoked for each modified object). So using <code>modify</code> method is preferable if object
+<code>Persistent.Modify()</code> method mark object is modified but doesn't immediately write it to the storage.
+All objects marked as modified will be stored to the storage during transaction commit (<code>Store()</code> method
+will be invoked for each modified object). So using <code>Modify()</code> method is preferable if object
 is updated multiple times within transaction. In this case instead of storing it several times, it will
 be stored only once at the end.<P>
 
@@ -122,19 +122,19 @@ runtime behavior reflection (changing behavior of object at runtime), it is not 
 transparent persistence (when there are no differences between access to transient and persistent objects).
 Instead of it Volante propose transparent behavior in most cases with some exceptions.<P>
 
-<code>IPersistent</code> interface declares <code>recursiveLoading</code> method. Default implementation of 
+<code>IPersistent</code> interface declares <code>RecursiveLoading()</code> method. Default implementation of 
 this method in <code>Persistent</code> class always returns <code>true</code>. In this case Volante 
 will recursively load any object referenced from target object when target object is loaded. 
 So it cause implicit loading of all cluster of referenced objects from storage to main memory.
 It is similar with how serialization mechanism works.<P>
 
 To avoid overflow of main memory caused by recursive loading of all objects fro the storage, 
-programmer has to overload <code>recursiveLoading</code> method in some classes and return <code>false</code> n it.
+programmer has to overload <code>RecursiveLoading()</code> method in some classes and return <code>false</code> in it.
 Objects loaded from such object will not be implicitly loaded and programmer has to explicitly 
-invoke <code>Persistent.load</code> method to load them. So <code>recursiveLoading</code> method can be used
+invoke <code>Persistent.Load()</code> method to load them. So <code>RecursiveLoading()</code> method can be used
 to control loading of objects from storage to main memory.<P>
 
-Also it is important to notice that containers (<code>Link, Relation, Index</code>) always load member object on demand 
+Also it is important to notice that containers (<code>Link, Relation, IIndex</code>) always load member objects on demand 
 (do not perform automatic loading of all objects in the containers). Since access to the container members is always 
 performed through methods of the container class, programmer will never notice it - container methods will always
 return loaded object(s).<P>
@@ -152,13 +152,11 @@ If you need these values to be able to perform initialization of transient field
 <code>onLoad</code> method which is invoked after fetching of all values of non-transient fields of persistent object from the storage. 
 </OL><P>
 
-So summarizing all above, proposed mechanism is convenient and easy to use because it doesn't require programmer
-to explicitly load any referenced object and from another point of view is is flexible above by providing programmer control
-on object loading. Only those classes (usually containers) which explicitly control loading of their
-members (by overloading <code>recursiveLoading</code> to return <code>false</code> value) should be aware
-calling <code>Persistent.load</code> method.<P> 
-
-
+To summarize: the mechanism is convenient and easy to use because it doesn't require programmer
+to explicitly load any referenced objects. It's also flexible by giving the programmer control
+over object loading. Only those classes (usually containers) which explicitly control loading
+of their members (by overloading <code>RecursiveLoading()</code> to return <code>false</code>)
+should need to use <code>Persistent.Load()</code> method.<P>
 
 <H3> <A NAME = "scheme">Automatic scheme evaluation</A></H3>
 

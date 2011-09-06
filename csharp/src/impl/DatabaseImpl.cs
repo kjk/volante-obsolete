@@ -1844,7 +1844,7 @@ namespace Volante.Impl
             return new Ttree<K, V>(new DefaultPersistentComparator<K, V>(), unique);
         }
 
-        public ISet<T> CreateSet<T>() where T : class,IPersistent
+        internal ISet<T> CreateBtreeSet<T>() where T : class,IPersistent
         {
             lock (this)
             {
@@ -1861,12 +1861,12 @@ namespace Volante.Impl
             }
         }
 
-        public ISet<T> CreateScalableSet<T>() where T : class,IPersistent
+        public ISet<T> CreateSet<T>() where T : class,IPersistent
         {
-            return CreateScalableSet<T>(8);
+            return CreateSet<T>(8);
         }
 
-        public ISet<T> CreateScalableSet<T>(int initialSize) where T : class,IPersistent
+        public ISet<T> CreateSet<T>(int initialSize) where T : class,IPersistent
         {
             lock (this)
             {
@@ -1961,10 +1961,12 @@ namespace Volante.Impl
             return new TimeSeriesImpl<T>(this, blockSize, maxBlockTimeInterval);
         }
 
+#if WITH_PATRICIA
         public IPatriciaTrie<T> CreatePatriciaTrie<T>() where T : class,IPersistent
         {
             return new PTrie<T>();
         }
+#endif
 
         public IBlob CreateBlob()
         {

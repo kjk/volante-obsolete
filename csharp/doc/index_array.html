@@ -1,0 +1,42 @@
+<!doctype HTML> 
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<link href="main.css" type="text/css" rel="stylesheet">
+	<link  href="http://blog.kowalczyk.info/js/prettify.css" type="text/css" rel="stylesheet"> 
+	<script src="http://blog.kowalczyk.info/js/prettify.js" type="text/javascript"></script>
+	<title>Link</title>
+</head>
+
+<body onload="prettyPrint()">
+<div id=left-bar>
+	<div id=sections>
+		<center><div><a href="index.html">Volante</a></div></center>
+	</div>
+</div>
+
+<div class=content>
+	<p><a href=index.html>Volante</a> : <a href=devguideindex.html>Volante Developer's Guide</a> : Persistent array</p>
+
+    <p>Persistent array is inteded to be used in classes that use virtual properties to access components of persistent objects (you can't use standard C# array in that case).</p>
+
+	<p>To create persistent array:
+	<ul>
+		<li><code>IPArray&lt;T&gt; CreateArray&lt;T&gt;() where T : class,IPersistent</code></li>
+		<li><code>IPArray&lt;T&gt; CreateArray&lt;T&gt;(int initialSize) where T : class,IPersistent</code></li>
+	</ul></p>
+
+	<p>Persistent array implements all the same functionality as <a href=index_link.html>link</a> plus:
+	<ul>
+		<li><code>int GetOid(int i)</code></li>
+	</ul></p>
+
+	<center><a href=index_sorted_collection.html>← sorted collections</a> &nbsp;&bull;&nbsp; <a href=index_link.html>link →</a></center>
+
+	<hr style="margin-top:28px">
+	<center style="font-size:10pt;color:gray">Volante is maintained by <a href="http://blog.kowalczyk.info">Krzysztof Kowalczyk</a></center>
+</div>
+
+<span id=adsense></span>
+</body>
+</html>

@@ -1,3 +1,4 @@
+#if WITH_PATRICIA
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -5,15 +6,14 @@ using System.Collections.Generic;
 namespace Volante
 {
     /// <summary> 
-    /// PATRICIA trie (Practical Algorithm To Retrieve Information Coded In Alphanumeric).
-    /// Tries are a kind of tree where each node holds a common part of one or more keys. 
-    /// PATRICIA trie is one of the many existing variants of the trie, which adds path compression 
-    /// by grouping common sequences of nodes together.
-    /// This structure provides a very efficient way of storing values while maintaining the lookup time 
-    /// for a key in O(N) in the worst case, where N is the length of the longest key. 
-    /// This structure has it's main use in IP routing software, but can provide an interesting alternative 
-    /// to other structures such as hashtables when memory space is of concern.
-    /// </summary>
+    /// Trie is a kind of tree where each node holds a common part of one or more keys. 
+    /// Patricia trie is one of the many existing variants of the trie, which adds path
+    /// compression by grouping common sequences of nodes together.
+    /// This structure provides a very efficient way of storing values while maintaining
+    /// the lookup time for a key in O(N) in the worst case, where N is the length of
+    /// the longest key. This structure has it's main use in IP routing software, but
+    /// can provide an interesting alternative to other structures such as hashtables
+    /// when memory space is of concern.</summary>
     public interface IPatriciaTrie<T> : IPersistent, IResource, ICollection<T> where T : class,IPersistent
     {
         /// <summary> 
@@ -47,3 +47,4 @@ namespace Volante
         T Remove(PatriciaTrieKey key);
     }
 }
+#endif

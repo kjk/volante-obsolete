@@ -16,7 +16,7 @@ namespace Volante.Impl
             if (initialSize <= BTREE_THRESHOLD)
                 link = db.CreateLink<T>(initialSize);
             else
-                pset = db.CreateSet<T>();
+                pset = db.CreateBtreeSet<T>();
         }
 
         ScalableSet() { }
@@ -85,7 +85,7 @@ namespace Volante.Impl
                 return;
             }
 
-            pset = Database.CreateSet<T>();
+            pset = ((DatabaseImpl)Database).CreateBtreeSet<T>();
             for (int i = 0, n = link.Count; i < n; i++)
             {
                 pset.Add(link[i]);
@@ -106,7 +106,7 @@ namespace Volante.Impl
             if (i < 0)
                 return false;
 
-            link.Remove(i);
+            link.RemoveAt(i);
             Modify();
             return true;
         }

@@ -1,0 +1,122 @@
+<!doctype HTML> 
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<link href="main.css" type="text/css" rel="stylesheet">
+	<link  href="http://blog.kowalczyk.info/js/prettify.css" type="text/css" rel="stylesheet"> 
+	<script src="http://blog.kowalczyk.info/js/prettify.js" type="text/javascript"></script>
+	<title>Persistent objects in depth</title>
+</head>
+
+<body onload="prettyPrint()">
+<div id=left-bar>
+	<div id=sections>
+		<center><div><a href="index.html">Volante</a></div></center>
+	</div>
+</div>
+
+<div class=content>
+	<p><a href=index.html>Volante</a> : <a href=devguideindex.html>Volante Developer's Guide</a> : Persistent objects in depth</p>
+
+	<h3>What is a persistent object?</h3>
+
+	<p>In Volante terminology, a persistent object is an object that implements <a href=""><code>IPersistent</code></a> interface (storing plain .NET objects is <a href=#plain-objects>possible</a> but does have limitations). In practice persistent objects should derive from <a href=""><code>Persistent</code></a> class.</p>
+
+	<h3>Few rules for persistent objects</h3>
+
+	<p>A persistent object is uniquely identified by an oid (32-bit integer), which is managed by the database.</p>
+
+	<p>In order to provide seamless integration with C# language without using a pre-processor (like in some other object-oriented databases) Volante has some restrictions on what data can be part of a persistent object. Allowed types are:
+	<dl>
+		<dt>Scalar types
+			<dd>Any C# scalar type: boolean, integer, real or enum e.g. <code>bool, int, short, double, ...</code>
+		<dt>String type
+			<dd><code>System.String</code> type
+		<dt>Date type
+			<dd><code>System.DateTime</code> type
+		<dt>Reference to another persistent object
+			<dd>Any class inherited from <code>Persistent</code> or any interface extending <code>IPersistent</code> interface.
+		<dt>Value types (structs)
+			<dd>Any C# value type (e.g. a struct) with the same restrictions for types of components as for persitent capable objects. Values are stored inside persistent object containing them. 
+		<dt>Raw binary type
+			<dd>Any C# class not implementing <code>IPersistent</code> interface and marked as Serializable. Standard C# serialization mechanism will be used to pack those objects into a byte array which will be stored in the database. The class must be marked with <code>Serializable</code> attribute and should not contain references to persistent objects. 
+		<dt>Array type
+			<dd>One dimensional array whose elements are of type described above
+		<dt>Types provided by Volante
+			<dd>Objects like <a href=
+	</dl>
+
+	<p>To exclude some fields from being stored in the database (create a transient field), mark them with <code>NonSerialized</code> attribute.</p>
+
+	<p>Persistent objects must have a default construct (constructor without parameters). You can have other constructor for convenience, but when Volante loads an object from database file, it has to create an instance in memory and that's only possible by using default constructor.</p>
+
+	<p>Default constructor should only initialize transient field.</p>
+
+	</p>When default constructor is called, persisted fields are not yet initialized, so the constructor cannot access them. You can override <a href=#onload-store><code>OnLoad()</code></a> to execute code after the object has been fully constructed.</p>
+
+	<h3>New objects</h3>
+
+	<p>When a new persistent object is created, it only exists in memory. It is not yet stored in the database and doesn't have an oid assigned to it. You can check for that state by calling <code>bool IsPersistent()</code>.</p>
+
+	<p>You can assign an oid to new object explicitly by calling <code>int MakePersistent(IDatabase db)</code> and store the object in the database by calling <code>void Store()</code> but you rarely have to do it explicitly. This will be handled implicitly for you e.g. when you insert an object into an index, this will be taken care of by the index code.</p>
+
+	<h3>Modifying the object</h3>
+
+	<p>What happens when you load the object from the database and modify it? Well, you have to tell the database about it by calling <code>void Modify()</code> on the object. For performance reasons it's not done automatically. In your own object, you can use properties to automatically call <code>Modify</code> on value changes:
+<pre class="prettyprint lang-cs">class Record : Persistent {
+    int IntVal
+    {
+        get;
+        set
+        {
+            if (IntVal == value)
+                return;
+            IntVal = value;
+            Modify();
+        }
+    }
+}</pre></p>
+
+	<p>You can check if object is modified by calling <code>bool IsModified()</code>.</p>
+
+	<h3 id=raw>Raw object</h3>
+
+	<p>A raw object is a stub of a persistent object. It only has the oid of the object, but none of its data. You can check if the object is raw with <code>bool IsRaw()</code> and load the object's data with <code>void Load()</code>.</p>
+
+	<p>Raw objects are used for efficiency e.g. <a href=index_link.html>link object</a> can return raw objects.</p>
+
+	<h3 id=recursive-load>Recursive loading</h3>
+
+	<p>If persistent object contains other persistent objects, those objects will be automatically, recursively loaded. You can change that by overriding <code>bool RecursiveLoading()</code> and returning <code>false</code>. In that case the embedded object will be raw.</p>
+
+	<h3 id=onload-store>OnLoad(), OnStore()</h3>
+	<p>Volante allows executing custom, per-object code when object is loaded or saved. The most common use for this functionality is setting transient (non-persisted) members of the object, assuming that they can be re-created from other members, than have been persisted.</p>
+
+	<p><a href="https://github.com/kjk/volante/blob/master/csharp/src/IPersistent.cs">IPersistent</a> interface provides <code>void OnLoad()</code> and <code>void OnStore()</code> methods. The simplest way to implement them is to derive your object from <a href="https://github.com/kjk/volante/blob/master/csharp/src/Persistent.cs"><code>Persistent</code></a> class and override one (or both) of them. Their default implementation does nothing.</p>
+
+	<p>When <code>OnLoad()</code> is called, all the persisted fields have been fetched so it's a good time to initialize transient (non-persisted) fields that can be derived from persisted fields.</p>
+
+	<h3 id=deleted>Deleted objects</h3>
+
+	<p><a href=garbage_collection.html>Garbage collection</a> can delete an object in the database while it's still present in memory. You can check if an object has been deleted with <code>bool IsDeleted()</code>.</p>
+
+	<h3 id=plain-objects>Storing plain .NET objects</h3>
+
+	<p>Sometimes it's convenient to store .NET objects that don't derive from <code>Persistent</code> class (or implement <code>IPersistent</code> interface in some other way). It's possible, but it does has drawbacks.</p>
+
+	<p>The object will be serialized using standard .NET binary serialization, so all the standard .NET serialization rules apply. Most importantly, the object and all object it references must be marked with <code>Serializable</code> attribute. Additionally, it should not contain references to persistent objects.</p>
+
+	<p>Persistent objects carry their identity (oid) when loaded into memory. Plain .NET objects loose their oid when loaded into memory so storing the same object multiple times (e.g. adding it to two different indexes) creates multiple copies of the object on disk.</p>
+
+	<p>This is analogous to passing function arguments by reference vs. passing by value in C#. Oid is a reference to an object which allows to locate the value of an object so when other objects point to that object, we only need to store oid on the disk and only one copy of the value. Plain .NET objects don't have oid so we have to store the whole value every time.</p>
+
+	<center><a href=garbage_collection.html>← garbage collection</a> &nbsp;&bull;&nbsp; <a href=plain_objects.html>storing plain objects →</a></center>
+
+	<hr style="margin-top:28px">
+	<center style="font-size:10pt;color:gray">Volante is maintained by <a href="http://blog.kowalczyk.info">Krzysztof Kowalczyk</a></center>
+
+</div>
+
+<span id=adsense></span>
+</body>
+</html>
