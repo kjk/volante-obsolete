@@ -2,6 +2,7 @@ body {
 	margin: 0px;
 	font-family: Georgia, serif;
 	-webkit-font-smoothing: antialiased;
+	background: #F8F8F8;
 }
 
 a {
@@ -32,9 +33,10 @@ a:visited {
 	font-size: 11pt;
 }
 
+/*
 .content p {
 	width: 680px;
-}
+}*/
 
 .toc ul {
 	margin: 0;
@@ -53,6 +55,9 @@ a:visited {
 	padding: 2px 1em;
 }
 
+#left-bar #sections {
+	display: none;
+}
 #left-bar #sections a {
 	background-color: #0B4B97;
 	padding: 3px 5px;

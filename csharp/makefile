@@ -9,7 +9,7 @@
 CSC=gmcs
 
 CSC_FLAGS = -debug -d:MONO
-MONO_FLAGS = --gc=sgen
+MONO_FLAGS = --debug --gc=sgen
 
 ifeq ($(CFG),)
 CFG=rel

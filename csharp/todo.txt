@@ -10,6 +10,7 @@ Things to do for c# version:
  * index_relation.html
  * transactions.html
  * document tweaking performance
+* write download.html page
 * script that copies docs to my website (i.e. my blog repository)
 * make a 0.9 release
 
@@ -32,31 +33,4 @@ Test coverage notes:
 * 52%   on 2011-08-06
 * 59.5% on 2011-08-24
 * 61.4% on 2011-08-26
-
-Rc4 doc notes:
-        /// <summary> Open the encrypted db
-        /// </summary>
-        /// <param name="filePath">path to the database file
-        /// </param>
-        /// <param name="pagePoolSize">size of page pool (in bytes). Page pool should contain
-        /// at least ten 4kb pages, so minimal page pool size should be at least 40Kb.
-        /// But larger page pool ussually leads to better performance (unless it could not fit
-        /// in memory and cause swapping).
-        /// </param>
-        /// <param name="cipherKey">cipher key</param>
-        void Open(String filePath, int pagePoolSize, String cipherKey);
-
-        public void Open(String filePath, int pagePoolSize, String cipherKey)
-        {
-            Rc4File file = new Rc4File(filePath, readOnly, noFlush, cipherKey);
-            try
-            {
-                Open(file, pagePoolSize);
-            }
-            catch (DatabaseError)
-            {
-                file.Close();
-                throw;
-            }
-        }
 

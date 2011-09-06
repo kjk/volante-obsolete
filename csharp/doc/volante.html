@@ -60,18 +60,12 @@ Lets now describe key features of Volante architecture.
 
 Volante is implementing <I>persistency by reachability</I> approach. Object of any class derived from 
 <code>Persistent</code> base class is considered as persistent capable. It is automatically made
-persistent and stored in the storage when it is referenced from some other persistent object and
-<code>store</code> method of that object was invoked. So there is no need (but it is possible) to explicitly 
-assign object to the storage.<P>
+persistent and stored in the database when it is referenced from some other persistent object and
+<code>store</code> method of that object was invoked. So there is no need (but it is possible) to explicitlyassign object to the database.<P>
 
-The storage has one special <I>root</I> object. Root object is the only persistent object accessed in the special
-way (using <code>IDatabase.Root</code> property). All other persistent objects are accessed in normal way:
-either by traversing by references from another persistent objects, using object containers (<code>IIndex</code>, 
-<code>Link</code> or <code>Relation</code>). Unlike many other OODBMS, there can be only one root in the storage.
-If you need to have several named roots, you should create <code>IIndex</code> object and use it as root object.<P>
+The database has one special <I>root</I> object. Root object is the only persistent object accessed in the special way (using <code>IDatabase.Root</code> property). All other persistent objects are accessed in normal way: either by traversing by references from another persistent objects, using object containers (<code>IIndex</code>, <code>Link</code> or <code>Relation</code>). Unlike many other OODBMS, there can be only one root in the database. If you need to have several named roots, you should create <code>IIndex</code> object and use it as root object.<P>
 
-Volante requires that each persistent capable class should be derived from <code>Persistent</code> class.
-It makes not possible to store "foreign" classes in the storage. This is the cost of easy use of Volante and lack of any specialized preprocessors or compilers. Also components of persistent capable object are restricted to have the following types:
+Volante requires that each persistent capable class should be derived from <code>Persistent</code> class. It makes not possible to store "foreign" classes in the database. This is the cost of easy use of Volante and lack of any specialized preprocessors or compilers. Also components of persistent capable object are restricted to have the following types:
 
 <DL>
 <DT>Scalar types
@@ -96,60 +90,30 @@ and should not contain references to persistent objects.
 Links are created using <code>IDatabase.CreateLink()</code> method.
 </DL><P>
 
-Unfortunately it is not possible to detect if object is changed or not without saving old state of the object
-and performing field-by-field comparison with new state of the object. But overhead of such solution 
-(both space and CPU) is very high. In Volante it is responsibility of programmer to save object in the storage.
-It can be done by <code>Persistent.Store()</code> method. or <code>Persistent.Modify()</code> methods.<P>
+Unfortunately it is not possible to detect if object is changed or not without saving old state of the object and performing field-by-field comparison with new state of the object. But overhead of such solution (both space and CPU) is very high. In Volante it is responsibility of programmer to save object in the database. It can be done by <code>Persistent.Store()</code> method. or <code>Persistent.Modify()</code> methods.<P>
 
-<code>Persistent.Store()</code> method writes object in the storage as well
-as all objects referenced from this object which are not yet persistent. So if you create tree of objects
-and assign reference to the root of this tree to some persistent object <B>X</B>, it is only necessary to 
-invoke <code>Store()</code> method in this object <B>X</B>. But then if you update one of the elements in this tree, 
-you should invoke <code>Store()</code> individually for each such element (<code>X.Store()</code> will
-NOT now automatically save referenced objects).<P>
+<code>Persistent.Store()</code> method writes object to the database as well as all objects referenced from this object which are not yet persistent. So if you create tree of objects and assign reference to the root of this tree to some persistent object <B>X</B>, it is only necessary toinvoke <code>Store()</code> method in this object <B>X</B>. But then if you update one of the elements in this tree,you should invoke <code>Store()</code> individually for each such element (<code>X.Store()</code> will NOT now automatically save referenced objects).<P>
 
-<code>Persistent.Modify()</code> method mark object is modified but doesn't immediately write it to the storage.
-All objects marked as modified will be stored to the storage during transaction commit (<code>Store()</code> method
-will be invoked for each modified object). So using <code>Modify()</code> method is preferable if object
-is updated multiple times within transaction. In this case instead of storing it several times, it will
-be stored only once at the end.<P>
-
+<code>Persistent.Modify()</code> method mark object is modified but doesn't immediately write it to the database. All objects marked as modified will be stored in the database during transaction commit (<code>Store()</code> method will be invoked for each modified object). So using <code>Modify()</code> method is preferable if object is updated multiple times within transaction. In this case instead of storing it several times, it will be stored only once at the end.<P>
 
 <H3> <A NAME = "load">Semitransparent object loading</A></H3>
 
 Volante is not using any special compiler or preprocessor. And since C# doesn't provide
-runtime behavior reflection (changing behavior of object at runtime), it is not possible to implement completely
-transparent persistence (when there are no differences between access to transient and persistent objects).
-Instead of it Volante propose transparent behavior in most cases with some exceptions.<P>
+runtime behavior reflection (changing behavior of object at runtime), it is not possible to implement completely transparent persistence (when there are no differences between access to transient and persistent objects). Instead of it Volante propose transparent behavior in most cases with some exceptions.<P>
 
-<code>IPersistent</code> interface declares <code>RecursiveLoading()</code> method. Default implementation of 
-this method in <code>Persistent</code> class always returns <code>true</code>. In this case Volante 
-will recursively load any object referenced from target object when target object is loaded. 
-So it cause implicit loading of all cluster of referenced objects from storage to main memory.
-It is similar with how serialization mechanism works.<P>
+<code>IPersistent</code> interface declares <code>RecursiveLoading()</code> method. Default implementation of  this method in <code>Persistent</code> class always returns <code>true</code>. In this case Volante will recursively load any object referenced from target object when target object is loaded. So it cause implicit loading of all cluster of referenced objects from database to main memory. It is similar with how serialization mechanism works.<P>
 
-To avoid overflow of main memory caused by recursive loading of all objects fro the storage, 
-programmer has to overload <code>RecursiveLoading()</code> method in some classes and return <code>false</code> in it.
-Objects loaded from such object will not be implicitly loaded and programmer has to explicitly 
-invoke <code>Persistent.Load()</code> method to load them. So <code>RecursiveLoading()</code> method can be used
-to control loading of objects from storage to main memory.<P>
+To avoid overflow of main memory caused by recursive loading of all objects from the database, programmer has to overload <code>RecursiveLoading()</code> method in some classes and return <code>false</code> in it. Objects loaded from such object will not be implicitly loaded and programmer has to explicitly invoke <code>Persistent.Load()</code> method to load them. So <code>RecursiveLoading()</code> method can be used to control loading of objects from database to main memory.<P>
 
-Also it is important to notice that containers (<code>Link, Relation, IIndex</code>) always load member objects on demand 
-(do not perform automatic loading of all objects in the containers). Since access to the container members is always 
-performed through methods of the container class, programmer will never notice it - container methods will always
-return loaded object(s).<P>
+Also it is important to notice that containers (<code>Link, Relation, IIndex</code>) always load member objects on demand (do not perform automatic loading of all objects in the containers). Since access to the container members is always performed through methods of the container class, programmer will never notice it - container methods will always return loaded object(s).<P>
 
-Volante is using default constructor (constructor without parameters) to create object loaded from the storage. 
-It means the following things:
+Volante is using default constructor (constructor without parameters) to create object loaded from the database. It means the following things:
 <OL>
 <LI>All persistent capable classes should have default constructor (or have no constructor at all, in this case
 it will be automatically generated by compiler). Default constructor should not necessarily be public, it can have any
 access type. 
 <LI>Default constructor should initialize only transient fields. 
-<LI>Default constructor is used to create instance of the persistent object loaded from the storage. 
-So at the time of default constructor execution field of the constructed object are not yet assigned values stored in the database.
-If you need these values to be able to perform initialization of transient fields, then you need to perform this initialization in
-<code>onLoad</code> method which is invoked after fetching of all values of non-transient fields of persistent object from the storage. 
+<LI>Default constructor is used to create instance of the persistent object loaded from the database. So at the time of default constructor execution field of the constructed object are not yet assigned values stored in the database. If you need these values to be able to perform initialization of transient fields, then you need to perform this initialization in <code>OnLoad()</code> method which is invoked after fetching of all values of non-transient fields of persistent object from the database. 
 </OL><P>
 
 To summarize: the mechanism is convenient and easy to use because it doesn't require programmer
@@ -180,9 +144,9 @@ if <code>java.lang.reflect.Field.setXXX</code> method can be applied to the comp
 All other schema modifications (such as renaming fields, incompatible change of field type)
 could not be handled by Volante automatic schema modification mechanism. 
 In this case you can use Volante XML export/import mechanism. Database can be 
-exported to XML format using <code>Storage.exportXML</code> method, 
+exported to XML format using <code>IDatabase.ExportXML()</code> method, 
 then recreated with new class definitions and  after it saved data can be imported using 
-<code>Storage.importXML</code> method.<P>
+<code>IDatabase.ImportXML()</code> method.<P>
 
 
 <H3> <A NAME = "relations">Relations</A></H3>
@@ -193,12 +157,8 @@ Volante provides <code>Link</code> interface to deal with relations of such kind
 This interface allows to add/delete/inspect members of the relation.
 Members of the relation can be accessed by index or be extracted as array of objects.<P>
 
-Relations can be of two kinds: <I>embedded</I> (when references to the related objects are stored in relation
-owner object itself) and <I>standalone</I> (when relation is separate object, which contains
-the reference to the relation owner and relation members). Both kinds of relations
-implements Link interface. Embedded relation is created by <code>Storage.createLink</code> method
-and standalone relation is represented by Relation persistent class created by
-<code>Storage.createRelation</code> method.<P>
+Relations can be of two kinds: <I>embedded</I> (when references to the related objects are stored in relation owner object itself) and <I>standalone</I> (when relation is separate object, which contains the reference to the relation owner and relation members). Both kinds of relations
+implements Link interface. Embedded relation is created by <code>IDatabase.CreateLink()</code> method and standalone relation is represented by Relation persistent class created by <code>IDatabase.CreateRelation()</code> method.<P>
 
 So relation between two classes A and B can be implemented in the following way:<P>
 
@@ -222,7 +182,7 @@ for independent specification key and associated value. <code>IndexField</code> 
 using one of the fields of this object (key field).<P>
 
 
-Indices are created in Volante using <code>Storage.createIndex</code> or <code>Storage.createFieldIndex</code> methods. 
+Indices are created in Volante using <code>IDatabase.CreateIndex()</code> or <code>IDatabase.CreateFieldIndex()</code> methods. 
 There can be several index implementations
 but right now only one implementation based on B+Tree is provided (because B+Tree is the most efficient structure
 for disk based databases). Methods of <code>Index</code> and <code>FieldIndex</code> interface allows to add, remove and 
@@ -255,7 +215,7 @@ You can use index in <code>foreach</code> construction to iterate through all in
 <DD>Get iterator for objects with key belonging to the specified range. Either from boundary, either till boundary either both of them can be <code>null</code>. Both boundaries can be inclusive or exclusive. Objects can be traversed in key ascending or descending order .
 </DL><P>
 
-If you need set of persistent objects you should use <code>Storage.createSet</code> method.
+If you need set of persistent objects you should use <code>IDatabase.CreateSet()</code> method.
 Set is implemented using B+Tree where object OID is used as a key.<P> 
 
 Volante also support spatial indices (<code>org.garret.perst.SpatialIndex</code>) and generic indices with
@@ -275,63 +235,63 @@ The table below summarize information about all indeices supported by Volante:
 <TD>Index with explicitely specified key used for exact match or range queries</TD>
 <TD>scalar, string or reference</TD>
 <TD align=center>B+Tree</TD>
-<TD><code>Storage.CreateIndex(Type type, boolean unique)</code></TD>
+<TD><code>IDatabase.CreateIndex(Type type, boolean unique)</code></TD>
 </TR>
 <TR>
 <TD><code>Index</code></TD>
 <TD>The same as above but assuming that there can be a lot of duplicate key values</TD>
 <TD>scalar, string or reference</TD>
 <TD align=center>B+Tree</TD>
-<TD><code>Storage.CreateThinkIndex(Type type)</code></TD>
+<TD><code>IDatabase.CreateThinkIndex(Type type)</code></TD>
 </TR>
 <TR>
 <TD><code>FieldIndex</code></TD>
 <TD>Index constructed for one of the object fields</TD>
 <TD>scalar, string or reference</TD>
 <TD align=center>B+Tree</TD>
-<TD><code>Storage.CreateFieldIndex(Type type, String fieldName, boolean unique)</code></TD>
+<TD><code>IDatabase.CreateFieldIndex(Type type, String fieldName, boolean unique)</code></TD>
 </TR>
 <TR>
 <TD><code>BitIndex</code></TD>
 <TD>Bit index for searching object by bitmap of properties</TD>
 <TD>persistent object</TD>
 <TD align=center>B+Tree</TD>
-<TD><code>Storage.CreateBitIndex()</code></TD>
+<TD><code>IDatabase.CreateBitIndex()</code></TD>
 </TR>
 <TR>
 <TD><code>ISet</code></TD>
 <TD>Set of persistent objects</TD>
 <TD>-</TD>
 <TD align=center>B+Tree</TD>
-<TD><code>Storage.CreateSet()</code></TD>
+<TD><code>IDatabase.CreateSet()</code></TD>
 </TR>
 <TR>
 <TD><code>IPersistentSet</code></TD>
 <TD>Scalable set of persistent objects (can efficienty handle both small and large number of members</TD>
 <TD>persistent object</TD>
 <TD align=center>Link or B+Tree</TD>
-<TD><code>Storage.CreateScalableSet()</code></TD>
+<TD><code>IDatabase.CreateScalableSet()</code></TD>
 </TR>
 <TR>
 <TD><code>SpatialIndex</code></TD>
 <TD>Index for spatial objects</TD>
 <TD>Rectangle</TD>
 <TD align=center>R-Tree</TD>
-<TD><code>Storage.CreateSpatialIndex()</code></TD>
+<TD><code>IDatabase.CreateSpatialIndex()</code></TD>
 </TR>
 <TR>
 <TD><code>SpatialIndexR2</code></TD>
 <TD>Index for spatial objects with real coordinates</TD>
 <TD>RectangleR2</TD>
 <TD align=center>R-Tree</TD>
-<TD><code>Storage.CreateSpatialIndexR2()</code></TD>
+<TD><code>IDatabase.CreateSpatialIndexR2()</code></TD>
 </TR>
 <TR>
 <TD><code>SortedCollection</code></TD>
 <TD>Index with user defined comparator</TD>
 <TD>any</TD>
 <TD align=center>T-Tree</TD>
-<TD><code>Storage.CreateSortedCollection(PersistentComparator comparator, boolean unique)</code></TD>
+<TD><code>IDatabase.CreateSortedCollection(PersistentComparator comparator, boolean unique)</code></TD>
 </TR>
 </TABLE><P>
 
@@ -495,11 +455,11 @@ you should define abstract properties (it is also possible to define properties
 in interface). Fortunately C# provides convenient mechanism for working
 with properties, so it will significantly complicates programming. 
 <LI>You can not create persistent object by new operator - you should
-use <code>IStorage.CreateClass</code> method which will generate wrapper class
+use <code>IDatabase.CreateClass()</code> method which will generate wrapper class
 and create instance of this class. Also persistent class should have no constructor
 except default. And this default constructor should not do something else except 
 initialization of transient components, because this constructor will be invoked each time 
-object is loaded from the storage.
+object is loaded from the database.
 <LI>It is not possible to have arrays of references. You have to use 
 <code>Volante.PArray</code> class instead.
 <LI>Generation of wrapper classes is not cheap operations, so if there are many classes
@@ -543,10 +503,10 @@ class NodeWrapper : Persistent, Node {
     }
     public Node Parent {
         get {
-            return (Node)Storage.getByOid(parent);
+            return (Node)IDatabase.getByOid(parent);
         }
         set {
-            parent = value.MakePersistent(Storage);
+            parent = value.MakePersistent(Database);
             Modify();
         }
     }
@@ -719,7 +679,7 @@ Bitmap of modified object index pages is used to minimize time of committing
 transaction. Not the whole object index, but only its modified pages should be
 copied. After committing of transaction bitmap is cleared.<P>
 
-When transaction is explicitly aborted by <code>Storage.rollback</code>
+When transaction is explicitly aborted by <code>IDatabase.Rollback()</code>
 method, shadow object index is copied back to the current index, eliminating
 all changes done by aborted transaction. After the end of copying,
 both indices are identical again and database state corresponds to the moment
@@ -810,7 +770,7 @@ public class YourPersistentClass : Persistent {
     void doUpdate() { 
         x = 1;
         y = "Hello World";
-        links = getStorage().CreateLink();
+        links = Database.CreateLink();
         store(); // save changes in the database
     }
 }
@@ -832,7 +792,7 @@ public class YourApplication {
         String databaseFilePath = args[0]; // path to the database file
         int pagePoolSize = Int32.Parse(args[1]); // size of page pol in bytes
 
-        Storage storage = StorageFactory.Instance.CreateStorage();
+        IDatabase storage = DatabaseFactory.CreateDatabase();
         storage.Open(databaseFilePath, pagePoolSize);
 
         YourRoot root = (YourRoot)storage.Root;
@@ -921,7 +881,7 @@ This sections contains several hints how to adjust Volante parameters and increa
 
 Speed of accessing data at the disk is several times slower than speed of access data in main memory. 
 That is why caching of data is the key to increase database performance. Volante is using 
-pool of pages to optimize access to the disk. Page pool size can be specified in <code>Storage.open</code>
+pool of pages to optimize access to the disk. Page pool size can be specified in <code>IDatabase.Open()</code>
 method (by default it is 4Mb). Usually increasing page pool leads to better performance. But you should 
 notice the following things:
 
@@ -941,7 +901,7 @@ to keep all pinned pages. So do no make page pool size less then 64kb.
 </UL><P>
 
 If you think that all your data should fit in main memory, you can use
-<code>Storage.INFINITE_PAGE_POOL</code> constant in <code>Storage.open</code> method.
+<code>Storage.INFINITE_PAGE_POOL</code> constant in <code>IDatabase.Open()</code> method.
 In this case page pool will be dynamically extended when new page is requested. 
 As a result, all pages will be cached and present in memory. So each page is read from the disk only once. 
 Also in this case strong object cache is used instead of weak object cache. It means that all fetched
@@ -955,7 +915,7 @@ as Link, Index, FieldIndex, SpatialIndex still can be used by application. In th
 with <code>Storage.INFINITE_PAGE_POOL</code> to create transient in-memory database. Data in this case will never be 
 written on the disk.<P> 
 
-There are some constants defined in <code>StorageImpl</code> class which has influence on
+There are some constants defined in <code>DatabaseImpl</code> class which has influence on
 initial and maximal database size. If you want to change them, you will have to rebuild Volante.
 Below is detailed description of this parameters:<P>
 
@@ -1012,10 +972,10 @@ reduce overhead of each commit and save database size.<P>
 If your persistent object form tree or graph where all objects cab be accessed by reference from the root object,
 then once you will load root object in main memory and store reference to it in some variable, 
 GC will never be able to collect any instance of loaded persistent object (because it will be accessible from
-the root object). So when you application access more and more objects from the storage, 
+the root object). So when you application access more and more objects from the database, 
 at some moment of time all of them will have to be loaded in main memory. It can cause space exhaustion.
 To prevent this situation you should avoid to store in variables references to container objects which 
-contain references to a large number of members. Especially it is true for storage root object.
+contain references to a large number of members. Especially it is true for database root object.
 In this case GC is able to do it work and throw out from the memory objects which are not used 
 at this moment (to which there are no references from local variable). 
 But it is important to say that objects accessible though the index by key can be normally deallocated by garbage
@@ -1155,7 +1115,7 @@ First problem is most critical and can cause database data corruption.
 To prevent this problem it is strongly recommended to use Volante garbage collector
 instead of explicit memory deallocation. If it is not possible (due to performance 
 or some other reasons), it still can be used for debugging, since Volante GC is able to detect 
-both problems: it will throw <code>StorageError(StorageError.ErrorCode.INVALID_OID)</code> exception
+both problems: it will throw <code>DatabaseException(DatabaseError.ErrorCode.INVALID_OID)</code> exception
 if reference to the deleted object is found and return non zero number of collected objects
 if there is garbage in the database. 
 

@@ -13,7 +13,7 @@
 </div>
 
 <div class=content>
-	<p><a href=index.html>Volante</a> : <a href=devguideindex.html>Volante Developer's Guide</a> : Introduction to Volante</p>
+	<p><a href=index.html>Volante</a> : <a href=devguideindex.html>Volante Developer's Guide</a> : Introduction</p>
 
 	<h3>What is Volante?</h3>
 
@@ -21,11 +21,21 @@
 
 	<p>Volante is BSD-licensed (free to use even for commercial projects)</p>
 
-	<p>Volante is designed for similar use cases as <a href="http://sqlite.org/">SQLite</a>. The difference is that Volante is written in C# and is not a SQL database but an object-oriented database.</p>
+	<h3>When to use Volante?</h3>
+
+	<p>Volante is designed for similar use cases as <a href="http://sqlite.org/">SQLite</a>.</p>
+
+	<p>If your desktop application needs to persist data accross program invocations, you can store them in the Volante database and seamlessly integrate with your C# code.</p>
+
+	<p>Volante is extremely small (Volante.dll is less than 200kB) and offers high-performance and rich feature set.</p>
+
+	<p>Volante is not designed to be a replacement for a database server like MySQL or PostgreSQL.</p>
+
+	<p>A database is stored in a single file.</p>
 
 	<h3>Features overview</h3>
 
-	<p>Volante offers a rich feature set:
+	<p>Volante offers a rich set of features:
 	<ul>
 		<li>object-oriented storage with <a href=garbage_collection.html>garbage collection</a> for removing no longer reachable objects</li>
 		<li>seamless integration with .NET programs</li>
@@ -41,18 +51,19 @@
 
 	<p>Objects are at the core of .NET. Storing objects in SQL databases requires converting objects to and from SQL tables (a process sometimes automated by ORMs (object-relational mappers)). This conversion process is cumbersome and slows things down. Volante understands .NET objects and can store them natively, which is faster and allows for a better integration with your program.</p>
 
-	<p>Volante is not a datbase server, like MySQL. The primary use case is for using Volante as a convenient way to persist and manipulate data in your .NET programs. To use Volante, add Volante.dll to your project and it will provides an API for manipulating a database (storing, deleting, retrieving data).</p>
+	<p>The primary use case is for using Volante as a convenient way to persist and manipulate data in your .NET programs. Simply add Volante.dll to your project and use the API it provides for manipulating data (storing in the database, deleting, retrieving).</p>
 
-	<p>Few things to know to understand Volante:</p>
+	<p>Basic things to know:</p>
 	<ul>
-		<li>Volante stores .NET objects</li>
+		<li>Volante stores .NET objects that implement <code>IPersistent</code> interface</li>
 		<li>each stored objects gets a unique oid (object identifer, a 32-bit integer)</li>
 		<li>objects can refer to other objects (via their oid)</li>
 		<li>there is a special root object</li>
 		<li>all other objects must be reachable from root object</li>
-		<li>you can think of Volante as a graph database: root object is a root of a graph, it points to other objects which in turn point to other objects etc.)</li>
-		<li>objects that are no longer reachable from root will eventually be deleated (via databasegarbage collection process)</li>
-		<li>indexes are used to quickly locate the data</li>
+		<li>you can think of Volante as a graph database: root object is a start of a graph, it points to other objects which in turn point to other objects etc.)</li>
+		<li>objects that are no longer reachable from root will eventually be deleated (via <a href=garbage_collection.html>database garbage collection</a> process)</li>
+		<li><a href=indexes.html>indexes</a> are used to quickly locate the data</li>
+		<li>database is stored in a single file</li>
 	</ul>
 
 	<center><a href=index.html>← home</a> &nbsp;&bull;&nbsp; <a href=getting_started.html>getting started →</a></center>
