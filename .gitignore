@@ -10,3 +10,4 @@ csharp/doc/perst.xml
 *.vsp
 partcover.driver.log
 *.user
+*.DS_Store
