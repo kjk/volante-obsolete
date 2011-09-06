@@ -5,7 +5,7 @@
 	<link href="main.css" type="text/css" rel="stylesheet">
 	<link  href="http://blog.kowalczyk.info/js/prettify.css" type="text/css" rel="stylesheet"> 
 	<script src="http://blog.kowalczyk.info/js/prettify.js" type="text/javascript"></script>
-	<title>Link</title>
+	<title>Link, array, relation</title>
 </head>
 
 <body onload="prettyPrint()">
@@ -16,14 +16,15 @@
 </div>
 
 <div class=content>
-	<p><a href=index.html>Volante</a> : <a href=devguideindex.html>Volante Developer's Guide</a> : Link (one-to-many relation) and persistent array</p>
+	<p><a href=index.html>Volante</a> : <a href=devguideindex.html>Volante Developer's Guide</a> : Link, array, relation</p>
 
-	<p>Link and persistent array provide almost identical functionality. They can be though of as modeling one-to-many relation i.e. one persistent object (an owner) pointing to several persistent object e.g. an object representing a directory can point to several objects representing a file and several objects representing a directory.</p>
+	<p>Link, parray (persistent array) and relation are related and implement the same <code>ILink</code> interface.</p>
 
-	<p>Implementation-wise, link loads its member objects while array only loads their oids and only loads the content of the object on demand. For that reason link is apropriate for storing a small number of objects while array for storing large number of objects.</p>
+	<p>C# references model one-to-one relation between objects. In many cases one-to-many and many-to-many relations are needed. Volante provides <code>ILink</code> interface to model such relations. This interface allows to add/delete/inspect members of the relation. Members of the relation can be accessed by index or be extracted as an array of objects.</p>
 
-	<p>A concept related to link is a a href=index_relation.html>relation</a>.</p>
+	<p>There are two kinds of relations: <i>embedded</i> (when references to related objects are stored in relation owner object itself) and <i>standalone</i> (when relation is a separate object, which contains the reference to the relation owner and relation members). Both kinds of relations implement <code>ILink</code> interface. Embedded relation is created with <code>IDatabase.CreateLink()</code> or <code>IDatabase.CreateArray()</code> and standalone relation is represented by <code>Relation</code> persistent class created with <code>IDatabase.CreateRelation()</code>.</p>
 
+	<p>Link and an array both provide an embedded relation i.e. the link or array object is part of a persistent object (the owner of the relation). The difference is in implementation: link fully loads its member objects while array only loads their oids and loads the content of the object on demand. Array is thus more efficient for larger number of objects (if you don't need to access all of them).</p>
 
 	<h3>Creating a link</h3>
 
@@ -86,6 +87,9 @@
 		<li><code>int GetOid(int i)</code></li>
 	</ul></p>
 
+	<h3>Relation</h3>
+
+	<p>To create a relation, call <code>Relation&lt;M, O&gt; CreateRelation&lt;M, O&gt;(O owner) where M : class,IPersistent where O : class,IPersistent</code>.</p>
 
 	<center><a href=index_sorted_collection.html>← sorted collections</a> &nbsp;&bull;&nbsp; <a href=index_link.html>link →</a></center>
 

@@ -8,12 +8,13 @@ Things to do for c# version:
 * get rid of IDatabase.StringEncoding and always use utf8 for storing strings (?)
 * make a release script that builds and uploads .zip with the Volante.dll
 * finish manual:
- * index_relation.html
  * document tweaking performance
 * script that copies docs to my website (i.e. my blog repository)
 * write download.html
 * make a reference API from .xml extracted during build process (after 0.9?)
 * make a 0.9 release
+* g+ button in the website version of docs
+* remove redundant Size() methods (if Length or Count are already provided due to implementing some other interface)
 
 After 0.9:
 * document projection

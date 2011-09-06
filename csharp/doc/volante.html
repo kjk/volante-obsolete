@@ -6,54 +6,53 @@
 <p><b>Note:</b> this is an older docs from Perst days. It might contain some
 additional information but also might no longer reflect the code.</p>
 
-<UL>
-<LI> <A HREF = "#introduction">Introduction</A>
-
-<LI> <A HREF = "#features">Features</A>
-  <UL>
-  <LI> <A HREF = "#pbs">Persistency by reachability</A>
-  <LI> <A HREF = "#load">Semitransparent object loading</A>
-  <LI> <A HREF = "#scheme">Automatic sheme evaluation</A>
-  <LI> <A HREF = "#relations">Relations</A>
-  <LI> <A HREF = "#indices">Indices</A>
-  <LI> <A HREF = "#projection">Projection</A>
-  <LI> <A HREF = "#transaction">Transaction model</A>
-  </UL>
-<LI> <A HREF = "#transparent">Transparent API's</A>
-  <UL>
-  <LI> <A HREF = "#remoting">Using .Net remoting API</A>
-  <LI> <A HREF = "#props">Using virtual properties</A>
-  </UL>
-<LI> <A HREF = "#implementation">Volante implementation issues</A>
-  <UL>
-  <LI> <A HREF = "#memory">Memory allocation</A>
-  <LI> <A HREF = "#logless">Logless transactions</A>
-  </UL>
-<LI> <A HREF = "#where">Where to use</A>
-<LI> <A HREF = "#quick">Quick start</A>
-<LI> <A HREF = "#tuning">Tuning</A>
-<LI> <A HREF = "#tips">Tricks and tips</A>
-<LI> <A HREF = "#distribution">Distribution terms</A>
-</UL>
-</UL>
+<ul>
+<li> <a href="#introduction">Introduction</a>
+<li> <a href="#features">Features</a>
+  <ul>
+  <li> <a href="#pbs">Persistency by reachability</a>
+  <li> <a href="#load">Semitransparent object loading</a>
+  <li> <a href="#scheme">Automatic sheme evaluation</a>
+  <li> <a href="#relations">Relations</a>
+  <li> <a href="#indices">Indices</a>
+  <li> <a href="#projection">Projection</a>
+  <li> <a href="#transaction">Transaction model</a>
+  </ul>
+<li> <a href="#transparent">Transparent API's</a>
+  <ul>
+  <li> <a href="#remoting">Using .Net remoting API</a>
+  <li> <a href="#props">Using virtual properties</a>
+  </ul>
+<li> <a href="#implementation">Volante implementation issues</a>
+  <ul>
+  <li> <a href="#memory">Memory allocation</a>
+  <li> <a href="#logless">Logless transactions</a>
+  </ul>
+<li> <a href="#where">Where to use</a>
+<li> <a href="#quick">Quick start</a>
+<li> <a href="#tuning">Tuning</a>
+<li> <a href="#tips">Tricks and tips</a>
+<li> <a href="#distribution">Distribution terms</a>
+</ul>
+</ul>
 
 <HR>
-<H2><A NAME = "introduction">Introduction</A></H2>
+<h2><a name="introduction">Introduction</a></h2>
 
 Volante is very simple object oriented embedded database. It is easy to use and
 provide high performance. It is intended to be used in applications which needs to deal with persistent  data in more sophisticated way than load/store object tree provided but standard serialization mechanism. Although Volante is very simple, it provides fault tolerant support (ACID transactions)  and concurrent access to the database.
 
-<P>The main advantage of Volante is tight integration with programming language.
+<p>The main advantage of Volante is tight integration with programming language.
 There is no gap between database and application data models - Volante directly stores language objects. So there is no need in packing/unpacking code, which has to be written for traditional relational databases. Also Volante (unlike many other OODBMS) requires no special compiler or preprocessor. And still it is able to provide high level of transparency.
 
-<H2> <A NAME = "features">Features</A></H2>
+<h2> <a name="features">Features</a></h2>
 Lets now describe key features of Volante architecture. 
 
-<H3> <A NAME = "pbs">Persistency by reachability</A></H3>
+<h3> <a name="pbs">Persistency by reachability</a></h3>
 
-Volante is implementing <I>persistency by reachability</I> approach. Object of any class derived from <code>Persistent</code> base class is capable of being persisted. It is automatically made persistent and stored in the database when it is referenced from some other persistent object and <code>Store()</code> method of that object was invoked. So there is no need (but it is possible) to explicitlyassign object to the database.<P>
+Volante is implementing <i>persistency by reachability</i> approach. Object of any class derived from <code>Persistent</code> base class is capable of being persisted. It is automatically made persistent and stored in the database when it is referenced from some other persistent object and <code>Store()</code> method of that object was invoked. So there is no need (but it is possible) to explicitlyassign object to the database.<p>
 
-The database has one special <I>root</I> object. Root object is the only persistent object accessed in the special way (using <code>IDatabase.Root</code> property). All other persistent objects are accessed in normal way: either by traversing by references from another persistent objects, using object containers (<code>IIndex</code>, <code>Link</code> or <code>Relation</code>). Unlike many other OODBMS, there can be only one root in the database. If you need to have several named roots, you should create <code>IIndex</code> object and use it as root object.<P>
+The database has one special <i>root</i> object. Root object is the only persistent object accessed in the special way (using <code>IDatabase.Root</code> property). All other persistent objects are accessed in normal way: either by traversing by references from another persistent objects, using object containers (<code>IIndex</code>, <code>Link</code> or <code>Relation</code>). Unlike many other OODBMS, there can be only one root in the database. If you need to have several named roots, you should create <code>IIndex</code> object and use it as root object.<p>
 
 Volante requires that each persistent capable class should be derived from <code>Persistent</code> class. It makes not possible to store "foreign" classes in the database. This is the cost of easy use of Volante and lack of any specialized preprocessors or compilers. Also components of persistent capable object are restricted to have the following types:
 
@@ -78,89 +77,84 @@ and should not contain references to persistent objects.
 <DT>Link type
 <DD>One-to-many link or from implementation point of view - dynamic array of persistent object.
 Links are created using <code>IDatabase.CreateLink()</code> method.
-</DL><P>
+</DL><p>
 
-Unfortunately it is not possible to detect if object is changed or not without saving old state of the object and performing field-by-field comparison with new state of the object. But overhead of such solution (both space and CPU) is very high. In Volante it is responsibility of programmer to save object in the database. It can be done by <code>Persistent.Store()</code> method. or <code>Persistent.Modify()</code> methods.<P>
+Unfortunately it is not possible to detect if object is changed or not without saving old state of the object and performing field-by-field comparison with new state of the object. But overhead of such solution (both space and CPU) is very high. In Volante it is responsibility of programmer to save object in the database. It can be done by <code>Persistent.Store()</code> method. or <code>Persistent.Modify()</code> methods.<p>
 
-<code>Persistent.Store()</code> method writes object to the database as well as all objects referenced from this object which are not yet persistent. So if you create tree of objects and assign reference to the root of this tree to some persistent object <B>X</B>, it is only necessary toinvoke <code>Store()</code> method in this object <B>X</B>. But then if you update one of the elements in this tree,you should invoke <code>Store()</code> individually for each such element (<code>X.Store()</code> will NOT now automatically save referenced objects).<P>
+<code>Persistent.Store()</code> method writes object to the database as well as all objects referenced from this object which are not yet persistent. So if you create tree of objects and assign reference to the root of this tree to some persistent object <b>X</b>, it is only necessary toinvoke <code>Store()</code> method in this object <b>X</b>. But then if you update one of the elements in this tree,you should invoke <code>Store()</code> individually for each such element (<code>X.Store()</code> will NOT now automatically save referenced objects).<p>
 
-<code>Persistent.Modify()</code> method mark object is modified but doesn't immediately write it to the database. All objects marked as modified will be stored in the database during transaction commit (<code>Store()</code> method will be invoked for each modified object). So using <code>Modify()</code> method is preferable if object is updated multiple times within transaction. In this case instead of storing it several times, it will be stored only once at the end.<P>
+<code>Persistent.Modify()</code> method mark object is modified but doesn't immediately write it to the database. All objects marked as modified will be stored in the database during transaction commit (<code>Store()</code> method will be invoked for each modified object). So using <code>Modify()</code> method is preferable if object is updated multiple times within transaction. In this case instead of storing it several times, it will be stored only once at the end.<p>
 
-<H3> <A NAME = "load">Semitransparent object loading</A></H3>
+<h3> <a name="load">Semitransparent object loading</a></h3>
 
 Volante is not using any special compiler or preprocessor. And since C# doesn't provide
-runtime behavior reflection (changing behavior of object at runtime), it is not possible to implement completely transparent persistence (when there are no differences between access to transient and persistent objects). Instead of it Volante propose transparent behavior in most cases with some exceptions.<P>
+runtime behavior reflection (changing behavior of object at runtime), it is not possible to implement completely transparent persistence (when there are no differences between access to transient and persistent objects). Instead of it Volante propose transparent behavior in most cases with some exceptions.<p>
 
-<code>IPersistent</code> interface declares <code>RecursiveLoading()</code> method. Default implementation of  this method in <code>Persistent</code> class always returns <code>true</code>. In this case Volante will recursively load any object referenced from target object when target object is loaded. So it cause implicit loading of all cluster of referenced objects from database to main memory. It is similar with how serialization mechanism works.<P>
+<code>IPersistent</code> interface declares <code>RecursiveLoading()</code> method. Default implementation of  this method in <code>Persistent</code> class always returns <code>true</code>. In this case Volante will recursively load any object referenced from target object when target object is loaded. So it cause implicit loading of all cluster of referenced objects from database to main memory. It is similar with how serialization mechanism works.<p>
 
-To avoid overflow of main memory caused by recursive loading of all objects from the database, programmer has to overload <code>RecursiveLoading()</code> method in some classes and return <code>false</code> in it. Objects loaded from such object will not be implicitly loaded and programmer has to explicitly invoke <code>Persistent.Load()</code> method to load them. So <code>RecursiveLoading()</code> method can be used to control loading of objects from database to main memory.<P>
+To avoid overflow of main memory caused by recursive loading of all objects from the database, programmer has to overload <code>RecursiveLoading()</code> method in some classes and return <code>false</code> in it. Objects loaded from such object will not be implicitly loaded and programmer has to explicitly invoke <code>Persistent.Load()</code> method to load them. So <code>RecursiveLoading()</code> method can be used to control loading of objects from database to main memory.<p>
 
-Also it is important to notice that containers (<code>Link, Relation, IIndex</code>) always load member objects on demand (do not perform automatic loading of all objects in the containers). Since access to the container members is always performed through methods of the container class, programmer will never notice it - container methods will always return loaded object(s).<P>
+Also it is important to notice that containers (<code>Link, Relation, IIndex</code>) always load member objects on demand (do not perform automatic loading of all objects in the containers). Since access to the container members is always performed through methods of the container class, programmer will never notice it - container methods will always return loaded object(s).<p>
 
 Volante is using default constructor (constructor without parameters) to create object loaded from the database. It means the following things:
-<OL>
-<LI>All persistent capable classes should have default constructor (or have no constructor at all, in this case
+<ol>
+<li>All persistent capable classes should have default constructor (or have no constructor at all, in this case
 it will be automatically generated by compiler). Default constructor should not necessarily be public, it can have any
 access type. 
-<LI>Default constructor should initialize only transient fields. 
-<LI>Default constructor is used to create instance of the persistent object loaded from the database. So at the time of default constructor execution field of the constructed object are not yet assigned values stored in the database. If you need these values to be able to perform initialization of transient fields, then you need to perform this initialization in <code>OnLoad()</code> method which is invoked after fetching of all values of non-transient fields of persistent object from the database. 
-</OL><P>
+<li>Default constructor should initialize only transient fields. 
+<li>Default constructor is used to create instance of the persistent object loaded from the database. So at the time of default constructor execution field of the constructed object are not yet assigned values stored in the database. If you need these values to be able to perform initialization of transient fields, then you need to perform this initialization in <code>OnLoad()</code> method which is invoked after fetching of all values of non-transient fields of persistent object from the database. 
+</ol><p>
 
 To summarize: the mechanism is convenient and easy to use because it doesn't require programmer
 to explicitly load any referenced objects. It's also flexible by giving the programmer control
 over object loading. Only those classes (usually containers) which explicitly control loading
 of their members (by overloading <code>RecursiveLoading()</code> to return <code>false</code>)
-should need to use <code>Persistent.Load()</code> method.<P>
+should need to use <code>Persistent.Load()</code> method.<p>
 
-<H3> <A NAME = "scheme">Automatic scheme evaluation</A></H3>
+<h3> <a name="scheme">Automatic scheme evaluation</a></h3>
 
 Volante supports lazy automatic scheme evaluation. When class format is changed, 
 Volante perform conversion of loaded object to new format. If this object is modified, 
 it will be stored in new format. So object is converted to the new format on demand.
 Volante is able to handle the following scheme changes:
 
-<OL>
-<LI>Compatible change of scalar type (change which could not cause data truncation).
+<ol>
+<li>Compatible change of scalar type (change which could not cause data truncation).
 For example it is possible to change <code>int</code> type to <code>long</code> or 
 <code>int</code> to <code>float</code>. But changing type from <code>int</code> to
 <code>short</code> is not possible. More precisely, Volante is able to perform any conversion
 which is supported by .NET reflection mechanism (field type XXX can be changed to YYY
 if <code>java.lang.reflect.Field.setXXX</code> method can be applied to the component with type YYY).
-<LI>Reordering components within class or moving component to base or derived class.
-<LI>Adding/removing classes from class inheritance hierarchy.
-<LI>Changing format of classes with value semantic. 
-</OL><P>
+<li>Reordering components within class or moving component to base or derived class.
+<li>Adding/removing classes from class inheritance hierarchy.
+<li>Changing format of classes with value semantic. 
+</ol><p>
 
 All other schema modifications (such as renaming fields, incompatible change of field type)
 could not be handled by Volante automatic schema modification mechanism. 
 In this case you can use Volante XML export/import mechanism. Database can be 
 exported to XML format using <code>IDatabase.ExportXML()</code> method, 
 then recreated with new class definitions and  after it saved data can be imported using 
-<code>IDatabase.ImportXML()</code> method.<P>
+<code>IDatabase.ImportXML()</code> method.<p>
 
 
-<H3> <A NAME = "relations">Relations</A></H3>
+<h3> <a name="relations">Relations</a></h3>
 
-CSharp references provides a way to implement one-to-one relation between objects.
-But in many cases one-to-many and many-to-many relations are needed. 
-Volante provides <code>Link</code> interface to deal with relations of such kind.
-This interface allows to add/delete/inspect members of the relation.
-Members of the relation can be accessed by index or be extracted as array of objects.<P>
+<p>C# references model one-to-one relation between objects. In many cases one-to-many and many-to-many relations are needed. Volante provides <code>ILink</code> interface to model such relations. This interface allows to add/delete/inspect members of the relation. Members of the relation can be accessed by index or be extracted as an array of objects.</p>
 
-Relations can be of two kinds: <I>embedded</I> (when references to the related objects are stored in relation owner object itself) and <I>standalone</I> (when relation is separate object, which contains the reference to the relation owner and relation members). Both kinds of relations
-implements Link interface. Embedded relation is created by <code>IDatabase.CreateLink()</code> method and standalone relation is represented by Relation persistent class created by <code>IDatabase.CreateRelation()</code> method.<P>
+<p>There are two kinds of relations: <i>embedded</i> (when references to related objects are stored in relation owner object itself) and <i>standalone</i> (when relation is a separate object, which contains the reference to the relation owner and relation members). Both kinds of relations implement <code>ILink</code> interface. Embedded relation is created with <code>IDatabase.CreateLink()</code> or <code>IDatabase.CreateArray()</code> and standalone relation is represented by <code>Relation</code> persistent class created with <code>IDatabase.CreateRelation()</code>.</p>
 
-So relation between two classes A and B can be implemented in the following way:<P>
+Relation between two classes A and B can be implemented in the following way:<p>
 
 <TABLE BORDER>
 <TR><TH>Relation type</TH><TH>Object A</TH><TH>Object B</TH></TR>
-<TR><TD>one-to-one</TD><TD><code>B bref;</code></TD><TD><code>A aref;</code></TD></TR>
-<TR><TD>one-to-many</TD><TD><code>Link bref;</code></TD><TD><code>A aref;</code></TD></TR>
-<TR><TD>many-to-one</TD><TD><code>B bref;</code></TD><TD><code>Link aref;</code></TD></TR>
-<TR><TD>many-to-many</TD><TD><code>Link bref;</code></TD><TD><code>Link aref;</code></TD></TR>
-</TABLE><P>
+<TR><td>td>one-to-one</td><td><code>B bref;</code></td><td><code>A aref;</code></td></TR>
+<td>td>td>><td>one-to-many</td><td><code>ILink bref;</code></td><td><code>A aref;</code></td></TR>
+<TR><td>many-to-one</td><td><code>B bref;</code></td><td><code>ILink aref;</code></td></TR>
+<TR><td>many-to-many</td><td><code>ILink bref;</code></td><td><code>ILink aref;</code></td></TR>
+</TABLE><p>
 
-<H3> <A NAME = "indices">Indices</A></H3>
+<h3> <a name="indices">Indices</a></h3>
 
 Usually objects are accessed by traversing from one object to another using references or links.
 But it is frequently needed to locate object by key. In .NET <code>Hashtable</code> class
@@ -169,7 +163,7 @@ I do not want to implement in Volante complete SQL language, because it immediat
 But in most cases application is performing only very simple queries using exact match or key range.
 This is done in Volante by <code>Index</code> and <code>IndexField</code> interfaces. First interface is used
 for independent specification key and associated value. <code>IndexField</code> interface allows to index objects
-using one of the fields of this object (key field).<P>
+using one of the fields of this object (key field).<p>
 
 
 Indices are created in Volante using <code>IDatabase.CreateIndex()</code> or <code>IDatabase.CreateFieldIndex()</code> methods. 
@@ -178,19 +172,19 @@ but right now only one implementation based on B+Tree is provided (because B+Tre
 for disk based databases). Methods of <code>Index</code> and <code>FieldIndex</code> interface allows to add, remove and 
 locate objects by key. It is possible to perform search either specifying exact key value either specifying range of key values
 (high or low boundary or both of them can be skipped or can be declared as been exclusive or inclusive).
-So it is possible to perform the following types of search:<P>
+So it is possible to perform the following types of search:<p>
 
-<OL>
-<LI>key is equals to VAL
-<LI>key belongs to [MIN_VAL, MAX_VAL]
-<LI>key belongs to [MIN_VAL, MAX_VAL)
-<LI>key belongs to (MIN_VAL, MAX_VAL]
-<LI>key belongs to (MIN_VAL, MAX_VAL)
-<LI>key is greater than MIN_VAL
-<LI>key is greater or equals to MIN_VAL
-<LI>key is less than than MAX_VAL
-<LI>key is less than or equals to MAX_VAL
-</OL><P>
+<ol>
+<li>key is equals to VAL
+<li>key belongs to [MIN_VAL, MAX_VAL]
+<li>key belongs to [MIN_VAL, MAX_VAL)
+<li>key belongs to (MIN_VAL, MAX_VAL]
+<li>key belongs to (MIN_VAL, MAX_VAL)
+<li>key is greater than MIN_VAL
+<li>key is greater or equals to MIN_VAL
+<li>key is less than than MAX_VAL
+<li>key is less than or equals to MAX_VAL
+</ol><p>
 
 There are several different ways of selecting objects using index:
 <DL>
@@ -203,10 +197,10 @@ There are several different ways of selecting objects using index:
 You can use index in <code>foreach</code> construction to iterate through all indexed objects. 
 <DT><code>IEnumerator GetEnumerator(Key from, Key till, IterationOrder order)</code>
 <DD>Get iterator for objects with key belonging to the specified range. Either from boundary, either till boundary either both of them can be <code>null</code>. Both boundaries can be inclusive or exclusive. Objects can be traversed in key ascending or descending order .
-</DL><P>
+</DL><p>
 
 If you need set of persistent objects you should use <code>IDatabase.CreateSet()</code> method.
-Set is implemented using B+Tree where object OID is used as a key.<P> 
+Set is implemented using B+Tree where object OID is used as a key.<p> 
 
 Volante also support spatial indices (<code>SpatialIndex</code>) and generic indices with
 user defined comparator (<code>SortedCollection</code>).Spatial index is implemented using Guttman's R-Tree with quadratic split algorithm. It allows efficient search of R2 objects. Sorted collection provides almost the same methods as <code>FieldIndex</code> but it uses user defined comparator to compare collection members. Sorted collection is implemented using T-Tree and is especially efficient for main-memory databases.</P>
@@ -216,72 +210,72 @@ The table below summarize information about all indeices supported by Volante:
 <TABLE border>
 <TR><TH>Interface</TH><TH>Description</TH><TH>Key type</TH><TH>Implementation</TH><TH>Created by</TH></TH>
 <TR>
-<TD><code>Index</code></TD>
-<TD>Index with explicitely specified key used for exact match or range queries</TD>
-<TD>scalar, string or reference</TD>
-<TD align=center>B+Tree</TD>
-<TD><code>IDatabase.CreateIndex(Type type, boolean unique)</code></TD>
+<td><code>Index</code></td>
+<td>Index with explicitely specified key used for exact match or range queries</td>
+<td>scalar, string or reference</td>
+<TD align=center>B+Tree</td>
+<td><code>IDatabase.CreateIndex(Type type, boolean unique)</code></td>
 </TR>
 <TR>
-<TD><code>Index</code></TD>
-<TD>The same as above but assuming that there can be a lot of duplicate key values</TD>
-<TD>scalar, string or reference</TD>
-<TD align=center>B+Tree</TD>
-<TD><code>IDatabase.CreateThinkIndex(Type type)</code></TD>
+<td><code>Index</code></td>
+<td>The same as above but assuming that there can be a lot of duplicate key values</td>
+<td>scalar, string or reference</td>
+<TD align=center>B+Tree</td>
+<td><code>IDatabase.CreateThinkIndex(Type type)</code></td>
 </TR>
 <TR>
-<TD><code>FieldIndex</code></TD>
-<TD>Index constructed for one of the object fields</TD>
-<TD>scalar, string or reference</TD>
-<TD align=center>B+Tree</TD>
-<TD><code>IDatabase.CreateFieldIndex(Type type, String fieldName, boolean unique)</code></TD>
+<td><code>FieldIndex</code></td>
+<td>Index constructed for one of the object fields</td>
+<td>scalar, string or reference</td>
+<TD align=center>B+Tree</td>
+<td><code>IDatabase.CreateFieldIndex(Type type, String fieldName, boolean unique)</code></td>
 </TR>
 <TR>
-<TD><code>BitIndex</code></TD>
-<TD>Bit index for searching object by bitmap of properties</TD>
-<TD>persistent object</TD>
-<TD align=center>B+Tree</TD>
-<TD><code>IDatabase.CreateBitIndex()</code></TD>
+<td><code>BitIndex</code></td>
+<td>td>Bit index for searching object by bitmap of properties</td>
+<td>td>persistent object</td>
+<TD align=center>B+Tree</td>
+<td><code>IDatabase.CreateBitIndex()</code></td>
 </TR>
 <TR>
-<TD><code>ISet</code></TD>
-<TD>Set of persistent objects</TD>
-<TD>-</TD>
-<TD align=center>B+Tree</TD>
-<TD><code>IDatabase.CreateSet()</code></TD>
+<td><code>ISet</code></td>
+<td>Set of persistent objects</td>
+<td>-</td>
+<TD align=center>B+Tree</td>
+<td><code>IDatabase.CreateSet()</code></td>
 </TR>
 <TR>
-<TD><code>IPersistentSet</code></TD>
-<TD>Scalable set of persistent objects (can efficienty handle both small and large number of members</TD>
-<TD>persistent object</TD>
-<TD align=center>Link or B+Tree</TD>
-<TD><code>IDatabase.CreateScalableSet()</code></TD>
+<td><code>IPersistentSet</code></td>
+<td>Scalable set of persistent objects (can efficienty handle both small and large number of members</td>
+<td>persistent object</td>
+<TD align=center>Link or B+Tree</td>
+<td><code>IDatabase.CreateScalableSet()</code></td>
 </TR>
 <TR>
-<TD><code>SpatialIndex</code></TD>
-<TD>Index for spatial objects</TD>
-<TD>Rectangle</TD>
-<TD align=center>R-Tree</TD>
-<TD><code>IDatabase.CreateSpatialIndex()</code></TD>
+<td><code>SpatialIndex</code></td>
+<td>Index for spatial objects</td>
+<td>Rectangle</td>
+<TD align=center>R-Tree</td>
+<td><code>IDatabase.CreateSpatialIndex()</code></td>
 </TR>
 <TR>
-<TD><code>SpatialIndexR2</code></TD>
-<TD>Index for spatial objects with real coordinates</TD>
-<TD>RectangleR2</TD>
-<TD align=center>R-Tree</TD>
-<TD><code>IDatabase.CreateSpatialIndexR2()</code></TD>
+<td><code>SpatialIndexR2</code></td>
+<td>Index for spatial objects with real coordinates</td>
+<td>RectangleR2</td>
+<TD align=center>R-Tree</td>
+<td><code>IDatabase.CreateSpatialIndexR2()</code></td>
 </TR>
 <TR>
-<TD><code>SortedCollection</code></TD>
-<TD>Index with user defined comparator</TD>
-<TD>any</TD>
-<TD align=center>T-Tree</TD>
-<TD><code>IDatabase.CreateSortedCollection(PersistentComparator comparator, boolean unique)</code></TD>
+<td><code>SortedCollection</code></td>
+<td>Index with user defined comparator</td>
+<td>any</td>
+<TD align=center>T-Tree</td>
+<td><code>IDatabase.CreateSortedCollection(PersistentComparator comparator, boolean unique)</code></td>
 </TR>
-</TABLE><P>
+</TABLE><p>
 
 
-<H3> <A NAME = "projection">Projection</A></H3>
+<h3> <a name="projection">Projection</a></h3>
 
 Using Volante indices programmer can easily implement most of simple SQL queries, like:
 
@@ -297,7 +291,7 @@ like the following SQL query fetching all order to the particular vendor:
 </pre>
 
 In Volante it is possible to select first vendor using index search and ten traverse 
-correspondent relation to locate all orders to this vendor.<P>
+correspondent relation to locate all orders to this vendor.<p>
 
 But sometimes it is needed to implement more complex queries.
 It is also possible in Volante without need to write query in some special 
@@ -343,15 +337,15 @@ Set of requested orders can be obtained in the following way:
 
 So, as you see Projection class is used for several purposes:
 
-<OL>
-<LI>Combine result of several simple operations (implementing OR operator)
-<LI>Eliminate duplicates of such merge
-<LI>Get set of related objects (perform projection using specified projection field)
-<LI>Join several projections (analogue of SQL JOIN)
-</OL><P>
+<ol>
+<li>Combine result of several simple operations (implementing OR operator)
+<li>Eliminate duplicates of such merge
+<li>Get set of related objects (perform projection using specified projection field)
+<li>Join several projections (analogue of SQL JOIN)
+</ol><p>
 
 It is possible to derive your own class from <code>Projection</code> to implement 
-more sophisticated projections than using single projection field.<P>
+more sophisticated projections than using single projection field.<p>
 
 If you need to sort selection in some particular order, then most efficient way 
 is to use <code>FieldIndex</code> for it. When you select objects using index, selected objects
@@ -361,10 +355,10 @@ we need to sort orders by price field, it can be done with the following stateme
 
 <pre>
     Array.Sort(orders, Order.PriceComparer);
-</pre><P>
+</pre><p>
 
 
-<H3> <A NAME = "transaction">Transaction model</A></H3>
+<h3> <a name="transaction">Transaction model</a></h3>
 
 <p>Volante maintains consistency of the data in case of system or application crash. Transaction mechanism is used to implement all-or-nothing database update. Transaction in Volante is started implicitly when update operation is performed for the first time and finished explicitly by <code>Commit()</code>, <code>Rollback()</code> or <code>Close()</code> method.</p>
 
@@ -374,8 +368,8 @@ we need to sort orders by price field, it can be done with the following stateme
 
 <p>The only drawback of long transactions is possibility of loosing a lot of changes in case of a crash. Volante will preserve consistency of the database but all changes made since last commit will be lost.</p>
 
-<H2> <A NAME = "transparent">Transparent API's</A></H2>
-<H3> <A NAME = "remoting">Using .Net remoting API</A></H3>
+<h2> <a name="transparent">Transparent API's</a></h2>
+<h3> <a name="remoting">Using .Net remoting API</a></h3>
 
 .Net framework provides System.Runtime.Remoting package for easy
 implementation of distributed applications. Programmer should only derived
@@ -392,24 +386,24 @@ If application class is derived from PersistentContext and marked with Transpare
 attribute, it will automatically load on demand its content from the database and 
 automatically store content if the object is modified. Implementation of 
 <code>recursiveLoading</code> method in <code>PersistentContext</code> class returns false, 
-so object are loaded from the database only when them are accessed.<P>
+so object are loaded from the database only when them are accessed.<p>
 
 But there are two significant restrictions on using remoting API:
-<UL>
-<LI>Remoting API can handle only public members of the class
-<LI>It cause significant performance overhead (invocation of method through remoting API
+<ul>
+<li>Remoting API can handle only public members of the class
+<li>It cause significant performance overhead (invocation of method through remoting API
 is about 100 times slower than normal method invocation).
-</UL><P>
+</ul><p>
 
 <code>TransparentGuess</code> example illustrates using of Volante transparent API.<p>
 
-<H3><A NAME = "props">Using virtual properties</A></H3>
+<h3><a name="props">Using virtual properties</a></h3>
 
 Yet another attempt to build transparent API to Volante without using special
 preprocessor (enhancer) is based on the idea of using virtual properties.
 Unlike Java, C# provides property mechanism which allows to encapsulate 
 representation of object component. Idea originally proposed by 
-<A href="shiziye@hotmail.com">Shi Ziye</A> is very simple - generate wrapper class
+<a href="shiziye@hotmail.com">Shi Ziye</a> is very simple - generate wrapper class
 which will implement these properties. So programmer should not worry any more
 about cutting recursive loading of objects by redefinition of
 <code>IPersistent.RecursiveLoading</code> method and explicit loading 
@@ -418,24 +412,24 @@ marking of updated object by <code>IPersistent.Modify</code> method.
 So a lot of error prone things are disappears. But certainly this approach has their 
 own drawbacks:
 
-<OL>
-<LI>Your persistent objects can not have persistent fields, instead of it
+<ol>
+<li>Your persistent objects can not have persistent fields, instead of it
 you should define abstract properties (it is also possible to define properties
 in interface). Fortunately C# provides convenient mechanism for working
 with properties, so it will significantly complicates programming. 
-<LI>You can not create persistent object by new operator - you should
+<li>You can not create persistent object by new operator - you should
 use <code>IDatabase.CreateClass()</code> method which will generate wrapper class
 and create instance of this class. Also persistent class should have no constructor
 except default. And this default constructor should not do something else except 
 initialization of transient components, because this constructor will be invoked each time 
 object is loaded from the database.
-<LI>It is not possible to have arrays of references. You have to use 
+<li>It is not possible to have arrays of references. You have to use 
 <code>Volante.PArray</code> class instead.
-<LI>Generation of wrapper classes is not cheap operations, so if there are many classes
+<li>Generation of wrapper classes is not cheap operations, so if there are many classes
 in your applications, then it can take significant time when opening a database .
-<LI>This mechanism will not work in Compact.Net framework 
+<li>This mechanism will not work in Compact.Net framework 
 because it doesn't support code generation at runtime.
-</OL><P>
+</ol><p>
 
 There are two possible ways of defining persistent classes using this API.
 First is based in using interfaces:
@@ -516,13 +510,13 @@ to increase performance (it is used by default).<p>
 <code>PropGuess</code> example illustrates using of this Volante transparent API.<p>
 
 
-<H2> <A NAME = "implementation">Volante implementation issues</A></H2>
+<h2> <a name="implementation">Volante implementation issues</a></h2>
 
 Below is more detailed description of Volante implementation.
-This section can be skipped if you are not interested in the details of implementation:<P>
+This section can be skipped if you are not interested in the details of implementation:<p>
 
 
-<H3> <A NAME = "memory">Memory allocation</A></H3>
+<h3> <a name="memory">Memory allocation</a></h3>
 
 Memory allocation is performed in Volante by bitmap. Memory is allocated in
 chunks called allocation quantum. In current version of Volante size of
@@ -531,7 +525,7 @@ aligned on 64 byte boundary. Each 64 byte of database memory is represented by
 one bit in the bitmap. To locate hole of requested size in bitmap, Volante
 sequentially searches bitmap pages for correspondent number of successive
 cleared bits. Volante uses three arrays indexed by bitmap byte, which
-makes possible fast calculation of hole offset and size within the byte.<P>
+makes possible fast calculation of hole offset and size within the byte.<p>
 
 Volante performs cyclic scanning of bitmap pages. It keeps identifier
 of current bitmap page and current position within the page. Each time
@@ -545,7 +539,7 @@ size of allocated object and extension quantum. Extension quantum is parameter
 of database, specified in constructor. Bitmap is extended to be able to map
 additional space. If virtual space is exhausted and no more
 bitmap pages can be allocated, then <code>OutOfMemory</code> error
-is reported.<P>
+is reported.<p>
 
 Allocation memory using bitmap provides high locality of references
 (objects are mostly allocated sequentially) and also minimizes
@@ -557,18 +551,18 @@ reduced. Using extension quantum also helps to
 preserve sequential allocation. Once bitmap is extended, objects will
 be allocated sequentially until extension quantum will be completely used.
 Only after reaching the end of the bitmap, scanning restarts from the beginning
-searching for holes in previously allocated memory.<P>
+searching for holes in previously allocated memory.<p>
 
 
 To reduce number of bitmap pages scans, Volante associates descriptor with
 each page, which is used to remember maximal size of the hole on the page.
 Calculation of maximal hole size is performed in the following way:
-if object of size <I>M</I> can not be allocated from this bitmap pages,
-then maximal hole size is less than <I>M</I>, so <I>M</I>
+if object of size <i>M</i> can not be allocated from this bitmap pages,
+then maximal hole size is less than <i>M</i>, so <i>M</i>
 is stored in the page descriptor if previous value of descriptor is large
-than <I>M</I>. For next allocation of object of size greater or
-equal than <I>M</I>, we will skip this bitmap page. Page descriptor
-is reset when some object is deallocated within this bitmap page.<P>
+than <i>M</i>. For next allocation of object of size greater or
+equal than <i>M</i>, we will skip this bitmap page. Page descriptor
+is reset when some object is deallocated within this bitmap page.<p>
 
 Some database objects
 (like hash table pages) should be aligned on page boundary
@@ -576,7 +570,7 @@ to provide more efficient access. Volante memory  allocator checks requested
 size and if it is aligned on page boundary, then address of
 allocated memory segment is also aligned on page boundary. Search of free hole
 will be done faster in this case, because Volante increases step of current
-position increment according to the value of alignment.<P>
+position increment according to the value of alignment.<p>
 
 To be able to deallocate memory used by object, Volante needs to keep
 somewhere
@@ -588,20 +582,20 @@ So size of the table record object can be extracted from record header.
 Page objects always occupies the whole database page are are allocated at
 the positions aligned on page boundary. Page objects has no headers.
 Volante distinguish page objects
-with normal object by using special marker in object index.<P>
+with normal object by using special marker in object index.<p>
 
 
-<H3> <A NAME = "logless">Shadow transaction mechanism</A></H3>
+<h3> <a name="logless">Shadow transaction mechanism</a></h3>
 
 Each record (object) in Volante has unique identifier (OID).
 Object identifiers
 are used to implement references between objects. To locate object by
 reference, its OID is used as index in array of object offsets within the file.
-This array is called <I>object index</I> and element of this array -
-<I>object handle</I>. These are two copies of object
+This array is called <i>object index</i> and element of this array -
+<i>object handle</i>. These are two copies of object
 indices in Volante, one of which is current and other - shadow.
 Header of database contains pointers to both object indices and indicator
-which index is current at this moment.<P>
+which index is current at this moment.<p>
 
 When object is modified first time, it is cloned
 (copy of the object is created) and object handle in current index is
@@ -609,7 +603,7 @@ changed to point to newly created object copy. And shadow index still
 contains handle which points to the original version of the object.
 All changes are done with the object copy, leaving original object unchanged.
 Volante marks in special bitmap page of the object index, which contains
-modified object handle.<P>
+modified object handle.<p>
 
 When transaction is committed, Volante first checks if size of object index
 was increased during current transaction. If so, it also reallocates shadow
@@ -630,7 +624,7 @@ of object is done in two steps. When object is cloned, all bitmap pages
 used for marking objects space, are also cloned (if not
 not cloned before). So when transaction is committed, we only clear bits in
 bitmap pages and no more requests for allocation memory can be generated at
-this moment.<P>
+this moment.<p>
 
 After deallocation of old copies, Volante flushes all modified pages on disk
 to synchronize content of the memory and disk file. After that Volante
@@ -642,17 +636,17 @@ database to new consistent state.
 After that Volante copies all modified handles from new object index
 to object index which was previously shadow and now becomes current.
 At this moment contents of both indices is synchronized and Volante is ready
-to start new transaction.<P>
+to start new transaction.<p>
 
 Bitmap of modified object index pages is used to minimize time of committing
 transaction. Not the whole object index, but only its modified pages should be
-copied. After committing of transaction bitmap is cleared.<P>
+copied. After committing of transaction bitmap is cleared.<p>
 
 When transaction is explicitly aborted by <code>IDatabase.Rollback()</code>
 method, shadow object index is copied back to the current index, eliminating
 all changes done by aborted transaction. After the end of copying,
 both indices are identical again and database state corresponds to the moment
-before the start of current transaction.<P>
+before the start of current transaction.<p>
 
 Allocation of object handles is done by free handles list. Header of the list
 is also shadowed and two instances of list headers are stored in database
@@ -661,15 +655,15 @@ object indices. When there are no more free elements in the list, Volante
 allocates handles from the unused part of new index. When there is no
 more space in the index, it is reallocated. Object index is the only
 entity in database whose is not cloned on modification. Instead of this
-two copies of object index are always used.<P>
+two copies of object index are always used.<p>
 
-There are some predefined OID values in Volante. OID <I>0</I> is reserved
-as invalid object identifier. OID starting from <I>1</I> are reserved for bitmap pages.
+There are some predefined OID values in Volante. OID <i>0</i> is reserved
+as invalid object identifier. OID starting from <i>1</i> are reserved for bitmap pages.
 Number of bitmap pages depends on database maximum virtual space.
 For one terabyte virtual space, 8 Kb page size and 64 byte allocation quantum,
 32K bitmap pages are required. So 32K handles are reserved in object index for
 bitmap. Bitmap pages are allocated on demand, when database size is extended.
-So OID of first users object will be 0x8002.<P>
+So OID of first users object will be 0x8002.<p>
 
 Recovery procedure is trivial in Volante. There are two instances of
 object index, one of which is current and another corresponds to
@@ -685,42 +679,42 @@ performed by recovery procedure is copying of objects index (really only
 handles having different values in current and shadow indices are copied to
 reduce number of modified pages) and size of object index is small,
 recovery can be done very fast.
-Fast recovery procedure reduces "out-of-service" time of application.<P>
+Fast recovery procedure reduces "out-of-service" time of application.<p>
 
 
-<H2> <A NAME = "where">Where to use</A></H2>
+<h2> <a name="where">Where to use</a></h2>
 
 Volante is simple and fast embedded database engine. 
 If your applications need embedded database engine and do not need to execute complex SQL queries, 
 and the only thing you need is to be able to store/fetch/locate object in the database using navigation 
 through references or indexed search by key, then Volante is what you need. It will provide much better performance
-than relational database and other (more sophisticated) object oriented database.<P>
+than relational database and other (more sophisticated) object oriented database.<p>
 
-The table below summarize <B>pro</B> features of Volante:<P>
+The table below summarize <b>pro</b> features of Volante:<p>
 
-<OL>
-<LI>Tight and transparent integration with programming language
-<LI>No gap in database and application data model
-<LI>Easy to use
-<LI>Minimal requirements (Volante dll is around 250Kb and can be configured to use minimal amount of memory and disk)
-<LI>High performance (no overheads of communication, locking and parsing and executing queries)
-<LI>Fault tolerance (transaction support)
-<LI>Fast recovery after a crash
-<LI>Zero administration efforts (database consists of the single file), there is no need
+<ol>
+<li>Tight and transparent integration with programming language
+<li>No gap in database and application data model
+<li>Easy to use
+<li>Minimal requirements (Volante dll is around 250Kb and can be configured to use minimal amount of memory and disk)
+<li>High performance (no overheads of communication, locking and parsing and executing queries)
+<li>Fault tolerance (transaction support)
+<li>Fast recovery after a crash
+<li>Zero administration efforts (database consists of the single file), there is no need
 to define or tune any database parameters. Such situation like transaction log overflow can never happen
-</OL>
+</ol>
 
 Certainly nothing in this world can have only positive features.
-No <B>contra</B> list which contains features lacking in Volante:
+No <b>contra</b> list which contains features lacking in Volante:
 
-<OL>
-<LI>No procedural query language
-<LI>Remote access by multiple clients (unless you will implement you own server).
-<LI>Data distribution
-<LI>Lack of support of any standard (for example ODMG)
-</OL>
+<ol>
+<li>No procedural query language
+<li>Remote access by multiple clients (unless you will implement you own server).
+<li>Data distribution
+<li>Lack of support of any standard (for example ODMG)
+</ol>
 
-<H2> <A NAME = "quick">Quick start</A></H2>
+<h2> <a name="quick">Quick start</a></h2>
 
 You can build Volante using Microsoft Visual .NET solution file.
 Template of Volante application is the following:
@@ -784,9 +778,9 @@ public class YourApplication {
         storage.Close(); // commit the last transaction and close the database
     }
 }
-</PRE><P>
+</PRE><p>
 
-You can also look at Volante examples:<P>
+You can also look at Volante examples:<p>
 
 <DL>
 <DT>Guess.cs
@@ -823,7 +817,7 @@ implementing many-to-many relations based on using Projection class.
 <DT>TestTtree.cs
 <DD>Test of sorted collection.
 <DT>TestRaw.cs
-<DD>Test of using CSharp serialization mechanism for storing in database alien objects
+<DD>Test of using C# serialization mechanism for storing in database alien objects
 <DT>TestBlob.java
 <DD>Test of handling large binary objects in Volante
 <DT>TestTimeSeries.java
@@ -839,14 +833,14 @@ implementing many-to-many relations based on using Projection class.
 <DT>TestReplic.cs
 <DD>Test of Volante replication mechanism. 
 performance.
-</DL><P>
+</DL><p>
 
 Tests are located in <code>tst</code> directory and can be build using <code>compile.bat</code>
-script.<P> 
+script.<p> 
 
-<H2><A NAME = "tuning">Tuning</A></H2>
+<h2><a name="tuning">Tuning</a></h2>
 
-This sections contains several hints how to adjust Volante parameters and increase database performance.<P>
+This sections contains several hints how to adjust Volante parameters and increase database performance.<p>
 
 Speed of accessing data at the disk is several times slower than speed of access data in main memory. 
 That is why caching of data is the key to increase database performance. Volante is using 
@@ -854,20 +848,20 @@ pool of pages to optimize access to the disk. Page pool size can be specified in
 method (by default it is 4Mb). Usually increasing page pool leads to better performance. But you should 
 notice the following things:
 
-<UL>
-<LI>There is can be a limit for maximal size of memory used by application.
+<ul>
+<li>There is can be a limit for maximal size of memory used by application.
 
-<LI>If you specify very large pool size, leaving no free memory for other applications and operating system, 
+<li>If you specify very large pool size, leaving no free memory for other applications and operating system, 
 then swapping will cause significant performance degradation.
 
-<LI>Operating system itself maintains file buffers.
+<li>Operating system itself maintains file buffers.
 So data is cached twice. Certainly accessing data from page pool is much faster than from 
 operating system cache, because in this case no operating system calls and context switches are needed. 
 
-<LI>It is not possible to specify empty page pool (leaving all caching for operating system).
+<li>It is not possible to specify empty page pool (leaving all caching for operating system).
 When data is access from the page, it is pinned in page pool. So page pool should contain enough entries
 to keep all pinned pages. So do no make page pool size less then 64kb.
-</UL><P>
+</ul><p>
 
 If you think that all your data should fit in main memory, you can use
 <code>Storage.INFINITE_PAGE_POOL</code> constant in <code>IDatabase.Open()</code> method.
@@ -876,46 +870,46 @@ As a result, all pages will be cached and present in memory. So each page is rea
 Also in this case strong object cache is used instead of weak object cache. It means that all fetched
 objects are also pinned in memory and object is unpacked only once. It is important to notice
 that amount of used main memory will be greater than database size: all objects will be present in memory in packed
-(inside the page containing the object) and in unpacked (referenced from object cached) form.<P>
+(inside the page containing the object) and in unpacked (referenced from object cached) form.<p>
 
 In some applications (for example for mobile devices) persistency is not needed. But such Volante container classes
 as Link, Index, FieldIndex, SpatialIndex still can be used by application. In this case you can use
 <code>NullFile</code> implementation of <code>IFile</code> interface together
 with <code>Storage.INFINITE_PAGE_POOL</code> to create transient in-memory database. Data in this case will never be 
-written on the disk.<P> 
+written on the disk.<p> 
 
 There are some constants defined in <code>DatabaseImpl</code> class which has influence on
 initial and maximal database size. If you want to change them, you will have to rebuild Volante.
-Below is detailed description of this parameters:<P>
+Below is detailed description of this parameters:<p>
 
 <TABLE BORDER>
 <TR><TH>Parameter</TH><TH>Default value</TH><TH>Description</TH></TR>
-<TR><TD><code>dbDefaultInitIndexSize</code></TD><TD>1024</TD>
-<TD>Initial object index size. Object index is increased on demand. Reallocation of index is
+<TR><td><code>dbDefaultInitIndexSize</code></td><td>1024</td>
+<td>Initial object index size. Object index is increased on demand. Reallocation of index is
 expensive operation and so to minimize number of such reallocations, object index size is always doubled.
 Specifying larger initial index size allows to reduce number of future reallocations and so a little bit increase
 performance (certainly if your application allocates such number of object). But it also leads to larger initial
 size of database file. With default value of this parameter, initial database size is about 50Kb.
-</TD></TR>
+</td></TR>
 
-<TR><TD><code>dbDefaultExtensionQuantum</code></TD><TD>4Mb</TD>
-<TD>Database extension quantum. 
+<TR><td><code>dbDefaultExtensionQuantum</code></td><td>4Mb</td>
+<td>Database extension quantum. 
 Memory is allocate by scanning bitmap. If there is no large enough hole, then database is extended by the value of 
 <code>dbDefaultExtensionQuantum</code>. Increasing the value of this parameters leads to less frequent 
 rescanning of allocation bitmap from the very beginning. It leads to faster allocation speed and better locality of 
 reference for created objects (because there is more chances that them will be allocated sequentially). 
 From the other side it leads to less efficient memory usage. Reducing the value of this parameter force reusing 
 of existed holes in memory allocation bitmap. 
-</TD></TR>
+</td></TR>
 
 
-<TR><TD><code>dbObjectCacheInitSize</code></TD><TD>1319</TD>
-<TD>Size of object cache. Volante needs this cache to check if object with such OID already 
+<TR><td><code>dbObjectCacheInitSize</code></td><td>1319</td>
+<td>Size of object cache. Volante needs this cache to check if object with such OID already 
 present in memory. This cache uses weak references to allow garbage collector to do it work. 
 When some threshold of filling cache is reached, cached is reallocated by doubling its size.
 Once again increasing this parameter can save some number of cache reallocations.
-</TD></TR>
-</TABLE><P>
+</td></TR>
+</TABLE><p>
 
 Now some hints how to increase Volante performance and reduce size of used main memory.
 If you database performs a lot of updates of persistent data, then the main limiting factor is speed 
@@ -927,7 +921,7 @@ But it is possible to dramatically increase update performance if you group seve
 one transactions. Volante is creating shadow of the object when it is
 first time updated inside transaction. If object will be updated once in N transactions, 
 then N shadows will be created. If object will be updated N times inside one transaction, then
-shadow will be created only once. It explains advantage of having one large transaction.<P>
+shadow will be created only once. It explains advantage of having one large transaction.<p>
 
 But if you will perform update of large number of objects in one transaction and for each updated
 object shadow is created, then it leads to significant increase of database file size.
@@ -935,7 +929,7 @@ If you update each object in the database inside one transaction, database size 
 almost doubled! And if you perform each update in separate transaction, then size of database
 will be almost unchanged (because space of allocated shadow objects will be reused in this case).
 So the best approach is to perform commit after 100 or 1000 updates, it will
-reduce overhead of each commit and save database size.<P>
+reduce overhead of each commit and save database size.<p>
 
 
 If your persistent object form tree or graph where all objects cab be accessed by reference from the root object,
@@ -948,10 +942,10 @@ contain references to a large number of members. Especially it is true for datab
 In this case GC is able to do it work and throw out from the memory objects which are not used 
 at this moment (to which there are no references from local variable). 
 But it is important to say that objects accessible though the index by key can be normally deallocated by garbage
-collector. So in this case special care is not needed.<P>
+collector. So in this case special care is not needed.<p>
 
 
-<H2><A NAME = "tips">Tricks and tips</A></H2>
+<h2><a name="tips">Tricks and tips</a></h2>
 <dl>
 <dt><i>When to use what collection structure?</i></dt>
 <dd>
@@ -1014,10 +1008,10 @@ The normal default constructor of a class is always used by Volante when
 loading objects.
 This implies that when one needs to create attributes that are to remain 
 one has to either:
-<UL>
-<LI>Check for oid existence on the object (if oid then object already 
+<ul>
+<li>Check for oid existence on the object (if oid then object already 
 exists in the db)
-<LI>Leave the default constructor as is and introduce an alternate 
+<li>Leave the default constructor as is and introduce an alternate 
 constructor that is only called on new object creation.
 </ul>
 <p>
@@ -1035,7 +1029,7 @@ If it is not desired (because loading of all objects will take significant amoun
 it will cause memory exhaustion), then you should stop recursion by redefinition of 
 <code>recursiveLoading</code> method in some classes. You should explicitly load all object referenced
 from object with disabled recursive loading. 
-<P>
+<p>
 But really situation is better. It is important to notice that all Volante collection classes
 always load their members on demand. It means that once you have reference for example to FielIndex, 
 only header of this collection object will be loaded and members will be loaded on demand. 
@@ -1066,10 +1060,10 @@ from all indices before it is deallocated.<BR>
 Volante also doesn't remove any object referenced from removed object.
 If it is needed - programmer should do it himself.<BR>
 Explicit deletion of object can cause two problems:
-<UL>
-<LI>Dangling references (references to the removed objects).
-<LI>Garbage in the database (unreferenced objects).
-</UL>
+<ul>
+<li>Dangling references (references to the removed objects).
+<li>Garbage in the database (unreferenced objects).
+</ul>
 First problem is most critical and can cause database data corruption.
 To prevent this problem it is strongly recommended to use Volante garbage collector
 instead of explicit memory deallocation. If it is not possible (due to performance 
@@ -1108,24 +1102,24 @@ mutually block each other).
 
 
 
-<H2><A NAME = "distribution">Distribution terms</A></H2>
+<h2><a name="distribution">Distribution terms</a></h2>
 Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the <A HREF="#Software">Software</A>), to deal
+of this software and associated documentation files (the <a HREF="#Software">Software</a>), to deal
 in the Software without restriction, including without limitation the rights
 to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:<P>
+furnished to do so, subject to the following conditions:<p>
 
-<A NAME="Software">
-<B>
+<a NAME="Software">
+<b>
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
 AUTHOR OF THIS SOFTWARE BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
 WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
 IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-</B>
-</A><P>
+</b>
+</a><p>
 
 </BODY>
 </HTML>
