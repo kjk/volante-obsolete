@@ -3,32 +3,28 @@ namespace Volante
     using System;
     using System.Collections.Generic;
 
-    /// <summary>
-    /// Interface for timeseries element.
-    /// You should derive your time series element from this class
-    /// and implement Ticks getter method.
+    /// <summary>Interface for time series elements.
+    /// Objects inserted into time series must implement this interface.
     /// </summary>
     public interface ITimeSeriesTick
     {
         /// <summary>
-        /// Get time series element timestamp (100 nanoseconds)
+        /// Get time series element timestamp. Has the same meaning as DateTime.Ticks (100 nanoseconds). 
         /// </summary>
         long Ticks { get; }
     }
 
-    /// <summary>
-    /// Time series is used for efficient
-    /// handling of time series data. Usually time series contains a very large number
-    /// of relatively small elements which are usually accessed in sucessive order. 
-    /// To avoid overhead of loading from the disk each particular time series element, 
-    /// this class group several subsequent time series elements together and store them 
+    /// <summary>Time series is used for efficiently handling of time series data. 
+    /// Time series usually contains a very large number
+    /// of small elements which are usually accessed in sucessive order. 
+    /// To avoid overhead of loading elements from the disk one at a time,
+    /// Volante groups several elements together and stores them 
     /// as single object (block).
     /// </summary>
     public interface ITimeSeries<T> : IPersistent, IResource, ICollection<T> where T : ITimeSeriesTick
     {
-
         /// <summary>
-        /// Get forward iterator for time series elements belonging to the specified range
+        /// Get forward iterator for time series elements in the given time interval
         /// </summary>
         /// <param name="from">inclusive time of the beginning of interval</param>
         /// <param name="till">inclusive time of the ending of interval</param>
@@ -36,23 +32,23 @@ namespace Volante
         IEnumerator<T> GetEnumerator(DateTime from, DateTime till);
 
         /// <summary>
-        /// Get iterator through all time series elements
+        /// Get iterator for all time series elements
         /// </summary>
         /// <param name="order">direction of iteration</param>
         /// <returns>iterator in specified direction</returns>
         IEnumerator<T> GetEnumerator(IterationOrder order);
 
         /// <summary>
-        /// Get forward iterator for time series elements belonging to the specified range
+        /// Get forward iterator for time series elements in a given time interval
         /// </summary>
         /// <param name="from">inclusive time of the beginning  of interval</param>
         /// <param name="till">inclusive time of the ending of interval</param>
         /// <param name="order">direction of iteration</param>
-        /// <returns>iterator within specified range in specified direction</returns>
+        /// <returns>iterator within specified range in the specified direction</returns>
         IEnumerator<T> GetEnumerator(DateTime from, DateTime till, IterationOrder order);
 
         /// <summary>
-        /// Get forward iterator for time series elements belonging to the specified range
+        /// Get forward iterator for time series elements in a given time interval
         /// </summary>
         /// <param name="from">inclusive time of the beginning  of interval</param>
         /// <param name="till">inclusive time of the ending of interval</param>
@@ -96,19 +92,19 @@ namespace Volante
         IEnumerable<T> Reverse();
 
         /// <summary>
-        /// Get timestamp of first time series element
+        /// Get timestamp of first element in time series
         /// </summary>
         /// <exception cref="Volante.DatabaseException">DatabaseException(DatabaseException.ErrorClass.KEY_NOT_FOUND) if time series is empy</exception>
         DateTime FirstTime { get; }
 
         /// <summary>
-        /// Get timestamp of last time series element
+        /// Get timestamp of last element in time series
         /// </summary>
         /// <exception cref="Volante.DatabaseException">DatabaseException(DatabaseException.ErrorClass.KEY_NOT_FOUND) if time series is empy</exception>
         DateTime LastTime { get; }
 
         /// <summary> 
-        /// Get tick for specified data
+        /// Get element for a given timestamp
         /// </summary>
         /// <param name="timestamp">time series element timestamp</param>
         /// <exception cref="Volante.DatabaseException">DatabaseException(DatabaseException.ErrorClass.KEY_NOT_FOUND) if no element with such timestamp exists</exception>
@@ -141,14 +137,14 @@ namespace Volante
         int RemoveFrom(DateTime from);
 
         /// <summary>
-        /// Remove time series elements with timestamp less or equal then specified
+        /// Remove elements with timestamp less or equal then specified
         /// </summary>
         /// <param name="till">inclusive time of the ending of interval</param>
         /// <returns>number of removed elements</returns>
         int RemoveTill(DateTime till);
 
         /// <summary>
-        /// Remove all time series elements
+        /// Remove all elements
         /// </summary>
         /// <returns>number of removed elements</returns>
         int RemoveAll();
