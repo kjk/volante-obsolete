@@ -10,33 +10,33 @@
             </summary>
         </member>
         <member name="T:Volante.IFile">
-            <summary> Interface of file.
+            <summary>Interface for a database file.
             Programmer can provide its own implementation of this interface, adding such features
-            as support of flash cards, encrypted files,...
-            Implentation of this interface should throw DatabaseException exception in case of failure
+            as support encryption, compression etc.
+            Implentations should throw DatabaseException exception in case of failure.
             </summary>
         </member>
         <member name="M:Volante.IFile.Write(System.Int64,System.Byte[])">
-            <summary> Write data to the file
+            <summary>Write data to the file
             </summary>
-            <param name="pos"> offset in the file
+            <param name="pos">offset in the file
             </param>
-            <param name="buf"> array with data to be writter (size is always equal to database page size)
+            <param name="buf">array with data to be writter (size is always equal to database page size)
             </param>
             
         </member>
         <member name="M:Volante.IFile.Read(System.Int64,System.Byte[])">
-            <summary> Reade data from the file
+            <summary>Read data from the file
             </summary>
-            <param name="pos"> offset in the file
+            <param name="pos">offset in the file
             </param>
-            <param name="buf"> array to receive readen data (size is always equal to database page size)
+            <param name="buf">array to receive data (size is always equal to database page size)
             </param>
-            <returns> param number of bytes actually readen
+            <returns>number of bytes read
             </returns>
         </member>
         <member name="M:Volante.IFile.Sync">
-            <summary> Flush all fiels changes to the disk
+            <summary>Flush all file changes to disk
             </summary>
         </member>
         <member name="M:Volante.IFile.Lock">
@@ -45,12 +45,12 @@
             </summary>
         </member>
         <member name="M:Volante.IFile.Close">
-            <summary> Close file
+            <summary>Close the file
             </summary>
         </member>
         <member name="P:Volante.IFile.NoFlush">
             <summary>
-            Boolean property. Set to <c>true</c> to avoid flushing the stream, or <c>false</c> to flush the stream with every calls to <see cref="M:Volante.IFile.Sync"/>
+            Set to <code>true</code> to avoid flushing the stream, or <c>false</c> to flush the stream with every call to <see cref="M:Volante.IFile.Sync"/>
             </summary>
         </member>
         <member name="P:Volante.IFile.Length">
@@ -58,6 +58,11 @@
             Length of the file
             </summary>
             <returns>length of file in bytes</returns>
+        </member>
+        <member name="P:Volante.IFile.Monitor">
+            <summary>
+            Get/set <code>IFileMonitor</code> object
+            </summary>
         </member>
         <member name="M:Volante.StreamFile.#ctor(System.IO.Stream)">
             <summary>
@@ -2772,6 +2777,11 @@
             Get previous list element. 
             Been call for the first list element, this method will return last element of the list 
             or list header
+            </summary>
+        </member>
+        <member name="T:Volante.IFileMonitor">
+            <summary>Allows getting notifications for IFile.Write(), IFile.Read() and
+            IFile.Sync() calls. Useful as a debugging/diagnostic tool.
             </summary>
         </member>
         <member name="T:Volante.Impl.CodeGenerator">

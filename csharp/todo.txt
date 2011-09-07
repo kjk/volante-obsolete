@@ -9,9 +9,7 @@ Things to do for c# version:
 * script that copies docs to my website (i.e. my blog repository)
 * make a reference API from .xml extracted during build process (after 0.9?)
 * g+ button in the website version of docs
-* remove redundant Size() methods (if Length or Count are already provided due to implementing some other interface)
 * document CodeGeneration in performance_tuning.html
-* add callback object to IFile for monitoring i/o operations
 * more coverage tests
 * make a 0.9 release
 

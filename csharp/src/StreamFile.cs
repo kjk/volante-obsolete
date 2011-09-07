@@ -8,6 +8,8 @@ namespace Volante
         private long offset = 0;
         private System.IO.Stream stream;
 
+        public IFileMonitor Monitor { get; set; }
+
         /// <summary>
         /// Construction
         /// </summary>
@@ -37,6 +39,8 @@ namespace Volante
         {
             stream.Position = pos + offset;
             stream.Write(buf, 0, buf.Length);
+            if (Monitor != null)
+                Monitor.OnWrite(pos, buf.Length);
         }
 
         /// <summary>
@@ -47,7 +51,10 @@ namespace Volante
         public int Read(long pos, byte[] buf)
         {
             stream.Position = pos + offset;
-            return stream.Read(buf, 0, buf.Length);
+            int len = stream.Read(buf, 0, buf.Length);
+            if (Monitor != null)
+                Monitor.OnRead(pos, buf.Length, len);
+            return len;
         }
 
         /// <summary>
@@ -58,6 +65,8 @@ namespace Volante
         {
             if (NoFlush == false)
                 stream.Flush();
+            if (Monitor != null)
+                Monitor.OnSync();
         }
 
         /// <summary>
