@@ -51,26 +51,26 @@ namespace Volante
     /// </summary>
     public interface IDatabase
     {
-        /// <summary> Get/set db root. Database can have exactly one root object. 
-        /// If you need to have several root object and access them by name (as is possible 
-        /// in many other OODBMSes), you should create index and use it as root object.
-        /// Previous reference to the root object is rewritten but old root is not automatically deallocated.
+        /// <summary>Get/set database root. Database can have exactly one root. 
+        /// If you need several root objects and access them by name (as is possible 
+        /// in many other OODBMSes), create an index and use it as root object.
+        /// Previous reference to the root object is rewritten but old root is not
+        /// automatically deallocated.
         /// </summary>
         IPersistent Root { get; set; }
 
-        /// <summary> Open the db
+        /// <summary>Open the database
         /// </summary>
         /// <param name="filePath">path to the database file
         /// </param>
-        /// <param name="pagePoolSize">size of page pool (in bytes). Page pool should contain
-        /// at least ten 4kb pages, so minimal page pool size should be at least 40Kb.
-        /// But larger page pool ussually leads to better performance (unless it could not fit
-        /// in memory and cause swapping). If value of pagePoolSize is 0, then page pool will be
-        /// unlimited - dynamically extended to conatins all database file pages.
+        /// <param name="cacheSizeInBytes">size of database cache, in bytes.
+        /// Minimum size of the cache should be 64kB (64*1024 bytes).
+        /// Larger cache usually leads to better performance. If the size is 0
+        /// the cache is unlimited - and will grow to the size of the database.
         /// </param>
-        void Open(String filePath, int pagePoolSize);
+        void Open(String filePath, int cacheSizeInBytes);
 
-        /// <summary> Open the db with default page pool size
+        /// <summary>Open the database with default page pool size (4 MB)
         /// </summary>
         /// <param name="filePath">path to the database file
         /// </param>
@@ -78,16 +78,16 @@ namespace Volante
 
         /// <summary>Open the db
         /// </summary>
-        /// <param name="file">user specific implementation of IFile interface
+        /// <param name="file">object implementing IFile interface
         /// </param>
-        /// <param name="pagePoolSize">size of page pool (in bytes). Page pool should contain
-        /// at least ten 4kb pages, so minimal page pool size should be at least 40Kb.
-        /// But larger page pool ussually leads to better performance (unless it could not fit
-        /// in memory and cause swapping).
+        /// <param name="cacheSizeInBytes">size of database cache, in bytes.
+        /// Minimum size of the cache should be 64kB (64*1024 bytes).
+        /// Larger cache usually leads to better performance. If the size is 0
+        /// the cache is unlimited - and will grow to the size of the database.
         /// </param>
-        void Open(IFile file, int pagePoolSize);
+        void Open(IFile file, int cacheSizeInBytes);
 
-        /// <summary> Open the db with default page pool size
+        /// <summary>Open the database with default cache size
         /// </summary>
         /// <param name="file">user specific implementation of IFile interface
         /// </param>
@@ -95,10 +95,10 @@ namespace Volante
 
         /// <summary>Check if database is opened
         /// </summary>
-        /// <returns><code>true</code> if database was opened by <code>open</code> method, 
+        /// <returns><code>true</code>if database was opened by <code>open</code> method, 
         /// <code>false</code> otherwise
         /// </returns>        
-        bool IsOpened();
+        bool IsOpened { get; }
 
         /// <summary> Commit changes done by the last transaction. Transaction is started implcitlely with forst update
         /// opertation.

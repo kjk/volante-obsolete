@@ -134,7 +134,7 @@ namespace Volante
             Record[] recs;
 
             IDatabase db = config.GetDatabase();
-            Tests.Assert(db.IsOpened());
+            Tests.Assert(db.IsOpened);
             Tests.AssertDatabaseException(() =>
                 { db.Open(new NullFile(), 0); }, DatabaseException.ErrorCode.DATABASE_ALREADY_OPENED);
 
@@ -187,7 +187,7 @@ namespace Volante
             Tests.Assert(recs.Length == 0);
 
             db.Close();
-            Tests.Assert(!db.IsOpened());
+            Tests.Assert(!db.IsOpened;
         }
 
         Record[] GetInRange(IIndex<long,Record> idx, long range)

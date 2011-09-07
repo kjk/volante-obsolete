@@ -1,0 +1,40 @@
+<!doctype HTML> 
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<link href="main.css" type="text/css" rel="stylesheet">
+	<link  href="http://blog.kowalczyk.info/js/prettify.css" type="text/css" rel="stylesheet"> 
+	<script src="http://blog.kowalczyk.info/js/prettify.js" type="text/javascript"></script>
+	<title>Peformance tuning</title>
+</head>
+
+<body onload="prettyPrint()">
+<div id=left-bar>
+	<div id=sections>
+		<center><div><a href="index.html">Volante</a></div></center>
+	</div>
+</div>
+
+<div class=content>
+	<p><a href=index.html>Volante</a> : <a href=devguideindex.html>Volante Developer's Guide</a> : Performance tuning</p>
+
+	<h3>Choosing database cache size</h3>
+
+	<p>Disk access is <a href=important_numbers.html>orders of magnitude slower</a> than memory access so the size of the cache has the biggest impact on Volante performance. Default size of the cache is 4 MB. You ican change the cache size in <code>IDatabase.Open()</code> call. Don't make it smaller than 64 kB.</p>
+
+	<p>A bigger cache usually leads to faster operations, but keep the following in mind:
+	<ul>
+		<li>If a very large cache size will cause your application using all the system memory and cause swapping, performance of the whole system will degrage drastically</li>
+		<li>Operating system also maintains file cache, so data is cached twice. That being said, accessing data from cache is faster than from  operating system cache because we avoid os call and context switching overhead</li>
+		<li>It's not possible to have zero-sized cache. When data is accessed, it is pinned in the cache so the cache should contain enough entries to keep all pinned pages. Don't make cache size less than 64kb</li>
+	</ul></p>
+
+	<center><a href=index_sorted_collection.html>← sorted collections</a> &nbsp;&bull;&nbsp; <a href=index_link.html>link →</a></center>
+
+	<hr style="margin-top:28px">
+	<center style="font-size:10pt;color:gray">Volante is maintained by <a href="http://blog.kowalczyk.info">Krzysztof Kowalczyk</a></center>
+</div>
+
+<span id=adsense></span>
+</body>
+</html>

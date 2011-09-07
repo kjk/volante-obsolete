@@ -1145,9 +1145,9 @@ namespace Volante.Impl
             }
         }
 
-        public bool IsOpened()
+        public bool IsOpened
         {
-            return opened;
+            get { return opened; }
         }
 
         internal static void checkIfFinal(ClassDescriptor desc)

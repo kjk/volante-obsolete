@@ -1,0 +1,49 @@
+<!doctype HTML> 
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<link href="main.css" type="text/css" rel="stylesheet">
+	<link  href="http://blog.kowalczyk.info/js/prettify.css" type="text/css" rel="stylesheet"> 
+	<script src="http://blog.kowalczyk.info/js/prettify.js" type="text/javascript"></script>
+	<title>Peformance tuning</title>
+</head>
+
+<body onload="prettyPrint()">
+<div id=left-bar>
+	<div id=sections>
+		<center><div><a href="index.html">Volante</a></div></center>
+	</div>
+</div>
+
+<div class=content>
+	<p><a href=index.html>Volante</a> : <a href=devguideindex.html>Volante Developer's Guide</a> : Numbers every programmer should know</p>
+
+	<p>Jeffrey Dean, one of the architects of some key Google services, gave a talk <a href="http://www.youtube.com/watch?v=modXC5IWTJI">Building Software Systems at Google and Lessons Learned</a> at Stanford. One of his slides had the following list of numbers:</p>
+
+	
+	<p><table><tbody> 
+		<tr><td>L1 cache reference</td>						<td align="right">0.5 ns</td></tr> 
+		<tr><td>Branch mispredict</td>						<td align="right">5 ns</td></tr> 
+		<tr><td>L2 cache reference</td>						<td align="right">7 ns</td></tr> 
+		<tr><td>Mutex lock/unlock</td>						<td align="right">25 ns</td></tr> 
+		<tr><td>Main memory reference</td>					<td align="right">100 ns</td></tr> 
+		<tr><td>Compress 1K bytes w/ cheap algorithm</td>	<td align="right">3,000 ns</td></tr> 
+		<tr><td>Send 2K bytes over 1 Gbps network</td>		<td align="right">20,000 ns</td></tr> 
+		<tr><td>Read 1 MB sequentially from memory</td>		<td align="right">250,000 ns</td></tr> 
+		<tr><td>Round trip within same datacenter</td>		<td align="right">500,000 ns</td></tr> 
+		<tr><td>Disk seek</td>								<td align="right">10,000,000 ns</td></tr> 
+		<tr><td>Read 1 MB sequentially from disk</td>		<td align="right">20,000,000 ns</td></tr> 
+		<tr><td>Send packet CA-&gt;Netherlands-&gt;CA</td>	<td align="right">150,000,000 ns</td></tr> 
+	</tbody></table></p>
+
+	<p>Knowing those numbers helps understand e.g. why bigger in memory cache usually <a href=performance_tuning.html>increases performance of databases</a> (including Volante).</p>
+
+	<center><a href=index_sorted_collection.html>← sorted collections</a> &nbsp;&bull;&nbsp; <a href=index_link.html>link →</a></center>
+
+	<hr style="margin-top:28px">
+	<center style="font-size:10pt;color:gray">Volante is maintained by <a href="http://blog.kowalczyk.info">Krzysztof Kowalczyk</a></center>
+</div>
+
+<span id=adsense></span>
+</body>
+</html>

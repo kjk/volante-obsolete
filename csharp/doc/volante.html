@@ -1,7 +1,8 @@
-<HTML>
-<HEAD>
-<TITLE>Volante - Simple, Fast, Convenient Object Oriented Database</TITLE>
-<BODY>
+<html>
+<head>
+<title>Volante - Simple, Fast, Convenient Object Oriented Database</title>
+</head>
+<body>
 
 <p><b>Note:</b> this is an older docs from Perst days. It might contain some
 additional information but also might no longer reflect the code.</p>
@@ -36,7 +37,7 @@ additional information but also might no longer reflect the code.</p>
 </ul>
 </ul>
 
-<HR>
+<hr>
 <h2><a name="introduction">Introduction</a></h2>
 
 Volante is very simple object oriented embedded database. It is easy to use and
@@ -146,13 +147,13 @@ then recreated with new class definitions and  after it saved data can be import
 
 Relation between two classes A and B can be implemented in the following way:<p>
 
-<TABLE BORDER>
-<TR><TH>Relation type</TH><TH>Object A</TH><TH>Object B</TH></TR>
-<TR><td>td>one-to-one</td><td><code>B bref;</code></td><td><code>A aref;</code></td></TR>
-<td>td>td>><td>one-to-many</td><td><code>ILink bref;</code></td><td><code>A aref;</code></td></TR>
-<TR><td>many-to-one</td><td><code>B bref;</code></td><td><code>ILink aref;</code></td></TR>
-<TR><td>many-to-many</td><td><code>ILink bref;</code></td><td><code>ILink aref;</code></td></TR>
-</TABLE><p>
+<table border>
+<tr><th>Relation type</th><th>Object A</th><th>Object B</th></tr>
+<tr><td>td>one-to-one</td><td><code>B bref;</code></td><td><code>A aref;</code></td></tr>
+<td>td>td>><td>one-to-many</td><td><code>ILink bref;</code></td><td><code>A aref;</code></td></tr>
+<tr><td>many-to-one</td><td><code>B bref;</code></td><td><code>ILink aref;</code></td></tr>
+<tr><td>many-to-many</td><td><code>ILink bref;</code></td><td><code>ILink aref;</code></td></tr>
+</table><p>
 
 <h3> <a name="indices">Indices</a></h3>
 
@@ -207,72 +208,72 @@ user defined comparator (<code>SortedCollection</code>).Spatial index is impleme
 
 The table below summarize information about all indeices supported by Volante:
 
-<TABLE border>
-<TR><TH>Interface</TH><TH>Description</TH><TH>Key type</TH><TH>Implementation</TH><TH>Created by</TH></TH>
-<TR>
+<table border>
+<tr><th>Interface</th><th>Description</th><th>Key type</th><th>Implementation</th><th>Created by</th></th>
+<tr>
 <td><code>Index</code></td>
 <td>Index with explicitely specified key used for exact match or range queries</td>
 <td>scalar, string or reference</td>
-<TD align=center>B+Tree</td>
+<td align=center>B+Tree</td>
 <td><code>IDatabase.CreateIndex(Type type, boolean unique)</code></td>
-</TR>
-<TR>
+</tr>
+<tr>
 <td><code>Index</code></td>
 <td>The same as above but assuming that there can be a lot of duplicate key values</td>
 <td>scalar, string or reference</td>
-<TD align=center>B+Tree</td>
+<td align=center>B+Tree</td>
 <td><code>IDatabase.CreateThinkIndex(Type type)</code></td>
-</TR>
-<TR>
+</tr>
+<tr>
 <td><code>FieldIndex</code></td>
 <td>Index constructed for one of the object fields</td>
 <td>scalar, string or reference</td>
-<TD align=center>B+Tree</td>
+<td align=center>B+Tree</td>
 <td><code>IDatabase.CreateFieldIndex(Type type, String fieldName, boolean unique)</code></td>
-</TR>
-<TR>
+</tr>
+<tr>
 <td><code>BitIndex</code></td>
 <td>td>Bit index for searching object by bitmap of properties</td>
 <td>td>persistent object</td>
-<TD align=center>B+Tree</td>
+<td align=center>B+Tree</td>
 <td><code>IDatabase.CreateBitIndex()</code></td>
-</TR>
-<TR>
+</tr>
+<tr>
 <td><code>ISet</code></td>
 <td>Set of persistent objects</td>
 <td>-</td>
-<TD align=center>B+Tree</td>
+<td align=center>B+Tree</td>
 <td><code>IDatabase.CreateSet()</code></td>
-</TR>
-<TR>
+</tr>
+<tr>
 <td><code>IPersistentSet</code></td>
 <td>Scalable set of persistent objects (can efficienty handle both small and large number of members</td>
 <td>persistent object</td>
-<TD align=center>Link or B+Tree</td>
+<td align=center>Link or B+Tree</td>
 <td><code>IDatabase.CreateScalableSet()</code></td>
-</TR>
-<TR>
+</tr>
+<tr>
 <td><code>SpatialIndex</code></td>
 <td>Index for spatial objects</td>
 <td>Rectangle</td>
-<TD align=center>R-Tree</td>
+<td align=center>R-Tree</td>
 <td><code>IDatabase.CreateSpatialIndex()</code></td>
-</TR>
-<TR>
+</tr>
+<tr>
 <td><code>SpatialIndexR2</code></td>
 <td>Index for spatial objects with real coordinates</td>
 <td>RectangleR2</td>
-<TD align=center>R-Tree</td>
+<td align=center>R-Tree</td>
 <td><code>IDatabase.CreateSpatialIndexR2()</code></td>
-</TR>
-<TR>
+</tr>
+<tr>
 <td><code>SortedCollection</code></td>
 <td>Index with user defined comparator</td>
 <td>any</td>
-<TD align=center>T-Tree</td>
+<td align=center>T-Tree</td>
 <td><code>IDatabase.CreateSortedCollection(PersistentComparator comparator, boolean unique)</code></td>
-</TR>
-</TABLE><p>
+</tr>
+</table><p>
 
 
 <h3> <a name="projection">Projection</a></h3>
@@ -719,7 +720,7 @@ No <b>contra</b> list which contains features lacking in Volante:
 You can build Volante using Microsoft Visual .NET solution file.
 Template of Volante application is the following:
 
-<PRE>
+<pre>
 
 using Volante;
 
@@ -778,7 +779,7 @@ public class YourApplication {
         storage.Close(); // commit the last transaction and close the database
     }
 }
-</PRE><p>
+</pre><p>
 
 You can also look at Volante examples:<p>
 
@@ -838,112 +839,46 @@ performance.
 Tests are located in <code>tst</code> directory and can be build using <code>compile.bat</code>
 script.<p> 
 
-<h2><a name="tuning">Tuning</a></h2>
+<h2><a name="tuning">Performance tuning</a></h2>
 
-This sections contains several hints how to adjust Volante parameters and increase database performance.<p>
+<p>Disk access is <a href="http://julianhyde.blogspot.com/2010/11/numbers-everyone-should-know.html">orders of magnitude slower</a> than memory access so the size of the cache has the biggest impact on Volante performance. Default size of the cache is 4 MB. You ican change the cache size in <code>IDatabase.Open()</code> call. Don't make it smaller than 64 kB.</p>
 
-Speed of accessing data at the disk is several times slower than speed of access data in main memory. 
-That is why caching of data is the key to increase database performance. Volante is using 
-pool of pages to optimize access to the disk. Page pool size can be specified in <code>IDatabase.Open()</code>
-method (by default it is 4Mb). Usually increasing page pool leads to better performance. But you should 
-notice the following things:
-
+<p>A bigger cache usually leads to faster operations, but keep the following in mind:
 <ul>
-<li>There is can be a limit for maximal size of memory used by application.
+  <li>If a very large cache size will cause your application using all the system memory and cause swapping, performance of the whole system will degrage drastically</li>
+  <li>Operating system also maintains file cache, so data is cached twice. That being said, accessing data from cache is faster than from  operating system cache because we avoid os call and context switching overhead</li>
+  <li>It's not possible to have zero-sized cache. When data is accessed, it is pinned in the cache so the cache should contain enough entries to keep all pinned pages. Don't make cache size less than 64kb</li>
+</ul></p>
 
-<li>If you specify very large pool size, leaving no free memory for other applications and operating system, 
-then swapping will cause significant performance degradation.
+<p>Passing 0 as a cache size to <code>IDatabase.Open()</code> will create an infinite cache i.e. it will be as big as the database. In this case strong object cache will be used (instead of default weak object cache). It means that all fetched objects are also pinned in memory and object is unpacked only once. It is important to notice that amount of used main memory will be greater than database size because all objects will be present in memory in packed form (inside the page containing the object) and in unpacked form.</p>
 
-<li>Operating system itself maintains file buffers.
-So data is cached twice. Certainly accessing data from page pool is much faster than from 
-operating system cache, because in this case no operating system calls and context switches are needed. 
+<p>In some applications persistency is not needed. You can use Volante as fully in-memory database. In this case you can use <code>NullFile</code> implementation of <code>IFile</code> interface together with <code>Storage.INFINITE_PAGE_POOL</code> to create transient in-memory database. In this case data will never be written to disk.</p> 
 
-<li>It is not possible to specify empty page pool (leaving all caching for operating system).
-When data is access from the page, it is pinned in page pool. So page pool should contain enough entries
-to keep all pinned pages. So do no make page pool size less then 64kb.
-</ul><p>
+<p>There are some constants defined in <code>DatabaseImpl</code> class which has influence on initial and maximal database size. If you want to change them, you will have to recompile Volante. Below is detailed description of this parameters:<p>
 
-If you think that all your data should fit in main memory, you can use
-<code>Storage.INFINITE_PAGE_POOL</code> constant in <code>IDatabase.Open()</code> method.
-In this case page pool will be dynamically extended when new page is requested. 
-As a result, all pages will be cached and present in memory. So each page is read from the disk only once. 
-Also in this case strong object cache is used instead of weak object cache. It means that all fetched
-objects are also pinned in memory and object is unpacked only once. It is important to notice
-that amount of used main memory will be greater than database size: all objects will be present in memory in packed
-(inside the page containing the object) and in unpacked (referenced from object cached) form.<p>
-
-In some applications (for example for mobile devices) persistency is not needed. But such Volante container classes
-as Link, Index, FieldIndex, SpatialIndex still can be used by application. In this case you can use
-<code>NullFile</code> implementation of <code>IFile</code> interface together
-with <code>Storage.INFINITE_PAGE_POOL</code> to create transient in-memory database. Data in this case will never be 
-written on the disk.<p> 
-
-There are some constants defined in <code>DatabaseImpl</code> class which has influence on
-initial and maximal database size. If you want to change them, you will have to rebuild Volante.
-Below is detailed description of this parameters:<p>
-
-<TABLE BORDER>
-<TR><TH>Parameter</TH><TH>Default value</TH><TH>Description</TH></TR>
-<TR><td><code>dbDefaultInitIndexSize</code></td><td>1024</td>
+<table border>
+<tr><th>Parameter</th><th>Default value</th><th>Description</th></tr>
+<tr><td><code>dbDefaultInitIndexSize</code></td><td>1024</td>
 <td>Initial object index size. Object index is increased on demand. Reallocation of index is
 expensive operation and so to minimize number of such reallocations, object index size is always doubled.
 Specifying larger initial index size allows to reduce number of future reallocations and so a little bit increase
 performance (certainly if your application allocates such number of object). But it also leads to larger initial
 size of database file. With default value of this parameter, initial database size is about 50Kb.
-</td></TR>
+</td></tr>
 
-<TR><td><code>dbDefaultExtensionQuantum</code></td><td>4Mb</td>
-<td>Database extension quantum. 
-Memory is allocate by scanning bitmap. If there is no large enough hole, then database is extended by the value of 
-<code>dbDefaultExtensionQuantum</code>. Increasing the value of this parameters leads to less frequent 
-rescanning of allocation bitmap from the very beginning. It leads to faster allocation speed and better locality of 
-reference for created objects (because there is more chances that them will be allocated sequentially). 
-From the other side it leads to less efficient memory usage. Reducing the value of this parameter force reusing 
-of existed holes in memory allocation bitmap. 
-</td></TR>
+<tr><td><code>dbDefaultExtensionQuantum</code></td><td>4Mb</td>
+<td>Database extension quantum. Memory is allocate by scanning bitmap. If there is no large enough hole, then database is extended by the value of<code>dbDefaultExtensionQuantum</code>. Increasing the value of this parameters leads to less frequentrescanning of allocation bitmap from the very beginning. It leads to faster allocation speed and better locality of reference for created objects (because there is more chances that them will be allocated sequentially). From the other side it leads to less efficient memory usage. Reducing the value of this parameter force reusing of existed holes in memory allocation bitmap. 
+</td></tr>
 
+<tr><td><code>dbObjectCacheInitSize</code></td><td>1319</td>
+<td>Size of object cache. Volante needs this cache to check if object with such OID already present in memory. This cache uses weak references to allow garbage collector to do it work. When some threshold of filling cache is reached, cached is reallocated by doubling its size. Once again increasing this parameter can save some number of cache reallocations.</td></tr>
+</table><p>
 
-<TR><td><code>dbObjectCacheInitSize</code></td><td>1319</td>
-<td>Size of object cache. Volante needs this cache to check if object with such OID already 
-present in memory. This cache uses weak references to allow garbage collector to do it work. 
-When some threshold of filling cache is reached, cached is reallocated by doubling its size.
-Once again increasing this parameter can save some number of cache reallocations.
-</td></TR>
-</TABLE><p>
+<p>Now some hints how to increase Volante performance and reduce the size of memory used. If you database performs a lot of updates of persistent data, then the main limiting factor is speed of writing changes to the disk. Especially synchronous write to the disk performed by commit. If you will do commit after each update, then average speed will be about 10 updates per second (this estimation is based on the assumption than average disk access time is about 10msec and each transaction commit usually requires writing about 10 pages in random places in the file). But it is possible to dramatically increase update performance if you group several updates in  one transactions. Volante is creating shadow of the object when it is first time updated inside transaction. If object will be updated once in N transactions,  then N shadows will be created. If object will be updated N times inside one transaction, then shadow will be created only once. It explains advantage of having one large transaction.<p>
 
-Now some hints how to increase Volante performance and reduce size of used main memory.
-If you database performs a lot of updates of persistent data, then the main limiting factor is speed 
-of writing changes to the disk. Especially synchronous write to the disk performed by commit.
-If you will do commit after each update, then average speed will be about 10 updates per second 
-(this estimation is based on the assumption than average disk access time is about 10msec and
-each transaction commit usually requires writing about 10 pages in random places in the file).
-But it is possible to dramatically increase update performance if you group several updates in 
-one transactions. Volante is creating shadow of the object when it is
-first time updated inside transaction. If object will be updated once in N transactions, 
-then N shadows will be created. If object will be updated N times inside one transaction, then
-shadow will be created only once. It explains advantage of having one large transaction.<p>
+<p>But if you will perform update of large number of objects in one transaction and for each updated object shadow is created, then it leads to significant increase of database file size. If you update each object in the database inside one transaction, database size will be almost doubled! And if you perform each update in separate transaction, then size of database will be almost unchanged (because space of allocated shadow objects will be reused in this case). So the best approach is to perform commit after 100 or 1000 updates, it will reduce overhead of each commit and save database size.<p>
 
-But if you will perform update of large number of objects in one transaction and for each updated
-object shadow is created, then it leads to significant increase of database file size.
-If you update each object in the database inside one transaction, database size will be 
-almost doubled! And if you perform each update in separate transaction, then size of database
-will be almost unchanged (because space of allocated shadow objects will be reused in this case).
-So the best approach is to perform commit after 100 or 1000 updates, it will
-reduce overhead of each commit and save database size.<p>
-
-
-If your persistent object form tree or graph where all objects cab be accessed by reference from the root object,
-then once you will load root object in main memory and store reference to it in some variable, 
-GC will never be able to collect any instance of loaded persistent object (because it will be accessible from
-the root object). So when you application access more and more objects from the database, 
-at some moment of time all of them will have to be loaded in main memory. It can cause space exhaustion.
-To prevent this situation you should avoid to store in variables references to container objects which 
-contain references to a large number of members. Especially it is true for database root object.
-In this case GC is able to do it work and throw out from the memory objects which are not used 
-at this moment (to which there are no references from local variable). 
-But it is important to say that objects accessible though the index by key can be normally deallocated by garbage
-collector. So in this case special care is not needed.<p>
-
+<p>If your persistent object form tree or graph where all objects cab be accessed by reference from the root object, then once you will load root object in main memory and store reference to it in some variable, GC will never be able to collect any instance of loaded persistent object (because it will be accessible from the root object). So when you application access more and more objects from the database,  at some moment of time all of them will have to be loaded in main memory. It can cause space exhaustion. To prevent this situation you should avoid to store in variables references to container objects which  contain references to a large number of members. Especially it is true for database root object. In this case GC is able to do it work and throw out from the memory objects which are not used  at this moment (to which there are no references from local variable). But it is important to say that objects accessible though the index by key can be normally deallocated by garbage collector. So in this case special care is not needed.</p>
 
 <h2><a name="tips">Tricks and tips</a></h2>
 <dl>
@@ -1099,8 +1034,6 @@ synchronization problems: race conditions (as you have with
 ArrayIndexOutOfBoundsException) or deadlocks (two or more threads
 mutually block each other).
 </dl>
-
-
 
 <h2><a name="distribution">Distribution terms</a></h2>
 Permission is hereby granted, free of charge, to any person obtaining a copy
