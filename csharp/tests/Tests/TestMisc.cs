@@ -187,7 +187,7 @@ namespace Volante
             Tests.Assert(recs.Length == 0);
 
             db.Close();
-            Tests.Assert(!db.IsOpened;
+            Tests.Assert(!db.IsOpened);
         }
 
         Record[] GetInRange(IIndex<long,Record> idx, long range)
