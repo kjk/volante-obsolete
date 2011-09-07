@@ -1,17 +1,17 @@
 Things to do for c# version:
 
-* update opencover and ReportGenerator to latest versions
 * fix a TestInsertShort and TestInsertUShort bug where can't find short.MaxValue and 1999 in the index (grep for FAILED_TEST)
 * rename AltBtree to Btree, Btree to BtreeOld
 * figure out why guid tests fail in mono
 * get rid of IDatabase.StringEncoding and always use utf8 for storing strings (?)
 * make a release script that builds and uploads .zip with the Volante.dll
-* script that copies docs to my website (i.e. my blog repository)
 * write download.html
+* script that copies docs to my website (i.e. my blog repository)
 * make a reference API from .xml extracted during build process (after 0.9?)
 * g+ button in the website version of docs
 * remove redundant Size() methods (if Length or Count are already provided due to implementing some other interface)
-* add callback object to IFIle for monitoring i/o operations
+* document CodeGeneration in performance_tuning.html
+* add callback object to IFile for monitoring i/o operations
 * more coverage tests
 * make a 0.9 release
 
