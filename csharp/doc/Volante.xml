@@ -878,30 +878,27 @@
             </exception>
         </member>
         <member name="T:Volante.ITimeSeriesTick">
-            <summary>
-            Interface for timeseries element.
-            You should derive your time series element from this class
-            and implement Ticks getter method.
+            <summary>Interface for time series elements.
+            Objects inserted into time series must implement this interface.
             </summary>
         </member>
         <member name="P:Volante.ITimeSeriesTick.Ticks">
             <summary>
-            Get time series element timestamp (100 nanoseconds)
+            Get time series element timestamp. Has the same meaning as DateTime.Ticks (100 nanoseconds). 
             </summary>
         </member>
         <member name="T:Volante.ITimeSeries`1">
-            <summary>
-            Time series is used for efficient
-            handling of time series data. Usually time series contains a very large number
-            of relatively small elements which are usually accessed in sucessive order. 
-            To avoid overhead of loading from the disk each particular time series element, 
-            this class group several subsequent time series elements together and store them 
+            <summary>Time series is used for efficiently handling of time series data. 
+            Time series usually contains a very large number
+            of small elements which are usually accessed in sucessive order. 
+            To avoid overhead of loading elements from the disk one at a time,
+            Volante groups several elements together and stores them 
             as single object (block).
             </summary>
         </member>
         <member name="M:Volante.ITimeSeries`1.GetEnumerator(System.DateTime,System.DateTime)">
             <summary>
-            Get forward iterator for time series elements belonging to the specified range
+            Get forward iterator for time series elements in the given time interval
             </summary>
             <param name="from">inclusive time of the beginning of interval</param>
             <param name="till">inclusive time of the ending of interval</param>
@@ -909,23 +906,23 @@
         </member>
         <member name="M:Volante.ITimeSeries`1.GetEnumerator(Volante.IterationOrder)">
             <summary>
-            Get iterator through all time series elements
+            Get iterator for all time series elements
             </summary>
             <param name="order">direction of iteration</param>
             <returns>iterator in specified direction</returns>
         </member>
         <member name="M:Volante.ITimeSeries`1.GetEnumerator(System.DateTime,System.DateTime,Volante.IterationOrder)">
             <summary>
-            Get forward iterator for time series elements belonging to the specified range
+            Get forward iterator for time series elements in a given time interval
             </summary>
             <param name="from">inclusive time of the beginning  of interval</param>
             <param name="till">inclusive time of the ending of interval</param>
             <param name="order">direction of iteration</param>
-            <returns>iterator within specified range in specified direction</returns>
+            <returns>iterator within specified range in the specified direction</returns>
         </member>
         <member name="M:Volante.ITimeSeries`1.Range(System.DateTime,System.DateTime)">
             <summary>
-            Get forward iterator for time series elements belonging to the specified range
+            Get forward iterator for time series elements in a given time interval
             </summary>
             <param name="from">inclusive time of the beginning  of interval</param>
             <param name="till">inclusive time of the ending of interval</param>
@@ -992,32 +989,32 @@
         </member>
         <member name="M:Volante.ITimeSeries`1.RemoveTill(System.DateTime)">
             <summary>
-            Remove time series elements with timestamp less or equal then specified
+            Remove elements with timestamp less or equal then specified
             </summary>
             <param name="till">inclusive time of the ending of interval</param>
             <returns>number of removed elements</returns>
         </member>
         <member name="M:Volante.ITimeSeries`1.RemoveAll">
             <summary>
-            Remove all time series elements
+            Remove all elements
             </summary>
             <returns>number of removed elements</returns>
         </member>
         <member name="P:Volante.ITimeSeries`1.FirstTime">
             <summary>
-            Get timestamp of first time series element
+            Get timestamp of first element in time series
             </summary>
             <exception cref="T:Volante.DatabaseException">DatabaseException(DatabaseException.ErrorClass.KEY_NOT_FOUND) if time series is empy</exception>
         </member>
         <member name="P:Volante.ITimeSeries`1.LastTime">
             <summary>
-            Get timestamp of last time series element
+            Get timestamp of last element in time series
             </summary>
             <exception cref="T:Volante.DatabaseException">DatabaseException(DatabaseException.ErrorClass.KEY_NOT_FOUND) if time series is empy</exception>
         </member>
         <member name="P:Volante.ITimeSeries`1.Item(System.DateTime)">
             <summary> 
-            Get tick for specified data
+            Get element for a given timestamp
             </summary>
             <param name="timestamp">time series element timestamp</param>
             <exception cref="T:Volante.DatabaseException">DatabaseException(DatabaseException.ErrorClass.KEY_NOT_FOUND) if no element with such timestamp exists</exception>

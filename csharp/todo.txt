@@ -12,6 +12,7 @@ Things to do for c# version:
 * g+ button in the website version of docs
 * remove redundant Size() methods (if Length or Count are already provided due to implementing some other interface)
 * add callback object to IFIle for monitoring i/o operations
+* more coverage tests
 * make a 0.9 release
 
 After 0.9:
