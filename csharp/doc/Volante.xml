@@ -352,7 +352,7 @@
             embedded (when references to the related objects are stored in relation
             owner object itself) and standalone (when relation is a separate object, which contains
             the reference to the relation owner and relation members). Both kinds of relations
-            implements Link interface. Embedded relation is created by IDatabase.CreateLink() method
+            implements ILink interface. Embedded relation is created by IDatabase.CreateLink() method
             and standalone relation is represented by Relation persistent class created by
             IDatabase.CreateRelation() method.
             </summary>
@@ -762,12 +762,6 @@
             <returns>array of objects in the index ordered by key value
             </returns>
         </member>
-        <member name="M:Volante.IGenericIndex`2.Size">
-            <summary> Get number of objects in the index
-            </summary>
-            <returns>number of objects in the index
-            </returns>
-        </member>
         <member name="P:Volante.IGenericIndex`2.Item(`0)">
             <summary> Access element by key
             </summary>
@@ -1024,19 +1018,18 @@
             </summary>
         </member>
         <member name="M:Volante.IDatabase.Open(System.String,System.Int32)">
-            <summary> Open the db
+            <summary>Open the database
             </summary>
             <param name="filePath">path to the database file
             </param>
-            <param name="pagePoolSize">size of page pool (in bytes). Page pool should contain
-            at least ten 4kb pages, so minimal page pool size should be at least 40Kb.
-            But larger page pool ussually leads to better performance (unless it could not fit
-            in memory and cause swapping). If value of pagePoolSize is 0, then page pool will be
-            unlimited - dynamically extended to conatins all database file pages.
+            <param name="cacheSizeInBytes">size of database cache, in bytes.
+            Minimum size of the cache should be 64kB (64*1024 bytes).
+            Larger cache usually leads to better performance. If the size is 0
+            the cache is unlimited - and will grow to the size of the database.
             </param>
         </member>
         <member name="M:Volante.IDatabase.Open(System.String)">
-            <summary> Open the db with default page pool size
+            <summary>Open the database with default page pool size (4 MB)
             </summary>
             <param name="filePath">path to the database file
             </param>
@@ -1044,26 +1037,19 @@
         <member name="M:Volante.IDatabase.Open(Volante.IFile,System.Int32)">
             <summary>Open the db
             </summary>
-            <param name="file">user specific implementation of IFile interface
+            <param name="file">object implementing IFile interface
             </param>
-            <param name="pagePoolSize">size of page pool (in bytes). Page pool should contain
-            at least ten 4kb pages, so minimal page pool size should be at least 40Kb.
-            But larger page pool ussually leads to better performance (unless it could not fit
-            in memory and cause swapping).
+            <param name="cacheSizeInBytes">size of database cache, in bytes.
+            Minimum size of the cache should be 64kB (64*1024 bytes).
+            Larger cache usually leads to better performance. If the size is 0
+            the cache is unlimited - and will grow to the size of the database.
             </param>
         </member>
         <member name="M:Volante.IDatabase.Open(Volante.IFile)">
-            <summary> Open the db with default page pool size
+            <summary>Open the database with default cache size
             </summary>
             <param name="file">user specific implementation of IFile interface
             </param>
-        </member>
-        <member name="M:Volante.IDatabase.IsOpened">
-            <summary>Check if database is opened
-            </summary>
-            <returns><code>true</code> if database was opened by <code>open</code> method, 
-            <code>false</code> otherwise
-            </returns>        
         </member>
         <member name="M:Volante.IDatabase.Commit">
             <summary> Commit changes done by the last transaction. Transaction is started implcitlely with forst update
@@ -1369,10 +1355,28 @@
             </summary>
         </member>
         <member name="P:Volante.IDatabase.Root">
-            <summary> Get/set db root. Database can have exactly one root object. 
-            If you need to have several root object and access them by name (as is possible 
-            in many other OODBMSes), you should create index and use it as root object.
-            Previous reference to the root object is rewritten but old root is not automatically deallocated.
+            <summary>Get/set database root. Database can have exactly one root. 
+            If you need several root objects and access them by name (as is possible 
+            in many other OODBMSes), create an index and use it as root object.
+            Previous reference to the root object is rewritten but old root is not
+            automatically deallocated.
+            </summary>
+        </member>
+        <member name="P:Volante.IDatabase.IsOpened">
+            <summary>Check if database is opened
+            </summary>
+            <returns><code>true</code>if database was opened by <code>open</code> method, 
+            <code>false</code> otherwise
+            </returns>        
+        </member>
+        <member name="P:Volante.IDatabase.CacheKind">
+            <summary>Set/get kind of object cache.
+            If cache is CacheType.Strong none of the loaded persistent objects
+            can be deallocated from memory by garbage collection.
+            CacheType.Weak and CacheType.Lru both use weak references, so loaded
+            objects can be deallocated. Lru cache can also pin some number of
+            recently used objects for improved performance.
+            Default value: CacheType.Lru
             </summary>
         </member>
         <member name="P:Volante.IDatabase.ObjectIndexInitSize">
@@ -1383,16 +1387,6 @@
         </member>
         <member name="P:Volante.IDatabase.ObjectCacheInitSize">
             <summary>Set/get initial size of object cache. Default value: 1319
-            </summary>
-        </member>
-        <member name="P:Volante.IDatabase.CacheKind">
-            <summary>Set/get kind of object cache.
-            If cache is CacheType.Strong none of the loaded persistent objects
-            can be deallocated by GC.
-            CacheType.Weak and CacheType.Lru both use weak references, so loaded
-            objects can be deallocated. Lru cache can also pin some number of
-            recently used objects for improved perforance.
-            Default value: CacheType.Lru
             </summary>
         </member>
         <member name="P:Volante.IDatabase.ExtensionQuantum">
@@ -1568,13 +1562,6 @@
             <exception cref="T:Volante.DatabaseException">DatabaseException(DatabaseException.KEY_NOT_FOUND) exception if there is no such key in the index
             </exception>
         </member>
-        <member name="M:Volante.ISpatialIndex`1.Size">
-            <summary>
-            Get number of objects in the index
-            </summary>
-            <returns>number of objects in the index
-            </returns>
-        </member>
         <member name="M:Volante.ISpatialIndex`1.Overlaps(Volante.Rectangle)">
             <summary>
             Get enumerator for objects located in the selected rectangle
@@ -1661,13 +1648,6 @@
             <exception cref="T:Volante.DatabaseException">DatabaseException(DatabaseException.KEY_NOT_FOUND) exception 
             if there is no such key in the index
             </exception>
-        </member>
-        <member name="M:Volante.ISpatialIndexR2`1.Size">
-            <summary>
-            Get number of objects in the index
-            </summary>
-            <returns>number of objects in the index
-            </returns>
         </member>
         <member name="M:Volante.ISpatialIndexR2`1.Overlaps(Volante.RectangleR2)">
             <summary>
@@ -2031,13 +2011,6 @@
             <param name="till"> high boundary</param>
             <param name="tillKind"> kind of high boundary</param>
             <returns> array of objects which keys belongs to the specified interval, ordered by key value</returns>
-        </member>
-        <member name="M:Volante.ISortedCollection`2.Size">
-             <summary>
-             Get number of objects in the collection
-             </summary>
-             <returns> number of objects in the collection</returns>
-            
         </member>
         <member name="M:Volante.ISortedCollection`2.ToArray">
              <summary>
@@ -2753,7 +2726,7 @@
             <summary>
             This implementation of <code>IFile</code> interface can be used
             to make Volante as an main-memory database. It should be used when
-            pagePoolSize is set to <code>Database.INFINITE_PAGE_POOL</code>.
+            cacheSizeInBytes is set to <code>0</code>.
             In this case all pages are cached in memory and <code>NullFile</code>
             is used just as a stub.
             <code>NullFile</code> should be used only when data is transient

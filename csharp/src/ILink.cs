@@ -56,7 +56,7 @@ namespace Volante
     /// embedded (when references to the related objects are stored in relation
     /// owner object itself) and standalone (when relation is a separate object, which contains
     /// the reference to the relation owner and relation members). Both kinds of relations
-    /// implements Link interface. Embedded relation is created by IDatabase.CreateLink() method
+    /// implements ILink interface. Embedded relation is created by IDatabase.CreateLink() method
     /// and standalone relation is represented by Relation persistent class created by
     /// IDatabase.CreateRelation() method.
     /// </summary>
