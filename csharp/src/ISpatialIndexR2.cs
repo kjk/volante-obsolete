@@ -42,13 +42,6 @@ namespace Volante
         void Remove(RectangleR2 r, T obj);
 
         /// <summary>
-        /// Get number of objects in the index
-        /// </summary>
-        /// <returns>number of objects in the index
-        /// </returns>
-        int Size();
-
-        /// <summary>
         /// Get wrapping rectangle 
         /// </summary>
         /// <returns>Minimal rectangle containing all rectangles in the index

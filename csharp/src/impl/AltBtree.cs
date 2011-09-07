@@ -1716,11 +1716,6 @@ namespace Volante.Impl
             return Get(new Key(prefix, true), new Key(prefix + Char.MaxValue, false));
         }
 
-        public virtual int Size()
-        {
-            return nElems;
-        }
-
         public override void Clear()
         {
             if (root == null)

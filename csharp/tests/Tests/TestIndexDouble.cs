@@ -55,7 +55,6 @@ namespace Volante
             Tests.Assert(idx.Count == count + 2);
             db.Commit();
             res.InsertTime = DateTime.Now - start;
-            Tests.Assert(idx.Size() == count + 2);
 
             start = System.DateTime.Now;
             Record[] recs = idx[min, mid];

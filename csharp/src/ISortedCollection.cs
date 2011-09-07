@@ -77,13 +77,6 @@ namespace Volante
         V[] Get(K from, BoundaryKind fromKind, K till, BoundaryKind tillKind);
 
         /// <summary>
-        /// Get number of objects in the collection
-        /// </summary>
-        /// <returns> number of objects in the collection</returns>
-        ///
-        int Size();
-
-        /// <summary>
         /// Get all objects in the index as array ordered by index key.
         /// </summary>
         /// <returns> array of objects in the index ordered by key value</returns>

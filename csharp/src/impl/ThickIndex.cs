@@ -101,11 +101,6 @@ namespace Volante.Impl
             return extend(index.PrefixSearch(word));
         }
 
-        public int Size()
-        {
-            return nElems;
-        }
-
         public override void Clear()
         {
             foreach (IPersistent o in this)

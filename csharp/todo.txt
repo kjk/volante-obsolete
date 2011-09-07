@@ -9,10 +9,10 @@ Things to do for c# version:
 * script that copies docs to my website (i.e. my blog repository)
 * write download.html
 * make a reference API from .xml extracted during build process (after 0.9?)
-* make a 0.9 release
 * g+ button in the website version of docs
 * remove redundant Size() methods (if Length or Count are already provided due to implementing some other interface)
 * add callback object to IFIle for monitoring i/o operations
+* make a 0.9 release
 
 After 0.9:
 * document projection

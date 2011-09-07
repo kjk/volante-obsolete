@@ -256,12 +256,6 @@ namespace Volante
         /// </returns>
         Array ToArray(Type elemType);
 
-        /// <summary> Get number of objects in the index
-        /// </summary>
-        /// <returns>number of objects in the index
-        /// </returns>
-        int Size();
-
         /// <summary>
         /// Get type of index key
         /// </summary>

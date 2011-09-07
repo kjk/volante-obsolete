@@ -132,11 +132,6 @@ namespace Volante.Impl
             return true;
         }
 
-        public int Size()
-        {
-            return nMembers;
-        }
-
         public override void Clear()
         {
             if (root != null)

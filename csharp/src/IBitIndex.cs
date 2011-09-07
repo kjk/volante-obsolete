@@ -42,13 +42,6 @@ namespace Volante
             set;
         }
 
-        /// <summary> Get number of objects in the index
-        /// </summary>
-        /// <returns>number of objects in the index
-        /// 
-        /// </returns>
-        int Size();
-
         /// <summary>
         /// Get enumerator for selecting objects with specified properties.
         /// </summary>

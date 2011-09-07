@@ -408,11 +408,6 @@ namespace Volante.Impl
             return Remove(KeyBuilder.getKeyFromObject(key));
         }
 
-        public virtual int Size()
-        {
-            return nElems;
-        }
-
         public override void Clear()
         {
             if (root != 0)

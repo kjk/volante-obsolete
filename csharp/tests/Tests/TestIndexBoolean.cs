@@ -49,7 +49,7 @@ namespace Volante
             }
             Tests.Assert(count == trueCount + falseCount);
             db.Commit();
-            Tests.Assert(idx.Size() == count);
+            Tests.Assert(idx.Count == count);
             res.InsertTime = DateTime.Now - start;
 
             start = System.DateTime.Now;

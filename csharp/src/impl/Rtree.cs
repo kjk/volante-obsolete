@@ -45,11 +45,6 @@ namespace Volante.Impl
             Modify();
         }
 
-        public int Size()
-        {
-            return n;
-        }
-
         public void Remove(Rectangle r, T obj)
         {
             if (root == null)

@@ -55,7 +55,7 @@ namespace Volante
             db.Commit();
             db.Close();
             res.InsertTime = DateTime.Now - start;
-            Tests.Assert(idx.Size() == count + 2);
+            Tests.Assert(idx.Count == count + 2);
 
             start = System.DateTime.Now;
             db = config.GetDatabase(false);

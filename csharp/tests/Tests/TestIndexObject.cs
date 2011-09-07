@@ -45,7 +45,7 @@ namespace Volante
             Tests.Assert(idx.Count == count);
             db.Commit();
             res.InsertTime = DateTime.Now - start;
-            Tests.Assert(idx.Size() == count);
+            Tests.Assert(idx.Count == count);
             Record[] recs = idx.ToArray();
             Array.Sort(recs, (r1, r2) => { return r1.Oid - r2.Oid; });
             Tests.Assert(recs.Length == count);
