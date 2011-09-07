@@ -2,11 +2,11 @@ namespace Volante
 {
     using System;
 
-    /// <summary> Exception throw by database implementation
+    /// <summary>Exception thrown by database implementation
     /// </summary>
     public class DatabaseException : System.ApplicationException
     {
-        /// <summary> Get exception error code (see definitions above)
+        /// <summary>Get exception error code (see definitions above)
         /// </summary>
         public virtual ErrorCode Code
         {
@@ -49,14 +49,38 @@ namespace Volante
             INDEXED_FIELD_NOT_FOUND
         }
 
-        private static System.String[] messageText = new System.String[] { "Database not opened", "Database already opened", "File access error", "Key not unique", "Key not found", "Database schema was changed for", "Unsupported type", "Unsupported index type", "Incompatible key type", "Incompatible value type", "Not enough space", "Database file is corrupted", "Failed to instantiate the object of", "Failed to build descriptor for", "Stub object is accessed", "Invalid object reference", "Access to the deleted object", "Object access violation", "Failed to locate", "Ambiguity definition of class", "Could not find indexed field", "No such property", "Bad property value" };
+        private static string[] messageText = new string[] {
+            "Database not opened",
+            "Database already opened",
+            "File access error",
+            "Key not unique",
+            "Key not found",
+            "Database schema was changed for",
+            "Unsupported type",
+            "Unsupported index type",
+            "Incompatible key type",
+            "Incompatible value type",
+            "Not enough space",
+            "Database file is corrupted",
+            "Failed to instantiate the object of",
+            "Failed to build descriptor for",
+            "Stub object is accessed",
+            "Invalid object reference",
+            "Access to the deleted object",
+            "Object access violation",
+            "Failed to locate",
+            "Ambiguity definition of class",
+            "Could not find indexed field",
+            "No such property",
+            "Bad property value"
+        };
 
-        /// <summary> Get original exception if DatabaseException excepotion was thrown as the result 
-        /// of catching some other exception within Database implementation. 
-        /// DatabaseException is used as wrapper of other exceptions to avoid cascade propagation
-        /// of throws and try/catch constructions.
+        /// <summary>Get original exception if DatabaseException was thrown as the result 
+        /// of catching some other exception within database implementation. 
+        /// DatabaseException is used as a wrapper of other exceptions to avoid cascading
+        /// propagation of throw and try/catch.
         /// </summary>
-        /// <returns>original exception or <code>null</code> if there is no such exception
+        /// <returns>original exception or <code>null</code> if there was no such exception
         /// 
         /// </returns>
         public DatabaseException(ErrorCode errorCode)

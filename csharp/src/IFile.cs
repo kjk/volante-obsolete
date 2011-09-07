@@ -3,11 +3,11 @@ namespace Volante
     /// <summary>Allows getting notifications for IFile.Write(), IFile.Read() and
     /// IFile.Sync() calls. Useful as a debugging/diagnostic tool.
     /// </summary>
-    public interface IFileMonitor
+    public abstract class FileListener
     {
-        void OnWrite(long pos, long len);
-        void OnRead(long pos, long bufSize, long read);
-        void OnSync();
+        public void OnWrite(long pos, long len) { }
+        public void OnRead(long pos, long bufSize, long read) { }
+        public void OnSync() { }
     }
 
     /// <summary>Interface for a database file.
@@ -63,6 +63,6 @@ namespace Volante
         /// <summary>
         /// Get/set <code>IFileMonitor</code> object
         /// </summary>
-        IFileMonitor Monitor { get; set; }
+        FileListener Listener { get; set; }
     }
 }

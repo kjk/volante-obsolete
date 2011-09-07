@@ -7,7 +7,7 @@ namespace Volante
 
     public class OsFile : IFile
     {
-        public IFileMonitor Monitor { get; set; }
+        public FileListener Listener { get; set; }
 
 #if !MONO && !CF && !SILVERLIGHT
 #if NET_4_0
@@ -20,16 +20,16 @@ namespace Volante
         {
             file.Seek(pos, SeekOrigin.Begin);
             file.Write(buf, 0, buf.Length);
-            if (Monitor != null)
-                Monitor.OnWrite(pos, buf.Length);
+            if (Listener != null)
+                Listener.OnWrite(pos, buf.Length);
         }
 
         public virtual int Read(long pos, byte[] buf)
         {
             file.Seek(pos, SeekOrigin.Begin);
             int len = file.Read(buf, 0, buf.Length);
-            if (Monitor != null)
-                Monitor.OnRead(pos, buf.Length, len);
+            if (Listener != null)
+                Listener.OnRead(pos, buf.Length, len);
             return len;
         }
 
@@ -45,8 +45,8 @@ namespace Volante
                 FlushFileBuffers(file.SafeFileHandle);
             }
 #endif
-            if (Monitor != null)
-                Monitor.OnSync();
+            if (Listener != null)
+                Listener.OnSync();
         }
 
         /// Whether to not flush file buffers during transaction commit. It will increase performance because

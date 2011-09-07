@@ -59,7 +59,7 @@
             </summary>
             <returns>length of file in bytes</returns>
         </member>
-        <member name="P:Volante.IFile.Monitor">
+        <member name="P:Volante.IFile.Listener">
             <summary>
             Get/set <code>IFileMonitor</code> object
             </summary>
@@ -1600,21 +1600,21 @@
             </returns>
         </member>
         <member name="T:Volante.DatabaseException">
-            <summary> Exception throw by database implementation
+            <summary>Exception thrown by database implementation
             </summary>
         </member>
         <member name="M:Volante.DatabaseException.#ctor(Volante.DatabaseException.ErrorCode)">
-            <summary> Get original exception if DatabaseException excepotion was thrown as the result 
-            of catching some other exception within Database implementation. 
-            DatabaseException is used as wrapper of other exceptions to avoid cascade propagation
-            of throws and try/catch constructions.
+            <summary>Get original exception if DatabaseException was thrown as the result 
+            of catching some other exception within database implementation. 
+            DatabaseException is used as a wrapper of other exceptions to avoid cascading
+            propagation of throw and try/catch.
             </summary>
-            <returns>original exception or <code>null</code> if there is no such exception
+            <returns>original exception or <code>null</code> if there was no such exception
             
             </returns>
         </member>
         <member name="P:Volante.DatabaseException.Code">
-            <summary> Get exception error code (see definitions above)
+            <summary>Get exception error code (see definitions above)
             </summary>
         </member>
         <member name="T:Volante.ISpatialIndexR2`1">
@@ -1872,11 +1872,11 @@
             </returns>
         </member>
         <member name="T:Volante.DatabaseFactory">
-            <summary> Database factory
+            <summary>Database factory
             </summary>
         </member>
         <member name="M:Volante.DatabaseFactory.CreateDatabase">
-            <summary> Create new instance of the db
+            <summary>Create a database instance
             </summary>
         </member>
         <member name="T:Volante.Rectangle">
@@ -2779,7 +2779,7 @@
             or list header
             </summary>
         </member>
-        <member name="T:Volante.IFileMonitor">
+        <member name="T:Volante.FileListener">
             <summary>Allows getting notifications for IFile.Write(), IFile.Read() and
             IFile.Sync() calls. Useful as a debugging/diagnostic tool.
             </summary>

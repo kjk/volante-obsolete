@@ -13,25 +13,25 @@ namespace Volante
     /// </summary>
     public class NullFile : IFile
     {
-        public IFileMonitor Monitor { get; set; }
+        public FileListener Listener { get; set; }
 
         public void Write(long pos, byte[] buf)
         {
-            if (Monitor != null)
-                Monitor.OnWrite(pos, buf.Length);
+            if (Listener != null)
+                Listener.OnWrite(pos, buf.Length);
         }
 
         public int Read(long pos, byte[] buf)
         {
-            if (Monitor != null)
-                Monitor.OnRead(pos, buf.Length, 0);
+            if (Listener != null)
+                Listener.OnRead(pos, buf.Length, 0);
             return 0;
         }
 
         public void Sync()
         {
-            if (Monitor != null)
-                Monitor.OnSync();
+            if (Listener != null)
+                Listener.OnSync();
         }
 
         public void Lock() { }
