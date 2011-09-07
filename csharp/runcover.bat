@@ -17,7 +17,7 @@ devenv Volante.sln /Rebuild ReleaseFull /Project Tests
 @IF ERRORLEVEL 1 GOTO OPENCOVERFAILED
 @cd ..\..
 
-python opencover-to-html.py %O%\opencover.xml cov
+python opencover-to-html.py %O%\opencover.xml ..\..\volante-cov
 @IF ERRORLEVEL 1 GOTO OPENCOVERTOHTMLFAILED
 
 @goto END
