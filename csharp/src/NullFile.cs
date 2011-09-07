@@ -3,7 +3,7 @@ namespace Volante
     /// <summary>
     /// This implementation of <code>IFile</code> interface can be used
     /// to make Volante as an main-memory database. It should be used when
-    /// pagePoolSize is set to <code>Database.INFINITE_PAGE_POOL</code>.
+    /// cacheSizeInBytes is set to <code>0</code>.
     /// In this case all pages are cached in memory and <code>NullFile</code>
     /// is used just as a stub.
     /// <code>NullFile</code> should be used only when data is transient

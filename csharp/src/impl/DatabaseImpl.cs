@@ -923,12 +923,12 @@ namespace Volante.Impl
             Open(file, DEFAULT_PAGE_POOL_SIZE);
         }
 
-        public void Open(String filePath, int pagePoolSize)
+        public void Open(String filePath, int cacheSizeInBytes)
         {
             OsFile file = new OsFile(filePath);
             try
             {
-                Open(file, pagePoolSize);
+                Open(file, cacheSizeInBytes);
             }
             catch (DatabaseException)
             {
@@ -937,9 +937,9 @@ namespace Volante.Impl
             }
         }
 
-        protected virtual OidHashTable createObjectCache(CacheType kind, int pagePoolSize, int objectCacheSize)
+        protected virtual OidHashTable createObjectCache(CacheType kind, int cacheSizeInBytes, int objectCacheSize)
         {
-            if (pagePoolSize == 0 || kind == CacheType.Strong)
+            if (cacheSizeInBytes == 0 || kind == CacheType.Strong)
             {
                 return new StrongHashTable(objectCacheSize);
             }
@@ -951,7 +951,7 @@ namespace Volante.Impl
             return new LruObjectCache(objectCacheSize);
         }
 
-        public virtual void Open(IFile file, int pagePoolSize)
+        public virtual void Open(IFile file, int cacheSizeInBytes)
         {
             lock (this)
             {
@@ -993,7 +993,7 @@ namespace Volante.Impl
 
                 modified = false;
 
-                objectCache = createObjectCache(cacheKind, pagePoolSize, objectCacheInitSize);
+                objectCache = createObjectCache(cacheKind, cacheSizeInBytes, objectCacheInitSize);
 
                 classDescMap = new Dictionary<Type,ClassDescriptor>();
                 descList = null;
@@ -1014,7 +1014,7 @@ namespace Volante.Impl
                 }
                 if (pool == null)
                 {
-                    pool = new PagePool(pagePoolSize / Page.pageSize);
+                    pool = new PagePool(cacheSizeInBytes / Page.pageSize);
                     pool.open(file);
                 }
                 if (!header.initialized)

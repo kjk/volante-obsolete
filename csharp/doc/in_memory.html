@@ -17,12 +17,12 @@
 <div class=content>
 	<p><a href=index.html>Volante</a> : <a href=devguideindex.html>Volante Developer's Guide</a> : Volante as in-memory database</p>
 
-	<p>The main use case for Volante is to easily persist application's data between session. It can also be used as an in-memory database. Because writing to disk is the slowest part of any database system, in-memory use offers dramatically higher performance.</p>
+	<p>Volante can be used as an in-memory database. Because writing to disk is the slowest part of any database system, in-memory use offers dramatically higher performance.</p>
 
 	<p>There are two possibilities:
 	<ul>
 		<li>no persistence</li>
-		<li>with persistence</li>
+		<li>with persistence at the time of closing the database</li>
 	</ul>
 	</p>
 
@@ -32,19 +32,25 @@
 
 	<p>In that mode the data is gone after application quits. Good for completely transient data.</p>
 
-	<p>This mode is enabled by passing <code>NullFile()</code> instance and 0 for <code>pagePoolSize to IDatabase.Open()</code>.</p>
+	<p>This mode is enabled by passing <code>NullFile()</code> instance and 0 for <code>cacheSizeInBytes</code> to <code>IDatabase.Open()</code>.</p>
 
 	<pre class="prettyprint lang-cs">NullFile dbFile = new NullFile();
 db.Open(dbFile, 0);</pre>
 
 	<h3>In-memory use with persistence</h3>
 
-	<p>In this mode all the operations are done in memory but the database is persisted to disk when database is closed. This is faster than standard mode because there's less disk I/O during the operations.</p>
+	<p>In this mode all the operations are done in memory but the database is persisted to disk when database is closed. This is faster than standard mode because there's less total disk I/O.</p>
 
-	<p>The downside is that if the application crashes and the database is not closed, all the data will be lost.</p>
+	<p>The downside is that if the application crashes and the database is not closed, all the data will be lost and closing the database will take a long time.</p>
 
-	<p>This mode is enabled by passing 0 for <code>pagePoolSize</code> to <code>IDatabase.Open()</code>.</p>
+	<p>This mode is enabled by passing <code>0</code> for <code>cacheSizeInBytes</code> to <code>IDatabase.Open()</code>.</p>
 	<pre class="prettyprint lang-cs">db.Open("mydb.dbs", 0);</pre>
+
+	<h3>Other effects of infinite cache size</h3>
+
+	<p>Using <code>0</code> for <code>cacheSizeInBytes</code> to create an infinite cache also means that strong object cache will be used (instead of default weak object cache). All fetched objects will be pinned in memory and objects will be unpacked only once (which further improves performance).</p>
+	
+	<p>The mount of main memory used will be greater than database size because all objects will be present in memory in packed form (inside the page containing the object) and in unpacked form.</p>
 
 	<center><a href=plain_objects.html>← plain objects</a> &nbsp;&bull;&nbsp; <a href=rc4encrypted.html>encrypted database →</a></center>
 

@@ -3,18 +3,17 @@ Things to do for c# version:
 * update opencover and ReportGenerator to latest versions
 * store cov directory outside of source tree
 * fix a TestInsertShort and TestInsertUShort bug where can't find short.MaxValue and 1999 in the index (grep for FAILED_TEST)
-* remove WITH_OLD_BTREE code, rename AltBtree to Btree
+* rename AltBtree to Btree, Btree to BtreeOld
 * figure out why guid tests fail in mono
 * get rid of IDatabase.StringEncoding and always use utf8 for storing strings (?)
 * make a release script that builds and uploads .zip with the Volante.dll
-* finish manual:
- * document tweaking performance
 * script that copies docs to my website (i.e. my blog repository)
 * write download.html
 * make a reference API from .xml extracted during build process (after 0.9?)
 * make a 0.9 release
 * g+ button in the website version of docs
 * remove redundant Size() methods (if Length or Count are already provided due to implementing some other interface)
+* add callback object to IFIle for monitoring i/o operations
 
 After 0.9:
 * document projection
@@ -36,31 +35,3 @@ Test coverage notes:
 * 52%   on 2011-08-06
 * 59.5% on 2011-08-24
 * 61.4% on 2011-08-26
-
-Rc4 doc notes:
-        /// <summary> Open the encrypted db
-        /// </summary>
-        /// <param name="filePath">path to the database file
-        /// </param>
-        /// <param name="pagePoolSize">size of page pool (in bytes). Page pool should contain
-        /// at least ten 4kb pages, so minimal page pool size should be at least 40Kb.
-        /// But larger page pool ussually leads to better performance (unless it could not fit
-        /// in memory and cause swapping).
-        /// </param>
-        /// <param name="cipherKey">cipher key</param>
-        void Open(String filePath, int pagePoolSize, String cipherKey);
-
-        public void Open(String filePath, int pagePoolSize, String cipherKey)
-        {
-            Rc4File file = new Rc4File(filePath, readOnly, noFlush, cipherKey);
-            try
-            {
-                Open(file, pagePoolSize);
-            }
-            catch (DatabaseError)
-            {
-                file.Close();
-                throw;
-            }
-        }
-

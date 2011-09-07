@@ -24,7 +24,7 @@ public class TestReplic
     const int transSize = 100;
     const int defaultPort = 6000;
     const int asyncBufSize = 1024 * 1024;
-    const int pagePoolSize = 32 * 1024 * 1024;
+    const int cacheSizeInBytes = 32 * 1024 * 1024;
 
     private static void usage()
     {
@@ -72,7 +72,7 @@ public class TestReplic
             db.ReplicationAck = ack;
             var dbFile = new OsFile("master.dbs");
             dbFile.NoFlush = true;
-            db.Open(dbFile, pagePoolSize);
+            db.Open(dbFile, cacheSizeInBytes);
 
             IFieldIndex<int, Record> root = (IFieldIndex<int, Record>)db.Root;
             if (root == null)
@@ -107,7 +107,7 @@ public class TestReplic
             db.ReplicationAck = ack;
             var dbFile = new OsFile("slave.dbs");
             dbFile.NoFlush = true;
-            db.Open(dbFile, pagePoolSize);
+            db.Open(dbFile, cacheSizeInBytes);
 
             DateTime total = new DateTime(0);
             int n = 0;

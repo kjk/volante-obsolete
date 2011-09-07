@@ -361,6 +361,16 @@ namespace Volante
         bool AlternativeBtree { get; set; }
 #endif
 
+        /// <summary>Set/get kind of object cache.
+        /// If cache is CacheType.Strong none of the loaded persistent objects
+        /// can be deallocated from memory by garbage collection.
+        /// CacheType.Weak and CacheType.Lru both use weak references, so loaded
+        /// objects can be deallocated. Lru cache can also pin some number of
+        /// recently used objects for improved performance.
+        /// Default value: CacheType.Lru
+        /// </summary>
+        CacheType CacheKind { get; set; }
+
         /// <summary>Set/get initial size of object index. Bigger values increase
         /// initial size of database but reduce number of index reallocations.
         /// Default value: 1024
@@ -370,16 +380,6 @@ namespace Volante
         /// <summary>Set/get initial size of object cache. Default value: 1319
         /// </summary>
         int ObjectCacheInitSize { get; set; }
-
-        /// <summary>Set/get kind of object cache.
-        /// If cache is CacheType.Strong none of the loaded persistent objects
-        /// can be deallocated by GC.
-        /// CacheType.Weak and CacheType.Lru both use weak references, so loaded
-        /// objects can be deallocated. Lru cache can also pin some number of
-        /// recently used objects for improved perforance.
-        /// Default value: CacheType.Lru
-        /// </summary>
-        CacheType CacheKind { get; set; }
 
         /// <summary>Set/get object allocation bitmap extenstion quantum. Memory
         /// is allocated by scanning a bitmap. If there is no hole large enough,

@@ -11,12 +11,12 @@ namespace Volante.Impl
             this.asyncBufSize = asyncBufSize;
         }
 
-        public override void Open(IFile file, int pagePoolSize)
+        public override void Open(IFile file, int cacheSizeInBytes)
         {
             base.Open(asyncBufSize != 0
                 ? (ReplicationMasterFile)new AsyncReplicationMasterFile(this, file, asyncBufSize)
                 : new ReplicationMasterFile(this, file),
-                pagePoolSize);
+                cacheSizeInBytes);
         }
 
         public int GetNumberOfAvailableHosts()

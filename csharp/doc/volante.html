@@ -754,10 +754,10 @@ public class YourRoot : Persistent {
 public class YourApplication {
     static public void Main(String[] args) { 
         String databaseFilePath = args[0]; // path to the database file
-        int pagePoolSize = Int32.Parse(args[1]); // size of page pol in bytes
+        int cacheSizeInBytes = Int32.Parse(args[1]);
 
         IDatabase storage = DatabaseFactory.CreateDatabase();
-        storage.Open(databaseFilePath, pagePoolSize);
+        storage.Open(databaseFilePath, cacheSizeInBytes);
 
         YourRoot root = (YourRoot)storage.Root;
         if (root == null) { 
@@ -852,13 +852,13 @@ script.<p>
 
 <p>Passing 0 as a cache size to <code>IDatabase.Open()</code> will create an infinite cache i.e. it will be as big as the database. In this case strong object cache will be used (instead of default weak object cache). It means that all fetched objects are also pinned in memory and object is unpacked only once. It is important to notice that amount of used main memory will be greater than database size because all objects will be present in memory in packed form (inside the page containing the object) and in unpacked form.</p>
 
-<p>In some applications persistency is not needed. You can use Volante as fully in-memory database. In this case you can use <code>NullFile</code> implementation of <code>IFile</code> interface together with <code>Storage.INFINITE_PAGE_POOL</code> to create transient in-memory database. In this case data will never be written to disk.</p> 
+<p>In some applications persistency is not needed. You can use Volante as fully in-memory database. In this case you can use <code>NullFile</code> implementation of <code>IFile</code> interface together with <code>0</code> to create transient in-memory database. In this case data will never be written to disk.</p> 
 
 <p>There are some constants defined in <code>DatabaseImpl</code> class which has influence on initial and maximal database size. If you want to change them, you will have to recompile Volante. Below is detailed description of this parameters:<p>
 
 <table border>
 <tr><th>Parameter</th><th>Default value</th><th>Description</th></tr>
-<tr><td><code>dbDefaultInitIndexSize</code></td><td>1024</td>
+<tr><td><code>ObjectIndexInitSize</code></td><td>1024</td>
 <td>Initial object index size. Object index is increased on demand. Reallocation of index is
 expensive operation and so to minimize number of such reallocations, object index size is always doubled.
 Specifying larger initial index size allows to reduce number of future reallocations and so a little bit increase
@@ -866,11 +866,11 @@ performance (certainly if your application allocates such number of object). But
 size of database file. With default value of this parameter, initial database size is about 50Kb.
 </td></tr>
 
-<tr><td><code>dbDefaultExtensionQuantum</code></td><td>4Mb</td>
+<tr><td><code>ExtensionQuantum</code></td><td>4Mb</td>
 <td>Database extension quantum. Memory is allocate by scanning bitmap. If there is no large enough hole, then database is extended by the value of<code>dbDefaultExtensionQuantum</code>. Increasing the value of this parameters leads to less frequentrescanning of allocation bitmap from the very beginning. It leads to faster allocation speed and better locality of reference for created objects (because there is more chances that them will be allocated sequentially). From the other side it leads to less efficient memory usage. Reducing the value of this parameter force reusing of existed holes in memory allocation bitmap. 
 </td></tr>
 
-<tr><td><code>dbObjectCacheInitSize</code></td><td>1319</td>
+<tr><td><code>ObjectCacheInitSize</code></td><td>1319</td>
 <td>Size of object cache. Volante needs this cache to check if object with such OID already present in memory. This cache uses weak references to allow garbage collector to do it work. When some threshold of filling cache is reached, cached is reallocated by doubling its size. Once again increasing this parameter can save some number of cache reallocations.</td></tr>
 </table><p>
 

@@ -14,7 +14,7 @@ namespace Volante.Impl
             this.port = port;
         }
 
-        public override void Open(IFile file, int pagePoolSize)
+        public override void Open(IFile file, int cacheSizeInBytes)
         {
             acceptor = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             acceptor.Bind(new IPEndPoint(IPAddress.Any, port));
@@ -46,12 +46,12 @@ namespace Volante.Impl
             commit = new object();
             listening = true;
             connect();
-            pool = new PagePool(pagePoolSize / Page.pageSize);
+            pool = new PagePool(cacheSizeInBytes / Page.pageSize);
             pool.open(file);
             thread = new Thread(new ThreadStart(run));
             thread.Start();
             WaitInitializationCompletion();
-            base.Open(file, pagePoolSize);
+            base.Open(file, cacheSizeInBytes);
         }
 
 
