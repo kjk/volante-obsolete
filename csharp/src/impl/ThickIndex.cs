@@ -100,10 +100,12 @@ namespace Volante.Impl
 
         public override void Clear()
         {
-            foreach (IPersistent o in this)
-            {
-                o.Deallocate();
-            }
+            // TODO: not sure but the index might not own the objects in it,
+            // so it cannot deallocate them
+            //foreach (IPersistent o in this)
+            //{
+            //    o.Deallocate();
+            //}
             index.Clear();
             nElems = 0;
             Modify();
@@ -116,10 +118,11 @@ namespace Volante.Impl
 
         public Array ToArray(Type elemType)
         {
+            V[] arr = extend(index.ToArray());
             ArrayList list = new ArrayList();
-            foreach (ICollection c in index)
+            foreach (var el in arr)
             {
-                list.AddRange(c);
+                list.Add(el);
             }
             return list.ToArray(elemType);
         }

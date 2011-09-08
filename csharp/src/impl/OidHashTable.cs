@@ -9,7 +9,6 @@ namespace Volante.Impl
         IPersistent Get(int oid);
         void Flush();
         void Invalidate();
-        int Size();
         void SetDirty(int oid);
         void ClearDirty(int oid);
     }

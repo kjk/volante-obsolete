@@ -31,6 +31,7 @@ namespace Volante.Impl
 
         public void CopyTo(T[] dst, int i)
         {
+            Pin();
             Array.Copy(arr, 0, dst, i, used);
         }
 

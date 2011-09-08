@@ -313,11 +313,6 @@ namespace Volante.Impl
             }
         }
 
-        public int Size()
-        {
-            return count;
-        }
-
         internal class Entry
         {
             internal Entry next;

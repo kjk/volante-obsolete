@@ -191,7 +191,7 @@ public class TestConfig
     public bool Encrypted = false;
     public bool IsTransient = false;
     public CacheType CacheKind = CacheType.Lru;
-    public int Count; // number of iterations
+    public int Count = 0; // number of iterations
 
     // Set by the test. Can be a subclass of TestResult
     public TestResult Result;
@@ -497,11 +497,11 @@ public class TestsMain
     };
 
     static TestConfig[] ConfigsIndex = new TestConfig[] {
+        new TestConfig{ InMemory = TestConfig.InMemoryType.No, AltBtree=true, CacheKind = CacheType.Weak, Count = 2500 },
         new TestConfig{ InMemory = TestConfig.InMemoryType.Full },
         new TestConfig{ InMemory = TestConfig.InMemoryType.Full, Serializable=true },
         new TestConfig{ InMemory = TestConfig.InMemoryType.No, AltBtree=false },
         new TestConfig{ InMemory = TestConfig.InMemoryType.No, AltBtree=true },
-        new TestConfig{ InMemory = TestConfig.InMemoryType.No, AltBtree=true, CacheKind = CacheType.Weak },
         new TestConfig{ InMemory = TestConfig.InMemoryType.Full, AltBtree=true },
         new TestConfig{ InMemory = TestConfig.InMemoryType.No, AltBtree=true, CodeGeneration=false },
         new TestConfig{ InMemory = TestConfig.InMemoryType.No, AltBtree=true, Encrypted=true },
@@ -633,7 +633,10 @@ public class TestsMain
 #endif
             // make a copy because we modify it
             var config = configTmp.Clone();
-            config.Count = count;
+            if (configTmp.Count != 0)
+                config.Count = configTmp.Count;
+            else
+                config.Count = count;
             config.TestName = testClassName;
             config.Result = new TestResult(); // can be over-written by a test
             DateTime start = DateTime.Now;

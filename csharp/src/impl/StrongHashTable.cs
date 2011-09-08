@@ -141,11 +141,6 @@ namespace Volante.Impl
             }
         }
 
-        public int Size()
-        {
-            return count;
-        }
-
         public void SetDirty(int oid)
         {
         }

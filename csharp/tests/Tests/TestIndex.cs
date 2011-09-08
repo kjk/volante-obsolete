@@ -2,6 +2,7 @@ namespace Volante
 {
     using System;
     using System.Collections;
+    using System.Collections.Generic;
 
     public class TestIndexResult : TestResult
     {
@@ -34,6 +35,20 @@ namespace Volante
             }
         }
 
+        void RememberInThick(Dictionary<byte, List<RecordFull>> dict, RecordFull rec)
+        {
+
+            if (dict.ContainsKey(rec.ByteVal))
+            {
+                var list = dict[rec.ByteVal];
+                list.Add(rec);
+            }
+            else
+            {
+                dict[rec.ByteVal] = new List<RecordFull>() { rec };
+            }
+        }
+
         public void Run(TestConfig config)
         {
             int count = config.Count;
@@ -52,8 +67,8 @@ namespace Volante
             db.Root = root;
             var strIndex = root.strIndex;
             Tests.Assert(typeof(string) == strIndex.KeyType);
-            var intIndex = root.longIndex;
-            Tests.Assert(typeof(long) == intIndex.KeyType);
+            var longIndex = root.longIndex;
+            Tests.Assert(typeof(long) == longIndex.KeyType);
             var thickByteIndex = root.thickByteIndex;
             Tests.Assert(typeof(byte) == thickByteIndex.KeyType);
             DateTime start = DateTime.Now;
@@ -63,6 +78,7 @@ namespace Volante
             string strLast  = "0";
 
             int n = 0;
+            var inThickIndex = new Dictionary<byte, List<RecordFull>>();
             foreach (var key in Tests.KeySeq(count))
             {
                 RecordFull rec = new RecordFull(key);
@@ -74,24 +90,57 @@ namespace Volante
                     strFirst = rec.StrVal;
                 else if (rec.StrVal.CompareTo(strLast) > 0)
                     strLast = rec.StrVal;
-                intIndex[rec.Int32Val] = rec;
+                longIndex[rec.Int32Val] = rec;
                 strIndex[rec.StrVal] = rec;
-                thickByteIndex[rec.ByteVal] = rec;
+                if (n % 2 == 0)
+                {
+                    thickByteIndex.Put(rec.ByteVal, rec);
+                    RememberInThick(inThickIndex, rec);
+                }
+                else
+                {
+                    bool add = true;
+                    if (inThickIndex.ContainsKey(rec.ByteVal))
+                    {
+                        var list = inThickIndex[rec.ByteVal];
+                        var el = list[0];
+                        list.Remove(el);
+                        thickByteIndex.Remove(rec.ByteVal, el);
+                        if (list.Count > 0)
+                            add = false;
+                    }
+                    if (add)
+                    {
+                        RememberInThick(inThickIndex, rec);
+                        thickByteIndex[rec.ByteVal] = rec;
+                    }
+                }
                 n++;
                 if (n % 100 == 0)
                     MyCommit(db, config.Serializable);
             }
             MyCommit(db, config.Serializable);
 
-            Tests.Assert(intIndex.Count == count);
+            Tests.Assert(longIndex.Count == count);
             Tests.Assert(strIndex.Count == count);
+            Tests.Assert(thickByteIndex.Count <= count);
 
             res.InsertTime = DateTime.Now - start;
             start = System.DateTime.Now;
 
+            foreach (var mk in inThickIndex.Keys)
+            {
+                var list = inThickIndex[mk];
+                while (list.Count > 1)
+                {
+                    var el = list[0];
+                    list.Remove(el);
+                    thickByteIndex.Remove(el.ByteVal, el);
+                }
+            }
             foreach (var key in Tests.KeySeq(count))
             {
-                RecordFull rec1 = intIndex[key];
+                RecordFull rec1 = longIndex[key];
                 RecordFull rec2 = strIndex[Convert.ToString(key)];
                 RecordFull rec3 = thickByteIndex[rec1.ByteVal];
                 Tests.Assert(rec1 != null && rec2 != null && rec3 != null);
@@ -99,11 +148,15 @@ namespace Volante
                 Tests.Assert(rec1.ByteVal == rec3.ByteVal);
             }
             res.IndexSearchTime = DateTime.Now - start;
+            RecordFull[] recs = thickByteIndex.ToArray();
+            Tests.Assert(recs.Length == thickByteIndex.Count);
+            Array recs2 = thickByteIndex.ToArray(typeof(RecordFull));
+            Tests.Assert(recs2.Length == recs.Length);
             start = System.DateTime.Now;
 
             var k = Int64.MinValue;
             n = 0;
-            foreach (RecordFull rec in intIndex)
+            foreach (RecordFull rec in longIndex)
             {
                 Tests.Assert(rec.Int32Val >= k);
                 k = rec.Int32Val;
@@ -123,18 +176,17 @@ namespace Volante
             res.IterationTime = DateTime.Now - start;
             start = System.DateTime.Now;
 
-            IDictionaryEnumerator de = intIndex.GetDictionaryEnumerator();
+            IDictionaryEnumerator de = longIndex.GetDictionaryEnumerator();
             n = VerifyDictionaryEnumerator(de, IterationOrder.AscentOrder);
             Tests.Assert(n == count);
 
             long mid = 0;
             long max = long.MaxValue;
-            de = intIndex.GetDictionaryEnumerator(new Key(mid), new Key(max), IterationOrder.DescentOrder);
+            de = longIndex.GetDictionaryEnumerator(new Key(mid), new Key(max), IterationOrder.DescentOrder);
             VerifyDictionaryEnumerator(de, IterationOrder.DescentOrder);
 
-            Tests.AssertDatabaseException(() => intIndex.PrefixSearch("1"),
+            Tests.AssertDatabaseException(() => longIndex.PrefixSearch("1"),
                 DatabaseException.ErrorCode.INCOMPATIBLE_KEY_TYPE);
-            RecordFull[] recs;
             recs = strIndex.PrefixSearch("1");
             Tests.Assert(startWithOne == recs.Length);
             foreach (var r in recs)
@@ -171,12 +223,12 @@ namespace Volante
                 n++;
                 if (n % 2 == 0)
                     continue;
-                RecordFull rec = intIndex.Get(key);
-                RecordFull removed = intIndex.RemoveKey(key);
+                RecordFull rec = longIndex.Get(key);
+                RecordFull removed = longIndex.RemoveKey(key);
                 Tests.Assert(removed == rec);
                 strIndex.Remove(new Key(System.Convert.ToString(key)), rec);
-                rec.Deallocate();
             }
+            thickByteIndex.Clear();
             res.RemoveTime = DateTime.Now - start;
             db.Close();
             if (config.IsTransient)
@@ -184,13 +236,14 @@ namespace Volante
 
             db = config.GetDatabase(false);
             root = (Root)db.Root;
-            intIndex = root.longIndex;
+            longIndex = root.longIndex;
             strIndex = root.strIndex;
+            thickByteIndex = root.thickByteIndex;
             k = Int64.MinValue;
             n = 0;
             RecordFull firstRec = null;
             RecordFull removedRec = null;
-            foreach (RecordFull rec in intIndex)
+            foreach (RecordFull rec in longIndex)
             {
                 Tests.Assert(rec.Int32Val >= k);
                 k = rec.Int32Val;
@@ -203,16 +256,17 @@ namespace Volante
                 }
                 n++;
             }
-            Tests.Assert(intIndex.Count == n);
+            Tests.Assert(longIndex.Count == n);
             Tests.Assert(strIndex.Count == n-1);
-            Tests.Assert(intIndex.Contains(firstRec));
+            Tests.Assert(longIndex.Contains(firstRec));
             Tests.Assert(strIndex.Contains(firstRec));
             Tests.Assert(!strIndex.Contains(removedRec));
             RecordFull notPresent = new RecordFull();
             Tests.Assert(!strIndex.Contains(notPresent));
-            Tests.Assert(!intIndex.Contains(notPresent));
-            intIndex.Clear();
-            Tests.Assert(!intIndex.Contains(firstRec));
+            Tests.Assert(!longIndex.Contains(notPresent));
+            longIndex.Clear();
+            thickByteIndex.Clear();
+            Tests.Assert(!longIndex.Contains(firstRec));
             db.Close();
         }
 
