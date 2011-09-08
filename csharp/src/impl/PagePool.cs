@@ -166,13 +166,11 @@ namespace Volante.Impl
                 }
                 long len = size;
                 if (len > Page.pageSize - srcOffs)
-                {
                     len = Page.pageSize - srcOffs;
-                }
+
                 if (len > Page.pageSize - dstOffs)
-                {
                     len = Page.pageSize - dstOffs;
-                }
+
                 Array.Copy(srcPage.data, srcOffs, dstPage.data, dstOffs, (int)len);
                 srcOffs = (int)(srcOffs + len);
                 dstOffs = (int)(dstOffs + len);

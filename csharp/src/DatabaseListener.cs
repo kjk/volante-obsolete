@@ -4,44 +4,44 @@ namespace Volante
 {
     /// <summary>
     /// Listener of database events. Programmer should derive his own subclass and register
-    /// it using Database.SetListener method.
+    /// it using IDatabase.Listener property.
     /// </summary>
     public abstract class DatabaseListener
     {
         /// <summary>
-        /// This metod is called during database open when database was not
-        /// close normally and has to be recovered
+        /// Called if database was detected to be corrupted during openinig
+        /// (when database was not closed properly and has to be recovered)
         /// </summary>
-        public void DatabaseCorrupted() { }
+        public virtual void DatabaseCorrupted() { }
 
         /// <summary>
-        /// This method is called after completion of recovery
+        /// Called after database recovery has completed
         /// </summary>
-        public void RecoveryCompleted() { }
+        public virtual void RecoveryCompleted() { }
 
         /// <summary>
-        /// This method is called when garbage collection is  started (ether explicitly
-        /// by invocation of IDatabase.Gc() method, either implicitly  after allocation
-        /// of some amount of memory)).
+        /// Called when garbage collection is started, either explicitly
+        /// (by calling IDatabase.Gc()) or implicitly (after allocating
+        /// enough memory to trigger gc threshold)
         /// </summary>
-        public void GcStarted() { }
+        public virtual void GcStarted() { }
 
         /// <summary>
-        /// This method is called  when unreferenced object is deallocated from 
+        /// Called when garbage collection is completed
+        /// </summary>
+        /// <param name="nDeallocatedObjects">number of deallocated objects</param>
+        ///
+        public virtual void GcCompleted(int nDeallocatedObjects) { }
+
+        /// <summary>
+        /// Called  when unreferenced object is deallocated from 
         /// database. It is possible to get instance of the object using
         /// <code>IDatabase.GetObjectByOid()</code> method.
         /// </summary>
         /// <param name="cls">class of deallocated object</param>
         /// <param name="oid">object identifier of deallocated object</param>
         ///
-        public void DeallocateObject(Type cls, int oid) { }
-
-        /// <summary>
-        /// This method is called when garbage collection is completed
-        /// </summary>
-        /// <param name="nDeallocatedObjects">number of deallocated objects</param>
-        ///
-        public void GcCompleted(int nDeallocatedObjects) { }
+        public virtual void DeallocateObject(Type cls, int oid) { }
 
         /// <summary>
         /// Handle replication error 
@@ -50,7 +50,7 @@ namespace Volante
         /// <returns><code>true</code> if host should be reconnected and attempt to send data to it should be 
         /// repeated, <code>false</code> if no more attmpts to communicate with this host should be performed
         /// </returns>
-        public bool ReplicationError(string host)
+        public virtual bool ReplicationError(string host)
         {
             return false;
         }

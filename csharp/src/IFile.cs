@@ -5,9 +5,9 @@ namespace Volante
     /// </summary>
     public abstract class FileListener
     {
-        public void OnWrite(long pos, long len) { }
-        public void OnRead(long pos, long bufSize, long read) { }
-        public void OnSync() { }
+        public virtual void OnWrite(long pos, long len) { }
+        public virtual void OnRead(long pos, long bufSize, long read) { }
+        public virtual void OnSync() { }
     }
 
     /// <summary>Interface for a database file.

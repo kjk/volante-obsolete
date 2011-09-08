@@ -8,9 +8,6 @@ Things to do for c# version:
 * make a reference API from .xml extracted during build process (after 0.9?)
 * g+ button in the website version of docs
 * more code coverage tests:
- * CodeGeneration
- * DatabaseListener
- * FileListener
  * replication
  * BtreeFieldIndex
  * BtreeMultiFieldIndex

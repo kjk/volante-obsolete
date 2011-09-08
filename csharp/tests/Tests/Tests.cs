@@ -36,6 +36,77 @@ public enum RecordFullEnum
     Ten = 10
 }
 
+public class TestFileListener : FileListener
+{
+    int WriteCount = 0;
+    int ReadCount = 0;
+    int SyncCount = 0;
+
+    public override void OnWrite(long pos, long len)
+    {
+        base.OnWrite(pos, len);
+        WriteCount++;
+    }
+
+    public override void OnRead(long pos, long bufSize, long read)
+    {
+        base.OnRead(pos, bufSize, read);
+        ReadCount++;
+    }
+
+    public override void OnSync()
+    {
+        base.OnSync();
+        SyncCount++;
+    }
+}
+
+public class TestDatabaseListener : DatabaseListener
+{
+    int DatabaseCorruptedCount;
+    int RecoveryCompletedCount;
+    int GcStartedCount;
+    int GcCompletedCount;
+    int DeallocateObjectCount;
+    int ReplicationErrorCount;
+
+    public override void DatabaseCorrupted()
+    {
+        base.DatabaseCorrupted();
+        DatabaseCorruptedCount++;
+    }
+
+    public override void RecoveryCompleted()
+    {
+        base.RecoveryCompleted();
+        RecoveryCompletedCount++;
+    }
+
+    public override void GcStarted()
+    {
+        base.GcStarted();
+        GcStartedCount++;
+    }
+
+    public override void GcCompleted(int nDeallocatedObjects)
+    {
+        base.GcCompleted(nDeallocatedObjects);
+        GcCompletedCount++;
+    }
+
+    public override void DeallocateObject(Type cls, int oid)
+    {
+        base.DeallocateObject(cls, oid);
+        DeallocateObjectCount++;
+    }
+
+    public override bool ReplicationError(string host)
+    {
+        ReplicationErrorCount++;
+        return base.ReplicationError(host);
+    }
+}
+
 public class RecordFull : Persistent
 {
     public string StrVal;
@@ -108,6 +179,7 @@ public class TestConfig
     public bool AltBtree = false;
     public bool Serializable = false;
     public bool BackgroundGc = false;
+    public bool CodeGeneration = false;
     public int Count; // number of iterations
 
     // Set by the test. Can be a subclass of TestResult
@@ -124,23 +196,27 @@ public class TestConfig
             if (InMemory != InMemoryType.Full)
                 p4 = (FileKind == FileType.File) ? "_file" : "_stream";
             string p5 = String.Format("_{0}", Count);
-            return String.Format("{0}{1}{2}{3}{4}{5}.dbs", TestName, p1, p2, p3, p4, p5);
+            string p6 = CodeGeneration ? "_cg" : ""; 
+            return String.Format("{0}{1}{2}{3}{4}{5}{6}.dbs", TestName, p1, p2, p3, p4, p5, p6);
         }
     }
 
     void OpenTransientDatabase(IDatabase db)
     {
         NullFile dbFile = new NullFile();
+        dbFile.Listener = new TestFileListener();
         db.Open(dbFile, INFINITE_PAGE_POOL);
     }
 
     public IDatabase GetDatabase(bool delete=true)
     {
         IDatabase db = DatabaseFactory.CreateDatabase();
+        db.Listener = new TestDatabaseListener();
 #if WITH_OLD_BTREE
         db.AlternativeBtree = AltBtree || Serializable;
 #endif
         db.BackgroundGc = BackgroundGc;
+        db.CodeGeneration = CodeGeneration;
         // TODO: make it configurable?
         // TODO: make it bigger (1000000 - the original value for h)
         if (BackgroundGc)
@@ -166,6 +242,7 @@ public class TestConfig
                     var sf = new StreamFile(f);
                     db.Open(sf, INFINITE_PAGE_POOL);
                 }
+                db.File.Listener = new TestFileListener();
             }
             else
             {
@@ -396,6 +473,7 @@ public class TestsMain
         new TestConfig{ InMemory = TestConfig.InMemoryType.No, AltBtree=false },
         new TestConfig{ InMemory = TestConfig.InMemoryType.No, AltBtree=true },
         new TestConfig{ InMemory = TestConfig.InMemoryType.Full, AltBtree=true },
+        new TestConfig{ InMemory = TestConfig.InMemoryType.Full, AltBtree=true, CodeGeneration=true },
         new TestConfig{ InMemory = TestConfig.InMemoryType.No, FileKind = TestConfig.FileType.Stream, AltBtree=true }
     };
 

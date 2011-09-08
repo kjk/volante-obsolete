@@ -951,9 +951,8 @@ namespace Volante.Impl
                 int i;
                 int indexSize = initIndexSize;
                 if (indexSize < dbFirstUserId)
-                {
                     indexSize = dbFirstUserId;
-                }
+
                 indexSize = (indexSize + dbHandlesPerPage - 1) & ~(dbHandlesPerPage - 1);
 
                 dirtyPagesMap = new int[dbDirtyPageBitmapSize / 4 + 1];
@@ -992,19 +991,18 @@ namespace Volante.Impl
                 byte[] buf = new byte[Header.Sizeof];
                 int rc = file.Read(0, buf);
                 if (rc > 0 && rc < Header.Sizeof)
-                {
                     throw new DatabaseException(DatabaseException.ErrorCode.DATABASE_CORRUPTED);
-                }
+
                 header.unpack(buf);
                 if (header.curr < 0 || header.curr > 1)
-                {
                     throw new DatabaseException(DatabaseException.ErrorCode.DATABASE_CORRUPTED);
-                }
+
                 if (pool == null)
                 {
                     pool = new PagePool(cacheSizeInBytes / Page.pageSize);
                     pool.open(file);
                 }
+
                 if (!header.initialized)
                 {
                     header.curr = currIndex = 0;
@@ -1108,10 +1106,8 @@ namespace Volante.Impl
                                   header.root[curr].index,
                                   (header.root[curr].indexUsed * 8L + Page.pageSize - 1) & ~(Page.pageSize - 1));
                         if (Listener != null)
-                        {
                             Listener.RecoveryCompleted();
-                        }
-                        System.Console.WriteLine("Recovery completed");
+
                     }
                     currIndexSize = header.root[1 - curr].indexUsed;
                     committedIndexSize = currIndexSize;
@@ -2991,6 +2987,11 @@ namespace Volante.Impl
         }
 
         public DatabaseListener Listener { get; set; }
+
+        public IFile File
+        {
+            get { return pool == null ? null : pool.file; }
+        }
 
         public IPersistent GetObjectByOid(int oid)
         {

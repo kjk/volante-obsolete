@@ -30,9 +30,7 @@ namespace Volante
         public virtual void Load()
         {
             if (oid != 0 && (state & ObjectState.RAW) != 0)
-            {
                 db.loadObject(this);
-            }
         }
 
         public bool IsRaw()
@@ -65,9 +63,8 @@ namespace Volante
         public virtual void Store()
         {
             if ((state & ObjectState.RAW) != 0)
-            {
                 throw new DatabaseException(DatabaseException.ErrorCode.ACCESS_TO_STUB);
-            }
+
             if (db != null)
             {
                 db.storeObject(this);
@@ -80,9 +77,8 @@ namespace Volante
             if ((state & ObjectState.DIRTY) == 0 && oid != 0)
             {
                 if ((state & ObjectState.RAW) != 0)
-                {
                     throw new DatabaseException(DatabaseException.ErrorCode.ACCESS_TO_STUB);
-                }
+
                 Debug.Assert((state & ObjectState.DELETED) == 0);
                 db.modifyObject(this);
                 state |= ObjectState.DIRTY;
@@ -91,13 +87,13 @@ namespace Volante
 
         public virtual void Deallocate()
         {
-            if (oid != 0)
-            {
-                db.deallocateObject(this);
-                db = null;
-                oid = 0;
-                state = 0;
-            }
+            if (0 == oid)
+                return;
+
+            db.deallocateObject(this);
+            db = null;
+            oid = 0;
+            state = 0;
         }
 
         public virtual bool RecursiveLoading()
@@ -136,13 +132,11 @@ namespace Volante
             this.db = db;
         }
 
-
         ~MarshalByRefPersistent()
         {
             if ((state & ObjectState.DIRTY) != 0 && oid != 0)
-            {
                 db.storeFinalizedObject(this);
-            }
+
             state = ObjectState.DELETED;
         }
 
@@ -151,13 +145,9 @@ namespace Volante
             this.oid = oid;
             this.db = db;
             if (raw)
-            {
                 state |= ObjectState.RAW;
-            }
             else
-            {
                 state &= ~ObjectState.RAW;
-            }
         }
 
         [NonSerialized()]

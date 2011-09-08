@@ -436,6 +436,9 @@ namespace Volante
         bool ReplicationAck { get; set; }
 #endif
 
+        /// <summary>Get database file. Should only be used to set FileListener.</summary>
+        IFile File { get; }
+
         /// <summary>Get/set db listener. You can set <code>null</code> listener.
         /// </summary>
         DatabaseListener Listener { get; set; }
