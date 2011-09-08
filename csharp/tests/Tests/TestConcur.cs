@@ -9,7 +9,7 @@ namespace Volante
         public TimeSpan AccessTime;
     }
 
-    public class TestConcur
+    public class TestConcur : ITest
     {
         class L2List : PersistentResource
         {

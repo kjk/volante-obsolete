@@ -9,7 +9,7 @@ namespace Volante
         public TimeSpan BackupTime;
     }
 
-    public class TestBackup
+    public class TestBackup : ITest
     {
         class Record : Persistent
         {

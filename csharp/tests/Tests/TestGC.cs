@@ -7,7 +7,7 @@ namespace Volante
     {
     }
 
-    public class TestGc
+    public class TestGc : ITest
     {
         class PObject : Persistent
         {

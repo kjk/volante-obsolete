@@ -10,7 +10,7 @@ namespace Volante
         public TimeSpan RemoveTime;
     }
 
-    public class TestCompoundIndex
+    public class TestCompoundIndex : ITest
     {
         class Record : Persistent
         {

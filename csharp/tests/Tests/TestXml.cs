@@ -11,7 +11,7 @@ namespace Volante
         public TimeSpan IndexSearchTime;
     }
 
-    public class TestXml
+    public class TestXml : ITest
     {
         class Record : Persistent
         {

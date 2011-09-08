@@ -481,30 +481,6 @@ public class TestsMain
         return testInfo.Configs ?? ConfigsDefault;
     }
 
-    public static void RunTests2(ITest test, TestConfig[] configs)
-    {
-        foreach (TestConfig configTmp in configs)
-        {
-#if !WITH_OLD_BTREE
-            bool useAltBtree = configTmp.AltBtree || configTmp.Serializable;
-            if (!useAltBtree)
-                continue;
-#endif
-            // make a copy because we modify it
-            var config = new TestConfig(configTmp);
-            config.Count = configTmp.Count;
-            //config.TestName = testClassName;
-            config.TestName = "";
-            config.Result = new TestResult(); // can be over-written by a test
-            DateTime start = DateTime.Now;
-            test.Run(config);
-            config.Result.ExecutionTime = DateTime.Now - start;
-            config.Result.Config = config; // so that we Print() nicely
-            config.Result.Ok = Tests.FinalizeTest();
-            config.Result.Print();
-        }
-    }
-
     public static void RunTests(TestInfo testInfo)
     {
         string testClassName = testInfo.Name;
@@ -512,8 +488,7 @@ public class TestsMain
         object obj = assembly.CreateInstance(testClassName);
         if (obj == null)
             obj = assembly.CreateInstance("Volante." + testClassName);
-        Type tp = obj.GetType();
-        MethodInfo mi = tp.GetMethod("Run");
+        ITest test = (ITest)obj;
         int count = GetCount(testClassName);
         TestConfig[] configs = GetTestConfigs(testInfo);
         foreach (TestConfig configTmp in configs)
@@ -529,7 +504,7 @@ public class TestsMain
             config.TestName = testClassName;
             config.Result = new TestResult(); // can be over-written by a test
             DateTime start = DateTime.Now;
-            mi.Invoke(obj, new object[] { config });
+            test.Run(config);
             config.Result.ExecutionTime = DateTime.Now - start;
             config.Result.Config = config; // so that we Print() nicely
             config.Result.Ok = Tests.FinalizeTest();

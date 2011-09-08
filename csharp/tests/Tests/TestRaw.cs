@@ -23,7 +23,7 @@ namespace Volante
         }
     }
 
-    public class TestRaw : Persistent
+    public class TestRaw : Persistent, ITest
     {
         L1List list;
         Hashtable map;

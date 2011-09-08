@@ -10,7 +10,7 @@ namespace Volante
         public TimeSpan ReadTime;
     }
 
-    public class TestBlob
+    public class TestBlob : ITest
     {
         static string IsSrcImpl(string d)
         {

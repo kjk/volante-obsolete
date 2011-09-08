@@ -10,7 +10,7 @@ namespace Volante
         public TimeSpan InsertTime4;
     }
 
-    public class TestList
+    public class TestList : ITest
     {
         public abstract class LinkNode : Persistent
         {

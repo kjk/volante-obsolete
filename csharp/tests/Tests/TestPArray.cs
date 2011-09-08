@@ -7,7 +7,7 @@ namespace Volante
     using System.Collections;
     using System.Collections.Generic;
 
-    public class TestPArray
+    public class TestPArray : ITest
     {
         public class Root : Persistent
         {

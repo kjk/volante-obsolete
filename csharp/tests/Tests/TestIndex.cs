@@ -12,7 +12,7 @@ namespace Volante
         public ICollection MemoryUsage; // values are of TypeMemoryUsage type
     }
 
-    public class TestIndex
+    public class TestIndex : ITest
     {
         public class Record : Persistent
         {

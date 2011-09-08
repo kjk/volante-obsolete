@@ -2,7 +2,7 @@ namespace Volante
 {
     using System;
 
-    public class TestIndexInt
+    public class TestIndexInt : ITest
     {
         public class Record : Persistent
         {
@@ -143,7 +143,7 @@ namespace Volante
     }
 
     // Test for BtreePageOfInt.compare() bug
-    public class TestIndexInt00
+    public class TestIndexInt00 : ITest
     {
         public class Record : Persistent
         {

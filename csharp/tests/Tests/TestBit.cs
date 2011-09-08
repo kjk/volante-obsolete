@@ -10,7 +10,7 @@ namespace Volante
         public TimeSpan RemoveTime;
     }
 
-    public class TestBit
+    public class TestBit : ITest
     {
         [Flags]
         public enum Options

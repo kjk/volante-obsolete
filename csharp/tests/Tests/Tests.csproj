@@ -123,7 +123,6 @@
     <Compile Include="TestBlob.cs" />
     <Compile Include="TestCompoundIndex.cs" />
     <Compile Include="TestConcur.cs" />
-    <Compile Include="TestEncoding.cs" />
     <Compile Include="TestEnumerator.cs" />
     <Compile Include="TestGC.cs" />
     <Compile Include="TestIndex.cs" />
@@ -157,12 +156,10 @@
     <Compile Include="TestXml.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="..\..\..\todo.txt">
-      <Link>todo.txt</Link>
-    </Content>
+    <None Include="app.config" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="app.config" />
+    <Content Include="todo.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

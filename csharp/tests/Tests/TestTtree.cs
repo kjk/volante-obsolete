@@ -9,7 +9,7 @@ namespace Volante
         public TimeSpan RemoveTime;
     }
 
-    public class TestTtree
+    public class TestTtree : ITest
     {
         class Name
         {

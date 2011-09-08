@@ -6,7 +6,7 @@ namespace Volante
     {
     }
 
-    public class TestR2 : Persistent
+    public class TestR2 : Persistent, ITest
     {
         class SpatialObject : Persistent
         {

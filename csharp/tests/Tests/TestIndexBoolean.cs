@@ -7,7 +7,7 @@ namespace Volante
         public TimeSpan InsertTime;
     }
 
-    public class TestIndexBoolean
+    public class TestIndexBoolean : ITest
     {
         public class Record : Persistent
         {

@@ -2,7 +2,7 @@ namespace Volante
 {
     using System;
 
-    public class TestIndexUInt00
+    public class TestIndexUInt00 : ITest
     {
         public class Record : Persistent
         {
@@ -48,7 +48,7 @@ namespace Volante
         }
     }
 
-    public class TestIndexUInt
+    public class TestIndexUInt : ITest
     {
         public class Record : Persistent
         {

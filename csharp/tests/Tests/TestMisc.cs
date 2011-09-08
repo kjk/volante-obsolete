@@ -132,7 +132,6 @@ namespace Volante
         public void Run(TestConfig config)
         {
             Record[] recs;
-
             IDatabase db = config.GetDatabase();
             Tests.Assert(db.IsOpened);
             Tests.AssertDatabaseException(() =>

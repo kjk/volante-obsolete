@@ -8,7 +8,7 @@ namespace Volante
         public TimeSpan IterationTime;
     }
 
-    public class TestEnumerator
+    public class TestEnumerator : ITest
     {
         class Record : Persistent
         {

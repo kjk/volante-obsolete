@@ -2,7 +2,7 @@ namespace Volante
 {
     using System;
 
-    public class TestIndexDecimal
+    public class TestIndexDecimal : ITest
     {
         public class Record : Persistent
         {

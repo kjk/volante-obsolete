@@ -10,7 +10,7 @@ namespace Volante
         public TimeSpan RemoveTime;
     }
 
-    public class TestTimeSeries
+    public class TestTimeSeries : ITest
     {
         public struct Quote : ITimeSeriesTick
         {

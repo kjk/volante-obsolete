@@ -11,7 +11,7 @@ namespace Volante
         public Rectangle rect;
     }
 
-    public class TestRtree : Persistent
+    public class TestRtree : Persistent, ITest
     {
         ISpatialIndex<SpatialObject> index;
 

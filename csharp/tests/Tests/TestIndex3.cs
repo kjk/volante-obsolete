@@ -3,7 +3,7 @@ namespace Volante
     using System;
     using System.Collections;
 
-    public class TestIndex3
+    public class TestIndex3 : ITest
     {
         public class Record : Persistent
         {
