@@ -51,9 +51,7 @@ namespace Volante.Impl
             catch (DatabaseException x)
             {
                 if (x.Code == DatabaseException.ErrorCode.KEY_NOT_FOUND)
-                {
                     return false;
-                }
                 throw;
             }
             return true;
@@ -64,9 +62,7 @@ namespace Volante.Impl
             foreach (T o in c)
             {
                 if (!Contains(o))
-                {
                     return false;
-                }
             }
             return true;
         }
@@ -84,18 +80,15 @@ namespace Volante.Impl
         public override bool Equals(object o)
         {
             if (o == this)
-            {
                 return true;
-            }
+
             Volante.ISet<T> s = o as Volante.ISet<T>;
             if (s == null)
-            {
                 return false;
-            }
+
             if (Count != s.Count)
-            {
                 return false;
-            }
+
             return ContainsAll(s);
         }
 

@@ -15,71 +15,77 @@ namespace Volante
             var start = DateTime.Now;
             IDatabase db = config.GetDatabase();
             Tests.Assert(null == db.Root);
-            var idx = db.CreateSet<RecordFull>();
-            db.Root = idx;
+            var set = db.CreateSet<RecordFull>();
+            db.Root = set;
             long val = 1999;
             var recs = new List<RecordFull>();
             var rand = new Random();
             for (i = 0; i < count; i++)
             {
                 var r = new RecordFull(val);
-                Tests.Assert(!idx.Contains(r));
-                idx.Add(r);
-                idx.Add(r);
-                if (rand.Next(0, 20) == 4 && recs.Count < 10)
-                {
+                Tests.Assert(!set.Contains(r));
+                set.Add(r);
+                set.Add(r);
+                if (recs.Count < 10 && rand.Next(0, 20) == 4)
                     recs.Add(r);
-                }
-                Tests.Assert(idx.Contains(r));
+
+                Tests.Assert(set.Contains(r));
                 if (i % 100 == 0)
                     db.Commit();
                 val = (3141592621L * val + 2718281829L) % 1000000007L;
             }
 
-            Tests.Assert(idx.Count == count);
+            Tests.Assert(set.Count == count);
             db.Commit();
-            Tests.Assert(idx.Count == count);
-            Tests.Assert(idx.IsReadOnly == false);
-            Tests.Assert(idx.ContainsAll(recs));
+            Tests.Assert(set.Count == count);
+            Tests.Assert(set.IsReadOnly == false);
+            Tests.Assert(set.ContainsAll(recs));
 
             var rOne = new RecordFull(val);
-            Tests.Assert(!idx.Contains(rOne));
-            Tests.Assert(idx.AddAll(new RecordFull[] { rOne }));
-            Tests.Assert(!idx.AddAll(recs));
-            Tests.Assert(idx.Count == count + 1);
-            Tests.Assert(idx.Remove(rOne));
-            Tests.Assert(!idx.Remove(rOne));
+            Tests.Assert(!set.Contains(rOne));
+            Tests.Assert(set.AddAll(new RecordFull[] { rOne }));
+            Tests.Assert(!set.AddAll(recs));
+            Tests.Assert(set.Count == count + 1);
+            Tests.Assert(set.Remove(rOne));
+            Tests.Assert(!set.Remove(rOne));
 
-            Tests.Assert(idx.RemoveAll(recs));
-            Tests.Assert(!idx.RemoveAll(recs));
-            Tests.Assert(idx.Count == count - recs.Count);
-            Tests.Assert(idx.AddAll(recs));
-            Tests.Assert(idx.Count == count);
+            Tests.Assert(set.RemoveAll(recs));
+            Tests.Assert(!set.RemoveAll(recs));
+            Tests.Assert(set.Count == count - recs.Count);
+            Tests.Assert(set.AddAll(recs));
+            Tests.Assert(set.Count == count);
             db.Commit();
 
             res.InsertTime = DateTime.Now - start;
 
             start = System.DateTime.Now;
-            foreach (var r2 in idx)
+            Tests.Assert(!set.Equals(null));
+            Tests.Assert(set.Equals(set));
+
+            var set2 = db.CreateSet<RecordFull>();
+            Tests.Assert(!set.Equals(set2));
+            foreach (var r2 in set)
             {
-                Tests.Assert(idx.Contains(r2));
+                Tests.Assert(set.Contains(r2));
+                set2.Add(r2);
             }
+            Tests.Assert(set.Equals(set2));
 
-            idx.Invalidate();
+            set.Invalidate();
 
-            RecordFull[] recsArr = idx.ToArray();
+            RecordFull[] recsArr = set.ToArray();
             Tests.Assert(recsArr.Length == count);
-            Array recsArr2 = idx.ToArray(typeof(RecordFull));
+            Array recsArr2 = set.ToArray(typeof(RecordFull));
             Tests.Assert(recsArr2.Length == count);
-            idx.Clear();
-            Tests.Assert(idx.Count == 0);
+            set.Clear();
+            Tests.Assert(set.Count == 0);
             db.Commit();
-            Tests.Assert(idx.Count == 0);
-            idx.AddAll(recs);
-            Tests.Assert(idx.Count == recs.Count);
+            Tests.Assert(set.Count == 0);
+            set.AddAll(recs);
+            Tests.Assert(set.Count == recs.Count);
             db.Commit();
-            Tests.Assert(idx.Count == recs.Count);
-            Tests.Assert(idx.GetHashCode() > 0);
+            Tests.Assert(set.Count == recs.Count);
+            Tests.Assert(set.GetHashCode() > 0);
             db.Gc();
             db.Commit();
             db.Close();

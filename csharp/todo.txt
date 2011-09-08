@@ -7,7 +7,30 @@ Things to do for c# version:
 * script that copies docs to my website (i.e. my blog repository)
 * make a reference API from .xml extracted during build process (after 0.9?)
 * g+ button in the website version of docs
-* more coverage tests
+* more code coverage tests:
+ * CodeGeneration
+ * DatabaseListener
+ * FileListener
+ * replication
+ * BtreeFieldIndex
+ * BtreeMultiFieldIndex
+ * LinkImpl
+ * OldBtreeFieldIndex
+ * OldBtreeMultiFieldIndex
+ * PTrie
+ * Relation
+ * RTree
+ * RTreeR2
+ * ThickIndex
+ * Ttree
+ * TtreePage
+ * WeakHashTable
+ * L2List
+ * L2ListElem
+ * PersistentString
+ * Projection
+ * Rc4File
+ * Relation
 * document setting IFile.NoFlush to true in performance_tuning.html
 * make a 0.9 release
 
