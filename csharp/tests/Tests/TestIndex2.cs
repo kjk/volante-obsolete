@@ -73,37 +73,34 @@ namespace Volante
 
             ISortedCollection<long, Record> intIndex = root.intIndex;
             ISortedCollection<string, Record> strIndex = root.strIndex;
-            long key = 1999;
-            for (i = 0; i < count; i++)
+
+            foreach (var key in Tests.KeySeq(count))
             {
                 Record rec = new Record();
                 rec.intKey = key;
                 rec.strKey = System.Convert.ToString(key);
                 intIndex.Add(rec);
                 strIndex.Add(rec);
-                key = (3141592621L * key + 2718281829L) % 1000000007L;
             }
             db.Commit();
             res.InsertTime = DateTime.Now - start;
 
             start = System.DateTime.Now;
-            key = 1999;
-            for (i = 0; i < count; i++)
+
+            foreach (var key in Tests.KeySeq(count))
             {
                 Record rec1 = intIndex[key];
                 Record rec2 = strIndex[Convert.ToString(key)];
-                Tests.Assert(rec1 != null && rec1 == rec2);
-                key = (3141592621L * key + 2718281829L) % 1000000007L;
             }
             res.IndexSearch = DateTime.Now - start;
 
             start = System.DateTime.Now;
-            key = Int64.MinValue;
+            var k = Int64.MinValue;
             i = 0;
             foreach (Record rec in intIndex)
             {
-                Tests.Assert(rec.intKey >= key);
-                key = rec.intKey;
+                Tests.Assert(rec.intKey >= k);
+                k = rec.intKey;
                 i += 1;
             }
             Tests.Assert(i == count);
@@ -122,14 +119,12 @@ namespace Volante
             res.MemoryUsage = db.GetMemoryUsage().Values;
 
             start = System.DateTime.Now;
-            key = 1999;
-            for (i = 0; i < count; i++)
+            foreach (var key in Tests.KeySeq(count))
             {
                 Record rec = intIndex[key];
                 intIndex.Remove(rec);
                 strIndex.Remove(rec);
                 rec.Deallocate();
-                key = (3141592621L * key + 2718281829L) % 1000000007L;
             }
             res.RemoveTime = DateTime.Now - start;
             db.Close();

@@ -119,8 +119,12 @@ public class RecordFull : Persistent
     public UInt32 UInt32Val;
     public Int64 Int64Val;
     public UInt64 UInt64Val;
+    public float FloatVal;
+    public double DoubleVal;
     public DateTime DateTimeVal;
-    //public SimpleStruct StructVal;
+    public Decimal DecimalVal;
+    public Guid GuidVal;
+
     public RecordFullEnum EnumVal;
     public object o;
 
@@ -140,9 +144,11 @@ public class RecordFull : Persistent
         UInt32Val = (UInt32)v;
         Int64Val = (Int64)v;
         UInt64Val = (UInt64)v;
+        FloatVal = (float)v;
+        DoubleVal = Convert.ToDouble(v);
+        DecimalVal = Convert.ToDecimal(v);
+        GuidVal = Guid.NewGuid();
         DateTimeVal = DateTime.Now;
-        //StructVal.v1 = (int)(v + 1);
-        //StructVal.v2 = (long)(v + 1);
         int enumVal = (int)(v % 11);
         EnumVal = (RecordFullEnum)enumVal;
         o = (object)v;
@@ -380,6 +386,16 @@ public class Tests
             gotException = exc.Code == expectedCode;
         }
         Assert(gotException);
+    }
+
+    public static IEnumerable<long> KeySeq(int count)
+    {
+        long v = 1999;
+        for (int i = 0; i < count; i++)
+        {
+            yield return v;
+            v = (3141592621L * v + 2718281829L) % 1000000007L;
+        }
     }
 
     public static bool FinalizeTest()

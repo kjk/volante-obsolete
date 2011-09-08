@@ -22,7 +22,6 @@ namespace Volante
 
         public void Run(TestConfig config)
         {
-            int i;
             int count = config.Count;
             var res = new TestIndexResult();
             config.Result = res;
@@ -42,12 +41,13 @@ namespace Volante
             Tests.Assert(typeof(long) == intIndex.KeyType);
 
             DateTime start = DateTime.Now;
-            long key = 1999;
             int startWithOne = 0;
             int startWithFive = 0;
             string strFirst = "z";
             string strLast  = "0";
-            for (i = 0; i < count; i++)
+
+            int n = 0;
+            foreach (var key in Tests.KeySeq(count))
             {
                 RecordFull rec = new RecordFull(key);
                 if (rec.StrVal[0] == '1')
@@ -60,9 +60,9 @@ namespace Volante
                     strLast = rec.StrVal;
                 intIndex[rec.Int32Val] = rec;
                 strIndex[rec.StrVal] = rec;
-                if (i % 100 == 0)
+                n++;
+                if (n % 100 == 0)
                     db.Commit();
-                key = (3141592621L * key + 2718281829L) % 1000000007L;
             }
 
             if (config.Serializable)
@@ -78,42 +78,40 @@ namespace Volante
             res.InsertTime = DateTime.Now - start;
             start = System.DateTime.Now;
 
-            key = 1999;
-            for (i = 0; i < count; i++)
+            foreach (var key in Tests.KeySeq(count))
             {
                 RecordFull rec1 = intIndex[key];
                 RecordFull rec2 = strIndex[Convert.ToString(key)];
                 Tests.Assert(rec1 != null && rec1 == rec2);
-                key = (3141592621L * key + 2718281829L) % 1000000007L;
             }
             res.IndexSearchTime = DateTime.Now - start;
             start = System.DateTime.Now;
 
-            key = Int64.MinValue;
-            i = 0;
+            var k = Int64.MinValue;
+            n = 0;
             foreach (RecordFull rec in intIndex)
             {
-                Tests.Assert(rec.Int32Val >= key);
-                key = rec.Int32Val;
-                i += 1;
+                Tests.Assert(rec.Int32Val >= k);
+                k = rec.Int32Val;
+                n += 1;
             }
-            Tests.Assert(i == count);
+            Tests.Assert(n == count);
 
             String strKey = "";
-            i = 0;
+            n = 0;
             foreach (RecordFull rec in strIndex)
             {
                 Tests.Assert(rec.StrVal.CompareTo(strKey) >= 0);
                 strKey = rec.StrVal;
-                i += 1;
+                n += 1;
             }
-            Tests.Assert(i == count);
+            Tests.Assert(n == count);
             res.IterationTime = DateTime.Now - start;
             start = System.DateTime.Now;
 
             IDictionaryEnumerator de = intIndex.GetDictionaryEnumerator();
-            i = VerifyDictionaryEnumerator(de, IterationOrder.AscentOrder);
-            Tests.Assert(i == count);
+            n = VerifyDictionaryEnumerator(de, IterationOrder.AscentOrder);
+            Tests.Assert(n == count);
 
             long mid = 0;
             long max = long.MaxValue;
@@ -153,15 +151,17 @@ namespace Volante
             Tests.Assert(recs.Length == 1);
             Tests.Assert(recs[0].StrVal == strLast);
 
-            key = 1999;
-            for (i = 0; i < count; i++)
+            n = 0;
+            foreach (var key in Tests.KeySeq(count))
             {
+                n++;
+                if (n % 2 == 0)
+                    continue;
                 RecordFull rec = intIndex.Get(key);
                 RecordFull removed = intIndex.RemoveKey(key);
                 Tests.Assert(removed == rec);
                 strIndex.Remove(new Key(System.Convert.ToString(key)), rec);
                 rec.Deallocate();
-                key = (3141592621L * key + 2718281829L) % 1000000007L;
             }
             res.RemoveTime = DateTime.Now - start;
             db.Close();
