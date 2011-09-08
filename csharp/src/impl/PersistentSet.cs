@@ -35,6 +35,8 @@ namespace Volante.Impl
             bool modified = false;
             foreach (T o in c)
             {
+                if (!o.IsPersistent())
+                    ((DatabaseImpl)Database).MakePersistent(o);
                 modified |= base.Put(new Key(o), o);
             }
             return modified;

@@ -25,41 +25,54 @@ namespace Volante.Impl
         {
             get
             {
-                return link != null ? link.Count : pset.Count;
+                if (pset != null)
+                    return pset.Count;
+                else
+                    return link.Count;
             }
         }
 
         public override void Clear()
         {
-            if (link != null)
+            if (pset != null)
+                pset.Clear();
+            else
             {
                 link.Clear();
                 Modify();
-            }
-            else
-            {
-                pset.Clear();
             }
         }
 
         public override bool Contains(T o)
         {
-            return link != null ? link.Contains(o) : pset.Contains(o);
+            if (pset != null)
+                return pset.Contains(o);
+            else
+                return link.Contains(o);
         }
 
         public T[] ToArray()
         {
-            return link != null ? link.ToArray() : pset.ToArray();
+            if (pset != null)
+                return pset.ToArray();
+            else
+                return link.ToArray();
         }
 
         public Array ToArray(Type elemType)
         {
-            return link != null ? link.ToArray(elemType) : pset.ToArray(elemType);
+            if (pset != null)
+                return pset.ToArray(elemType);
+            else
+                return link.ToArray(elemType);
         }
 
         public override IEnumerator<T> GetEnumerator()
         {
-            return link != null ? link.GetEnumerator() : pset.GetEnumerator();
+            if (pset != null)
+                return pset.GetEnumerator();
+            else
+                return link.GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()
@@ -69,7 +82,7 @@ namespace Volante.Impl
 
         public override void Add(T o)
         {
-            if (link == null)
+            if (pset != null)
             {
                 pset.Add(o);
                 return;
@@ -97,7 +110,7 @@ namespace Volante.Impl
 
         public override bool Remove(T o)
         {
-            if (link == null)
+            if (pset != null)
                 return pset.Remove(o);
 
             int i = link.IndexOf(o);
@@ -111,6 +124,9 @@ namespace Volante.Impl
 
         public bool ContainsAll(ICollection<T> c)
         {
+            if (pset != null)
+                return pset.ContainsAll(c);
+
             foreach (T o in c)
             {
                 if (!Contains(o))
@@ -121,6 +137,9 @@ namespace Volante.Impl
 
         public bool AddAll(ICollection<T> c)
         {
+            if (pset != null)
+                return pset.AddAll(c);
+
             bool modified = false;
             foreach (T o in c)
             {
@@ -135,6 +154,9 @@ namespace Volante.Impl
 
         public bool RemoveAll(ICollection<T> c)
         {
+            if (pset != null)
+                return pset.RemoveAll(c);
+
             bool modified = false;
             foreach (T o in c)
             {
@@ -160,6 +182,9 @@ namespace Volante.Impl
 
         public override int GetHashCode()
         {
+            if (pset != null)
+                return pset.GetHashCode();
+
             int h = 0;
             foreach (IPersistent o in this)
             {

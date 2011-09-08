@@ -218,7 +218,7 @@ namespace Volante.Impl
                 IPersistent o = arr[i];
                 if (o == obj)
                     return i;
-                // TODO: compare by oid if o is PersistentStub
+                // TODO: compare by oid if o is PersistentStub ?
             }
             return -1;
         }

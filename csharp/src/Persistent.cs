@@ -84,9 +84,8 @@ namespace Volante
                 return;
 
             if ((state & ObjectState.RAW) != 0)
-            {
                 throw new DatabaseException(DatabaseException.ErrorCode.ACCESS_TO_STUB);
-            }
+
             Debug.Assert((state & ObjectState.DELETED) == 0);
             db.modifyObject(this);
             state |= ObjectState.DIRTY;

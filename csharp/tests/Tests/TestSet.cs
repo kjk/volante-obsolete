@@ -65,6 +65,8 @@ namespace Volante
                 Tests.Assert(idx.Contains(r2));
             }
 
+            idx.Invalidate();
+
             RecordFull[] recsArr = idx.ToArray();
             Tests.Assert(recsArr.Length == count);
             Array recsArr2 = idx.ToArray(typeof(RecordFull));
@@ -77,7 +79,7 @@ namespace Volante
             Tests.Assert(idx.Count == recs.Count);
             db.Commit();
             Tests.Assert(idx.Count == recs.Count);
-
+            Tests.Assert(idx.GetHashCode() > 0);
             db.Gc();
             db.Commit();
             db.Close();
