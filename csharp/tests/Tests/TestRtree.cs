@@ -1,6 +1,8 @@
 namespace Volante
 {
     using System;
+    using System.Collections;
+    using System.Collections.Generic;
 
     public class TestRtreeResult : TestResult
     {
@@ -46,13 +48,9 @@ namespace Volante
                     {
                         so = sos[k];
                         if (r.Equals(so.rect))
-                        {
                             po = so;
-                        }
                         else
-                        {
                             Tests.Assert(r.Intersects(so.rect));
-                        }
                     }
                     Tests.Assert(po != null);
 
@@ -60,9 +58,7 @@ namespace Volante
                     for (int k = 0; k < nObjectsInTree; k++)
                     {
                         if (r.Intersects(rectangles[k]))
-                        {
                             n += 1;
-                        }
                     }
                     Tests.Assert(n == sos.Length);
 
@@ -89,10 +85,42 @@ namespace Volante
                 root.index.Put(r, so);
 
                 if (i % 100 == 0)
-                {
                     db.Commit();
-                }
             }
+            db.Commit();
+            Tests.Assert(root.index.Count == count);
+            Rectangle wrappingRect = root.index.WrappingRectangle;
+            SpatialObject[] objsTmp = root.index.Get(wrappingRect);
+            Tests.Assert(root.index.Count == objsTmp.Length);
+            var objs = new List<SpatialObject>();
+            objs.AddRange(objsTmp);
+
+            foreach (var spo in root.index)
+            {
+                Tests.Assert(objs.Contains(spo));
+            }
+
+            IDictionaryEnumerator de = root.index.GetDictionaryEnumerator();
+            while (de.MoveNext())
+            {
+                var spo = (SpatialObject)de.Value;
+                var rect = (Rectangle)de.Key;
+                Tests.Assert(spo.rect.EqualsTo(rect));
+                Tests.Assert(objs.Contains(spo));
+            }
+
+            var rand = new Random();
+            while (root.index.Count > 5)
+            {
+                int idx = rand.Next(root.index.Count);
+                SpatialObject o = objs[idx];
+                if (rand.Next(10) > 5)
+                    root.index.Remove(o.rect, o);
+                else
+                    root.index.Remove(wrappingRect, o);
+                objs.RemoveAt(idx);
+            }
+
             root.index.Clear();
             db.Close();
         }

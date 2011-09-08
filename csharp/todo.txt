@@ -16,13 +16,10 @@ Things to do for c# version:
  * OldBtreeMultiFieldIndex
  * PTrie
  * Relation
- * RTree
- * RTreeR2
  * Ttree
  * TtreePage
  * L2List
  * L2ListElem
- * PersistentString
  * Projection
  * Rc4File
  * Relation

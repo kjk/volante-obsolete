@@ -1,6 +1,8 @@
 namespace Volante
 {
     using System;
+    using System.Collections;
+    using System.Collections.Generic;
 
     public class TestR2Result : TestResult
     {
@@ -30,6 +32,7 @@ namespace Volante
             root = new TestR2();
             root.index = db.CreateSpatialIndexR2<SpatialObject>();
             db.Root = root;
+            var index = root.index;
 
             RectangleR2[] rectangles = new RectangleR2[nObjectsInTree];
             long key = 1999;
@@ -83,6 +86,40 @@ namespace Volante
                 if (i % 100 == 0)
                     db.Commit();
             }
+            db.Commit();
+            Tests.Assert(root.index.Count == count);
+            RectangleR2 wrappingRect = root.index.WrappingRectangle;
+            SpatialObject[] objsTmp = root.index.Get(wrappingRect);
+            Tests.Assert(root.index.Count == objsTmp.Length);
+            var objs = new List<SpatialObject>();
+            objs.AddRange(objsTmp);
+
+            foreach (var spo in root.index)
+            {
+                Tests.Assert(objs.Contains(spo));
+            }
+
+            IDictionaryEnumerator de = root.index.GetDictionaryEnumerator();
+            while (de.MoveNext())
+            {
+                var spo = (SpatialObject)de.Value;
+                var rect = (RectangleR2)de.Key;
+                Tests.Assert(spo.rect.EqualsTo(rect));
+                Tests.Assert(objs.Contains(spo));
+            }
+
+            var rand = new Random();
+            while (root.index.Count > 5)
+            {
+                int idx = rand.Next(root.index.Count);
+                SpatialObject o = objs[idx];
+                if (rand.Next(10) > 5)
+                    root.index.Remove(o.rect, o);
+                else
+                    root.index.Remove(wrappingRect, o);
+                objs.RemoveAt(idx);
+            }
+
             root.index.Clear();
             db.Close();
         }

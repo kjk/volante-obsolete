@@ -108,21 +108,16 @@ namespace Volante
         public void Join(Rectangle r)
         {
             if (left > r.left)
-            {
                 left = r.left;
-            }
+
             if (right < r.right)
-            {
                 right = r.right;
-            }
+
             if (top > r.top)
-            {
                 top = r.top;
-            }
+
             if (bottom < r.bottom)
-            {
                 bottom = r.bottom;
-            }
         }
 
         /// <summary>
@@ -163,6 +158,19 @@ namespace Volante
         public bool IsEmpty()
         {
             return left > right;
+        }
+
+        public bool EqualsTo(Rectangle other)
+        {
+            if (Left != other.Left)
+                return false;
+            if (Right != other.Right)
+                return false;
+            if (Top != other.Top)
+                return false;
+            if (Bottom != other.Bottom)
+                return false;
+            return true;
         }
     }
 }

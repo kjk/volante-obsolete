@@ -48,15 +48,13 @@ namespace Volante.Impl
         public void Remove(Rectangle r, T obj)
         {
             if (root == null)
-            {
                 throw new DatabaseException(DatabaseException.ErrorCode.KEY_NOT_FOUND);
-            }
+
             ArrayList reinsertList = new ArrayList();
             int reinsertLevel = root.remove(r, obj, height, reinsertList);
             if (reinsertLevel < 0)
-            {
                 throw new DatabaseException(DatabaseException.ErrorCode.KEY_NOT_FOUND);
-            }
+
             for (int i = reinsertList.Count; --i >= 0; )
             {
                 RtreePage p = (RtreePage)reinsertList[i];
@@ -89,9 +87,7 @@ namespace Volante.Impl
         {
             ArrayList result = new ArrayList();
             if (root != null)
-            {
                 root.find(r, result, height);
-            }
             return (T[])result.ToArray(typeof(T));
         }
 
@@ -157,9 +153,8 @@ namespace Volante.Impl
                 height = tree.height;
                 this.tree = tree;
                 if (height == 0)
-                {
                     return;
-                }
+
                 this.r = r;
                 pageStack = new RtreePage[height];
                 posStack = new int[height];
@@ -186,17 +181,14 @@ namespace Volante.Impl
             public bool MoveNext()
             {
                 if (counter != tree.updateCounter)
-                {
                     throw new InvalidOperationException("Tree was modified");
-                }
+
                 if (hasNext)
                 {
                     page = pageStack[height - 1];
                     pos = posStack[height - 1];
                     if (!gotoNextItem(height - 1))
-                    {
                         hasNext = false;
-                    }
                     return true;
                 }
                 else
@@ -211,9 +203,8 @@ namespace Volante.Impl
                 get
                 {
                     if (page == null)
-                    {
                         throw new InvalidOperationException();
-                    }
+
                     return (T)page.branch[pos];
                 }
             }
@@ -300,9 +291,8 @@ namespace Volante.Impl
                 get
                 {
                     if (page == null)
-                    {
                         throw new InvalidOperationException();
-                    }
+
                     return new DictionaryEntry(page.b[pos], page.branch[pos]);
                 }
             }
@@ -312,9 +302,8 @@ namespace Volante.Impl
                 get
                 {
                     if (page == null)
-                    {
                         throw new InvalidOperationException();
-                    }
+
                     return page.b[pos];
                 }
             }
@@ -324,9 +313,8 @@ namespace Volante.Impl
                 get
                 {
                     if (page == null)
-                    {
                         throw new InvalidOperationException();
-                    }
+
                     return page.branch[pos];
                 }
             }

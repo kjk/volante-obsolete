@@ -100,7 +100,7 @@ namespace Volante
         /// </returns>        
         bool IsOpened { get; }
 
-        /// <summary> Commit changes done by the last transaction. Transaction is started implcitlely with forst update
+        /// <summary> Commit changes done by the last transaction. Transaction is started implcitly with forst update
         /// opertation.
         /// </summary>
         void Commit();
