@@ -43,7 +43,7 @@ namespace Volante
             db.Commit();
 
             // Test that modyfing an index while traversing it throws an exception
-            // Tests AltBtree.BtreeEnumerator
+            // Tests Btree.BtreeEnumerator
             long n = -1;
             Tests.AssertException<InvalidOperationException>(
                 () => {
@@ -69,7 +69,7 @@ namespace Volante
             Tests.Assert(n == 0);
 
             // Test that modyfing an index while traversing it throws an exception
-            // Tests AltBtree.BtreeSelectionIterator
+            // Tests Btree.BtreeSelectionIterator
 
             Key keyStart = new Key("four", true);
             Key keyEnd = new Key("three", true);

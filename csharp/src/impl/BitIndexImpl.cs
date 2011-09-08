@@ -7,7 +7,7 @@ namespace Volante.Impl
     using System.Diagnostics;
     using Volante;
 
-    class BitIndexImpl<T> : OldBtree<IPersistent, T>, IBitIndex<T> where T : class,IPersistent
+    class OldBitIndexImpl<T> : OldBtree<IPersistent, T>, IBitIndex<T> where T : class,IPersistent
     {
         class Key
         {
@@ -21,7 +21,7 @@ namespace Volante.Impl
             }
         }
 
-        internal BitIndexImpl()
+        internal OldBitIndexImpl()
             : base(ClassDescriptor.FieldType.tpInt, true)
         {
         }
@@ -139,7 +139,7 @@ namespace Volante.Impl
 
         class BitIndexIterator : IEnumerator<T>, IEnumerable<T>
         {
-            internal BitIndexIterator(BitIndexImpl<T> index, int setBits, int clearBits)
+            internal BitIndexIterator(OldBitIndexImpl<T> index, int setBits, int clearBits)
             {
                 sp = 0;
                 counter = index.updateCounter;
@@ -268,7 +268,7 @@ namespace Volante.Impl
                 return false;
             }
 
-            BitIndexImpl<T> index;
+            OldBitIndexImpl<T> index;
             DatabaseImpl db;
             int[] pageStack;
             int[] posStack;

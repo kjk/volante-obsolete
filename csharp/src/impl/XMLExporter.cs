@@ -50,7 +50,7 @@ namespace Volante.Impl
                                     {
                                         exportIndex(oid, obj, name);
                                     }
-                                    else if (t == typeof(PersistentSet<>))
+                                    else if (t == typeof(OldPersistentSet<>))
                                     {
                                         exportSet(oid, obj, name);
                                     }

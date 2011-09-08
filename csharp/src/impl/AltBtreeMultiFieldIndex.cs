@@ -7,7 +7,7 @@ namespace Volante.Impl
     using System.Diagnostics;
     using Volante;
 
-    class AltBtreeMultiFieldIndex<T> : AltBtree<object[], T>, IMultiFieldIndex<T> where T : class,IPersistent
+    class BtreeMultiFieldIndex<T> : Btree<object[], T>, IMultiFieldIndex<T> where T : class,IPersistent
     {
         internal String className;
         internal String[] fieldNames;
@@ -16,7 +16,7 @@ namespace Volante.Impl
         [NonSerialized()]
         MemberInfo[] mbr;
 
-        internal AltBtreeMultiFieldIndex()
+        internal BtreeMultiFieldIndex()
         {
         }
 
@@ -71,7 +71,7 @@ namespace Volante.Impl
             locateFields();
         }
 
-        internal AltBtreeMultiFieldIndex(string[] fieldNames, bool unique)
+        internal BtreeMultiFieldIndex(string[] fieldNames, bool unique)
         {
             this.cls = typeof(T);
             this.unique = unique;

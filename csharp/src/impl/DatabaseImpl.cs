@@ -1776,7 +1776,7 @@ namespace Volante.Impl
                 ensureOpened();
 #if WITH_OLD_BTREE
                 IIndex<K, V> index = alternativeBtree
-                    ? new AltBtree<K, V>(indexType)
+                    ? new Btree<K, V>(indexType)
                     : (IIndex<K, V>)new OldBtree<K, V>(indexType);
 #else
                 IIndex<K, V> index = new AltBtree<K, V>(indexType);
@@ -1801,7 +1801,7 @@ namespace Volante.Impl
             lock (this)
             {
                 ensureOpened();
-                IBitIndex<T> index = new BitIndexImpl<T>();
+                IBitIndex<T> index = new OldBitIndexImpl<T>();
                 index.AssignOid(this, 0, false);
                 return index;
             }
@@ -1851,8 +1851,8 @@ namespace Volante.Impl
                 ensureOpened();
 #if WITH_OLD_BTREE
                 ISet<T> s = alternativeBtree
-                    ? (ISet<T>)new AltPersistentSet<T>()
-                    : (ISet<T>)new PersistentSet<T>();
+                    ? (ISet<T>)new PersistentSet<T>()
+                    : (ISet<T>)new OldPersistentSet<T>();
 #else
                 ISet<T> s = new AltPersistentSet<T>();
 #endif
@@ -1883,7 +1883,7 @@ namespace Volante.Impl
                 bool unique = (indexType == IndexType.Unique);
 #if WITH_OLD_BTREE
                 IFieldIndex<K, V> index = alternativeBtree
-                    ? (IFieldIndex<K, V>)new AltBtreeFieldIndex<K, V>(fieldName, unique)
+                    ? (IFieldIndex<K, V>)new BtreeFieldIndex<K, V>(fieldName, unique)
                     : (IFieldIndex<K, V>)new OldBtreeFieldIndex<K, V>(fieldName, unique);
 #else
                 IFieldIndex<K, V> index = (IFieldIndex<K, V>)new AltBtreeFieldIndex<K, V>(fieldName, unique);
@@ -1908,7 +1908,7 @@ namespace Volante.Impl
 #else
 #if WITH_OLD_BTREE
                 IMultiFieldIndex<T> index = alternativeBtree
-                    ? (IMultiFieldIndex<T>)new AltBtreeMultiFieldIndex<T>(fieldNames, unique)
+                    ? (IMultiFieldIndex<T>)new BtreeMultiFieldIndex<T>(fieldNames, unique)
                     : (IMultiFieldIndex<T>)new OldBtreeMultiFieldIndex<T>(fieldNames, unique);
 #else
                 IMultiFieldIndex<T> index = (IMultiFieldIndex<T>)new AltBtreeMultiFieldIndex<T>(fieldNames, unique);

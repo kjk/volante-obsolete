@@ -5,9 +5,9 @@ namespace Volante.Impl
     using System.Collections;
     using Volante;
 
-    class AltPersistentSet<T> : AltBtree<T, T>, Volante.ISet<T> where T : class,IPersistent
+    class PersistentSet<T> : Btree<T, T>, Volante.ISet<T> where T : class,IPersistent
     {
-        public AltPersistentSet()
+        public PersistentSet()
         {
             type = ClassDescriptor.FieldType.tpObject;
             unique = true;

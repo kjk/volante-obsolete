@@ -47,8 +47,8 @@ namespace Volante.Impl
                 }
                 System.String elemName = scanner.Identifier;
                 if (elemName.StartsWith("Volante.Impl.OldBtree")
-                    || elemName.StartsWith("Volante.Impl.BitIndexImpl")
-                    || elemName.StartsWith("Volante.Impl.PersistentSet")
+                    || elemName.StartsWith("Volante.Impl.OldBitIndexImpl")
+                    || elemName.StartsWith("Volante.Impl.OldPersistentSet")
                     || elemName.StartsWith("Volante.Impl.OldBtreeFieldIndex")
                     || elemName.StartsWith("Volante.Impl.OldBtreeMultiFieldIndex"))
                 {

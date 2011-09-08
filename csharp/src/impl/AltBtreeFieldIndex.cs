@@ -7,7 +7,7 @@ namespace Volante.Impl
     using System.Diagnostics;
     using Volante;
 
-    class AltBtreeFieldIndex<K, V> : AltBtree<K, V>, IFieldIndex<K, V> where V : class, IPersistent
+    class BtreeFieldIndex<K, V> : Btree<K, V>, IFieldIndex<K, V> where V : class, IPersistent
     {
         internal String className;
         internal String fieldName;
@@ -19,7 +19,7 @@ namespace Volante.Impl
         [NonSerialized()]
         Type mbrType;
 
-        internal AltBtreeFieldIndex()
+        internal BtreeFieldIndex()
         {
         }
 
@@ -73,7 +73,7 @@ namespace Volante.Impl
             lookupField(fieldName);
         }
 
-        internal AltBtreeFieldIndex(String fieldName, bool unique)
+        internal BtreeFieldIndex(String fieldName, bool unique)
         {
             this.cls = typeof(V);
             this.unique = unique;

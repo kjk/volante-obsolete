@@ -7,7 +7,7 @@ namespace Volante.Impl
     using System.Collections.Generic;
     using ILink = ILink<IPersistent>;
 
-    class AltBtree<K, V> : PersistentCollection<V>, IIndex<K, V> where V : class, IPersistent
+    class Btree<K, V> : PersistentCollection<V>, IIndex<K, V> where V : class, IPersistent
     {
         public Type KeyType
         {
@@ -25,7 +25,7 @@ namespace Volante.Impl
         [NonSerialized()]
         internal int updateCounter;
 
-        internal AltBtree()
+        internal Btree()
         {
         }
 
@@ -1391,13 +1391,13 @@ namespace Volante.Impl
             return elemType;
         }
 
-        internal AltBtree(IndexType indexType)
+        internal Btree(IndexType indexType)
         {
             type = checkType(typeof(K));
             this.unique = (indexType == IndexType.Unique);
         }
 
-        internal AltBtree(ClassDescriptor.FieldType type, bool unique)
+        internal Btree(ClassDescriptor.FieldType type, bool unique)
         {
             this.type = type;
             this.unique = unique;
@@ -1760,7 +1760,7 @@ namespace Volante.Impl
 
         class BtreeEnumerator : IEnumerator<V>
         {
-            internal BtreeEnumerator(AltBtree<K, V> tree)
+            internal BtreeEnumerator(Btree<K, V> tree)
             {
                 this.tree = tree;
                 Reset();
@@ -1865,12 +1865,12 @@ namespace Volante.Impl
             protected int counter;
             protected IPersistent curr;
             protected bool hasCurrent;
-            protected AltBtree<K, V> tree;
+            protected Btree<K, V> tree;
         }
 
         class BtreeDictionaryEnumerator : BtreeEnumerator, IDictionaryEnumerator
         {
-            internal BtreeDictionaryEnumerator(AltBtree<K, V> tree)
+            internal BtreeDictionaryEnumerator(Btree<K, V> tree)
                 : base(tree)
             {
             }
@@ -1945,7 +1945,7 @@ namespace Volante.Impl
 
         class BtreeSelectionIterator : IEnumerator<V>, IEnumerable<V>
         {
-            internal BtreeSelectionIterator(AltBtree<K, V> tree, Key from, Key till, IterationOrder order)
+            internal BtreeSelectionIterator(Btree<K, V> tree, Key from, Key till, IterationOrder order)
             {
                 this.from = from;
                 this.till = till;
@@ -2256,12 +2256,12 @@ namespace Volante.Impl
             protected int counter;
             protected bool hasCurrent;
             protected IPersistent curr;
-            protected AltBtree<K, V> tree;
+            protected Btree<K, V> tree;
         }
 
         class BtreeDictionarySelectionIterator : BtreeSelectionIterator, IDictionaryEnumerator
         {
-            internal BtreeDictionarySelectionIterator(AltBtree<K, V> tree, Key from, Key till, IterationOrder order)
+            internal BtreeDictionarySelectionIterator(Btree<K, V> tree, Key from, Key till, IterationOrder order)
                 : base(tree, from, till, order)
             { }
 
