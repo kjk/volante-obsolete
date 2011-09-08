@@ -19,10 +19,10 @@ namespace Volante
                     base.Write(length, zeroPage);
                 } while ((length += Page.pageSize) < pos);
             }
+
             if (pos == length)
-            {
                 length += Page.pageSize;
-            }
+
             encrypt(buf, 0, cipherBuf, 0, buf.Length);
             base.Write(pos, cipherBuf);
         }
@@ -75,8 +75,7 @@ namespace Volante
             Array.Copy(initState, 0, state, 0, state.Length);
             for (int i = 0; i < len; i++)
             {
-                cipherText[cipherOff + i] =
-                    (byte)(clearText[clearOff + i] ^ state[nextState()]);
+                cipherText[cipherOff + i] = (byte)(clearText[clearOff + i] ^ state[nextState()]);
             }
         }
 
@@ -86,8 +85,7 @@ namespace Volante
             Array.Copy(initState, 0, state, 0, state.Length);
             for (int i = 0; i < len; i++)
             {
-                clearText[clearOff + i] =
-                    (byte)(cipherText[cipherOff + i] ^ state[nextState()]);
+                clearText[clearOff + i] = (byte)(cipherText[cipherOff + i] ^ state[nextState()]);
             }
         }
 

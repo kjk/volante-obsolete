@@ -14,9 +14,7 @@ namespace Volante.Impl
         {
             threshold = (int)(initialCapacity * loadFactor);
             if (initialCapacity != 0)
-            {
                 table = new Entry[initialCapacity];
-            }
         }
 
         public bool Remove(int oid)
@@ -32,13 +30,9 @@ namespace Volante.Impl
                         e.oref = null;
                         count -= 1;
                         if (prev != null)
-                        {
                             prev.next = e.next;
-                        }
                         else
-                        {
                             tab[index] = e.next;
-                        }
                         return true;
                     }
                 }
@@ -83,9 +77,7 @@ namespace Volante.Impl
                 for (Entry e = tab[index]; e != null; e = e.next)
                 {
                     if (e.oid == oid)
-                    {
                         return e.oref;
-                    }
                 }
                 return null;
             }
@@ -100,9 +92,7 @@ namespace Volante.Impl
                     for (Entry e = table[i]; e != null; e = e.next)
                     {
                         if (e.oref.IsModified())
-                        {
                             e.oref.Store();
-                        }
                     }
                 }
             }
@@ -117,9 +107,7 @@ namespace Volante.Impl
                     for (Entry e = table[i]; e != null; e = e.next)
                     {
                         if (e.oref.IsModified())
-                        {
                             e.oref.Invalidate();
-                        }
                     }
                     table[i] = null;
                 }

@@ -122,6 +122,7 @@ public class RecordFull : Persistent
     public DateTime DateTimeVal;
     public SimpleStruct StructVal;
     public RecordFullEnum EnumVal;
+    public object o;
 
     public RecordFull()
     {
@@ -144,6 +145,7 @@ public class RecordFull : Persistent
         StructVal.v2 = (long)(v + 1);
         int enumVal = (int)(v % 11);
         EnumVal = (RecordFullEnum)enumVal;
+        o = (object)v;
     }
 
     public RecordFull(Int64 v)
@@ -180,6 +182,7 @@ public class TestConfig
     public bool Serializable = false;
     public bool BackgroundGc = false;
     public bool CodeGeneration = false;
+    public bool Encrypted = false;
     public int Count; // number of iterations
 
     // Set by the test. Can be a subclass of TestResult
@@ -196,8 +199,9 @@ public class TestConfig
             if (InMemory != InMemoryType.Full)
                 p4 = (FileKind == FileType.File) ? "_file" : "_stream";
             string p5 = String.Format("_{0}", Count);
-            string p6 = CodeGeneration ? "_cg" : ""; 
-            return String.Format("{0}{1}{2}{3}{4}{5}{6}.dbs", TestName, p1, p2, p3, p4, p5, p6);
+            string p6 = CodeGeneration ? "_cg" : "";
+            string p7 = Encrypted ? "_enc" : "";
+            return String.Format("{0}{1}{2}{3}{4}{5}{6}{7}.dbs", TestName, p1, p2, p3, p4, p5, p6, p7);
         }
     }
 
@@ -205,6 +209,10 @@ public class TestConfig
     {
         NullFile dbFile = new NullFile();
         dbFile.Listener = new TestFileListener();
+        Tests.Assert(dbFile.NoFlush == false);
+        dbFile.NoFlush = true;
+        Tests.Assert(dbFile.NoFlush == false);
+        Tests.Assert(dbFile.Length == 0);
         db.Open(dbFile, INFINITE_PAGE_POOL);
     }
 
@@ -247,13 +255,19 @@ public class TestConfig
             else
             {
                 if (FileKind == FileType.File)
-                    db.Open(name);
+                {
+                    if (Encrypted)
+                        db.Open(new Rc4File(name, "PassWord"));
+                    else
+                        db.Open(name);
+                }
                 else
                 {
                     var f = File.Open(name, FileMode.CreateNew, FileAccess.ReadWrite, FileShare.None);
                     var sf = new StreamFile(f);
                     db.Open(sf);
                 }
+                db.File.Listener = new TestFileListener();
             }
         }
         return db;
@@ -263,18 +277,11 @@ public class TestConfig
     {
     }
 
-    public TestConfig(TestConfig tc)
+    public TestConfig Clone()
     {
-        TestName = tc.TestName;
-        InMemory = tc.InMemory;
-        FileKind = tc.FileKind;
-        AltBtree = tc.AltBtree;
-        Serializable = tc.Serializable;
-        BackgroundGc = tc.BackgroundGc;
-        Count = tc.Count;
-        Result = tc.Result;
+        return (TestConfig)MemberwiseClone();
     }
-};
+}
 
 public class TestResult
 {
@@ -473,7 +480,8 @@ public class TestsMain
         new TestConfig{ InMemory = TestConfig.InMemoryType.No, AltBtree=false },
         new TestConfig{ InMemory = TestConfig.InMemoryType.No, AltBtree=true },
         new TestConfig{ InMemory = TestConfig.InMemoryType.Full, AltBtree=true },
-        new TestConfig{ InMemory = TestConfig.InMemoryType.Full, AltBtree=true, CodeGeneration=true },
+        new TestConfig{ InMemory = TestConfig.InMemoryType.No, AltBtree=true, CodeGeneration=true },
+        new TestConfig{ InMemory = TestConfig.InMemoryType.No, AltBtree=true, Encrypted=true },
         new TestConfig{ InMemory = TestConfig.InMemoryType.No, FileKind = TestConfig.FileType.Stream, AltBtree=true }
     };
 
@@ -601,7 +609,7 @@ public class TestsMain
                 continue;
 #endif
             // make a copy because we modify it
-            var config = new TestConfig(configTmp);
+            var config = configTmp.Clone();
             config.Count = count;
             config.TestName = testClassName;
             config.Result = new TestResult(); // can be over-written by a test
