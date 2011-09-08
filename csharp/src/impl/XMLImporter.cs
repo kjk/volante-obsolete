@@ -46,11 +46,11 @@ namespace Volante.Impl
                     throwException("Element name expected");
                 }
                 System.String elemName = scanner.Identifier;
-                if (elemName.StartsWith("Volante.Impl.Btree")
+                if (elemName.StartsWith("Volante.Impl.OldBtree")
                     || elemName.StartsWith("Volante.Impl.BitIndexImpl")
                     || elemName.StartsWith("Volante.Impl.PersistentSet")
-                    || elemName.StartsWith("Volante.Impl.BtreeFieldIndex")
-                    || elemName.StartsWith("Volante.Impl.BtreeMultiFieldIndex"))
+                    || elemName.StartsWith("Volante.Impl.OldBtreeFieldIndex")
+                    || elemName.StartsWith("Volante.Impl.OldBtreeMultiFieldIndex"))
                 {
                     createIndex(elemName);
                 }
@@ -553,7 +553,7 @@ namespace Volante.Impl
             }
             ClassDescriptor desc = db.getClassDescriptor(findClassByName(indexType));
 #if WITH_OLD_BTREE
-            Btree btree = (Btree)desc.newInstance();
+            OldBtree btree = (OldBtree)desc.newInstance();
             if (className != null)
             {
                 Type cls = findClassByName(className);

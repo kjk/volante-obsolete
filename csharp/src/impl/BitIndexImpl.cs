@@ -7,7 +7,7 @@ namespace Volante.Impl
     using System.Diagnostics;
     using Volante;
 
-    class BitIndexImpl<T> : Btree<IPersistent, T>, IBitIndex<T> where T : class,IPersistent
+    class BitIndexImpl<T> : OldBtree<IPersistent, T>, IBitIndex<T> where T : class,IPersistent
     {
         class Key
         {
@@ -67,8 +67,8 @@ namespace Volante.Impl
             }
             else
             {
-                BtreeResult result = BitIndexPage.insert(db, root, ins, height);
-                if (result == BtreeResult.Overflow)
+                OldBtreeResult result = BitIndexPage.insert(db, root, ins, height);
+                if (result == OldBtreeResult.Overflow)
                 {
                     root = BitIndexPage.allocate(db, root, ins);
                     height += 1;
@@ -90,13 +90,13 @@ namespace Volante.Impl
             {
                 return false;
             }
-            BtreeResult result = BitIndexPage.remove(db, root, obj.Oid, height);
-            if (result == BtreeResult.NotFound)
+            OldBtreeResult result = BitIndexPage.remove(db, root, obj.Oid, height);
+            if (result == OldBtreeResult.NotFound)
             {
                 return false;
             }
             nElems -= 1;
-            if (result == BtreeResult.Underflow)
+            if (result == OldBtreeResult.Underflow)
             {
                 Page pg = db.getPage(root);
                 if (BitIndexPage.getnItems(pg) == 0)
@@ -278,7 +278,7 @@ namespace Volante.Impl
             int counter;
         }
 
-        class BitIndexPage : BtreePage
+        class BitIndexPage : OldBtreePage
         {
             const int max = keySpace / 8;
 
@@ -363,7 +363,7 @@ namespace Volante.Impl
                 }
             }
 
-            internal static BtreeResult insert(DatabaseImpl db, int pageId, Key ins, int height)
+            internal static OldBtreeResult insert(DatabaseImpl db, int pageId, Key ins, int height)
             {
                 Page pg = db.getPage(pageId);
                 int l = 0, n = getnItems(pg), r = n;
@@ -386,9 +386,9 @@ namespace Volante.Impl
                         }
                         Debug.Assert(l == r);
                         /* insert before e[r] */
-                        BtreeResult result = insert(db, getItem(pg, maxItems - r - 1), ins, height);
-                        Debug.Assert(result != BtreeResult.NotFound);
-                        if (result != BtreeResult.Overflow)
+                        OldBtreeResult result = insert(db, getItem(pg, maxItems - r - 1), ins, height);
+                        Debug.Assert(result != OldBtreeResult.NotFound);
+                        if (result != OldBtreeResult.Overflow)
                         {
                             return result;
                         }
@@ -414,7 +414,7 @@ namespace Volante.Impl
                             pg = null;
                             pg = db.putPage(pageId);
                             setItem(pg, r, ins.key);
-                            return BtreeResult.Overwrite;
+                            return OldBtreeResult.Overwrite;
                         }
                     }
                     db.pool.unfix(pg);
@@ -427,7 +427,7 @@ namespace Volante.Impl
                         setItem(pg, r, ins.key);
                         setItem(pg, maxItems - 1 - r, ins.oid);
                         setnItems(pg, getnItems(pg) + 1);
-                        return BtreeResult.Done;
+                        return OldBtreeResult.Done;
                     }
                     else
                     { /* page is full then divide page */
@@ -471,7 +471,7 @@ namespace Volante.Impl
                             setnItems(b, m - 1);
                         }
                         db.pool.unfix(b);
-                        return BtreeResult.Overflow;
+                        return OldBtreeResult.Overflow;
                     }
                 }
                 finally
@@ -483,7 +483,7 @@ namespace Volante.Impl
                 }
             }
 
-            internal static BtreeResult handlePageUnderflow(DatabaseImpl db, Page pg, int r, int height)
+            internal static OldBtreeResult handlePageUnderflow(DatabaseImpl db, Page pg, int r, int height)
             {
                 int nItems = getnItems(pg);
                 Page a = db.putPage(getItem(pg, maxItems - r - 1));
@@ -521,7 +521,7 @@ namespace Volante.Impl
                         setnItems(a, getnItems(a) + i);
                         db.pool.unfix(a);
                         db.pool.unfix(b);
-                        return BtreeResult.Done;
+                        return OldBtreeResult.Done;
                     }
                     else
                     { // merge page b to a  
@@ -535,7 +535,7 @@ namespace Volante.Impl
                         setnItems(pg, nItems - 1);
                         db.pool.unfix(a);
                         db.pool.unfix(b);
-                        return nItems < max / 2 ? BtreeResult.Underflow : BtreeResult.Done;
+                        return nItems < max / 2 ? OldBtreeResult.Underflow : OldBtreeResult.Done;
                     }
                 }
                 else
@@ -571,7 +571,7 @@ namespace Volante.Impl
                         setnItems(a, getnItems(a) + i);
                         db.pool.unfix(a);
                         db.pool.unfix(b);
-                        return BtreeResult.Done;
+                        return OldBtreeResult.Done;
                     }
                     else
                     { // merge page b to a
@@ -589,12 +589,12 @@ namespace Volante.Impl
                         setnItems(pg, nItems - 1);
                         db.pool.unfix(a);
                         db.pool.unfix(b);
-                        return nItems < max / 2 ? BtreeResult.Underflow : BtreeResult.Done;
+                        return nItems < max / 2 ? OldBtreeResult.Underflow : OldBtreeResult.Done;
                     }
                 }
             }
 
-            internal static BtreeResult remove(DatabaseImpl db, int pageId, int oid, int height)
+            internal static OldBtreeResult remove(DatabaseImpl db, int pageId, int oid, int height)
             {
                 Page pg = db.getPage(pageId);
                 try
@@ -622,9 +622,9 @@ namespace Volante.Impl
                             memcpy(pg, r, pg, r + 1, n - r - 1);
                             memcpy(pg, maxItems - n + 1, pg, maxItems - n, n - r - 1);
                             setnItems(pg, --n);
-                            return n < max / 2 ? BtreeResult.Underflow : BtreeResult.Done;
+                            return n < max / 2 ? OldBtreeResult.Underflow : OldBtreeResult.Done;
                         }
-                        return BtreeResult.NotFound;
+                        return OldBtreeResult.NotFound;
                     }
                     else
                     {
@@ -640,8 +640,8 @@ namespace Volante.Impl
                                 r = i;
                             }
                         }
-                        BtreeResult result = remove(db, getItem(pg, maxItems - r - 1), oid, height);
-                        if (result == BtreeResult.Underflow)
+                        OldBtreeResult result = remove(db, getItem(pg, maxItems - r - 1), oid, height);
+                        if (result == OldBtreeResult.Underflow)
                         {
                             db.pool.unfix(pg);
                             pg = null;

@@ -5,13 +5,13 @@ namespace Volante.Impl
     using Volante;
     using System.Diagnostics;
 
-    class BtreeKey
+    class OldBtreeKey
     {
         internal Key key;
         internal int oid;
         internal int oldOid;
 
-        internal BtreeKey(Key key, int oid)
+        internal OldBtreeKey(Key key, int oid)
         {
             this.key = key;
             this.oid = oid;
@@ -19,8 +19,8 @@ namespace Volante.Impl
 
         internal void getStr(Page pg, int i)
         {
-            int len = BtreePage.getKeyStrSize(pg, i);
-            int offs = BtreePage.firstKeyOffs + BtreePage.getKeyStrOffs(pg, i);
+            int len = OldBtreePage.getKeyStrSize(pg, i);
+            int offs = OldBtreePage.firstKeyOffs + OldBtreePage.getKeyStrOffs(pg, i);
             char[] sval = new char[len];
             for (int j = 0; j < len; j++)
             {
@@ -32,8 +32,8 @@ namespace Volante.Impl
 
         internal void getByteArray(Page pg, int i)
         {
-            int len = BtreePage.getKeyStrSize(pg, i);
-            int offs = BtreePage.firstKeyOffs + BtreePage.getKeyStrOffs(pg, i);
+            int len = OldBtreePage.getKeyStrSize(pg, i);
+            int offs = OldBtreePage.firstKeyOffs + OldBtreePage.getKeyStrOffs(pg, i);
             byte[] bval = new byte[len];
             Array.Copy(pg.data, offs, bval, 0, len);
             key = new Key(bval);
@@ -116,13 +116,13 @@ namespace Volante.Impl
                 case ClassDescriptor.FieldType.tpBoolean:
                 case ClassDescriptor.FieldType.tpSByte:
                 case ClassDescriptor.FieldType.tpByte:
-                    dst[BtreePage.firstKeyOffs + i] = (byte)key.ival;
+                    dst[OldBtreePage.firstKeyOffs + i] = (byte)key.ival;
                     break;
 
                 case ClassDescriptor.FieldType.tpShort:
                 case ClassDescriptor.FieldType.tpUShort:
                 case ClassDescriptor.FieldType.tpChar:
-                    Bytes.pack2(dst, BtreePage.firstKeyOffs + i * 2, (short)key.ival);
+                    Bytes.pack2(dst, OldBtreePage.firstKeyOffs + i * 2, (short)key.ival);
                     break;
 
                 case ClassDescriptor.FieldType.tpInt:
@@ -130,29 +130,29 @@ namespace Volante.Impl
                 case ClassDescriptor.FieldType.tpEnum:
                 case ClassDescriptor.FieldType.tpObject:
                 case ClassDescriptor.FieldType.tpOid:
-                    Bytes.pack4(dst, BtreePage.firstKeyOffs + i * 4, key.ival);
+                    Bytes.pack4(dst, OldBtreePage.firstKeyOffs + i * 4, key.ival);
                     break;
 
                 case ClassDescriptor.FieldType.tpLong:
                 case ClassDescriptor.FieldType.tpULong:
                 case ClassDescriptor.FieldType.tpDate:
-                    Bytes.pack8(dst, BtreePage.firstKeyOffs + i * 8, key.lval);
+                    Bytes.pack8(dst, OldBtreePage.firstKeyOffs + i * 8, key.lval);
                     break;
 
                 case ClassDescriptor.FieldType.tpFloat:
-                    Bytes.packF4(dst, BtreePage.firstKeyOffs + i * 4, (float)key.dval);
+                    Bytes.packF4(dst, OldBtreePage.firstKeyOffs + i * 4, (float)key.dval);
                     break;
 
                 case ClassDescriptor.FieldType.tpDouble:
-                    Bytes.packF8(dst, BtreePage.firstKeyOffs + i * 8, key.dval);
+                    Bytes.packF8(dst, OldBtreePage.firstKeyOffs + i * 8, key.dval);
                     break;
 
                 case ClassDescriptor.FieldType.tpDecimal:
-                    Bytes.packDecimal(dst, BtreePage.firstKeyOffs + i * 16, key.dec);
+                    Bytes.packDecimal(dst, OldBtreePage.firstKeyOffs + i * 16, key.dec);
                     break;
 
                 case ClassDescriptor.FieldType.tpGuid:
-                    Bytes.packGuid(dst, BtreePage.firstKeyOffs + i * 16, key.guid);
+                    Bytes.packGuid(dst, OldBtreePage.firstKeyOffs + i * 16, key.guid);
                     break;
 
 
@@ -161,7 +161,7 @@ namespace Volante.Impl
                     break;
 
             }
-            Bytes.pack4(dst, BtreePage.firstKeyOffs + (BtreePage.maxItems - i - 1) * 4, oid);
+            Bytes.pack4(dst, OldBtreePage.firstKeyOffs + (OldBtreePage.maxItems - i - 1) * 4, oid);
         }
     }
 }

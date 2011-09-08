@@ -7,7 +7,7 @@ namespace Volante.Impl
     using System.Diagnostics;
     using Volante;
 
-    enum BtreeResult
+    enum OldBtreeResult
     {
         Done,
         Overflow,
@@ -17,7 +17,7 @@ namespace Volante.Impl
         Overwrite
     }
 
-    interface Btree : IPersistent
+    interface OldBtree : IPersistent
     {
         int markTree();
 #if WITH_XML
@@ -32,7 +32,7 @@ namespace Volante.Impl
         void init(Type cls, ClassDescriptor.FieldType type, string[] fieldNames, bool unique, long autoincCount);
     }
 
-    class Btree<K, V> : PersistentCollection<V>, IIndex<K, V>, Btree where V : class,IPersistent
+    class OldBtree<K, V> : PersistentCollection<V>, IIndex<K, V>, OldBtree where V : class,IPersistent
     {
         internal int root;
         internal int height;
@@ -44,11 +44,11 @@ namespace Volante.Impl
 
         internal static int Sizeof = ObjectHeader.Sizeof + 4 * 4 + 1;
 
-        internal Btree()
+        internal OldBtree()
         {
         }
 
-        internal Btree(byte[] obj, int offs)
+        internal OldBtree(byte[] obj, int offs)
         {
             root = Bytes.unpack4(obj, offs);
             offs += 4;
@@ -61,7 +61,7 @@ namespace Volante.Impl
             unique = obj[offs] != 0;
         }
 
-        internal Btree(IndexType indexType)
+        internal OldBtree(IndexType indexType)
         {
             type = checkType(typeof(K));
             this.unique = (indexType == IndexType.Unique);
@@ -75,7 +75,7 @@ namespace Volante.Impl
             }
         }
 
-        internal Btree(ClassDescriptor.FieldType type, bool unique)
+        internal OldBtree(ClassDescriptor.FieldType type, bool unique)
         {
             this.type = type;
             this.unique = unique;
@@ -210,7 +210,7 @@ namespace Volante.Impl
             if (root != 0)
             {
                 ArrayList list = new ArrayList();
-                BtreePage.find((DatabaseImpl)Database, root, key, key, this, height, list);
+                OldBtreePage.find((DatabaseImpl)Database, root, key, key, this, height, list);
                 if (list.Count > 1)
                 {
                     throw new DatabaseException(DatabaseException.ErrorCode.KEY_NOT_UNIQUE);
@@ -240,7 +240,7 @@ namespace Volante.Impl
                 return emptySelection;
 
             ArrayList list = new ArrayList();
-            BtreePage.find((DatabaseImpl)Database, root, checkKey(from), checkKey(till), this, height, list);
+            OldBtreePage.find((DatabaseImpl)Database, root, checkKey(from), checkKey(till), this, height, list);
             if (0 == list.Count)
                 return emptySelection;
 
@@ -256,7 +256,7 @@ namespace Volante.Impl
             if (root != 0)
             {
                 ArrayList list = new ArrayList();
-                BtreePage.prefixSearch((DatabaseImpl)Database, root, key, height, list);
+                OldBtreePage.prefixSearch((DatabaseImpl)Database, root, key, height, list);
                 if (list.Count != 0)
                 {
                     return (V[])list.ToArray(typeof(V));
@@ -308,25 +308,25 @@ namespace Volante.Impl
             {
                 db.MakePersistent(obj);
             }
-            BtreeKey ins = new BtreeKey(checkKey(key), obj.Oid);
+            OldBtreeKey ins = new OldBtreeKey(checkKey(key), obj.Oid);
             if (root == 0)
             {
-                root = BtreePage.allocate(db, 0, type, ins);
+                root = OldBtreePage.allocate(db, 0, type, ins);
                 height = 1;
             }
             else
             {
-                BtreeResult result = BtreePage.insert(db, root, this, ins, height, unique, overwrite);
-                if (result == BtreeResult.Overflow)
+                OldBtreeResult result = OldBtreePage.insert(db, root, this, ins, height, unique, overwrite);
+                if (result == OldBtreeResult.Overflow)
                 {
-                    root = BtreePage.allocate(db, root, type, ins);
+                    root = OldBtreePage.allocate(db, root, type, ins);
                     height += 1;
                 }
-                else if (result == BtreeResult.Duplicate)
+                else if (result == OldBtreeResult.Duplicate)
                 {
                     return -1;
                 }
-                else if (result == BtreeResult.Overwrite)
+                else if (result == OldBtreeResult.Overwrite)
                 {
                     return ins.oldOid;
                 }
@@ -339,15 +339,15 @@ namespace Volante.Impl
 
         public virtual void Remove(Key key, V obj)
         {
-            remove(new BtreeKey(checkKey(key), obj.Oid));
+            remove(new OldBtreeKey(checkKey(key), obj.Oid));
         }
 
         public virtual void Remove(K key, V obj)
         {
-            remove(new BtreeKey(KeyBuilder.getKeyFromObject(key), obj.Oid));
+            remove(new OldBtreeKey(KeyBuilder.getKeyFromObject(key), obj.Oid));
         }
 
-        internal virtual void remove(BtreeKey rem)
+        internal virtual void remove(OldBtreeKey rem)
         {
             DatabaseImpl db = (DatabaseImpl)Database;
             if (db == null)
@@ -358,23 +358,23 @@ namespace Volante.Impl
             {
                 throw new DatabaseException(DatabaseException.ErrorCode.KEY_NOT_FOUND);
             }
-            BtreeResult result = BtreePage.remove(db, root, this, rem, height);
-            if (result == BtreeResult.NotFound)
+            OldBtreeResult result = OldBtreePage.remove(db, root, this, rem, height);
+            if (result == OldBtreeResult.NotFound)
             {
                 throw new DatabaseException(DatabaseException.ErrorCode.KEY_NOT_FOUND);
             }
             nElems -= 1;
-            if (result == BtreeResult.Underflow)
+            if (result == OldBtreeResult.Underflow)
             {
                 Page pg = db.getPage(root);
-                if (BtreePage.getnItems(pg) == 0)
+                if (OldBtreePage.getnItems(pg) == 0)
                 {
                     int newRoot = 0;
                     if (height != 1)
                     {
                         newRoot = (type == ClassDescriptor.FieldType.tpString || type == ClassDescriptor.FieldType.tpArrayOfByte)
-                            ? BtreePage.getKeyStrOid(pg, 0)
-                            : BtreePage.getReference(pg, BtreePage.maxItems - 1);
+                            ? OldBtreePage.getKeyStrOid(pg, 0)
+                            : OldBtreePage.getReference(pg, OldBtreePage.maxItems - 1);
                     }
                     db.freePage(root);
                     root = newRoot;
@@ -382,9 +382,9 @@ namespace Volante.Impl
                 }
                 db.pool.unfix(pg);
             }
-            else if (result == BtreeResult.Overflow)
+            else if (result == OldBtreeResult.Overflow)
             {
-                root = BtreePage.allocate(db, root, type, rem);
+                root = OldBtreePage.allocate(db, root, type, rem);
                 height += 1;
             }
             updateCounter += 1;
@@ -397,7 +397,7 @@ namespace Volante.Impl
             {
                 throw new DatabaseException(DatabaseException.ErrorCode.KEY_NOT_UNIQUE);
             }
-            BtreeKey rk = new BtreeKey(checkKey(key), 0);
+            OldBtreeKey rk = new OldBtreeKey(checkKey(key), 0);
             DatabaseImpl db = (DatabaseImpl)Database;
             remove(rk);
             return (V)db.lookupObject(rk.oldOid, null);
@@ -412,7 +412,7 @@ namespace Volante.Impl
         {
             if (root != 0)
             {
-                BtreePage.purge((DatabaseImpl)Database, root, type, height);
+                OldBtreePage.purge((DatabaseImpl)Database, root, type, height);
                 root = 0;
                 nElems = 0;
                 height = 0;
@@ -426,7 +426,7 @@ namespace Volante.Impl
             V[] arr = new V[nElems];
             if (root != 0)
             {
-                BtreePage.traverseForward((DatabaseImpl)Database, root, type, height, arr, 0);
+                OldBtreePage.traverseForward((DatabaseImpl)Database, root, type, height, arr, 0);
             }
             return arr;
         }
@@ -436,7 +436,7 @@ namespace Volante.Impl
             Array arr = Array.CreateInstance(elemType, nElems);
             if (root != 0)
             {
-                BtreePage.traverseForward((DatabaseImpl)Database, root, type, height, (IPersistent[])arr, 0);
+                OldBtreePage.traverseForward((DatabaseImpl)Database, root, type, height, (IPersistent[])arr, 0);
             }
             return arr;
         }
@@ -445,7 +445,7 @@ namespace Volante.Impl
         {
             if (root != 0)
             {
-                BtreePage.purge((DatabaseImpl)Database, root, type, height);
+                OldBtreePage.purge((DatabaseImpl)Database, root, type, height);
             }
             base.Deallocate();
         }
@@ -455,14 +455,14 @@ namespace Volante.Impl
         {
             if (root != 0)
             {
-                BtreePage.exportPage((DatabaseImpl)Database, exporter, root, type, height);
+                OldBtreePage.exportPage((DatabaseImpl)Database, exporter, root, type, height);
             }
         }
 #endif
 
         public int markTree()
         {
-            return (root != 0) ? BtreePage.markPage((DatabaseImpl)Database, root, type, height) : 0;
+            return (root != 0) ? OldBtreePage.markPage((DatabaseImpl)Database, root, type, height) : 0;
         }
 
         protected virtual object unpackEnum(int val)
@@ -474,7 +474,7 @@ namespace Volante.Impl
 
         internal object unpackKey(DatabaseImpl db, Page pg, int pos)
         {
-            int offs = BtreePage.firstKeyOffs + pos * ClassDescriptor.Sizeof[(int)type];
+            int offs = OldBtreePage.firstKeyOffs + pos * ClassDescriptor.Sizeof[(int)type];
             byte[] data = pg.data;
 
             switch (type)
@@ -533,8 +533,8 @@ namespace Volante.Impl
 
                 case ClassDescriptor.FieldType.tpString:
                     {
-                        int len = BtreePage.getKeyStrSize(pg, pos);
-                        offs = BtreePage.firstKeyOffs + BtreePage.getKeyStrOffs(pg, pos);
+                        int len = OldBtreePage.getKeyStrSize(pg, pos);
+                        offs = OldBtreePage.firstKeyOffs + OldBtreePage.getKeyStrOffs(pg, pos);
                         char[] sval = new char[len];
                         for (int j = 0; j < len; j++)
                         {
@@ -555,8 +555,8 @@ namespace Volante.Impl
 
         protected virtual object unpackByteArrayKey(Page pg, int pos)
         {
-            int len = BtreePage.getKeyStrSize(pg, pos);
-            int offs = BtreePage.firstKeyOffs + BtreePage.getKeyStrOffs(pg, pos);
+            int len = OldBtreePage.getKeyStrSize(pg, pos);
+            int offs = OldBtreePage.firstKeyOffs + OldBtreePage.getKeyStrOffs(pg, pos);
             byte[] val = new byte[len];
             Array.Copy(pg.data, offs, val, 0, len);
             return val;
@@ -564,7 +564,7 @@ namespace Volante.Impl
 
         class BtreeEnumerator : IEnumerator<V>
         {
-            internal BtreeEnumerator(Btree<K, V> tree)
+            internal BtreeEnumerator(OldBtree<K, V> tree)
             {
                 this.tree = tree;
                 Reset();
@@ -572,7 +572,7 @@ namespace Volante.Impl
 
             protected virtual int getReference(Page pg, int pos)
             {
-                return BtreePage.getReference(pg, BtreePage.maxItems - 1 - pos);
+                return OldBtreePage.getReference(pg, OldBtreePage.maxItems - 1 - pos);
             }
 
             protected virtual void getCurrent(Page pg, int pos)
@@ -601,7 +601,7 @@ namespace Volante.Impl
                             db.pool.unfix(pg);
                             pos = posStack[sp - 1];
                             pg = db.getPage(pageStack[sp - 1]);
-                            if (++pos <= BtreePage.getnItems(pg))
+                            if (++pos <= OldBtreePage.getnItems(pg))
                             {
                                 posStack[sp - 1] = pos;
                                 do
@@ -609,7 +609,7 @@ namespace Volante.Impl
                                     int pageId = getReference(pg, pos);
                                     db.pool.unfix(pg);
                                     pg = db.getPage(pageId);
-                                    end = BtreePage.getnItems(pg);
+                                    end = OldBtreePage.getnItems(pg);
                                     pageStack[sp] = pageId;
                                     posStack[sp] = pos = 0;
                                 } while (++sp < pageStack.Length);
@@ -667,7 +667,7 @@ namespace Volante.Impl
                     pageStack[sp] = pageId;
                     Page pg = db.getPage(pageId);
                     pageId = getReference(pg, 0);
-                    end = BtreePage.getnItems(pg);
+                    end = OldBtreePage.getnItems(pg);
                     db.pool.unfix(pg);
                     sp += 1;
                 }
@@ -675,7 +675,7 @@ namespace Volante.Impl
             }
 
             protected DatabaseImpl db;
-            protected Btree<K, V> tree;
+            protected OldBtree<K, V> tree;
             protected int[] pageStack;
             protected int[] posStack;
             protected int sp;
@@ -687,20 +687,20 @@ namespace Volante.Impl
 
         class BtreeStrEnumerator : BtreeEnumerator
         {
-            internal BtreeStrEnumerator(Btree<K, V> tree)
+            internal BtreeStrEnumerator(OldBtree<K, V> tree)
                 : base(tree)
             {
             }
 
             protected override int getReference(Page pg, int pos)
             {
-                return BtreePage.getKeyStrOid(pg, pos);
+                return OldBtreePage.getKeyStrOid(pg, pos);
             }
         }
 
         class BtreeDictionaryEnumerator : BtreeEnumerator, IDictionaryEnumerator
         {
-            internal BtreeDictionaryEnumerator(Btree<K, V> tree)
+            internal BtreeDictionaryEnumerator(OldBtree<K, V> tree)
                 : base(tree)
             {
             }
@@ -768,13 +768,13 @@ namespace Volante.Impl
 
         class BtreeDictionaryStrEnumerator : BtreeDictionaryEnumerator
         {
-            internal BtreeDictionaryStrEnumerator(Btree<K, V> tree)
+            internal BtreeDictionaryStrEnumerator(OldBtree<K, V> tree)
                 : base(tree)
             { }
 
             protected override int getReference(Page pg, int pos)
             {
-                return BtreePage.getKeyStrOid(pg, pos);
+                return OldBtreePage.getKeyStrOid(pg, pos);
             }
         }
 
@@ -801,13 +801,13 @@ namespace Volante.Impl
         {
             return compareByteArrays((byte[])key.oval,
                 pg.data,
-                BtreePage.getKeyStrOffs(pg, i) + BtreePage.firstKeyOffs,
-                BtreePage.getKeyStrSize(pg, i));
+                OldBtreePage.getKeyStrOffs(pg, i) + OldBtreePage.firstKeyOffs,
+                OldBtreePage.getKeyStrSize(pg, i));
         }
 
         class BtreeSelectionIterator : IEnumerator<V>, IEnumerable<V>
         {
-            internal BtreeSelectionIterator(Btree<K, V> tree, Key from, Key till, IterationOrder order)
+            internal BtreeSelectionIterator(OldBtree<K, V> tree, Key from, Key till, IterationOrder order)
             {
                 this.from = from;
                 this.till = till;
@@ -860,8 +860,8 @@ namespace Volante.Impl
                                 posStack[sp] = 0;
                                 pageStack[sp] = pageId;
                                 pg = db.getPage(pageId);
-                                pageId = BtreePage.getKeyStrOid(pg, 0);
-                                end = BtreePage.getnItems(pg);
+                                pageId = OldBtreePage.getKeyStrOid(pg, 0);
+                                end = OldBtreePage.getnItems(pg);
                                 db.pool.unfix(pg);
                                 sp += 1;
                             }
@@ -873,11 +873,11 @@ namespace Volante.Impl
                                 pageStack[sp] = pageId;
                                 pg = db.getPage(pageId);
                                 l = 0;
-                                r = BtreePage.getnItems(pg);
+                                r = OldBtreePage.getnItems(pg);
                                 while (l < r)
                                 {
                                     i = (l + r) >> 1;
-                                    if (BtreePage.compareStr(from, pg, i) >= from.inclusion)
+                                    if (OldBtreePage.compareStr(from, pg, i) >= from.inclusion)
                                     {
                                         l = i + 1;
                                     }
@@ -888,18 +888,18 @@ namespace Volante.Impl
                                 }
                                 Debug.Assert(r == l);
                                 posStack[sp] = r;
-                                pageId = BtreePage.getKeyStrOid(pg, r);
+                                pageId = OldBtreePage.getKeyStrOid(pg, r);
                                 db.pool.unfix(pg);
                                 sp += 1;
                             }
                             pageStack[sp] = pageId;
                             pg = db.getPage(pageId);
                             l = 0;
-                            end = r = BtreePage.getnItems(pg);
+                            end = r = OldBtreePage.getnItems(pg);
                             while (l < r)
                             {
                                 i = (l + r) >> 1;
-                                if (BtreePage.compareStr(from, pg, i) >= from.inclusion)
+                                if (OldBtreePage.compareStr(from, pg, i) >= from.inclusion)
                                 {
                                     l = i + 1;
                                 }
@@ -923,7 +923,7 @@ namespace Volante.Impl
                         if (sp != 0 && till != null)
                         {
                             pg = db.getPage(pageStack[sp - 1]);
-                            if (-BtreePage.compareStr(till, pg, posStack[sp - 1]) >= till.inclusion)
+                            if (-OldBtreePage.compareStr(till, pg, posStack[sp - 1]) >= till.inclusion)
                             {
                                 sp = 0;
                             }
@@ -938,14 +938,14 @@ namespace Volante.Impl
                             {
                                 pageStack[sp] = pageId;
                                 pg = db.getPage(pageId);
-                                posStack[sp] = BtreePage.getnItems(pg);
-                                pageId = BtreePage.getKeyStrOid(pg, posStack[sp]);
+                                posStack[sp] = OldBtreePage.getnItems(pg);
+                                pageId = OldBtreePage.getKeyStrOid(pg, posStack[sp]);
                                 db.pool.unfix(pg);
                                 sp += 1;
                             }
                             pageStack[sp] = pageId;
                             pg = db.getPage(pageId);
-                            posStack[sp++] = BtreePage.getnItems(pg) - 1;
+                            posStack[sp++] = OldBtreePage.getnItems(pg) - 1;
                             db.pool.unfix(pg);
                         }
                         else
@@ -955,11 +955,11 @@ namespace Volante.Impl
                                 pageStack[sp] = pageId;
                                 pg = db.getPage(pageId);
                                 l = 0;
-                                r = BtreePage.getnItems(pg);
+                                r = OldBtreePage.getnItems(pg);
                                 while (l < r)
                                 {
                                     i = (l + r) >> 1;
-                                    if (BtreePage.compareStr(till, pg, i) >= 1 - till.inclusion)
+                                    if (OldBtreePage.compareStr(till, pg, i) >= 1 - till.inclusion)
                                     {
                                         l = i + 1;
                                     }
@@ -970,18 +970,18 @@ namespace Volante.Impl
                                 }
                                 Debug.Assert(r == l);
                                 posStack[sp] = r;
-                                pageId = BtreePage.getKeyStrOid(pg, r);
+                                pageId = OldBtreePage.getKeyStrOid(pg, r);
                                 db.pool.unfix(pg);
                                 sp += 1;
                             }
                             pageStack[sp] = pageId;
                             pg = db.getPage(pageId);
                             l = 0;
-                            r = BtreePage.getnItems(pg);
+                            r = OldBtreePage.getnItems(pg);
                             while (l < r)
                             {
                                 i = (l + r) >> 1;
-                                if (BtreePage.compareStr(till, pg, i) >= 1 - till.inclusion)
+                                if (OldBtreePage.compareStr(till, pg, i) >= 1 - till.inclusion)
                                 {
                                     l = i + 1;
                                 }
@@ -1005,7 +1005,7 @@ namespace Volante.Impl
                         if (sp != 0 && from != null)
                         {
                             pg = db.getPage(pageStack[sp - 1]);
-                            if (BtreePage.compareStr(from, pg, posStack[sp - 1]) >= from.inclusion)
+                            if (OldBtreePage.compareStr(from, pg, posStack[sp - 1]) >= from.inclusion)
                             {
                                 sp = 0;
                             }
@@ -1024,8 +1024,8 @@ namespace Volante.Impl
                                 posStack[sp] = 0;
                                 pageStack[sp] = pageId;
                                 pg = db.getPage(pageId);
-                                pageId = BtreePage.getKeyStrOid(pg, 0);
-                                end = BtreePage.getnItems(pg);
+                                pageId = OldBtreePage.getKeyStrOid(pg, 0);
+                                end = OldBtreePage.getnItems(pg);
                                 db.pool.unfix(pg);
                                 sp += 1;
                             }
@@ -1037,7 +1037,7 @@ namespace Volante.Impl
                                 pageStack[sp] = pageId;
                                 pg = db.getPage(pageId);
                                 l = 0;
-                                r = BtreePage.getnItems(pg);
+                                r = OldBtreePage.getnItems(pg);
                                 while (l < r)
                                 {
                                     i = (l + r) >> 1;
@@ -1052,14 +1052,14 @@ namespace Volante.Impl
                                 }
                                 Debug.Assert(r == l);
                                 posStack[sp] = r;
-                                pageId = BtreePage.getKeyStrOid(pg, r);
+                                pageId = OldBtreePage.getKeyStrOid(pg, r);
                                 db.pool.unfix(pg);
                                 sp += 1;
                             }
                             pageStack[sp] = pageId;
                             pg = db.getPage(pageId);
                             l = 0;
-                            end = r = BtreePage.getnItems(pg);
+                            end = r = OldBtreePage.getnItems(pg);
                             while (l < r)
                             {
                                 i = (l + r) >> 1;
@@ -1102,14 +1102,14 @@ namespace Volante.Impl
                             {
                                 pageStack[sp] = pageId;
                                 pg = db.getPage(pageId);
-                                posStack[sp] = BtreePage.getnItems(pg);
-                                pageId = BtreePage.getKeyStrOid(pg, posStack[sp]);
+                                posStack[sp] = OldBtreePage.getnItems(pg);
+                                pageId = OldBtreePage.getKeyStrOid(pg, posStack[sp]);
                                 db.pool.unfix(pg);
                                 sp += 1;
                             }
                             pageStack[sp] = pageId;
                             pg = db.getPage(pageId);
-                            posStack[sp++] = BtreePage.getnItems(pg) - 1;
+                            posStack[sp++] = OldBtreePage.getnItems(pg) - 1;
                             db.pool.unfix(pg);
                         }
                         else
@@ -1119,7 +1119,7 @@ namespace Volante.Impl
                                 pageStack[sp] = pageId;
                                 pg = db.getPage(pageId);
                                 l = 0;
-                                r = BtreePage.getnItems(pg);
+                                r = OldBtreePage.getnItems(pg);
                                 while (l < r)
                                 {
                                     i = (l + r) >> 1;
@@ -1134,14 +1134,14 @@ namespace Volante.Impl
                                 }
                                 Debug.Assert(r == l);
                                 posStack[sp] = r;
-                                pageId = BtreePage.getKeyStrOid(pg, r);
+                                pageId = OldBtreePage.getKeyStrOid(pg, r);
                                 db.pool.unfix(pg);
                                 sp += 1;
                             }
                             pageStack[sp] = pageId;
                             pg = db.getPage(pageId);
                             l = 0;
-                            r = BtreePage.getnItems(pg);
+                            r = OldBtreePage.getnItems(pg);
                             while (l < r)
                             {
                                 i = (l + r) >> 1;
@@ -1188,8 +1188,8 @@ namespace Volante.Impl
                                 posStack[sp] = 0;
                                 pageStack[sp] = pageId;
                                 pg = db.getPage(pageId);
-                                pageId = BtreePage.getReference(pg, BtreePage.maxItems - 1);
-                                end = BtreePage.getnItems(pg);
+                                pageId = OldBtreePage.getReference(pg, OldBtreePage.maxItems - 1);
+                                end = OldBtreePage.getnItems(pg);
                                 db.pool.unfix(pg);
                                 sp += 1;
                             }
@@ -1201,11 +1201,11 @@ namespace Volante.Impl
                                 pageStack[sp] = pageId;
                                 pg = db.getPage(pageId);
                                 l = 0;
-                                r = BtreePage.getnItems(pg);
+                                r = OldBtreePage.getnItems(pg);
                                 while (l < r)
                                 {
                                     i = (l + r) >> 1;
-                                    if (BtreePage.compare(from, pg, i) >= from.inclusion)
+                                    if (OldBtreePage.compare(from, pg, i) >= from.inclusion)
                                     {
                                         l = i + 1;
                                     }
@@ -1216,18 +1216,18 @@ namespace Volante.Impl
                                 }
                                 Debug.Assert(r == l);
                                 posStack[sp] = r;
-                                pageId = BtreePage.getReference(pg, BtreePage.maxItems - 1 - r);
+                                pageId = OldBtreePage.getReference(pg, OldBtreePage.maxItems - 1 - r);
                                 db.pool.unfix(pg);
                                 sp += 1;
                             }
                             pageStack[sp] = pageId;
                             pg = db.getPage(pageId);
                             l = 0;
-                            r = end = BtreePage.getnItems(pg);
+                            r = end = OldBtreePage.getnItems(pg);
                             while (l < r)
                             {
                                 i = (l + r) >> 1;
-                                if (BtreePage.compare(from, pg, i) >= from.inclusion)
+                                if (OldBtreePage.compare(from, pg, i) >= from.inclusion)
                                 {
                                     l = i + 1;
                                 }
@@ -1251,7 +1251,7 @@ namespace Volante.Impl
                         if (sp != 0 && till != null)
                         {
                             pg = db.getPage(pageStack[sp - 1]);
-                            if (-BtreePage.compare(till, pg, posStack[sp - 1]) >= till.inclusion)
+                            if (-OldBtreePage.compare(till, pg, posStack[sp - 1]) >= till.inclusion)
                             {
                                 sp = 0;
                             }
@@ -1266,14 +1266,14 @@ namespace Volante.Impl
                             {
                                 pageStack[sp] = pageId;
                                 pg = db.getPage(pageId);
-                                posStack[sp] = BtreePage.getnItems(pg);
-                                pageId = BtreePage.getReference(pg, BtreePage.maxItems - 1 - posStack[sp]);
+                                posStack[sp] = OldBtreePage.getnItems(pg);
+                                pageId = OldBtreePage.getReference(pg, OldBtreePage.maxItems - 1 - posStack[sp]);
                                 db.pool.unfix(pg);
                                 sp += 1;
                             }
                             pageStack[sp] = pageId;
                             pg = db.getPage(pageId);
-                            posStack[sp++] = BtreePage.getnItems(pg) - 1;
+                            posStack[sp++] = OldBtreePage.getnItems(pg) - 1;
                             db.pool.unfix(pg);
                         }
                         else
@@ -1283,11 +1283,11 @@ namespace Volante.Impl
                                 pageStack[sp] = pageId;
                                 pg = db.getPage(pageId);
                                 l = 0;
-                                r = BtreePage.getnItems(pg);
+                                r = OldBtreePage.getnItems(pg);
                                 while (l < r)
                                 {
                                     i = (l + r) >> 1;
-                                    if (BtreePage.compare(till, pg, i) >= 1 - till.inclusion)
+                                    if (OldBtreePage.compare(till, pg, i) >= 1 - till.inclusion)
                                     {
                                         l = i + 1;
                                     }
@@ -1298,18 +1298,18 @@ namespace Volante.Impl
                                 }
                                 Debug.Assert(r == l);
                                 posStack[sp] = r;
-                                pageId = BtreePage.getReference(pg, BtreePage.maxItems - 1 - r);
+                                pageId = OldBtreePage.getReference(pg, OldBtreePage.maxItems - 1 - r);
                                 db.pool.unfix(pg);
                                 sp += 1;
                             }
                             pageStack[sp] = pageId;
                             pg = db.getPage(pageId);
                             l = 0;
-                            r = BtreePage.getnItems(pg);
+                            r = OldBtreePage.getnItems(pg);
                             while (l < r)
                             {
                                 i = (l + r) >> 1;
-                                if (BtreePage.compare(till, pg, i) >= 1 - till.inclusion)
+                                if (OldBtreePage.compare(till, pg, i) >= 1 - till.inclusion)
                                 {
                                     l = i + 1;
                                 }
@@ -1333,7 +1333,7 @@ namespace Volante.Impl
                         if (sp != 0 && from != null)
                         {
                             pg = db.getPage(pageStack[sp - 1]);
-                            if (BtreePage.compare(from, pg, posStack[sp - 1]) >= from.inclusion)
+                            if (OldBtreePage.compare(from, pg, posStack[sp - 1]) >= from.inclusion)
                             {
                                 sp = 0;
                             }
@@ -1367,8 +1367,8 @@ namespace Volante.Impl
             protected virtual void getCurrent(Page pg, int pos)
             {
                 oid = (type == ClassDescriptor.FieldType.tpString || type == ClassDescriptor.FieldType.tpArrayOfByte)
-                    ? BtreePage.getKeyStrOid(pg, pos)
-                    : BtreePage.getReference(pg, BtreePage.maxItems - 1 - pos);
+                    ? OldBtreePage.getKeyStrOid(pg, pos)
+                    : OldBtreePage.getReference(pg, OldBtreePage.maxItems - 1 - pos);
             }
 
             public virtual V Current
@@ -1404,15 +1404,15 @@ namespace Volante.Impl
                                 db.pool.unfix(pg);
                                 pos = posStack[sp - 1];
                                 pg = db.getPage(pageStack[sp - 1]);
-                                if (++pos <= BtreePage.getnItems(pg))
+                                if (++pos <= OldBtreePage.getnItems(pg))
                                 {
                                     posStack[sp - 1] = pos;
                                     do
                                     {
-                                        int pageId = BtreePage.getKeyStrOid(pg, pos);
+                                        int pageId = OldBtreePage.getKeyStrOid(pg, pos);
                                         db.pool.unfix(pg);
                                         pg = db.getPage(pageId);
-                                        end = BtreePage.getnItems(pg);
+                                        end = OldBtreePage.getnItems(pg);
                                         pageStack[sp] = pageId;
                                         posStack[sp] = pos = 0;
                                     } while (++sp < pageStack.Length);
@@ -1424,7 +1424,7 @@ namespace Volante.Impl
                         {
                             posStack[sp - 1] = pos;
                         }
-                        if (sp != 0 && till != null && -BtreePage.compareStr(till, pg, pos) >= till.inclusion)
+                        if (sp != 0 && till != null && -OldBtreePage.compareStr(till, pg, pos) >= till.inclusion)
                         {
                             sp = 0;
                         }
@@ -1443,11 +1443,11 @@ namespace Volante.Impl
                                     posStack[sp - 1] = pos;
                                     do
                                     {
-                                        int pageId = BtreePage.getKeyStrOid(pg, pos);
+                                        int pageId = OldBtreePage.getKeyStrOid(pg, pos);
                                         db.pool.unfix(pg);
                                         pg = db.getPage(pageId);
                                         pageStack[sp] = pageId;
-                                        posStack[sp] = pos = BtreePage.getnItems(pg);
+                                        posStack[sp] = pos = OldBtreePage.getnItems(pg);
                                     } while (++sp < pageStack.Length);
                                     posStack[sp - 1] = --pos;
                                     break;
@@ -1458,7 +1458,7 @@ namespace Volante.Impl
                         {
                             posStack[sp - 1] = pos;
                         }
-                        if (sp != 0 && from != null && BtreePage.compareStr(from, pg, pos) >= from.inclusion)
+                        if (sp != 0 && from != null && OldBtreePage.compareStr(from, pg, pos) >= from.inclusion)
                         {
                             sp = 0;
                         }
@@ -1475,15 +1475,15 @@ namespace Volante.Impl
                                 db.pool.unfix(pg);
                                 pos = posStack[sp - 1];
                                 pg = db.getPage(pageStack[sp - 1]);
-                                if (++pos <= BtreePage.getnItems(pg))
+                                if (++pos <= OldBtreePage.getnItems(pg))
                                 {
                                     posStack[sp - 1] = pos;
                                     do
                                     {
-                                        int pageId = BtreePage.getKeyStrOid(pg, pos);
+                                        int pageId = OldBtreePage.getKeyStrOid(pg, pos);
                                         db.pool.unfix(pg);
                                         pg = db.getPage(pageId);
-                                        end = BtreePage.getnItems(pg);
+                                        end = OldBtreePage.getnItems(pg);
                                         pageStack[sp] = pageId;
                                         posStack[sp] = pos = 0;
                                     } while (++sp < pageStack.Length);
@@ -1514,11 +1514,11 @@ namespace Volante.Impl
                                     posStack[sp - 1] = pos;
                                     do
                                     {
-                                        int pageId = BtreePage.getKeyStrOid(pg, pos);
+                                        int pageId = OldBtreePage.getKeyStrOid(pg, pos);
                                         db.pool.unfix(pg);
                                         pg = db.getPage(pageId);
                                         pageStack[sp] = pageId;
-                                        posStack[sp] = pos = BtreePage.getnItems(pg);
+                                        posStack[sp] = pos = OldBtreePage.getnItems(pg);
                                     } while (++sp < pageStack.Length);
                                     posStack[sp - 1] = --pos;
                                     break;
@@ -1546,15 +1546,15 @@ namespace Volante.Impl
                                 db.pool.unfix(pg);
                                 pos = posStack[sp - 1];
                                 pg = db.getPage(pageStack[sp - 1]);
-                                if (++pos <= BtreePage.getnItems(pg))
+                                if (++pos <= OldBtreePage.getnItems(pg))
                                 {
                                     posStack[sp - 1] = pos;
                                     do
                                     {
-                                        int pageId = BtreePage.getReference(pg, BtreePage.maxItems - 1 - pos);
+                                        int pageId = OldBtreePage.getReference(pg, OldBtreePage.maxItems - 1 - pos);
                                         db.pool.unfix(pg);
                                         pg = db.getPage(pageId);
-                                        end = BtreePage.getnItems(pg);
+                                        end = OldBtreePage.getnItems(pg);
                                         pageStack[sp] = pageId;
                                         posStack[sp] = pos = 0;
                                     } while (++sp < pageStack.Length);
@@ -1566,7 +1566,7 @@ namespace Volante.Impl
                         {
                             posStack[sp - 1] = pos;
                         }
-                        if (sp != 0 && till != null && -BtreePage.compare(till, pg, pos) >= till.inclusion)
+                        if (sp != 0 && till != null && -OldBtreePage.compare(till, pg, pos) >= till.inclusion)
                         {
                             sp = 0;
                         }
@@ -1585,11 +1585,11 @@ namespace Volante.Impl
                                     posStack[sp - 1] = pos;
                                     do
                                     {
-                                        int pageId = BtreePage.getReference(pg, BtreePage.maxItems - 1 - pos);
+                                        int pageId = OldBtreePage.getReference(pg, OldBtreePage.maxItems - 1 - pos);
                                         db.pool.unfix(pg);
                                         pg = db.getPage(pageId);
                                         pageStack[sp] = pageId;
-                                        posStack[sp] = pos = BtreePage.getnItems(pg);
+                                        posStack[sp] = pos = OldBtreePage.getnItems(pg);
                                     } while (++sp < pageStack.Length);
                                     posStack[sp - 1] = --pos;
                                     break;
@@ -1600,7 +1600,7 @@ namespace Volante.Impl
                         {
                             posStack[sp - 1] = pos;
                         }
-                        if (sp != 0 && from != null && BtreePage.compare(from, pg, pos) >= from.inclusion)
+                        if (sp != 0 && from != null && OldBtreePage.compare(from, pg, pos) >= from.inclusion)
                         {
                             sp = 0;
                         }
@@ -1612,7 +1612,7 @@ namespace Volante.Impl
             protected DatabaseImpl db;
             protected int[] pageStack;
             protected int[] posStack;
-            protected Btree<K, V> tree;
+            protected OldBtree<K, V> tree;
             protected int sp;
             protected int end;
             protected int oid;
@@ -1626,7 +1626,7 @@ namespace Volante.Impl
 
         class BtreeDictionarySelectionIterator : BtreeSelectionIterator, IDictionaryEnumerator
         {
-            internal BtreeDictionarySelectionIterator(Btree<K, V> tree, Key from, Key till, IterationOrder order)
+            internal BtreeDictionarySelectionIterator(OldBtree<K, V> tree, Key from, Key till, IterationOrder order)
                 : base(tree, from, till, order)
             { }
 

@@ -8,7 +8,7 @@ namespace Volante.Impl
     using System.Diagnostics;
     using Volante;
 
-    class BtreeFieldIndex<K, V> : Btree<K, V>, IFieldIndex<K, V> where V : class,IPersistent
+    class OldBtreeFieldIndex<K, V> : OldBtree<K, V>, IFieldIndex<K, V> where V : class,IPersistent
     {
         internal String className;
         internal String fieldName;
@@ -20,7 +20,7 @@ namespace Volante.Impl
         [NonSerialized()]
         Type mbrType;
 
-        internal BtreeFieldIndex()
+        internal OldBtreeFieldIndex()
         {
         }
 
@@ -74,17 +74,17 @@ namespace Volante.Impl
             lookupField(fieldName);
         }
 
-        internal BtreeFieldIndex(String fieldName, bool unique)
+        internal OldBtreeFieldIndex(String fieldName, bool unique)
             : this(fieldName, unique, 0)
         {
         }
 
-        internal BtreeFieldIndex(String fieldName, bool unique, long autoincCount)
+        internal OldBtreeFieldIndex(String fieldName, bool unique, long autoincCount)
             : this(typeof(V), fieldName, unique, autoincCount)
         {
         }
 
-        internal BtreeFieldIndex(Type cls, string fieldName, bool unique, long autoincCount)
+        internal OldBtreeFieldIndex(Type cls, string fieldName, bool unique, long autoincCount)
         {
             init(cls, ClassDescriptor.FieldType.tpLast, new string[] { fieldName }, unique, autoincCount);
         }
@@ -189,7 +189,7 @@ namespace Volante.Impl
         {
             try
             {
-                base.remove(new BtreeKey(extractKey(obj), obj.Oid));
+                base.remove(new OldBtreeKey(extractKey(obj), obj.Oid));
             }
             catch (DatabaseException x)
             {
@@ -261,7 +261,7 @@ namespace Volante.Impl
             ArrayList list = new ArrayList();
             if (root != 0)
             {
-                BtreePage.find((DatabaseImpl)Database, root, checkKey(from), checkKey(till), this, height, list);
+                OldBtreePage.find((DatabaseImpl)Database, root, checkKey(from), checkKey(till), this, height, list);
             }
             return (V[])list.ToArray(cls);
         }
@@ -271,7 +271,7 @@ namespace Volante.Impl
             V[] arr = (V[])Array.CreateInstance(cls, nElems);
             if (root != 0)
             {
-                BtreePage.traverseForward((DatabaseImpl)Database, root, type, height, arr, 0);
+                OldBtreePage.traverseForward((DatabaseImpl)Database, root, type, height, arr, 0);
             }
             return arr;
         }

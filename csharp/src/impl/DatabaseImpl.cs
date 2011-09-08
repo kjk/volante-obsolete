@@ -1777,7 +1777,7 @@ namespace Volante.Impl
 #if WITH_OLD_BTREE
                 IIndex<K, V> index = alternativeBtree
                     ? new AltBtree<K, V>(indexType)
-                    : (IIndex<K, V>)new Btree<K, V>(indexType);
+                    : (IIndex<K, V>)new OldBtree<K, V>(indexType);
 #else
                 IIndex<K, V> index = new AltBtree<K, V>(indexType);
 #endif
@@ -1884,7 +1884,7 @@ namespace Volante.Impl
 #if WITH_OLD_BTREE
                 IFieldIndex<K, V> index = alternativeBtree
                     ? (IFieldIndex<K, V>)new AltBtreeFieldIndex<K, V>(fieldName, unique)
-                    : (IFieldIndex<K, V>)new BtreeFieldIndex<K, V>(fieldName, unique);
+                    : (IFieldIndex<K, V>)new OldBtreeFieldIndex<K, V>(fieldName, unique);
 #else
                 IFieldIndex<K, V> index = (IFieldIndex<K, V>)new AltBtreeFieldIndex<K, V>(fieldName, unique);
 #endif
@@ -1909,7 +1909,7 @@ namespace Volante.Impl
 #if WITH_OLD_BTREE
                 IMultiFieldIndex<T> index = alternativeBtree
                     ? (IMultiFieldIndex<T>)new AltBtreeMultiFieldIndex<T>(fieldNames, unique)
-                    : (IMultiFieldIndex<T>)new BtreeMultiFieldIndex<T>(fieldNames, unique);
+                    : (IMultiFieldIndex<T>)new OldBtreeMultiFieldIndex<T>(fieldNames, unique);
 #else
                 IMultiFieldIndex<T> index = (IMultiFieldIndex<T>)new AltBtreeMultiFieldIndex<T>(fieldNames, unique);
 #endif
@@ -2038,9 +2038,9 @@ namespace Volante.Impl
         }
 
 #if WITH_OLD_BTREE
-        internal Btree createBtreeStub(byte[] data, int offs)
+        internal OldBtree createBtreeStub(byte[] data, int offs)
         {
-            return new Btree<int, IPersistent>(data, ObjectHeader.Sizeof + offs);
+            return new OldBtree<int, IPersistent>(data, ObjectHeader.Sizeof + offs);
         }
 #endif
 
@@ -2083,9 +2083,9 @@ namespace Volante.Impl
                                     {
                                         ClassDescriptor desc = (ClassDescriptor)lookupObject(typeOid, typeof(ClassDescriptor));
 #if WITH_OLD_BTREE
-                                        if (typeof(Btree).IsAssignableFrom(desc.cls))
+                                        if (typeof(OldBtree).IsAssignableFrom(desc.cls))
                                         {
-                                            Btree btree = createBtreeStub(pg.data, offs);
+                                            OldBtree btree = createBtreeStub(pg.data, offs);
                                             btree.AssignOid(this, 0, false);
                                             btree.markTree();
                                         }
@@ -2133,9 +2133,9 @@ namespace Volante.Impl
                             nDeallocated += 1;
 #if WITH_OLD_BTREE
                             if (desc != null
-                                && (typeof(Btree).IsAssignableFrom(desc.cls)))
+                                && (typeof(OldBtree).IsAssignableFrom(desc.cls)))
                             {
-                                Btree btree = createBtreeStub(pg.data, offs);
+                                OldBtree btree = createBtreeStub(pg.data, offs);
                                 pool.unfix(pg);
                                 btree.AssignOid(this, i, false);
                                 btree.Deallocate();
@@ -2292,9 +2292,9 @@ namespace Volante.Impl
                                             markOid(typeOid);
                                             ClassDescriptor desc = findClassDescriptor(typeOid);
 #if WITH_OLD_BTREE
-                                            if (typeof(Btree).IsAssignableFrom(desc.cls))
+                                            if (typeof(OldBtree).IsAssignableFrom(desc.cls))
                                             {
-                                                Btree btree = createBtreeStub(pg.data, offs);
+                                                OldBtree btree = createBtreeStub(pg.data, offs);
                                                 btree.AssignOid(this, 0, false);
                                                 int nPages = btree.markTree();
                                                 indexUsage.Count += 1;

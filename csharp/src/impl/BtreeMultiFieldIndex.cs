@@ -8,7 +8,7 @@ namespace Volante.Impl
     using System.Diagnostics;
     using Volante;
 
-    class BtreeMultiFieldIndex<V> : Btree<object[], V>, IMultiFieldIndex<V> where V : class,IPersistent
+    class OldBtreeMultiFieldIndex<V> : OldBtree<object[], V>, IMultiFieldIndex<V> where V : class,IPersistent
     {
         internal String className;
         internal String[] fieldNames;
@@ -18,7 +18,7 @@ namespace Volante.Impl
         [NonSerialized()]
         MemberInfo[] mbr;
 
-        internal BtreeMultiFieldIndex()
+        internal OldBtreeMultiFieldIndex()
         {
         }
 
@@ -81,12 +81,12 @@ namespace Volante.Impl
             locateFields();
         }
 
-        internal BtreeMultiFieldIndex(string[] fieldNames, bool unique)
+        internal OldBtreeMultiFieldIndex(string[] fieldNames, bool unique)
             : this(typeof(V), fieldNames, unique)
         {
         }
 
-        internal BtreeMultiFieldIndex(Type cls, string[] fieldNames, bool unique)
+        internal OldBtreeMultiFieldIndex(Type cls, string[] fieldNames, bool unique)
         {
             init(cls, ClassDescriptor.FieldType.tpLast, fieldNames, unique, 0);
         }
@@ -278,7 +278,7 @@ namespace Volante.Impl
 
         protected override object unpackByteArrayKey(Page pg, int pos)
         {
-            int offs = BtreePage.firstKeyOffs + BtreePage.getKeyStrOffs(pg, pos);
+            int offs = OldBtreePage.firstKeyOffs + OldBtreePage.getKeyStrOffs(pg, pos);
             byte[] data = pg.data;
             Object[] values = new Object[types.Length];
 
@@ -537,7 +537,7 @@ namespace Volante.Impl
         {
             try
             {
-                base.remove(new BtreeKey(extractKey(obj), obj.Oid));
+                base.remove(new OldBtreeKey(extractKey(obj), obj.Oid));
             }
             catch (DatabaseException x)
             {

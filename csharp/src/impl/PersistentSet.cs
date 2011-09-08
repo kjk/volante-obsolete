@@ -6,7 +6,7 @@ using Volante;
 
 namespace Volante.Impl
 {
-    class PersistentSet<T> : Btree<T, T>, ISet<T> where T : class, IPersistent
+    class PersistentSet<T> : OldBtree<T, T>, ISet<T> where T : class, IPersistent
     {
         public PersistentSet()
             : base(ClassDescriptor.FieldType.tpObject, true)

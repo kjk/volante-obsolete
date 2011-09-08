@@ -6,7 +6,7 @@ namespace Volante.Impl
     using System.Diagnostics;
     using Volante;
 
-    internal class BtreePage
+    internal class OldBtreePage
     {
         internal const int firstKeyOffs = 4;
         internal const int keySpace = Page.pageSize - firstKeyOffs;
@@ -89,53 +89,53 @@ namespace Volante.Impl
             switch (key.type)
             {
                 case ClassDescriptor.FieldType.tpSByte:
-                    return (sbyte)key.ival - (sbyte)pg.data[BtreePage.firstKeyOffs + i];
+                    return (sbyte)key.ival - (sbyte)pg.data[OldBtreePage.firstKeyOffs + i];
 
                 case ClassDescriptor.FieldType.tpBoolean:
                 case ClassDescriptor.FieldType.tpByte:
-                    return (byte)key.ival - pg.data[BtreePage.firstKeyOffs + i];
+                    return (byte)key.ival - pg.data[OldBtreePage.firstKeyOffs + i];
 
                 case ClassDescriptor.FieldType.tpShort:
-                    return (short)key.ival - Bytes.unpack2(pg.data, BtreePage.firstKeyOffs + i * 2);
+                    return (short)key.ival - Bytes.unpack2(pg.data, OldBtreePage.firstKeyOffs + i * 2);
                 case ClassDescriptor.FieldType.tpUShort:
-                    return (ushort)key.ival - (ushort)Bytes.unpack2(pg.data, BtreePage.firstKeyOffs + i * 2);
+                    return (ushort)key.ival - (ushort)Bytes.unpack2(pg.data, OldBtreePage.firstKeyOffs + i * 2);
 
                 case ClassDescriptor.FieldType.tpChar:
-                    return (char)key.ival - (char)Bytes.unpack2(pg.data, BtreePage.firstKeyOffs + i * 2);
+                    return (char)key.ival - (char)Bytes.unpack2(pg.data, OldBtreePage.firstKeyOffs + i * 2);
 
                 case ClassDescriptor.FieldType.tpObject:
                 case ClassDescriptor.FieldType.tpUInt:
                 case ClassDescriptor.FieldType.tpOid:
                 case ClassDescriptor.FieldType.tpEnum:
-                    u4 = (uint)Bytes.unpack4(pg.data, BtreePage.firstKeyOffs + i * 4);
+                    u4 = (uint)Bytes.unpack4(pg.data, OldBtreePage.firstKeyOffs + i * 4);
                     return (uint)key.ival < u4 ? -1 : (uint)key.ival == u4 ? 0 : 1;
 
                 case ClassDescriptor.FieldType.tpInt:
-                    i4 = Bytes.unpack4(pg.data, BtreePage.firstKeyOffs + i * 4);
+                    i4 = Bytes.unpack4(pg.data, OldBtreePage.firstKeyOffs + i * 4);
                     return key.ival < i4 ? -1 : key.ival == i4 ? 0 : 1;
 
                 case ClassDescriptor.FieldType.tpLong:
-                    i8 = Bytes.unpack8(pg.data, BtreePage.firstKeyOffs + i * 8);
+                    i8 = Bytes.unpack8(pg.data, OldBtreePage.firstKeyOffs + i * 8);
                     return key.lval < i8 ? -1 : key.lval == i8 ? 0 : 1;
 
                 case ClassDescriptor.FieldType.tpDate:
                 case ClassDescriptor.FieldType.tpULong:
-                    u8 = (ulong)Bytes.unpack8(pg.data, BtreePage.firstKeyOffs + i * 8);
+                    u8 = (ulong)Bytes.unpack8(pg.data, OldBtreePage.firstKeyOffs + i * 8);
                     return (ulong)key.lval < u8 ? -1 : (ulong)key.lval == u8 ? 0 : 1;
 
                 case ClassDescriptor.FieldType.tpFloat:
-                    r4 = Bytes.unpackF4(pg.data, BtreePage.firstKeyOffs + i * 4);
+                    r4 = Bytes.unpackF4(pg.data, OldBtreePage.firstKeyOffs + i * 4);
                     return key.dval < r4 ? -1 : key.dval == r4 ? 0 : 1;
 
                 case ClassDescriptor.FieldType.tpDouble:
-                    r8 = Bytes.unpackF8(pg.data, BtreePage.firstKeyOffs + i * 8);
+                    r8 = Bytes.unpackF8(pg.data, OldBtreePage.firstKeyOffs + i * 8);
                     return key.dval < r8 ? -1 : key.dval == r8 ? 0 : 1;
 
                 case ClassDescriptor.FieldType.tpDecimal:
-                    return key.dec.CompareTo(Bytes.unpackDecimal(pg.data, BtreePage.firstKeyOffs + i * 16));
+                    return key.dec.CompareTo(Bytes.unpackDecimal(pg.data, OldBtreePage.firstKeyOffs + i * 16));
 
                 case ClassDescriptor.FieldType.tpGuid:
-                    return key.guid.CompareTo(Bytes.unpackGuid(pg.data, BtreePage.firstKeyOffs + i * 16));
+                    return key.guid.CompareTo(Bytes.unpackGuid(pg.data, OldBtreePage.firstKeyOffs + i * 16));
             }
             Debug.Assert(false, "Invalid type");
             return 0;
@@ -145,9 +145,9 @@ namespace Volante.Impl
         {
             char[] chars = (char[])key.oval;
             int alen = chars.Length;
-            int blen = BtreePage.getKeyStrSize(pg, i);
+            int blen = OldBtreePage.getKeyStrSize(pg, i);
             int minlen = alen < blen ? alen : blen;
-            int offs = BtreePage.getKeyStrOffs(pg, i) + BtreePage.firstKeyOffs;
+            int offs = OldBtreePage.getKeyStrOffs(pg, i) + OldBtreePage.firstKeyOffs;
             byte[] b = pg.data;
             for (int j = 0; j < minlen; j++)
             {
@@ -161,7 +161,7 @@ namespace Volante.Impl
             return alen - blen;
         }
 
-        internal static bool find(DatabaseImpl db, int pageId, Key firstKey, Key lastKey, Btree tree, int height, ArrayList result)
+        internal static bool find(DatabaseImpl db, int pageId, Key firstKey, Key lastKey, OldBtree tree, int height, ArrayList result)
         {
             Page pg = db.getPage(pageId);
             int l = 0, n = getnItems(pg), r = n;
@@ -400,9 +400,9 @@ namespace Volante.Impl
         static int comparePrefix(string key, Page pg, int i)
         {
             int alen = key.Length;
-            int blen = BtreePage.getKeyStrSize(pg, i);
+            int blen = OldBtreePage.getKeyStrSize(pg, i);
             int minlen = alen < blen ? alen : blen;
-            int offs = BtreePage.getKeyStrOffs(pg, i) + BtreePage.firstKeyOffs;
+            int offs = OldBtreePage.getKeyStrOffs(pg, i) + OldBtreePage.firstKeyOffs;
             byte[] b = pg.data;
             for (int j = 0; j < minlen; j++)
             {
@@ -475,7 +475,7 @@ namespace Volante.Impl
             return true;
         }
 
-        internal static int allocate(DatabaseImpl db, int root, ClassDescriptor.FieldType type, BtreeKey ins)
+        internal static int allocate(DatabaseImpl db, int root, ClassDescriptor.FieldType type, OldBtreeKey ins)
         {
             int pageId = db.allocatePage();
             Page pg = db.putPage(pageId);
@@ -516,10 +516,10 @@ namespace Volante.Impl
             Array.Copy(src_pg.data, firstKeyOffs + src_idx * itemSize, dst_pg.data, firstKeyOffs + dst_idx * itemSize, len * itemSize);
         }
 
-        internal static BtreeResult insert(DatabaseImpl db, int pageId, Btree tree, BtreeKey ins, int height, bool unique, bool overwrite)
+        internal static OldBtreeResult insert(DatabaseImpl db, int pageId, OldBtree tree, OldBtreeKey ins, int height, bool unique, bool overwrite)
         {
             Page pg = db.getPage(pageId);
-            BtreeResult result;
+            OldBtreeResult result;
             int l = 0, n = getnItems(pg), r = n;
             try
             {
@@ -541,8 +541,8 @@ namespace Volante.Impl
                     if (--height != 0)
                     {
                         result = insert(db, getKeyStrOid(pg, r), tree, ins, height, unique, overwrite);
-                        Debug.Assert(result != BtreeResult.NotFound);
-                        if (result != BtreeResult.Overflow)
+                        Debug.Assert(result != OldBtreeResult.NotFound);
+                        if (result != OldBtreeResult.Overflow)
                         {
                             return result;
                         }
@@ -555,11 +555,11 @@ namespace Volante.Impl
                             pg = null;
                             pg = db.putPage(pageId);
                             setKeyStrOid(pg, r, ins.oid);
-                            return BtreeResult.Overwrite;
+                            return OldBtreeResult.Overwrite;
                         }
                         else if (unique)
                         {
-                            return BtreeResult.Duplicate;
+                            return OldBtreeResult.Duplicate;
                         }
                     }
                     db.pool.unfix(pg);
@@ -585,8 +585,8 @@ namespace Volante.Impl
                     if (--height != 0)
                     {
                         result = insert(db, getKeyStrOid(pg, r), tree, ins, height, unique, overwrite);
-                        Debug.Assert(result != BtreeResult.NotFound);
-                        if (result != BtreeResult.Overflow)
+                        Debug.Assert(result != OldBtreeResult.NotFound);
+                        if (result != OldBtreeResult.Overflow)
                         {
                             return result;
                         }
@@ -599,11 +599,11 @@ namespace Volante.Impl
                             pg = null;
                             pg = db.putPage(pageId);
                             setKeyStrOid(pg, r, ins.oid);
-                            return BtreeResult.Overwrite;
+                            return OldBtreeResult.Overwrite;
                         }
                         else if (unique)
                         {
-                            return BtreeResult.Duplicate;
+                            return OldBtreeResult.Duplicate;
                         }
                     }
                     db.pool.unfix(pg);
@@ -626,8 +626,8 @@ namespace Volante.Impl
                     if (--height != 0)
                     {
                         result = insert(db, getReference(pg, maxItems - r - 1), tree, ins, height, unique, overwrite);
-                        Debug.Assert(result != BtreeResult.NotFound);
-                        if (result != BtreeResult.Overflow)
+                        Debug.Assert(result != OldBtreeResult.NotFound);
+                        if (result != OldBtreeResult.Overflow)
                         {
                             return result;
                         }
@@ -641,11 +641,11 @@ namespace Volante.Impl
                             pg = null;
                             pg = db.putPage(pageId);
                             setReference(pg, maxItems - r - 1, ins.oid);
-                            return BtreeResult.Overwrite;
+                            return OldBtreeResult.Overwrite;
                         }
                         else if (unique)
                         {
-                            return BtreeResult.Duplicate;
+                            return OldBtreeResult.Duplicate;
                         }
                     }
                     db.pool.unfix(pg);
@@ -659,7 +659,7 @@ namespace Volante.Impl
                         memcpy(pg, maxItems - n - 1, pg, maxItems - n, n - r, 4);
                         ins.pack(pg, r);
                         setnItems(pg, getnItems(pg) + 1);
-                        return BtreeResult.Done;
+                        return OldBtreeResult.Done;
                     }
                     else
                     {
@@ -701,7 +701,7 @@ namespace Volante.Impl
                             setnItems(b, m - 1);
                         }
                         db.pool.unfix(b);
-                        return BtreeResult.Overflow;
+                        return OldBtreeResult.Overflow;
                     }
                 }
             }
@@ -714,7 +714,7 @@ namespace Volante.Impl
             }
         }
 
-        internal static BtreeResult insertStrKey(DatabaseImpl db, Page pg, int r, BtreeKey ins, int height)
+        internal static OldBtreeResult insertStrKey(DatabaseImpl db, Page pg, int r, OldBtreeKey ins, int height)
         {
             int nItems = getnItems(pg);
             int size = getSize(pg);
@@ -817,7 +817,7 @@ namespace Volante.Impl
                         setnItems(pg, nItems);
                         ins.oid = pageId;
                         db.pool.unfix(b);
-                        return BtreeResult.Overflow;
+                        return OldBtreeResult.Overflow;
                     }
                     moved += keyLen * 2;
                     prevDelta = delta;
@@ -840,10 +840,10 @@ namespace Volante.Impl
             }
             setnItems(pg, nItems);
             setSize(pg, size);
-            return size + strKeySize * (nItems + 1) < keySpace / 2 ? BtreeResult.Underflow : BtreeResult.Done;
+            return size + strKeySize * (nItems + 1) < keySpace / 2 ? OldBtreeResult.Underflow : OldBtreeResult.Done;
         }
 
-        internal static BtreeResult insertByteArrayKey(DatabaseImpl db, Page pg, int r, BtreeKey ins, int height)
+        internal static OldBtreeResult insertByteArrayKey(DatabaseImpl db, Page pg, int r, OldBtreeKey ins, int height)
         {
             int nItems = getnItems(pg);
             int size = getSize(pg);
@@ -946,7 +946,7 @@ namespace Volante.Impl
                         setnItems(pg, nItems);
                         ins.oid = pageId;
                         db.pool.unfix(b);
-                        return BtreeResult.Overflow;
+                        return OldBtreeResult.Overflow;
                     }
                     moved += keyLen;
                     prevDelta = delta;
@@ -969,7 +969,7 @@ namespace Volante.Impl
             }
             setnItems(pg, nItems);
             setSize(pg, size);
-            return size + strKeySize * (nItems + 1) < keySpace / 2 ? BtreeResult.Underflow : BtreeResult.Done;
+            return size + strKeySize * (nItems + 1) < keySpace / 2 ? OldBtreeResult.Underflow : OldBtreeResult.Done;
         }
 
         internal static int compactifyStrings(Page pg, int m)
@@ -1148,7 +1148,7 @@ namespace Volante.Impl
             return nItems;
         }
 
-        internal static BtreeResult removeStrKey(Page pg, int r)
+        internal static OldBtreeResult removeStrKey(Page pg, int r)
         {
             int len = getKeyStrSize(pg, r) * 2;
             int offs = getKeyStrOffs(pg, r);
@@ -1175,10 +1175,10 @@ namespace Volante.Impl
                 setSize(pg, size -= len);
             }
             setnItems(pg, nItems - 1);
-            return size + strKeySize * nItems < keySpace / 2 ? BtreeResult.Underflow : BtreeResult.Done;
+            return size + strKeySize * nItems < keySpace / 2 ? OldBtreeResult.Underflow : OldBtreeResult.Done;
         }
 
-        internal static BtreeResult removeByteArrayKey(Page pg, int r)
+        internal static OldBtreeResult removeByteArrayKey(Page pg, int r)
         {
             int len = getKeyStrSize(pg, r);
             int offs = getKeyStrOffs(pg, r);
@@ -1205,24 +1205,24 @@ namespace Volante.Impl
                 setSize(pg, size -= len);
             }
             setnItems(pg, nItems - 1);
-            return size + strKeySize * nItems < keySpace / 2 ? BtreeResult.Underflow : BtreeResult.Done;
+            return size + strKeySize * nItems < keySpace / 2 ? OldBtreeResult.Underflow : OldBtreeResult.Done;
         }
 
-        internal static BtreeResult replaceStrKey(DatabaseImpl db, Page pg, int r, BtreeKey ins, int height)
+        internal static OldBtreeResult replaceStrKey(DatabaseImpl db, Page pg, int r, OldBtreeKey ins, int height)
         {
             ins.oid = getKeyStrOid(pg, r);
             removeStrKey(pg, r);
             return insertStrKey(db, pg, r, ins, height);
         }
 
-        internal static BtreeResult replaceByteArrayKey(DatabaseImpl db, Page pg, int r, BtreeKey ins, int height)
+        internal static OldBtreeResult replaceByteArrayKey(DatabaseImpl db, Page pg, int r, OldBtreeKey ins, int height)
         {
             ins.oid = getKeyStrOid(pg, r);
             removeByteArrayKey(pg, r);
             return insertByteArrayKey(db, pg, r, ins, height);
         }
 
-        internal static BtreeResult handlePageUnderflow(DatabaseImpl db, Page pg, int r, ClassDescriptor.FieldType type, BtreeKey rem, int height)
+        internal static OldBtreeResult handlePageUnderflow(DatabaseImpl db, Page pg, int r, ClassDescriptor.FieldType type, OldBtreeKey rem, int height)
         {
             int nItems = getnItems(pg);
             if (type == ClassDescriptor.FieldType.tpString)
@@ -1284,7 +1284,7 @@ namespace Volante.Impl
                                 addSize = subSize = getKeyStrSize(b, i);
                             }
                         }
-                        BtreeResult result = BtreeResult.Done;
+                        OldBtreeResult result = OldBtreeResult.Done;
                         if (i > 0)
                         {
                             k = i;
@@ -1404,7 +1404,7 @@ namespace Volante.Impl
                                 addSize = subSize = getKeyStrSize(b, bn - i - 1);
                             }
                         }
-                        BtreeResult result = BtreeResult.Done;
+                        OldBtreeResult result = OldBtreeResult.Done;
                         if (i > 0)
                         {
                             k = i;
@@ -1539,7 +1539,7 @@ namespace Volante.Impl
                                 addSize = subSize = getKeyStrSize(b, i);
                             }
                         }
-                        BtreeResult result = BtreeResult.Done;
+                        OldBtreeResult result = OldBtreeResult.Done;
                         if (i > 0)
                         {
                             k = i;
@@ -1659,7 +1659,7 @@ namespace Volante.Impl
                                 addSize = subSize = getKeyStrSize(b, bn - i - 1);
                             }
                         }
-                        BtreeResult result = BtreeResult.Done;
+                        OldBtreeResult result = OldBtreeResult.Done;
                         if (i > 0)
                         {
                             k = i;
@@ -1768,7 +1768,7 @@ namespace Volante.Impl
                         setnItems(a, getnItems(a) + i);
                         db.pool.unfix(a);
                         db.pool.unfix(b);
-                        return BtreeResult.Done;
+                        return OldBtreeResult.Done;
                     }
                     else
                     {
@@ -1782,7 +1782,7 @@ namespace Volante.Impl
                         setnItems(pg, nItems - 1);
                         db.pool.unfix(a);
                         db.pool.unfix(b);
-                        return nItems * (itemSize + 4) < keySpace / 2 ? BtreeResult.Underflow : BtreeResult.Done;
+                        return nItems * (itemSize + 4) < keySpace / 2 ? OldBtreeResult.Underflow : OldBtreeResult.Done;
                     }
                 }
                 else
@@ -1816,7 +1816,7 @@ namespace Volante.Impl
                         setnItems(a, getnItems(a) + i);
                         db.pool.unfix(a);
                         db.pool.unfix(b);
-                        return BtreeResult.Done;
+                        return OldBtreeResult.Done;
                     }
                     else
                     {
@@ -1835,13 +1835,13 @@ namespace Volante.Impl
                         setnItems(pg, nItems - 1);
                         db.pool.unfix(a);
                         db.pool.unfix(b);
-                        return nItems * (itemSize + 4) < keySpace / 2 ? BtreeResult.Underflow : BtreeResult.Done;
+                        return nItems * (itemSize + 4) < keySpace / 2 ? OldBtreeResult.Underflow : OldBtreeResult.Done;
                     }
                 }
             }
         }
 
-        internal static BtreeResult remove(DatabaseImpl db, int pageId, Btree tree, BtreeKey rem, int height)
+        internal static OldBtreeResult remove(DatabaseImpl db, int pageId, OldBtree tree, OldBtreeKey rem, int height)
         {
             Page pg = db.getPage(pageId);
             try
@@ -1868,16 +1868,16 @@ namespace Volante.Impl
                         {
                             switch (remove(db, getKeyStrOid(pg, r), tree, rem, height))
                             {
-                                case BtreeResult.Underflow:
+                                case OldBtreeResult.Underflow:
                                     db.pool.unfix(pg);
                                     pg = null;
                                     pg = db.putPage(pageId);
                                     return handlePageUnderflow(db, pg, r, tree.FieldType, rem, height);
 
-                                case BtreeResult.Done:
-                                    return BtreeResult.Done;
+                                case OldBtreeResult.Done:
+                                    return OldBtreeResult.Done;
 
-                                case BtreeResult.Overflow:
+                                case OldBtreeResult.Overflow:
                                     db.pool.unfix(pg);
                                     pg = null;
                                     pg = db.putPage(pageId);
@@ -1931,16 +1931,16 @@ namespace Volante.Impl
                         {
                             switch (remove(db, getKeyStrOid(pg, r), tree, rem, height))
                             {
-                                case BtreeResult.Underflow:
+                                case OldBtreeResult.Underflow:
                                     db.pool.unfix(pg);
                                     pg = null;
                                     pg = db.putPage(pageId);
                                     return handlePageUnderflow(db, pg, r, tree.FieldType, rem, height);
 
-                                case BtreeResult.Done:
-                                    return BtreeResult.Done;
+                                case OldBtreeResult.Done:
+                                    return OldBtreeResult.Done;
 
-                                case BtreeResult.Overflow:
+                                case OldBtreeResult.Overflow:
                                     db.pool.unfix(pg);
                                     pg = null;
                                     pg = db.putPage(pageId);
@@ -2005,7 +2005,7 @@ namespace Volante.Impl
                                     memcpy(pg, r, pg, r + 1, n - r - 1, itemSize);
                                     memcpy(pg, maxItems - n + 1, pg, maxItems - n, n - r - 1, 4);
                                     setnItems(pg, --n);
-                                    return n * (itemSize + 4) < keySpace / 2 ? BtreeResult.Underflow : BtreeResult.Done;
+                                    return n * (itemSize + 4) < keySpace / 2 ? OldBtreeResult.Underflow : OldBtreeResult.Done;
                                 }
                             }
                             else
@@ -2014,25 +2014,25 @@ namespace Volante.Impl
                             }
                             r += 1;
                         }
-                        return BtreeResult.NotFound;
+                        return OldBtreeResult.NotFound;
                     }
                     do
                     {
                         switch (remove(db, getReference(pg, maxItems - r - 1), tree, rem, height))
                         {
-                            case BtreeResult.Underflow:
+                            case OldBtreeResult.Underflow:
                                 db.pool.unfix(pg);
                                 pg = db.putPage(pageId);
                                 return handlePageUnderflow(db, pg, r, tree.FieldType, rem, height);
 
-                            case BtreeResult.Done:
-                                return BtreeResult.Done;
+                            case OldBtreeResult.Done:
+                                return OldBtreeResult.Done;
 
                         }
                     }
                     while (++r <= n);
                 }
-                return BtreeResult.NotFound;
+                return OldBtreeResult.NotFound;
             }
             finally
             {
@@ -2205,7 +2205,7 @@ namespace Volante.Impl
                         // page of strings
                         for (i = 0; i < n; i++)
                         {
-                            exporter.exportAssoc(getKeyStrOid(pg, i), pg.data, BtreePage.firstKeyOffs + BtreePage.getKeyStrOffs(pg, i), BtreePage.getKeyStrSize(pg, i), type);
+                            exporter.exportAssoc(getKeyStrOid(pg, i), pg.data, OldBtreePage.firstKeyOffs + OldBtreePage.getKeyStrOffs(pg, i), OldBtreePage.getKeyStrSize(pg, i), type);
                         }
                     }
                     else
@@ -2213,7 +2213,7 @@ namespace Volante.Impl
                         // page of scalars
                         for (i = 0; i < n; i++)
                         {
-                            exporter.exportAssoc(getReference(pg, maxItems - 1 - i), pg.data, BtreePage.firstKeyOffs + i * ClassDescriptor.Sizeof[(int)type], ClassDescriptor.Sizeof[(int)type], type);
+                            exporter.exportAssoc(getReference(pg, maxItems - 1 - i), pg.data, OldBtreePage.firstKeyOffs + i * ClassDescriptor.Sizeof[(int)type], ClassDescriptor.Sizeof[(int)type], type);
                         }
                     }
                 }

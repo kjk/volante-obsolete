@@ -43,10 +43,10 @@ namespace Volante.Impl
                                 ClassDescriptor desc = db.findClassDescriptor(typeOid);
                                 string name = desc.name;
 #if WITH_OLD_BTREE
-                                if (typeof(Btree).IsAssignableFrom(desc.cls))
+                                if (typeof(OldBtree).IsAssignableFrom(desc.cls))
                                 {
                                     Type t = desc.cls.GetGenericTypeDefinition();
-                                    if (t == typeof(Btree<,>) || t == typeof(IBitIndex<>))
+                                    if (t == typeof(OldBtree<,>) || t == typeof(IBitIndex<>))
                                     {
                                         exportIndex(oid, obj, name);
                                     }
@@ -54,11 +54,11 @@ namespace Volante.Impl
                                     {
                                         exportSet(oid, obj, name);
                                     }
-                                    else if (t == typeof(BtreeFieldIndex<,>))
+                                    else if (t == typeof(OldBtreeFieldIndex<,>))
                                     {
                                         exportFieldIndex(oid, obj, name);
                                     }
-                                    else if (t == typeof(BtreeMultiFieldIndex<>))
+                                    else if (t == typeof(OldBtreeMultiFieldIndex<>))
                                     {
                                         exportMultiFieldIndex(oid, obj, name);
                                     }
@@ -93,16 +93,16 @@ namespace Volante.Impl
         }
 
 #if WITH_OLD_BTREE
-        Btree createBtree(int oid, byte[] data)
+        OldBtree createBtree(int oid, byte[] data)
         {
-            Btree btree = db.createBtreeStub(data, 0);
+            OldBtree btree = db.createBtreeStub(data, 0);
             db.assignOid(btree, oid);
             return btree;
         }
 
         internal void exportSet(int oid, byte[] data, string name)
         {
-            Btree btree = createBtree(oid, data);
+            OldBtree btree = createBtree(oid, data);
             name = exportIdentifier(name);
             writer.Write(" <" + name + " id=\"" + oid + "\">\n");
             btree.export(this);
@@ -111,7 +111,7 @@ namespace Volante.Impl
 
         internal void exportIndex(int oid, byte[] data, string name)
         {
-            Btree btree = createBtree(oid, data);
+            OldBtree btree = createBtree(oid, data);
             name = exportIdentifier(name);
             writer.Write(" <" + name + " id=\"" + oid + "\" unique=\"" + (btree.IsUnique ? '1' : '0')
                 + "\" type=\"" + btree.FieldType + "\">\n");
@@ -121,7 +121,7 @@ namespace Volante.Impl
 
         internal void exportFieldIndex(int oid, byte[] data, string name)
         {
-            Btree btree = createBtree(oid, data);
+            OldBtree btree = createBtree(oid, data);
             name = exportIdentifier(name);
             writer.Write(" <" + name + " id=\"" + oid + "\" unique=\"" + (btree.IsUnique ? '1' : '0') + "\" class=");
             int offs = exportString(data, btree.HeaderSize);
@@ -134,7 +134,7 @@ namespace Volante.Impl
 
         internal void exportMultiFieldIndex(int oid, byte[] data, string name)
         {
-            Btree btree = createBtree(oid, data);
+            OldBtree btree = createBtree(oid, data);
             name = exportIdentifier(name);
             writer.Write(" <" + name + " id=\"" + oid + "\" unique=\"" + (btree.IsUnique ? '1' : '0')
                 + "\" class=");
