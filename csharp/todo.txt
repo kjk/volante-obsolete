@@ -8,6 +8,7 @@ Things to do for c# version:
 * make a reference API from .xml extracted during build process (after 0.9?)
 * g+ button in the website version of docs
 * more coverage tests
+* document setting IFile.NoFlush to true in performance_tuning.html
 * make a 0.9 release
 
 After 0.9:
