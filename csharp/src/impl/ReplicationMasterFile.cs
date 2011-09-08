@@ -12,6 +12,8 @@ namespace Volante.Impl
     /// </summary>
     public class ReplicationMasterFile : IFile
     {
+        public FileListener Listener { get; set; }
+
         /// <summary>
         /// Constructor of replication master file
         /// </summary>

@@ -393,7 +393,6 @@ namespace Volante.Impl
                             il.Emit(OpCodes.Ldloc_1, offs);
                             il.Emit(OpCodes.Ldloc_0, obj);
                             il.Emit(OpCodes.Ldflda, f);
-                            il.Emit(OpCodes.Ldarg_S, 5); // encoding
                             il.Emit(OpCodes.Call, unpackString);
                             il.Emit(OpCodes.Stloc_1, offs);
                             continue;

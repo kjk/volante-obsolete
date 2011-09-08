@@ -7,6 +7,6 @@ namespace Volante.Impl
     {
         IPersistent newInstance();
         int pack(DatabaseImpl store, IPersistent obj, ByteBuffer buf);
-        void unpack(DatabaseImpl store, IPersistent obj, byte[] body, bool recursiveLoading, Encoding encoding);
+        void unpack(DatabaseImpl store, IPersistent obj, byte[] body, bool recursiveLoading);
     }
 }

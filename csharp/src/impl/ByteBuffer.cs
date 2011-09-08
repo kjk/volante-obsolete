@@ -101,41 +101,23 @@ namespace Volante.Impl
                 extend(offs + 4);
                 Bytes.pack4(arr, offs, -1);
                 offs += 4;
+                return offs;
             }
-            else
-            {
-                int len = s.Length;
-                if (encoding == null)
-                {
-                    extend(offs + 4 + len * 2);
-                    Bytes.pack4(arr, offs, len);
-                    offs += 4;
-                    for (int i = 0; i < len; i++)
-                    {
-                        Bytes.pack2(arr, offs, (short)s[i]);
-                        offs += 2;
-                    }
-                }
-                else
-                {
-                    byte[] bytes = encoding.GetBytes(s);
-                    extend(offs + 4 + bytes.Length);
-                    Bytes.pack4(arr, offs, -2 - bytes.Length);
-                    Array.Copy(bytes, 0, arr, offs + 4, bytes.Length);
-                    offs += 4 + bytes.Length;
-                }
-            }
+
+            byte[] bytes = Encoding.UTF8.GetBytes(s);
+            extend(offs + 4 + bytes.Length);
+            Bytes.pack4(arr, offs, -2 - bytes.Length);
+            Array.Copy(bytes, 0, arr, offs + 4, bytes.Length);
+            offs += 4 + bytes.Length;
             return offs;
         }
 
-        public ByteBuffer(Encoding encoding)
+        public ByteBuffer()
         {
             arr = new byte[64];
-            this.encoding = encoding;
         }
 
         internal byte[] arr;
         internal int used;
-        internal Encoding encoding;
     }
 }

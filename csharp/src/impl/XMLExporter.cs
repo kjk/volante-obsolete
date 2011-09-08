@@ -236,10 +236,23 @@ namespace Volante.Impl
                     break;
 
                 case ClassDescriptor.FieldType.tpString:
-                    for (int i = 0; i < size; i++)
+
+                    if (size < 0)
                     {
-                        exportChar((char)Bytes.unpack2(body, offs));
-                        offs += 2;
+                        string s;
+                        offs = Bytes.unpackString(body, offs - 4, out s);
+                        for (int i = 0; i < s.Length; i++)
+                        {
+                            exportChar(s[i]);
+                        }
+                    }
+                    else
+                    {
+                        for (int i = 0; i < size; i++)
+                        {
+                            exportChar((char)Bytes.unpack2(body, offs));
+                            offs += 2;
+                        }
                     }
                     break;
 
@@ -344,31 +357,18 @@ namespace Volante.Impl
             offs += 4;
             if (len >= 0)
             {
-                writer.Write("\"");
-                while (--len >= 0)
-                {
-                    exportChar((char)Bytes.unpack2(body, offs));
-                    offs += 2;
-                }
-                writer.Write("\"");
+                Debug.Assert(false);
             }
             else if (len < -1)
             {
                 writer.Write("\"");
-                string s;
-                if (db.encoding != null)
-                {
-                    s = db.encoding.GetString(body, offs, -len - 2);
-                }
-                else
-                {
-                    s = Encoding.Default.GetString(body, offs, -len - 2);
-                }
+                string s = Encoding.UTF8.GetString(body, offs, -len - 2);
                 offs -= len + 2;
                 for (int i = 0, n = s.Length; i < n; i++)
                 {
                     exportChar(s[i]);
                 }
+                writer.Write("\"");
             }
             else
             {

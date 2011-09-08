@@ -10,6 +10,11 @@ using System.Reflection;
 using System.Text;
 using Volante;
 
+public interface ITest
+{
+    void Run(TestConfig config);
+}
+
 public struct SimpleStruct
 {
     public int v1;
@@ -80,7 +85,6 @@ public class TestConfig
     public bool AltBtree = false;
     public bool Serializable = false;
     public bool BackgroundGc = false;
-    public Encoding Encoding = null; // if not null will use this encoding for storing strings
     public int Count; // number of iterations
 
     // Set by the test. Can be a subclass of TestResult
@@ -96,9 +100,8 @@ public class TestConfig
             string p4 = "";
             if (InMemory != InMemoryType.Full)
                 p4 = (FileKind == FileType.File) ? "_file" : "_stream";
-            string p5 = (null == Encoding) ? "" : "_enc-" + Encoding.EncodingName;
-            string p6 = String.Format("_{0}", Count);
-            return String.Format("{0}{1}{2}{3}{4}{5}{6}.dbs", TestName, p1, p2, p3, p4, p5, p6);
+            string p5 = String.Format("_{0}", Count);
+            return String.Format("{0}{1}{2}{3}{4}{5}.dbs", TestName, p1, p2, p3, p4, p5);
         }
     }
 
@@ -119,7 +122,6 @@ public class TestConfig
         // TODO: make it bigger (1000000 - the original value for h)
         if (BackgroundGc)
             db.GcThreshold = 100000;
-        db.StringEncoding = Encoding;
         // TODO: could make CodeGeneration an explicit in TestConfig
         // but this is simpler
         if (AltBtree)
@@ -169,7 +171,6 @@ public class TestConfig
         AltBtree = tc.AltBtree;
         Serializable = tc.Serializable;
         BackgroundGc = tc.BackgroundGc;
-        Encoding = tc.Encoding;
         Count = tc.Count;
         Result = tc.Result;
     }
@@ -339,11 +340,6 @@ public class TestsMain
         new TestConfig{ InMemory = TestConfig.InMemoryType.Full, AltBtree=true }
     };
 
-    static TestConfig[] ConfigsEncoding = new TestConfig[] {
-        new TestConfig{ InMemory = TestConfig.InMemoryType.File, AltBtree = true },
-        new TestConfig{ InMemory = TestConfig.InMemoryType.File, AltBtree = true, Encoding = Encoding.UTF8 }
-    };
-
     static TestConfig[] ConfigsR2 = new TestConfig[] {
         new TestConfig{ InMemory = TestConfig.InMemoryType.Full },
         // TODO: should have a separate NoFlush flag
@@ -407,6 +403,10 @@ public class TestsMain
 
     static TestInfo[] TestInfos = new TestInfo[]
     {
+#if WITH_XML
+        new TestInfo("TestXml", ConfigsDefaultFile, new int[2] { 2000, 20000 }),
+#endif
+        new TestInfo("TestCompoundIndex"),
         new TestInfo("TestIndexRangeSearch"),
         new TestInfo("TestCorrupt00", ConfigsOneFileAlt),
         new TestInfo("TestRemove00"),
@@ -440,16 +440,11 @@ public class TestsMain
         new TestInfo("TestRtree", ConfigsDefault, new int[2] { 800, 20000 }),
         new TestInfo("TestTtree"),
         new TestInfo("TestBlob", ConfigsOneFileAlt),
-        new TestInfo("TestCompoundIndex"),
         new TestInfo("TestConcur"),
         new TestInfo("TestEnumerator", ConfigsDefault, new int[2] { 50, 1000 }),
-        new TestInfo("TestEncoding", ConfigsEncoding, new int[2] { 50000, 50000 }),
         // TODO: figure out why running it twice throws an exception from reflection
         // about trying to create a duplicate wrapper class
         new TestInfo("TestList", ConfigsOnlyAlt),
-#if WITH_XML
-        new TestInfo("TestXml", ConfigsDefaultFile, new int[2] { 2000, 20000 }),
-#endif
         // TODO: figure out why when it's 2000 instead of 2001 we fail
         new TestInfo("TestTimeSeries", ConfigsDefault, new int[2] { 2001, 100000 }),
         new TestInfo("TestBackup", ConfigsDefaultFile),
@@ -480,6 +475,30 @@ public class TestsMain
     public static TestConfig[] GetTestConfigs(TestInfo testInfo)
     {
         return testInfo.Configs ?? ConfigsDefault;
+    }
+
+    public static void RunTests2(ITest test, TestConfig[] configs)
+    {
+        foreach (TestConfig configTmp in configs)
+        {
+#if !WITH_OLD_BTREE
+            bool useAltBtree = configTmp.AltBtree || configTmp.Serializable;
+            if (!useAltBtree)
+                continue;
+#endif
+            // make a copy because we modify it
+            var config = new TestConfig(configTmp);
+            config.Count = configTmp.Count;
+            //config.TestName = testClassName;
+            config.TestName = "";
+            config.Result = new TestResult(); // can be over-written by a test
+            DateTime start = DateTime.Now;
+            test.Run(config);
+            config.Result.ExecutionTime = DateTime.Now - start;
+            config.Result.Config = config; // so that we Print() nicely
+            config.Result.Ok = Tests.FinalizeTest();
+            config.Result.Print();
+        }
     }
 
     public static void RunTests(TestInfo testInfo)

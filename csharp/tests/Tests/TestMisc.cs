@@ -8,7 +8,7 @@ namespace Volante
     using System.Collections;
     using System.Collections.Generic;
 
-    public class TestRemove00
+    public class TestRemove00 : ITest
     {
         public class Record : Persistent
         {
@@ -64,7 +64,7 @@ namespace Volante
 
     // test that deleting an object referenced by another objects
     // corrupts the database.
-    public class TestCorrupt00
+    public class TestCorrupt00 : ITest
     {
         public class Record : Persistent
         {
@@ -117,7 +117,7 @@ namespace Volante
 
 
     // Corner cases for key search
-    public class TestIndexRangeSearch
+    public class TestIndexRangeSearch : ITest
     {
         public class Record : Persistent
         {
@@ -200,6 +200,4 @@ namespace Volante
             return recs.ToArray();
         }
     }
-
-
 }

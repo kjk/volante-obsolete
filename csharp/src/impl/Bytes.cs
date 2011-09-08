@@ -2,6 +2,7 @@ namespace Volante.Impl
 {
     using System;
     using System.Text;
+    using System.Diagnostics;
     using Volante;
 
     // Class for packing/unpacking data
@@ -114,31 +115,16 @@ namespace Volante.Impl
             return new decimal(bits);
         }
 
-        public static int unpackString(byte[] arr, int offs, out string str, Encoding encoding)
+        public static int unpackString(byte[] arr, int offs, out string str)
         {
             int len = Bytes.unpack4(arr, offs);
             offs += 4;
             str = null;
-            if (len >= 0)
+            Debug.Assert(len < 0);
+            // -1 means a null string, less than that is utf8-encoded string
+            if (len < -1)
             {
-                char[] chars = new char[len];
-                for (int i = 0; i < len; i++)
-                {
-                    chars[i] = (char)Bytes.unpack2(arr, offs);
-                    offs += 2;
-                }
-                str = new string(chars);
-            }
-            else if (len < -1)
-            {
-                if (encoding != null)
-                {
-                    str = encoding.GetString(arr, offs, -2 - len);
-                }
-                else
-                {
-                    str = Encoding.Default.GetString(arr, offs, -2 - len);
-                }
+                str = Encoding.UTF8.GetString(arr, offs, -2 - len);
                 offs -= 2 + len;
             }
             return offs;

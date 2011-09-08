@@ -3032,13 +3032,6 @@ namespace Volante.Impl
             get { return objectCacheInitSize; }
         }
 
-        // TODO: needs tests
-        public Encoding StringEncoding
-        {
-            set { encoding = value; }
-            get { return encoding; }
-        }
-
         //TODO: needs tests
         public CacheType CacheKind
         {
@@ -3301,7 +3294,7 @@ namespace Volante.Impl
             obj.AssignOid(this, oid, false);
             if (desc.serializer != null)
             {
-                desc.serializer.unpack(this, obj, body, obj.RecursiveLoading(), encoding);
+                desc.serializer.unpack(this, obj, body, obj.RecursiveLoading());
             }
             else
             {
@@ -3648,7 +3641,7 @@ namespace Volante.Impl
                 case ClassDescriptor.FieldType.tpString:
                     {
                         string str;
-                        offs = Bytes.unpackString(body, offs, out str, encoding);
+                        offs = Bytes.unpackString(body, offs, out str);
                         val = str;
                         break;
                     }
@@ -3954,7 +3947,7 @@ namespace Volante.Impl
                         string[] arr = new string[len];
                         for (int j = 0; j < len; j++)
                         {
-                            offs = Bytes.unpackString(body, offs, out arr[j], encoding);
+                            offs = Bytes.unpackString(body, offs, out arr[j]);
                         }
                         val = arr;
                     }
@@ -4108,7 +4101,7 @@ namespace Volante.Impl
 
         internal byte[] packObject(IPersistent obj)
         {
-            ByteBuffer buf = new ByteBuffer(encoding);
+            ByteBuffer buf = new ByteBuffer();
             int offs = ObjectHeader.Sizeof;
             buf.extend(offs);
             ClassDescriptor desc = getClassDescriptor(obj.GetType());
@@ -4879,7 +4872,6 @@ namespace Volante.Impl
         internal object backgroundGcMonitor;
         internal object backgroundGcStartMonitor;
         internal Thread gcThread;
-        internal Encoding encoding;
 
         internal DatabaseListener listener;
 

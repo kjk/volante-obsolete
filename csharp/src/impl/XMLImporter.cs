@@ -304,7 +304,7 @@ namespace Volante.Impl
 
         Key createCompoundKey(ClassDescriptor.FieldType[] types, String[] values)
         {
-            ByteBuffer buf = new ByteBuffer(null);
+            ByteBuffer buf = new ByteBuffer();
             int dst = 0;
 
             for (int i = 0; i < types.Length; i++)
@@ -631,7 +631,7 @@ namespace Volante.Impl
                 throwException("Element is not closed");
             }
 #if WITH_OLD_BTREE
-            ByteBuffer buf = new ByteBuffer(db.encoding);
+            ByteBuffer buf = new ByteBuffer();
             buf.extend(ObjectHeader.Sizeof);
             int size = db.packObject(btree, desc, ObjectHeader.Sizeof, buf, null);
             byte[] data = buf.arr;
@@ -648,7 +648,7 @@ namespace Volante.Impl
         {
             ClassDescriptor desc = db.getClassDescriptor(findClassByName(elem.Name));
             int oid = mapId(getIntAttribute(elem, "id"));
-            ByteBuffer buf = new ByteBuffer(db.encoding);
+            ByteBuffer buf = new ByteBuffer();
             int offs = ObjectHeader.Sizeof;
             buf.extend(offs);
 

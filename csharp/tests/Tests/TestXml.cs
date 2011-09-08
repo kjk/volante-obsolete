@@ -44,6 +44,8 @@ namespace Volante
             IDatabase db = config.GetDatabase();
             string xmlName = config.DatabaseName + ".xml";
             string dbNameImported = config.DatabaseName + ".imported.dbs";
+            Tests.SafeDeleteFile(xmlName);
+            Tests.SafeDeleteFile(dbNameImported);
 
             Root root = (Root)db.Root;
             Tests.Assert(null == root);

@@ -28,3 +28,4 @@
 24. Removed non-templated CreateSet(), CreateLink(), CreateArray() from public API since they're trivially done with CreateSet<IPersistent>() etc.
 25. Renamed IDatabase.CreateScalableSet() to just CreateSet().
 26. Removed Patricia tree code - of very limited use.
+27. Removed IDatabase.StringEncoding, always use utf8 for storing strings

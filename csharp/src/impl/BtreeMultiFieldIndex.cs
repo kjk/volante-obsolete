@@ -222,6 +222,11 @@ namespace Volante.Impl
 
                     case ClassDescriptor.FieldType.tpString:
                         {
+                            string s1, s2;
+                            o1 = Bytes.unpackString(a1, o1, out s1);
+                            o2 = Bytes.unpackString(a2, o2, out s2);
+                            diff = String.CompareOrdinal(s1, s2);
+                            /* TODO: old version, remove
                             int len1 = Bytes.unpack4(a1, o1);
                             int len2 = Bytes.unpack4(a2, o2);
                             o1 += 4;
@@ -238,6 +243,7 @@ namespace Volante.Impl
                                 o2 += 2;
                             }
                             diff = len1 - len2;
+                             */
                             break;
                         }
                     case ClassDescriptor.FieldType.tpArrayOfByte:
@@ -404,7 +410,7 @@ namespace Volante.Impl
 
         private Key extractKey(IPersistent obj)
         {
-            ByteBuffer buf = new ByteBuffer(null);
+            ByteBuffer buf = new ByteBuffer();
             int dst = 0;
             for (int i = 0; i < types.Length; i++)
             {
@@ -425,7 +431,7 @@ namespace Volante.Impl
                 throw new DatabaseException(DatabaseException.ErrorCode.INCOMPATIBLE_KEY_TYPE);
             }
             Object[] values = (Object[])key.oval;
-            ByteBuffer buf = new ByteBuffer(null);
+            ByteBuffer buf = new ByteBuffer();
             int dst = 0;
 
             for (int i = 0; i < values.Length; i++)

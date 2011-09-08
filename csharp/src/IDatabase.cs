@@ -436,15 +436,6 @@ namespace Volante
         bool ReplicationAck { get; set; }
 #endif
 
-        /// Specifies encoding of storing strings in the database. By default Volante stores 
-        /// strings as sequence of chars (two bytes per char). If all strings in application are in 
-        /// the same language, then using encoding  can signifficantly reduce space needed
-        /// to store string (about two times). But please notice, that this option has influence
-        /// on all strings  stored in database. So if you already have some data in the db
-        /// and then change encoding, then it can cause incorrect fetching of strings and even database crash.
-        /// Default value: null
-        Encoding StringEncoding { get; set; }
-
         /// <summary>
         /// Set db listener.
         /// </summary>summary>
