@@ -1,7 +1,6 @@
 Things to do for c# version:
 
 * fix a TestInsertShort and TestInsertUShort bug where can't find short.MaxValue and 1999 in the index (grep for FAILED_TEST)
-* rename AltBtree to Btree, Btree to BtreeOld
 * figure out why guid tests fail in mono
 * make a release script that builds and uploads .zip with the Volante.dll
 * write download.html
