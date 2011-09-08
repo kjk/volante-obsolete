@@ -139,40 +139,40 @@
     <Compile Include="src\IGenericIndex.cs" />
     <Compile Include="src\IIndex.cs" />
     <Compile Include="src\ILink.cs" />
-    <Compile Include="src\impl\AltBtree.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="src\impl\AltBtreeFieldIndex.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="src\impl\AltBtreeMultiFieldIndex.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="src\impl\AltPersistentSet.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="src\impl\AsyncReplicationMasterFile.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="src\impl\BitIndexImpl.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="src\impl\BlobImpl.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="src\impl\Btree.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="src\impl\BtreeFieldIndex.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="src\impl\BtreeKey.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="src\impl\BtreeMultiFieldIndex.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="src\impl\BtreePage.cs">
+    <Compile Include="src\impl\PersistentSet.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="src\impl\AsyncReplicationMasterFile.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="src\impl\OldBitIndexImpl.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="src\impl\BlobImpl.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="src\impl\OldBtree.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="src\impl\OldBtreeFieldIndex.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="src\impl\OltBtreeKey.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="src\impl\OldBtreeMultiFieldIndex.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="src\impl\OldBtreePage.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="src\impl\ByteBuffer.cs">
@@ -218,7 +218,7 @@
     <Compile Include="src\impl\PArrayImpl.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="src\impl\PersistentSet.cs">
+    <Compile Include="src\impl\OldPersistentSet.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="src\impl\PersistentStub.cs">
