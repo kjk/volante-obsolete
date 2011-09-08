@@ -78,13 +78,9 @@ namespace Volante.Impl
                     {
                         int i = (l + r) >> 1;
                         if (compare(firstKey, i) >= firstKey.inclusion)
-                        {
                             l = i + 1;
-                        }
                         else
-                        {
                             r = i;
-                        }
                     }
                     Debug.Assert(r == l);
                 }
@@ -108,13 +104,10 @@ namespace Volante.Impl
                         do
                         {
                             if (!((BtreePage)items[l]).find(firstKey, lastKey, height, result))
-                            {
                                 return false;
-                            }
+
                             if (l == n)
-                            {
                                 return true;
-                            }
                         }
                         while (compare(lastKey, l++) >= 0);
                         return false;
@@ -174,13 +167,9 @@ namespace Volante.Impl
                 {
                     int i = (l + r) >> 1;
                     if (compare(ins.key, i) > 0)
-                    {
                         l = i + 1;
-                    }
                     else
-                    {
                         r = i;
-                    }
                 }
                 Debug.Assert(l == r);
                 /* insert before e[r] */
@@ -189,9 +178,8 @@ namespace Volante.Impl
                     result = ((BtreePage)items[r]).insert(ins, height, unique, overwrite);
                     Debug.Assert(result != OperationResult.NotFound);
                     if (result != OperationResult.Overflow)
-                    {
                         return result;
-                    }
+
                     n += 1;
                 }
                 else if (r < n && compare(ins.key, r) == 0)
@@ -283,9 +271,8 @@ namespace Volante.Impl
                         memcpy(b, 0, b, i, bn - i);
                         memcpyData(this, r, a, an + i - 1, 1);
                         if (height != 1)
-                        {
                             a.clearKeyValue(an + i - 1);
-                        }
+
                         b.memset(bn - i, i);
                         b.nItems -= i;
                         a.nItems += i;
@@ -323,14 +310,12 @@ namespace Volante.Impl
                         memcpy(a, i, a, 0, an);
                         memcpy(a, 0, b, bn - i, i);
                         if (height != 1)
-                        {
                             memcpyData(a, i - 1, this, r - 1, 1);
-                        }
+
                         memcpyData(this, r - 1, b, bn - i - 1, 1);
                         if (height != 1)
-                        {
                             b.clearKeyValue(bn - i - 1);
-                        }
+
                         b.memset(bn - i, i);
                         b.nItems -= i;
                         a.nItems += i;
@@ -342,9 +327,8 @@ namespace Volante.Impl
                         memcpy(a, bn, a, 0, an);
                         memcpy(a, 0, b, 0, bn);
                         if (height != 1)
-                        {
                             memcpyData(a, bn - 1, this, r - 1, 1);
-                        }
+
                         b.Deallocate();
                         items[r - 1] = a;
                         items[nItems] = null;
@@ -363,13 +347,9 @@ namespace Volante.Impl
                 {
                     i = (l + r) >> 1;
                     if (compare(rem.key, i) > 0)
-                    {
                         l = i + 1;
-                    }
                     else
-                    {
                         r = i;
-                    }
                 }
                 if (--height == 0)
                 {
@@ -1275,13 +1255,9 @@ namespace Volante.Impl
                     string s = data[i];
                     // TODO: is s.StartsWith(prefix) needed at all?
                     if (!s.StartsWith(prefix) && prefix.CompareTo(s) > 0)
-                    {
                         l = i + 1;
-                    }
                     else
-                    {
                         r = i;
-                    }
                 }
                 Debug.Assert(r == l);
                 if (height == 0)
@@ -1300,9 +1276,8 @@ namespace Volante.Impl
                     do
                     {
                         if (!((BtreePageOfString)items[l]).prefixSearch(prefix, height, result))
-                        {
                             return false;
-                        }
+
                         if (l == n)
                             return true;
                     }
@@ -1447,19 +1422,18 @@ namespace Volante.Impl
                 return null;
 
             if (key.type != type)
-            {
                 throw new DatabaseException(DatabaseException.ErrorCode.INCOMPATIBLE_KEY_TYPE);
-            }
+
             if ((type == ClassDescriptor.FieldType.tpObject
                     || type == ClassDescriptor.FieldType.tpOid)
                 && key.ival == 0 && key.oval != null)
             {
                 throw new DatabaseException(DatabaseException.ErrorCode.INVALID_OID);
             }
+
             if (key.oval is char[])
-            {
                 key = new Key(new string((char[])key.oval), key.inclusion != 0);
-            }
+
             return key;
         }
 
@@ -1489,32 +1463,28 @@ namespace Volante.Impl
         public virtual V[] PrefixSearch(string key)
         {
             if (ClassDescriptor.FieldType.tpString != type)
-            {
                 throw new DatabaseException(DatabaseException.ErrorCode.INCOMPATIBLE_KEY_TYPE);
-            }
-            if (root != null)
-            {
-                ArrayList list = new ArrayList();
-                ((BtreePageOfString)root).prefixSearch(key, height, list);
-                if (list.Count != 0)
-                {
-                    return (V[])list.ToArray(typeof(V));
-                }
-            }
+
+            if (null == root)
+                return emptySelection;
+
+            ArrayList list = new ArrayList();
+            ((BtreePageOfString)root).prefixSearch(key, height, list);
+            if (list.Count != 0)
+                return (V[])list.ToArray(typeof(V));
+
             return emptySelection;
         }
 
         public virtual V[] Get(Key from, Key till)
         {
-            if (root != null)
-            {
-                ArrayList list = new ArrayList();
-                root.find(checkKey(from), checkKey(till), height, list);
-                if (list.Count != 0)
-                {
-                    return (V[])list.ToArray(typeof(V));
-                }
-            }
+            if (null == root)
+                return emptySelection;
+
+            ArrayList list = new ArrayList();
+            root.find(checkKey(from), checkKey(till), height, list);
+            if (list.Count != 0)
+                return (V[])list.ToArray(typeof(V));
             return emptySelection;
         }
 
@@ -1668,14 +1638,12 @@ namespace Volante.Impl
         internal virtual void Remove(BtreeKey rem)
         {
             if (root == null)
-            {
                 throw new DatabaseException(DatabaseException.ErrorCode.KEY_NOT_FOUND);
-            }
+
             OperationResult result = root.remove(rem, height);
             if (result == OperationResult.NotFound)
-            {
                 throw new DatabaseException(DatabaseException.ErrorCode.KEY_NOT_FOUND);
-            }
+
             nElems -= 1;
             if (result == OperationResult.Underflow)
             {
@@ -1683,9 +1651,8 @@ namespace Volante.Impl
                 {
                     BtreePage newRoot = null;
                     if (height != 1)
-                    {
                         newRoot = (BtreePage)root.items[0];
-                    }
+
                     root.Deallocate();
                     root = newRoot;
                     height -= 1;
@@ -1698,9 +1665,8 @@ namespace Volante.Impl
         public virtual V Remove(Key key)
         {
             if (!unique)
-            {
                 throw new DatabaseException(DatabaseException.ErrorCode.KEY_NOT_UNIQUE);
-            }
+
             BtreeKey rk = new BtreeKey(checkKey(key), null);
             Remove(rk);
             return (V)rk.oldNode;
@@ -1733,9 +1699,8 @@ namespace Volante.Impl
         {
             V[] arr = new V[nElems];
             if (root != null)
-            {
                 root.traverseForward(height, arr, 0);
-            }
+
             return (V[])arr;
         }
 
@@ -1743,18 +1708,16 @@ namespace Volante.Impl
         {
             Array arr = Array.CreateInstance(elemType, nElems);
             if (root != null)
-            {
                 root.traverseForward(height, (IPersistent[])arr, 0);
-            }
+
             return arr;
         }
 
         public override void Deallocate()
         {
             if (root != null)
-            {
                 root.purge(height);
-            }
+
             base.Deallocate();
         }
 
@@ -1774,20 +1737,22 @@ namespace Volante.Impl
                 pageStack = new BtreePage[h];
                 posStack = new int[h];
                 sp = 0;
-                if (h > 0)
+                if (h == 0)
+                    return;
+
+                Debug.Assert(h > 0);
+
+                while (--h > 0)
                 {
-                    while (--h > 0)
-                    {
-                        posStack[sp] = 0;
-                        pageStack[sp] = page;
-                        page = (BtreePage)page.items[0];
-                        sp += 1;
-                    }
                     posStack[sp] = 0;
                     pageStack[sp] = page;
-                    end = page.nItems;
+                    page = (BtreePage)page.items[0];
                     sp += 1;
                 }
+                posStack[sp] = 0;
+                pageStack[sp] = page;
+                end = page.nItems;
+                sp += 1;
             }
 
             protected virtual void getCurrent(BtreePage pg, int pos)
@@ -1800,9 +1765,8 @@ namespace Volante.Impl
             public bool MoveNext()
             {
                 if (counter != tree.updateCounter)
-                {
                     throw new InvalidOperationException("B-Tree was modified");
-                }
+
                 if (sp > 0 && posStack[sp - 1] < end)
                 {
                     int pos = posStack[sp - 1];
@@ -1845,9 +1809,8 @@ namespace Volante.Impl
                 get
                 {
                     if (!hasCurrent)
-                    {
                         throw new InvalidOperationException();
-                    }
+
                     return (V)curr;
                 }
             }
@@ -1894,9 +1857,8 @@ namespace Volante.Impl
                 get
                 {
                     if (!hasCurrent)
-                    {
                         throw new InvalidOperationException();
-                    }
+
                     return new DictionaryEntry(key, curr);
                 }
             }
@@ -1906,9 +1868,8 @@ namespace Volante.Impl
                 get
                 {
                     if (!hasCurrent)
-                    {
                         throw new InvalidOperationException();
-                    }
+
                     return key;
                 }
             }
@@ -1918,9 +1879,8 @@ namespace Volante.Impl
                 get
                 {
                     if (!hasCurrent)
-                    {
                         throw new InvalidOperationException();
-                    }
+
                     return curr;
                 }
             }
@@ -1971,9 +1931,8 @@ namespace Volante.Impl
                 sp = 0;
                 counter = tree.updateCounter;
                 if (tree.height == 0)
-                {
                     return;
-                }
+
                 BtreePage page = tree.root;
                 int h = tree.height;
 
@@ -2007,13 +1966,9 @@ namespace Volante.Impl
                             {
                                 i = (l + r) >> 1;
                                 if (page.compare(from, i) >= from.inclusion)
-                                {
                                     l = i + 1;
-                                }
                                 else
-                                {
                                     r = i;
-                                }
                             }
                             Debug.Assert(r == l);
                             posStack[sp] = r;
@@ -2027,13 +1982,9 @@ namespace Volante.Impl
                         {
                             i = (l + r) >> 1;
                             if (page.compare(from, i) >= from.inclusion)
-                            {
                                 l = i + 1;
-                            }
                             else
-                            {
                                 r = i;
-                            }
                         }
                         Debug.Assert(r == l);
                         if (r == end)
@@ -2081,13 +2032,9 @@ namespace Volante.Impl
                             {
                                 i = (l + r) >> 1;
                                 if (page.compare(till, i) >= 1 - till.inclusion)
-                                {
                                     l = i + 1;
-                                }
                                 else
-                                {
                                     r = i;
-                                }
                             }
                             Debug.Assert(r == l);
                             posStack[sp] = r;
@@ -2101,13 +2048,9 @@ namespace Volante.Impl
                         {
                             i = (l + r) >> 1;
                             if (page.compare(till, i) >= 1 - till.inclusion)
-                            {
                                 l = i + 1;
-                            }
                             else
-                            {
                                 r = i;
-                            }
                         }
                         Debug.Assert(r == l);
                         if (r == 0)
@@ -2136,20 +2079,20 @@ namespace Volante.Impl
             public bool MoveNext()
             {
                 if (counter != tree.updateCounter)
-                {
                     throw new InvalidOperationException("B-Tree was modified");
-                }
-                if (sp != 0)
+
+                if (0 == sp)
                 {
-                    int pos = posStack[sp - 1];
-                    BtreePage pg = pageStack[sp - 1];
-                    hasCurrent = true;
-                    getCurrent(pg, pos);
-                    gotoNextItem(pg, pos);
-                    return true;
+                    hasCurrent = false;
+                    return false;
                 }
-                hasCurrent = false;
-                return false;
+
+                int pos = posStack[sp - 1];
+                BtreePage pg = pageStack[sp - 1];
+                hasCurrent = true;
+                getCurrent(pg, pos);
+                gotoNextItem(pg, pos);
+                return true;
             }
 
             protected virtual void getCurrent(BtreePage pg, int pos)
@@ -2162,9 +2105,8 @@ namespace Volante.Impl
                 get
                 {
                     if (!hasCurrent)
-                    {
                         throw new InvalidOperationException();
-                    }
+
                     return (V)curr;
                 }
             }
@@ -2284,9 +2226,8 @@ namespace Volante.Impl
                 get
                 {
                     if (!hasCurrent)
-                    {
                         throw new InvalidOperationException();
-                    }
+
                     return new DictionaryEntry(key, curr);
                 }
             }
@@ -2296,9 +2237,8 @@ namespace Volante.Impl
                 get
                 {
                     if (!hasCurrent)
-                    {
                         throw new InvalidOperationException();
-                    }
+
                     return key;
                 }
             }
@@ -2308,9 +2248,8 @@ namespace Volante.Impl
                 get
                 {
                     if (!hasCurrent)
-                    {
                         throw new InvalidOperationException();
-                    }
+
                     return curr;
                 }
             }

@@ -15,6 +15,9 @@ namespace Volante.Impl
 
         public override bool Contains(T o)
         {
+            if (!o.IsPersistent())
+                return false;
+
             Key key = new Key(o);
             IEnumerator<T> e = GetEnumerator(key, key, IterationOrder.AscentOrder);
             return e.MoveNext();
@@ -23,9 +26,7 @@ namespace Volante.Impl
         public override void Add(T o)
         {
             if (!o.IsPersistent())
-            {
                 ((DatabaseImpl)Database).MakePersistent(o);
-            }
             base.Put(new Key(o), o);
         }
 
@@ -48,9 +49,8 @@ namespace Volante.Impl
             catch (DatabaseException x)
             {
                 if (x.Code == DatabaseException.ErrorCode.KEY_NOT_FOUND)
-                {
                     return false;
-                }
+
                 throw;
             }
             return true;
@@ -61,9 +61,7 @@ namespace Volante.Impl
             foreach (T o in c)
             {
                 if (!Contains(o))
-                {
                     return false;
-                }
             }
             return true;
         }
@@ -81,18 +79,15 @@ namespace Volante.Impl
         public override bool Equals(object o)
         {
             if (o == this)
-            {
                 return true;
-            }
+
             ISet<T> s = o as ISet<T>;
             if (s == null)
-            {
                 return false;
-            }
+
             if (Count != s.Count)
-            {
                 return false;
-            }
+
             return ContainsAll(s);
         }
 

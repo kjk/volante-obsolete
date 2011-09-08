@@ -98,9 +98,7 @@ namespace Volante.Impl
         public override bool Remove(T o)
         {
             if (link == null)
-            {
                 return pset.Remove(o);
-            }
 
             int i = link.IndexOf(o);
             if (i < 0)

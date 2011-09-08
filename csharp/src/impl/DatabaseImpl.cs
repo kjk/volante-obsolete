@@ -183,29 +183,23 @@ namespace Volante.Impl
                 {
                     int oid = obj.Oid;
                     if (oid == 0)
-                    {
                         return;
-                    }
+
                     long pos = getPos(oid);
                     objectCache.Remove(oid);
                     int offs = (int)pos & (Page.pageSize - 1);
                     if ((offs & (dbFreeHandleFlag | dbPageObjectFlag)) != 0)
-                    {
                         throw new DatabaseException(DatabaseException.ErrorCode.DELETED_OBJECT);
-                    }
+
                     Page pg = pool.getPage(pos - offs);
                     offs &= ~dbFlagsMask;
                     int size = ObjectHeader.getSize(pg.data, offs);
                     pool.unfix(pg);
                     freeId(oid);
                     if ((pos & dbModifiedFlag) != 0)
-                    {
                         free(pos & ~dbFlagsMask, size);
-                    }
                     else
-                    {
                         cloneBitmap(pos, size);
-                    }
                     obj.AssignOid(this, 0, false);
                 }
             }
@@ -216,13 +210,9 @@ namespace Volante.Impl
             long pos = getPos(oid);
             Debug.Assert((pos & (dbFreeHandleFlag | dbPageObjectFlag)) == dbPageObjectFlag);
             if ((pos & dbModifiedFlag) != 0)
-            {
                 free(pos & ~dbFlagsMask, Page.pageSize);
-            }
             else
-            {
                 cloneBitmap(pos & ~dbFlagsMask, Page.pageSize);
-            }
             freeId(oid);
         }
 
@@ -340,9 +330,7 @@ namespace Volante.Impl
         internal void extend(long size)
         {
             if (size > header.root[1 - currIndex].size)
-            {
                 header.root[1 - currIndex].size = size;
-            }
         }
 
         internal class Location
@@ -1092,15 +1080,13 @@ namespace Volante.Impl
                     int curr = header.curr;
                     currIndex = curr;
                     if (header.root[curr].indexSize != header.root[curr].shadowIndexSize)
-                    {
                         throw new DatabaseException(DatabaseException.ErrorCode.DATABASE_CORRUPTED);
-                    }
+
                     if (isDirty())
                     {
                         if (Listener != null)
-                        {
                             Listener.DatabaseCorrupted();
-                        }
+
                         System.Console.WriteLine("Database was not normally closed: start recovery");
                         header.root[1 - curr].size = header.root[curr].size;
                         header.root[1 - curr].indexUsed = header.root[curr].indexUsed;
@@ -1157,13 +1143,9 @@ namespace Volante.Impl
             {
                 next.Load();
                 if (cls.IsAssignableFrom(next.cls))
-                {
                     desc.hasSubclasses = true;
-                }
                 else if (next.cls.IsAssignableFrom(cls))
-                {
                     next.hasSubclasses = true;
-                }
             }
         }
 
@@ -1184,9 +1166,8 @@ namespace Volante.Impl
                 for (desc = descList; desc != null; desc = desc.next)
                 {
                     if (classDescMap[desc.cls] == desc)
-                    {
                         desc.resolve();
-                    }
+
                     checkIfFinal(desc);
                 }
             }
@@ -1252,9 +1233,8 @@ namespace Volante.Impl
                     objectCache.Flush();
 
                     if (!modified)
-                    {
                         return;
-                    }
+
                     commit0();
                     modified = false;
                 }
@@ -1457,9 +1437,8 @@ namespace Volante.Impl
                 objectCache.Invalidate();
 
                 if (!modified)
-                {
                     return;
-                }
+
                 rollback0();
                 modified = false;
             }
@@ -1599,9 +1578,8 @@ namespace Volante.Impl
                 int[] oids = new int[nObjects];
 
                 if (bitmapExtent == 0)
-                {
                     bitmapExtent = int.MaxValue;
-                }
+
                 for (i = 0, j = 0; i < nUsedIndexPages; i++)
                 {
                     Page pg = pool.getPage(indexOffs + (long)i * Page.pageSize);
@@ -2014,14 +1992,11 @@ namespace Volante.Impl
                 return;
             long pos = getGCPos(oid);
             if ((pos & (dbFreeHandleFlag | dbPageObjectFlag)) != 0)
-            {
                 throw new DatabaseException(DatabaseException.ErrorCode.INVALID_OID);
-            }
+
             int bit = (int)((ulong)pos >> dbAllocationQuantumBits);
             if ((blackBitmap[(uint)bit >> 5] & (1 << (bit & 31))) == 0)
-            {
                 greyBitmap[(uint)bit >> 5] |= 1 << (bit & 31);
-            }
         }
 
         internal Page getGCPage(int oid)
@@ -2092,10 +2067,7 @@ namespace Volante.Impl
                                         else
 #endif
                                         if (desc.hasReferences)
-                                        {
                                             markObject(pool.get(pos), ObjectHeader.Sizeof, desc);
-
-                                        }
                                     }
                                     pool.unfix(pg);
                                 }
@@ -2121,9 +2093,8 @@ namespace Volante.Impl
                     {
                         // object is not accessible
                         if (getPos(i) != pos)
-                        {
                             throw new DatabaseException(DatabaseException.ErrorCode.INVALID_OID);
-                        }
+
                         int offs = (int)pos & (Page.pageSize - 1);
                         Page pg = pool.getPage(pos - offs);
                         int typeOid = ObjectHeader.getType(pg.data, offs);
@@ -2179,17 +2150,15 @@ namespace Volante.Impl
                         Monitor.Wait(backgroundGcStartMonitor);
                     }
                     if (!opened)
-                    {
                         return;
-                    }
+
                     gcGo = false;
                 }
                 lock (backgroundGcMonitor)
                 {
                     if (!opened)
-                    {
                         return;
-                    }
+
                     mark();
                     lock (this)
                     {
@@ -2219,9 +2188,8 @@ namespace Volante.Impl
                 ensureOpened();
 
                 if (gcDone || gcActive)
-                {
                     return 0;
-                }
+
                 gcActive = true;
 #if !CF
                 if (backgroundGc)
@@ -2335,13 +2303,11 @@ namespace Volante.Impl
                     } while (existsNotMarkedObjects);
 
                     if (indexUsage.Count != 0)
-                    {
                         map[typeof(IGenericIndex)] = indexUsage;
-                    }
+
                     if (classUsage.Count != 0)
-                    {
                         map[typeof(Type)] = classUsage;
-                    }
+
                     TypeMemoryUsage system = new TypeMemoryUsage(typeof(IDatabase));
                     system.TotalSize += header.root[0].indexSize * 8L;
                     system.TotalSize += header.root[1].indexSize * 8L;
@@ -2377,9 +2343,8 @@ namespace Volante.Impl
                     while (mask != 0)
                     {
                         if ((mask & 1) != 0)
-                        {
                             allocated += dbAllocationQuantum;
-                        }
+
                         mask >>= 1;
                     }
                 }
@@ -2429,13 +2394,9 @@ namespace Volante.Impl
                             int strlen = Bytes.unpack4(obj, offs);
                             offs += 4;
                             if (strlen > 0)
-                            {
                                 offs += strlen * 2;
-                            }
                             else if (strlen < -1)
-                            {
                                 offs -= strlen + 2;
-                            }
                             continue;
                         }
                     case ClassDescriptor.FieldType.tpObject:
@@ -2801,14 +2762,11 @@ namespace Volante.Impl
                     }
                     nNestedTransactions += 1;
                 }
+
                 if (mode == TransactionMode.Exclusive)
-                {
                     transactionLock.ExclusiveLock();
-                }
                 else
-                {
                     transactionLock.SharedLock();
-                }
             }
         }
 
@@ -2856,9 +2814,7 @@ namespace Volante.Impl
                             Commit();
                             scheduledCommitTime = Int64.MaxValue;
                             if (nBlockedTransactions != 0)
-                            {
                                 Monitor.PulseAll(transactionMonitor);
-                            }
                         }
                         else
                         {
@@ -2919,9 +2875,8 @@ namespace Volante.Impl
                     transactionLock.Reset();
                     nNestedTransactions = 0;
                     if (nBlockedTransactions != 0)
-                    {
                         Monitor.PulseAll(transactionMonitor);
-                    }
+
                     Rollback();
                 }
             }
@@ -2942,6 +2897,7 @@ namespace Volante.Impl
                 codeGenerationThread.Join();
                 codeGenerationThread = null;
             }
+
             if (gcThread != null)
             {
                 activateGc();
@@ -3050,18 +3006,18 @@ namespace Volante.Impl
             {
                 lock (objectCache)
                 {
-                    if (!obj.IsModified())
+                    if (obj.IsModified())
+                        return;
+
+                    if (useSerializableTransactions)
                     {
-                        if (useSerializableTransactions)
-                        {
-                            ThreadTransactionContext ctx = TransactionContext;
-                            if (ctx.nested != 0)
-                            { // serializable transaction
-                                ctx.modified.Add(obj);
-                            }
+                        ThreadTransactionContext ctx = TransactionContext;
+                        if (ctx.nested != 0)
+                        { // serializable transaction
+                            ctx.modified.Add(obj);
                         }
-                        objectCache.SetDirty(obj.Oid);
                     }
+                    objectCache.SetDirty(obj.Oid);
                 }
             }
         }
@@ -3098,9 +3054,7 @@ namespace Volante.Impl
                 lock (objectCache)
                 {
                     if (obj.Oid != 0)
-                    {
                         storeObject0(obj);
-                    }
                 }
             }
         }
@@ -3114,9 +3068,8 @@ namespace Volante.Impl
             {
                 oid = allocateId();
                 if (!obj.IsDeleted())
-                {
                     objectCache.Put(oid, obj);
-                }
+
                 obj.AssignOid(this, oid, false);
                 newObject = true;
             }
@@ -3136,9 +3089,8 @@ namespace Volante.Impl
             {
                 int offs = (int)pos & (Page.pageSize - 1);
                 if ((offs & (dbFreeHandleFlag | dbPageObjectFlag)) != 0)
-                {
                     throw new DatabaseException(DatabaseException.ErrorCode.DELETED_OBJECT);
-                }
+
                 Page pg = pool.getPage(pos - offs);
                 offs &= ~dbFlagsMask;
                 int size = ObjectHeader.getSize(pg.data, offs);
@@ -3174,9 +3126,7 @@ namespace Volante.Impl
             lock (this)
             {
                 if (obj.IsRaw())
-                {
                     loadStub(obj.Oid, obj, obj.GetType());
-                }
             }
         }
 
@@ -3184,24 +3134,20 @@ namespace Volante.Impl
         {
             IPersistent obj = objectCache.Get(oid);
             if (obj == null || obj.IsRaw())
-            {
                 obj = loadStub(oid, obj, cls);
-            }
+
             return obj;
         }
 
         protected virtual int swizzle(IPersistent obj)
         {
-            int oid = 0;
-            if (obj != null)
-            {
-                if (!obj.IsPersistent())
-                {
-                    storeObject0(obj);
-                }
-                oid = obj.Oid;
-            }
-            return oid;
+            if (null == obj)
+                return 0;
+
+            if (!obj.IsPersistent())
+                storeObject0(obj);
+
+            return obj.Oid;
         }
 
         internal ClassDescriptor findClassDescriptor(int oid)
@@ -3212,40 +3158,33 @@ namespace Volante.Impl
         protected virtual IPersistent unswizzle(int oid, System.Type cls, bool recursiveLoading)
         {
             if (oid == 0)
-            {
                 return null;
-            }
+
             if (recursiveLoading)
-            {
                 return lookupObject(oid, cls);
-            }
+
             IPersistent stub = objectCache.Get(oid);
             if (stub != null)
-            {
                 return stub;
-            }
+
             ClassDescriptor desc;
             if (cls == typeof(Persistent) || (desc = (ClassDescriptor)classDescMap[cls]) == null || desc.hasSubclasses)
             {
                 long pos = getPos(oid);
                 int offs = (int)pos & (Page.pageSize - 1);
                 if ((offs & (dbFreeHandleFlag | dbPageObjectFlag)) != 0)
-                {
                     throw new DatabaseException(DatabaseException.ErrorCode.DELETED_OBJECT);
-                }
+
                 Page pg = pool.getPage(pos - offs);
                 int typeOid = ObjectHeader.getType(pg.data, offs & ~dbFlagsMask);
                 pool.unfix(pg);
                 desc = findClassDescriptor(typeOid);
             }
             if (desc.serializer != null)
-            {
                 stub = desc.serializer.newInstance();
-            }
             else
-            {
                 stub = (IPersistent)desc.newInstance();
-            }
+
             stub.AssignOid(this, oid, true);
             objectCache.Put(oid, stub);
             return stub;
@@ -3255,41 +3194,31 @@ namespace Volante.Impl
         {
             long pos = getPos(oid);
             if ((pos & (dbFreeHandleFlag | dbPageObjectFlag)) != 0)
-            {
                 throw new DatabaseException(DatabaseException.ErrorCode.DELETED_OBJECT);
-            }
+
             byte[] body = pool.get(pos & ~dbFlagsMask);
             ClassDescriptor desc;
             int typeOid = ObjectHeader.getType(body, 0);
             if (typeOid == 0)
-            {
                 desc = classDescMap[cls];
-            }
             else
-            {
                 desc = findClassDescriptor(typeOid);
-            }
+
             if (obj == null)
             {
                 if (desc.serializer != null)
-                {
                     obj = desc.serializer.newInstance();
-                }
                 else
-                {
                     obj = (IPersistent)desc.newInstance();
-                }
+
                 objectCache.Put(oid, obj);
             }
             obj.AssignOid(this, oid, false);
             if (desc.serializer != null)
-            {
                 desc.serializer.unpack(this, obj, body, obj.RecursiveLoading());
-            }
             else
-            {
                 unpackObject(obj, desc, obj.RecursiveLoading(), body, ObjectHeader.Sizeof, obj);
-            }
+
             obj.OnLoad();
             return obj;
         }

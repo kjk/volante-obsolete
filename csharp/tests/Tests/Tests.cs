@@ -21,6 +21,21 @@ public struct SimpleStruct
     public long v2;
 }
 
+public enum RecordFullEnum
+{
+    Zero = 0,
+    One = 1,
+    Two = 2,
+    Three = 3,
+    Four = 4,
+    Five = 5,
+    Six = 6,
+    Seven = 7,
+    Eight = 8,
+    Nine = 9,
+    Ten = 10
+}
+
 public class RecordFull : Persistent
 {
     public string StrVal;
@@ -35,12 +50,13 @@ public class RecordFull : Persistent
     public UInt64 UInt64Val;
     public DateTime DateTimeVal;
     public SimpleStruct StructVal;
+    public RecordFullEnum EnumVal;
 
     public RecordFull()
     {
     }
 
-    public RecordFull(Int64 v)
+    public void SetValue(Int64 v)
     {
         StrVal = v.ToString();
         BoolVal = (v % 2 == 0) ? false : true;
@@ -55,6 +71,13 @@ public class RecordFull : Persistent
         DateTimeVal = DateTime.Now;
         StructVal.v1 = (int)(v + 1);
         StructVal.v2 = (long)(v + 1);
+        int enumVal = (int)(v % 11);
+        EnumVal = (RecordFullEnum)enumVal;
+    }
+
+    public RecordFull(Int64 v)
+    {
+        SetValue(v);
     }
 }
 
@@ -407,6 +430,7 @@ public class TestsMain
 
     static TestInfo[] TestInfos = new TestInfo[]
     {
+        new TestInfo("TestSet"),
 #if WITH_XML
         new TestInfo("TestXml", ConfigsDefaultFile, new int[2] { 2000, 20000 }),
 #endif

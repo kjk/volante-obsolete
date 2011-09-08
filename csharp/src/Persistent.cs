@@ -36,9 +36,7 @@ namespace Volante
         public virtual void Load()
         {
             if (oid != 0 && (state & ObjectState.RAW) != 0)
-            {
                 db.loadObject(this);
-            }
         }
 
         public bool IsRaw()
@@ -71,9 +69,8 @@ namespace Volante
         public virtual void Store()
         {
             if ((state & ObjectState.RAW) != 0)
-            {
                 throw new DatabaseException(DatabaseException.ErrorCode.ACCESS_TO_STUB);
-            }
+
             if (db != null)
             {
                 db.storeObject(this);
@@ -83,27 +80,27 @@ namespace Volante
 
         public void Modify()
         {
-            if ((state & ObjectState.DIRTY) == 0 && oid != 0)
+            if (((state & ObjectState.DIRTY) != 0) || (oid == 0))
+                return;
+
+            if ((state & ObjectState.RAW) != 0)
             {
-                if ((state & ObjectState.RAW) != 0)
-                {
-                    throw new DatabaseException(DatabaseException.ErrorCode.ACCESS_TO_STUB);
-                }
-                Debug.Assert((state & ObjectState.DELETED) == 0);
-                db.modifyObject(this);
-                state |= ObjectState.DIRTY;
+                throw new DatabaseException(DatabaseException.ErrorCode.ACCESS_TO_STUB);
             }
+            Debug.Assert((state & ObjectState.DELETED) == 0);
+            db.modifyObject(this);
+            state |= ObjectState.DIRTY;
         }
 
         public virtual void Deallocate()
         {
-            if (oid != 0)
-            {
-                db.deallocateObject(this);
-                db = null;
-                state = 0;
-                oid = 0;
-            }
+            if (0 == oid)
+                return;
+
+            db.deallocateObject(this);
+            db = null;
+            state = 0;
+            oid = 0;
         }
 
         public virtual bool RecursiveLoading()
@@ -145,9 +142,8 @@ namespace Volante
         ~Persistent()
         {
             if ((state & ObjectState.DIRTY) != 0 && oid != 0)
-            {
                 db.storeFinalizedObject(this);
-            }
+
             state = ObjectState.DELETED;
         }
 
@@ -156,13 +152,9 @@ namespace Volante
             this.oid = oid;
             this.db = db;
             if (raw)
-            {
                 state |= ObjectState.RAW;
-            }
             else
-            {
                 state &= ~ObjectState.RAW;
-            }
         }
 
         [NonSerialized()]

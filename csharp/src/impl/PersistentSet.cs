@@ -15,6 +15,9 @@ namespace Volante.Impl
 
         public override bool Contains(T o)
         {
+            if (!o.IsPersistent())
+                return false;
+
             Key key = new Key(o);
             IEnumerator<T> e = GetEnumerator(key, key, IterationOrder.AscentOrder);
             return e.MoveNext();
@@ -22,6 +25,8 @@ namespace Volante.Impl
 
         public override void Add(T o)
         {
+            if (!o.IsPersistent())
+                ((DatabaseImpl)Database).MakePersistent(o);
             base.Put(new Key(o), o);
         }
 

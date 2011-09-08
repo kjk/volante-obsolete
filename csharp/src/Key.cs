@@ -196,12 +196,11 @@ namespace Volante
             this.inclusion = 1;
         }
 
-        /// <summary> Constructor of boolean key
+        /// <summary>Constructor of boolean key
         /// </summary>
         /// <param name="v">key value
         /// </param>
         /// <param name="inclusive">whether boundary is inclusive or exclusive
-        /// 
         /// </param>
         public Key(bool v, bool inclusive)
             : this(ClassDescriptor.FieldType.tpBoolean, inclusive)
@@ -209,12 +208,11 @@ namespace Volante
             ival = v ? 1 : 0;
         }
 
-        /// <summary> Constructor of signed byte key
+        /// <summary>Constructor of signed byte key
         /// </summary>
         /// <param name="v">key value
         /// </param>
         /// <param name="inclusive">whether boundary is inclusive or exclusive
-        /// 
         /// </param>
         public Key(sbyte v, bool inclusive)
             : this(ClassDescriptor.FieldType.tpSByte, inclusive)
@@ -222,12 +220,11 @@ namespace Volante
             ival = v;
         }
 
-        /// <summary> Constructor of byte key
+        /// <summary>Constructor of byte key
         /// </summary>
         /// <param name="v">key value
         /// </param>
         /// <param name="inclusive">whether boundary is inclusive or exclusive
-        /// 
         /// </param>
         public Key(byte v, bool inclusive)
             : this(ClassDescriptor.FieldType.tpByte, inclusive)
@@ -235,12 +232,11 @@ namespace Volante
             ival = v;
         }
 
-        /// <summary> Constructor of char key
+        /// <summary>Constructor of char key
         /// </summary>
         /// <param name="v">key value
         /// </param>
         /// <param name="inclusive">whether boundary is inclusive or exclusive
-        /// 
         /// </param>
         public Key(char v, bool inclusive)
             : this(ClassDescriptor.FieldType.tpChar, inclusive)
@@ -248,12 +244,11 @@ namespace Volante
             ival = v;
         }
 
-        /// <summary> Constructor of short key
+        /// <summary>Constructor of short key
         /// </summary>
         /// <param name="v">key value
         /// </param>
         /// <param name="inclusive">whether boundary is inclusive or exclusive
-        /// 
         /// </param>
         public Key(short v, bool inclusive)
             : this(ClassDescriptor.FieldType.tpShort, inclusive)
@@ -261,12 +256,11 @@ namespace Volante
             ival = v;
         }
 
-        /// <summary> Constructor of unsigned short key
+        /// <summary>Constructor of unsigned short key
         /// </summary>
         /// <param name="v">key value
         /// </param>
         /// <param name="inclusive">whether boundary is inclusive or exclusive
-        /// 
         /// </param>
         public Key(ushort v, bool inclusive)
             : this(ClassDescriptor.FieldType.tpUShort, inclusive)
@@ -274,12 +268,11 @@ namespace Volante
             ival = v;
         }
 
-        /// <summary> Constructor of int key
+        /// <summary>Constructor of int key
         /// </summary>
         /// <param name="v">key value
         /// </param>
         /// <param name="inclusive">whether boundary is inclusive or exclusive
-        /// 
         /// </param>
         public Key(Enum v, bool inclusive)
             : this(ClassDescriptor.FieldType.tpEnum, inclusive)
@@ -287,12 +280,11 @@ namespace Volante
             ival = (int)(object)v;
         }
 
-        /// <summary> Constructor of int key
+        /// <summary>Constructor of int key
         /// </summary>
         /// <param name="v">key value
         /// </param>
         /// <param name="inclusive">whether boundary is inclusive or exclusive
-        /// 
         /// </param>
         public Key(int v, bool inclusive)
             : this(ClassDescriptor.FieldType.tpInt, inclusive)
@@ -300,12 +292,11 @@ namespace Volante
             ival = v;
         }
 
-        /// <summary> Constructor of unsigned int key
+        /// <summary>Constructor of unsigned int key
         /// </summary>
         /// <param name="v">key value
         /// </param>
         /// <param name="inclusive">whether boundary is inclusive or exclusive
-        /// 
         /// </param>
         public Key(uint v, bool inclusive)
             : this(ClassDescriptor.FieldType.tpUInt, inclusive)
@@ -313,12 +304,11 @@ namespace Volante
             ival = (int)v;
         }
 
-        /// <summary> Constructor of long key
+        /// <summary>Constructor of long key
         /// </summary>
         /// <param name="v">key value
         /// </param>
         /// <param name="inclusive">whether boundary is inclusive or exclusive
-        /// 
         /// </param>
         public Key(long v, bool inclusive)
             : this(ClassDescriptor.FieldType.tpLong, inclusive)
@@ -326,12 +316,11 @@ namespace Volante
             lval = v;
         }
 
-        /// <summary> Constructor of unsigned long key
+        /// <summary>Constructor of unsigned long key
         /// </summary>
         /// <param name="v">key value
         /// </param>
         /// <param name="inclusive">whether boundary is inclusive or exclusive
-        /// 
         /// </param>
         public Key(ulong v, bool inclusive)
             : this(ClassDescriptor.FieldType.tpULong, inclusive)
@@ -339,12 +328,11 @@ namespace Volante
             lval = (long)v;
         }
 
-        /// <summary> Constructor of float key
+        /// <summary>Constructor of float key
         /// </summary>
         /// <param name="v">key value
         /// </param>
         /// <param name="inclusive">whether boundary is inclusive or exclusive
-        /// 
         /// </param>
         public Key(float v, bool inclusive)
             : this(ClassDescriptor.FieldType.tpFloat, inclusive)
@@ -352,12 +340,11 @@ namespace Volante
             dval = v;
         }
 
-        /// <summary> Constructor of double key
+        /// <summary>Constructor of double key
         /// </summary>
         /// <param name="v">key value
         /// </param>
         /// <param name="inclusive">whether boundary is inclusive or exclusive
-        /// 
         /// </param>
         public Key(double v, bool inclusive)
             : this(ClassDescriptor.FieldType.tpDouble, inclusive)
@@ -365,12 +352,11 @@ namespace Volante
             dval = v;
         }
 
-        /// <summary> Constructor of decimal key
+        /// <summary>Constructor of decimal key
         /// </summary>
         /// <param name="v">key value
         /// </param>
         /// <param name="inclusive">whether boundary is inclusive or exclusive
-        /// 
         /// </param>
         public Key(decimal v, bool inclusive)
             : this(ClassDescriptor.FieldType.tpDecimal, inclusive)
@@ -378,12 +364,11 @@ namespace Volante
             dec = v;
         }
 
-        /// <summary> Constructor of Guid key
+        /// <summary>Constructor of Guid key
         /// </summary>
         /// <param name="v">key value
         /// </param>
         /// <param name="inclusive">whether boundary is inclusive or exclusive
-        /// 
         /// </param>
         public Key(Guid v, bool inclusive)
             : this(ClassDescriptor.FieldType.tpGuid, inclusive)
@@ -391,12 +376,11 @@ namespace Volante
             guid = v;
         }
 
-        /// <summary> Constructor of date key
+        /// <summary>Constructor of date key
         /// </summary>
         /// <param name="v">key value
         /// </param>
         /// <param name="inclusive">whether boundary is inclusive or exclusive
-        /// 
         /// </param>
         public Key(DateTime v, bool inclusive)
             : this(ClassDescriptor.FieldType.tpDate, inclusive)
@@ -404,12 +388,11 @@ namespace Volante
             lval = v.Ticks;
         }
 
-        /// <summary> Constructor of string key
+        /// <summary>Constructor of string key
         /// </summary>
         /// <param name="v">key value
         /// </param>
         /// <param name="inclusive">whether boundary is inclusive or exclusive
-        /// 
         /// </param>
         public Key(string v, bool inclusive)
             : this(ClassDescriptor.FieldType.tpString, inclusive)
@@ -417,12 +400,11 @@ namespace Volante
             oval = v;
         }
 
-        /// <summary> Constructor of array of char key
+        /// <summary>Constructor of array of char key
         /// </summary>
         /// <param name="v">key value
         /// </param>
         /// <param name="inclusive">whether boundary is inclusive or exclusive
-        /// 
         /// </param>
         public Key(char[] v, bool inclusive)
             : this(ClassDescriptor.FieldType.tpString, inclusive)
@@ -430,7 +412,7 @@ namespace Volante
             oval = v;
         }
 
-        /// <summary> Constructor of array of byte key
+        /// <summary>Constructor of array of byte key
         /// </summary>
         /// <param name="v">key value
         /// </param>
@@ -463,12 +445,11 @@ namespace Volante
         {
         }
 
-        /// <summary> Constructor of key with persistent object reference
+        /// <summary>Constructor of key with persistent object reference
         /// </summary>
         /// <param name="v">key value
         /// </param>
         /// <param name="inclusive">whether boundary is inclusive or exclusive
-        /// 
         /// </param>
         public Key(IPersistent v, bool inclusive)
             : this(ClassDescriptor.FieldType.tpObject, inclusive)
@@ -477,12 +458,11 @@ namespace Volante
             oval = v;
         }
 
-        /// <summary> Constructor of key of user defined type
+        /// <summary>Constructor of key of user defined type
         /// </summary>
         /// <param name="v">key value
         /// </param>
         /// <param name="inclusive">whether boundary is inclusive or exclusive
-        /// 
         /// </param>
         public Key(IComparable v, bool inclusive)
             : this(ClassDescriptor.FieldType.tpRaw, inclusive)

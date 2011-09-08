@@ -10,9 +10,7 @@ namespace Volante.Impl
         private void Modify()
         {
             if (owner != null)
-            {
                 owner.Modify();
-            }
         }
 
         public int Count
@@ -125,7 +123,8 @@ namespace Volante.Impl
         {
             if (used + len > arr.Length)
             {
-                IPersistent[] newArr = new IPersistent[used + len > arr.Length * 2 ? used + len : arr.Length * 2];
+                int newLen = used + len > arr.Length * 2 ? used + len : arr.Length * 2;
+                IPersistent[] newArr = new IPersistent[newLen];
                 Array.Copy(arr, 0, newArr, 0, used);
                 arr = newArr;
             }
@@ -200,31 +199,39 @@ namespace Volante.Impl
             return IndexOf(obj) >= 0;
         }
 
-        public virtual int IndexOf(T obj)
+        int IndexOfByOid(int oid)
         {
-            int oid;
-            if (obj != null && (oid = obj.Oid) != 0)
+            for (int i = 0;  i < used; i++)
             {
-                for (int i = used; --i >= 0; )
-                {
-                    IPersistent elem = arr[i];
-                    if (elem != null && elem.Oid == oid)
-                    {
-                        return i;
-                    }
-                }
-            }
-            else
-            {
-                for (int i = used; --i >= 0; )
-                {
-                    if ((T)arr[i] == obj)
-                    {
-                        return i;
-                    }
-                }
+                IPersistent elem = arr[i];
+                if (elem != null && elem.Oid == oid)
+                    return i;
             }
             return -1;
+        }
+
+        int IndexOfByObj(T obj)
+        {
+            IPersistent po = (IPersistent)obj;
+            for (int i = 0; i < used; i++)
+            {
+                IPersistent o = arr[i];
+                if (o == obj)
+                    return i;
+                // TODO: compare by oid if o is PersistentStub
+            }
+            return -1;
+        }
+
+        public virtual int IndexOf(T obj)
+        {
+            int oid = obj.Oid;
+            int idx;
+            if (obj != null && oid != 0)
+                idx = IndexOfByOid(oid);
+            else
+                idx = IndexOfByObj(obj);
+            return idx;
         }
 
         public virtual bool ContainsElement(int i, T obj)
@@ -310,9 +317,7 @@ namespace Volante.Impl
             {
                 IPersistent elem = arr[i];
                 if (elem != null && !elem.IsRaw() && elem.IsPersistent())
-                {
                     arr[i] = new PersistentStub(elem.Database, elem.Oid);
-                }
             }
         }
 
@@ -320,9 +325,7 @@ namespace Volante.Impl
         {
             IPersistent elem = arr[i];
             if (elem != null && elem.IsRaw())
-            {
                 elem = ((DatabaseImpl)elem.Database).lookupObject(elem.Oid, null);
-            }
             return (T)elem;
         }
 
