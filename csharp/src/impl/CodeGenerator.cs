@@ -8,9 +8,6 @@ using System.Globalization;
 
 namespace Volante.Impl
 {
-    /// <summary>
-    /// Generate code for condition
-    /// </summary>
     internal class CodeGenerator
     {
         public GeneratedSerializer Generate(ClassDescriptor desc)
@@ -29,14 +26,9 @@ namespace Volante.Impl
         {
             if (dynamicModule == null)
             {
-                //
-                //Create an assembly name
-                //
                 AssemblyName assemblyName = new AssemblyName();
                 assemblyName.Name = "GeneratedSerializerAssembly";
-                //
                 //Create a new assembly with one module
-                //
                 AssemblyBuilder assembly = Thread.GetDomain().DefineDynamicAssembly(assemblyName, AssemblyBuilderAccess.Run);
                 dynamicModule = assembly.DefineDynamicModule("GeneratedSerializerModule");
             }
@@ -501,10 +493,9 @@ namespace Volante.Impl
                         fieldType = returnType;
                         fieldName = "s_" + fieldName;
                     }
+
                     if (fieldType.IsArray && typeof(IPersistent).IsAssignableFrom(fieldType.GetElementType()))
-                    {
                         throw new DatabaseException(DatabaseException.ErrorCode.UNSUPPORTED_TYPE);
-                    }
 
                     FieldBuilder fb = wrapperType.DefineField(fieldName, fieldType, FieldAttributes.Private);
 
@@ -569,9 +560,7 @@ namespace Volante.Impl
             get
             {
                 if (instance == null)
-                {
                     instance = new CodeGenerator();
-                }
                 return instance;
             }
         }

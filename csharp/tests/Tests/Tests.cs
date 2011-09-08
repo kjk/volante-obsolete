@@ -120,7 +120,7 @@ public class RecordFull : Persistent
     public Int64 Int64Val;
     public UInt64 UInt64Val;
     public DateTime DateTimeVal;
-    public SimpleStruct StructVal;
+    //public SimpleStruct StructVal;
     public RecordFullEnum EnumVal;
     public object o;
 
@@ -141,8 +141,8 @@ public class RecordFull : Persistent
         Int64Val = (Int64)v;
         UInt64Val = (UInt64)v;
         DateTimeVal = DateTime.Now;
-        StructVal.v1 = (int)(v + 1);
-        StructVal.v2 = (long)(v + 1);
+        //StructVal.v1 = (int)(v + 1);
+        //StructVal.v2 = (long)(v + 1);
         int enumVal = (int)(v % 11);
         EnumVal = (RecordFullEnum)enumVal;
         o = (object)v;
@@ -181,7 +181,7 @@ public class TestConfig
     public bool AltBtree = false;
     public bool Serializable = false;
     public bool BackgroundGc = false;
-    public bool CodeGeneration = false;
+    public bool CodeGeneration = true;
     public bool Encrypted = false;
     public int Count; // number of iterations
 
@@ -219,6 +219,8 @@ public class TestConfig
     public IDatabase GetDatabase(bool delete=true)
     {
         IDatabase db = DatabaseFactory.CreateDatabase();
+        Tests.Assert(db.CodeGeneration);
+        Tests.Assert(!db.BackgroundGc);
         db.Listener = new TestDatabaseListener();
 #if WITH_OLD_BTREE
         db.AlternativeBtree = AltBtree || Serializable;
@@ -229,10 +231,6 @@ public class TestConfig
         // TODO: make it bigger (1000000 - the original value for h)
         if (BackgroundGc)
             db.GcThreshold = 100000;
-        // TODO: could make CodeGeneration an explicit in TestConfig
-        // but this is simpler
-        if (AltBtree)
-            db.CodeGeneration = true;
         if (InMemory == InMemoryType.Full)
             OpenTransientDatabase(db);
         else
@@ -480,7 +478,7 @@ public class TestsMain
         new TestConfig{ InMemory = TestConfig.InMemoryType.No, AltBtree=false },
         new TestConfig{ InMemory = TestConfig.InMemoryType.No, AltBtree=true },
         new TestConfig{ InMemory = TestConfig.InMemoryType.Full, AltBtree=true },
-        new TestConfig{ InMemory = TestConfig.InMemoryType.No, AltBtree=true, CodeGeneration=true },
+        new TestConfig{ InMemory = TestConfig.InMemoryType.No, AltBtree=true, CodeGeneration=false },
         new TestConfig{ InMemory = TestConfig.InMemoryType.No, AltBtree=true, Encrypted=true },
         new TestConfig{ InMemory = TestConfig.InMemoryType.No, FileKind = TestConfig.FileType.Stream, AltBtree=true }
     };

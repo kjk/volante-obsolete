@@ -2950,14 +2950,12 @@ namespace Volante.Impl
             get { return gcThreshold; }
         }
 
-        // TODO: needs tests
         public bool CodeGeneration
         {
             set { enableCodeGeneration = value; }
             get { return enableCodeGeneration; }
         }
 
-        // TODO: needs tests
         public bool BackgroundGc
         {
             set { backgroundGc = value; }

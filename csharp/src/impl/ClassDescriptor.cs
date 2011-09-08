@@ -196,9 +196,8 @@ namespace Volante.Impl
         internal void generateSerializer()
         {
             if (!cls.IsPublic || defaultConstructor == null || !defaultConstructor.IsPublic)
-            {
                 return;
-            }
+
             FieldDescriptor[] flds = allFields;
             for (int i = 0, n = flds.Length; i < n; i++)
             {
@@ -212,16 +211,13 @@ namespace Volante.Impl
                     case FieldType.tpArrayOfRaw:
                     case FieldType.tpLink:
                     case FieldType.tpArrayOfOid:
-
                         return;
                     default:
                         break;
                 }
                 FieldInfo f = flds[i].field;
                 if (f == null || !f.IsPublic)
-                {
                     return;
-                }
             }
             serializer = serializerGenerator.Generate(this);
         }
