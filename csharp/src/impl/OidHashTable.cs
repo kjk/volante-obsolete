@@ -4,13 +4,13 @@ namespace Volante.Impl
 
     public interface OidHashTable
     {
-        bool remove(int oid);
-        void put(int oid, IPersistent obj);
-        IPersistent get(int oid);
-        void flush();
-        void invalidate();
-        int size();
-        void setDirty(int oid);
-        void clearDirty(int oid);
+        bool Remove(int oid);
+        void Put(int oid, IPersistent obj);
+        IPersistent Get(int oid);
+        void Flush();
+        void Invalidate();
+        int Size();
+        void SetDirty(int oid);
+        void ClearDirty(int oid);
     }
 }

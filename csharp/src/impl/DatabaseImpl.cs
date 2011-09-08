@@ -187,7 +187,7 @@ namespace Volante.Impl
                         return;
                     }
                     long pos = getPos(oid);
-                    objectCache.remove(oid);
+                    objectCache.Remove(oid);
                     int offs = (int)pos & (Page.pageSize - 1);
                     if ((offs & (dbFreeHandleFlag | dbPageObjectFlag)) != 0)
                     {
@@ -1249,7 +1249,7 @@ namespace Volante.Impl
                 lock (this)
                 {
                     ensureOpened();
-                    objectCache.flush();
+                    objectCache.Flush();
 
                     if (!modified)
                     {
@@ -1454,7 +1454,7 @@ namespace Volante.Impl
             lock (this)
             {
                 ensureOpened();
-                objectCache.invalidate();
+                objectCache.Invalidate();
 
                 if (!modified)
                 {
@@ -1539,7 +1539,7 @@ namespace Volante.Impl
                     int oid = allocateId();
                     obj.AssignOid(this, oid, false);
                     setPos(oid, 0);
-                    objectCache.put(oid, obj);
+                    objectCache.Put(oid, obj);
                     obj.Modify();
                     return obj;
                 }
@@ -1573,7 +1573,7 @@ namespace Volante.Impl
                     int oid = allocateId();
                     obj.AssignOid(this, oid, false);
                     setPos(oid, 0);
-                    objectCache.put(oid, obj);
+                    objectCache.Put(oid, obj);
                     obj.Modify();
                     return oid;
                 }
@@ -1585,7 +1585,7 @@ namespace Volante.Impl
             lock (this)
             {
                 ensureOpened();
-                objectCache.flush();
+                objectCache.Flush();
                 int curr = 1 - currIndex;
                 int nObjects = header.root[curr].indexUsed;
                 long indexOffs = header.root[curr].index;
@@ -2146,7 +2146,7 @@ namespace Volante.Impl
                                 int size = ObjectHeader.getSize(pg.data, offs);
                                 pool.unfix(pg);
                                 freeId(i);
-                                objectCache.remove(i);
+                                objectCache.Remove(i);
                                 cloneBitmap(pos, size);
                             }
                             if (Listener != null)
@@ -3060,7 +3060,7 @@ namespace Volante.Impl
                                 ctx.modified.Add(obj);
                             }
                         }
-                        objectCache.setDirty(obj.Oid);
+                        objectCache.SetDirty(obj.Oid);
                     }
                 }
             }
@@ -3115,14 +3115,14 @@ namespace Volante.Impl
                 oid = allocateId();
                 if (!obj.IsDeleted())
                 {
-                    objectCache.put(oid, obj);
+                    objectCache.Put(oid, obj);
                 }
                 obj.AssignOid(this, oid, false);
                 newObject = true;
             }
             else if (obj.IsModified())
             {
-                objectCache.clearDirty(oid);
+                objectCache.ClearDirty(oid);
             }
             byte[] data = packObject(obj);
             long pos;
@@ -3182,7 +3182,7 @@ namespace Volante.Impl
 
         internal IPersistent lookupObject(int oid, System.Type cls)
         {
-            IPersistent obj = objectCache.get(oid);
+            IPersistent obj = objectCache.Get(oid);
             if (obj == null || obj.IsRaw())
             {
                 obj = loadStub(oid, obj, cls);
@@ -3219,7 +3219,7 @@ namespace Volante.Impl
             {
                 return lookupObject(oid, cls);
             }
-            IPersistent stub = objectCache.get(oid);
+            IPersistent stub = objectCache.Get(oid);
             if (stub != null)
             {
                 return stub;
@@ -3247,7 +3247,7 @@ namespace Volante.Impl
                 stub = (IPersistent)desc.newInstance();
             }
             stub.AssignOid(this, oid, true);
-            objectCache.put(oid, stub);
+            objectCache.Put(oid, stub);
             return stub;
         }
 
@@ -3279,7 +3279,7 @@ namespace Volante.Impl
                 {
                     obj = (IPersistent)desc.newInstance();
                 }
-                objectCache.put(oid, obj);
+                objectCache.Put(oid, obj);
             }
             obj.AssignOid(this, oid, false);
             if (desc.serializer != null)

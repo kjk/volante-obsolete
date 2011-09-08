@@ -19,7 +19,7 @@ namespace Volante.Impl
             }
         }
 
-        public bool remove(int oid)
+        public bool Remove(int oid)
         {
             lock (this)
             {
@@ -46,7 +46,7 @@ namespace Volante.Impl
             }
         }
 
-        public void put(int oid, IPersistent obj)
+        public void Put(int oid, IPersistent obj)
         {
             lock (this)
             {
@@ -74,7 +74,7 @@ namespace Volante.Impl
             }
         }
 
-        public IPersistent get(int oid)
+        public IPersistent Get(int oid)
         {
             lock (this)
             {
@@ -91,7 +91,7 @@ namespace Volante.Impl
             }
         }
 
-        public void flush()
+        public void Flush()
         {
             lock (this)
             {
@@ -108,7 +108,7 @@ namespace Volante.Impl
             }
         }
 
-        public void invalidate()
+        public void Invalidate()
         {
             lock (this)
             {
@@ -153,16 +153,16 @@ namespace Volante.Impl
             }
         }
 
-        public int size()
+        public int Size()
         {
             return count;
         }
 
-        public void setDirty(int oid)
+        public void SetDirty(int oid)
         {
         }
 
-        public void clearDirty(int oid)
+        public void ClearDirty(int oid)
         {
         }
 

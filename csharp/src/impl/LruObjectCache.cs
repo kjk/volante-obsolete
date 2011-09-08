@@ -24,7 +24,7 @@ namespace Volante.Impl
             pinList.lru = pinList.mru = pinList;
         }
 
-        public bool remove(int oid)
+        public bool Remove(int oid)
         {
             lock (this)
             {
@@ -84,7 +84,7 @@ namespace Volante.Impl
             }
         }
 
-        public void put(int oid, IPersistent obj)
+        public void Put(int oid, IPersistent obj)
         {
             lock (this)
             {
@@ -114,7 +114,7 @@ namespace Volante.Impl
             }
         }
 
-        public IPersistent get(int oid)
+        public IPersistent Get(int oid)
         {
             while (true)
             {
@@ -218,7 +218,7 @@ namespace Volante.Impl
             }
         }
 
-        public void flush()
+        public void Flush()
         {
             while (true)
             {
@@ -249,7 +249,7 @@ namespace Volante.Impl
             }
         }
 
-        public void invalidate()
+        public void Invalidate()
         {
             while (true)
             {
@@ -284,7 +284,7 @@ namespace Volante.Impl
             }
         }
 
-        public void setDirty(int oid)
+        public void SetDirty(int oid)
         {
             lock (this)
             {
@@ -301,7 +301,7 @@ namespace Volante.Impl
             }
         }
 
-        public void clearDirty(int oid)
+        public void ClearDirty(int oid)
         {
             lock (this)
             {
@@ -338,7 +338,7 @@ namespace Volante.Impl
             }
         }
 
-        public int size()
+        public int Size()
         {
             return count;
         }
