@@ -143,7 +143,12 @@ namespace Volante.Impl
 
         internal static int compareStr(Key key, Page pg, int i)
         {
-            char[] chars = (char[])key.oval;
+            char[] chars = null;
+            string s = key.oval as string;
+            if (s != null)
+                chars = s.ToCharArray();
+            else
+                chars = (char[])key.oval;
             int alen = chars.Length;
             int blen = OldBtreePage.getKeyStrSize(pg, i);
             int minlen = alen < blen ? alen : blen;
@@ -153,9 +158,7 @@ namespace Volante.Impl
             {
                 int diff = chars[j] - (char)Bytes.unpack2(b, offs);
                 if (diff != 0)
-                {
                     return diff;
-                }
                 offs += 2;
             }
             return alen - blen;
@@ -177,13 +180,9 @@ namespace Volante.Impl
                         {
                             int i = (l + r) >> 1;
                             if (compareStr(firstKey, pg, i) >= firstKey.inclusion)
-                            {
                                 l = i + 1;
-                            }
                             else
-                            {
                                 r = i;
-                            }
                         }
                         Debug.Assert(r == l);
                     }
@@ -194,9 +193,7 @@ namespace Volante.Impl
                             while (l < n)
                             {
                                 if (-compareStr(lastKey, pg, l) >= lastKey.inclusion)
-                                {
                                     return false;
-                                }
                                 oid = getKeyStrOid(pg, l);
                                 result.Add(db.lookupObject(oid, null));
                                 l += 1;
@@ -207,13 +204,9 @@ namespace Volante.Impl
                             do
                             {
                                 if (!find(db, getKeyStrOid(pg, l), firstKey, lastKey, tree, height, result))
-                                {
                                     return false;
-                                }
                                 if (l == n)
-                                {
                                     return true;
-                                }
                             }
                             while (compareStr(lastKey, pg, l++) >= 0);
                             return false;
@@ -235,9 +228,7 @@ namespace Volante.Impl
                             do
                             {
                                 if (!find(db, getKeyStrOid(pg, l), firstKey, lastKey, tree, height, result))
-                                {
                                     return false;
-                                }
                             }
                             while (++l <= n);
                         }
@@ -251,13 +242,9 @@ namespace Volante.Impl
                         {
                             int i = (l + r) >> 1;
                             if (tree.compareByteArrays(firstKey, pg, i) >= firstKey.inclusion)
-                            {
                                 l = i + 1;
-                            }
                             else
-                            {
                                 r = i;
-                            }
                         }
                         Debug.Assert(r == l);
                     }
@@ -268,9 +255,7 @@ namespace Volante.Impl
                             while (l < n)
                             {
                                 if (-tree.compareByteArrays(lastKey, pg, l) >= lastKey.inclusion)
-                                {
                                     return false;
-                                }
                                 oid = getKeyStrOid(pg, l);
                                 result.Add(db.lookupObject(oid, null));
                                 l += 1;
@@ -281,13 +266,9 @@ namespace Volante.Impl
                             do
                             {
                                 if (!find(db, getKeyStrOid(pg, l), firstKey, lastKey, tree, height, result))
-                                {
                                     return false;
-                                }
                                 if (l == n)
-                                {
                                     return true;
-                                }
                             }
                             while (tree.compareByteArrays(lastKey, pg, l++) >= 0);
                             return false;
@@ -309,9 +290,7 @@ namespace Volante.Impl
                             do
                             {
                                 if (!find(db, getKeyStrOid(pg, l), firstKey, lastKey, tree, height, result))
-                                {
                                     return false;
-                                }
                             }
                             while (++l <= n);
                         }
@@ -325,13 +304,9 @@ namespace Volante.Impl
                         {
                             int i = (l + r) >> 1;
                             if (compare(firstKey, pg, i) >= firstKey.inclusion)
-                            {
                                 l = i + 1;
-                            }
                             else
-                            {
                                 r = i;
-                            }
                         }
                         Debug.Assert(r == l);
                     }
@@ -342,9 +317,7 @@ namespace Volante.Impl
                             while (l < n)
                             {
                                 if (-compare(lastKey, pg, l) >= lastKey.inclusion)
-                                {
                                     return false;
-                                }
                                 oid = getReference(pg, maxItems - 1 - l);
                                 result.Add(db.lookupObject(oid, null));
                                 l += 1;
@@ -356,13 +329,10 @@ namespace Volante.Impl
                             do
                             {
                                 if (!find(db, getReference(pg, maxItems - 1 - l), firstKey, lastKey, tree, height, result))
-                                {
                                     return false;
-                                }
+
                                 if (l == n)
-                                {
                                     return true;
-                                }
                             }
                             while (compare(lastKey, pg, l++) >= 0);
                             return false;
@@ -382,9 +352,7 @@ namespace Volante.Impl
                         do
                         {
                             if (!find(db, getReference(pg, maxItems - 1 - l), firstKey, lastKey, tree, height, result))
-                            {
                                 return false;
-                            }
                         }
                         while (++l <= n);
                     }
@@ -409,9 +377,7 @@ namespace Volante.Impl
                 char c = (char)Bytes.unpack2(b, offs);
                 int diff = key[j] - c;
                 if (diff != 0)
-                {
                     return diff;
-                }
                 offs += 2;
             }
             return minlen - alen;
@@ -430,13 +396,9 @@ namespace Volante.Impl
                 {
                     int i = (l + r) >> 1;
                     if (comparePrefix(key, pg, i) > 0)
-                    {
                         l = i + 1;
-                    }
                     else
-                    {
                         r = i;
-                    }
                 }
                 Debug.Assert(r == l);
                 if (height == 0)
@@ -444,9 +406,8 @@ namespace Volante.Impl
                     while (l < n)
                     {
                         if (comparePrefix(key, pg, l) < 0)
-                        {
                             return false;
-                        }
+
                         oid = getKeyStrOid(pg, l);
                         result.Add(db.lookupObject(oid, null));
                         l += 1;
@@ -457,13 +418,9 @@ namespace Volante.Impl
                     do
                     {
                         if (!prefixSearch(db, getKeyStrOid(pg, l), key, height, result))
-                        {
                             return false;
-                        }
                         if (l == n)
-                        {
                             return true;
-                        }
                     } while (comparePrefix(key, pg, l++) >= 0);
                     return false;
                 }
@@ -529,13 +486,9 @@ namespace Volante.Impl
                     {
                         int i = (l + r) >> 1;
                         if (compareStr(ins.key, pg, i) > 0)
-                        {
                             l = i + 1;
-                        }
                         else
-                        {
                             r = i;
-                        }
                     }
                     Debug.Assert(l == r);
                     if (--height != 0)
@@ -573,13 +526,9 @@ namespace Volante.Impl
                     {
                         int i = (l + r) >> 1;
                         if (tree.compareByteArrays(ins.key, pg, i) > 0)
-                        {
                             l = i + 1;
-                        }
                         else
-                        {
                             r = i;
-                        }
                     }
                     Debug.Assert(l == r);
                     if (--height != 0)
@@ -628,9 +577,7 @@ namespace Volante.Impl
                         result = insert(db, getReference(pg, maxItems - r - 1), tree, ins, height, unique, overwrite);
                         Debug.Assert(result != OldBtreeResult.NotFound);
                         if (result != OldBtreeResult.Overflow)
-                        {
                             return result;
-                        }
                         n += 1;
                     }
                     else if (r < n && compare(ins.key, pg, r) == 0)
@@ -708,9 +655,7 @@ namespace Volante.Impl
             finally
             {
                 if (pg != null)
-                {
                     db.pool.unfix(pg);
-                }
             }
         }
 
@@ -978,9 +923,8 @@ namespace Volante.Impl
             int[] size = new int[keySpace / 2 + 1];
             int[] index = new int[keySpace / 2 + 1];
             if (m == 0)
-            {
                 return n;
-            }
+
             int nZeroLengthStrings = 0;
             if (m < 0)
             {
@@ -1066,9 +1010,8 @@ namespace Volante.Impl
             int[] size = new int[keySpace + 1];
             int[] index = new int[keySpace + 1];
             if (m == 0)
-            {
                 return n;
-            }
+
             int nZeroLengthArrays = 0;
             if (m < 0)
             {
@@ -1140,9 +1083,7 @@ namespace Volante.Impl
                     n -= 1;
                     setKeyStrOffs(pg, j, offs);
                     if (offs != i - len)
-                    {
                         memcpy(pg, offs, pg, i - len, len, 1);
-                    }
                 }
             }
             return nItems;
@@ -1155,22 +1096,17 @@ namespace Volante.Impl
             int size = getSize(pg);
             int nItems = getnItems(pg);
             if ((nItems + 1) * strKeySize >= keySpace)
-            {
                 memcpy(pg, r, pg, r + 1, nItems - r - 1, strKeySize);
-            }
             else
-            {
                 memcpy(pg, r, pg, r + 1, nItems - r, strKeySize);
-            }
+
             if (len != 0)
             {
                 memcpy(pg, keySpace - size + len, pg, keySpace - size, size - keySpace + offs, 1);
                 for (int i = nItems; --i >= 0; )
                 {
                     if (getKeyStrOffs(pg, i) < offs)
-                    {
                         setKeyStrOffs(pg, i, getKeyStrOffs(pg, i) + len);
-                    }
                 }
                 setSize(pg, size -= len);
             }
@@ -1185,22 +1121,17 @@ namespace Volante.Impl
             int size = getSize(pg);
             int nItems = getnItems(pg);
             if ((nItems + 1) * strKeySize >= keySpace)
-            {
                 memcpy(pg, r, pg, r + 1, nItems - r - 1, strKeySize);
-            }
             else
-            {
                 memcpy(pg, r, pg, r + 1, nItems - r, strKeySize);
-            }
+
             if (len != 0)
             {
                 memcpy(pg, keySpace - size + len, pg, keySpace - size, size - keySpace + offs, 1);
                 for (int i = nItems; --i >= 0; )
                 {
                     if (getKeyStrOffs(pg, i) < offs)
-                    {
                         setKeyStrOffs(pg, i, getKeyStrOffs(pg, i) + len);
-                    }
                 }
                 setSize(pg, size -= len);
             }
@@ -1266,9 +1197,7 @@ namespace Volante.Impl
                             if (delta >= 0)
                             {
                                 if (delta >= -prevDelta)
-                                {
                                     i -= 1;
-                                }
                                 break;
                             }
                             size_a += addSize * 2;
@@ -1356,9 +1285,8 @@ namespace Volante.Impl
                     int bn = getnItems(b);
                     int merged_size = (an + bn) * strKeySize + getSize(a) + getSize(b);
                     if (height != 1)
-                    {
                         merged_size += getKeyStrSize(pg, r - 1) * 2 + strKeySize * 2;
-                    }
+
                     if (merged_size > keySpace)
                     {
                         // reallocation of nodes between pages a and b
@@ -1386,9 +1314,7 @@ namespace Volante.Impl
                             if (delta >= 0)
                             {
                                 if (delta >= -prevDelta)
-                                {
                                     i -= 1;
-                                }
                                 break;
                             }
                             prevDelta = delta;
@@ -1521,9 +1447,8 @@ namespace Volante.Impl
                             if (delta >= 0)
                             {
                                 if (delta >= -prevDelta)
-                                {
                                     i -= 1;
-                                }
+
                                 break;
                             }
                             size_a += addSize;
@@ -1611,9 +1536,8 @@ namespace Volante.Impl
                     int bn = getnItems(b);
                     int merged_size = (an + bn) * strKeySize + getSize(a) + getSize(b);
                     if (height != 1)
-                    {
                         merged_size += getKeyStrSize(pg, r - 1) + strKeySize * 2;
-                    }
+
                     if (merged_size > keySpace)
                     {
                         // reallocation of nodes between pages a and b
@@ -1641,9 +1565,7 @@ namespace Volante.Impl
                             if (delta >= 0)
                             {
                                 if (delta >= -prevDelta)
-                                {
                                     i -= 1;
-                                }
                                 break;
                             }
                             prevDelta = delta;
@@ -1826,9 +1748,8 @@ namespace Volante.Impl
                         memcpy(a, maxItems - an - bn, a, maxItems - an, an, 4);
                         memcpy(a, maxItems - bn, b, maxItems - bn, bn, 4);
                         if (height != 1)
-                        {
                             memcpy(a, bn - 1, pg, r - 1, 1, itemSize);
-                        }
+
                         db.freePage(getReference(pg, maxItems - r));
                         setReference(pg, maxItems - r, getReference(pg, maxItems - r - 1));
                         setnItems(a, getnItems(a) + bn);
@@ -1854,13 +1775,9 @@ namespace Volante.Impl
                     {
                         i = (l + r) >> 1;
                         if (compareStr(rem.key, pg, i) > 0)
-                        {
                             l = i + 1;
-                        }
                         else
-                        {
                             r = i;
-                        }
                     }
                     if (--height != 0)
                     {
@@ -1917,13 +1834,9 @@ namespace Volante.Impl
                     {
                         i = (l + r) >> 1;
                         if (tree.compareByteArrays(rem.key, pg, i) > 0)
-                        {
                             l = i + 1;
-                        }
                         else
-                        {
                             r = i;
-                        }
                     }
                     if (--height != 0)
                     {
@@ -1981,13 +1894,10 @@ namespace Volante.Impl
                     {
                         i = (l + r) >> 1;
                         if (compare(rem.key, pg, i) > 0)
-                        {
                             l = i + 1;
-                        }
                         else
-                        {
                             r = i;
-                        }
+
                     }
                     if (--height == 0)
                     {

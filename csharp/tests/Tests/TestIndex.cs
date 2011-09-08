@@ -165,6 +165,41 @@ namespace Volante
             }
             res.RemoveTime = DateTime.Now - start;
             db.Close();
+            if (config.IsTransient)
+                return;
+
+            db = config.GetDatabase(false);
+            root = (Root)db.Root;
+            intIndex = root.intIndex;
+            strIndex = root.strIndex;
+            k = Int64.MinValue;
+            n = 0;
+            RecordFull firstRec = null;
+            RecordFull removedRec = null;
+            foreach (RecordFull rec in intIndex)
+            {
+                Tests.Assert(rec.Int32Val >= k);
+                k = rec.Int32Val;
+                if (null == firstRec)
+                    firstRec = rec;
+                else if (null == removedRec)
+                {
+                    removedRec = rec;
+                    strIndex.Remove(removedRec.StrVal, removedRec);
+                }
+                n++;
+            }
+            Tests.Assert(intIndex.Count == n);
+            Tests.Assert(strIndex.Count == n-1);
+            Tests.Assert(intIndex.Contains(firstRec));
+            Tests.Assert(strIndex.Contains(firstRec));
+            Tests.Assert(!strIndex.Contains(removedRec));
+            RecordFull notPresent = new RecordFull();
+            Tests.Assert(!strIndex.Contains(notPresent));
+            Tests.Assert(!intIndex.Contains(notPresent));
+            intIndex.Clear();
+            Tests.Assert(!intIndex.Contains(firstRec));
+            db.Close();
         }
 
         static int VerifyDictionaryEnumerator(IDictionaryEnumerator de, IterationOrder order)

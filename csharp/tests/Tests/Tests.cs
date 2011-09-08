@@ -189,6 +189,8 @@ public class TestConfig
     public bool BackgroundGc = false;
     public bool CodeGeneration = true;
     public bool Encrypted = false;
+    public bool IsTransient = false;
+    public CacheType CacheKind = CacheType.Lru;
     public int Count; // number of iterations
 
     // Set by the test. Can be a subclass of TestResult
@@ -207,7 +209,8 @@ public class TestConfig
             string p5 = String.Format("_{0}", Count);
             string p6 = CodeGeneration ? "_cg" : "";
             string p7 = Encrypted ? "_enc" : "";
-            return String.Format("{0}{1}{2}{3}{4}{5}{6}{7}.dbs", TestName, p1, p2, p3, p4, p5, p6, p7);
+            string p8 = (CacheKind != CacheType.Lru) ? CacheKind.ToString() : "";
+            return String.Format("{0}{1}{2}{3}{4}{5}{6}{7}{8}.dbs", TestName, p1, p2, p3, p4, p5, p6, p7, p8);
         }
     }
 
@@ -220,6 +223,7 @@ public class TestConfig
         Tests.Assert(dbFile.NoFlush == false);
         Tests.Assert(dbFile.Length == 0);
         db.Open(dbFile, INFINITE_PAGE_POOL);
+        IsTransient = true;
     }
 
     public IDatabase GetDatabase(bool delete=true)
@@ -232,6 +236,7 @@ public class TestConfig
         db.AlternativeBtree = AltBtree || Serializable;
 #endif
         db.BackgroundGc = BackgroundGc;
+        db.CacheKind = CacheKind;
         db.CodeGeneration = CodeGeneration;
         // TODO: make it configurable?
         // TODO: make it bigger (1000000 - the original value for h)
@@ -267,7 +272,10 @@ public class TestConfig
                 }
                 else
                 {
-                    var f = File.Open(name, FileMode.CreateNew, FileAccess.ReadWrite, FileShare.None);
+                    FileMode m = FileMode.CreateNew;
+                    if (!delete)
+                        m = FileMode.OpenOrCreate;
+                    var f = File.Open(name, m, FileAccess.ReadWrite, FileShare.None);
                     var sf = new StreamFile(f);
                     db.Open(sf);
                 }
@@ -493,6 +501,7 @@ public class TestsMain
         new TestConfig{ InMemory = TestConfig.InMemoryType.Full, Serializable=true },
         new TestConfig{ InMemory = TestConfig.InMemoryType.No, AltBtree=false },
         new TestConfig{ InMemory = TestConfig.InMemoryType.No, AltBtree=true },
+        new TestConfig{ InMemory = TestConfig.InMemoryType.No, AltBtree=true, CacheKind = CacheType.Weak },
         new TestConfig{ InMemory = TestConfig.InMemoryType.Full, AltBtree=true },
         new TestConfig{ InMemory = TestConfig.InMemoryType.No, AltBtree=true, CodeGeneration=false },
         new TestConfig{ InMemory = TestConfig.InMemoryType.No, AltBtree=true, Encrypted=true },
@@ -530,6 +539,7 @@ public class TestsMain
 
     static TestInfo[] TestInfos = new TestInfo[]
     {
+        new TestInfo("TestIndex", ConfigsIndex, Counts1),
         new TestInfo("TestSet"),
 #if WITH_XML
         new TestInfo("TestXml", ConfigsDefaultFile, new int[2] { 2000, 20000 }),
@@ -556,7 +566,6 @@ public class TestsMain
         new TestInfo("TestIndexGuid"),
         new TestInfo("TestIndexObject"),
         new TestInfo("TestIndexDateTime", ConfigsDefaultFile),
-        new TestInfo("TestIndex", ConfigsIndex, Counts1),
         new TestInfo("TestIndex2"),
         new TestInfo("TestIndex3"),
         new TestInfo("TestIndex4", ConfigsDefaultFile, Counts1),

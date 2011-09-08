@@ -35,13 +35,9 @@ namespace Volante.Impl
                     if (e.oid == oid)
                     {
                         if (prev != null)
-                        {
                             prev.next = e.next;
-                        }
                         else
-                        {
                             tab[index] = e.next;
-                        }
                         e.clear();
                         unpinObject(e);
                         count -= 1;
@@ -72,13 +68,9 @@ namespace Volante.Impl
                 else
                 {
                     if (nPinned == pinLimit)
-                    {
                         pinList.lru.unpin();
-                    }
                     else
-                    {
                         nPinned += 1;
-                    }
                 }
                 e.linkAfter(pinList, obj);
             }
@@ -130,22 +122,16 @@ namespace Volante.Impl
                             if (obj == null)
                             {
                                 if (e.dirty > 0)
-                                {
                                     goto waitFinalization;
-                                }
                             }
                             else
                             {
                                 if (obj.IsDeleted())
                                 {
                                     if (prev != null)
-                                    {
                                         prev.next = e.next;
-                                    }
                                     else
-                                    {
                                         tab[index] = e.next;
-                                    }
                                     unpinObject(e);
                                     e.clear();
                                     count -= 1;
@@ -179,13 +165,9 @@ namespace Volante.Impl
                         count -= 1;
                         e.clear();
                         if (prev == null)
-                        {
                             oldMap[i] = next;
-                        }
                         else
-                        {
                             prev.next = next;
-                        }
                     }
                     else
                     {
@@ -232,9 +214,7 @@ namespace Volante.Impl
                             if (obj != null)
                             {
                                 if (obj.IsModified())
-                                {
                                     obj.Store();
-                                }
                             }
                             else if (e.dirty != 0)
                             {
@@ -314,20 +294,15 @@ namespace Volante.Impl
                         if (e.oref.IsAlive)
                         {
                             if (e.dirty > 0)
-                            {
                                 e.dirty -= 1;
-                            }
                         }
                         else
                         {
                             if (prev != null)
-                            {
                                 prev.next = e.next;
-                            }
                             else
-                            {
                                 tab[index] = e.next;
-                            }
+
                             unpinObject(e);
                             e.clear();
                             count -= 1;
