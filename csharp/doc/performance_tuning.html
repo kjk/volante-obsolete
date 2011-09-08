@@ -69,6 +69,16 @@
 		</td></tr>
 	</table></p>
 
+	<h3>Using code generation</h3>
+
+	<p>Volante is using its own serialization/deserialization which happens every time an object needs to be stored in the database or loaded from the database, which happens quite a lot.</p>
+
+	<p>To speed up serialization/deserialization Volante can dynamically generate optimized functions for serializing each type (as opposed to using a slower, generic routine).</p>
+
+	<p>To enable that set <code>IDatabase.CodeGeneration</code> property to <code>true</code>.</p>
+
+	<p>A small downside is that those functions have to be generate every time a database is opened, which might slow down opening of the database if it contains many types.</p>
+
 	<center><a href=rc4encrypted.html>← encrypted database</a> &nbsp;&bull;&nbsp; <a href=history.html>history →</a></center>
 
 	<hr style="margin-top:28px">
