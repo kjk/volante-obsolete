@@ -1779,7 +1779,7 @@ namespace Volante.Impl
                     ? new Btree<K, V>(indexType)
                     : (IIndex<K, V>)new OldBtree<K, V>(indexType);
 #else
-                IIndex<K, V> index = new AltBtree<K, V>(indexType);
+                IIndex<K, V> index = new Btree<K, V>(indexType);
 #endif
                 index.AssignOid(this, 0, false);
                 return index;
@@ -1854,7 +1854,7 @@ namespace Volante.Impl
                     ? (ISet<T>)new PersistentSet<T>()
                     : (ISet<T>)new OldPersistentSet<T>();
 #else
-                ISet<T> s = new AltPersistentSet<T>();
+                ISet<T> s = new PersistentSet<T>();
 #endif
                 s.AssignOid(this, 0, false);
                 return s;
@@ -1886,7 +1886,7 @@ namespace Volante.Impl
                     ? (IFieldIndex<K, V>)new BtreeFieldIndex<K, V>(fieldName, unique)
                     : (IFieldIndex<K, V>)new OldBtreeFieldIndex<K, V>(fieldName, unique);
 #else
-                IFieldIndex<K, V> index = (IFieldIndex<K, V>)new AltBtreeFieldIndex<K, V>(fieldName, unique);
+                IFieldIndex<K, V> index = (IFieldIndex<K, V>)new BtreeFieldIndex<K, V>(fieldName, unique);
 #endif
                 index.AssignOid(this, 0, false);
                 return index;
@@ -1911,7 +1911,7 @@ namespace Volante.Impl
                     ? (IMultiFieldIndex<T>)new BtreeMultiFieldIndex<T>(fieldNames, unique)
                     : (IMultiFieldIndex<T>)new OldBtreeMultiFieldIndex<T>(fieldNames, unique);
 #else
-                IMultiFieldIndex<T> index = (IMultiFieldIndex<T>)new AltBtreeMultiFieldIndex<T>(fieldNames, unique);
+                IMultiFieldIndex<T> index = (IMultiFieldIndex<T>)new BtreeMultiFieldIndex<T>(fieldNames, unique);
 #endif
 #endif
                 index.AssignOid(this, 0, false);
