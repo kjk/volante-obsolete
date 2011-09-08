@@ -88,11 +88,10 @@ namespace Volante.Impl
         /// </returns>
         public bool HandleError(string host)
         {
-            return (db != null && db.listener != null)
-                ? db.listener.ReplicationError(host)
+            return (db != null && db.Listener != null)
+                ? db.Listener.ReplicationError(host)
                 : false;
         }
-
 
         public virtual void Write(long pos, byte[] buf)
         {

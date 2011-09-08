@@ -1097,9 +1097,9 @@ namespace Volante.Impl
                     }
                     if (isDirty())
                     {
-                        if (listener != null)
+                        if (Listener != null)
                         {
-                            listener.DatabaseCorrupted();
+                            Listener.DatabaseCorrupted();
                         }
                         System.Console.WriteLine("Database was not normally closed: start recovery");
                         header.root[1 - curr].size = header.root[curr].size;
@@ -1121,9 +1121,9 @@ namespace Volante.Impl
                         pool.copy(header.root[1 - curr].index,
                                   header.root[curr].index,
                                   (header.root[curr].indexUsed * 8L + Page.pageSize - 1) & ~(Page.pageSize - 1));
-                        if (listener != null)
+                        if (Listener != null)
                         {
-                            listener.RecoveryCompleted();
+                            Listener.RecoveryCompleted();
                         }
                         System.Console.WriteLine("Recovery completed");
                     }
@@ -2052,10 +2052,8 @@ namespace Volante.Impl
             long pos;
             int i, j;
 
-            if (listener != null)
-            {
-                listener.GcStarted();
-            }
+            if (Listener != null)
+                Listener.GcStarted();
 
             greyBitmap = new int[bitmapSize];
             blackBitmap = new int[bitmapSize];
@@ -2151,10 +2149,8 @@ namespace Volante.Impl
                                 objectCache.remove(i);
                                 cloneBitmap(pos, size);
                             }
-                            if (listener != null)
-                            {
-                                listener.DeallocateObject(desc.cls, i);
-                            }
+                            if (Listener != null)
+                                Listener.DeallocateObject(desc.cls, i);
                         }
                     }
                 }
@@ -2165,10 +2161,9 @@ namespace Volante.Impl
             allocatedDelta = 0;
             gcActive = false;
 
-            if (listener != null)
-            {
-                listener.GcCompleted(nDeallocated);
-            }
+            if (Listener != null)
+                Listener.GcCompleted(nDeallocated);
+
             return nDeallocated;
         }
 
@@ -3039,12 +3034,7 @@ namespace Volante.Impl
             get { return cacheKind; }
         }
 
-        public DatabaseListener SetListener(DatabaseListener listener)
-        {
-            DatabaseListener prevListener = this.listener;
-            this.listener = listener;
-            return prevListener;
-        }
+        public DatabaseListener Listener { get; set; }
 
         public IPersistent GetObjectByOid(int oid)
         {
@@ -4872,8 +4862,6 @@ namespace Volante.Impl
         internal object backgroundGcMonitor;
         internal object backgroundGcStartMonitor;
         internal Thread gcThread;
-
-        internal DatabaseListener listener;
 
         private IClassLoader loader;
 

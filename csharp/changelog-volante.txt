@@ -29,3 +29,4 @@
 25. Renamed IDatabase.CreateScalableSet() to just CreateSet().
 26. Removed Patricia tree code - of very limited use.
 27. Removed IDatabase.StringEncoding, always use utf8 for storing strings
+28. Changed IDatabase.SetListener() => IDatabase.Listener { get; set; }

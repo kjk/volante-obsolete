@@ -139,7 +139,7 @@ namespace Volante.Impl
         /// </summary>     
         public virtual bool HandleError()
         {
-            return (listener != null) ? listener.ReplicationError(null) : false;
+            return (Listener != null) ? Listener.ReplicationError(null) : false;
         }
 
         public void run()

@@ -436,12 +436,9 @@ namespace Volante
         bool ReplicationAck { get; set; }
 #endif
 
-        /// <summary>
-        /// Set db listener.
-        /// </summary>summary>
-        /// <param name="listener">new db listener (may be null)</param>
-        /// <returns>previous db listener</returns>
-        DatabaseListener SetListener(DatabaseListener listener);
+        /// <summary>Get/set db listener. You can set <code>null</code> listener.
+        /// </summary>
+        DatabaseListener Listener { get; set; }
 
         /// <summary>
         /// Set class loader. This class loader will be used to locate classes for 
