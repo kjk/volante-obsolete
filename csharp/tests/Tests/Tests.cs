@@ -132,7 +132,7 @@ public class TestConfig
         {
             var name = DatabaseName;
             if (delete)
-                Tests.SafeDeleteFile(name);
+                Tests.TryDeleteFile(name);
             if (InMemory == InMemoryType.File)
             {
                 if (FileKind == FileType.File)
@@ -298,13 +298,17 @@ public class Tests
         }
     }
 
-    public static void SafeDeleteFile(string path)
+    public static bool TryDeleteFile(string path)
     {
         try
         {
             File.Delete(path);
+            return true;
         }
-        catch { }
+        catch 
+        {
+            return false;
+        }
     }
 
     public static void VerifyDictionaryEnumeratorDone(IDictionaryEnumerator de)
