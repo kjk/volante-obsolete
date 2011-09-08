@@ -17,7 +17,21 @@ namespace Volante
         public class Root : Persistent
         {
             public IIndex<string, RecordFull> strIndex;
-            public IIndex<long, RecordFull> intIndex;
+            public IIndex<long, RecordFull> longIndex;
+            public IIndex<byte, RecordFull> thickByteIndex;
+        }
+
+        void MyCommit(IDatabase db, bool serializable)
+        {
+            if (serializable)
+            {
+                db.EndThreadTransaction();
+                db.BeginThreadTransaction(TransactionMode.Serializable);
+            }
+            else
+            {
+                db.Commit();
+            }
         }
 
         public void Run(TestConfig config)
@@ -33,13 +47,15 @@ namespace Volante
             Tests.Assert(null == root);
             root = new Root();
             root.strIndex = db.CreateIndex<string, RecordFull>(IndexType.Unique);
-            root.intIndex = db.CreateIndex<long, RecordFull>(IndexType.Unique);
+            root.longIndex = db.CreateIndex<long, RecordFull>(IndexType.Unique);
+            root.thickByteIndex = db.CreateThickIndex<byte, RecordFull>();
             db.Root = root;
             var strIndex = root.strIndex;
             Tests.Assert(typeof(string) == strIndex.KeyType);
-            var intIndex = root.intIndex;
+            var intIndex = root.longIndex;
             Tests.Assert(typeof(long) == intIndex.KeyType);
-
+            var thickByteIndex = root.thickByteIndex;
+            Tests.Assert(typeof(byte) == thickByteIndex.KeyType);
             DateTime start = DateTime.Now;
             int startWithOne = 0;
             int startWithFive = 0;
@@ -60,20 +76,15 @@ namespace Volante
                     strLast = rec.StrVal;
                 intIndex[rec.Int32Val] = rec;
                 strIndex[rec.StrVal] = rec;
+                thickByteIndex[rec.ByteVal] = rec;
                 n++;
                 if (n % 100 == 0)
-                    db.Commit();
+                    MyCommit(db, config.Serializable);
             }
+            MyCommit(db, config.Serializable);
 
-            if (config.Serializable)
-            {
-                db.EndThreadTransaction();
-                db.BeginThreadTransaction(TransactionMode.Serializable);
-            }
-            else
-            {
-                db.Commit();
-            }
+            Tests.Assert(intIndex.Count == count);
+            Tests.Assert(strIndex.Count == count);
 
             res.InsertTime = DateTime.Now - start;
             start = System.DateTime.Now;
@@ -82,7 +93,10 @@ namespace Volante
             {
                 RecordFull rec1 = intIndex[key];
                 RecordFull rec2 = strIndex[Convert.ToString(key)];
-                Tests.Assert(rec1 != null && rec1 == rec2);
+                RecordFull rec3 = thickByteIndex[rec1.ByteVal];
+                Tests.Assert(rec1 != null && rec2 != null && rec3 != null);
+                Tests.Assert(rec1 == rec2);
+                Tests.Assert(rec1.ByteVal == rec3.ByteVal);
             }
             res.IndexSearchTime = DateTime.Now - start;
             start = System.DateTime.Now;
@@ -170,7 +184,7 @@ namespace Volante
 
             db = config.GetDatabase(false);
             root = (Root)db.Root;
-            intIndex = root.intIndex;
+            intIndex = root.longIndex;
             strIndex = root.strIndex;
             k = Int64.MinValue;
             n = 0;

@@ -18,10 +18,8 @@ Things to do for c# version:
  * Relation
  * RTree
  * RTreeR2
- * ThickIndex
  * Ttree
  * TtreePage
- * WeakHashTable
  * L2List
  * L2ListElem
  * PersistentString

@@ -52,16 +52,13 @@ namespace Volante.Impl
         {
             IPersistent s = index.Get(key);
             if (s == null)
-            {
                 return null;
-            }
+
             Relation<V, V> r = s as Relation<V, V>;
             if (r != null)
             {
                 if (r.Count == 1)
-                {
                     return r[0];
-                }
             }
             throw new DatabaseException(DatabaseException.ErrorCode.KEY_NOT_UNIQUE);
         }
@@ -161,9 +158,7 @@ namespace Volante.Impl
             public void Reset()
             {
                 if (outer.MoveNext())
-                {
                     inner = ((IEnumerable<V>)outer.Current).GetEnumerator();
-                }
             }
 
             public IEnumerator<V> GetEnumerator()
