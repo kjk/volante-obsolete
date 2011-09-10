@@ -2,7 +2,7 @@ namespace Volante
 {
     using System;
 
-    public class TestCompoundResult : TestResult
+    public class TestMultiFieldResult : TestResult
     {
         public TimeSpan InsertTime;
         public TimeSpan IndexSearchTime;
@@ -10,7 +10,7 @@ namespace Volante
         public TimeSpan RemoveTime;
     }
 
-    public class TestCompoundIndex : ITest
+    public class TestMultiFieldIndex : ITest
     {
         class Record : Persistent
         {
@@ -21,7 +21,7 @@ namespace Volante
         public void Run(TestConfig config)
         {
             int count = config.Count;
-            var res = new TestCompoundResult();
+            var res = new TestMultiFieldResult();
             config.Result = res;
 
             DateTime start = DateTime.Now;

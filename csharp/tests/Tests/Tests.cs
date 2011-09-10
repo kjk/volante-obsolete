@@ -109,7 +109,6 @@ public class TestDatabaseListener : DatabaseListener
 
 public class RecordFull : Persistent
 {
-    public string StrVal;
     public Boolean BoolVal;
     public byte ByteVal;
     public sbyte SByteVal;
@@ -118,15 +117,18 @@ public class RecordFull : Persistent
     public Int32 Int32Val;
     public UInt32 UInt32Val;
     public Int64 Int64Val;
+    public Int64 Int64Prop { get; set; }
     public UInt64 UInt64Val;
+    public char CharVal;
     public float FloatVal;
     public double DoubleVal;
     public DateTime DateTimeVal;
     public Decimal DecimalVal;
     public Guid GuidVal;
+    public string StrVal;
 
     public RecordFullEnum EnumVal;
-    public object o;
+    public object ObjectVal;
 
     public RecordFull()
     {
@@ -134,7 +136,6 @@ public class RecordFull : Persistent
 
     public void SetValue(Int64 v)
     {
-        StrVal = v.ToString();
         BoolVal = (v % 2 == 0) ? false : true;
         ByteVal = (byte)v;
         SByteVal = (sbyte)v;
@@ -142,16 +143,20 @@ public class RecordFull : Persistent
         UInt16Val = (UInt16)v;
         Int32Val = (Int32)v;
         UInt32Val = (UInt32)v;
-        Int64Val = (Int64)v;
+        Int64Val = v;
+        Int64Prop = v;
         UInt64Val = (UInt64)v;
+        CharVal = (char)v;
         FloatVal = (float)v;
         DoubleVal = Convert.ToDouble(v);
+        DateTimeVal = DateTime.Now;
         DecimalVal = Convert.ToDecimal(v);
         GuidVal = Guid.NewGuid();
-        DateTimeVal = DateTime.Now;
+        StrVal = v.ToString();
+
         int enumVal = (int)(v % 11);
         EnumVal = (RecordFullEnum)enumVal;
-        o = (object)v;
+        ObjectVal = (object)v;
     }
 
     public RecordFull(Int64 v)
@@ -540,6 +545,10 @@ public class TestsMain
 
     static TestInfo[] TestInfos = new TestInfo[]
     {
+        // small count for both cases because we only want to test code paths
+        // unique to FieldIndex, the rest is tested in regular index tests
+        new TestInfo("TestFieldIndex", ConfigsDefault, new int[2] { 100, 100 }),
+        new TestInfo("TestMultiFieldIndex"),
         // test set below ScalableSet.BTREE_THRESHOLD, which is 128, to test
         // ILink code paths
         new TestInfo("TestSet", ConfigsOnlyAlt, new int[2] { 100, 100 }),
@@ -551,7 +560,6 @@ public class TestsMain
 #if WITH_XML
         new TestInfo("TestXml", ConfigsDefaultFile, new int[2] { 2000, 20000 }),
 #endif
-        new TestInfo("TestCompoundIndex"),
         new TestInfo("TestIndexRangeSearch"),
         new TestInfo("TestCorrupt00", ConfigsOneFileAlt),
         new TestInfo("TestRemove00"),

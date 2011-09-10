@@ -7,8 +7,6 @@ Things to do for c# version:
 * script that copies docs to my website (i.e. my blog repository)
 * g+ button in the website version of docs
 * more code coverage tests:
- * BtreeFieldIndex
- * OldBtreeFieldIndex
  * BtreeMultiFieldIndex
  * OldBtreeMultiFieldIndex
  * LinkImpl
@@ -27,6 +25,7 @@ Things to do for c# version:
 
 After 0.9:
 * document projection
+* test perf with SlimTune
 * silverlight version
 * wp7 versions
 * "who uses Volante" section in docs
@@ -46,3 +45,4 @@ Test coverage notes:
 * 59.5% on 2011-08-24
 * 61.4% on 2011-08-26
 * 65.2% on 2011-09-08
+* 67.5% on 2011-09-10

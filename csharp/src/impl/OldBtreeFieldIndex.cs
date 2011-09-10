@@ -31,9 +31,7 @@ namespace Volante.Impl
             {
                 PropertyInfo prop = cls.GetProperty(fieldName, BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
                 if (prop == null)
-                {
                     throw new DatabaseException(DatabaseException.ErrorCode.INDEXED_FIELD_NOT_FOUND, className + "." + fieldName);
-                }
                 mbrType = prop.PropertyType;
                 mbr = prop;
             }
@@ -43,9 +41,7 @@ namespace Volante.Impl
                 mbr = fld;
             }
             if (mbrType != typeof(K))
-            {
                 throw new DatabaseException(DatabaseException.ErrorCode.INCOMPATIBLE_KEY_TYPE, mbrType);
-            }
         }
 
         public Type IndexedClass
@@ -68,9 +64,8 @@ namespace Volante.Impl
         {
             cls = ClassDescriptor.lookup(Database, className);
             if (cls != typeof(V))
-            {
                 throw new DatabaseException(DatabaseException.ErrorCode.INCOMPATIBLE_VALUE_TYPE, cls);
-            }
+
             lookupField(fieldName);
         }
 
@@ -194,9 +189,7 @@ namespace Volante.Impl
             catch (DatabaseException x)
             {
                 if (x.Code == DatabaseException.ErrorCode.KEY_NOT_FOUND)
-                {
                     return false;
-                }
                 throw;
             }
             return true;
@@ -206,21 +199,15 @@ namespace Volante.Impl
         {
             Key key = extractKey(obj);
             if (unique)
+                return base.Get(key) == obj;
+
+            V[] mbrs = Get(key, key);
+            for (int i = 0; i < mbrs.Length; i++)
             {
-                return base.Get(key) != null;
+                if (mbrs[i] == obj)
+                    return true;
             }
-            else
-            {
-                V[] mbrs = Get(key, key);
-                for (int i = 0; i < mbrs.Length; i++)
-                {
-                    if (mbrs[i] == obj)
-                    {
-                        return true;
-                    }
-                }
-                return false;
-            }
+            return false;
         }
 
         public void Append(V obj)
@@ -243,13 +230,9 @@ namespace Volante.Impl
                         throw new DatabaseException(DatabaseException.ErrorCode.UNSUPPORTED_INDEX_TYPE, mbrType);
                 }
                 if (mbr is FieldInfo)
-                {
                     ((FieldInfo)mbr).SetValue(obj, val);
-                }
                 else
-                {
                     ((PropertyInfo)mbr).SetValue(obj, val, null);
-                }
                 autoincCount += 1;
                 obj.Modify();
                 base.insert(key, obj, false);
@@ -260,9 +243,7 @@ namespace Volante.Impl
         {
             ArrayList list = new ArrayList();
             if (root != 0)
-            {
                 OldBtreePage.find((DatabaseImpl)Database, root, checkKey(from), checkKey(till), this, height, list);
-            }
             return (V[])list.ToArray(cls);
         }
 
@@ -270,9 +251,7 @@ namespace Volante.Impl
         {
             V[] arr = (V[])Array.CreateInstance(cls, nElems);
             if (root != 0)
-            {
                 OldBtreePage.traverseForward((DatabaseImpl)Database, root, type, height, arr, 0);
-            }
             return arr;
         }
     }

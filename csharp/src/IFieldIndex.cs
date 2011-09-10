@@ -9,7 +9,7 @@ namespace Volante
     /// Index is used to provide fast access to the object by the value of indexed field. 
     /// Objects in the index are stored ordered by the value of indexed field. 
     /// It is possible to select object using exact value of the key or 
-    /// select set of objects which key belongs to the specified interval 
+    /// select set of objects whose key belongs to a specified interval 
     /// (each boundary can be specified or unspecified and can be inclusive or exclusive)
     /// Key should be of scalar, String, DateTime or peristent object type.
     /// </summary>

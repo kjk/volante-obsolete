@@ -179,8 +179,9 @@ namespace Volante.Impl
         public override bool Contains(V obj)
         {
             Key key = extractKey(obj);
+            // TODO: can it be thrown off by PersistentStub i.e. should we compare by oid?
             if (unique)
-                return base.Get(key) != null;
+                return base.Get(key) == obj;
 
             V[] mbrs = Get(key, key);
             for (int i = 0; i < mbrs.Length; i++)
