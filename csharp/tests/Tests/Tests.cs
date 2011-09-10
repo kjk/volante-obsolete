@@ -138,7 +138,7 @@ public class RecordFull : Persistent
     {
     }
 
-    public void SetValue(Int64 v)
+    public virtual void SetValue(Int64 v)
     {
         BoolVal = (v % 2 == 0) ? false : true;
         ByteVal = (byte)v;
@@ -173,7 +173,7 @@ public class RecordFullWithProperty : RecordFull
 {
     public Int64 Int64Prop { get; set; }
 
-    public void SetValue(Int64 v)
+    public override void SetValue(Int64 v)
     {
         base.SetValue(v);
         Int64Prop = v;
@@ -569,10 +569,11 @@ public class TestsMain
 
     static TestInfo[] TestInfos = new TestInfo[]
     {
-        // small count for both cases because we only want to test code paths
-        // unique to FieldIndex, the rest is tested in regular index tests
+        // small count for TestFieldIndex and TestMultiFieldIndex because we only
+        // want to test code paths unique to them. The underlying code is tested
+        // in regular index tests
+        new TestInfo("TestMultiFieldIndex", ConfigsDefault, new int[2] { 100, 100 }),
         new TestInfo("TestFieldIndex", ConfigsDefault, new int[2] { 100, 100 }),
-        new TestInfo("TestMultiFieldIndex"),
         // test set below ScalableSet.BTREE_THRESHOLD, which is 128, to test
         // ILink code paths
         new TestInfo("TestSet", ConfigsOnlyAlt, new int[2] { 100, 100 }),

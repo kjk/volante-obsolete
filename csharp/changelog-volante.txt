@@ -31,4 +31,5 @@
 27. Removed IDatabase.StringEncoding, always use utf8 for storing strings
 28. Changed IDatabase.SetListener() => IDatabase.Listener { get; set; }
 29. Renamed Btree* => OldBtree*, renamed Alt* by removing Alt prefix
-30. Fixed a bug in IFieldIndex.Contains() where a unique index could claim an object is there when it wasn't
+30. Fixed bug in IFieldIndex.Contains() where a unique index could claim an object is there when it wasn't
+31. Fixed bug in BtreeMultiFieldIndex.Contains() for non-unique index where it would throw an exception

@@ -32,9 +32,7 @@ namespace Volante.Impl
                 {
                     mbr[i] = cls.GetProperty(fieldNames[i], BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
                     if (mbr[i] == null)
-                    {
                         throw new DatabaseException(DatabaseException.ErrorCode.INDEXED_FIELD_NOT_FOUND, className + "." + fieldNames[i]);
-                    }
                 }
             }
         }
@@ -75,9 +73,7 @@ namespace Volante.Impl
         {
             cls = ClassDescriptor.lookup(Database, className);
             if (cls != typeof(V))
-            {
                 throw new DatabaseException(DatabaseException.ErrorCode.INCOMPATIBLE_VALUE_TYPE, cls);
-            }
             locateFields();
         }
 
@@ -257,9 +253,7 @@ namespace Volante.Impl
                             {
                                 diff = a1[o1++] - a2[o2++];
                                 if (diff != 0)
-                                {
                                     return diff;
-                                }
                             }
                             diff = len1 - len2;
                             break;
@@ -269,9 +263,7 @@ namespace Volante.Impl
                         break;
                 }
                 if (diff != 0)
-                {
                     return diff;
-                }
             }
             return 0;
         }
@@ -423,13 +415,11 @@ namespace Volante.Impl
         private Key convertKey(Key key)
         {
             if (key == null)
-            {
                 return null;
-            }
+
             if (key.type != ClassDescriptor.FieldType.tpArrayOfObject)
-            {
                 throw new DatabaseException(DatabaseException.ErrorCode.INCOMPATIBLE_KEY_TYPE);
-            }
+
             Object[] values = (Object[])key.oval;
             ByteBuffer buf = new ByteBuffer();
             int dst = 0;
@@ -542,9 +532,8 @@ namespace Volante.Impl
             catch (DatabaseException x)
             {
                 if (x.Code == DatabaseException.ErrorCode.KEY_NOT_FOUND)
-                {
                     return false;
-                }
+
                 throw;
             }
             return true;
@@ -560,21 +549,15 @@ namespace Volante.Impl
         {
             Key key = extractKey(obj);
             if (unique)
+                return base.Get(key) == obj;
+
+            V[] mbrs = Get(key, key);
+            for (int i = 0; i < mbrs.Length; i++)
             {
-                return base.Get(key) != null;
+                if (mbrs[i] == obj)
+                    return true;
             }
-            else
-            {
-                V[] mbrs = Get(key, key);
-                for (int i = 0; i < mbrs.Length; i++)
-                {
-                    if (mbrs[i] == obj)
-                    {
-                        return true;
-                    }
-                }
-                return false;
-            }
+            return false;
         }
 
         public void Append(V obj)

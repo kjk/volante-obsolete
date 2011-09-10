@@ -30,9 +30,7 @@ namespace Volante.Impl
                 {
                     mbr[i] = cls.GetProperty(fieldNames[i], BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
                     if (mbr[i] == null)
-                    {
                         throw new DatabaseException(DatabaseException.ErrorCode.INDEXED_FIELD_NOT_FOUND, className + "." + fieldNames[i]);
-                    }
                 }
             }
         }
@@ -65,9 +63,8 @@ namespace Volante.Impl
         {
             cls = ClassDescriptor.lookup(Database, className);
             if (cls != typeof(T))
-            {
                 throw new DatabaseException(DatabaseException.ErrorCode.INCOMPATIBLE_VALUE_TYPE, cls);
-            }
+
             locateFields();
         }
 
@@ -94,9 +91,7 @@ namespace Volante.Impl
                 {
                     int diff = ((IComparable)keys[i]).CompareTo(c.keys[i]);
                     if (diff != 0)
-                    {
                         return diff;
-                    }
                 }
                 return keys.Length - c.keys.Length;
             }
@@ -110,13 +105,11 @@ namespace Volante.Impl
         private Key convertKey(Key key)
         {
             if (key == null)
-            {
                 return null;
-            }
+
             if (key.type != ClassDescriptor.FieldType.tpArrayOfObject)
-            {
                 throw new DatabaseException(DatabaseException.ErrorCode.INCOMPATIBLE_KEY_TYPE);
-            }
+
             return new Key(new CompoundKey((System.Object[])key.oval), key.inclusion != 0);
         }
 
@@ -149,9 +142,8 @@ namespace Volante.Impl
             catch (DatabaseException x)
             {
                 if (x.Code == DatabaseException.ErrorCode.KEY_NOT_FOUND)
-                {
                     return false;
-                }
+
                 throw;
             }
             return true;
@@ -167,22 +159,16 @@ namespace Volante.Impl
         {
             Key key = extractKey(obj);
             if (unique)
-            {
-                return base.Get(key) != null;
-            }
-            else
-            {
-                T[] mbrs = Get(key, key);
+                return base.Get(key) == obj;
 
-                for (int i = 0; i < mbrs.Length; i++)
-                {
-                    if (mbrs[i] == obj)
-                    {
-                        return true;
-                    }
-                }
-                return false;
+            T[] mbrs = GetNoKeyConvert(key, key);
+
+            for (int i = 0; i < mbrs.Length; i++)
+            {
+                if (mbrs[i] == obj)
+                    return true;
             }
+            return false;
         }
 
         public void Append(T obj)
@@ -190,13 +176,19 @@ namespace Volante.Impl
             throw new DatabaseException(DatabaseException.ErrorCode.UNSUPPORTED_INDEX_TYPE);
         }
 
+        T[] GetNoKeyConvert(Key from, Key till)
+        {
+            ArrayList list = new ArrayList();
+            if (root != null)
+                root.find(from, till, height, list);
+            return (T[])list.ToArray(cls);
+        }
+
         public override T[] Get(Key from, Key till)
         {
             ArrayList list = new ArrayList();
             if (root != null)
-            {
                 root.find(convertKey(from), convertKey(till), height, list);
-            }
             return (T[])list.ToArray(cls);
         }
 
@@ -204,9 +196,7 @@ namespace Volante.Impl
         {
             T[] arr = new T[nElems];
             if (root != null)
-            {
                 root.traverseForward(height, arr, 0);
-            }
             return arr;
         }
 
