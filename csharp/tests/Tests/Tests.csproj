@@ -121,7 +121,7 @@
     <Compile Include="TestBackup.cs" />
     <Compile Include="TestBit.cs" />
     <Compile Include="TestBlob.cs" />
-    <Compile Include="TestCompoundIndex.cs" />
+    <Compile Include="TestMultiFieldIndex.cs" />
     <Compile Include="TestConcur.cs" />
     <Compile Include="TestEnumerator.cs" />
     <Compile Include="TestFieldIndex.cs" />

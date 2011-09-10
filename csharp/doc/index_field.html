@@ -1,4 +1,4 @@
-<!doctype HTML> 
+﻿<!doctype HTML> 
 <html>
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -20,7 +20,7 @@
 
 	<h3>Field and multi-field indexes</h3>
 
-	<p>B-Tree field and multi-field index are very similar to regular <a href="index_btree.html">B-Tree index</a>. The only difference is that the key is not any arbitrary value but must be a field of the object stored in the index.</p>
+	<p>Field and multi-field index provide a little bit convenience over regular <a href="index_btree.html">B-Tree index</a>. The only difference is that the key is not any arbitrary value but must be a field of the object stored in the index. That way when inserting an object into index you don't have to provide the key as a separate object as it can be extracted from the object itself. The implementation uses the same code as <a href="index_btree.html">B-Tree index</a>.</p>
 
 	<p>To create field index call <code>IFieldIndex&lt;K, V&gt; CreateFieldIndex&lt;K, V&gt;(string fieldName, IndexType indexType)</code>. <code>fieldName</code> is a name of a field on an object of type <code>V</code>. The type of that field must match type of the key <code>K</code>.</p>
 

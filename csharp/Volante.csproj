@@ -364,6 +364,39 @@
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="doc\blobs.html" />
+    <Content Include="doc\devguideindex.html" />
+    <Content Include="doc\download.html" />
+    <Content Include="doc\faq.html" />
+    <Content Include="doc\future.html" />
+    <Content Include="doc\garbage_collection.html" />
+    <Content Include="doc\getting_started.html" />
+    <Content Include="doc\history.html" />
+    <Content Include="doc\important_numbers.html" />
+    <Content Include="doc\index.html" />
+    <Content Include="doc\indexes.html" />
+    <Content Include="doc\index_array.html" />
+    <Content Include="doc\index_btree.html" />
+    <Content Include="doc\index_field.html" />
+    <Content Include="doc\index_set.html" />
+    <Content Include="doc\index_sorted_collection.html" />
+    <Content Include="doc\index_spatial.html" />
+    <Content Include="doc\index_time_series.html" />
+    <Content Include="doc\intro.html" />
+    <Content Include="doc\in_memory.html" />
+    <Content Include="doc\license.html" />
+    <Content Include="doc\link_array_relation.html" />
+    <Content Include="doc\main.css" />
+    <Content Include="doc\misc.html" />
+    <Content Include="doc\performance_tuning.html" />
+    <Content Include="doc\persistent_in_depth.html" />
+    <Content Include="doc\rc4encrypted.html" />
+    <Content Include="doc\schema_evolution.html" />
+    <Content Include="doc\transactions.html" />
+    <Content Include="doc\volante.html" />
+    <Content Include="doc\Volante.xml" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PreBuildEvent />
