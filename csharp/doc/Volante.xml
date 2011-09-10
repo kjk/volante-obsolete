@@ -4,11 +4,6 @@
         <name>Volante</name>
     </assembly>
     <members>
-        <member name="T:Volante.StreamFile">
-            <summary>
-            IFile implementation which to store databases on <see cref="T:System.IO.Stream"/> instances.
-            </summary>
-        </member>
         <member name="T:Volante.IFile">
             <summary>Interface for a database file.
             Programmer can provide its own implementation of this interface, adding such features
@@ -64,51 +59,21 @@
             Get/set <code>IFileMonitor</code> object
             </summary>
         </member>
-        <member name="M:Volante.StreamFile.#ctor(System.IO.Stream)">
-            <summary>
-            Construction
-            </summary>
-            <param name="stream">A <see cref="T:System.IO.Stream"/> where to store the database</param>
+        <member name="P:Volante.OsFile.NoFlush">
+            Whether to not flush file buffers during transaction commit. It will increase performance because
+            it eliminates synchronous write to the disk. It can cause database corruption in case of 
+            OS or power failure. Abnormal termination of application itself should not cause
+            the problem, because all data written to a file but not yet saved to the disk is 
+            stored in OS file buffers andwill be written to the disk.
+            Default value: false
         </member>
-        <member name="M:Volante.StreamFile.#ctor(System.IO.Stream,System.Int64)">
+        <member name="T:Volante.PersistentCollection`1">
             <summary>
-            Construction
-            </summary>
-            <param name="stream">A <see cref="T:System.IO.Stream"/> where to store the database</param>
-            <param name="offset">Offset within the stream where to store/find the database</param>
-        </member>
-        <member name="M:Volante.StreamFile.Write(System.Int64,System.Byte[])">
-            <summary>
-            Write method
-            </summary>
-            <param name="pos">Zero-based position</param>
-            <param name="buf">Buffer to write to the stream. The entire buffer is written</param>
-        </member>
-        <member name="M:Volante.StreamFile.Read(System.Int64,System.Byte[])">
-            <summary>
-            Read method
-            </summary>
-            <param name="pos">Zero-based position</param>
-            <param name="buf">Buffer where to store <c>buf.Length</c> byte(s) read from the stream</param>
-        </member>
-        <member name="M:Volante.StreamFile.Sync">
-            <summary>
-            Flushes the stream (subject to the NoFlush property)
+            Base class for all persistent collections
             </summary>
         </member>
-        <member name="M:Volante.StreamFile.Close">
-            <summary>
-            Closes the stream (subject to the NoFlush property)
-            </summary>
-        </member>
-        <member name="M:Volante.StreamFile.Lock">
-            <summary>
-            Locks the stream (no-op)
-            </summary>
-        </member>
-        <member name="P:Volante.StreamFile.NoFlush">
-            <summary>
-            Boolean property. Set to <c>true</c> to avoid flushing the stream, or <c>false</c> to flush the stream with every calls to <see cref="M:Volante.StreamFile.Sync"/>
+        <member name="T:Volante.PersistentResource">
+            <summary>Base class for persistent capable objects supporting locking
             </summary>
         </member>
         <member name="T:Volante.Persistent">
@@ -218,19 +183,6 @@
         </member>
         <member name="P:Volante.IPersistent.Database">
             <summary> Get db in which this object is stored
-            </summary>
-        </member>
-        <member name="T:Volante.Relation`2">
-            <summary> Class representing relation between owner and members
-            </summary>
-        </member>
-        <member name="T:Volante.PersistentCollection`1">
-            <summary>
-            Base class for all persistent collections
-            </summary>
-        </member>
-        <member name="T:Volante.PersistentResource">
-            <summary>Base class for persistent capable objects supporting locking
             </summary>
         </member>
         <member name="T:Volante.IResource">
@@ -350,6 +302,142 @@
             <summary>
             Reset resource to original state.
             Wakrup all threads waiting for this resource.
+            </summary>
+        </member>
+        <member name="T:Volante.ITimeSeries`1">
+            <summary>Time series is used for efficiently handling of time series data. 
+            Time series usually contains a very large number
+            of small elements which are usually accessed in sucessive order. 
+            To avoid overhead of loading elements from the disk one at a time,
+            Volante groups several elements together and stores them 
+            as single object (block).
+            </summary>
+        </member>
+        <member name="M:Volante.ITimeSeries`1.GetEnumerator(System.DateTime,System.DateTime)">
+            <summary>
+            Get forward iterator for time series elements in the given time interval
+            </summary>
+            <param name="from">inclusive time of the beginning of interval</param>
+            <param name="till">inclusive time of the ending of interval</param>
+            <returns>forward iterator within specified range</returns>
+        </member>
+        <member name="M:Volante.ITimeSeries`1.GetEnumerator(Volante.IterationOrder)">
+            <summary>
+            Get iterator for all time series elements
+            </summary>
+            <param name="order">direction of iteration</param>
+            <returns>iterator in specified direction</returns>
+        </member>
+        <member name="M:Volante.ITimeSeries`1.GetEnumerator(System.DateTime,System.DateTime,Volante.IterationOrder)">
+            <summary>
+            Get forward iterator for time series elements in a given time interval
+            </summary>
+            <param name="from">inclusive time of the beginning  of interval</param>
+            <param name="till">inclusive time of the ending of interval</param>
+            <param name="order">direction of iteration</param>
+            <returns>iterator within specified range in the specified direction</returns>
+        </member>
+        <member name="M:Volante.ITimeSeries`1.Range(System.DateTime,System.DateTime)">
+            <summary>
+            Get forward iterator for time series elements in a given time interval
+            </summary>
+            <param name="from">inclusive time of the beginning  of interval</param>
+            <param name="till">inclusive time of the ending of interval</param>
+            <returns>forward iterator within specified range</returns>
+        </member>
+        <member name="M:Volante.ITimeSeries`1.Range(Volante.IterationOrder)">
+            <summary>
+            Get iterator through all time series elements
+            </summary>
+            <param name="order">direction of iteration</param>
+            <returns>iterator in specified direction</returns>
+        </member>
+        <member name="M:Volante.ITimeSeries`1.Range(System.DateTime,System.DateTime,Volante.IterationOrder)">
+            <summary>
+            Get iterator for time series elements belonging to the specified range
+            </summary>
+            <param name="from">inclusive time of the beginning  of interval</param>
+            <param name="till">inclusive time of the ending of interval</param>
+            <param name="order">direction of iteration</param>
+            <returns>iterator within specified range in specified direction</returns>
+        </member>
+        <member name="M:Volante.ITimeSeries`1.From(System.DateTime)">
+            <summary>
+            Get forward iterator for time series elements with timestamp greater or equal than specified
+            </summary>
+            <param name="from">inclusive time of the beginning of interval</param>
+            <returns>forward iterator</returns>
+        </member>
+        <member name="M:Volante.ITimeSeries`1.Till(System.DateTime)">
+            <summary>
+            Get backward iterator for time series elements with timestamp less or equal than specified
+            </summary>
+            <param name="till">inclusive time of the eding of interval</param>
+            <returns>backward iterator</returns>
+        </member>
+        <member name="M:Volante.ITimeSeries`1.Reverse">
+            <summary>
+            Get backward iterator for time series elements 
+            </summary>
+            <returns>backward iterator</returns>
+        </member>
+        <member name="M:Volante.ITimeSeries`1.Contains(System.DateTime)">
+            <summary>
+            Check if data is available in time series for the specified time
+            </summary>
+            <param name="timestamp">time series element timestamp</param>
+            <returns><code>true</code> if there is element in time series with such timestamp, 
+            <code>false</code> otherwise</returns>
+        </member>
+        <member name="M:Volante.ITimeSeries`1.Remove(System.DateTime,System.DateTime)">
+            <summary>
+            Remove time series elements belonging to the specified range
+            </summary>
+            <param name="from">inclusive time of the beginning  of interval</param>
+            <param name="till">inclusive time of the ending of interval</param>
+            <returns>number of removed elements</returns>
+        </member>
+        <member name="M:Volante.ITimeSeries`1.RemoveFrom(System.DateTime)">
+            <summary>
+            Remove time series elements with timestamp greater or equal then specified
+            </summary>
+            <param name="from">inclusive time of the beginning of interval</param>
+            <returns>number of removed elements</returns>
+        </member>
+        <member name="M:Volante.ITimeSeries`1.RemoveTill(System.DateTime)">
+            <summary>
+            Remove elements with timestamp less or equal then specified
+            </summary>
+            <param name="till">inclusive time of the ending of interval</param>
+            <returns>number of removed elements</returns>
+        </member>
+        <member name="M:Volante.ITimeSeries`1.RemoveAll">
+            <summary>
+            Remove all elements
+            </summary>
+            <returns>number of removed elements</returns>
+        </member>
+        <member name="P:Volante.ITimeSeries`1.FirstTime">
+            <summary>
+            Get timestamp of first element in time series
+            </summary>
+            <exception cref="T:Volante.DatabaseException">DatabaseException(DatabaseException.ErrorClass.KEY_NOT_FOUND) if time series is empy</exception>
+        </member>
+        <member name="P:Volante.ITimeSeries`1.LastTime">
+            <summary>
+            Get timestamp of last element in time series
+            </summary>
+            <exception cref="T:Volante.DatabaseException">DatabaseException(DatabaseException.ErrorClass.KEY_NOT_FOUND) if time series is empy</exception>
+        </member>
+        <member name="P:Volante.ITimeSeries`1.Item(System.DateTime)">
+            <summary> 
+            Get element for a given timestamp
+            </summary>
+            <param name="timestamp">time series element timestamp</param>
+            <exception cref="T:Volante.DatabaseException">DatabaseException(DatabaseException.ErrorClass.KEY_NOT_FOUND) if no element with such timestamp exists</exception>
+        </member>
+        <member name="T:Volante.Relation`2">
+            <summary> Class representing relation between owner and members
             </summary>
         </member>
         <member name="T:Volante.ILink`1">
@@ -492,390 +580,6 @@
             <summary> Get or set relation owner
             </summary>
         </member>
-        <member name="T:Volante.IPArray`1">
-            <summary>Dynamically extended array of references to persistent objects.
-            It is inteded to be used in classes using virtual properties to 
-            access components of persistent objects. You can not use standard
-            C# array here, instead you should use PArray class.
-            PArray is created by IDatabase.CreateArray method
-            </summary>
-        </member>
-        <member name="T:Volante.IGenericPArray">
-            <summary>
-            Common interface for all PArrays
-            </summary> 
-        </member>
-        <member name="M:Volante.IGenericPArray.Size">
-            <summary> Get number of the array elements
-            </summary>
-            <returns>the number of related objects
-            
-            </returns>
-        </member>
-        <member name="M:Volante.IGenericPArray.GetOid(System.Int32)">
-            <summary>Get oid of array element.
-            </summary>
-            <param name="i">index of the object in the relation
-            </param>
-            <returns>oid of the object (0 if array contains <code>null</code> reference)
-            </returns>
-        </member>
-        <member name="M:Volante.IGenericPArray.SetOwner(Volante.IPersistent)">
-            <summary>
-            Set owner object for this PArray. Owner is persistent object contaning this PArray.
-            This method is mostly used by db itself, but can also used explicitly by programmer if
-            Parray component of one persistent object is assigned to component of another persistent object
-            </summary>
-            <param name="owner">owner of the array</param>
-        </member>
-        <member name="T:Volante.IIndex`2">
-            <summary> Interface of object index.
-            Index is used to provide fast access to the object by key. 
-            Objects in the index are stored ordered by key value. 
-            It is possible to select object using exact value of the key or 
-            select set of objects whose key belongs to a specified interval 
-            (each boundary can be specified or unspecified and can be inclusive or exclusive)
-            Key should be of scalar, String, DateTime or peristent object type.
-            </summary>
-        </member>
-        <member name="T:Volante.IGenericIndex">
-            <summary> Interface of object index.
-            Index is used to provide fast access to the object by key. 
-            Object in the index are stored ordered by key value. 
-            It is possible to select object using exact value of the key or 
-            select set of objects whose key belongs to the specified interval 
-            (each boundary can be specified or unspecified and can be inclusive or exclusive)
-            Key should be of scalar, String, DateTime or peristent object type.
-            </summary>
-        </member>
-        <member name="M:Volante.IGenericIndex`2.Get(Volante.Key)">
-            <summary> Get object by key (exact match)
-            </summary>
-            <param name="key">wrapper of the specified key. It should match with type of the index and should be inclusive.
-            </param>
-            <returns>object with this value of the key or <code>null</code> if key not found
-            </returns>
-            <exception cref="T:Volante.DatabaseException">DatabaseException(DatabaseException.ErrorCode.KEY_NOT_UNIQUE) exception if there are more than 
-            one objects in the index with specified value of the key.
-            
-            </exception>
-        </member>
-        <member name="M:Volante.IGenericIndex`2.Get(`0)">
-            <summary> Get object by key (exact match)     
-            </summary>
-            <param name="key">specified key value. It should match with type of the index and should be inclusive.
-            </param>
-            <returns>object with this value of the key or <code>null</code> if key not found
-            </returns>
-            <exception cref="T:Volante.DatabaseException">DatabaseException(DatabaseException.ErrorCode.KEY_NOT_UNIQUE) exception if there are more than 
-            one objects in the index with specified value of the key.
-            
-            </exception>
-        </member>
-        <member name="M:Volante.IGenericIndex`2.Get(Volante.Key,Volante.Key)">
-            <summary> Get objects which key value belongs to the specified range.
-            Either from boundary, either till boundary either both of them can be <code>null</code>.
-            In last case the method returns all objects from the index.
-            </summary>
-            <param name="from">low boundary. If <code>null</code> then low boundary is not specified.
-            Low boundary can be inclusive or exclusive. 
-            </param>
-            <param name="till">high boundary. If <code>null</code> then high boundary is not specified.
-            High boundary can be inclusive or exclusive. 
-            </param>
-            <returns>array of objects which keys belongs to the specified interval, ordered by key value
-            
-            </returns>
-        </member>
-        <member name="M:Volante.IGenericIndex`2.Get(`0,`0)">
-            <summary> Get objects which key value belongs to the specified inclusive range.
-            Either from boundary, either till boundary either both of them can be <code>null</code>.
-            In last case the method returns all objects from the index.
-            </summary>
-            <param name="from">Inclusive low boundary. If <code>null</code> then low boundary is not specified.
-            </param>
-            <param name="till">Inclusive high boundary. If <code>null</code> then high boundary is not specified.
-            </param>
-            <returns>array of objects which keys belongs to the specified interval, ordered by key value
-            
-            </returns>
-        </member>
-        <member name="M:Volante.IGenericIndex`2.GetEnumerator(Volante.Key,Volante.Key,Volante.IterationOrder)">
-             <summary>
-             Get iterator for traversing objects in the index with key belonging to the specified range. 
-             You should not update/remove or add members to the index during iteration
-             </summary>
-             <param name="from">Low boundary. If <code>null</code> then low boundary is not specified.
-             Low boundary can be inclusive or exclusive.</param>
-             <param name="till">High boundary. If <code>null</code> then high boundary is not specified.
-             High boundary can be inclusive or exclusive.</param>
-             <param name="order"><code>IterationOrder.AscentOrder</code> or <code>IterationOrder.DescentOrder</code></param>
-             <returns>selection iterator</returns>
-            
-        </member>
-        <member name="M:Volante.IGenericIndex`2.GetEnumerator(`0,`0,Volante.IterationOrder)">
-             <summary>
-             Get iterator for traversing objects in the index with key belonging to the specified range. 
-             You should not update/remove or add members to the index during iteration
-             </summary>
-             <param name="from">Low boundary. If <code>null</code> then low boundary is not specified.
-             Low boundary can be inclusive or exclusive.</param>
-             <param name="till">High boundary. If <code>null</code> then high boundary is not specified.
-             High boundary can be inclusive or exclusive.</param>
-             <param name="order"><code>IterationOrder.AscentOrder</code> or <code>IterationOrder.DescentOrder</code></param>
-             <returns>selection iterator</returns>
-            
-        </member>
-        <member name="M:Volante.IGenericIndex`2.GetEnumerator(Volante.Key,Volante.Key)">
-             <summary>
-             Get iterator for traversing objects in ascent order belonging to the specified range. 
-             You should not update/remove or add members to the index during iteration
-             </summary>
-             <param name="from">Low boundary. If <code>null</code> then low boundary is not specified.
-             Low boundary can be inclusive or exclusive.</param>
-             <param name="till">High boundary. If <code>null</code> then high boundary is not specified.
-             High boundary can be inclusive or exclusive.</param>
-             <returns>selection iterator</returns>
-            
-        </member>
-        <member name="M:Volante.IGenericIndex`2.GetEnumerator(`0,`0)">
-            <summary>
-            Get iterator for traversing objects in ascent order belonging to the specified range. 
-            You should not update/remove or add members to the index during iteration
-            </summary>
-            <param name="from">Low boundary. If <code>null</code> then low boundary is not specified.
-            Low boundary can be inclusive or exclusive.</param>
-            <param name="till">High boundary. If <code>null</code> then high boundary is not specified.
-            High boundary can be inclusive or exclusive.</param>
-            <returns>selection iterator</returns>
-        </member>
-        <member name="M:Volante.IGenericIndex`2.Range(Volante.Key,Volante.Key,Volante.IterationOrder)">
-             <summary>
-             Get enumerable collection of objects in the index with key belonging to the specified range. 
-             You should not update/remove or add members to the index during iteration
-             </summary>
-             <param name="from">Low boundary. If <code>null</code> then low boundary is not specified.
-             Low boundary can be inclusive or exclusive.</param>
-             <param name="till">High boundary. If <code>null</code> then high boundary is not specified.
-             High boundary can be inclusive or exclusive.</param>
-             <param name="order"><code>IterationOrder.AscentOrder</code> or <code>IterationOrder.DescentOrder</code></param>
-             <returns>enumerable collection</returns>
-            
-        </member>
-        <member name="M:Volante.IGenericIndex`2.Range(Volante.Key,Volante.Key)">
-             <summary>
-             Get enumerable ascent ordered collection of objects in the index with key belonging to the specified range. 
-             You should not update/remove or add members to the index during iteration
-             </summary>
-             <param name="from">Low boundary. If <code>null</code> then low boundary is not specified.
-             Low boundary can be inclusive or exclusive.</param>
-             <param name="till">High boundary. If <code>null</code> then high boundary is not specified.
-             High boundary can be inclusive or exclusive.</param>
-             <returns>enumerable collection</returns>
-            
-        </member>
-        <member name="M:Volante.IGenericIndex`2.Range(`0,`0,Volante.IterationOrder)">
-             <summary>
-             Get enumerable collection of objects in the index with key belonging to the specified range. 
-             You should not update/remove or add members to the index during iteration
-             </summary>
-             <param name="from">Inclusive low boundary. If <code>null</code> then low boundary is not specified.</param>
-             <param name="till">Inclusive high boundary. If <code>null</code> then high boundary is not specified.</param>
-             <param name="order"><code>IterationOrder.AscentOrder</code> or <code>IterationOrder.DescentOrder</code></param>
-             <returns>enumerable collection</returns>
-            
-        </member>
-        <member name="M:Volante.IGenericIndex`2.Range(`0,`0)">
-             <summary>
-             Get enumerable ascent ordered collection of objects in the index with key belonging to the specified range. 
-             You should not update/remove or add members to the index during iteration
-             </summary>
-             <param name="from">Inclusive low boundary. If <code>null</code> then low boundary is not specified.</param>
-             <param name="till">Inclusive high boundary. If <code>null</code> then high boundary is not specified.</param>
-             <returns>enumerable collection</returns>
-            
-        </member>
-        <member name="M:Volante.IGenericIndex`2.Reverse">
-             <summary>
-             Get enumerable collection of objects in descending order
-             </summary>
-             <returns>enumerable collection</returns>
-            
-        </member>
-        <member name="M:Volante.IGenericIndex`2.GetDictionaryEnumerator">
-             <summary>
-             Get iterator for traversing all entries in the index 
-             You should not update/remove or add members to the index during iteration
-             </summary>
-             <returns>entry iterator</returns>
-            
-        </member>
-        <member name="M:Volante.IGenericIndex`2.GetDictionaryEnumerator(Volante.Key,Volante.Key,Volante.IterationOrder)">
-             <summary>
-             Get iterator for traversing entries in the index with key belonging to the specified range. 
-             You should not update/remove or add members to the index during iteration
-             </summary>
-             <param name="from">Low boundary. If <code>null</code> then low boundary is not specified.
-             Low boundary can be inclusive or exclusive.</param>
-             <param name="till">High boundary. If <code>null</code> then high boundary is not specified.
-             High boundary can be inclusive or exclusive.</param>
-             <param name="order"><code>AscanrOrder</code> or <code>DescentOrder</code></param>
-             <returns>selection iterator</returns>
-            
-        </member>
-        <member name="M:Volante.IGenericIndex`2.GetPrefix(System.String)">
-            <summary> Get objects whose key starts with specifid prefix.
-            </summary>
-            <param name="prefix">String key prefix</param>
-            <returns>array of objects which key starts with specifid prefix, ordered by key value 
-            </returns>
-        </member>
-        <member name="M:Volante.IGenericIndex`2.GetEnumerator(System.String)">
-             <summary>Get iterator for traversing objects in ascending order whose key starts with specified prefix. 
-             You should not update/remove or add members to the index during iteration
-             </summary>
-             <param name="prefix">String key prefix</param>
-             <returns>selection iterator</returns>
-            
-        </member>
-        <member name="M:Volante.IGenericIndex`2.StartsWith(System.String)">
-            <summary>
-            Get enumerable in ascending ordered of objects whose key starts with specified prefix. 
-            You should not update/remove or add members to the index during iteration
-            </summary>
-            <param name="prefix">String key prefix</param>
-            <returns>enumerable collection</returns>
-        </member>
-        <member name="M:Volante.IGenericIndex`2.PrefixSearch(System.String)">
-            <summary> 
-            Locate all objects whose key is prefix of a specified word.
-            </summary>
-            <param name="word">string whose prefixes are located in index</param>
-            <returns>array of objects whose key is prefix of specified word, ordered by key value
-            </returns>
-        </member>
-        <member name="M:Volante.IGenericIndex`2.ToArray">
-            <summary> Get all objects in the index as array orderd by index key
-            </summary>
-            <returns>array of objects in the index ordered by key value
-            </returns>
-        </member>
-        <member name="M:Volante.IGenericIndex`2.ToArray(System.Type)">
-            <summary> Get all objects in the index as array of specified type orderd by index key
-            </summary>
-            <param name="elemType">type of array element</param>
-            <returns>array of objects in the index ordered by key value
-            </returns>
-        </member>
-        <member name="P:Volante.IGenericIndex`2.Item(`0)">
-            <summary> Access element by key
-            </summary>
-        </member>
-        <member name="P:Volante.IGenericIndex`2.Item(`0,`0)">
-            <summary> Get objects which key value belongs to the specified range.
-            </summary>
-        </member>
-        <member name="P:Volante.IGenericIndex`2.KeyType">
-            <summary>
-            Get type of index key
-            </summary>
-            <returns>type of index key</returns>
-        </member>
-        <member name="M:Volante.IIndex`2.Put(Volante.Key,`1)">
-            <summary>Put new object in the index. 
-            </summary>
-            <param name="key">object key wrapper
-            </param>
-            <param name="obj">object associated with this key. Object can be not yet peristent, in this case
-            its forced to become persistent by assigning oid to it.
-            </param>
-            <returns><code>true</code> if object is successfully inserted in the index, 
-            <code>false</code> if index was declared as unique and there is already object with such value
-            of the key in the index. 
-            </returns>
-        </member>
-        <member name="M:Volante.IIndex`2.Put(`0,`1)">
-            <summary>Put new object in the index. 
-            </summary>
-            <param name="key">object key value
-            </param>
-            <param name="obj">object associated with this key. Object can be not yet peristent, in this case
-            its forced to become persistent by assigning oid to it.
-            </param>
-            <returns><code>true</code> if object is successfully inserted in the index, 
-            <code>false</code> if index was declared as unique and there is already object with such value
-            of the key in the index. 
-            
-            </returns>
-        </member>
-        <member name="M:Volante.IIndex`2.Set(Volante.Key,`1)">
-            <summary>Associate new value with the key. If there is already object with such key in the index, 
-            then it will be removed from the index and new value associated with this key.
-            </summary>
-            <param name="key">object key wrapper
-            </param>
-            <param name="obj">object associated with this key. Object can be not yet peristent, in this case
-            its forced to become persistent by assigning oid to it.
-            </param>
-            <returns>object previously associated with this key, <code>null</code> if there was no such object
-            </returns>
-        </member>
-        <member name="M:Volante.IIndex`2.Set(`0,`1)">
-            <summary>Associate new value with the key. If there is already object with such key in the index, 
-            then it will be removed from the index and new value associated with this key.
-            </summary>
-            <param name="key">object key value
-            </param>
-            <param name="obj">object associated with this key. Object can be not yet peristent, in this case
-            its forced to become persistent by assigning oid to it.
-            </param>
-            <returns>object previously associated with this key, <code>null</code> if there was no such object
-            </returns>
-        </member>
-        <member name="M:Volante.IIndex`2.Remove(Volante.Key,`1)">
-            <summary>Remove object with specified key from the tree.
-            </summary>
-            <param name="key">wrapper of the value of the key of removed object
-            </param>
-            <param name="obj">object removed from the index
-            </param>
-            <exception cref="T:Volante.DatabaseException">DatabaseException(DatabaseException.ErrorCode.KEY_NOT_FOUND) exception if there is no such key in the index
-            
-            </exception>
-        </member>
-        <member name="M:Volante.IIndex`2.Remove(`0,`1)">
-            <summary>Remove object with specified key from the tree.
-            </summary>
-            <param name="key">value of the key of removed object
-            </param>
-            <param name="obj">object removed from the index
-            </param>
-            <exception cref="T:Volante.DatabaseException">DatabaseException(DatabaseException.ErrorCode.KEY_NOT_FOUND) exception if there is no such key in the index
-            
-            </exception>
-        </member>
-        <member name="M:Volante.IIndex`2.Remove(Volante.Key)">
-            <summary>Remove key from the unique index.
-            </summary>
-            <param name="key">wrapper of removed key
-            </param>
-            <returns>removed object</returns>
-            <exception cref="T:Volante.DatabaseException">DatabaseException(DatabaseException.ErrorCode.KEY_NOT_FOUND) exception if there is no such key in the index,
-            or DatabaseException(DatabaseException.ErrorCode.KEY_NOT_UNIQUE) if index is not unique.
-            
-            </exception>
-        </member>
-        <member name="M:Volante.IIndex`2.RemoveKey(`0)">
-            <summary>Remove key from the unique index.
-            </summary>
-            <param name="key">value of removed key
-            </param>
-            <returns>removed object</returns>
-            <exception cref="T:Volante.DatabaseException">DatabaseException(DatabaseException.ErrorCode.KEY_NOT_FOUND) exception if there is no such key in the index,
-            or DatabaseException(DatabaseException.ErrorCode.KEY_NOV_UNIQUE) if index is not unique.
-            
-            </exception>
-        </member>
         <member name="T:Volante.ITimeSeriesTick">
             <summary>Interface for time series elements.
             Objects inserted into time series must implement this interface.
@@ -885,138 +589,6 @@
             <summary>
             Get time series element timestamp. Has the same meaning as DateTime.Ticks (100 nanoseconds). 
             </summary>
-        </member>
-        <member name="T:Volante.ITimeSeries`1">
-            <summary>Time series is used for efficiently handling of time series data. 
-            Time series usually contains a very large number
-            of small elements which are usually accessed in sucessive order. 
-            To avoid overhead of loading elements from the disk one at a time,
-            Volante groups several elements together and stores them 
-            as single object (block).
-            </summary>
-        </member>
-        <member name="M:Volante.ITimeSeries`1.GetEnumerator(System.DateTime,System.DateTime)">
-            <summary>
-            Get forward iterator for time series elements in the given time interval
-            </summary>
-            <param name="from">inclusive time of the beginning of interval</param>
-            <param name="till">inclusive time of the ending of interval</param>
-            <returns>forward iterator within specified range</returns>
-        </member>
-        <member name="M:Volante.ITimeSeries`1.GetEnumerator(Volante.IterationOrder)">
-            <summary>
-            Get iterator for all time series elements
-            </summary>
-            <param name="order">direction of iteration</param>
-            <returns>iterator in specified direction</returns>
-        </member>
-        <member name="M:Volante.ITimeSeries`1.GetEnumerator(System.DateTime,System.DateTime,Volante.IterationOrder)">
-            <summary>
-            Get forward iterator for time series elements in a given time interval
-            </summary>
-            <param name="from">inclusive time of the beginning  of interval</param>
-            <param name="till">inclusive time of the ending of interval</param>
-            <param name="order">direction of iteration</param>
-            <returns>iterator within specified range in the specified direction</returns>
-        </member>
-        <member name="M:Volante.ITimeSeries`1.Range(System.DateTime,System.DateTime)">
-            <summary>
-            Get forward iterator for time series elements in a given time interval
-            </summary>
-            <param name="from">inclusive time of the beginning  of interval</param>
-            <param name="till">inclusive time of the ending of interval</param>
-            <returns>forward iterator within specified range</returns>
-        </member>
-        <member name="M:Volante.ITimeSeries`1.Range(Volante.IterationOrder)">
-            <summary>
-            Get iterator through all time series elements
-            </summary>
-            <param name="order">direction of iteration</param>
-            <returns>iterator in specified direction</returns>
-        </member>
-        <member name="M:Volante.ITimeSeries`1.Range(System.DateTime,System.DateTime,Volante.IterationOrder)">
-            <summary>
-            Get iterator for time series elements belonging to the specified range
-            </summary>
-            <param name="from">inclusive time of the beginning  of interval</param>
-            <param name="till">inclusive time of the ending of interval</param>
-            <param name="order">direction of iteration</param>
-            <returns>iterator within specified range in specified direction</returns>
-        </member>
-        <member name="M:Volante.ITimeSeries`1.From(System.DateTime)">
-            <summary>
-            Get forward iterator for time series elements with timestamp greater or equal than specified
-            </summary>
-            <param name="from">inclusive time of the beginning of interval</param>
-            <returns>forward iterator</returns>
-        </member>
-        <member name="M:Volante.ITimeSeries`1.Till(System.DateTime)">
-            <summary>
-            Get backward iterator for time series elements with timestamp less or equal than specified
-            </summary>
-            <param name="till">inclusive time of the eding of interval</param>
-            <returns>backward iterator</returns>
-        </member>
-        <member name="M:Volante.ITimeSeries`1.Reverse">
-            <summary>
-            Get backward iterator for time series elements 
-            </summary>
-            <returns>backward iterator</returns>
-        </member>
-        <member name="M:Volante.ITimeSeries`1.Contains(System.DateTime)">
-            <summary>
-            Check if data is available in time series for the specified time
-            </summary>
-            <param name="timestamp">time series element timestamp</param>
-            <returns><code>true</code> if there is element in time series with such timestamp, 
-            <code>false</code> otherwise</returns>
-        </member>
-        <member name="M:Volante.ITimeSeries`1.Remove(System.DateTime,System.DateTime)">
-            <summary>
-            Remove time series elements belonging to the specified range
-            </summary>
-            <param name="from">inclusive time of the beginning  of interval</param>
-            <param name="till">inclusive time of the ending of interval</param>
-            <returns>number of removed elements</returns>
-        </member>
-        <member name="M:Volante.ITimeSeries`1.RemoveFrom(System.DateTime)">
-            <summary>
-            Remove time series elements with timestamp greater or equal then specified
-            </summary>
-            <param name="from">inclusive time of the beginning of interval</param>
-            <returns>number of removed elements</returns>
-        </member>
-        <member name="M:Volante.ITimeSeries`1.RemoveTill(System.DateTime)">
-            <summary>
-            Remove elements with timestamp less or equal then specified
-            </summary>
-            <param name="till">inclusive time of the ending of interval</param>
-            <returns>number of removed elements</returns>
-        </member>
-        <member name="M:Volante.ITimeSeries`1.RemoveAll">
-            <summary>
-            Remove all elements
-            </summary>
-            <returns>number of removed elements</returns>
-        </member>
-        <member name="P:Volante.ITimeSeries`1.FirstTime">
-            <summary>
-            Get timestamp of first element in time series
-            </summary>
-            <exception cref="T:Volante.DatabaseException">DatabaseException(DatabaseException.ErrorClass.KEY_NOT_FOUND) if time series is empy</exception>
-        </member>
-        <member name="P:Volante.ITimeSeries`1.LastTime">
-            <summary>
-            Get timestamp of last element in time series
-            </summary>
-            <exception cref="T:Volante.DatabaseException">DatabaseException(DatabaseException.ErrorClass.KEY_NOT_FOUND) if time series is empy</exception>
-        </member>
-        <member name="P:Volante.ITimeSeries`1.Item(System.DateTime)">
-            <summary> 
-            Get element for a given timestamp
-            </summary>
-            <param name="timestamp">time series element timestamp</param>
-            <exception cref="T:Volante.DatabaseException">DatabaseException(DatabaseException.ErrorClass.KEY_NOT_FOUND) if no element with such timestamp exists</exception>
         </member>
         <member name="T:Volante.IDatabase">
             <summary> Object db
@@ -1466,6 +1038,448 @@
             This parameter should not be smaller than dbFirstUserId
             </summary>
         </member>
+        <member name="T:Volante.IIndex`2">
+            <summary> Interface of object index.
+            Index is used to provide fast access to the object by key. 
+            Objects in the index are stored ordered by key value. 
+            It is possible to select object using exact value of the key or 
+            select set of objects whose key belongs to a specified interval 
+            (each boundary can be specified or unspecified and can be inclusive or exclusive)
+            Key should be of scalar, String, DateTime or peristent object type.
+            </summary>
+        </member>
+        <member name="T:Volante.IGenericIndex">
+            <summary> Interface of object index.
+            Index is used to provide fast access to the object by key. 
+            Object in the index are stored ordered by key value. 
+            It is possible to select object using exact value of the key or 
+            select set of objects whose key belongs to the specified interval 
+            (each boundary can be specified or unspecified and can be inclusive or exclusive)
+            Key should be of scalar, String, DateTime or peristent object type.
+            </summary>
+        </member>
+        <member name="M:Volante.IGenericIndex`2.Get(Volante.Key)">
+            <summary> Get object by key (exact match)
+            </summary>
+            <param name="key">wrapper of the specified key. It should match with type of the index and should be inclusive.
+            </param>
+            <returns>object with this value of the key or <code>null</code> if key not found
+            </returns>
+            <exception cref="T:Volante.DatabaseException">DatabaseException(DatabaseException.ErrorCode.KEY_NOT_UNIQUE) exception if there are more than 
+            one objects in the index with specified value of the key.
+            
+            </exception>
+        </member>
+        <member name="M:Volante.IGenericIndex`2.Get(`0)">
+            <summary> Get object by key (exact match)     
+            </summary>
+            <param name="key">specified key value. It should match with type of the index and should be inclusive.
+            </param>
+            <returns>object with this value of the key or <code>null</code> if key not found
+            </returns>
+            <exception cref="T:Volante.DatabaseException">DatabaseException(DatabaseException.ErrorCode.KEY_NOT_UNIQUE) exception if there are more than 
+            one objects in the index with specified value of the key.
+            
+            </exception>
+        </member>
+        <member name="M:Volante.IGenericIndex`2.Get(Volante.Key,Volante.Key)">
+            <summary> Get objects which key value belongs to the specified range.
+            Either from boundary, either till boundary either both of them can be <code>null</code>.
+            In last case the method returns all objects from the index.
+            </summary>
+            <param name="from">low boundary. If <code>null</code> then low boundary is not specified.
+            Low boundary can be inclusive or exclusive. 
+            </param>
+            <param name="till">high boundary. If <code>null</code> then high boundary is not specified.
+            High boundary can be inclusive or exclusive. 
+            </param>
+            <returns>array of objects which keys belongs to the specified interval, ordered by key value
+            
+            </returns>
+        </member>
+        <member name="M:Volante.IGenericIndex`2.Get(`0,`0)">
+            <summary> Get objects which key value belongs to the specified inclusive range.
+            Either from boundary, either till boundary either both of them can be <code>null</code>.
+            In last case the method returns all objects from the index.
+            </summary>
+            <param name="from">Inclusive low boundary. If <code>null</code> then low boundary is not specified.
+            </param>
+            <param name="till">Inclusive high boundary. If <code>null</code> then high boundary is not specified.
+            </param>
+            <returns>array of objects which keys belongs to the specified interval, ordered by key value
+            
+            </returns>
+        </member>
+        <member name="M:Volante.IGenericIndex`2.GetEnumerator(Volante.Key,Volante.Key,Volante.IterationOrder)">
+             <summary>
+             Get iterator for traversing objects in the index with key belonging to the specified range. 
+             You should not update/remove or add members to the index during iteration
+             </summary>
+             <param name="from">Low boundary. If <code>null</code> then low boundary is not specified.
+             Low boundary can be inclusive or exclusive.</param>
+             <param name="till">High boundary. If <code>null</code> then high boundary is not specified.
+             High boundary can be inclusive or exclusive.</param>
+             <param name="order"><code>IterationOrder.AscentOrder</code> or <code>IterationOrder.DescentOrder</code></param>
+             <returns>selection iterator</returns>
+            
+        </member>
+        <member name="M:Volante.IGenericIndex`2.GetEnumerator(`0,`0,Volante.IterationOrder)">
+             <summary>
+             Get iterator for traversing objects in the index with key belonging to the specified range. 
+             You should not update/remove or add members to the index during iteration
+             </summary>
+             <param name="from">Low boundary. If <code>null</code> then low boundary is not specified.
+             Low boundary can be inclusive or exclusive.</param>
+             <param name="till">High boundary. If <code>null</code> then high boundary is not specified.
+             High boundary can be inclusive or exclusive.</param>
+             <param name="order"><code>IterationOrder.AscentOrder</code> or <code>IterationOrder.DescentOrder</code></param>
+             <returns>selection iterator</returns>
+            
+        </member>
+        <member name="M:Volante.IGenericIndex`2.GetEnumerator(Volante.Key,Volante.Key)">
+             <summary>
+             Get iterator for traversing objects in ascent order belonging to the specified range. 
+             You should not update/remove or add members to the index during iteration
+             </summary>
+             <param name="from">Low boundary. If <code>null</code> then low boundary is not specified.
+             Low boundary can be inclusive or exclusive.</param>
+             <param name="till">High boundary. If <code>null</code> then high boundary is not specified.
+             High boundary can be inclusive or exclusive.</param>
+             <returns>selection iterator</returns>
+            
+        </member>
+        <member name="M:Volante.IGenericIndex`2.GetEnumerator(`0,`0)">
+            <summary>
+            Get iterator for traversing objects in ascent order belonging to the specified range. 
+            You should not update/remove or add members to the index during iteration
+            </summary>
+            <param name="from">Low boundary. If <code>null</code> then low boundary is not specified.
+            Low boundary can be inclusive or exclusive.</param>
+            <param name="till">High boundary. If <code>null</code> then high boundary is not specified.
+            High boundary can be inclusive or exclusive.</param>
+            <returns>selection iterator</returns>
+        </member>
+        <member name="M:Volante.IGenericIndex`2.Range(Volante.Key,Volante.Key,Volante.IterationOrder)">
+             <summary>
+             Get enumerable collection of objects in the index with key belonging to the specified range. 
+             You should not update/remove or add members to the index during iteration
+             </summary>
+             <param name="from">Low boundary. If <code>null</code> then low boundary is not specified.
+             Low boundary can be inclusive or exclusive.</param>
+             <param name="till">High boundary. If <code>null</code> then high boundary is not specified.
+             High boundary can be inclusive or exclusive.</param>
+             <param name="order"><code>IterationOrder.AscentOrder</code> or <code>IterationOrder.DescentOrder</code></param>
+             <returns>enumerable collection</returns>
+            
+        </member>
+        <member name="M:Volante.IGenericIndex`2.Range(Volante.Key,Volante.Key)">
+             <summary>
+             Get enumerable ascent ordered collection of objects in the index with key belonging to the specified range. 
+             You should not update/remove or add members to the index during iteration
+             </summary>
+             <param name="from">Low boundary. If <code>null</code> then low boundary is not specified.
+             Low boundary can be inclusive or exclusive.</param>
+             <param name="till">High boundary. If <code>null</code> then high boundary is not specified.
+             High boundary can be inclusive or exclusive.</param>
+             <returns>enumerable collection</returns>
+            
+        </member>
+        <member name="M:Volante.IGenericIndex`2.Range(`0,`0,Volante.IterationOrder)">
+             <summary>
+             Get enumerable collection of objects in the index with key belonging to the specified range. 
+             You should not update/remove or add members to the index during iteration
+             </summary>
+             <param name="from">Inclusive low boundary. If <code>null</code> then low boundary is not specified.</param>
+             <param name="till">Inclusive high boundary. If <code>null</code> then high boundary is not specified.</param>
+             <param name="order"><code>IterationOrder.AscentOrder</code> or <code>IterationOrder.DescentOrder</code></param>
+             <returns>enumerable collection</returns>
+            
+        </member>
+        <member name="M:Volante.IGenericIndex`2.Range(`0,`0)">
+             <summary>
+             Get enumerable ascent ordered collection of objects in the index with key belonging to the specified range. 
+             You should not update/remove or add members to the index during iteration
+             </summary>
+             <param name="from">Inclusive low boundary. If <code>null</code> then low boundary is not specified.</param>
+             <param name="till">Inclusive high boundary. If <code>null</code> then high boundary is not specified.</param>
+             <returns>enumerable collection</returns>
+            
+        </member>
+        <member name="M:Volante.IGenericIndex`2.Reverse">
+             <summary>
+             Get enumerable collection of objects in descending order
+             </summary>
+             <returns>enumerable collection</returns>
+            
+        </member>
+        <member name="M:Volante.IGenericIndex`2.GetDictionaryEnumerator">
+             <summary>
+             Get iterator for traversing all entries in the index 
+             You should not update/remove or add members to the index during iteration
+             </summary>
+             <returns>entry iterator</returns>
+            
+        </member>
+        <member name="M:Volante.IGenericIndex`2.GetDictionaryEnumerator(Volante.Key,Volante.Key,Volante.IterationOrder)">
+             <summary>
+             Get iterator for traversing entries in the index with key belonging to the specified range. 
+             You should not update/remove or add members to the index during iteration
+             </summary>
+             <param name="from">Low boundary. If <code>null</code> then low boundary is not specified.
+             Low boundary can be inclusive or exclusive.</param>
+             <param name="till">High boundary. If <code>null</code> then high boundary is not specified.
+             High boundary can be inclusive or exclusive.</param>
+             <param name="order"><code>AscanrOrder</code> or <code>DescentOrder</code></param>
+             <returns>selection iterator</returns>
+            
+        </member>
+        <member name="M:Volante.IGenericIndex`2.GetPrefix(System.String)">
+            <summary> Get objects whose key starts with specifid prefix.
+            </summary>
+            <param name="prefix">String key prefix</param>
+            <returns>array of objects which key starts with specifid prefix, ordered by key value 
+            </returns>
+        </member>
+        <member name="M:Volante.IGenericIndex`2.GetEnumerator(System.String)">
+             <summary>Get iterator for traversing objects in ascending order whose key starts with specified prefix. 
+             You should not update/remove or add members to the index during iteration
+             </summary>
+             <param name="prefix">String key prefix</param>
+             <returns>selection iterator</returns>
+            
+        </member>
+        <member name="M:Volante.IGenericIndex`2.StartsWith(System.String)">
+            <summary>
+            Get enumerable in ascending ordered of objects whose key starts with specified prefix. 
+            You should not update/remove or add members to the index during iteration
+            </summary>
+            <param name="prefix">String key prefix</param>
+            <returns>enumerable collection</returns>
+        </member>
+        <member name="M:Volante.IGenericIndex`2.PrefixSearch(System.String)">
+            <summary> 
+            Locate all objects whose key is prefix of a specified word.
+            </summary>
+            <param name="word">string whose prefixes are located in index</param>
+            <returns>array of objects whose key is prefix of specified word, ordered by key value
+            </returns>
+        </member>
+        <member name="M:Volante.IGenericIndex`2.ToArray">
+            <summary> Get all objects in the index as array orderd by index key
+            </summary>
+            <returns>array of objects in the index ordered by key value
+            </returns>
+        </member>
+        <member name="M:Volante.IGenericIndex`2.ToArray(System.Type)">
+            <summary> Get all objects in the index as array of specified type orderd by index key
+            </summary>
+            <param name="elemType">type of array element</param>
+            <returns>array of objects in the index ordered by key value
+            </returns>
+        </member>
+        <member name="P:Volante.IGenericIndex`2.Item(`0)">
+            <summary> Access element by key
+            </summary>
+        </member>
+        <member name="P:Volante.IGenericIndex`2.Item(`0,`0)">
+            <summary> Get objects which key value belongs to the specified range.
+            </summary>
+        </member>
+        <member name="P:Volante.IGenericIndex`2.KeyType">
+            <summary>
+            Get type of index key
+            </summary>
+            <returns>type of index key</returns>
+        </member>
+        <member name="M:Volante.IIndex`2.Put(Volante.Key,`1)">
+            <summary>Put new object in the index. 
+            </summary>
+            <param name="key">object key wrapper
+            </param>
+            <param name="obj">object associated with this key. Object can be not yet peristent, in this case
+            its forced to become persistent by assigning oid to it.
+            </param>
+            <returns><code>true</code> if object is successfully inserted in the index, 
+            <code>false</code> if index was declared as unique and there is already object with such value
+            of the key in the index. 
+            </returns>
+        </member>
+        <member name="M:Volante.IIndex`2.Put(`0,`1)">
+            <summary>Put new object in the index. 
+            </summary>
+            <param name="key">object key value
+            </param>
+            <param name="obj">object associated with this key. Object can be not yet peristent, in this case
+            its forced to become persistent by assigning oid to it.
+            </param>
+            <returns><code>true</code> if object is successfully inserted in the index, 
+            <code>false</code> if index was declared as unique and there is already object with such value
+            of the key in the index. 
+            
+            </returns>
+        </member>
+        <member name="M:Volante.IIndex`2.Set(Volante.Key,`1)">
+            <summary>Associate new value with the key. If there is already object with such key in the index, 
+            then it will be removed from the index and new value associated with this key.
+            </summary>
+            <param name="key">object key wrapper
+            </param>
+            <param name="obj">object associated with this key. Object can be not yet peristent, in this case
+            its forced to become persistent by assigning oid to it.
+            </param>
+            <returns>object previously associated with this key, <code>null</code> if there was no such object
+            </returns>
+        </member>
+        <member name="M:Volante.IIndex`2.Set(`0,`1)">
+            <summary>Associate new value with the key. If there is already object with such key in the index, 
+            then it will be removed from the index and new value associated with this key.
+            </summary>
+            <param name="key">object key value
+            </param>
+            <param name="obj">object associated with this key. Object can be not yet peristent, in this case
+            its forced to become persistent by assigning oid to it.
+            </param>
+            <returns>object previously associated with this key, <code>null</code> if there was no such object
+            </returns>
+        </member>
+        <member name="M:Volante.IIndex`2.Remove(Volante.Key,`1)">
+            <summary>Remove object with specified key from the tree.
+            </summary>
+            <param name="key">wrapper of the value of the key of removed object
+            </param>
+            <param name="obj">object removed from the index
+            </param>
+            <exception cref="T:Volante.DatabaseException">DatabaseException(DatabaseException.ErrorCode.KEY_NOT_FOUND) exception if there is no such key in the index
+            
+            </exception>
+        </member>
+        <member name="M:Volante.IIndex`2.Remove(`0,`1)">
+            <summary>Remove object with specified key from the tree.
+            </summary>
+            <param name="key">value of the key of removed object
+            </param>
+            <param name="obj">object removed from the index
+            </param>
+            <exception cref="T:Volante.DatabaseException">DatabaseException(DatabaseException.ErrorCode.KEY_NOT_FOUND) exception if there is no such key in the index
+            
+            </exception>
+        </member>
+        <member name="M:Volante.IIndex`2.Remove(Volante.Key)">
+            <summary>Remove key from the unique index.
+            </summary>
+            <param name="key">wrapper of removed key
+            </param>
+            <returns>removed object</returns>
+            <exception cref="T:Volante.DatabaseException">DatabaseException(DatabaseException.ErrorCode.KEY_NOT_FOUND) exception if there is no such key in the index,
+            or DatabaseException(DatabaseException.ErrorCode.KEY_NOT_UNIQUE) if index is not unique.
+            
+            </exception>
+        </member>
+        <member name="M:Volante.IIndex`2.RemoveKey(`0)">
+            <summary>Remove key from the unique index.
+            </summary>
+            <param name="key">value of removed key
+            </param>
+            <returns>removed object</returns>
+            <exception cref="T:Volante.DatabaseException">DatabaseException(DatabaseException.ErrorCode.KEY_NOT_FOUND) exception if there is no such key in the index,
+            or DatabaseException(DatabaseException.ErrorCode.KEY_NOV_UNIQUE) if index is not unique.
+            
+            </exception>
+        </member>
+        <member name="T:Volante.ISet`1">
+            <summary>
+             Interface of objects set
+             </summary>
+        </member>
+        <member name="M:Volante.ISet`1.ContainsAll(System.Collections.Generic.ICollection{`0})">
+            <summary>
+            Check if the set contains all members from specified collection
+            </summary>
+            <param name="c">collection specifying members</param>
+            <returns><code>true</code> if all members of enumerator are present in the set</returns>
+        </member>
+        <member name="M:Volante.ISet`1.AddAll(System.Collections.Generic.ICollection{`0})">
+            <summary>
+            Add all elements from specified collection to the set
+            </summary>
+            <param name="c">collection specifying members</param>
+            <returns><code>true</code> if at least one element was added to the set,
+            <code>false</code> if now new elements were added</returns>
+        </member>
+        <member name="M:Volante.ISet`1.RemoveAll(System.Collections.Generic.ICollection{`0})">
+            <summary>
+            Remove from the set all members from the specified enumerator
+            </summary>
+            <param name="c">collection specifying members</param>
+            <returns></returns>
+        </member>
+        <member name="M:Volante.ISet`1.ToArray">
+            <summary>
+            Copy all set members to an array
+            </summary>
+            <returns>array of object with set members</returns>
+        </member>
+        <member name="M:Volante.ISet`1.ToArray(System.Type)">
+            <summary>
+            Copy all set members to an array of specified type
+            </summary>
+            <param name="elemType">type of array element</param>
+            <returns>array of specified type with members of the set</returns>
+        </member>
+        <member name="T:Volante.TypeMemoryUsage">
+            <summary>
+            Information about memory usage for one type. 
+            Instances of this class are created by IDatabase.GetMemoryUsage method.
+            Size of internal database structures (object index,* memory allocation bitmap) is associated with 
+            <code>Database</code> class. Size of class descriptors  - with <code>System.Type</code> class.
+            </summary>
+        </member>
+        <member name="F:Volante.TypeMemoryUsage.Type">
+            <summary>
+            Class of persistent object or Database for database internal data
+            </summary>
+        </member>
+        <member name="F:Volante.TypeMemoryUsage.Count">
+            <summary>
+            Number of reachable instance of the particular class in the database.
+            </summary>
+        </member>
+        <member name="F:Volante.TypeMemoryUsage.TotalSize">
+            <summary>
+            Total size of all reachable instances
+            </summary>
+        </member>
+        <member name="F:Volante.TypeMemoryUsage.AllocatedSize">
+            <summary>
+            Real allocated size of all instances. Database allocates space for th objects using quantums,
+            for example object wilth size 25 bytes will use 32 bytes in the db.
+            In item associated with Database class this field contains size of all allocated
+            space in the database (marked as used in bitmap) 
+            </summary>
+        </member>
+        <member name="M:Volante.TypeMemoryUsage.#ctor(System.Type)">
+            <summary>
+            TypeMemoryUsage constructor
+            </summary>
+        </member>
+        <member name="T:Volante.DatabaseException">
+            <summary>Exception thrown by database implementation
+            </summary>
+        </member>
+        <member name="M:Volante.DatabaseException.#ctor(Volante.DatabaseException.ErrorCode)">
+            <summary>Get original exception if DatabaseException was thrown as the result 
+            of catching some other exception within database implementation. 
+            DatabaseException is used as a wrapper of other exceptions to avoid cascading
+            propagation of throw and try/catch.
+            </summary>
+            <returns>original exception or <code>null</code> if there was no such exception
+            
+            </returns>
+        </member>
+        <member name="P:Volante.DatabaseException.Code">
+            <summary>Get exception error code (see definitions above)
+            </summary>
+        </member>
         <member name="T:Volante.IMultiFieldIndex`1">
             <summary> Interface of multifield index. 
             </summary>
@@ -1560,207 +1574,6 @@
             </summary>
             <returns>array of index key fields</returns>
         </member>
-        <member name="T:Volante.IBlob">
-            <summary>
-            Interface to store/fetch large binary objects
-            </summary>
-        </member>
-        <member name="M:Volante.IBlob.GetStream">
-            <summary>
-            Get stream to fetch/store BLOB data 
-            </summary>
-            <returns>BLOB read/write stream</returns>
-        </member>
-        <member name="P:Volante.OsFile.NoFlush">
-            Whether to not flush file buffers during transaction commit. It will increase performance because
-            it eliminates synchronous write to the disk. It can cause database corruption in case of 
-            OS or power failure. Abnormal termination of application itself should not cause
-            the problem, because all data written to a file but not yet saved to the disk is 
-            stored in OS file buffers andwill be written to the disk.
-            Default value: false
-        </member>
-        <member name="T:Volante.ISpatialIndex`1">
-            <summary> Interface of object spatial index.
-            Spatial index is used to allow fast selection of spatial objects belonging to the specified rectangle.
-            Spatial index is implemented using Guttman R-Tree with quadratic split algorithm.
-            </summary>
-        </member>
-        <member name="M:Volante.ISpatialIndex`1.Get(Volante.Rectangle)">
-            <summary>
-            Find all objects located in the selected rectangle
-            </summary>
-            <param name="r">selected rectangle
-            </param>
-            <returns>array of objects which enveloping rectangle intersects with specified rectangle
-            </returns>             
-        </member>
-        <member name="M:Volante.ISpatialIndex`1.Put(Volante.Rectangle,`0)">
-            <summary>
-            Put new object in the index. 
-            </summary>
-            <param name="r">enveloping rectangle for the object
-            </param>
-            <param name="obj"> object associated with this rectangle. Object can be not yet persistent, in this case
-            its forced to become persistent by assigning oid to it.
-            </param>
-        </member>
-        <member name="M:Volante.ISpatialIndex`1.Remove(Volante.Rectangle,`0)">
-            <summary>
-            Remove object with specified enveloping rectangle from the tree.
-            </summary>
-            <param name="r">enveloping rectangle for the object
-            </param>
-            <param name="obj">object removed from the index
-            </param>
-            <exception cref="T:Volante.DatabaseException">DatabaseException(DatabaseException.KEY_NOT_FOUND) exception if there is no such key in the index
-            </exception>
-        </member>
-        <member name="M:Volante.ISpatialIndex`1.Overlaps(Volante.Rectangle)">
-            <summary>
-            Get enumerator for objects located in the selected rectangle
-            </summary>
-            <param name="rect">Selected rectangle</param>
-            <returns>enumerable collection for objects which enveloping rectangle overlaps with specified rectangle
-            </returns>
-        </member>
-        <member name="M:Volante.ISpatialIndex`1.GetDictionaryEnumerator(Volante.Rectangle)">
-            <summary>
-            Get dictionary enumerator for objects located in the selected rectangle
-            </summary>
-            <param name="rect">Selected rectangle</param>
-            <returns>dictionary enumerator for objects which enveloping rectangle overlaps with specified rectangle
-            </returns>
-        </member>
-        <member name="M:Volante.ISpatialIndex`1.GetDictionaryEnumerator">
-            <summary>
-            Get dictionary enumerator for all objects in the index
-            </summary>
-            <returns>dictionary enumerator for all objects in the index
-            </returns>
-        </member>
-        <member name="P:Volante.ISpatialIndex`1.WrappingRectangle">
-            <summary>
-            Get wrapping rectangle 
-            </summary>
-            <returns>Minimal rectangle containing all rectangles in the index     
-            If index is empty <i>empty rectangle</i> (double.MaxValue, double.MaxValue, double.MinValue, double.MinValue)
-            is returned.
-            </returns>
-        </member>
-        <member name="T:Volante.DatabaseException">
-            <summary>Exception thrown by database implementation
-            </summary>
-        </member>
-        <member name="M:Volante.DatabaseException.#ctor(Volante.DatabaseException.ErrorCode)">
-            <summary>Get original exception if DatabaseException was thrown as the result 
-            of catching some other exception within database implementation. 
-            DatabaseException is used as a wrapper of other exceptions to avoid cascading
-            propagation of throw and try/catch.
-            </summary>
-            <returns>original exception or <code>null</code> if there was no such exception
-            
-            </returns>
-        </member>
-        <member name="P:Volante.DatabaseException.Code">
-            <summary>Get exception error code (see definitions above)
-            </summary>
-        </member>
-        <member name="T:Volante.ISpatialIndexR2`1">
-            <summary> Interface of object spatial index.
-            Spatial index is used to allow fast selection of spatial objects belonging to the specified rectangle.
-            Spatial index is implemented using Guttman R-Tree with quadratic split algorithm.
-            </summary>
-        </member>
-        <member name="M:Volante.ISpatialIndexR2`1.Get(Volante.RectangleR2)">
-            <summary>
-            Find all objects located in the selected rectangle
-            </summary>
-            <param name="r">selected rectangle
-            </param>
-            <returns>array of objects which enveloping rectangle intersects with specified rectangle
-            </returns>             
-        </member>
-        <member name="M:Volante.ISpatialIndexR2`1.Put(Volante.RectangleR2,`0)">
-            <summary>
-            Put new object in the index. 
-            </summary>
-            <param name="r">enveloping rectangle for the object
-            </param>
-            <param name="obj"> object associated with this rectangle. Object can be not yet persistent, in this case
-            its forced to become persistent by assigning oid to it.
-            </param>
-        </member>
-        <member name="M:Volante.ISpatialIndexR2`1.Remove(Volante.RectangleR2,`0)">
-            <summary>
-            Remove object with specified enveloping rectangle from the tree.
-            </summary>
-            <param name="r">enveloping rectangle for the object
-            </param>
-            <param name="obj">object removed from the index
-            </param>
-            <exception cref="T:Volante.DatabaseException">DatabaseException(DatabaseException.KEY_NOT_FOUND) exception 
-            if there is no such key in the index
-            </exception>
-        </member>
-        <member name="M:Volante.ISpatialIndexR2`1.Overlaps(Volante.RectangleR2)">
-            <summary>
-            Get enumerator for objects located in the selected rectangle
-            </summary>
-            <param name="rect">Selected rectangle</param>
-            <returns>enumerable collection for objects which enveloping rectangle overlaps with specified rectangle
-            </returns>
-        </member>
-        <member name="M:Volante.ISpatialIndexR2`1.GetDictionaryEnumerator(Volante.RectangleR2)">
-            <summary>
-            Get dictionary enumerator for objects located in the selected rectangle
-            </summary>
-            <param name="rect">Selected rectangle</param>
-            <returns>dictionary enumerator for objects which enveloping rectangle overlaps with specified rectangle
-            </returns>
-        </member>
-        <member name="M:Volante.ISpatialIndexR2`1.GetDictionaryEnumerator">
-            <summary>
-            Get dictionary enumerator for all objects in the index
-            </summary>
-            <returns>dictionary enumerator for all objects in the index
-            </returns>
-        </member>
-        <member name="P:Volante.ISpatialIndexR2`1.WrappingRectangle">
-            <summary>
-            Get wrapping rectangle 
-            </summary>
-            <returns>Minimal rectangle containing all rectangles in the index
-            If index is empty <i>empty rectangle</i> (double.MaxValue, double.MaxValue, double.MinValue, double.MinValue)
-            is returned.
-            </returns>
-        </member>
-        <member name="T:Volante.ReplicationSlaveDatabase">
-            <summary>
-            Database reciving modified pages from replication master and 
-            been able to run read-only transactions 
-            </summary>
-        </member>
-        <member name="M:Volante.ReplicationSlaveDatabase.IsConnected">
-            <summary>
-            Check if socket is connected to the master host
-            </summary>
-            <returns><code>true</code> if connection between slave and master is sucessfully established</returns>
-        </member>
-        <member name="M:Volante.ReplicationSlaveDatabase.WaitForModification">
-            <summary>
-            Wait until database is modified by master
-            This method blocks current thread until master node commits trasanction and
-            this transanction is completely delivered to this slave node
-            </summary>
-        </member>
-        <member name="T:Volante.TransparentPersistenceAttribute">
-            <summary>
-            Attribute providing transparent persistency for context bound objects.
-            It should be used for classes derived from PeristentContext class.
-            Objects of these classes automatically on demand load their 
-            content from the database and also automatically detect object modification.
-            </summary>
-        </member>
         <member name="T:Volante.PersistentComparator`2">
             <summary> Base class for persistent comparator used in SortedCollection class
             </summary>
@@ -1781,140 +1594,6 @@
             <param name="key"> search key</param>
             <returns>negative number if mbr &lt; key, zero if mbr == key and positive number if mbr &gt; key</returns>
         </member>
-        <member name="T:Volante.L2List`1">
-            <summary>
-            Double linked list.
-            </summary>
-        </member>
-        <member name="M:Volante.L2List`1.Clear">
-            <summary>
-            Make list empty. 
-            </summary>
-        </member>
-        <member name="M:Volante.L2List`1.Prepend(`0)">
-            <summary>
-            Insert element at the beginning of the list
-            </summary>
-        </member>
-        <member name="M:Volante.L2List`1.Append(`0)">
-            <summary>
-            Insert element at the end of the list
-            </summary>
-        </member>
-        <member name="M:Volante.L2List`1.Remove(`0)">
-            <summary>
-            Remove element from the list
-            </summary>
-        </member>
-        <member name="M:Volante.L2List`1.Add(`0)">
-            <summary>
-            Add element to the list
-            </summary>
-        </member>
-        <member name="P:Volante.L2List`1.Head">
-            <summary>
-            Get list head element
-            </summary>
-            <returns>list head element or null if list is empty
-            </returns>>
-        </member>
-        <member name="P:Volante.L2List`1.Tail">
-            <summary>
-            Get list tail element
-            </summary>
-            <returns>list tail element or null if list is empty
-            </returns>
-        </member>
-        <member name="T:Volante.DatabaseFactory">
-            <summary>Database factory
-            </summary>
-        </member>
-        <member name="M:Volante.DatabaseFactory.CreateDatabase">
-            <summary>Create a database instance
-            </summary>
-        </member>
-        <member name="T:Volante.Rectangle">
-            <summary>
-            Rectangle with integer coordinates. This class is used in spatial index.
-            </summary>
-        </member>
-        <member name="M:Volante.Rectangle.Area">
-            <summary>
-            Rectangle area
-            </summary>
-        </member>
-        <member name="M:Volante.Rectangle.JoinArea(Volante.Rectangle,Volante.Rectangle)">
-            <summary>
-            Area of covered rectangle for two sepcified rectangles
-            </summary>
-        </member>
-        <member name="M:Volante.Rectangle.#ctor(Volante.Rectangle)">
-            <summary>
-            Create copy of the rectangle
-            </summary>
-        </member>
-        <member name="M:Volante.Rectangle.#ctor(System.Int32,System.Int32,System.Int32,System.Int32)">
-            <summary>
-            Construct rectangle with specified coordinates
-            </summary>
-        </member>
-        <member name="M:Volante.Rectangle.Join(Volante.Rectangle)">
-            <summary>
-            Join two rectangles. This rectangle is updates to contain cover of this and specified rectangle.
-            </summary>
-            <param name="r">rectangle to be joined with this rectangle
-            </param>
-        </member>
-        <member name="M:Volante.Rectangle.Join(Volante.Rectangle,Volante.Rectangle)">
-            <summary>
-             Non destructive join of two rectangles. 
-            </summary>
-            <param name="a">first joined rectangle
-            </param>
-            <param name="b">second joined rectangle
-            </param>
-            <returns>rectangle containing cover of these two rectangles
-            </returns>
-        </member>
-        <member name="M:Volante.Rectangle.Intersects(Volante.Rectangle)">
-            <summary>
-            Checks if this rectangle intersects with specified rectangle
-            </summary>
-        </member>
-        <member name="M:Volante.Rectangle.Contains(Volante.Rectangle)">
-            <summary>
-            Checks if this rectangle contains the specified rectangle
-            </summary>
-        </member>
-        <member name="M:Volante.Rectangle.IsEmpty">
-            <summary>
-            Check if rectanlge is empty 
-            </summary>
-        </member>
-        <member name="P:Volante.Rectangle.Top">
-            <summary>
-            Smallest Y coordinate of the rectangle
-            </summary>
-        </member>
-        <member name="P:Volante.Rectangle.Left">
-            <summary>
-            Smallest X coordinate of the rectangle
-            </summary>
-        </member>
-        <member name="P:Volante.Rectangle.Bottom">
-            <summary>
-            Greatest Y coordinate  of the rectangle
-            </summary>
-        </member>
-        <member name="P:Volante.Rectangle.Right">
-            <summary>
-            Greatest X coordinate  of the rectangle
-            </summary>
-        </member>
-        <member name="T:Volante.MarshalByRefPersistent">
-            <summary> Base class for persistent capable objects with marshal by reference semantic
-            </summary>
-        </member>
         <member name="T:Volante.ReplicationMasterDatabase">
             <summary>
             Database performing replication of changed pages to specified slave nodes.
@@ -1925,6 +1604,28 @@
             Get number of currently available slave nodes
             </summary>
             <returns>number of online replication slaves</returns>
+        </member>
+        <member name="F:Volante.TransactionMode.Exclusive">
+            <summary>
+            Exclusive per-thread transaction: each thread accesses database in exclusive mode
+            </summary>
+        </member>
+        <member name="F:Volante.TransactionMode.Cooperative">
+            <summary>
+            Cooperative mode; all threads share the same transaction. Commit will commit changes made
+            by all threads. To make this schema work correctly, it is necessary to ensure (using locking)
+            that no thread is performing update of the database while another one tries to perform commit.
+            Rollback will undo the work of all threads. 
+            </summary>
+        </member>
+        <member name="F:Volante.TransactionMode.Serializable">
+            <summary>
+            Serializable per-thread transaction. Unlike exclusive mode, threads can concurrently access database, 
+            but effect will be the same as them working exclusively.
+            To provide such behavior, programmer should lock all access objects (or use hierarchical locking).
+            When object is updated, exclusive lock should be set, otherwise shared lock is enough.
+            Lock should be preserved until the end of transaction.
+            </summary>
         </member>
         <member name="T:Volante.ISortedCollection`2">
             <summary>
@@ -2040,6 +1741,54 @@
             <summary> Access elements by key range
             </summary>
         </member>
+        <member name="T:Volante.IPArray`1">
+            <summary>Dynamically extended array of references to persistent objects.
+            It is inteded to be used in classes using virtual properties to 
+            access components of persistent objects. You can not use standard
+            C# array here, instead you should use PArray class.
+            PArray is created by IDatabase.CreateArray method
+            </summary>
+        </member>
+        <member name="T:Volante.IGenericPArray">
+            <summary>
+            Common interface for all PArrays
+            </summary> 
+        </member>
+        <member name="M:Volante.IGenericPArray.Size">
+            <summary> Get number of the array elements
+            </summary>
+            <returns>the number of related objects
+            
+            </returns>
+        </member>
+        <member name="M:Volante.IGenericPArray.GetOid(System.Int32)">
+            <summary>Get oid of array element.
+            </summary>
+            <param name="i">index of the object in the relation
+            </param>
+            <returns>oid of the object (0 if array contains <code>null</code> reference)
+            </returns>
+        </member>
+        <member name="M:Volante.IGenericPArray.SetOwner(Volante.IPersistent)">
+            <summary>
+            Set owner object for this PArray. Owner is persistent object contaning this PArray.
+            This method is mostly used by db itself, but can also used explicitly by programmer if
+            Parray component of one persistent object is assigned to component of another persistent object
+            </summary>
+            <param name="owner">owner of the array</param>
+        </member>
+        <member name="T:Volante.IClassLoader">
+            <summary>
+            Interface to provide application apecific class loading
+            </summary>
+        </member>
+        <member name="M:Volante.IClassLoader.LoadClass(System.String)">
+            <summary>
+            Load class with specified name.
+            </summary>
+            <param name="name">full name of the class to be loaded</param>
+            <returns>loaded class or <code>null</code> if class can not be loaded</returns>
+        </member>
         <member name="T:Volante.DatabaseListener">
             <summary>
             Listener of database events. Programmer should derive his own subclass and register
@@ -2089,233 +1838,6 @@
             <returns><code>true</code> if host should be reconnected and attempt to send data to it should be 
             repeated, <code>false</code> if no more attmpts to communicate with this host should be performed
             </returns>
-        </member>
-        <member name="T:Volante.RectangleR2">
-            <summary>
-            R2 rectangle class. This class is used in spatial index.
-            </summary>
-        </member>
-        <member name="M:Volante.RectangleR2.Area">
-            <summary>
-            Rectangle area
-            </summary>
-        </member>
-        <member name="M:Volante.RectangleR2.JoinArea(Volante.RectangleR2,Volante.RectangleR2)">
-            <summary>
-            Area of covered rectangle for two sepcified rectangles
-            </summary>
-        </member>
-        <member name="M:Volante.RectangleR2.#ctor(Volante.RectangleR2)">
-            <summary>
-            Create copy of the rectangle
-            </summary>
-        </member>
-        <member name="M:Volante.RectangleR2.#ctor(System.Double,System.Double,System.Double,System.Double)">
-            <summary>
-            Construct rectangle with specified coordinates
-            </summary>
-        </member>
-        <member name="M:Volante.RectangleR2.Join(Volante.RectangleR2)">
-            <summary>
-            Join two rectangles. This rectangle is updates to contain cover of this and specified rectangle.
-            </summary>
-            <param name="r">rectangle to be joined with this rectangle
-            </param>
-        </member>
-        <member name="M:Volante.RectangleR2.Join(Volante.RectangleR2,Volante.RectangleR2)">
-            <summary>
-             Non destructive join of two rectangles. 
-            </summary>
-            <param name="a">first joined rectangle
-            </param>
-            <param name="b">second joined rectangle
-            </param>
-            <returns>rectangle containing cover of these two rectangles
-            </returns>
-        </member>
-        <member name="M:Volante.RectangleR2.Intersects(Volante.RectangleR2)">
-            <summary>
-            Checks if this rectangle intersects with specified rectangle
-            </summary>
-        </member>
-        <member name="M:Volante.RectangleR2.Contains(Volante.RectangleR2)">
-            <summary>
-            Checks if this rectangle contains the specified rectangle
-            </summary>
-        </member>
-        <member name="M:Volante.RectangleR2.IsEmpty">
-            <summary>
-            Check if rectanlge is empty 
-            </summary>
-        </member>
-        <member name="P:Volante.RectangleR2.Top">
-            <summary>
-            Smallest Y coordinate of the rectangle
-            </summary>
-        </member>
-        <member name="P:Volante.RectangleR2.Left">
-            <summary>
-            Smallest X coordinate of the rectangle
-            </summary>
-        </member>
-        <member name="P:Volante.RectangleR2.Bottom">
-            <summary>
-            Greatest Y coordinate  of the rectangle
-            </summary>
-        </member>
-        <member name="P:Volante.RectangleR2.Right">
-            <summary>
-            Greatest X coordinate  of the rectangle
-            </summary>
-        </member>
-        <member name="T:Volante.ISet`1">
-            <summary>
-             Interface of objects set
-             </summary>
-        </member>
-        <member name="M:Volante.ISet`1.ContainsAll(System.Collections.Generic.ICollection{`0})">
-            <summary>
-            Check if the set contains all members from specified collection
-            </summary>
-            <param name="c">collection specifying members</param>
-            <returns><code>true</code> if all members of enumerator are present in the set</returns>
-        </member>
-        <member name="M:Volante.ISet`1.AddAll(System.Collections.Generic.ICollection{`0})">
-            <summary>
-            Add all elements from specified collection to the set
-            </summary>
-            <param name="c">collection specifying members</param>
-            <returns><code>true</code> if at least one element was added to the set,
-            <code>false</code> if now new elements were added</returns>
-        </member>
-        <member name="M:Volante.ISet`1.RemoveAll(System.Collections.Generic.ICollection{`0})">
-            <summary>
-            Remove from the set all members from the specified enumerator
-            </summary>
-            <param name="c">collection specifying members</param>
-            <returns></returns>
-        </member>
-        <member name="M:Volante.ISet`1.ToArray">
-            <summary>
-            Copy all set members to an array
-            </summary>
-            <returns>array of object with set members</returns>
-        </member>
-        <member name="M:Volante.ISet`1.ToArray(System.Type)">
-            <summary>
-            Copy all set members to an array of specified type
-            </summary>
-            <param name="elemType">type of array element</param>
-            <returns>array of specified type with members of the set</returns>
-        </member>
-        <member name="T:Volante.Projection`2">
-            <summary>
-            Class used to project selected objects using relation field. 
-            For all selected objects (specified by array ort iterator), 
-            value of specified field (of IPersistent, array of IPersistent, Link or Relation type)
-            is inspected and all referenced object for projection (duplicate values are eliminated)
-            </summary>
-        </member>
-        <member name="M:Volante.Projection`2.#ctor(System.String)">
-            <summary>
-            Constructor of projection specified by field name of projected objects
-            </summary>
-            <param name="fieldName">field name used to perform projection</param>
-        </member>
-        <member name="M:Volante.Projection`2.#ctor">
-            <summary>
-            Default constructor of projection. This constructor should be used
-            only when you are going to derive your class from Projection and redefine
-            map method in it or sepcify type and fieldName later using setProjectionField
-            method
-            </summary>
-        </member>
-        <member name="M:Volante.Projection`2.SetProjectionField(System.String)">
-            <summary>
-            Specify projection field name
-            </summary>
-            <param name="fieldName">field name used to perform projection</param>
-        </member>
-        <member name="M:Volante.Projection`2.Project(`0[])">
-            <summary>
-            Project specified selection
-            </summary>
-            <param name="selection">array with selected object</param>
-        </member>
-        <member name="M:Volante.Projection`2.Project(`0)">
-            <summary>
-            Project specified object
-            </summary>
-            <param name="obj">selected object</param>
-        </member>
-        <member name="M:Volante.Projection`2.Project(System.Collections.Generic.IEnumerator{`0})">
-            <summary>
-            Project specified selection
-            </summary>
-            <param name="selection">enumerator specifying selceted objects</param>
-        </member>
-        <member name="M:Volante.Projection`2.Project(System.Collections.Generic.IEnumerable{`0})">
-            <summary>
-            Project specified selection
-            </summary>
-            <param name="selection">enumerator specifying selceted objects</param>
-        </member>
-        <member name="M:Volante.Projection`2.Join``1(Volante.Projection{``0,`1})">
-            <summary>
-            Join this projection with another projection.
-            Result of this join is set of objects present in both projections.
-            </summary>
-            <param name="prj">joined projection</param>
-        </member>
-        <member name="M:Volante.Projection`2.ToArray">
-            <summary>
-            Get result of preceding project and join operations
-            </summary>
-            <returns>array of objects</returns>
-        </member>
-        <member name="M:Volante.Projection`2.ToArray(System.Type)">
-            <summary>
-            Get result of preceding project and join operations
-            </summary>
-            <param name="elemType">type of result array element</param>
-            <returns>array of objects</returns>
-        </member>
-        <member name="M:Volante.Projection`2.GetEnumerator">
-            <summary>
-            Get enumerator for result of preceding project and join operations
-            </summary>
-            <returns>enumerator</returns>
-        </member>
-        <member name="M:Volante.Projection`2.Reset">
-            <summary>
-            Reset projection - clear result of prceding project and join operations
-            </summary>
-        </member>
-        <member name="M:Volante.Projection`2.Add(`1)">
-            <summary>
-            Add object to the set
-            </summary>
-            <param name="obj">object to be added to the set</param>
-        </member>
-        <member name="M:Volante.Projection`2.Map(`0)">
-            <summary>
-            Get related objects for the object obj. 
-            It is possible to redifine this method in derived classes 
-            to provide application specific mapping
-            </summary>
-            <param name="obj">object from the selection</param>
-        </member>
-        <member name="P:Volante.Projection`2.Length">
-            <summary>
-            Get number of objets in the result 
-            </summary>
-        </member>
-        <member name="T:Volante.PersistentContext">
-            <summary>Base class for context bound object with provided
-            transparent persistence. Objects derived from this class and marked with
-            TransparentPresistence attribute automatically on demand load their 
-            content from the database and also automatically detect object modification.
-            </summary>
         </member>
         <member name="T:Volante.Key">
             <summary> Class for specifying key value (neededd to access object by key usig index)
@@ -2600,53 +2122,288 @@
             <param name="inclusive">whether boundary is inclusive or exclusive
             </param>
         </member>
-        <member name="T:Volante.IClassLoader">
+        <member name="T:Volante.ReplicationSlaveDatabase">
             <summary>
-            Interface to provide application apecific class loading
+            Database reciving modified pages from replication master and 
+            been able to run read-only transactions 
             </summary>
         </member>
-        <member name="M:Volante.IClassLoader.LoadClass(System.String)">
+        <member name="M:Volante.ReplicationSlaveDatabase.IsConnected">
             <summary>
-            Load class with specified name.
+            Check if socket is connected to the master host
             </summary>
-            <param name="name">full name of the class to be loaded</param>
-            <returns>loaded class or <code>null</code> if class can not be loaded</returns>
+            <returns><code>true</code> if connection between slave and master is sucessfully established</returns>
         </member>
-        <member name="T:Volante.TypeMemoryUsage">
+        <member name="M:Volante.ReplicationSlaveDatabase.WaitForModification">
             <summary>
-            Information about memory usage for one type. 
-            Instances of this class are created by IDatabase.GetMemoryUsage method.
-            Size of internal database structures (object index,* memory allocation bitmap) is associated with 
-            <code>Database</code> class. Size of class descriptors  - with <code>System.Type</code> class.
+            Wait until database is modified by master
+            This method blocks current thread until master node commits trasanction and
+            this transanction is completely delivered to this slave node
             </summary>
         </member>
-        <member name="F:Volante.TypeMemoryUsage.Type">
-            <summary>
-            Class of persistent object or Database for database internal data
+        <member name="T:Volante.ISpatialIndexR2`1">
+            <summary> Interface of object spatial index.
+            Spatial index is used to allow fast selection of spatial objects belonging to the specified rectangle.
+            Spatial index is implemented using Guttman R-Tree with quadratic split algorithm.
             </summary>
         </member>
-        <member name="F:Volante.TypeMemoryUsage.Count">
+        <member name="M:Volante.ISpatialIndexR2`1.Get(Volante.RectangleR2)">
             <summary>
-            Number of reachable instance of the particular class in the database.
+            Find all objects located in the selected rectangle
+            </summary>
+            <param name="r">selected rectangle
+            </param>
+            <returns>array of objects which enveloping rectangle intersects with specified rectangle
+            </returns>             
+        </member>
+        <member name="M:Volante.ISpatialIndexR2`1.Put(Volante.RectangleR2,`0)">
+            <summary>
+            Put new object in the index. 
+            </summary>
+            <param name="r">enveloping rectangle for the object
+            </param>
+            <param name="obj"> object associated with this rectangle. Object can be not yet persistent, in this case
+            its forced to become persistent by assigning oid to it.
+            </param>
+        </member>
+        <member name="M:Volante.ISpatialIndexR2`1.Remove(Volante.RectangleR2,`0)">
+            <summary>
+            Remove object with specified enveloping rectangle from the tree.
+            </summary>
+            <param name="r">enveloping rectangle for the object
+            </param>
+            <param name="obj">object removed from the index
+            </param>
+            <exception cref="T:Volante.DatabaseException">DatabaseException(DatabaseException.KEY_NOT_FOUND) exception 
+            if there is no such key in the index
+            </exception>
+        </member>
+        <member name="M:Volante.ISpatialIndexR2`1.Overlaps(Volante.RectangleR2)">
+            <summary>
+            Get enumerator for objects located in the selected rectangle
+            </summary>
+            <param name="rect">Selected rectangle</param>
+            <returns>enumerable collection for objects which enveloping rectangle overlaps with specified rectangle
+            </returns>
+        </member>
+        <member name="M:Volante.ISpatialIndexR2`1.GetDictionaryEnumerator(Volante.RectangleR2)">
+            <summary>
+            Get dictionary enumerator for objects located in the selected rectangle
+            </summary>
+            <param name="rect">Selected rectangle</param>
+            <returns>dictionary enumerator for objects which enveloping rectangle overlaps with specified rectangle
+            </returns>
+        </member>
+        <member name="M:Volante.ISpatialIndexR2`1.GetDictionaryEnumerator">
+            <summary>
+            Get dictionary enumerator for all objects in the index
+            </summary>
+            <returns>dictionary enumerator for all objects in the index
+            </returns>
+        </member>
+        <member name="P:Volante.ISpatialIndexR2`1.WrappingRectangle">
+            <summary>
+            Get wrapping rectangle 
+            </summary>
+            <returns>Minimal rectangle containing all rectangles in the index
+            If index is empty <i>empty rectangle</i> (double.MaxValue, double.MaxValue, double.MinValue, double.MinValue)
+            is returned.
+            </returns>
+        </member>
+        <member name="T:Volante.RectangleR2">
+            <summary>
+            R2 rectangle class. This class is used in spatial index.
             </summary>
         </member>
-        <member name="F:Volante.TypeMemoryUsage.TotalSize">
+        <member name="M:Volante.RectangleR2.Area">
             <summary>
-            Total size of all reachable instances
+            Rectangle area
             </summary>
         </member>
-        <member name="F:Volante.TypeMemoryUsage.AllocatedSize">
+        <member name="M:Volante.RectangleR2.JoinArea(Volante.RectangleR2,Volante.RectangleR2)">
             <summary>
-            Real allocated size of all instances. Database allocates space for th objects using quantums,
-            for example object wilth size 25 bytes will use 32 bytes in the db.
-            In item associated with Database class this field contains size of all allocated
-            space in the database (marked as used in bitmap) 
+            Area of covered rectangle for two sepcified rectangles
             </summary>
         </member>
-        <member name="M:Volante.TypeMemoryUsage.#ctor(System.Type)">
+        <member name="M:Volante.RectangleR2.#ctor(Volante.RectangleR2)">
             <summary>
-            TypeMemoryUsage constructor
+            Create copy of the rectangle
             </summary>
+        </member>
+        <member name="M:Volante.RectangleR2.#ctor(System.Double,System.Double,System.Double,System.Double)">
+            <summary>
+            Construct rectangle with specified coordinates
+            </summary>
+        </member>
+        <member name="M:Volante.RectangleR2.Join(Volante.RectangleR2)">
+            <summary>
+            Join two rectangles. This rectangle is updates to contain cover of this and specified rectangle.
+            </summary>
+            <param name="r">rectangle to be joined with this rectangle
+            </param>
+        </member>
+        <member name="M:Volante.RectangleR2.Join(Volante.RectangleR2,Volante.RectangleR2)">
+            <summary>
+             Non destructive join of two rectangles. 
+            </summary>
+            <param name="a">first joined rectangle
+            </param>
+            <param name="b">second joined rectangle
+            </param>
+            <returns>rectangle containing cover of these two rectangles
+            </returns>
+        </member>
+        <member name="M:Volante.RectangleR2.Intersects(Volante.RectangleR2)">
+            <summary>
+            Checks if this rectangle intersects with specified rectangle
+            </summary>
+        </member>
+        <member name="M:Volante.RectangleR2.Contains(Volante.RectangleR2)">
+            <summary>
+            Checks if this rectangle contains the specified rectangle
+            </summary>
+        </member>
+        <member name="M:Volante.RectangleR2.IsEmpty">
+            <summary>
+            Check if rectanlge is empty 
+            </summary>
+        </member>
+        <member name="P:Volante.RectangleR2.Top">
+            <summary>
+            Smallest Y coordinate of the rectangle
+            </summary>
+        </member>
+        <member name="P:Volante.RectangleR2.Left">
+            <summary>
+            Smallest X coordinate of the rectangle
+            </summary>
+        </member>
+        <member name="P:Volante.RectangleR2.Bottom">
+            <summary>
+            Greatest Y coordinate  of the rectangle
+            </summary>
+        </member>
+        <member name="P:Volante.RectangleR2.Right">
+            <summary>
+            Greatest X coordinate  of the rectangle
+            </summary>
+        </member>
+        <member name="T:Volante.Projection`2">
+            <summary>
+            Class used to project selected objects using relation field. 
+            For all selected objects (specified by array ort iterator), 
+            value of specified field (of IPersistent, array of IPersistent, Link or Relation type)
+            is inspected and all referenced object for projection (duplicate values are eliminated)
+            </summary>
+        </member>
+        <member name="M:Volante.Projection`2.#ctor(System.String)">
+            <summary>
+            Constructor of projection specified by field name of projected objects
+            </summary>
+            <param name="fieldName">field name used to perform projection</param>
+        </member>
+        <member name="M:Volante.Projection`2.#ctor">
+            <summary>
+            Default constructor of projection. This constructor should be used
+            only when you are going to derive your class from Projection and redefine
+            map method in it or sepcify type and fieldName later using setProjectionField
+            method
+            </summary>
+        </member>
+        <member name="M:Volante.Projection`2.SetProjectionField(System.String)">
+            <summary>
+            Specify projection field name
+            </summary>
+            <param name="fieldName">field name used to perform projection</param>
+        </member>
+        <member name="M:Volante.Projection`2.Project(`0[])">
+            <summary>
+            Project specified selection
+            </summary>
+            <param name="selection">array with selected object</param>
+        </member>
+        <member name="M:Volante.Projection`2.Project(`0)">
+            <summary>
+            Project specified object
+            </summary>
+            <param name="obj">selected object</param>
+        </member>
+        <member name="M:Volante.Projection`2.Project(System.Collections.Generic.IEnumerator{`0})">
+            <summary>
+            Project specified selection
+            </summary>
+            <param name="selection">enumerator specifying selceted objects</param>
+        </member>
+        <member name="M:Volante.Projection`2.Project(System.Collections.Generic.IEnumerable{`0})">
+            <summary>
+            Project specified selection
+            </summary>
+            <param name="selection">enumerator specifying selceted objects</param>
+        </member>
+        <member name="M:Volante.Projection`2.Join``1(Volante.Projection{``0,`1})">
+            <summary>
+            Join this projection with another projection.
+            Result of this join is set of objects present in both projections.
+            </summary>
+            <param name="prj">joined projection</param>
+        </member>
+        <member name="M:Volante.Projection`2.ToArray">
+            <summary>
+            Get result of preceding project and join operations
+            </summary>
+            <returns>array of objects</returns>
+        </member>
+        <member name="M:Volante.Projection`2.ToArray(System.Type)">
+            <summary>
+            Get result of preceding project and join operations
+            </summary>
+            <param name="elemType">type of result array element</param>
+            <returns>array of objects</returns>
+        </member>
+        <member name="M:Volante.Projection`2.GetEnumerator">
+            <summary>
+            Get enumerator for result of preceding project and join operations
+            </summary>
+            <returns>enumerator</returns>
+        </member>
+        <member name="M:Volante.Projection`2.Reset">
+            <summary>
+            Reset projection - clear result of prceding project and join operations
+            </summary>
+        </member>
+        <member name="M:Volante.Projection`2.Add(`1)">
+            <summary>
+            Add object to the set
+            </summary>
+            <param name="obj">object to be added to the set</param>
+        </member>
+        <member name="M:Volante.Projection`2.Map(`0)">
+            <summary>
+            Get related objects for the object obj. 
+            It is possible to redifine this method in derived classes 
+            to provide application specific mapping
+            </summary>
+            <param name="obj">object from the selection</param>
+        </member>
+        <member name="P:Volante.Projection`2.Length">
+            <summary>
+            Get number of objets in the result 
+            </summary>
+        </member>
+        <member name="T:Volante.MarshalByRefPersistent">
+            <summary> Base class for persistent capable objects with marshal by reference semantic
+            </summary>
+        </member>
+        <member name="T:Volante.IBlob">
+            <summary>
+            Interface to store/fetch large binary objects
+            </summary>
+        </member>
+        <member name="M:Volante.IBlob.GetStream">
+            <summary>
+            Get stream to fetch/store BLOB data 
+            </summary>
+            <returns>BLOB read/write stream</returns>
         </member>
         <member name="T:Volante.PersistentString">
             <summary>
@@ -2701,32 +2458,73 @@
             <param name="str">PersistentString</param>
             <returns>.Net string</returns>
         </member>
-        <member name="T:Volante.NullFile">
-            <summary>
-            This implementation of <code>IFile</code> interface can be used
-            to make Volante as an main-memory database. It should be used when
-            cacheSizeInBytes is set to <code>0</code>.
-            In this case all pages are cached in memory and <code>NullFile</code>
-            is used just as a stub.
-            <code>NullFile</code> should be used only when data is transient
-            i.e. it will not be saved between database sessions. If you need
-            an in-memory database that provides data persistency, 
-            you should use normal file and infinite page pool size. 
+        <member name="T:Volante.ISpatialIndex`1">
+            <summary> Interface of object spatial index.
+            Spatial index is used to allow fast selection of spatial objects belonging to the specified rectangle.
+            Spatial index is implemented using Guttman R-Tree with quadratic split algorithm.
             </summary>
         </member>
-        <member name="T:Volante.BoundaryKind">
+        <member name="M:Volante.ISpatialIndex`1.Get(Volante.Rectangle)">
             <summary>
-            Range boundary kind
+            Find all objects located in the selected rectangle
             </summary>
+            <param name="r">selected rectangle
+            </param>
+            <returns>array of objects which enveloping rectangle intersects with specified rectangle
+            </returns>             
         </member>
-        <member name="F:Volante.BoundaryKind.Exclusive">
-            <summary>exclusive interval</summary>
+        <member name="M:Volante.ISpatialIndex`1.Put(Volante.Rectangle,`0)">
+            <summary>
+            Put new object in the index. 
+            </summary>
+            <param name="r">enveloping rectangle for the object
+            </param>
+            <param name="obj"> object associated with this rectangle. Object can be not yet persistent, in this case
+            its forced to become persistent by assigning oid to it.
+            </param>
         </member>
-        <member name="F:Volante.BoundaryKind.Inclusive">
-            <summary>inclusive interval</summary>
+        <member name="M:Volante.ISpatialIndex`1.Remove(Volante.Rectangle,`0)">
+            <summary>
+            Remove object with specified enveloping rectangle from the tree.
+            </summary>
+            <param name="r">enveloping rectangle for the object
+            </param>
+            <param name="obj">object removed from the index
+            </param>
+            <exception cref="T:Volante.DatabaseException">DatabaseException(DatabaseException.KEY_NOT_FOUND) exception if there is no such key in the index
+            </exception>
         </member>
-        <member name="F:Volante.BoundaryKind.None">
-            <summary>open interval</summary>
+        <member name="M:Volante.ISpatialIndex`1.Overlaps(Volante.Rectangle)">
+            <summary>
+            Get enumerator for objects located in the selected rectangle
+            </summary>
+            <param name="rect">Selected rectangle</param>
+            <returns>enumerable collection for objects which enveloping rectangle overlaps with specified rectangle
+            </returns>
+        </member>
+        <member name="M:Volante.ISpatialIndex`1.GetDictionaryEnumerator(Volante.Rectangle)">
+            <summary>
+            Get dictionary enumerator for objects located in the selected rectangle
+            </summary>
+            <param name="rect">Selected rectangle</param>
+            <returns>dictionary enumerator for objects which enveloping rectangle overlaps with specified rectangle
+            </returns>
+        </member>
+        <member name="M:Volante.ISpatialIndex`1.GetDictionaryEnumerator">
+            <summary>
+            Get dictionary enumerator for all objects in the index
+            </summary>
+            <returns>dictionary enumerator for all objects in the index
+            </returns>
+        </member>
+        <member name="P:Volante.ISpatialIndex`1.WrappingRectangle">
+            <summary>
+            Get wrapping rectangle 
+            </summary>
+            <returns>Minimal rectangle containing all rectangles in the index     
+            If index is empty <i>empty rectangle</i> (double.MaxValue, double.MaxValue, double.MinValue, double.MinValue)
+            is returned.
+            </returns>
         </member>
         <member name="T:Volante.L2ListElem`1">
             <summary>
@@ -2753,31 +2551,233 @@
             or list header
             </summary>
         </member>
+        <member name="T:Volante.PersistentContext">
+            <summary>Base class for context bound object with provided
+            transparent persistence. Objects derived from this class and marked with
+            TransparentPresistence attribute automatically on demand load their 
+            content from the database and also automatically detect object modification.
+            </summary>
+        </member>
+        <member name="T:Volante.NullFile">
+            <summary>
+            This implementation of <code>IFile</code> interface can be used
+            to make Volante as an main-memory database. It should be used when
+            cacheSizeInBytes is set to <code>0</code>.
+            In this case all pages are cached in memory and <code>NullFile</code>
+            is used just as a stub.
+            <code>NullFile</code> should be used only when data is transient
+            i.e. it will not be saved between database sessions. If you need
+            an in-memory database that provides data persistency, 
+            you should use normal file and infinite page pool size. 
+            </summary>
+        </member>
+        <member name="T:Volante.L2List`1">
+            <summary>
+            Double linked list.
+            </summary>
+        </member>
+        <member name="M:Volante.L2List`1.Clear">
+            <summary>
+            Make list empty. 
+            </summary>
+        </member>
+        <member name="M:Volante.L2List`1.Prepend(`0)">
+            <summary>
+            Insert element at the beginning of the list
+            </summary>
+        </member>
+        <member name="M:Volante.L2List`1.Append(`0)">
+            <summary>
+            Insert element at the end of the list
+            </summary>
+        </member>
+        <member name="M:Volante.L2List`1.Remove(`0)">
+            <summary>
+            Remove element from the list
+            </summary>
+        </member>
+        <member name="M:Volante.L2List`1.Add(`0)">
+            <summary>
+            Add element to the list
+            </summary>
+        </member>
+        <member name="P:Volante.L2List`1.Head">
+            <summary>
+            Get list head element
+            </summary>
+            <returns>list head element or null if list is empty
+            </returns>>
+        </member>
+        <member name="P:Volante.L2List`1.Tail">
+            <summary>
+            Get list tail element
+            </summary>
+            <returns>list tail element or null if list is empty
+            </returns>
+        </member>
+        <member name="T:Volante.BoundaryKind">
+            <summary>
+            Range boundary kind
+            </summary>
+        </member>
+        <member name="F:Volante.BoundaryKind.Exclusive">
+            <summary>exclusive interval</summary>
+        </member>
+        <member name="F:Volante.BoundaryKind.Inclusive">
+            <summary>inclusive interval</summary>
+        </member>
+        <member name="F:Volante.BoundaryKind.None">
+            <summary>open interval</summary>
+        </member>
+        <member name="T:Volante.DatabaseFactory">
+            <summary>Database factory
+            </summary>
+        </member>
+        <member name="M:Volante.DatabaseFactory.CreateDatabase">
+            <summary>Create a database instance
+            </summary>
+        </member>
+        <member name="T:Volante.StreamFile">
+            <summary>
+            IFile implementation which to store databases on <see cref="T:System.IO.Stream"/> instances.
+            </summary>
+        </member>
+        <member name="M:Volante.StreamFile.#ctor(System.IO.Stream)">
+            <summary>
+            Construction
+            </summary>
+            <param name="stream">A <see cref="T:System.IO.Stream"/> where to store the database</param>
+        </member>
+        <member name="M:Volante.StreamFile.#ctor(System.IO.Stream,System.Int64)">
+            <summary>
+            Construction
+            </summary>
+            <param name="stream">A <see cref="T:System.IO.Stream"/> where to store the database</param>
+            <param name="offset">Offset within the stream where to store/find the database</param>
+        </member>
+        <member name="M:Volante.StreamFile.Write(System.Int64,System.Byte[])">
+            <summary>
+            Write method
+            </summary>
+            <param name="pos">Zero-based position</param>
+            <param name="buf">Buffer to write to the stream. The entire buffer is written</param>
+        </member>
+        <member name="M:Volante.StreamFile.Read(System.Int64,System.Byte[])">
+            <summary>
+            Read method
+            </summary>
+            <param name="pos">Zero-based position</param>
+            <param name="buf">Buffer where to store <c>buf.Length</c> byte(s) read from the stream</param>
+        </member>
+        <member name="M:Volante.StreamFile.Sync">
+            <summary>
+            Flushes the stream (subject to the NoFlush property)
+            </summary>
+        </member>
+        <member name="M:Volante.StreamFile.Close">
+            <summary>
+            Closes the stream (subject to the NoFlush property)
+            </summary>
+        </member>
+        <member name="M:Volante.StreamFile.Lock">
+            <summary>
+            Locks the stream (no-op)
+            </summary>
+        </member>
+        <member name="P:Volante.StreamFile.NoFlush">
+            <summary>
+            Boolean property. Set to <c>true</c> to avoid flushing the stream, or <c>false</c> to flush the stream with every calls to <see cref="M:Volante.StreamFile.Sync"/>
+            </summary>
+        </member>
+        <member name="T:Volante.Rectangle">
+            <summary>
+            Rectangle with integer coordinates. This class is used in spatial index.
+            </summary>
+        </member>
+        <member name="M:Volante.Rectangle.Area">
+            <summary>
+            Rectangle area
+            </summary>
+        </member>
+        <member name="M:Volante.Rectangle.JoinArea(Volante.Rectangle,Volante.Rectangle)">
+            <summary>
+            Area of covered rectangle for two sepcified rectangles
+            </summary>
+        </member>
+        <member name="M:Volante.Rectangle.#ctor(Volante.Rectangle)">
+            <summary>
+            Create copy of the rectangle
+            </summary>
+        </member>
+        <member name="M:Volante.Rectangle.#ctor(System.Int32,System.Int32,System.Int32,System.Int32)">
+            <summary>
+            Construct rectangle with specified coordinates
+            </summary>
+        </member>
+        <member name="M:Volante.Rectangle.Join(Volante.Rectangle)">
+            <summary>
+            Join two rectangles. This rectangle is updates to contain cover of this and specified rectangle.
+            </summary>
+            <param name="r">rectangle to be joined with this rectangle
+            </param>
+        </member>
+        <member name="M:Volante.Rectangle.Join(Volante.Rectangle,Volante.Rectangle)">
+            <summary>
+             Non destructive join of two rectangles. 
+            </summary>
+            <param name="a">first joined rectangle
+            </param>
+            <param name="b">second joined rectangle
+            </param>
+            <returns>rectangle containing cover of these two rectangles
+            </returns>
+        </member>
+        <member name="M:Volante.Rectangle.Intersects(Volante.Rectangle)">
+            <summary>
+            Checks if this rectangle intersects with specified rectangle
+            </summary>
+        </member>
+        <member name="M:Volante.Rectangle.Contains(Volante.Rectangle)">
+            <summary>
+            Checks if this rectangle contains the specified rectangle
+            </summary>
+        </member>
+        <member name="M:Volante.Rectangle.IsEmpty">
+            <summary>
+            Check if rectanlge is empty 
+            </summary>
+        </member>
+        <member name="P:Volante.Rectangle.Top">
+            <summary>
+            Smallest Y coordinate of the rectangle
+            </summary>
+        </member>
+        <member name="P:Volante.Rectangle.Left">
+            <summary>
+            Smallest X coordinate of the rectangle
+            </summary>
+        </member>
+        <member name="P:Volante.Rectangle.Bottom">
+            <summary>
+            Greatest Y coordinate  of the rectangle
+            </summary>
+        </member>
+        <member name="P:Volante.Rectangle.Right">
+            <summary>
+            Greatest X coordinate  of the rectangle
+            </summary>
+        </member>
+        <member name="T:Volante.TransparentPersistenceAttribute">
+            <summary>
+            Attribute providing transparent persistency for context bound objects.
+            It should be used for classes derived from PeristentContext class.
+            Objects of these classes automatically on demand load their 
+            content from the database and also automatically detect object modification.
+            </summary>
+        </member>
         <member name="T:Volante.FileListener">
             <summary>Allows getting notifications for IFile.Write(), IFile.Read() and
             IFile.Sync() calls. Useful as a debugging/diagnostic tool.
-            </summary>
-        </member>
-        <member name="F:Volante.TransactionMode.Exclusive">
-            <summary>
-            Exclusive per-thread transaction: each thread accesses database in exclusive mode
-            </summary>
-        </member>
-        <member name="F:Volante.TransactionMode.Cooperative">
-            <summary>
-            Cooperative mode; all threads share the same transaction. Commit will commit changes made
-            by all threads. To make this schema work correctly, it is necessary to ensure (using locking)
-            that no thread is performing update of the database while another one tries to perform commit.
-            Rollback will undo the work of all threads. 
-            </summary>
-        </member>
-        <member name="F:Volante.TransactionMode.Serializable">
-            <summary>
-            Serializable per-thread transaction. Unlike exclusive mode, threads can concurrently access database, 
-            but effect will be the same as them working exclusively.
-            To provide such behavior, programmer should lock all access objects (or use hierarchical locking).
-            When object is updated, exclusive lock should be set, otherwise shared lock is enough.
-            Lock should be preserved until the end of transaction.
             </summary>
         </member>
     </members>

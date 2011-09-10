@@ -524,6 +524,7 @@ public class TestsMain
         public string Name;
         public TestConfig[] Configs;
         public int[] Counts;
+        public int Count { get { return Counts[CountsIdx]; } }
 
         public TestInfo(string name, TestConfig[] configs = null, int[] counts=null)
         {
@@ -539,11 +540,14 @@ public class TestsMain
 
     static TestInfo[] TestInfos = new TestInfo[]
     {
+        // test set below ScalableSet.BTREE_THRESHOLD, which is 128, to test
+        // ILink code paths
+        new TestInfo("TestSet", ConfigsOnlyAlt, new int[2] { 100, 100 }),
+        new TestInfo("TestSet", ConfigsDefault, CountsDefault),
 #if WITH_REPLICATION
         new TestInfo("TestReplication", ConfigsOnlyAlt, new int[2] { 10000, 500000 }),
 #endif
         new TestInfo("TestIndex", ConfigsIndex, Counts1),
-        new TestInfo("TestSet"),
 #if WITH_XML
         new TestInfo("TestXml", ConfigsDefaultFile, new int[2] { 2000, 20000 }),
 #endif
@@ -591,16 +595,6 @@ public class TestsMain
         new TestInfo("TestGc", ConfigsGc, new int[2] { 5000, 50000 })
     };
 
-    public static int GetCount(string testName)
-    {
-        foreach (var ti in TestInfos)
-        {
-            if (testName == ti.Name)
-                return ti.Counts[CountsIdx];
-        }
-        return CountsDefault[CountsIdx];
-    }
-
     static void ParseCmdLineArgs(string[] args)
     {
         foreach (var arg in args)
@@ -612,11 +606,6 @@ public class TestsMain
         }
     }
 
-    public static TestConfig[] GetTestConfigs(TestInfo testInfo)
-    {
-        return testInfo.Configs ?? ConfigsDefault;
-    }
-
     public static void RunTests(TestInfo testInfo)
     {
         string testClassName = testInfo.Name;
@@ -625,29 +614,26 @@ public class TestsMain
         if (obj == null)
             obj = assembly.CreateInstance("Volante." + testClassName);
         ITest test = (ITest)obj;
-        int count = GetCount(testClassName);
-        TestConfig[] configs = GetTestConfigs(testInfo);
-        foreach (TestConfig configTmp in configs)
+        foreach (TestConfig configTmp in testInfo.Configs)
         {
 #if !WITH_OLD_BTREE
             bool useAltBtree = configTmp.AltBtree || configTmp.Serializable;
             if (!useAltBtree)
                 continue;
 #endif
-            // make a copy because we modify it
-            var config = configTmp.Clone();
-            if (configTmp.Count != 0)
-                config.Count = configTmp.Count;
-            else
-                config.Count = count;
-            config.TestName = testClassName;
-            config.Result = new TestResult(); // can be over-written by a test
-            DateTime start = DateTime.Now;
-            test.Run(config);
-            config.Result.ExecutionTime = DateTime.Now - start;
-            config.Result.Config = config; // so that we Print() nicely
-            config.Result.Ok = Tests.FinalizeTest();
-            config.Result.Print();
+        var config = configTmp.Clone();
+        if (configTmp.Count != 0)
+            config.Count = configTmp.Count;
+        else
+            config.Count = testInfo.Count;
+        config.TestName = testClassName;
+        config.Result = new TestResult(); // can be over-written by a test
+        DateTime start = DateTime.Now;
+        test.Run(config);
+        config.Result.ExecutionTime = DateTime.Now - start;
+        config.Result.Config = config; // so that we Print() nicely
+        config.Result.Ok = Tests.FinalizeTest();
+        config.Result.Print();
         }
     }
 

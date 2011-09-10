@@ -9,8 +9,13 @@ namespace Volante
     /// </summary>
     public class PersistentString : PersistentResource
     {
+        public PersistentString()
+        {
+            this.str = "";
+        }
+
         /// <summary>
-        /// Consutrctor of perisstent string
+        /// Constructor of peristent string
         /// </summary>
         /// <param name="str">.Net string</param>
         public PersistentString(string str)

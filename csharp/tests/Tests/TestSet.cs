@@ -1,6 +1,7 @@
 namespace Volante
 {
     using System;
+    using System.Collections;
     using System.Collections.Generic;
 
     public class TestSet : ITest
@@ -43,6 +44,7 @@ namespace Volante
 
             var rOne = new RecordFull(val);
             Tests.Assert(!set.Contains(rOne));
+            Tests.Assert(!set.ContainsAll(new RecordFull[] { rOne }));
             Tests.Assert(set.AddAll(new RecordFull[] { rOne }));
             Tests.Assert(!set.AddAll(recs));
             Tests.Assert(set.Count == count + 1);
@@ -58,6 +60,9 @@ namespace Volante
 
             res.InsertTime = DateTime.Now - start;
 
+            IEnumerator e = set.GetEnumerator();
+            Tests.Assert(e != null);
+
             start = System.DateTime.Now;
             Tests.Assert(!set.Equals(null));
             Tests.Assert(set.Equals(set));
@@ -71,8 +76,6 @@ namespace Volante
             }
             Tests.Assert(set.Equals(set2));
 
-            set.Invalidate();
-
             RecordFull[] recsArr = set.ToArray();
             Tests.Assert(recsArr.Length == count);
             Array recsArr2 = set.ToArray(typeof(RecordFull));
@@ -81,11 +84,31 @@ namespace Volante
             Tests.Assert(set.Count == 0);
             db.Commit();
             Tests.Assert(set.Count == 0);
+            set.Invalidate();
+            set.Load();
             set.AddAll(recs);
             Tests.Assert(set.Count == recs.Count);
             db.Commit();
             Tests.Assert(set.Count == recs.Count);
             Tests.Assert(set.GetHashCode() > 0);
+            db.Gc();
+
+            // tests for PersistentString
+            var ps = new PersistentString();
+            Tests.Assert(ps.Get() == "");
+            ps = new PersistentString("Hello");
+            var s = ps.ToString();
+            Tests.Assert(s == "Hello");
+            ps.Append("2");
+            Tests.Assert("Hello2" == ps.Get());
+            ps.Set("Lala");
+            Tests.Assert("Lala" == ps.Get());
+            string s2 = ps;
+            Tests.Assert("Lala" == s2);
+            PersistentString ps2 = "Lulu";
+            Tests.Assert(ps2.Get() == "Lulu");
+            db.Root = ps;
+            set.Deallocate();
             db.Gc();
             db.Commit();
             db.Close();

@@ -43,9 +43,8 @@ namespace Volante.Impl
                 {
                     ensureOpened();
                     if (!value.IsPersistent())
-                    {
                         storeObject0(value);
-                    }
+
                     header.root[1 - currIndex].rootObject = value.Oid;
                     modified = true;
                 }
