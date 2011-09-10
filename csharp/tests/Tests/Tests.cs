@@ -107,6 +107,11 @@ public class TestDatabaseListener : DatabaseListener
     }
 }
 
+// Note: this object should allow generating dynamic code
+// for serialization/deserialization. Among other things,
+// it cannot contain properties (because they are implemented
+// as private backing fields), enums. The code that decides
+// what can be generated like that is ClassDescriptor.generateSerializer()
 public class RecordFull : Persistent
 {
     public Boolean BoolVal;
@@ -117,7 +122,6 @@ public class RecordFull : Persistent
     public Int32 Int32Val;
     public UInt32 UInt32Val;
     public Int64 Int64Val;
-    public Int64 Int64Prop { get; set; }
     public UInt64 UInt64Val;
     public char CharVal;
     public float FloatVal;
@@ -144,7 +148,6 @@ public class RecordFull : Persistent
         Int32Val = (Int32)v;
         UInt32Val = (UInt32)v;
         Int64Val = v;
-        Int64Prop = v;
         UInt64Val = (UInt64)v;
         CharVal = (char)v;
         FloatVal = (float)v;
@@ -162,6 +165,27 @@ public class RecordFull : Persistent
     public RecordFull(Int64 v)
     {
         SetValue(v);
+    }
+}
+
+// used for FieldIndex
+public class RecordFullWithProperty : RecordFull
+{
+    public Int64 Int64Prop { get; set; }
+
+    public void SetValue(Int64 v)
+    {
+        base.SetValue(v);
+        Int64Prop = v;
+    }
+
+    public RecordFullWithProperty(Int64 v)
+    {
+        SetValue(v);
+    }
+
+    public RecordFullWithProperty()
+    {
     }
 }
 

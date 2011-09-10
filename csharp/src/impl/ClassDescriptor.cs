@@ -446,9 +446,7 @@ namespace Volante.Impl
             allFields = (FieldDescriptor[])list.ToArray(typeof(FieldDescriptor));
             defaultConstructor = cls.GetConstructor(BindingFlags.Instance | BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly, null, defaultConstructorProfile, null);
             if (defaultConstructor == null && !typeof(ValueType).IsAssignableFrom(cls))
-            {
                 throw new DatabaseException(DatabaseException.ErrorCode.DESCRIPTOR_FAILURE, cls);
-            }
             resolved = true;
         }
 
