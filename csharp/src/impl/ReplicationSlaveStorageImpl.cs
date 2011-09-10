@@ -49,6 +49,7 @@ namespace Volante.Impl
             pool = new PagePool(cacheSizeInBytes / Page.pageSize);
             pool.open(file);
             thread = new Thread(new ThreadStart(run));
+            thread.Name = "ReplicationSlaveStorageImpl";
             thread.Start();
             WaitInitializationCompletion();
             base.Open(file, cacheSizeInBytes);

@@ -1057,7 +1057,7 @@
             </param>
         </member>
         <member name="M:Volante.IDatabase.Commit">
-            <summary> Commit changes done by the last transaction. Transaction is started implcitlely with forst update
+            <summary> Commit changes done by the last transaction. Transaction is started implcitly with forst update
             opertation.
             </summary>
         </member>
@@ -1264,13 +1264,6 @@
             <param name="obj">object to be made persistent</param>
             <returns>oid assigned to the object</returns>
         </member>
-        <member name="M:Volante.IDatabase.SetListener(Volante.DatabaseListener)">
-            <summary>
-            Set db listener.
-            </summary>summary>
-            <param name="listener">new db listener (may be null)</param>
-            <returns>previous db listener</returns>
-        </member>
         <member name="M:Volante.IDatabase.CreateClass(System.Type)">
             <summary>
             Create persistent class wrapper. This wrapper will implement virtual properties
@@ -1407,9 +1400,12 @@
             If it is set to the value different from long.MaxValue, GC will be started each time 
             when delta between total size of allocated and deallocated objects exceeds specified threashold OR
             after reaching end of allocation bitmap in allocator.
-            <summary>Set threshold for initiation of garbage collection. By default garbage collection is disable (threshold is set to
-            Int64.MaxValue). If it is set to the value different fro Long.MAX_VALUE, GC will be started each time when
-            delta between total size of allocated and deallocated objects exceeds specified threashold OR
+            <summary>Set threshold for initiation of garbage collection. By default garbage
+            collection is disabled (threshold is set to
+            Int64.MaxValue). If it is set to the value different fro
+            Long.MAX_VALUE, GC will be started each time when
+            delta between total size of allocated and deallocated
+            objects exceeds specified threashold OR
             after reaching end of allocation bitmap in allocator. 
             </summary>
             <param>delta between total size of allocated and deallocated object since last GC or db opening
@@ -1431,14 +1427,12 @@
             Default value: false
             </summary>
         </member>
-        <member name="P:Volante.IDatabase.StringEncoding">
-            Specifies encoding of storing strings in the database. By default Volante stores 
-            strings as sequence of chars (two bytes per char). If all strings in application are in 
-            the same language, then using encoding  can signifficantly reduce space needed
-            to store string (about two times). But please notice, that this option has influence
-            on all strings  stored in database. So if you already have some data in the db
-            and then change encoding, then it can cause incorrect fetching of strings and even database crash.
-            Default value: null
+        <member name="P:Volante.IDatabase.File">
+            <summary>Get database file. Should only be used to set FileListener.</summary>
+        </member>
+        <member name="P:Volante.IDatabase.Listener">
+            <summary>Get/set db listener. You can set <code>null</code> listener.
+            </summary>
         </member>
         <member name="P:Volante.IDatabase.Loader">
             <summary>
@@ -1472,6 +1466,100 @@
             This parameter should not be smaller than dbFirstUserId
             </summary>
         </member>
+        <member name="T:Volante.IMultiFieldIndex`1">
+            <summary> Interface of multifield index. 
+            </summary>
+        </member>
+        <member name="T:Volante.IFieldIndex`2">
+            <summary> Interface of indexed field. 
+            Index is used to provide fast access to the object by the value of indexed field. 
+            Objects in the index are stored ordered by the value of indexed field. 
+            It is possible to select object using exact value of the key or 
+            select set of objects which key belongs to the specified interval 
+            (each boundary can be specified or unspecified and can be inclusive or exclusive)
+            Key should be of scalar, String, DateTime or peristent object type.
+            </summary>
+        </member>
+        <member name="M:Volante.IFieldIndex`2.Put(`1)">
+            <summary> Put new object in the index. 
+            </summary>
+            <param name="obj">object to be inserted in index. Object should contain indexed field. 
+            Object can be not yet persistent, in this case its forced to become persistent by assigning oid to it.
+            </param>
+            <returns><code>true</code> if object is successfully inserted in the index, 
+            <code>false</code> if index was declared as unique and there is already object with such value
+            of the key in the index. 
+            
+            </returns>
+        </member>
+        <member name="M:Volante.IFieldIndex`2.Set(`1)">
+            <summary>
+            Associate new object with the key specified by object field value. 
+            If there is already object with such key in the index, 
+            then it will be removed from the index and new value associated with this key.
+            </summary>
+            <param name="obj">object to be inserted in index. Object should contain indexed field. 
+            Object can be not yet peristent, in this case
+            its forced to become persistent by assigning oid to it.
+            </param>
+            <returns>object previously associated with this key, <code>null</code> if there was no such object
+            </returns>
+        </member>
+        <member name="M:Volante.IFieldIndex`2.Append(`1)">
+            <summary>
+            Assign to the integer indexed field unique auto-icremented value and 
+            insert object in the index. 
+            </summary>
+            <param name="obj">object to be inserted in index. Object should contain indexed field
+            of integer (<code>int</code> or <code>long</code>) type.
+            This field is assigned unique value (which will not be reused while 
+            this index exists) and object is marked as modified.
+            Object can be not yet peristent, in this case
+            its forced to become persistent by assigning oid to it.
+            </param>
+            <exception cref="T:Volante.DatabaseException"><code>DatabaseException(DatabaseException.ErrorCode.INCOMPATIBLE_KEY_TYPE)</code> 
+            is thrown when indexed field has type other than <code>int</code> or <code>long</code></exception>
+        </member>
+        <member name="M:Volante.IFieldIndex`2.Remove(Volante.Key)">
+            <summary> Remove object with specified key from the unique index.
+            </summary>
+            <param name="key">wrapper of removed key
+            </param>
+            <returns>removed object</returns>
+            <exception cref="T:Volante.DatabaseException">DatabaseException(DatabaseException.ErrorCode.KEY_NOT_FOUND) exception if there is no such key in the index,
+            or DatabaseException(DatabaseException.ErrorCode.KEY_NOT_UNIQUE) if index is not unique.
+            
+            </exception>
+        </member>
+        <member name="M:Volante.IFieldIndex`2.RemoveKey(`0)">
+            <summary> Remove object with specified key from the unique index.
+            </summary>
+            <param name="key">value of removed key
+            </param>
+            <returns>removed object</returns>
+            <exception cref="T:Volante.DatabaseException">DatabaseException(DatabaseException.ErrorCode.KEY_NOT_FOUND) exception if there is no such key in the index,
+            or DatabaseException(DatabaseException.ErrorCode.KEY_NOT_UNIQUE) if index is not unique.
+            
+            </exception>
+        </member>
+        <member name="P:Volante.IFieldIndex`2.IndexedClass">
+            <summary>
+            Get class object objects which can be inserted in this index
+            </summary>
+            <returns>class specified in IDatabase.CreateFielIndex method</returns>
+        </member>
+        <member name="P:Volante.IFieldIndex`2.KeyField">
+            <summary>
+            Get key field
+            </summary>
+            <returns>field info for key field</returns>
+        </member>
+        <member name="P:Volante.IMultiFieldIndex`1.KeyFields">
+            <summary>
+            Get fields used as a key
+            </summary>
+            <returns>array of index key fields</returns>
+        </member>
         <member name="T:Volante.IBlob">
             <summary>
             Interface to store/fetch large binary objects
@@ -1482,46 +1570,6 @@
             Get stream to fetch/store BLOB data 
             </summary>
             <returns>BLOB read/write stream</returns>
-        </member>
-        <member name="T:Volante.ISet`1">
-            <summary>
-             Interface of objects set
-             </summary>
-        </member>
-        <member name="M:Volante.ISet`1.ContainsAll(System.Collections.Generic.ICollection{`0})">
-            <summary>
-            Check if the set contains all members from specified collection
-            </summary>
-            <param name="c">collection specifying members</param>
-            <returns><code>true</code> if all members of enumerator are present in the set</returns>
-        </member>
-        <member name="M:Volante.ISet`1.AddAll(System.Collections.Generic.ICollection{`0})">
-            <summary>
-            Add all elements from specified collection to the set
-            </summary>
-            <param name="c">collection specifying members</param>
-            <returns><code>true</code> if at least one element was added to the set,
-            <code>false</code> if now new elements were added</returns>
-        </member>
-        <member name="M:Volante.ISet`1.RemoveAll(System.Collections.Generic.ICollection{`0})">
-            <summary>
-            Remove from the set all members from the specified enumerator
-            </summary>
-            <param name="c">collection specifying members</param>
-            <returns></returns>
-        </member>
-        <member name="M:Volante.ISet`1.ToArray">
-            <summary>
-            Copy all set members to an array
-            </summary>
-            <returns>array of object with set members</returns>
-        </member>
-        <member name="M:Volante.ISet`1.ToArray(System.Type)">
-            <summary>
-            Copy all set members to an array of specified type
-            </summary>
-            <param name="elemType">type of array element</param>
-            <returns>array of specified type with members of the set</returns>
         </member>
         <member name="P:Volante.OsFile.NoFlush">
             Whether to not flush file buffers during transaction commit. It will increase performance because
@@ -1686,90 +1734,6 @@
             is returned.
             </returns>
         </member>
-        <member name="T:Volante.IFieldIndex`2">
-            <summary> Interface of indexed field. 
-            Index is used to provide fast access to the object by the value of indexed field. 
-            Objects in the index are stored ordered by the value of indexed field. 
-            It is possible to select object using exact value of the key or 
-            select set of objects which key belongs to the specified interval 
-            (each boundary can be specified or unspecified and can be inclusive or exclusive)
-            Key should be of scalar, String, DateTime or peristent object type.
-            </summary>
-        </member>
-        <member name="M:Volante.IFieldIndex`2.Put(`1)">
-            <summary> Put new object in the index. 
-            </summary>
-            <param name="obj">object to be inserted in index. Object should contain indexed field. 
-            Object can be not yet persistent, in this case its forced to become persistent by assigning oid to it.
-            </param>
-            <returns><code>true</code> if object is successfully inserted in the index, 
-            <code>false</code> if index was declared as unique and there is already object with such value
-            of the key in the index. 
-            
-            </returns>
-        </member>
-        <member name="M:Volante.IFieldIndex`2.Set(`1)">
-            <summary>
-            Associate new object with the key specified by object field value. 
-            If there is already object with such key in the index, 
-            then it will be removed from the index and new value associated with this key.
-            </summary>
-            <param name="obj">object to be inserted in index. Object should contain indexed field. 
-            Object can be not yet peristent, in this case
-            its forced to become persistent by assigning oid to it.
-            </param>
-            <returns>object previously associated with this key, <code>null</code> if there was no such object
-            </returns>
-        </member>
-        <member name="M:Volante.IFieldIndex`2.Append(`1)">
-            <summary>
-            Assign to the integer indexed field unique auto-icremented value and 
-            insert object in the index. 
-            </summary>
-            <param name="obj">object to be inserted in index. Object should contain indexed field
-            of integer (<code>int</code> or <code>long</code>) type.
-            This field is assigned unique value (which will not be reused while 
-            this index exists) and object is marked as modified.
-            Object can be not yet peristent, in this case
-            its forced to become persistent by assigning oid to it.
-            </param>
-            <exception cref="T:Volante.DatabaseException"><code>DatabaseException(DatabaseException.ErrorCode.INCOMPATIBLE_KEY_TYPE)</code> 
-            is thrown when indexed field has type other than <code>int</code> or <code>long</code></exception>
-        </member>
-        <member name="M:Volante.IFieldIndex`2.Remove(Volante.Key)">
-            <summary> Remove object with specified key from the unique index.
-            </summary>
-            <param name="key">wrapper of removed key
-            </param>
-            <returns>removed object</returns>
-            <exception cref="T:Volante.DatabaseException">DatabaseException(DatabaseException.ErrorCode.KEY_NOT_FOUND) exception if there is no such key in the index,
-            or DatabaseException(DatabaseException.ErrorCode.KEY_NOT_UNIQUE) if index is not unique.
-            
-            </exception>
-        </member>
-        <member name="M:Volante.IFieldIndex`2.RemoveKey(`0)">
-            <summary> Remove object with specified key from the unique index.
-            </summary>
-            <param name="key">value of removed key
-            </param>
-            <returns>removed object</returns>
-            <exception cref="T:Volante.DatabaseException">DatabaseException(DatabaseException.ErrorCode.KEY_NOT_FOUND) exception if there is no such key in the index,
-            or DatabaseException(DatabaseException.ErrorCode.KEY_NOT_UNIQUE) if index is not unique.
-            
-            </exception>
-        </member>
-        <member name="P:Volante.IFieldIndex`2.IndexedClass">
-            <summary>
-            Get class object objects which can be inserted in this index
-            </summary>
-            <returns>class specified in IDatabase.CreateFielIndex method</returns>
-        </member>
-        <member name="P:Volante.IFieldIndex`2.KeyField">
-            <summary>
-            Get key field
-            </summary>
-            <returns>field info for key field</returns>
-        </member>
         <member name="T:Volante.ReplicationSlaveDatabase">
             <summary>
             Database reciving modified pages from replication master and 
@@ -1788,16 +1752,6 @@
             This method blocks current thread until master node commits trasanction and
             this transanction is completely delivered to this slave node
             </summary>
-        </member>
-        <member name="T:Volante.IMultiFieldIndex`1">
-            <summary> Interface of multifield index. 
-            </summary>
-        </member>
-        <member name="P:Volante.IMultiFieldIndex`1.KeyFields">
-            <summary>
-            Get fields used as a key
-            </summary>
-            <returns>array of index key fields</returns>
         </member>
         <member name="T:Volante.TransparentPersistenceAttribute">
             <summary>
@@ -2089,42 +2043,42 @@
         <member name="T:Volante.DatabaseListener">
             <summary>
             Listener of database events. Programmer should derive his own subclass and register
-            it using Database.SetListener method.
+            it using IDatabase.Listener property.
             </summary>
         </member>
         <member name="M:Volante.DatabaseListener.DatabaseCorrupted">
             <summary>
-            This metod is called during database open when database was not
-            close normally and has to be recovered
+            Called if database was detected to be corrupted during openinig
+            (when database was not closed properly and has to be recovered)
             </summary>
         </member>
         <member name="M:Volante.DatabaseListener.RecoveryCompleted">
             <summary>
-            This method is called after completion of recovery
+            Called after database recovery has completed
             </summary>
         </member>
         <member name="M:Volante.DatabaseListener.GcStarted">
             <summary>
-            This method is called when garbage collection is  started (ether explicitly
-            by invocation of IDatabase.Gc() method, either implicitly  after allocation
-            of some amount of memory)).
+            Called when garbage collection is started, either explicitly
+            (by calling IDatabase.Gc()) or implicitly (after allocating
+            enough memory to trigger gc threshold)
             </summary>
+        </member>
+        <member name="M:Volante.DatabaseListener.GcCompleted(System.Int32)">
+             <summary>
+             Called when garbage collection is completed
+             </summary>
+             <param name="nDeallocatedObjects">number of deallocated objects</param>
+            
         </member>
         <member name="M:Volante.DatabaseListener.DeallocateObject(System.Type,System.Int32)">
              <summary>
-             This method is called  when unreferenced object is deallocated from 
+             Called  when unreferenced object is deallocated from 
              database. It is possible to get instance of the object using
              <code>IDatabase.GetObjectByOid()</code> method.
              </summary>
              <param name="cls">class of deallocated object</param>
              <param name="oid">object identifier of deallocated object</param>
-            
-        </member>
-        <member name="M:Volante.DatabaseListener.GcCompleted(System.Int32)">
-             <summary>
-             This method is called when garbage collection is completed
-             </summary>
-             <param name="nDeallocatedObjects">number of deallocated objects</param>
             
         </member>
         <member name="M:Volante.DatabaseListener.ReplicationError(System.String)">
@@ -2213,6 +2167,46 @@
             <summary>
             Greatest X coordinate  of the rectangle
             </summary>
+        </member>
+        <member name="T:Volante.ISet`1">
+            <summary>
+             Interface of objects set
+             </summary>
+        </member>
+        <member name="M:Volante.ISet`1.ContainsAll(System.Collections.Generic.ICollection{`0})">
+            <summary>
+            Check if the set contains all members from specified collection
+            </summary>
+            <param name="c">collection specifying members</param>
+            <returns><code>true</code> if all members of enumerator are present in the set</returns>
+        </member>
+        <member name="M:Volante.ISet`1.AddAll(System.Collections.Generic.ICollection{`0})">
+            <summary>
+            Add all elements from specified collection to the set
+            </summary>
+            <param name="c">collection specifying members</param>
+            <returns><code>true</code> if at least one element was added to the set,
+            <code>false</code> if now new elements were added</returns>
+        </member>
+        <member name="M:Volante.ISet`1.RemoveAll(System.Collections.Generic.ICollection{`0})">
+            <summary>
+            Remove from the set all members from the specified enumerator
+            </summary>
+            <param name="c">collection specifying members</param>
+            <returns></returns>
+        </member>
+        <member name="M:Volante.ISet`1.ToArray">
+            <summary>
+            Copy all set members to an array
+            </summary>
+            <returns>array of object with set members</returns>
+        </member>
+        <member name="M:Volante.ISet`1.ToArray(System.Type)">
+            <summary>
+            Copy all set members to an array of specified type
+            </summary>
+            <param name="elemType">type of array element</param>
+            <returns>array of specified type with members of the set</returns>
         </member>
         <member name="T:Volante.Projection`2">
             <summary>
@@ -2425,169 +2419,151 @@
             </summary>
         </member>
         <member name="M:Volante.Key.#ctor(System.Boolean,System.Boolean)">
-            <summary> Constructor of boolean key
+            <summary>Constructor of boolean key
             </summary>
             <param name="v">key value
             </param>
             <param name="inclusive">whether boundary is inclusive or exclusive
-            
             </param>
         </member>
         <member name="M:Volante.Key.#ctor(System.SByte,System.Boolean)">
-            <summary> Constructor of signed byte key
+            <summary>Constructor of signed byte key
             </summary>
             <param name="v">key value
             </param>
             <param name="inclusive">whether boundary is inclusive or exclusive
-            
             </param>
         </member>
         <member name="M:Volante.Key.#ctor(System.Byte,System.Boolean)">
-            <summary> Constructor of byte key
+            <summary>Constructor of byte key
             </summary>
             <param name="v">key value
             </param>
             <param name="inclusive">whether boundary is inclusive or exclusive
-            
             </param>
         </member>
         <member name="M:Volante.Key.#ctor(System.Char,System.Boolean)">
-            <summary> Constructor of char key
+            <summary>Constructor of char key
             </summary>
             <param name="v">key value
             </param>
             <param name="inclusive">whether boundary is inclusive or exclusive
-            
             </param>
         </member>
         <member name="M:Volante.Key.#ctor(System.Int16,System.Boolean)">
-            <summary> Constructor of short key
+            <summary>Constructor of short key
             </summary>
             <param name="v">key value
             </param>
             <param name="inclusive">whether boundary is inclusive or exclusive
-            
             </param>
         </member>
         <member name="M:Volante.Key.#ctor(System.UInt16,System.Boolean)">
-            <summary> Constructor of unsigned short key
+            <summary>Constructor of unsigned short key
             </summary>
             <param name="v">key value
             </param>
             <param name="inclusive">whether boundary is inclusive or exclusive
-            
             </param>
         </member>
         <member name="M:Volante.Key.#ctor(System.Enum,System.Boolean)">
-            <summary> Constructor of int key
+            <summary>Constructor of int key
             </summary>
             <param name="v">key value
             </param>
             <param name="inclusive">whether boundary is inclusive or exclusive
-            
             </param>
         </member>
         <member name="M:Volante.Key.#ctor(System.Int32,System.Boolean)">
-            <summary> Constructor of int key
+            <summary>Constructor of int key
             </summary>
             <param name="v">key value
             </param>
             <param name="inclusive">whether boundary is inclusive or exclusive
-            
             </param>
         </member>
         <member name="M:Volante.Key.#ctor(System.UInt32,System.Boolean)">
-            <summary> Constructor of unsigned int key
+            <summary>Constructor of unsigned int key
             </summary>
             <param name="v">key value
             </param>
             <param name="inclusive">whether boundary is inclusive or exclusive
-            
             </param>
         </member>
         <member name="M:Volante.Key.#ctor(System.Int64,System.Boolean)">
-            <summary> Constructor of long key
+            <summary>Constructor of long key
             </summary>
             <param name="v">key value
             </param>
             <param name="inclusive">whether boundary is inclusive or exclusive
-            
             </param>
         </member>
         <member name="M:Volante.Key.#ctor(System.UInt64,System.Boolean)">
-            <summary> Constructor of unsigned long key
+            <summary>Constructor of unsigned long key
             </summary>
             <param name="v">key value
             </param>
             <param name="inclusive">whether boundary is inclusive or exclusive
-            
             </param>
         </member>
         <member name="M:Volante.Key.#ctor(System.Single,System.Boolean)">
-            <summary> Constructor of float key
+            <summary>Constructor of float key
             </summary>
             <param name="v">key value
             </param>
             <param name="inclusive">whether boundary is inclusive or exclusive
-            
             </param>
         </member>
         <member name="M:Volante.Key.#ctor(System.Double,System.Boolean)">
-            <summary> Constructor of double key
+            <summary>Constructor of double key
             </summary>
             <param name="v">key value
             </param>
             <param name="inclusive">whether boundary is inclusive or exclusive
-            
             </param>
         </member>
         <member name="M:Volante.Key.#ctor(System.Decimal,System.Boolean)">
-            <summary> Constructor of decimal key
+            <summary>Constructor of decimal key
             </summary>
             <param name="v">key value
             </param>
             <param name="inclusive">whether boundary is inclusive or exclusive
-            
             </param>
         </member>
         <member name="M:Volante.Key.#ctor(System.Guid,System.Boolean)">
-            <summary> Constructor of Guid key
+            <summary>Constructor of Guid key
             </summary>
             <param name="v">key value
             </param>
             <param name="inclusive">whether boundary is inclusive or exclusive
-            
             </param>
         </member>
         <member name="M:Volante.Key.#ctor(System.DateTime,System.Boolean)">
-            <summary> Constructor of date key
+            <summary>Constructor of date key
             </summary>
             <param name="v">key value
             </param>
             <param name="inclusive">whether boundary is inclusive or exclusive
-            
             </param>
         </member>
         <member name="M:Volante.Key.#ctor(System.String,System.Boolean)">
-            <summary> Constructor of string key
+            <summary>Constructor of string key
             </summary>
             <param name="v">key value
             </param>
             <param name="inclusive">whether boundary is inclusive or exclusive
-            
             </param>
         </member>
         <member name="M:Volante.Key.#ctor(System.Char[],System.Boolean)">
-            <summary> Constructor of array of char key
+            <summary>Constructor of array of char key
             </summary>
             <param name="v">key value
             </param>
             <param name="inclusive">whether boundary is inclusive or exclusive
-            
             </param>
         </member>
         <member name="M:Volante.Key.#ctor(System.Byte[],System.Boolean)">
-            <summary> Constructor of array of byte key
+            <summary>Constructor of array of byte key
             </summary>
             <param name="v">key value
             </param>
@@ -2609,21 +2585,19 @@
             <param name="inclusive">whether boundary is inclusive or exclusive</param>
         </member>
         <member name="M:Volante.Key.#ctor(Volante.IPersistent,System.Boolean)">
-            <summary> Constructor of key with persistent object reference
+            <summary>Constructor of key with persistent object reference
             </summary>
             <param name="v">key value
             </param>
             <param name="inclusive">whether boundary is inclusive or exclusive
-            
             </param>
         </member>
         <member name="M:Volante.Key.#ctor(System.IComparable,System.Boolean)">
-            <summary> Constructor of key of user defined type
+            <summary>Constructor of key of user defined type
             </summary>
             <param name="v">key value
             </param>
             <param name="inclusive">whether boundary is inclusive or exclusive
-            
             </param>
         </member>
         <member name="T:Volante.IClassLoader">
@@ -2678,9 +2652,9 @@
             <summary>
             Class encapsulating native .Net string. System.String is not a persistent object
             so it can not be stored in Volante as independent persistent object. 
-            But sometimes it is needed. This class sole this problem providing implcit conversion
+            But sometimes it is needed. This class sole this problem providing implicit conversion
             operator from System.String to PerisstentString.
-            Also PersistentString class is mutable, allowing to change it's values.
+            Also PersistentString class is mutable (i.e. unlike System.String, its value can be changed).
             </summary>
         </member>
         <member name="M:Volante.PersistentString.#ctor(System.String)">
@@ -2782,11 +2756,6 @@
         <member name="T:Volante.FileListener">
             <summary>Allows getting notifications for IFile.Write(), IFile.Read() and
             IFile.Sync() calls. Useful as a debugging/diagnostic tool.
-            </summary>
-        </member>
-        <member name="T:Volante.Impl.CodeGenerator">
-            <summary>
-            Generate code for condition
             </summary>
         </member>
         <member name="F:Volante.TransactionMode.Exclusive">

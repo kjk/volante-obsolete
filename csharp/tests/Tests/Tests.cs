@@ -539,6 +539,9 @@ public class TestsMain
 
     static TestInfo[] TestInfos = new TestInfo[]
     {
+#if WITH_REPLICATION
+        new TestInfo("TestReplication", ConfigsOnlyAlt, new int[2] { 10000, 500000 }),
+#endif
         new TestInfo("TestIndex", ConfigsIndex, Counts1),
         new TestInfo("TestSet"),
 #if WITH_XML

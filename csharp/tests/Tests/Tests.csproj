@@ -149,6 +149,7 @@
     <Compile Include="TestPArray.cs" />
     <Compile Include="TestR2.cs" />
     <Compile Include="TestRaw.cs" />
+    <Compile Include="TestReplication.cs" />
     <Compile Include="TestRtree.cs" />
     <Compile Include="Tests.cs" />
     <Compile Include="TestSet.cs" />

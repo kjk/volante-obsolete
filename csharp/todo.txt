@@ -8,12 +8,11 @@ Things to do for c# version:
 * make a reference API from .xml extracted during build process (after 0.9?)
 * g+ button in the website version of docs
 * more code coverage tests:
- * replication
  * BtreeFieldIndex
- * BtreeMultiFieldIndex
- * LinkImpl
  * OldBtreeFieldIndex
+ * BtreeMultiFieldIndex
  * OldBtreeMultiFieldIndex
+ * LinkImpl
  * PTrie
  * Relation
  * Ttree
@@ -46,3 +45,4 @@ Test coverage notes:
 * 52%   on 2011-08-06
 * 59.5% on 2011-08-24
 * 61.4% on 2011-08-26
+* 65.2% on 2011-09-08

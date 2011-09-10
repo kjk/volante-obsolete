@@ -13,9 +13,6 @@ devenv Volante.sln /Rebuild Debug /Project Tests
 @cd bin\Debug
 Tests.exe -fast
 
-@rem start %O%\TestReplic master
-@rem %O%\TestReplic slave
-
 @goto END
 
 :FAILEDCOMPILE
