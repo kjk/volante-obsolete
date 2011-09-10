@@ -20,7 +20,6 @@ namespace Volante
 
         public void Run(TestConfig config)
         {
-            int i;
             int count = config.Count;
             var res = new TestCompoundResult();
             config.Result = res;
@@ -33,23 +32,22 @@ namespace Volante
             root = db.CreateFieldIndex<Record>(new string[] { "intKey", "strKey" }, IndexType.Unique);
             db.Root = root;
 
-            long key = 1999;
-            for (i = 0; i < count; i++)
+            foreach (var key in Tests.KeySeq(count))
             {
                 Record rec = new Record();
                 rec.intKey = (int)((ulong)key >> 32);
                 rec.strKey = Convert.ToString((int)key);
                 root.Put(rec);
-                key = (3141592621L * key + 2718281829L) % 1000000007L;
             }
+            Tests.Assert(root.Count == count);
             db.Commit();
+            Tests.Assert(root.Count == count);
             res.InsertTime = DateTime.Now - start;
 
             start = DateTime.Now;
-            key = 1999;
             int minKey = Int32.MaxValue;
             int maxKey = Int32.MinValue;
-            for (i = 0; i < count; i++)
+            foreach (var key in Tests.KeySeq(count))
             {
                 int intKey = (int)((ulong)key >> 32);
                 String strKey = Convert.ToString((int)key);
@@ -59,7 +57,6 @@ namespace Volante
                     minKey = intKey;
                 if (intKey > maxKey)
                     maxKey = intKey;
-                key = (3141592621L * key + 2718281829L) % 1000000007L;
             }
             res.IndexSearchTime = DateTime.Now - start;
 
@@ -92,8 +89,7 @@ namespace Volante
             Tests.Assert(n == count);
             res.IterationTime = DateTime.Now - start;
             start = DateTime.Now;
-            key = 1999;
-            for (i = 0; i < count; i++)
+            foreach (var key in Tests.KeySeq(count))
             {
                 int intKey = (int)((ulong)key >> 32);
                 String strKey = Convert.ToString((int)key);
@@ -102,7 +98,6 @@ namespace Volante
                 Tests.Assert(root.Contains(rec));
                 root.Remove(rec);
                 rec.Deallocate();
-                key = (3141592621L * key + 2718281829L) % 1000000007L;
             }
             Tests.Assert(!root.GetEnumerator().MoveNext());
             Tests.Assert(!root.Reverse().GetEnumerator().MoveNext());
@@ -110,5 +105,4 @@ namespace Volante
             db.Close();
         }
     }
-
 }

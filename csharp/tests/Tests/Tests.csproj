@@ -124,6 +124,7 @@
     <Compile Include="TestCompoundIndex.cs" />
     <Compile Include="TestConcur.cs" />
     <Compile Include="TestEnumerator.cs" />
+    <Compile Include="TestFieldIndex.cs" />
     <Compile Include="TestGC.cs" />
     <Compile Include="TestIndex.cs" />
     <Compile Include="TestIndex2.cs" />
