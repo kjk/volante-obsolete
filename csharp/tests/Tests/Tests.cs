@@ -569,6 +569,9 @@ public class TestsMain
 
     static TestInfo[] TestInfos = new TestInfo[]
     {
+#if WITH_PATRICIA
+        new TestInfo("TestPatriciaTrie"),
+#endif
         new TestInfo("TestLinkPArray"),
         // small count for TestFieldIndex and TestMultiFieldIndex because we only
         // want to test code paths unique to them. The underlying code is tested

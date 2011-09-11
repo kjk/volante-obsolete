@@ -7,7 +7,6 @@ Things to do for c# version:
 * script that copies docs to my website (i.e. my blog repository)
 * g+ button in the website version of docs
 * more code coverage tests:
- * PTrie
  * Relation
  * Ttree
  * TtreePage

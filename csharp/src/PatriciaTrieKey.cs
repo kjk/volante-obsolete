@@ -23,10 +23,6 @@ namespace Volante
 
         public static PatriciaTrieKey FromIpAddress(IPAddress addr)
         {
-#if CF
-            ulong mask = (ulong)addr.Address;
-            return new PatriciaTrieKey(mask, 64);
-#else
             byte[] bytes = addr.GetAddressBytes();
             ulong mask = 0;
             for (int i = 0; i < bytes.Length; i++)
@@ -34,7 +30,6 @@ namespace Volante
                 mask = (mask << 8) | (uint)(bytes[i] & 0xFF);
             }
             return new PatriciaTrieKey(mask, bytes.Length * 8);
-#endif
         }
 
         public static PatriciaTrieKey FromIpAddress(string addr)
@@ -54,7 +49,7 @@ namespace Volante
             return new PatriciaTrieKey(mask, len);
         }
 
-        public static PatriciaTrieKey fromDecimalDigits(string digits)
+        public static PatriciaTrieKey FromDecimalDigits(string digits)
         {
             ulong mask = 0;
             int n = digits.Length;
@@ -68,7 +63,7 @@ namespace Volante
             return new PatriciaTrieKey(mask, n * 4);
         }
 
-        public static PatriciaTrieKey from7bitString(string str)
+        public static PatriciaTrieKey From7bitString(string str)
         {
             ulong mask = 0;
             int n = str.Length;
@@ -81,7 +76,7 @@ namespace Volante
             return new PatriciaTrieKey(mask, n * 7);
         }
 
-        public static PatriciaTrieKey from8bitString(string str)
+        public static PatriciaTrieKey From8bitString(string str)
         {
             ulong mask = 0;
             int n = str.Length;
@@ -94,7 +89,7 @@ namespace Volante
             return new PatriciaTrieKey(mask, n * 8);
         }
 
-        public static PatriciaTrieKey fromByteArray(byte[] arr)
+        public static PatriciaTrieKey FromByteArray(byte[] arr)
         {
             ulong mask = 0;
             int n = arr.Length;

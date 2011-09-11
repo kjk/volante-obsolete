@@ -27,12 +27,12 @@ namespace Volante.Impl
 
         private static void fill(List<T> list, PTrieNode node)
         {
-            if (node != null)
-            {
-                list.Add(node.obj);
-                fill(list, node.childZero);
-                fill(list, node.childOne);
-            }
+            if (null == node)
+                return;
+
+            list.Add(node.obj);
+            fill(list, node.childZero);
+            fill(list, node.childOne);
         }
 
         public override int Count
@@ -129,16 +129,12 @@ namespace Volante.Impl
             if (firstDigit(key.mask, key.length) == 1)
             {
                 if (rootOne != null)
-                {
                     return rootOne.findExactMatch(key.mask, key.length);
-                }
             }
             else
             {
                 if (rootZero != null)
-                {
                     return rootZero.findExactMatch(key.mask, key.length);
-                }
             }
             return null;
         }
@@ -315,16 +311,12 @@ namespace Volante.Impl
                     if (firstDigit(keyDiff, keyLengthDiff) == 1)
                     {
                         if (childOne != null)
-                        {
                             return childOne.findBestMatch(keyDiff, keyLengthDiff);
-                        }
                     }
                     else
                     {
                         if (childZero != null)
-                        {
                             return childZero.findBestMatch(keyDiff, keyLengthDiff);
-                        }
                     }
                 }
                 return obj;
@@ -348,16 +340,12 @@ namespace Volante.Impl
                         if (firstDigit(keyDiff, keyLengthDiff) == 1)
                         {
                             if (childOne != null)
-                            {
                                 return childOne.findBestMatch(keyDiff, keyLengthDiff);
-                            }
                         }
                         else
                         {
                             if (childZero != null)
-                            {
                                 return childZero.findBestMatch(keyDiff, keyLengthDiff);
-                            }
                         }
                     }
                 }
