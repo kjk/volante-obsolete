@@ -51,7 +51,7 @@ namespace Volante.Impl
             {
                 if (value < used)
                 {
-                    Array.Clear(arr, value, used);
+                    Array.Clear(arr, value, used - value);
                     Modify();
                 }
                 else
@@ -163,11 +163,10 @@ namespace Volante.Impl
         {
             int n = link.Length;
             reserveSpace(n);
-            for (int i = 0, j = used; i < n; i++, j++)
+            for (int i = 0; i < n; i++)
             {
-                arr[j] = link.GetRaw(i);
+                arr[used++] = link.GetRaw(i);
             }
-            used += n;
         }
 
         public virtual Array ToRawArray()

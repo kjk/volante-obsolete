@@ -569,6 +569,7 @@ public class TestsMain
 
     static TestInfo[] TestInfos = new TestInfo[]
     {
+        new TestInfo("TestLinkPArray"),
         // small count for TestFieldIndex and TestMultiFieldIndex because we only
         // want to test code paths unique to them. The underlying code is tested
         // in regular index tests
@@ -588,7 +589,6 @@ public class TestsMain
         new TestInfo("TestIndexRangeSearch"),
         new TestInfo("TestCorrupt00", ConfigsOneFileAlt),
         new TestInfo("TestRemove00"),
-        new TestInfo("TestPArray"),
         new TestInfo("TestIndexUInt00"),
         new TestInfo("TestIndexInt00"),
         new TestInfo("TestIndexInt"),
