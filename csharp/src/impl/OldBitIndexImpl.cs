@@ -194,9 +194,8 @@ namespace Volante.Impl
                 get
                 {
                     if (sp == 0)
-                    {
                         throw new InvalidOperationException();
-                    }
+
                     int pos = posStack[sp - 1];
                     Page pg = db.getPage(pageStack[sp - 1]);
                     IPersistent curr = db.lookupObject(BitIndexPage.getItem(pg, BitIndexPage.maxItems - pos), null);

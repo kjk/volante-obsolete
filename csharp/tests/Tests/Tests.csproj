@@ -155,6 +155,7 @@
     <Compile Include="TestRtree.cs" />
     <Compile Include="Tests.cs" />
     <Compile Include="TestSet.cs" />
+    <Compile Include="TestThickIndex.cs" />
     <Compile Include="TestTimeSeries.cs" />
     <Compile Include="TestTtree.cs" />
     <Compile Include="TestXml.cs" />

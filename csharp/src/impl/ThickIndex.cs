@@ -206,6 +206,8 @@ namespace Volante.Impl
             {
                 get
                 {
+                    if (reachedEnd)
+                        throw new InvalidOperationException();
                     return key;
                 }
             }
@@ -222,10 +224,16 @@ namespace Volante.Impl
 
             public bool MoveNext()
             {
+                if (reachedEnd)
+                    return false;
+
                 while (!inner.MoveNext())
                 {
                     if (!outer.MoveNext())
+                    {
+                        reachedEnd = true;
                         return false;
+                    }
 
                     key = outer.Key;
                     inner = ((IEnumerable<V>)outer.Value).GetEnumerator();
@@ -235,8 +243,10 @@ namespace Volante.Impl
 
             public void Reset()
             {
+                reachedEnd = true;
                 if (outer.MoveNext())
                 {
+                    reachedEnd = false;
                     key = outer.Key;
                     inner = ((IEnumerable<V>)outer.Value).GetEnumerator();
                 }
@@ -251,6 +261,7 @@ namespace Volante.Impl
             private IDictionaryEnumerator outer;
             private IEnumerator<V> inner;
             private object key;
+            private bool reachedEnd;
         }
 
         public virtual IDictionaryEnumerator GetDictionaryEnumerator()

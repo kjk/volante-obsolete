@@ -33,3 +33,5 @@
 29. Renamed Btree* => OldBtree*, renamed Alt* by removing Alt prefix
 30. Fixed bug in IFieldIndex.Contains() where a unique index could claim an object is there when it wasn't
 31. Fixed bug in BtreeMultiFieldIndex.Contains() for non-unique index where it would throw an exception
+32. Fixed LinkImpl iterator to throw InvalidOperationException when reached end of sequence
+33. Fixed ThickIndex DictionaryIterator to throw InvalidOperationException when accessing Key when reached end of sequence

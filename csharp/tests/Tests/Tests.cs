@@ -569,6 +569,7 @@ public class TestsMain
 
     static TestInfo[] TestInfos = new TestInfo[]
     {
+        new TestInfo("TestThickIndex"),
 #if WITH_PATRICIA
         new TestInfo("TestPatriciaTrie"),
 #endif

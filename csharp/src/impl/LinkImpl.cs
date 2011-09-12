@@ -252,13 +252,24 @@ namespace Volante.Impl
         {
             public void Dispose() { }
 
+            public bool HasMore()
+            {
+                return i + 1 < link.Length;
+            }
+
+            public bool ReachEnd()
+            {
+                return i == link.Length + 1;
+            }
+
             public bool MoveNext()
             {
-                if (i + 1 < link.Length)
+                if (HasMore())
                 {
                     i += 1;
                     return true;
                 }
+                i = link.Length + 1;
                 return false;
             }
 
@@ -266,6 +277,8 @@ namespace Volante.Impl
             {
                 get
                 {
+                    if (ReachEnd())
+                        throw new InvalidOperationException();
                     return link[i];
                 }
             }
