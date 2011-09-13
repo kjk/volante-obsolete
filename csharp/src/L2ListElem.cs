@@ -11,7 +11,7 @@ namespace Volante
         internal T prev;
         /// <summary>
         /// Get next list element. 
-        /// Been call for the last list element, this method will return first element of the list 
+        /// Been called for the last list element, this method will return first element of the list 
         /// or list header
         /// </summary>
         public T Next

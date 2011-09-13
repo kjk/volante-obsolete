@@ -46,9 +46,7 @@ namespace Volante
             foreach (T o in this)
             {
                 if (o == obj)
-                {
                     return true;
-                }
             }
             return false;
         }
@@ -84,9 +82,8 @@ namespace Volante
                     head.prev = elem;
                 }
                 else
-                {
                     tail = elem;
-                }
+
                 head = elem;
                 nElems += 1;
                 updateCounter += 1;
@@ -110,9 +107,8 @@ namespace Volante
                     tail.next = elem;
                 }
                 else
-                {
                     tail = elem;
-                }
+
                 tail = elem;
                 nElems += 1;
                 updateCounter += 1;
@@ -134,9 +130,8 @@ namespace Volante
                     elem.prev = null;
                 }
                 else
-                {
                     head = head.next;
-                }
+
                 if (elem.next != null)
                 {
                     elem.next.Modify();
@@ -144,9 +139,8 @@ namespace Volante
                     elem.next = null;
                 }
                 else
-                {
                     tail = tail.prev;
-                }
+
                 nElems -= 1;
                 updateCounter += 1;
                 return true;
@@ -194,9 +188,7 @@ namespace Volante
                 get
                 {
                     if (curr == null || counter != list.updateCounter)
-                    {
                         throw new InvalidOperationException();
-                    }
                     return curr;
                 }
             }
@@ -214,18 +206,16 @@ namespace Volante
             public bool MoveNext()
             {
                 if (counter != list.updateCounter)
-                {
                     throw new InvalidOperationException();
-                }
+
                 if (head)
                 {
                     curr = list.head;
                     head = false;
                 }
                 else if (curr != null)
-                {
                     curr = curr.next;
-                }
+
                 return curr != null;
             }
         }

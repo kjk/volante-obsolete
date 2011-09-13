@@ -105,9 +105,7 @@ namespace Volante.Impl
             lock (objectCache)
             {
                 if (oid == 0 || oid >= currIndexSize)
-                {
                     throw new DatabaseException(DatabaseException.ErrorCode.INVALID_OID);
-                }
                 Page pg = pool.getPage(header.root[1 - currIndex].index + ((long)(oid >> dbHandlesPerPageBits) << Page.pageBits));
                 long pos = Bytes.unpack8(pg.data, (oid & (dbHandlesPerPage - 1)) << 3);
                 pool.unfix(pg);
@@ -130,9 +128,8 @@ namespace Volante.Impl
         {
             long pos = getPos(oid);
             if ((pos & (dbFreeHandleFlag | dbPageObjectFlag)) != 0)
-            {
                 throw new DatabaseException(DatabaseException.ErrorCode.INVALID_OID);
-            }
+
             return pool.get(pos & ~dbFlagsMask);
         }
 
@@ -140,9 +137,8 @@ namespace Volante.Impl
         {
             long pos = getPos(oid);
             if ((pos & (dbFreeHandleFlag | dbPageObjectFlag)) != dbPageObjectFlag)
-            {
                 throw new DatabaseException(DatabaseException.ErrorCode.DELETED_OBJECT);
-            }
+
             return pool.getPage(pos & ~dbFlagsMask);
         }
 
@@ -152,9 +148,8 @@ namespace Volante.Impl
             {
                 long pos = getPos(oid);
                 if ((pos & (dbFreeHandleFlag | dbPageObjectFlag)) != dbPageObjectFlag)
-                {
                     throw new DatabaseException(DatabaseException.ErrorCode.DELETED_OBJECT);
-                }
+
                 if ((pos & dbModifiedFlag) == 0)
                 {
                     dirtyPagesMap[oid >> (dbHandlesPerPageBits + 5)] |= 1 << ((oid >> dbHandlesPerPageBits) & 31);
@@ -384,9 +379,8 @@ namespace Volante.Impl
                 Debug.Assert(size != 0);
                 allocatedDelta += size;
                 if (allocatedDelta > gcThreshold)
-                {
                     gc0();
-                }
+
                 int objBitSize = (int)(size >> dbAllocationQuantumBits);
                 Debug.Assert(objBitSize == (size >> dbAllocationQuantumBits));
                 long pos;
@@ -591,13 +585,9 @@ namespace Volante.Impl
                                 }
                                 offs += 1;
                                 if (lastHoleSize[mask] == 8)
-                                {
                                     holeBitSize += 8;
-                                }
                                 else
-                                {
                                     holeBitSize = lastHoleSize[mask];
-                                }
                             }
                             if (startOffs == 0 && holeBitSize == 0
                                 && spaceNeeded < bitmapPageAvailableSpace[i])
@@ -758,9 +748,8 @@ namespace Volante.Impl
                             commitLocation();
                         }
                         if (oldIndex != 0)
-                        {
                             free(oldIndex, oldIndexSize * 8L);
-                        }
+
                         return pos;
                     }
                     if (gcThreshold != Int64.MaxValue && !gcDone)
@@ -927,13 +916,11 @@ namespace Volante.Impl
         protected virtual OidHashTable createObjectCache(CacheType kind, int cacheSizeInBytes, int objectCacheSize)
         {
             if (cacheSizeInBytes == 0 || kind == CacheType.Strong)
-            {
                 return new StrongHashTable(objectCacheSize);
-            }
+
             if (kind == CacheType.Weak)
-            {
                 return new WeakHashTable(objectCacheSize);
-            }
+
             Debug.Assert(kind == CacheType.Lru);
             return new LruObjectCache(objectCacheSize);
         }
