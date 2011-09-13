@@ -70,4 +70,77 @@ namespace Volante
             db.Close();
         }
     }
+
+    public class TestL2List : ITest
+    {
+        public class Record : L2ListElem<Record>
+        {
+            public long v;
+            public string s;
+
+            public Record()
+            {
+            }
+
+            public Record(long n)
+            {
+                v = n;
+                s = n.ToString();
+            }
+        }
+
+        public class Root : Persistent
+        {
+            public L2List<Record> l;
+        }
+
+        public void Run(TestConfig config)
+        {
+            int count = config.Count;
+            var res = new TestListResult();
+            config.Result = res;
+
+            var start = DateTime.Now;
+            IDatabase db = config.GetDatabase();
+            var root = new Root();
+            root.l = new L2List<Record>();
+            var l = root.l;
+            db.Root = root;
+
+            Tests.Assert(null == l.Head);
+            Tests.Assert(null == l.Tail);
+            Tests.Assert(0 == l.Count);
+            foreach (var k in Tests.KeySeq(count))
+            {
+                Record r = new Record(k);
+                if (k % 3 == 0)
+                    l.Append(r);
+                else if (k % 3 == 1)
+                    l.Prepend(r);
+                else
+                    l.Add(r);
+            }
+            Tests.Assert(count == l.Count);
+            Tests.Assert(null != l.Head);
+            Tests.Assert(null != l.Tail);
+            Tests.Assert(l.Contains(l.Head));
+            Tests.Assert(l.Contains(l.Tail));
+
+            var e = l.GetEnumerator();
+            while (e.MoveNext())
+            {
+                Tests.Assert(e.Current != null);
+            }
+            Tests.AssertException<InvalidOperationException>(
+                () => { var tmp = e.Current; });
+            Tests.Assert(!e.MoveNext());
+            e.Reset();
+            Tests.Assert(e.MoveNext());
+
+            l.Clear();
+            Tests.Assert(0 == l.Count);
+            db.Close();
+        }
+
+    }
 }

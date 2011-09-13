@@ -570,6 +570,7 @@ public class TestsMain
 
     static TestInfo[] TestInfos = new TestInfo[]
     {
+        new TestInfo("TestL2List", ConfigsDefault, new int[2] { 500, 500 }),
         new TestInfo("TestTtree", ConfigsDefault, new int[2] { 10020, 100000 }),
         new TestInfo("TestTimeSeries", ConfigsDefault, new int[2] { 10005, 100005 }),
         new TestInfo("TestThickIndex"),
