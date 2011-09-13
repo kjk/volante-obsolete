@@ -74,9 +74,7 @@ namespace Volante
             foreach (T o in this)
             {
                 if (o == obj)
-                {
                     return true;
-                }
             }
             return false;
         }

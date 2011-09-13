@@ -37,3 +37,4 @@
 33. Fixed ThickIndex DictionaryIterator to throw InvalidOperationException when accessing Key when reached end of sequence
 34. Fixed TimeSeriesImpl.Contains() to not throw and exception if object not found
 35. Fixed Reset() on TimeSeriesImpl enumerator
+36. Fixed a bug in TTree enumerator's MoveNext() to properly handle finished iteration

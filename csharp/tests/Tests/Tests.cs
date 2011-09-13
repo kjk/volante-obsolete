@@ -570,7 +570,7 @@ public class TestsMain
 
     static TestInfo[] TestInfos = new TestInfo[]
     {
-        // TODO: figure out why we fail for coun == 2000
+        new TestInfo("TestTtree", ConfigsDefault, new int[2] { 10020, 100000 }),
         new TestInfo("TestTimeSeries", ConfigsDefault, new int[2] { 10005, 100005 }),
         new TestInfo("TestThickIndex"),
 #if WITH_PATRICIA
@@ -622,7 +622,6 @@ public class TestsMain
         new TestInfo("TestR2", ConfigsR2, new int[2] { 1000, 20000 }),
         new TestInfo("TestRaw", ConfigsRaw, new int[2] { 1000, 10000 }),
         new TestInfo("TestRtree", ConfigsDefault, new int[2] { 800, 20000 }),
-        new TestInfo("TestTtree"),
         new TestInfo("TestBlob", ConfigsOneFileAlt),
         new TestInfo("TestConcur"),
         new TestInfo("TestEnumerator", ConfigsDefault, new int[2] { 50, 1000 }),

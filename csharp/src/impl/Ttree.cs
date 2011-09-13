@@ -56,23 +56,14 @@ namespace Volante.Impl
 
         public V Get(K key)
         {
-            if (root != null)
-            {
-                List<V> list = new List<V>();
-                root.find(comparator, key, BoundaryKind.Inclusive, key, BoundaryKind.Inclusive, list);
-                if (list.Count > 1)
-                {
-                    throw new DatabaseException(DatabaseException.ErrorCode.KEY_NOT_UNIQUE);
-                }
-                else if (list.Count == 0)
-                {
-                    return null;
-                }
-                else
-                {
-                    return list[0];
-                }
-            }
+            if (null == root)
+                return null;
+            List<V> list = new List<V>();
+            root.find(comparator, key, BoundaryKind.Inclusive, key, BoundaryKind.Inclusive, list);
+            if (list.Count > 1)
+                throw new DatabaseException(DatabaseException.ErrorCode.KEY_NOT_UNIQUE);
+            if (list.Count > 0)
+                return list[0];
             return null;
         }
 
@@ -110,13 +101,15 @@ namespace Volante.Impl
 
         public override bool Contains(V member)
         {
-            return (root != null) ? root.contains(comparator, member) : false;
+            if (null == root)
+                return false;
+            return root.contains(comparator, member);
         }
 
         public override bool Remove(V obj)
         {
             if (root == null)
-                return false;
+                return false; // TODO: shouldn't that be an exception too?
 
             TtreePage<K, V> newRoot = root;
             if (root.remove(comparator, obj, ref newRoot) == TtreePage<K, V>.NOT_FOUND)
@@ -131,13 +124,12 @@ namespace Volante.Impl
 
         public override void Clear()
         {
-            if (root != null)
-            {
-                root.prune();
-                Modify();
-                root = null;
-                nMembers = 0;
-            }
+            if (null == root)
+                return;
+            root.prune();
+            Modify();
+            root = null;
+            nMembers = 0;
         }
 
         public override void Deallocate()
@@ -217,9 +209,10 @@ namespace Volante.Impl
             {
                 if (i + 1 < list.Count)
                 {
-                    i += 1;
+                    i++;
                     return true;
                 }
+                i++;
                 return false;
             }
         }

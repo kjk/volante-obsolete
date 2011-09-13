@@ -89,9 +89,7 @@ namespace Volante.Impl
                 selection.Add(loadItem(l));
             }
             if (right != null)
-            {
                 return right.find(comparator, minValue, minBoundary, maxValue, maxBoundary, selection);
-            }
             return true;
         }
 
@@ -260,7 +258,8 @@ namespace Volante.Impl
                     Modify();
                     right = pgRef;
                     pgRef = pg;
-                    if (result == OK) return OK;
+                    if (result == OK)
+                        return OK;
                 }
                 if (balance < 0)
                 {
