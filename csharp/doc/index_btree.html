@@ -1,4 +1,4 @@
-<!doctype HTML> 
+﻿<!doctype HTML> 
 <html>
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -82,7 +82,7 @@
 	<p>In the non-unique index, if an object with a given key already exists:
 	<ul>
 		<li><code>Put()</code> will add another object with the key</li>
-		<li><code>Set()</code> will overwrite the object with this key, i.e. old object will be removed. TODO: what happens when there were 2 objects with this key?</li>
+		<li><code>Set()</code> will overwrite the object with this key, i.e. old object will be removed. If there is more than one object with this key, an exception will be thrown.</li>
 	</ul>
 	If the key doesn't exist, the result is the same.</p>
 

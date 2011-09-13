@@ -479,6 +479,7 @@ public class Tests
             () => { Console.WriteLine(de.Key); });
         AssertException<InvalidOperationException>(
             () => { Console.WriteLine(de.Value); });
+        Tests.Assert(!de.MoveNext());
     }
 
     public static void VerifyEnumeratorDone(IEnumerator e)

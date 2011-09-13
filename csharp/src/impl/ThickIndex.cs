@@ -133,10 +133,15 @@ namespace Volante.Impl
 
             public bool MoveNext()
             {
+                if (reachedEnd)
+                    return false;
                 while (!inner.MoveNext())
                 {
                     if (!outer.MoveNext())
+                    {
+                        reachedEnd = false;
                         return false;
+                    }
                     inner = ((IEnumerable<V>)outer.Current).GetEnumerator();
                 }
                 return true;
@@ -146,6 +151,8 @@ namespace Volante.Impl
             {
                 get
                 {
+                    if (reachedEnd)
+                        throw new InvalidOperationException();
                     return inner.Current;
                 }
             }
@@ -154,14 +161,20 @@ namespace Volante.Impl
             {
                 get
                 {
+                    if (reachedEnd)
+                        throw new InvalidOperationException();
                     return Current;
                 }
             }
 
             public void Reset()
             {
+                reachedEnd = true;
                 if (outer.MoveNext())
+                {
+                    reachedEnd = false;
                     inner = ((IEnumerable<V>)outer.Current).GetEnumerator();
+                }
             }
 
             public IEnumerator<V> GetEnumerator()
@@ -182,6 +195,7 @@ namespace Volante.Impl
 
             private IEnumerator<IPersistent> outer;
             private IEnumerator<V> inner;
+            private bool reachedEnd;
         }
 
         class ExtendDictionaryEnumerator : IDictionaryEnumerator
