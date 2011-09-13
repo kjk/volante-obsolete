@@ -34,15 +34,5 @@ namespace Volante
                 return prev;
             }
         }
-
-        /// <summary>
-        /// Make list empty. 
-        /// This method should be applied to list header. 
-        /// </summary>
-        public void Prune()
-        {
-            Modify();
-            next = prev = null;
-        }
     }
 }

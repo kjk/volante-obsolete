@@ -110,6 +110,8 @@ namespace Volante
                     tail = elem;
 
                 tail = elem;
+                if (head == null)
+                    head = elem;
                 nElems += 1;
                 updateCounter += 1;
             }

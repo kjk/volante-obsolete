@@ -128,9 +128,16 @@ namespace Volante
             Tests.Assert(!l.Contains(new Record(-1234)));
 
             var e = l.GetEnumerator();
+            Record rFirst = null;
             while (e.MoveNext())
             {
                 Tests.Assert(e.Current != null);
+                if (null == rFirst)
+                {
+                    rFirst = e.Current;
+                    Tests.Assert(null == rFirst.Prev);
+                    Tests.Assert(null != rFirst.Next);
+                }
             }
             Tests.AssertException<InvalidOperationException>(
                 () => { var tmp = e.Current; });
@@ -138,8 +145,21 @@ namespace Volante
             e.Reset();
             Tests.Assert(e.MoveNext());
 
+            l.Remove(l.Head);
+            l.Remove(l.Tail);
+
             l.Clear();
             Tests.Assert(0 == l.Count);
+            var rTmp = new Record(0);
+            l.Add(rTmp);
+            Tests.Assert(rTmp == l.Head);
+            Tests.Assert(rTmp == l.Tail);
+            var rTmp2 = new Record(1);
+            l.Add(rTmp2);
+            Tests.Assert(rTmp2 == l.Tail);
+            Tests.Assert(rTmp == l.Head);
+            Tests.Assert(2 == l.Count);
+            db.Commit();
             db.Close();
         }
 

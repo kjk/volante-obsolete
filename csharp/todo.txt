@@ -8,8 +8,6 @@ Things to do for c# version:
 * g+ button in the website version of docs
 * more code coverage tests:
  * Relation, RelationImpl
- * L2List
- * L2ListElem
  * Projection
  * database corruption/recovery
 * document setting IFile.NoFlush to true in performance_tuning.html
