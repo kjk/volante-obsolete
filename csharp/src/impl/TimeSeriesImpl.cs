@@ -107,6 +107,7 @@ namespace Volante.Impl
             public void Reset()
             {
                 hasCurrent = false;
+                blockIterator.Reset();
                 pos = -1;
                 while (blockIterator.MoveNext())
                 {
@@ -117,13 +118,9 @@ namespace Volante.Impl
                     {
                         int i = (l + r) >> 1;
                         if (from > block[i].Ticks)
-                        {
                             l = i + 1;
-                        }
                         else
-                        {
                             r = i;
-                        }
                     }
                     Debug.Assert(l == r && (l == n || block[l].Ticks >= from));
                     if (l < n)
@@ -174,9 +171,7 @@ namespace Volante.Impl
                 get
                 {
                     if (!hasCurrent)
-                    {
                         throw new InvalidOperationException();
-                    }
                     return currBlock[pos];
                 }
             }
@@ -196,7 +191,6 @@ namespace Volante.Impl
             private long from;
             private long till;
         }
-
 
         class TimeSeriesReverseEnumerator : IEnumerator<T>, IEnumerable<T>
         {
@@ -222,6 +216,7 @@ namespace Volante.Impl
             {
                 hasCurrent = false;
                 pos = -1;
+                blockIterator.Reset();
                 while (blockIterator.MoveNext())
                 {
                     TimeSeriesBlock block = (TimeSeriesBlock)blockIterator.Current;
@@ -231,13 +226,9 @@ namespace Volante.Impl
                     {
                         int i = (l + r) >> 1;
                         if (till >= block[i].Ticks)
-                        {
                             l = i + 1;
-                        }
                         else
-                        {
                             r = i;
-                        }
                     }
                     Debug.Assert(l == r && (l == n || block[l].Ticks > till));
                     if (l > 0)
@@ -288,9 +279,7 @@ namespace Volante.Impl
                 get
                 {
                     if (!hasCurrent)
-                    {
                         throw new InvalidOperationException();
-                    }
                     return currBlock[pos];
                 }
             }
@@ -310,7 +299,6 @@ namespace Volante.Impl
             private long from;
             private long till;
         }
-
 
         public IEnumerator<T> GetEnumerator()
         {
@@ -425,19 +413,13 @@ namespace Volante.Impl
                     {
                         int i = (l + r) >> 1;
                         if (time > block[i].Ticks)
-                        {
                             l = i + 1;
-                        }
                         else
-                        {
                             r = i;
-                        }
                     }
                     Debug.Assert(l == r && (l == n || block[l].Ticks >= time));
                     if (l < n && block[l].Ticks == time)
-                    {
                         return block[l];
-                    }
                 }
                 throw new DatabaseException(DatabaseException.ErrorCode.KEY_NOT_FOUND);
             }
@@ -445,7 +427,17 @@ namespace Volante.Impl
 
         public bool Contains(DateTime timestamp)
         {
-            return this[timestamp] != null;
+            try
+            {
+                T val = this[timestamp];
+                return true;
+            }
+            catch (DatabaseException e)
+            {
+                if (e.Code == DatabaseException.ErrorCode.KEY_NOT_FOUND)
+                    return false;
+                throw;
+            }
         }
 
         public int Remove(DateTime from, DateTime till)
@@ -482,13 +474,9 @@ namespace Volante.Impl
                 {
                     int i = (l + r) >> 1;
                     if (from > block[i].Ticks)
-                    {
                         l = i + 1;
-                    }
                     else
-                    {
                         r = i;
-                    }
                 }
                 Debug.Assert(l == r && (l == n || block[l].Ticks >= from));
                 while (r < n && block[r].Ticks <= till)
@@ -538,13 +526,9 @@ namespace Volante.Impl
             {
                 i = (l + r) >> 1;
                 if (t > block[i].Ticks)
-                {
                     l = i + 1;
-                }
                 else
-                {
                     r = i;
-                }
             }
             Debug.Assert(l == r && (l == n || block[l].Ticks >= t));
             if (r == 0)
@@ -572,9 +556,7 @@ namespace Volante.Impl
             else
             {
                 if (n != r)
-                {
                     Array.Copy(block.Ticks, r, block.Ticks, r + 1, n - r);
-                }
                 block.used += 1;
             }
             block[r] = tick;

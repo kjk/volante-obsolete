@@ -570,6 +570,8 @@ public class TestsMain
 
     static TestInfo[] TestInfos = new TestInfo[]
     {
+        // TODO: figure out why we fail for coun == 2000
+        new TestInfo("TestTimeSeries", ConfigsDefault, new int[2] { 10005, 100005 }),
         new TestInfo("TestThickIndex"),
 #if WITH_PATRICIA
         new TestInfo("TestPatriciaTrie"),
@@ -628,7 +630,6 @@ public class TestsMain
         // about trying to create a duplicate wrapper class
         new TestInfo("TestList", ConfigsOnlyAlt),
         // TODO: figure out why when it's 2000 instead of 2001 we fail
-        new TestInfo("TestTimeSeries", ConfigsDefault, new int[2] { 2001, 100000 }),
         new TestInfo("TestBackup", ConfigsDefaultFile),
         new TestInfo("TestGc", ConfigsGc, new int[2] { 5000, 50000 })
     };

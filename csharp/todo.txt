@@ -8,7 +8,6 @@ Things to do for c# version:
 * g+ button in the website version of docs
 * more code coverage tests:
  * Relation, RelationImpl
- * TimeSeriesImpl
  * Ttree
  * TtreePage
  * L2List
