@@ -125,6 +125,7 @@ namespace Volante
             Tests.Assert(null != l.Tail);
             Tests.Assert(l.Contains(l.Head));
             Tests.Assert(l.Contains(l.Tail));
+            Tests.Assert(!l.Contains(new Record(-1234)));
 
             var e = l.GetEnumerator();
             while (e.MoveNext())
