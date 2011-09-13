@@ -85,9 +85,7 @@ namespace Volante.Impl
         {
             List<V> list = new List<V>();
             if (root != null)
-            {
                 root.find(comparator, from, fromKind, till, tillKind, list);
-            }
             return list.ToArray();
         }
 
@@ -118,9 +116,8 @@ namespace Volante.Impl
         public override bool Remove(V obj)
         {
             if (root == null)
-            {
                 return false;
-            }
+
             TtreePage<K, V> newRoot = root;
             if (root.remove(comparator, obj, ref newRoot) == TtreePage<K, V>.NOT_FOUND)
             {
@@ -146,9 +143,7 @@ namespace Volante.Impl
         public override void Deallocate()
         {
             if (root != null)
-            {
                 root.prune();
-            }
             base.Deallocate();
         }
 
@@ -156,9 +151,7 @@ namespace Volante.Impl
         {
             V[] arr = new V[nMembers];
             if (root != null)
-            {
                 root.toArray(arr, 0);
-            }
             return arr;
         }
 
@@ -166,9 +159,7 @@ namespace Volante.Impl
         {
             Array arr = Array.CreateInstance(elemType, nMembers);
             if (root != null)
-            {
                 root.toArray((IPersistent[])arr, 0);
-            }
             return arr;
         }
 
@@ -206,9 +197,8 @@ namespace Volante.Impl
                 get
                 {
                     if (i < 0 || i >= list.Count)
-                    {
                         throw new InvalidOperationException();
-                    }
+
                     return list[i];
                 }
             }
@@ -263,9 +253,7 @@ namespace Volante.Impl
         {
             List<V> list = new List<V>();
             if (root != null)
-            {
                 root.find(comparator, from, fromKind, till, tillKind, list);
-            }
             //return new TtreeEnumerator(this, list);
             return new TtreeEnumerator(list);
         }

@@ -48,30 +48,22 @@ namespace Volante.Impl
                     if (-comparator.CompareMemberWithKey(loadItem(n - 1), minValue) >= (int)minBoundary)
                     {
                         if (right != null)
-                        {
                             return right.find(comparator, minValue, minBoundary, maxValue, maxBoundary, selection);
-                        }
                         return true;
                     }
                     for (l = 0, r = n; l < r; )
                     {
                         m = (l + r) >> 1;
                         if (-comparator.CompareMemberWithKey(loadItem(m), minValue) >= (int)minBoundary)
-                        {
                             l = m + 1;
-                        }
                         else
-                        {
                             r = m;
-                        }
                     }
                     while (r < n)
                     {
                         if (maxBoundary != BoundaryKind.None
                             && comparator.CompareMemberWithKey(loadItem(r), maxValue) >= (int)maxBoundary)
-                        {
                             return false;
-                        }
                         selection.Add(loadItem(r));
                         r += 1;
                     }
@@ -85,9 +77,7 @@ namespace Volante.Impl
             if (left != null)
             {
                 if (!left.find(comparator, minValue, minBoundary, maxValue, maxBoundary, selection))
-                {
                     return false;
-                }
             }
             for (l = 0; l < n; l++)
             {
@@ -115,63 +105,44 @@ namespace Volante.Impl
                 if (comparator.CompareMembers(loadItem(n - 1), mbr) < 0)
                 {
                     if (right != null)
-                    {
                         return right.contains(comparator, mbr);
-                    }
                     return false;
                 }
                 for (l = 0, r = n; l < r; )
                 {
                     m = (l + r) >> 1;
                     if (comparator.CompareMembers(loadItem(m), mbr) < 0)
-                    {
                         l = m + 1;
-                    }
                     else
-                    {
                         r = m;
-                    }
                 }
                 while (r < n)
                 {
                     if (mbr == loadItem(r))
-                    {
                         return true;
-                    }
+
                     if (comparator.CompareMembers(item[r], mbr) > 0)
-                    {
                         return false;
-                    }
                     r += 1;
                 }
                 if (right != null)
-                {
                     return right.contains(comparator, mbr);
-                }
                 return false;
             }
             if (left != null)
             {
                 if (left.contains(comparator, mbr))
-                {
                     return true;
-                }
             }
             for (l = 0; l < n; l++)
             {
                 if (mbr == loadItem(l))
-                {
                     return true;
-                }
                 if (comparator.CompareMembers(item[l], mbr) > 0)
-                {
                     return false;
-                }
             }
             if (right != null)
-            {
                 return right.contains(comparator, mbr);
-            }
             return false;
         }
 
@@ -191,9 +162,8 @@ namespace Volante.Impl
             if (diff <= 0)
             {
                 if (unique && diff == 0)
-                {
                     return NOT_UNIQUE;
-                }
+
                 if ((left == null || diff == 0) && n != maxItems)
                 {
                     Modify();
@@ -214,9 +184,8 @@ namespace Volante.Impl
                     pgRef = left;
                     int result = left.insert(comparator, mbr, unique, ref pgRef);
                     if (result == NOT_UNIQUE)
-                    {
                         return NOT_UNIQUE;
-                    }
+
                     Modify();
                     left = pgRef;
                     pgRef = pg;
@@ -266,9 +235,8 @@ namespace Volante.Impl
             if (diff >= 0)
             {
                 if (unique && diff == 0)
-                {
                     return NOT_UNIQUE;
-                }
+
                 if ((right == null || diff == 0) && n != maxItems)
                 {
                     Modify();
@@ -287,9 +255,8 @@ namespace Volante.Impl
                     pgRef = right;
                     int result = right.insert(comparator, mbr, unique, ref pgRef);
                     if (result == NOT_UNIQUE)
-                    {
                         return NOT_UNIQUE;
-                    }
+
                     Modify();
                     right = pgRef;
                     pgRef = pg;
@@ -350,9 +317,7 @@ namespace Volante.Impl
                     if (diff == 0)
                     {
                         if (unique)
-                        {
                             return NOT_UNIQUE;
-                        }
                         break;
                     }
                 }
@@ -514,13 +479,9 @@ namespace Volante.Impl
                     left = pgRef;
                     pgRef = pg;
                     if (h == UNDERFLOW)
-                    {
                         return balanceLeftBranch(ref pgRef);
-                    }
                     else if (h == OK)
-                    {
                         return OK;
-                    }
                 }
             }
             diff = comparator.CompareMembers(mbr, loadItem(n - 1));
@@ -569,9 +530,7 @@ namespace Volante.Impl
                                 left = pgRef;
                                 pgRef = pg;
                                 if (h == UNDERFLOW)
-                                {
                                     h = balanceLeftBranch(ref pgRef);
-                                }
                                 return h;
                             }
                             else if (right != null)
@@ -595,9 +554,7 @@ namespace Volante.Impl
                                 right = pgRef;
                                 pgRef = pg;
                                 if (h == UNDERFLOW)
-                                {
                                     h = balanceRightBranch(ref pgRef);
-                                }
                                 return h;
                             }
                         }
@@ -621,13 +578,9 @@ namespace Volante.Impl
                 right = pgRef;
                 pgRef = pg;
                 if (h == UNDERFLOW)
-                {
                     return balanceRightBranch(ref pgRef);
-                }
                 else
-                {
                     return h;
-                }
             }
             return NOT_FOUND;
         }
@@ -636,17 +589,13 @@ namespace Volante.Impl
         {
             Load();
             if (left != null)
-            {
                 index = left.toArray(arr, index);
-            }
             for (int i = 0, n = nItems; i < n; i++)
             {
                 arr[index++] = loadItem(i);
             }
             if (right != null)
-            {
                 index = right.toArray(arr, index);
-            }
             return index;
         }
 
@@ -654,13 +603,9 @@ namespace Volante.Impl
         {
             Load();
             if (left != null)
-            {
                 left.prune();
-            }
             if (right != null)
-            {
                 right.prune();
-            }
             Deallocate();
         }
     }

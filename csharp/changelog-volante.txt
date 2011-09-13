@@ -35,3 +35,5 @@
 31. Fixed bug in BtreeMultiFieldIndex.Contains() for non-unique index where it would throw an exception
 32. Fixed LinkImpl iterator to throw InvalidOperationException when reached end of sequence
 33. Fixed ThickIndex DictionaryIterator to throw InvalidOperationException when accessing Key when reached end of sequence
+34. Fixed TimeSeriesImpl.Contains() to not throw and exception if object not found
+35. Fixed Reset() on TimeSeriesImpl enumerator
