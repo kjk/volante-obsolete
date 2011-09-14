@@ -171,6 +171,13 @@ namespace Volante.Impl
 
         public virtual Array ToRawArray()
         {
+            //TODO: this seems like the right code, but changing it
+            //breaks a lot of code in Btree (it uses ILink internally
+            //for its implementation). Maybe they rely on having the
+            //original array 
+            //T[] arrUsed = new T[used];
+            //Array.Copy(arr, arrUsed, used);
+            //return arrUsed;
             return arr;
         }
 
@@ -238,7 +245,12 @@ namespace Volante.Impl
         {
             EnsureValidIndex(i);
             IPersistent elem = arr[i];
-            return (T)elem == obj || (elem != null && elem.Oid != 0 && elem.Oid == obj.Oid);
+            T elTyped = elem as T;
+            if (elTyped == obj)
+                return true;
+            if (null == elem)
+                return false;
+            return elem.Oid != 0 && elem.Oid == obj.Oid;
         }
 
         public virtual void Clear()

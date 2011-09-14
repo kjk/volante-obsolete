@@ -9,16 +9,34 @@ namespace Volante
 
     public class TestLinkPArray : ITest
     {
+        public class RelMember : Persistent
+        {
+            long l;
+
+            public RelMember()
+            {
+            }
+
+            public RelMember(long v)
+            {
+                l = v;
+            }
+        }
+
         public class Root : Persistent
         {
             public IPArray<RecordFull> arr;
             public ILink<RecordFull> link;
+            public RecordFull relOwner;
+            public Relation<RelMember, RecordFull> rel;
         }
 
         public void Run(TestConfig config)
         {
             RecordFull r;
+            RelMember rm;
             RecordFull[] recs;
+            RelMember[] rmArr;
             RecordFull notInArr1;
             IDatabase db = config.GetDatabase();
             config.Result = new TestResult();
@@ -27,8 +45,16 @@ namespace Volante
             arr = db.CreateArray<RecordFull>();
             var link = db.CreateLink<RecordFull>(256);
             link = db.CreateLink<RecordFull>();
+            root.relOwner = new RecordFull();
+            var rel = db.CreateRelation<RelMember, RecordFull>(root.relOwner);
+            Tests.Assert(rel.Owner == root.relOwner);
+            rel.SetOwner(new RecordFull(88));
+            Tests.Assert(rel.Owner != root.relOwner);
+            rel.Owner = root.relOwner;
+            Tests.Assert(rel.Owner == root.relOwner);
             root.arr = arr;
             root.link = link;
+            root.rel = rel;
             db.Root = root;
             Tests.Assert(arr.Count == 0);
             Tests.Assert(((IGenericPArray)arr).Size() == 0);
@@ -37,21 +63,31 @@ namespace Volante
             for (long i = 0; i < 256; i++)
             {
                 r = new RecordFull(i);
+                rm = new RelMember(i);
                 inMem.Add(r);
                 arr.Add(r);
                 Tests.Assert(arr.Count == i + 1);
                 link.Add(r);
+                rel.Add(rm);
                 Tests.Assert(link.Count == i + 1);
             }
             recs = arr.ToArray();
+            rmArr = rel.ToArray();
+            Tests.Assert(recs.Length == rmArr.Length);
+            Tests.Assert(rel.Count == rel.Length);
+            Tests.Assert(rel.Size() == rel.Count);
+            rel.CopyTo(rmArr, 0);
             Tests.Assert(recs.Length == arr.Length);
             for (int j = 0; j < recs.Length; j++)
             {
                 Tests.Assert(recs[j] == arr[j]);
+                Tests.Assert(rmArr[j] == rel[j]);
             }
             recs = inMem.ToArray();
 
             arr.AddAll(recs);
+
+            rel.AddAll(rmArr);
 
             notInArr1 = new RecordFull(256);
             inMem.Add(notInArr1);
@@ -63,6 +99,9 @@ namespace Volante
             {
                 Tests.Assert(e.Current == inMem[idx++]);
             }
+            Tests.AssertException<InvalidOperationException>(
+                () => { var tmp = e.Current; });
+            Tests.Assert(!e.MoveNext());
             e.Reset();
             idx = 0;
             int nullCount = 0;
@@ -73,6 +112,17 @@ namespace Volante
                 if (e2.Current == null)
                     nullCount++;
             }
+
+            var e3 = rel.GetEnumerator();
+            while (e3.MoveNext())
+            {
+                Tests.Assert(e3.Current != null);
+            }
+            Tests.Assert(!e3.MoveNext());
+            Tests.AssertException<InvalidOperationException>(
+                () => { var tmp = e3.Current; });
+            e3.Reset();
+            Tests.Assert(e3.MoveNext());
 
             nullCount = 0;
             foreach (var r2 in link)
@@ -174,8 +224,43 @@ namespace Volante
             recs = link.ToArray();
             Tests.Assert(recs.Length == link.Length);
             link.Length = link.Length - 2;
+
+            rel.Length = rel.Length / 2;
+            idx = rel.Length / 2;
+            Tests.Assert(null != rel.Get(idx));
+            rel[idx] = new RelMember(55);
+            db.Commit();
+            IPersistent raw = rel.GetRaw(idx);
+            Tests.Assert(raw.IsRaw());
+            rm = rel[idx];
+            Tests.Assert(rel.Contains(rm));
+            Tests.Assert(rel.ContainsElement(idx, rm));
+            Tests.Assert(rel.Remove(rm));
+            Tests.Assert(!rel.Contains(rm));
+            Tests.Assert(!rel.Remove(rm));
+            idx = rel.Length / 2;
+            rm = rel[idx];
+            Tests.Assert(idx == rel.IndexOf(rm));
+            int cnt = rel.Count;
+            rel.RemoveAt(idx);
+            Tests.Assert(rel.Count == cnt - 1);
+            Tests.Assert(!rel.Contains(rm));
+            rel.Add(rm);
+            db.Commit();
+            //TODO: LinkImpl.ToRawArray() seems wrong but changing it
+            //breaks a lot of code
+            //Array ra = rel.ToRawArray();
+            Array ra2 = rel.ToArray();
+            //Tests.Assert(ra2.Length == ra.Length);
+            //Tests.Assert(ra.Length == rel.Count);
+            rel.Insert(1, new RelMember(123));
+            //Tests.Assert(rel.Count == ra.Length + 1);
+            rel.Unpin();
+            rel.Pin();
+            rel.Unpin();
+            rel.Clear();
+            Tests.Assert(rel.Count == 0);
             db.Close();
         }
     }
-
 }

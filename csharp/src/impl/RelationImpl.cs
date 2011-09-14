@@ -135,7 +135,6 @@ namespace Volante.Impl
         public override IEnumerator<M> GetEnumerator()
         {
             return link.GetEnumerator();
-
         }
 
         public override void Clear()

@@ -126,8 +126,8 @@ namespace Volante
 
             long n = stock.quotes.Remove(stock.quotes.FirstTime, stock.quotes.LastTime);
             Tests.Assert(n == count + 1);
-            res.RemoveTime = DateTime.Now - start;
             Tests.Assert(stock.quotes.Count == 0);
+            res.RemoveTime = DateTime.Now - start;
 
             Quote q;
             Quote qFirst = NewQuote(0);
