@@ -6,7 +6,6 @@ Things to do for c# version:
 * write download.html
 * script that copies docs to my website (i.e. my blog repository)
 * g+ button in the website version of docs
-* document setting IFile.NoFlush to true in performance_tuning.html
 * make a reference API from .xml extracted during build process (after 0.9?)
 * make a 0.9 release
 
@@ -34,3 +33,4 @@ Test coverage notes:
 * 65.2% on 2011-09-08
 * 67.5% on 2011-09-10
 * 72.6% on 2011-09-13
+* 74.9% on 2011-09-15

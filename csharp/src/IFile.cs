@@ -50,7 +50,7 @@ namespace Volante
         void Close();
 
         /// <summary>
-        /// Set to <code>true</code> to avoid flushing the stream, or <c>false</c> to flush the stream with every call to <see cref="Sync"/>
+        /// Set to <code>true</code> to avoid flushing the stream, or <c>false</c> to flush the stream with every call to <see cref="Sync"/>. Default value is <code>false</code>.
         /// </summary>
         bool NoFlush { get; set ;}
 

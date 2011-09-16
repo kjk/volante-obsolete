@@ -1,4 +1,4 @@
-<!doctype HTML> 
+﻿<!doctype HTML> 
 <html>
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -44,6 +44,11 @@
 	<p>Usually the database root is kept in some variable during the lifetime of your program. That means that root object and all of the objects it points to will not be reclaimed by .NET garbage collector. If anywhere in your graph you reference a large number of objects e.g. as <code>IPersistent[10000] largeArray</code>, all of them will be kept in memory all the time.</p>
 
 	<p>You can avoid that by using collections that load objects on demand. Built-in Volante collections, like <a href=indexes.html>indexes</a> or <a href=link_array_relation.html>persistent array</a> do that and efficiently manage memory.</p>
+
+    <h3>Not flushing file buffers</h3>
+
+    <p>When Volante writes its data to a file, by default it flushes file buffers (i.e. calls <a href="http://msdn.microsoft.com/en-us/library/aa364439(v=vs.85).aspx">FlushFileBuffers()</a> win32 function). This is needed for reliability, to make sure that the data has really been written to disk and not merely queued by the operating system for writing. This is slower than not flushing. If you can sacrifice relibility, set <code>IFile.NoFlush</code> property to <code>true</code>.</p>
+    <p>This only affects <code>IFile</code> implementations that write to disk, like <code>OsFile</code>.</p>
 
 	<h3>Tuning datbase parameters</h3>
 
