@@ -149,18 +149,6 @@ namespace Volante
         }
 
         /// <summary>
-        /// Get result of preceding project and join operations
-        /// </summary>
-        /// <param name="elemType">type of result array element</param>
-        /// <returns>array of objects</returns>
-        public Array ToArray(Type elemType)
-        {
-            Array arr = Array.CreateInstance(elemType, hash.Count);
-            hash.Keys.CopyTo((To[])arr, 0);
-            return arr;
-        }
-
-        /// <summary>
         /// Get number of objets in the result 
         /// </summary>
         public int Length

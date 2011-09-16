@@ -191,16 +191,6 @@ namespace Volante.Impl
             return a;
         }
 
-        public virtual Array ToArray(Type elemType)
-        {
-            Array a = Array.CreateInstance(elemType, used);
-            for (int i = used; --i >= 0; )
-            {
-                a.SetValue(loadElem(i), i);
-            }
-            return a;
-        }
-
         public virtual bool Contains(T obj)
         {
             return IndexOf(obj) >= 0;

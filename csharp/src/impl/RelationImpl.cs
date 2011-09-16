@@ -112,11 +112,6 @@ namespace Volante.Impl
             return link.ToRawArray();
         }
 
-        public override Array ToArray(Type elemType)
-        {
-            return link.ToArray(elemType);
-        }
-
         public override bool Contains(M obj)
         {
             return link.Contains(obj);

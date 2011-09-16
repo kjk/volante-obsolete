@@ -116,17 +116,6 @@ namespace Volante.Impl
             return extend(index.ToArray());
         }
 
-        public Array ToArray(Type elemType)
-        {
-            V[] arr = extend(index.ToArray());
-            ArrayList list = new ArrayList();
-            foreach (var el in arr)
-            {
-                list.Add(el);
-            }
-            return list.ToArray(elemType);
-        }
-
         class ExtendEnumerator : IEnumerator<V>, IEnumerable<V>
         {
             public void Dispose() { }

@@ -80,8 +80,6 @@ namespace Volante
             Tests.Assert(p1.Count == projectedEls * 5);
             var arrTmp = p1.ToArray();
             Tests.Assert(arrTmp.Length == p1.Length);
-            var arr2 = p1.ToArray(typeof(ToRec));
-            Tests.Assert(arr2.Length == p1.Length);
             p1.Reset();
 
             p1.Project(arr[0]);

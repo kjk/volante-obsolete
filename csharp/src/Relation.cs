@@ -44,8 +44,6 @@ namespace Volante
 
         public abstract Array ToRawArray();
 
-        public abstract Array ToArray(Type elemType);
-
         public abstract bool ContainsElement(int i, M obj);
 
         public abstract int IndexOf(M obj);

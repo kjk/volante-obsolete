@@ -90,8 +90,6 @@ namespace Volante
 
             recs = root.byteIdx.ToArray();
             Tests.Assert(recs.Length == root.byteIdx.Count);
-            Array recs2 = root.strIdx.ToArray(typeof(RecordFull));
-            Tests.Assert(recs2.Length == recs.Length);
 
             var prevByte = byte.MinValue;
             n = 0;

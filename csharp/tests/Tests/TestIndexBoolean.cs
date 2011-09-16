@@ -71,18 +71,6 @@ namespace Volante
                 Tests.Assert(!r2.ToBool());
             }
 
-            Array a = idx.ToArray(typeof(Record));
-            Tests.Assert(a.Length == count);
-            for (i=0; i<a.Length; i++)
-            {
-                r = (Record)a.GetValue(i);
-                // false should be before true
-                if (i<falseCount)
-                    Tests.Assert(!r.ToBool());
-                else
-                    Tests.Assert(r.ToBool());
-            }
-
             var e1 = idx.GetEnumerator(false, true, IterationOrder.AscentOrder);
             Record first = null;
             i = 0;

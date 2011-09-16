@@ -78,8 +78,6 @@ namespace Volante
 
             RecordFull[] recsArr = set.ToArray();
             Tests.Assert(recsArr.Length == count);
-            Array recsArr2 = set.ToArray(typeof(RecordFull));
-            Tests.Assert(recsArr2.Length == count);
             set.Clear();
             Tests.Assert(set.Count == 0);
             db.Commit();

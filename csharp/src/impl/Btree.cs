@@ -1704,15 +1704,6 @@ namespace Volante.Impl
             return (V[])arr;
         }
 
-        public virtual Array ToArray(Type elemType)
-        {
-            Array arr = Array.CreateInstance(elemType, nElems);
-            if (root != null)
-                root.traverseForward(height, (IPersistent[])arr, 0);
-
-            return arr;
-        }
-
         public override void Deallocate()
         {
             if (root != null)

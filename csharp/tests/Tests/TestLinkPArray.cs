@@ -199,10 +199,6 @@ namespace Volante
             int expectedCount = arr.Count + link.Count;
             arr.AddAll(link);
             Tests.Assert(arr.Count == expectedCount);
-            Array aTmp = arr.ToArray(typeof(RecordFull));
-            Tests.Assert(aTmp.Length == arr.Count);
-            aTmp = link.ToArray(typeof(RecordFull));
-            Tests.Assert(aTmp.Length == link.Count);
 
             Tests.Assert(null != arr.GetEnumerator());
             Tests.Assert(null != link.GetEnumerator());

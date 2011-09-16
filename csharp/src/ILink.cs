@@ -124,12 +124,6 @@ namespace Volante
         /// </returns>
         Array ToRawArray();
 
-        /// <summary>Get relation members as array with specifed element type
-        /// </summary>
-        /// <param name="elemType">element type of created array</param>
-        /// <returns>created array</returns>
-        Array ToArray(Type elemType);
-
         /// <summary>Check if i-th element of Link is the same as specified obj
         /// </summary>
         /// <param name="i"> element index</param>

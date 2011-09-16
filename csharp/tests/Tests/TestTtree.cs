@@ -172,13 +172,10 @@ namespace Volante
             db.Commit();
             PopulateIndex(list, 20);
             Tests.Assert(20 == list.Count);
-            Array arr = list.ToArray(typeof(Person));
-            Tests.Assert(20 == arr.Length);
-            Person pTmp = (Person)arr.GetValue(0);
             Tests.Assert(null == list.Get(new Name(-123456)));
-            list.Clear();
-            arr = list.ToArray(typeof(Person));
-            Tests.Assert(0 == list.Count);
+            var arr = list.ToArray();
+            Tests.Assert(20 == arr.Length);
+            Person pTmp = arr[0];
             list.Clear();
             Tests.Assert(!list.Remove(pTmp));
             list.Deallocate();

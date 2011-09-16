@@ -36,12 +36,5 @@ namespace Volante
         /// </summary>
         /// <returns>array of object with set members</returns>
         T[] ToArray();
-
-        /// <summary>
-        /// Copy all set members to an array of specified type
-        /// </summary>
-        /// <param name="elemType">type of array element</param>
-        /// <returns>array of specified type with members of the set</returns>
-        Array ToArray(Type elemType);
     }
 }

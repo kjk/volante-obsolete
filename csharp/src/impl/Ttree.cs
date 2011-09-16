@@ -147,14 +147,6 @@ namespace Volante.Impl
             return arr;
         }
 
-        public virtual Array ToArray(Type elemType)
-        {
-            Array arr = Array.CreateInstance(elemType, nMembers);
-            if (root != null)
-                root.toArray((IPersistent[])arr, 0);
-            return arr;
-        }
-
         class TtreeEnumerator : IEnumerator<V>, IEnumerable<V>
         {
             int i;

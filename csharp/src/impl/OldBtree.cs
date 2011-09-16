@@ -405,14 +405,6 @@ namespace Volante.Impl
             return arr;
         }
 
-        public virtual Array ToArray(Type elemType)
-        {
-            Array arr = Array.CreateInstance(elemType, nElems);
-            if (root != 0)
-                OldBtreePage.traverseForward((DatabaseImpl)Database, root, type, height, (IPersistent[])arr, 0);
-            return arr;
-        }
-
         public override void Deallocate()
         {
             if (root != 0)

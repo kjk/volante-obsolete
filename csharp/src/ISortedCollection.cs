@@ -83,13 +83,6 @@ namespace Volante
         ///
         V[] ToArray();
 
-        /// <summary> Get all objects in the index as array of specified type orderd by index key
-        /// </summary>
-        /// <param name="elemType">type of array element</param>
-        /// <returns>array of objects in the index ordered by key value
-        /// </returns>
-        Array ToArray(Type elemType);
-
         /// <summary>
         /// Get iterator for traversing collection members  with key belonging to the specified range. 
         /// </summary>

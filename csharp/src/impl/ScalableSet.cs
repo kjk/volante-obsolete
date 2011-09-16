@@ -59,14 +59,6 @@ namespace Volante.Impl
                 return link.ToArray();
         }
 
-        public Array ToArray(Type elemType)
-        {
-            if (pset != null)
-                return pset.ToArray(elemType);
-            else
-                return link.ToArray(elemType);
-        }
-
         public override IEnumerator<T> GetEnumerator()
         {
             if (pset != null)

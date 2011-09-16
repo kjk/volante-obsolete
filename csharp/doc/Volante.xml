@@ -50,7 +50,7 @@
         </member>
         <member name="P:Volante.IFile.NoFlush">
             <summary>
-            Set to <code>true</code> to avoid flushing the stream, or <c>false</c> to flush the stream with every call to <see cref="M:Volante.IFile.Sync"/>
+            Set to <code>true</code> to avoid flushing the stream, or <c>false</c> to flush the stream with every call to <see cref="M:Volante.IFile.Sync"/>. Default value is <code>false</code>.
             </summary>
         </member>
         <member name="P:Volante.IFile.Length">
@@ -463,12 +463,6 @@
             <returns>array of object with relation members used in implementation of Link class
             </returns>
         </member>
-        <member name="M:Volante.ILink`1.ToArray(System.Type)">
-            <summary>Get relation members as array with specifed element type
-            </summary>
-            <param name="elemType">element type of created array</param>
-            <returns>created array</returns>
-        </member>
         <member name="M:Volante.ILink`1.ContainsElement(System.Int32,`0)">
             <summary>Check if i-th element of Link is the same as specified obj
             </summary>
@@ -757,13 +751,6 @@
         <member name="M:Volante.IGenericIndex`2.ToArray">
             <summary> Get all objects in the index as array orderd by index key
             </summary>
-            <returns>array of objects in the index ordered by key value
-            </returns>
-        </member>
-        <member name="M:Volante.IGenericIndex`2.ToArray(System.Type)">
-            <summary> Get all objects in the index as array of specified type orderd by index key
-            </summary>
-            <param name="elemType">type of array element</param>
             <returns>array of objects in the index ordered by key value
             </returns>
         </member>
@@ -1978,13 +1965,6 @@
              <returns> array of objects in the index ordered by key value</returns>
             
         </member>
-        <member name="M:Volante.ISortedCollection`2.ToArray(System.Type)">
-            <summary> Get all objects in the index as array of specified type orderd by index key
-            </summary>
-            <param name="elemType">type of array element</param>
-            <returns>array of objects in the index ordered by key value
-            </returns>
-        </member>
         <member name="M:Volante.ISortedCollection`2.GetEnumerator(`0,`0)">
              <summary>
              Get iterator for traversing collection members  with key belonging to the specified range. 
@@ -2201,17 +2181,10 @@
             </summary>
             <returns>array of object with set members</returns>
         </member>
-        <member name="M:Volante.ISet`1.ToArray(System.Type)">
-            <summary>
-            Copy all set members to an array of specified type
-            </summary>
-            <param name="elemType">type of array element</param>
-            <returns>array of specified type with members of the set</returns>
-        </member>
         <member name="T:Volante.Projection`2">
             <summary>
             Class used to project selected objects using relation field. 
-            For all selected objects (specified by array ort iterator), 
+            For all selected objects (specified by array or iterator), 
             value of specified field (of IPersistent, array of IPersistent, Link or Relation type)
             is inspected and all referenced object for projection (duplicate values are eliminated)
             </summary>
@@ -2226,7 +2199,7 @@
             <summary>
             Default constructor of projection. This constructor should be used
             only when you are going to derive your class from Projection and redefine
-            map method in it or sepcify type and fieldName later using setProjectionField
+            Map() method in it or sepcify type and fieldName later using SetProjectionField()
             method
             </summary>
         </member>
@@ -2273,16 +2246,9 @@
             </summary>
             <returns>array of objects</returns>
         </member>
-        <member name="M:Volante.Projection`2.ToArray(System.Type)">
-            <summary>
-            Get result of preceding project and join operations
-            </summary>
-            <param name="elemType">type of result array element</param>
-            <returns>array of objects</returns>
-        </member>
         <member name="M:Volante.Projection`2.GetEnumerator">
             <summary>
-            Get enumerator for result of preceding project and join operations
+            Get enumerator for the result of preceding project and join operations
             </summary>
             <returns>enumerator</returns>
         </member>
@@ -2300,7 +2266,7 @@
         <member name="M:Volante.Projection`2.Map(`0)">
             <summary>
             Get related objects for the object obj. 
-            It is possible to redifine this method in derived classes 
+            It's possible to redefine this method in derived classes 
             to provide application specific mapping
             </summary>
             <param name="obj">object from the selection</param>
