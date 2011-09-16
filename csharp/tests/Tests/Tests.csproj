@@ -149,6 +149,7 @@
     <Compile Include="TestMisc.cs" />
     <Compile Include="TestLinkPArray.cs" />
     <Compile Include="TestPatriciaTrie.cs" />
+    <Compile Include="TestProjection.cs" />
     <Compile Include="TestR2.cs" />
     <Compile Include="TestRaw.cs" />
     <Compile Include="TestReplication.cs" />

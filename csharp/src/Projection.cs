@@ -7,7 +7,7 @@ namespace Volante
 
     /// <summary>
     /// Class used to project selected objects using relation field. 
-    /// For all selected objects (specified by array ort iterator), 
+    /// For all selected objects (specified by array or iterator), 
     /// value of specified field (of IPersistent, array of IPersistent, Link or Relation type)
     /// is inspected and all referenced object for projection (duplicate values are eliminated)
     /// </summary>
@@ -27,7 +27,7 @@ namespace Volante
         /// <summary>
         /// Default constructor of projection. This constructor should be used
         /// only when you are going to derive your class from Projection and redefine
-        /// map method in it or sepcify type and fieldName later using setProjectionField
+        /// Map() method in it or sepcify type and fieldName later using SetProjectionField()
         /// method
         /// </summary>
         public Projection() { }
@@ -73,9 +73,7 @@ namespace Volante
             Type type = typeof(From);
             field = type.GetField(fieldName, BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
             if (field == null)
-            {
                 throw new DatabaseException(DatabaseException.ErrorCode.KEY_NOT_FOUND);
-            }
         }
 
         /// <summary>
@@ -134,9 +132,7 @@ namespace Volante
             foreach (To p in prj.hash.Keys)
             {
                 if (hash.ContainsKey(p))
-                {
                     join[p] = p;
-                }
             }
             hash = join;
         }
@@ -176,7 +172,7 @@ namespace Volante
         }
 
         /// <summary>
-        /// Get enumerator for result of preceding project and join operations
+        /// Get enumerator for the result of preceding project and join operations
         /// </summary>
         /// <returns>enumerator</returns>
         public IEnumerator<To> GetEnumerator()
@@ -204,14 +200,12 @@ namespace Volante
         public void Add(To obj)
         {
             if (obj != null)
-            {
                 hash[obj] = obj;
-            }
         }
 
         /// <summary>
         /// Get related objects for the object obj. 
-        /// It is possible to redifine this method in derived classes 
+        /// It's possible to redefine this method in derived classes 
         /// to provide application specific mapping
         /// </summary>
         /// <param name="obj">object from the selection</param>
@@ -220,31 +214,31 @@ namespace Volante
             if (field == null)
             {
                 Add((To)(object)obj);
+                return;
             }
-            else
+
+            object o = field.GetValue(obj);
+            if (o is ILink<To>)
             {
-                object o = field.GetValue(obj);
-                if (o is ILink<To>)
+                To[] arr = ((ILink<To>)o).ToArray();
+                for (int i = 0; i < arr.Length; i++)
                 {
-                    To[] arr = ((ILink<To>)o).ToArray();
-                    for (int i = 0; i < arr.Length; i++)
-                    {
-                        Add(arr[i]);
-                    }
+                    Add(arr[i]);
                 }
-                else if (o is To[])
-                {
-                    To[] arr = (To[])o;
-                    for (int i = 0; i < arr.Length; i++)
-                    {
-                        Add(arr[i]);
-                    }
-                }
-                else
-                {
-                    Add((To)o);
-                }
+                return;
             }
+
+            if (o is To[])
+            {
+                To[] arr = (To[])o;
+                for (int i = 0; i < arr.Length; i++)
+                {
+                    Add(arr[i]);
+                }
+                return;
+            }
+
+            Add((To)o);
         }
 
         public bool IsReadOnly
@@ -257,7 +251,7 @@ namespace Volante
 
         public bool Contains(To obj)
         {
-            return hash[obj] != null;
+            return hash.ContainsKey(obj);
         }
 
         public bool Remove(To obj)

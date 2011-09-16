@@ -7,8 +7,6 @@ Things to do for c# version:
 * script that copies docs to my website (i.e. my blog repository)
 * g+ button in the website version of docs
 * more code coverage tests:
- * Relation, RelationImpl
- * Projection
  * database corruption/recovery
 * document setting IFile.NoFlush to true in performance_tuning.html
 * make a reference API from .xml extracted during build process (after 0.9?)

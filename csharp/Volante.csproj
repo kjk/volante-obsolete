@@ -365,6 +365,7 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="changelog-volante.txt" />
     <Content Include="doc\blobs.html" />
     <Content Include="doc\devguideindex.html" />
     <Content Include="doc\download.html" />
@@ -396,6 +397,7 @@
     <Content Include="doc\transactions.html" />
     <Content Include="doc\volante.html" />
     <Content Include="doc\Volante.xml" />
+    <Content Include="todo.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
