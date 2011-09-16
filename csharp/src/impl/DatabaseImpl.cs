@@ -1071,7 +1071,7 @@ namespace Volante.Impl
                         if (Listener != null)
                             Listener.DatabaseCorrupted();
 
-                        System.Console.WriteLine("Database was not normally closed: start recovery");
+                        //System.Console.WriteLine("Database was not normally closed: start recovery");
                         header.root[1 - curr].size = header.root[curr].size;
                         header.root[1 - curr].indexUsed = header.root[curr].indexUsed;
                         header.root[1 - curr].freeList = header.root[curr].freeList;
@@ -2870,7 +2870,15 @@ namespace Volante.Impl
         {
             lock (backgroundGcMonitor)
             {
-                Commit();
+                try
+                {
+                    Commit();
+                }
+                catch
+                {
+                    opened = false;
+                    throw;
+                }
                 opened = false;
             }
 #if !CF
@@ -3034,13 +3042,12 @@ namespace Volante.Impl
 
         public void storeFinalizedObject(IPersistent obj)
         {
-            if (opened)
+            if (!opened)
+                return;
+            lock (objectCache)
             {
-                lock (objectCache)
-                {
-                    if (obj.Oid != 0)
-                        storeObject0(obj);
-                }
+                if (obj.Oid != 0)
+                    storeObject0(obj);
             }
         }
 

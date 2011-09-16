@@ -159,16 +159,23 @@ namespace Volante
             Tests.Assert(recs[0].StrVal == strLast);
 
             n = 0;
+            RecordFull oneRemoved = null;
             foreach (var key in Tests.KeySeq(count))
             {
                 n++;
-                if (n % 2 == 0)
+                if (n % 3 == 0)
                     continue;
                 RecordFull rec = longIndex.Get(key);
                 RecordFull removed = longIndex.RemoveKey(key);
                 Tests.Assert(removed == rec);
                 strIndex.Remove(new Key(System.Convert.ToString(key)), rec);
+                Tests.Assert(!strIndex.Contains(removed));
+                if (null == oneRemoved)
+                    oneRemoved = removed;
             }
+            db.Rollback();
+            //TODO: shouldn't this be true?
+            //Tests.Assert(strIndex.Contains(oneRemoved));
 
             res.RemoveTime = DateTime.Now - start;
             db.Close();

@@ -570,6 +570,8 @@ public class TestsMain
 
     static TestInfo[] TestInfos = new TestInfo[]
     {
+        new TestInfo("TestCorrupt01", ConfigsOneFileAlt, Counts1),
+        new TestInfo("TestIndex", ConfigsIndex, Counts1),
         new TestInfo("TestProjection"),
         new TestInfo("TestL2List", ConfigsDefault, new int[2] { 500, 500 }),
         new TestInfo("TestTtree", ConfigsDefault, new int[2] { 10020, 100000 }),

@@ -7,6 +7,7 @@ namespace Volante
     using System;
     using System.Collections;
     using System.Collections.Generic;
+    using System.Diagnostics;
 
     public class TestRemove00 : ITest
     {
@@ -66,33 +67,16 @@ namespace Volante
     // corrupts the database.
     public class TestCorrupt00 : ITest
     {
-        public class Record : Persistent
-        {
-            public DateTime dt;
-            public long lval;
-
-            // persistent objects require empty constructor
-            public Record()
-            {
-            }
-
-            public Record(long val)
-            {
-                this.lval = val;
-                this.dt = DateTime.Now;
-            }
-        }
-
         public class Root : Persistent
         {
-            public Record r;
+            public RecordFull r;
         }
 
         public void Run(TestConfig config)
         {
             IDatabase db = config.GetDatabase();
             Root root = new Root();
-            Record r = new Record();
+            var r = new RecordFull();
             root.r = r;
             db.Root = root;
             db.Commit();
@@ -115,6 +99,51 @@ namespace Volante
         }
     }
 
+
+    // force recover by not closing the database propery
+    public class TestCorrupt01 : ITest
+    {
+        public class Root : Persistent
+        {
+            public IIndex<string, RecordFull> idx;
+        }
+
+        public void Run(TestConfig config)
+        {
+            Debug.Assert(!config.IsTransient);
+
+            IDatabase db = DatabaseFactory.CreateDatabase();
+            Tests.AssertDatabaseException(
+                () => { var r = db.Root; },
+                DatabaseException.ErrorCode.DATABASE_NOT_OPENED);
+
+            db = config.GetDatabase();
+            Root root = new Root();
+            var idx = db.CreateIndex<string, RecordFull>(IndexType.NonUnique);
+            root.idx = idx;
+            db.Root = root;
+            db.Commit();
+
+            for (int i = 0; i < 10; i++)
+            {
+                var r = new RecordFull(i);
+                idx.Put(r.StrVal, r);
+            }
+            var f = db.File;
+            OsFile of = (OsFile)f;
+            of.Close();
+
+            IDatabase db2 = config.GetDatabase(false);
+            try
+            {
+                db.Close();
+            }
+            catch
+            {
+            }
+            db2.Close();
+        }
+    }
 
     // Corner cases for key search
     public class TestIndexRangeSearch : ITest
