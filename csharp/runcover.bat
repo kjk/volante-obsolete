@@ -13,7 +13,7 @@ devenv Volante.sln /Rebuild ReleaseFull /Project Tests
 @set O=bin\ReleaseFull
 @cd %O%
 
-..\..\..\thirdparty\opencover\OpenCover.Console -target:Tests.exe -register:user -filter:+[Volante*]* -output:opencover.xml >opencover.out.txt
+..\..\..\tools\opencover\OpenCover.Console -target:Tests.exe -register:user -filter:+[Volante*]* -output:opencover.xml >opencover.out.txt
 @IF ERRORLEVEL 1 GOTO OPENCOVERFAILED
 @cd ..\..
 
