@@ -570,6 +570,8 @@ public class TestsMain
 
     static TestInfo[] TestInfos = new TestInfo[]
     {
+        new TestInfo("TestR2", ConfigsR2, new int[2] { 1500, 20000 }),
+        new TestInfo("TestRtree", ConfigsDefault, new int[2] { 1500, 20000 }),
         new TestInfo("TestCorrupt01", ConfigsOneFileAlt, Counts1),
         new TestInfo("TestIndex", ConfigsIndex, Counts1),
         new TestInfo("TestProjection"),
@@ -623,9 +625,7 @@ public class TestsMain
 #if WITH_OLD_BTREE
         new TestInfo("TestBit", ConfigsNoAlt, new int[2] { 2000, 20000 }),
 #endif
-        new TestInfo("TestR2", ConfigsR2, new int[2] { 1000, 20000 }),
         new TestInfo("TestRaw", ConfigsRaw, new int[2] { 1000, 10000 }),
-        new TestInfo("TestRtree", ConfigsDefault, new int[2] { 800, 20000 }),
         new TestInfo("TestBlob", ConfigsOneFileAlt),
         new TestInfo("TestConcur"),
         new TestInfo("TestEnumerator", ConfigsDefault, new int[2] { 50, 1000 }),

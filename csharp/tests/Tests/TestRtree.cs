@@ -88,7 +88,6 @@ namespace Volante
                     db.Commit();
             }
             db.Commit();
-            Tests.Assert(root.index.Count == count);
             Rectangle wrappingRect = root.index.WrappingRectangle;
             SpatialObject[] objsTmp = root.index.Get(wrappingRect);
             Tests.Assert(root.index.Count == objsTmp.Length);

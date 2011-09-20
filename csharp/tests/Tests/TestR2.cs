@@ -17,10 +17,10 @@ namespace Volante
 
         ISpatialIndexR2<SpatialObject> index;
 
-        const int nObjectsInTree = 1000;
-
         public void Run(TestConfig config)
         {
+            const int nObjectsInTree = 1000;
+
             SpatialObject so;
             RectangleR2 r;
             int count = config.Count;
@@ -87,7 +87,6 @@ namespace Volante
                     db.Commit();
             }
             db.Commit();
-            Tests.Assert(root.index.Count == count);
             RectangleR2 wrappingRect = root.index.WrappingRectangle;
             SpatialObject[] objsTmp = root.index.Get(wrappingRect);
             Tests.Assert(root.index.Count == objsTmp.Length);
