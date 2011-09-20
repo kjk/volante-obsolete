@@ -2,7 +2,6 @@
 *.dbs
 *bin/
 *obj/
-cov/
 csharp/test.xml
 csharp/testalt.xml
 csharp/doc/perst.xml
@@ -11,3 +10,4 @@ csharp/doc/perst.xml
 partcover.driver.log
 *.user
 *.DS_Store
+scripts/awscreds.py
