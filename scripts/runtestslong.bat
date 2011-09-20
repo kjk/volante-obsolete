@@ -7,13 +7,11 @@ call "%ProgramFiles(x86)%\Microsoft Visual Studio 10.0\Common7\Tools\vsvars32.ba
 IF ERRORLEVEL 1 GOTO NEEDSVS
 
 :BUILD
+cd csharp
 devenv Volante.sln /Project tests\Tests\Tests.csproj /ProjectConfig Release /Rebuild
 IF ERRORLEVEL 1 GOTO FAILEDCOMPILE
 
 bin\Release\Tests.exe -slow
-
-@rem start %O%\TestReplic master
-@rem %O%\TestReplic slave
 
 goto END
 

@@ -7,6 +7,7 @@ call "%ProgramFiles(x86)%\Microsoft Visual Studio 10.0\Common7\Tools\vsvars32.ba
 @IF ERRORLEVEL 1 GOTO NEEDSVS
 
 :BUILD
+cd csharp
 devenv Volante.sln /Rebuild Debug /Project Tests
 @IF ERRORLEVEL 1 GOTO FAILEDCOMPILE
 

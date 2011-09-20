@@ -74,7 +74,7 @@ def main():
     os.makedirs(outdir)
     shutil.copyfile(partcover_file, os.path.join(outdir, "opencover.xml"))
 
-    report_exe_path = os.path.join("..", "thirdparty", "ReportGenerator", "ReportGenerator.exe")
+    report_exe_path = os.path.join("tools", "ReportGenerator", "ReportGenerator.exe")
     run_cmd_throw(report_exe_path, partcover_file, outdir)
 
 if __name__ == "__main__":
