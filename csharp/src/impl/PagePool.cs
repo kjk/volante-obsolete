@@ -45,9 +45,7 @@ namespace Volante.Impl
                     if (pg.offs == addr)
                     {
                         if (pg.accessCount++ == 0)
-                        {
                             pg.unlink();
-                        }
                         break;
                     }
                     nCollisions += 1;
@@ -56,9 +54,7 @@ namespace Volante.Impl
                 {
                     pg = freePages;
                     if (pg != null)
-                    {
                         freePages = (Page)pg.next;
-                    }
                     else if (autoExtended)
                     {
                         if (pageNo >= poolSize)
@@ -97,14 +93,11 @@ namespace Volante.Impl
                             prev = curr;
                             curr = curr.collisionChain;
                         }
+
                         if (prev == null)
-                        {
                             hashTable[h] = pg.collisionChain;
-                        }
                         else
-                        {
                             prev.collisionChain = pg.collisionChain;
-                        }
                     }
                     pg.accessCount = 1;
                     pg.offs = addr;
@@ -125,15 +118,12 @@ namespace Volante.Impl
                     pg.writeQueueIndex = nDirtyPages++;
                     pg.state |= Page.psDirty;
                 }
+
                 if ((pg.state & Page.psRaw) != 0)
                 {
                     if (file.Read(pg.offs, pg.data) < Page.pageSize)
-                    {
-                        for (int i = 0; i < Page.pageSize; i++)
-                        {
-                            pg.data[i] = 0;
-                        }
-                    }
+                        Array.Clear(pg.data, 0, Page.pageSize);
+
                     pg.state &= ~Page.psRaw;
                 }
             }
@@ -206,14 +196,14 @@ namespace Volante.Impl
             nDirtyPages = 0;
             lru = new LRU();
             freePages = null;
-            if (!autoExtended)
+            if (autoExtended)
+                return;
+
+            for (int i = poolSize; --i >= 0; )
             {
-                for (int i = poolSize; --i >= 0; )
-                {
-                    Page pg = new Page();
-                    pg.next = freePages;
-                    freePages = pg;
-                }
+                Page pg = new Page();
+                pg.next = freePages;
+                freePages = pg;
             }
         }
 
