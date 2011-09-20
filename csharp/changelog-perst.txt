@@ -373,8 +373,3 @@ Object will be automatically saved during transaction commit.
 
 --- Release version 1.01 21.22.2003 -------------------------------------
 Initial release
-
-
-
-
-
