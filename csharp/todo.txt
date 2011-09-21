@@ -7,6 +7,7 @@ Things to do for c# version:
 After 0.9:
 * make a reference API from .xml extracted during build process (after 0.9?)
 * code coverage for all index key types
+* write docs on how to work on Volante codebase
 * document projection
 * test perf with SlimTune
 * silverlight version
@@ -19,6 +20,10 @@ After 0.9:
 * benchmark Bytes.unpack*() using unsafe fixed vs. bit fiddling
 * benchmark using standard stream vs. compressed (gzip) stream for database file
 * write a blog post about small size of Volante.dll (compare to e.g. log4net)
+* ambitious: add integrated, small full-text search (maybe port FTS 
+  from SQliteSharp but store indexes in NachoDB)
+* make TestBlob verify both before closing and after closing database (?)
+* ambitious: add LINQ support
 
 Notes:
 * building without (old) Btree code saves 48kB (264 => 216)

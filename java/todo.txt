@@ -1,0 +1,6 @@
+Todo for Java:
+
+ * test with other jvms (e.g. http://jamvm.sourceforge.net/)
+ * change namespace to volante.org
+ * Unix makefile and 
+ * maybe: write ant makefile (to make it easy to run from eclipse)
