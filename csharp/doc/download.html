@@ -4,6 +4,35 @@
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 	<link href="main.css" type="text/css" rel="stylesheet">
 	<title>Volante - download</title>
+
+<script src="http://kjkpub.s3.amazonaws.com/software/volante/latestver.js" type="text/javascript"></script>
+
+<script>
+function $(id) {
+	if (document.all)
+		return document.all[id];
+	if (document.getElementById)
+		return document.getElementById(id);
+	for (var i=1; i<document.layers.length; i++) {
+	    if (document.layers[i].id==id)
+	      return document.layers[i];
+	}
+	return false;
+}
+
+function myInit() {
+	var html;
+	$("buildtime").innerHTML = volanteBuiltOn;
+	html = "<a href='" + volanteLatestZip + "'>" + volanteLatestName + "</a>";
+	$("urlzip").innerHTML = html;
+	var sizeInKb = volanteDllSize / 1024;
+	$("dllsize").innerHTML = sizeInKb.toFixed(2) + " kB";
+}
+
+window.onload = myInit;
+</script>
+
+
 </head>
 <body>
 <div id=left-bar>
@@ -15,7 +44,9 @@
 <div class=content>
 	<p><a href=index.html>Volante</a> : Download</p>
 
-	<p>Download Volante for .NET:</p>
+	<h3>Download Volante for .NET</h3>
+
+	<p><span id="urlzip"></span> <span style="color:gray">(built on <span id="buildtime"></span>, Volante.dll size: <span id=dllsize></span>)</span></p>
 
 	<hr style="margin-top:28px">
 	<center style="font-size:10pt;color:gray">Volante is maintained by <a href="http://blog.kowalczyk.info">Krzysztof Kowalczyk</a></center>

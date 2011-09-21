@@ -139,3 +139,9 @@ def zip_file(dst_zip_file, src, src_name=None, compress=True, append=False):
     src_name = os.path.basename(src)
   zf.write(src, src_name)
   zf.close()
+
+def zip_dir(dst_zip_file, dir):
+  for name in os.listdir(dir):
+    fullosname = os.path.join(dir, name)
+    fullzipname = "%s/%s" % (dir, name)
+    zip_file(dst_zip_file, fullosname, fullzipname, compress=True, append=True)
