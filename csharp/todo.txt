@@ -1,7 +1,5 @@
 Things to do for c# version:
 
-* fix a TestInsertShort and TestInsertUShort bug where can't find short.MaxValue and 1999 in the index (grep for FAILED_TEST)
-* figure out why guid tests fail in mono
 * make a 0.9 release
 
 After 0.9:
@@ -14,6 +12,7 @@ After 0.9:
 * wp7 versions
 * "who uses Volante" section in docs
 * benchmarks info
+* figure out why guid tests fail in mono
 * an example of persisted double-linked list
 * re-implement BitIndexImp.cs using AltBtree
 * implement MemFile : IFile which to use for tests that need database to be closed and re-opened (and currently use file on disk for that)

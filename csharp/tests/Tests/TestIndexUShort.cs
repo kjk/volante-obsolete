@@ -22,11 +22,10 @@ namespace Volante
         const ushort max = ushort.MaxValue;
         const ushort mid = max / 2;
 
-        static byte Clamp(long n)
+        static ushort Clamp(long n)
         {
-            long range = max - min;
-            long val = (n % range) + (long)min;
-            return (byte)val;
+            long val = n % max;
+            return (ushort)val;
         }
 
         public void Run(TestConfig config)
@@ -42,15 +41,18 @@ namespace Volante
             Tests.Assert(null == db.Root);
             var idx = db.CreateIndex<ushort, Record>(IndexType.NonUnique);
             db.Root = idx;
-            long val = 1999;
-            for (i = 0; i < count; i++)
+            int countOf1999 = 0;
+            i = 0;
+            foreach (var val in Tests.KeySeq(count))
             {
-                byte idxVal = Clamp(val);
+                ushort idxVal = Clamp(val);
+                if (val == 1999)
+                    countOf1999++;
                 r = new Record(idxVal);
                 idx.Put(idxVal, r);
+                i++;
                 if (i % 100 == 0)
                     db.Commit();
-                val = (3141592621L * val + 2718281829L) % 1000000007L;
             }
             idx.Put(min, new Record(min));
             idx.Put(max, new Record(max));
@@ -81,11 +83,9 @@ namespace Volante
             recs = idx[max, max];
             Tests.Assert(1 == recs.Length);
 
-#if FAILED_TEST
             // TODO: figure out why returns no values
             recs = idx[1999, 1999];
             Tests.Assert(1 == recs.Length);
-#endif
 
             ushort prev = min;
             var e1 = idx.GetEnumerator();

@@ -42,16 +42,19 @@ namespace Volante
             Tests.Assert(null == db.Root);
             var idx = db.CreateIndex<short, Record>(IndexType.NonUnique);
             db.Root = idx;
-            long val = 1999;
-            for (i = 0; i < count; i++)
+            int countOf1999 = 0;
+            i = 0;
+            foreach (long val in Tests.KeySeq(count))
             {
                 short idxVal = Clamp(val);
+                if (idxVal == 1999)
+                    countOf1999++;
                 Tests.Assert(idxVal != max);
                 r = new Record(idxVal);
                 idx.Put(idxVal, r);
+                i++;
                 if (i % 100 == 0)
                     db.Commit();
-                val = (3141592621L * val + 2718281829L) % 1000000007L;
             }
             idx.Put(min, new Record(min));
             idx.Put(max, new Record(max));
@@ -78,16 +81,11 @@ namespace Volante
             recs = idx[min, min];
             Tests.Assert(1 == recs.Length);
 
-#if FAILED_TEST
-            // TODO: figure out why returns no values
             recs = idx[max, max];
             Tests.Assert(1 == recs.Length);
 
-            // TODO: figure out why returns no values
             recs = idx[1999, 1999];
-            Tests.Assert(1 == recs.Length);
-
-#endif
+            Tests.Assert(countOf1999 == recs.Length);
 
             recs = idx[min + 1, min + 1];
             Tests.Assert(0 == recs.Length);
