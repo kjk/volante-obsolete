@@ -55,8 +55,9 @@ namespace CopyDocs
             path = Path.Combine(path, "web", "blog", "www", "software");
             EnsureDirExists(path);
             path = Path.Combine(path, "volante");
-            if (!Directory.Exists(path))
-                Directory.CreateDirectory(path);
+            var pathTmp = Path.Combine(path, "js");
+            if (!Directory.Exists(pathTmp))
+                Directory.CreateDirectory(pathTmp);
             EnsureDirExists(path);
             return path;
         }
@@ -72,7 +73,7 @@ namespace CopyDocs
         static bool ShouldCopy(string fileName)
         {
             var ext = Path.GetExtension(fileName).ToLower();
-            return ext == ".html" || ext == ".css";
+            return ext == ".html" || ext == ".css" || ext == ".js";
         }
 
         static Dictionary<string, string> FileNameSubst = new Dictionary<string, string>() { 
@@ -100,8 +101,20 @@ namespace CopyDocs
             { "href=index.html", "href=\"database.html\"" }
         };
 
+        static bool NoSubst(string path)
+        {
+            var ext = Path.GetExtension(path).ToLower();
+            return ext == ".css" || ext == ".js";
+        }
+
         static void CopyFile(string srcPath, string dstPath)
         {
+            if (NoSubst(srcPath))
+            {
+                File.Copy(srcPath, dstPath);
+                return;
+            }
+
             string contentOrig = File.ReadAllText(srcPath);
             string content = contentOrig;
             foreach (var strOld in StrSubst.Keys)
@@ -116,11 +129,8 @@ namespace CopyDocs
                 File.WriteAllText(dstPath, content, Encoding.UTF8);
         }
 
-        static void Main(string[] args)
+        static void CopyFilesInDir(string srcDir, string dstDir)
         {
-            string srcDir = FindSrcDocsDir();
-            string dstDir = FindDstDocsDir();
-            DeleteFilesInDir(dstDir); // we want a clean slate - no leaving of obsolete files
             var srcFiles = Directory.GetFiles(srcDir);
             foreach (var filePath in srcFiles)
             {
@@ -133,7 +143,20 @@ namespace CopyDocs
                     dstFileName = fileName;
                 var dstPath = Path.Combine(dstDir, dstFileName);
                 CopyFile(srcPath, dstPath);
+                Console.WriteLine(String.Format("{0} =>\n{1}\n", srcPath, dstPath));
             }
+        }
+
+        static void Main(string[] args)
+        {
+            string srcDir = FindSrcDocsDir();
+            string dstDir = FindDstDocsDir();
+            DeleteFilesInDir(dstDir); // we want a clean slate - no leaving of obsolete files
+            CopyFilesInDir(srcDir, dstDir);
+            srcDir = Path.Combine(srcDir, "js");
+            dstDir = Path.Combine(dstDir, "js");
+            DeleteFilesInDir(dstDir);
+            CopyFilesInDir(srcDir, dstDir);
         }
     }
 }
