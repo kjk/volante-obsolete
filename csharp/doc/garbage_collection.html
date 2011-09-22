@@ -20,11 +20,11 @@
 
 	<h3>What is garbage collection?</h3>
 
-	<p>You should not confuse database garbage collection (gc) with .NET runtime garbage collections. They are similar in that they both serve to reclaim space used by objects that are no longer used (reachable from other objects) but .NET runtime gc works on .NET objects created in memory while Volante garbage collection works on database objects.</p>
+	<p>Do not confuse database garbage collection with .NET runtime garbage collection. They are similar in that they both serve to reclaim space used by objects that are no longer used (reachable from other objects) but .NET runtime gc works on .NET objects created in memory while Volante garbage collection works on objects stored in the database.</p>
 
-	<p>In Volante terminology, a persistent object is an object implementing <a href="https://github.com/kjk/volante/blob/master/csharp/src/IPersistent.cs"><code>IPersistent</code></a> interface. Every object stored in Volante database gets assigned a uniqe oid (object identifier), which is a 32-bit integer. This oid is accessible via <code>Oid</code> property of <code>IPersistent</code> interface. When one persistent objects contains another persistent object, when Volante serializes this object in the database, the embedded object is not stored by value but only its oid is stored. This is more efficient if the object is referenced from many other objects.</p>
+	<p>In Volante terminology, a persistent object is an object implementing <a href="https://github.com/kjk/volante/blob/master/csharp/src/IPersistent.cs"><code>IPersistent</code></a> interface. Every object stored in a Volante database gets assigned a uniqe oid (object identifier), which is a 32-bit integer. This oid is accessible via <code>Oid</code> property of <code>IPersistent</code> interface. When one persistent objects contains another persistent object, when Volante stores this object in the database, the embedded object is not stored by value but only as its oid.</p>
 
-	<p>Volante database can be thought of as a graph of serialized objects. Volante defines a special root object which is the starting point of that graph. All the objects that are found by traversing the whole graph, starting at the root object, are considered reachable and all other objects are considered no longer used and therefore the space they use in the database file can be reused. Garbage collection in Volante is a process that implements does this traversal and figures out which space can be reused.</p>
+	<p>Volante database can be thought of as a graph of serialized objects. Volante defines a special root object which is the starting point of that graph. All the objects that are found by traversing that graph are considered reachable. All other objects are considered no longer used and therefore the space they use in the database file can be reused. Database garbage collection traverses the graph of objects stored in the database and figures out which objects can be deleted (and their space reused).</p>
 
 	<h3>An example of the need for garbage collection</h3>
 
@@ -36,23 +36,31 @@ class Root : Persistent
 	IIndex&lt;int, Record&gt; idx;
 }</pre>
 
-	<p><code>IIndex</code> is a persistent object itself, so it's reachable from the root object. When we insert (key,value) entries into an index, the value objects are persistent and considered reachable from the index, but as described above, the objects are not stored by values but only their oid is stored. If we remove an entry from, we remove the key and the oid of the object from the index but the object itself is still in the database. We should delete it from the database, so that we can use that space for other objects, but not if it's still referenced from other reachable objects. We don't want to manually keep track of which objects are and aren't referenced by other objects. Garbage collections is safe and convenient way to figure out which objects are safe to delete.</p>
+	<p><code>IIndex</code> is a persistent object itself, so it's reachable from the root object. When we insert (key,value) entries into an index, the value objects are persistent and considered reachable from the index. The key and oid of the value object is stored in the index and the object itself is stored as a separate object.</p>
 
-	<h3 id=manual-gc>Explicit garbage collection</h3>
+	<p>When we remove an entry from the index, we remove the key and the oid but the object itself is still in the database even though it cannot be reached from any other object. We should remove it from the database, so that we can use the space for other objects.</p>
+	
+	<p>We don't want to manually keep track of which objects are and aren't referenced by other objects. It would be simple in this case, where an object is only referenced from one index, but it would become tedious and error prone if an object is referenced from multiple other objects.</p>
+	
+	<p>Garbage collections is a safe and convenient way to figure out which objects are safe to delete.</p>
 
-	<p>Garbage collection needs to traverse the whole graph of reachable objects, so it can be a slow process. The bigger the database, the longer it takes to garbage collect it.<p>
+	<h3 id=background-gc>Garbage collection on a background thread</h3>
 
-	<p>Garbage collection can take a long time. In order to not block the application for an arbitrarily long time, you can set <code>bool BackgroundGc</code> property to <code>true</code>, so that the collection happens on a background thread. By default it's <code>false</code> and the collection happens on the thread that triggers garbage collection (usually application's main thread).</p>
+	<p>Garbage collection needs to traverse the whole graph of reachable objects, so it can be slow. The bigger the database, the longer it takes to garbage collect it.<p>
+
+	<p>In order to not block the application for an arbitrarily long time, you can set <code>bool BackgroundGc</code> property to <code>true</code>, so that garbage collection happens on a background thread. By default it's <code>false</code> and the collection happens on the thread that triggers garbage collection.</p>
+
+	<h3 id=explicit-gc>Explicit garbage collection</h3>
 
 	<p>You can trigger garbage collection manually with <code>int Gc()</code> method of database object. It returns number of deleted objects. If <code>BackgroundGc</code> is <code>true</code>, this method returns immediately and the collection happens on a background thread. Otherwise it's performed on the calling thread.</p>
 
 	<p>For performance reasons you shouldn't call <code>Gc()</code> too frequently. A good reason to call it is after deleting a lot of objects, when you know that garbage collection will find a lot of unreachable objects.</p>
 
-	<h3 id=automatic-gc>Implicit garbage collection</h3>
+	<h3 id=implicit-gc>Implicit garbage collection</h3>
 
 	<p>By deafult garbage collection happens only if you explicitly call <code>Gc()</code>. You can trigger garbage collection implicitly by setting <code>long GcThreshold</code> property to a value other than <code>long.MaxValue</code>. In that case garbage collection will be triggered implicitly (and unpredictably) as a result of database operations when delta between total size of allocated and deallocated objects exceeds specified threashold <b>or</b> after reaching an end of allocation bitmap in allocator.<p>
 
-	<p>As with explicit garbage collection, <code>BackgroundGc</code> property determines whether this will happen on a background thread or a calling thread.</p>
+	<p>As with explicit garbage collection, <code>BackgroundGc</code> property determines whether this will happen on a background thread or on a calling thread.</p>
 
 	<center><a href=transactions.html>← transactions, multi-threaded access</a> &nbsp;&bull;&nbsp; <a href=in_memory.html>Volante as in-memory database →</a></center>
 

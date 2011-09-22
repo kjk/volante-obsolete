@@ -22,7 +22,7 @@
 	<p>There are two possibilities:
 	<ul>
 		<li>no persistence</li>
-		<li>with persistence at the time of closing the database</li>
+		<li>persistence at the time of closing the database</li>
 	</ul>
 	</p>
 
@@ -32,7 +32,7 @@
 
 	<p>In that mode the data is gone after application quits. Good for completely transient data.</p>
 
-	<p>This mode is enabled by passing <code>NullFile()</code> instance and 0 for <code>cacheSizeInBytes</code> to <code>IDatabase.Open()</code>.</p>
+	<p>This mode is enabled by passing instance of <code>NullFile()</code> class and <code>0</code> for <code>cacheSizeInBytes</code> to <code>IDatabase.Open()</code>.</p>
 
 	<pre class="prettyprint lang-cs">NullFile dbFile = new NullFile();
 db.Open(dbFile, 0);</pre>
@@ -41,16 +41,17 @@ db.Open(dbFile, 0);</pre>
 
 	<p>In this mode all the operations are done in memory but the database is persisted to disk when database is closed. This is faster than standard mode because there's less total disk I/O.</p>
 
-	<p>The downside is that if the application crashes and the database is not closed, all the data will be lost and closing the database will take a long time.</p>
+	<p>The downside is that if the application crashes and the database is not closed, all the data will be lost.</p>
+	<p>Also, closing the database takes a long time since all the accumulatd changs need to be written out to disk.</p>
 
 	<p>This mode is enabled by passing <code>0</code> for <code>cacheSizeInBytes</code> to <code>IDatabase.Open()</code>.</p>
 	<pre class="prettyprint lang-cs">db.Open("mydb.dbs", 0);</pre>
 
 	<h3>Other effects of infinite cache size</h3>
 
-	<p>Using <code>0</code> for <code>cacheSizeInBytes</code> to create an infinite cache also means that strong object cache will be used (instead of default weak object cache). All fetched objects will be pinned in memory and objects will be unpacked only once (which further improves performance).</p>
+	<p>Using <code>0</code> for <code>cacheSizeInBytes</code> to create an infinite cache also means that strong object cache will be used (instead of default weak object cache). All fetched objects will be pinned in memory and objects will be unpacked only once (which improves performance).</p>
 	
-	<p>The mount of main memory used will be greater than database size because all objects will be present in memory in packed form (inside the page containing the object) and in unpacked form.</p>
+	<p>The amount of main memory used will be greater than database size because all objects will be present in memory in packed form (inside database pages) and in unpacked form.</p>
 
 	<center><a href=garbage_collection.html>← garbage collection</a> &nbsp;&bull;&nbsp; <a href=schema_evolution.html>schema evolution →</a></center>
 
