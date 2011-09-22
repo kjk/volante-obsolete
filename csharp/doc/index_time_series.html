@@ -18,26 +18,26 @@
 <div class=content>
 	<p><a href=index.html>Volante</a> : <a href=devguideindex.html>Volante Developer's Guide</a> : Time series</p>
 
-	<p>Time series usually contains a very large number of relatively small objects that are usually accessed in sucessive order. Objects stored in a time series need to support <code>ITimeSeriesTick</code> interface:<pre class="prettyprint lang-cs">public interface ITimeSeriesTick {
+	<p>Time series usually contains a very large number of relatively small objects that are accessed in sucessive order. Objects stored in a time series need to support <code>ITimeSeriesTick</code> interface:<pre class="prettyprint lang-cs">public interface ITimeSeriesTick {
     long Ticks { get; }
 }</pre>
-	<code>Ticks</code> has the same meaning as <a href="http://msdn.microsoft.com/en-us/library/system.datetime.ticks.aspx"><code>DateTime.Ticks</code></a>: one tick represents 100 nanoseconds interval.</p>
+	<code>Ticks</code> property has the same meaning as <a href="http://msdn.microsoft.com/en-us/library/system.datetime.ticks.aspx"><code>DateTime.Ticks</code></a>: one tick represents 100 nanoseconds interval.</p>
 
 	<p>You can create a <code>DateTime</code> instance from a tick by using <code>DateTime(long ticks)</code> constructor.</p>
 
-	<p>To create a time series use <code>ITimeSeries&lt;T&gt; CreateTimeSeries&lt;Tgt;(int blockSize, long maxBlockTimeInterval) where T : ITimeSeriesTick</code>.</p>
+	<p>To create a time series use <code>ITimeSeries&lt;T&gt; CreateTimeSeries&lt;T&gt;(int blockSize, long maxBlockTimeInterval) where T : ITimeSeriesTick</code>.</p>
 
-	<p>To avoid overhead of loading time series elements one at a time, Volante groups several subsequent time series elements together and stores them as single object (block). <code>blockSize</code> specifies number of elements in a block.</p>
+	<p>To avoid overhead of loading time series elements one at a time, Volante groups several subsequent time series elements together and stores them as a single object (block). <code>blockSize</code> specifies number of elements in a block.</p>
 	
-	<p><code>maxBlockTimeInterval</code> is a maximal difference in system ticks (100 nanoseconds) between timestamps of the first and last element in the block.</p>
+	<p><code>maxBlockTimeInterval</code> is a maximum difference in ticks (100 nanoseconds) between timestamps of the first and last element in the block.</p>
 	
-	<p>If value of this parameter is too small, most blocks will contains less elements than preallocated (wasting space).</p>
+	<p>If value of this parameter is too small, most blocks will contains less elements than block size (wasting space).</p>
 
-	<p>If it is too large, searching will be inefficient, because index search will select a lot of extra blocks which do not contain any element from the specified range.</p>
+	<p>If it is too large, searching will be inefficient because index search will select a lot of extra blocks that do not contain any element from the specified range.</p>
 
-    <p>Ideally the value of <code>maxBlockTimeInterval</code> should be <code>(number of elements in block)*(tick interval)*2</code>. Coefficient 2 is used to compact possible holes in time series.</p>
+    <p>Ideally the value of <code>maxBlockTimeInterval</code> should be: <code>(number of elements in block)*(tick interval)*2</code>. Coefficient 2 is used to compact possible holes in time series.</p>
 
-	<p>For example, if we collect stocks data, we will only have data for working hours. If number of elements in a block is 100, time series period is 1 day, then value of <code>maxBlockTimeInterval</code> shou.d be <code>100*(24*60*60*10000000L)*2</code>.
+	<p>For example, if we collect stocks data, we will only have data for working hours. If number of elements in a block is 100, time series period is 1 day, then value of <code>maxBlockTimeInterval</code> should be <code>100*(24*60*60*10000000L)*2</code>.
 
 	<h3>Adding elements to a time series</h3>
 

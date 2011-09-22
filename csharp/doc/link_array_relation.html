@@ -18,11 +18,11 @@
 <div class=content>
 	<p><a href=index.html>Volante</a> : <a href=devguideindex.html>Volante Developer's Guide</a> : Link, array, relation</p>
 
-	<p>Link, parray (persistent array) and relation are related and implement the same <code>ILink</code> interface.</p>
+	<p>Link, parray (persistent array) and relation are related and implement the same <code><a href="https://github.com/kjk/volante/blob/master/csharp/src/ILink.cs">ILink</a></code> interface.</p>
 
-	<p>C# references model one-to-one relation between objects. In many cases one-to-many and many-to-many relations are needed. Volante provides <code>ILink</code> interface to model such relations. This interface allows to add/delete/inspect members of the relation. Members of the relation can be accessed by index or be extracted as an array of objects.</p>
+	<p>By embedding persisted object inside other persisted object, we model one-to-one relation between objects. In many cases one-to-many or many-to-many relations are needed. <code>ILink</code> models such relations. This interface allows to add/delete/inspect members of the relation. Members of the relation can be accessed by index or be extracted as an array of objects.</p>
 
-	<p>There are two kinds of relations: <i>embedded</i> (when references to related objects are stored in relation owner object itself) and <i>standalone</i> (when relation is a separate object, which contains the reference to the relation owner and relation members). Both kinds of relations implement <code>ILink</code> interface. Embedded relation is created with <code>IDatabase.CreateLink()</code> or <code>IDatabase.CreateArray()</code> and standalone relation is represented by <code>Relation</code> persistent class created with <code>IDatabase.CreateRelation()</code>.</p>
+	<p>There are two kinds of relations: <i>embedded</i> (when references to related objects are stored in relation owner object itself) and <i>standalone</i> (when relation is a separate object, which contains the reference to the relation owner and relation members). Both kinds of relations implement <code>ILink</code> interface. Embedded relation is created with <code>IDatabase.CreateLink&lt;T&gt;()</code> or <code>IDatabase.CreateArray&lt;T&gt;()</code> and standalone relation is represented by <code>Relation</code> persistent class created with <code>IDatabase.CreateRelation()</code>.</p>
 
 	<p>Link and an array both provide an embedded relation i.e. the link or array object is part of a persistent object (the owner of the relation). The difference is in implementation: link fully loads its member objects while array only loads their oids and loads the content of the object on demand. Array is thus more efficient for larger number of objects (if you don't need to access all of them).</p>
 

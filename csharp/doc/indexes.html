@@ -16,37 +16,37 @@
 <div class=content>
 	<p><a href=index.html>Volante</a> : <a href=devguideindex.html>Volante Developer's Guide</a> : Indexes</p>
 
-	<p>Storing objects is just half of the job. The other half is (quickly) retrieving objects based on some criteria. That's the job of indexes.</p>
+	<p>Storing objects is just half of the job. The other half is (quickly) retrieving objects based on desired criteria. That's the job of indexes.</p>
 
 	<p>Similar to relational (SQL) databases, indexes need to be explicitly created. Unlike SQL, you have to add objects to indexes explicitly.</p>
 	
-	<p>A given object can belong to multiple indexes.</p>
+	<p>An object can belong to multiple indexes.</p>
 
 	<p>Indexes only store object's oid (32-bit integer) to refer to the object, so no duplicate data is created when an object is inserted into multiple indexes.</p>
 
 	<p>Indexes are usually part of the root object.</p>
 
-	<p>Indexes are persistent objects (objects implementing IPersistent interface) themselves, so they can be used in all context where IPersistent class can be used.</p>
+	<p>Indexes are persistent objects themselves, so they can be used in all context where <code>IPersistent</code> objects can be used, including being inserted into other indexes.</p>
 
-	<p>Inserting an object into index makes it reachable (assuming the index itself is reachable from other reachable object e.g. root object) which means inserting object into index is enough to persist the object. The colorally is: removing the index entries referring to an object from all indexes will also de-allocate the obbject during the next <a href=garbage_collection.html>garbage collection cycle</a> (assuming it's not reachable from other reachable persistent objects).</p>
+	<p>Inserting an object into index makes it reachable (assuming the index itself is reachable from other reachable object) which means inserting object into index is enough to make sure it won't be deleted during database garbage collection process. The colorally is: removing the index entries referring to an object from all indexes will also remove the object completely from the database during the next <a href=garbage_collection.html>garbage collection cycle</a> (assuming it's not reachable from other reachable objects).</p>
 
-	<p>Most index creation functions are generic and require providing type of the value, which must implement <code>IPersistent</code> interface. Most of the time you'll create homogenous index (i.e. indexes where all values are of the same type). You can create heterogenous indexes (i.e. allowing values of different types) by using <code>IPersistent</code> as the type of the value.</p>
+	<p>Most indexes are generic and require providing type of the key and the value. Values must implement <code>IPersistent</code> interface. Most of the time you'll create homogeneous index (i.e. index where all values are of the same type). You can create heterogeneous index (i.e. allowing values of different types) by using <code>IPersistent</code> as the type of the value.</p>
 
 	<h3>Types of indexes</h3>
 
-	<p>Volante offers several kinds of indexes so it's important to choose the right index for your needs.</p>
+	<p>Volante offers several kinds of indexes. It's important to choose the right index for your needs.</p>
 
-	<p><a href=index_btree.html>B-Tree indexe</a> is the most widely used. It keeps the objects sorted by a key. A key can be of any basic type (e.g. <code>short</code>, <code>int</code>, <code>string</code>, <code>DateTime</code>). That allows quickly finding an object having a given key or find all objects in a given range. Indexes can be unique (do not allow duplicate keys) or non-unique (allow duplicate keys). A thick index offers a more efficient implementation if there are many duplicate keys.</p>
+	<p><a href=index_btree.html>B-Tree index</a> is the most widely used. It keeps the objects sorted by a key. A key can be of any basic type (e.g. <code>short</code>, <code>int</code>, <code>string</code>, <code>DateTime</code>). That allows quickly finding an object having a given key or find all objects in a given range. Indexes can be unique (do not allow duplicate keys) or non-unique (allow duplicate keys). A thick index offers a more efficient implementation if there are many duplicate keys.</p>
 
-	<p>In a generic B-Tree index the key can be of any value, not necessarily related to the object stored under that key. <a href=index_field.html>Field and multi-field indexes</a> are different in that the key value must be part of the object.</p>
+	<p>In a generic B-Tree index the key can be of any value, not necessarily related to the object stored under that key. <a href=index_field.html>Field and multi-field indexes</a> are different in that the key must be part of the object.</p>
 
 	<p><a href=index_spatial.html>Spatial index</a> is for geometric data. The key is a rectangle (either with integer or floating-point coordinates).</p>
 
-	<p><a href=index_sorted_collection.html>Sorted collections</a> is similar to generic B-Tree index but it allows (and requires) providing a custom comparator which determines the order of keys.</p>
+	<p><a href=index_sorted_collection.html>Sorted collections</a> is similar to generic B-Tree index but requires providing a custom comparator which determines the order of keys and is optimized for in-memory use.</p>
 
 	<p><a href=index_set.html>Set</a> is used to store a set of objects (i.e. a collection of objects without duplicates).</p>
 
-	<p><a href=index_time_series.html>Time series</a> is used to efficientl store time series data.</p>
+	<p><a href=index_time_series.html>Time series</a> is used to efficiently store time series data.</p>
 
 	<p><a href=link_array_relation.html>Link, array, relation</a> provide one-to-many mapping.</p>
 

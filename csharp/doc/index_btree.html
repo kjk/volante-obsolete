@@ -18,43 +18,43 @@
 <div class=content>
 	<p><a href=index.html>Volante</a> : <a href=devguideindex.html> Volante Developer's Guide</a> : B-Tree index (regular and thick index)</p>
 
-	<p>B-Tree index entry has a key and a value. Value is usually a persistent object (implementing <code>IPersistent</code> interface), although using <a href=plain_objects.html>plain objects</a> is possible.</p>
+	<p>An entry in a B-Tree index consists of a key and a value. Value is a persistent object (implementing <code>IPersistent</code> interface).</p>
 
-	<p>Values are sorted by a key. That allows quickly finding value by its key or all values within a given range.</p>
+	<p>Values are sorted by a key which allows quickly finding value by its key, all values within a given key range or enumerating values in the sort order of the key.</p>
 
-	<p>The key can be any of the standard .NET types: byte, int, string, DateTime, Guid etc. Sort order is the natural sort order for a given key type.</p>
+	<p>The key can be any of the standard .NET types: byte, int, string, DateTime, Guid etc. Sort order is the natural sort order for a given type.</p>
 	
 	<p>When the key is a string, sorting is done with <a href="http://msdn.microsoft.com/en-us/library/system.string.compareto.aspx">String.CompareTo()</a>.</p>
 
 	<p>Index can be unique (doesn't allow duplicate keys) or non-unique (allows duplicate keys).</p>
 
-	<p>A thick index is optimized for the case of many duplicte keys (so it's a non-unique index by definition)</p>
+	<p>A thick index is optimized for the case of many duplicte keys (it's a non-unique index by definition).</p>
 
 	<p>Index implements <a href="https://github.com/kjk/volante/blob/master/csharp/src/IIndex.cs">IIndex</a> interface, which derives from <a href="https://github.com/kjk/volante/blob/master/csharp/src/IGenericIndex.cs">IGenericIndex</a> interface.</p>
 
 	<h3 id=key>Key class</h3>
 
-	<p>Many index functions take objects of class <a href=""><code>Key</code></a> as an argument. <code>Key</code> class describes the type and value of the index key. In many cases you can just use the raw value for the key and it'll be implicitly converted to the proper <code>Key</code> object. There are cases where you need to explicitly provide <code>Key</code> object.</p>
+	<p>Many index functions take objects of class <a href="https://github.com/kjk/volante/blob/master/csharp/src/Key.cs"><code>Key</code></a> as an argument. <code>Key</code> class represents type and value of the index key. In many cases you can just use the raw value for the key and it'll be implicitly converted to the proper <code>Key</code> object. There are cases where you need to explicitly provide <code>Key</code> object.</p>
 
-	<p>Volante supports searches for inclusive and exclusive ranges. For example, if the index key is an integer and we've inserted objects with keys 1, 2, 3, 4, 5, inclusive search for objects in (2,4) range will return objects whose key is 2, 3 or 4. Search exclusive on both sides in the same (2,4) range will return only objects whose key is 3.</p>
+	<p>Volante supports searches for inclusive and exclusive ranges. For example, if the index key is an integer and we've inserted objects with keys 1, 2, 3, 4, 5, a search for objects in inclusive range (2,4) will return objects whose key is 2, 3 or 4. If the range is in exclusive (2,4) range(on both sides), the search will return only objects whose key is 3.</p>
 
-	<p>The inclusivity is encoded by the <code>Key</code>. When doing a range search, we provide the <code>Key</code> for the lower and upper range. Either key can be inclusive or exclusive so we have 4 possibilities (both inlusive, both exclusive, one of the exclusive while the other inclusive).</p>
+	<p>The inclusivity/exclusivity is encoded in the <code>Key</code> object. When doing a range search, we provide the <code>Key</code> for the lower and upper range. Either key can be inclusive or exclusive so we have 4 possibilities.</p>
 
-	<p>To create a <code>Key</code> marked as exclusive you have to use the 2 argument constructor and pass <code>false</code> for the second argument which is <code>bool</code> indicating inclusivity.</p>
+	<p>To create a <code>Key</code> marked as exclusive you have to use the 2 argument constructor and pass <code>false</code> for the second argument which is of type <code>bool</code> and indicates inclusivity.</p>
 
-	<p>By default this argument is <code>true</code>, which means by default the <code>Key</code> objects, including those created implicitly, are inclusive.</p>
+	<p><code>Key</code> objects created with 1 argument constructor, including those created implicitly, are inclusive.</p>
 
 	<p>Another case where you need to explicitly use <code>Key</code> constructor is to disambiguate between integer types. If you have an index whose key is e.g. of type <code>short</code>, if you create a key with integer constant like <code>var k = new Key(5)</code>, it'll create a <code>Key</code> with type <code>int</code>, which won't be compatible with your index. The right way to create a <code>Key</code> with a specific integer type is to force the right constructor with a cast: <code>var k = new Key((short)5)</code>.
 
 	<h3 id=create-index>Creating an index</h3>
 
-	<p>To create an index call <code>IDatabase.CreateIndex&lt;K, V&gt;(IndexType indexType)</code>. <code>IndexType</code> is an enum that can be <code>IndexType.Unique</code> or <code>IndexType.NonQunique</code>.</p>
+	<p>To create an index use <code>IDatabase.CreateIndex&lt;K, V&gt;(IndexType indexType)</code> method. <code>IndexType</code> is an enum that can be <code>IndexType.Unique</code> or <code>IndexType.NonUnique</code>.</p>
 
 	<p><code>K</code> is type of the key, <code>V</code> is type of the value.</p>
 
 	<p>The result is an object implementing <code>IIndex&lt;K,V&gt;</code> interface. This object is used for all operations on the index.</p>
 
-	<p>To create a thick index use <code>IDatabase.CreateThickIndex&lt;K, V&gt;()</code>. It also returns <code>IIndex&lt;K,V&gt;</code> interface.</p>
+	<p>Thick index is a more efficient implementation in the case of many duplicate keys. To create a thick index use <code>IDatabase.CreateThickIndex&lt;K, V&gt;()</code> method. It also returns <code>IIndex&lt;K,V&gt;</code> interface.</p>
 
 	<h3>Inserting objects into an index</h3>
 
@@ -71,20 +71,20 @@
 
 	<p><code>Put()</code> adds a new object to the index, <code>Set()</code> associates an object with a given key. <code>V this[K key] { set; }</code> is equivalent to <code>Set()</code>.</p>
  
-	<p>In the unique index, if an object with a given key already exists:
+	<p>In a unique index, if an object with a given key already exists:
 	<ul>
-		<li><code>Put()</code> returns false and does not add the object ot the index</li>
-		<li><code>Set()</code> will associate new object with the key (i.e. will overwrite the old object) and return the old object associated with the key</li>
+		<li><code>Put()</code> returns false and does not add the object to the index</li>
+		<li><code>Set()</code> will associate new object with the key (i.e. will overwrite the value) and return the old object associated with the key</li>
 	</ul>
 
-	If the key doesn't exist, the result of <code>Put()</code> and <code>Set()</code> is the same.</p>
+	If the key doesn't exist, the effect of <code>Put()</code> and <code>Set()</code> is the same.</p>
 
-	<p>In the non-unique index, if an object with a given key already exists:
+	<p>In a non-unique index, if an object with a given key already exists:
 	<ul>
 		<li><code>Put()</code> will add another object with the key</li>
 		<li><code>Set()</code> will overwrite the object with this key, i.e. old object will be removed. If there is more than one object with this key, an exception will be thrown.</li>
 	</ul>
-	If the key doesn't exist, the result is the same.</p>
+	If the key doesn't exist, the effect is the same.</p>
 
 	<h3 id=remove>Removing objects from the index</h3>
 
@@ -93,16 +93,16 @@
 		<li><code>void Remove(Key key, V obj)</code></li>
 		<li><code>void Remove(K key, V obj)</code></li>
 	</ul>
-	Notice that you have to provide object to be removed to disambiguate between (possibly) many objects with the same key in non-uniqe index.</p>
+	Notice that you have to provide object to be removed to disambiguate between (possibly) many objects with the same key.</p>
 
-	<p>To remove an object for unique index you can use the above functions as well as:
+	<p>To remove an object from unique index you can additionally use:
 	<ul>
 		<li><code>V Remove(Key key)</code></li>
 		<li><code>V RemoveKey(K key)</code></li>
 	</ul>
 	Since there's at most one object with a given key, we only need the key to uniquely identify the object. Calling those methods on non-unique index will throw an exception.</p>
 
-	<p>Calling any of the above functions with a key that doesn't exist in the index, will throw an exception (TODO: verify that)</p>
+	<p>Calling any of the above functions with a key that doesn't exist in the index will throw an exception.</p>
 
 	<p>What if you want to remove all objects with a given key from non-unique index? It's easy:
 <pre class="prettyprint lang-cs">IPersistent[] objs = index.Get(key,key);
@@ -120,28 +120,30 @@ foreach (var obj in objs) {
 	</ul>
 	If you use <code>Get(Key key)</code>, the key object should be inclusive.</p>
 
-	<p>If the value with a given key is not found, they return <code>null</code>. If there is more than one value with a given key, they'll throw <code>DatabaseException</code> exception with <code>DatabaseException.Code</code> equal to <code>DatabaseException.ErrorCode.KEY_NOT_UNIQUE</code>.</p>
+	<p>If the value with a given key is not found the return value is <code>null</code>. If there is more than one value with a given key, a <code>DatabaseException</code> exception with <code>DatabaseException.Code</code> equal to <code>DatabaseException.ErrorCode.KEY_NOT_UNIQUE</code> is thrown.</p>
 
 	<h3 id=retrieve-range>Retrieving objects within a key range</h3>
 
-	<p>There is a number of functions that returns the values for keys within an inclusive or exclusive range.
+	<p>There is a number of functions that return the values for keys within a given key range:
 	<ul>
 		<li><code>V[] Get(Key from, Key till)</code></li>
 		<li><code>V[] Get(K from, K till)</code></li>
 		<li><code>V[] this[K from, K till] { get; }</code></li>
 	</ul>
-	Those functions return the result as an array of objects.</p>
+	<code>Get(Key fro, Key till</code> allows specifying either limit of the range as inclusive or exclusive by creating either inclusive or exclusive <code>Key</code> object. The other 2 functions use inclusive range.</p>
 
 	<p>
+	Instead of getting an array of objects, you can obtain an enumerator for traversing the results:
 	<ul>
 		<li><code>IEnumerator&lt;V&gt; GetEnumerator(Key from, Key till, IterationOrder order)</code></li>
 		<li><code>IEnumerator&lt;V&gt; GetEnumerator(Key from, Key till)</code></li>
 		<li><code>IEnumerator&lt;V&gt; GetEnumerator(K from, K till, IterationOrder order)</code></li>
 		<li><code>IEnumerator&lt;V&gt; GetEnumerator(K from, K till)</code></li>
 	</ul>
-	Those functions return an enumerator that can be explicitly traversed with <code>IEnumerator.MoveNext()</code> and whose current value can be accessed with <code>IEnumerator.Current</code>. Iteration order can be specified as <code>IterationOrder.AscentOrder</code> (from low values to high values, the default value if not provided) or <code>IterationOrder.DescentOrder</code>.</p>
+	An enumerator that can be explicitly traversed with <code>IEnumerator.MoveNext()</code> and its current value can be accessed with <code>IEnumerator.Current</code>. Iteration order can be specified as <code>IterationOrder.AscentOrder</code> (from low values to high values, the default value if not provided) or <code>IterationOrder.DescentOrder</code>.</p>
 
 	<p>
+	You can also obtain enumerable object, which can be used in <code>foreach</code> loops:
 	<ul>
 		<li><code>IEnumerable&lt;V&gt; Range(Key from, Key till, IterationOrder order)</code></li>
 		<li><code>IEnumerable&lt;V&gt; Range(Key from, Key till)</code></li>
@@ -149,16 +151,17 @@ foreach (var obj in objs) {
 		<li><code>IEnumerable&lt;V&gt; Range(K from, K till)</code></li>
 		<li><code>IEnumerable&lt;V&gt; Reverse()</code></li>
 	</ul>
-	Those functions return an <code>IEnumerable</code> which can be used in <code>foreach</code> loop. <code>Reverse()</code> returns all elements backwards (in descending order).</p>
-
-	<p>Changing the index (by adding/removing/changing) values invalidates <code>IEnumerator</code> and <code>IEnumerable</code>, so you can't e.g. use those values to delete them from the index. If you modify the index while iterating </p>
+	<code>Reverse()</code> returns all elements sorted in descending order.</p>
 
 	<p>
+	There's also functionality to enumerate both keys and values:
 	<ul>
 		<li><code>IDictionaryEnumerator GetDictionaryEnumerator(Key from, Key till, IterationOrder order)</code></li>
 		<li><code>IDictionaryEnumerator GetDictionaryEnumerator()</code></li>
 	</ul>
-	Those functions return <code>IDictionaryEnumerator</code>.</p>
+	</p>
+
+	<p>Changing the index (by adding/removing/changing) values invalidates <code>IEnumerator</code> and <code>IEnumerable</code>, so you can't use those values to delete them from the index. Modifying the index while iterating will throw an exception.</p>
 
 	<h3 id=prefix-search>Prefix search</h3>
 
@@ -170,7 +173,7 @@ foreach (var obj in objs) {
 	</ul>
 	We can also ask for all objects whose key is a prefix of a given word with <code>V[] PrefixSearch(string word)</code>.</p>
 
-	<p>Calling those functions on an index whose key type is not a string will throw an exception.</p>
+	<p>Calling those functions on an index whose key is not a string will throw an exception.</p>
 
 	<h3 id=misc>Misc operations</h3>
 

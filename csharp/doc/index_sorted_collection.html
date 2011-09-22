@@ -18,22 +18,22 @@
 <div class=content>
 	<p><a href=index.html>Volante</a> : <a href=devguideindex.html>Volante Developer's Guide</a> : Sorted collection</p>
 
-	<p>Sorted collection is implemented using <a href="http://en.wikipedia.org/wiki/T-tree">T-Tree</a> and is optimized for <a href=in_memory.html>in-memory</a> use. It's not recommended if the database is on disk. For databases whose size is significantly larger than size of page pool, operations can cause disk trashing and very bad performance. Unlike other index structures, sorted collection doesn't store values of keys so searching requires fetching all of the objects.</p>
+	<p>Sorted collection is implemented using <a href="http://en.wikipedia.org/wiki/T-tree">T-Tree</a> and is optimized for <a href=in_memory.html>in-memory</a> use. It's not recommended if the database is on disk. For databases whose size is significantly larger than size of page pool, operations can cause disk trashing and bad performance. Unlike other indexes, sorted collection doesn't store values of keys so searching requires fetching the values of all objects.</p>
 
-	<p>Sorted collection requires you to provide a custom compare function which determines how the objects are sorted. This is different from a regular <a href=index_btree.html>B-Tree index</a> which only allows keys to be built-in .NET types and uses their standard compare semantics.</p>
+	<p>Sorted collection requires you to provide a custom compare function which determines how the objects are sorted. This is different from a regular <a href=index_btree.html>B-Tree index</a> which only allows keys to be built-in .NET types and uses their standard sort order.</p>
 
 	<h3 id=create>Creating sorted collection</h3>
 
-	<p>To create a sorted collection you can use:
+	<p>To create a sorted collection:
 	<ul>
 		<li><code>ISortedCollection&lt;K, V&gt; CreateSortedCollection&lt;K, V&gt;(PersistentComparator&lt;K, V&gt; comparator, IndexType indexType) where V : class,IPersistent</code></li>
 		<li><code>ISortedCollection&ltK, V&gt; CreateSortedCollection&lt;K, V&gt;(IndexType indexType) where V : class,IPersistent, IComparable&lt;K&gt;, IComparable&lt;V&gt</code></li>
 	</ul>
 	</p>
 
-	<p>As with other index creation functions, <code>IndexType.Unique</code> asks for an unique index (no duplicate keys) and <code>IndexType.NonUnique</code> creates non-unique index which allows duplicate keys.</p>
+	<p>As with other index creation functions, <code>IndexType.Unique</code> asks for a unique index (no duplicate keys) and <code>IndexType.NonUnique</code> creates non-unique index which allows duplicate keys.</p>
 
-	<p>You can provide your own comparator class by inheriting it from abstract <a href=""><code>PersistentComparator</code></a>:</p>
+	<p>You can provide your own comparator class by inheriting it from abstract <a href="https://github.com/kjk/volante/blob/master/csharp/src/PersistentComparator.cs"><code>PersistentComparator</code></a>:</p>
 
 <pre class="prettyprint lang-cs">public abstract class PersistentComparator<K, V> : Persistent where V : class,IPersistent
 {
@@ -43,11 +43,11 @@
 
 	<p>Alternatively, you can make sure that <code>V</code> class implements <a href="http://msdn.microsoft.com/en-us/library/4d7sx9hd.aspx"><code>IComparable&lt;T&gt;</code></a> interface for both key and value. This interface consists of only one function <a href="http://msdn.microsoft.com/en-us/library/43hc6wht.aspx"><code>int CompareTo(T other)</code></a>.</p>
 
-	<p>The object inserted into the index must be comparable both with other objects as well as with keys. The simplest way to achieve that is by using one of the object's fields as the key and writing a compare function that only uses that field.</p>
+	<p>The object inserted into the index must be comparable with other objects as well as with their keys. The simplest way to achieve that is by using one of the object's fields as the key and writing a compare function that only uses that field.</p>
 
 	<h3>Sorted collection operations</h3>
 
-	<p><a href=""><code>ISortedCollection</code></a> implements standard <a href="http://msdn.microsoft.com/en-us/library/92t2ye13.aspx"><code>ICollection&lt;T&gt;</code></a> interface as well as providing some additional functionality:
+	<p><a href="https://github.com/kjk/volante/blob/master/csharp/src/ISortedCollection.cs"><code>ISortedCollection</code></a> implements standard <a href="http://msdn.microsoft.com/en-us/library/92t2ye13.aspx"><code>ICollection&lt;T&gt;</code></a> interface as well as providing some additional functionality:
 	<ul>
 		<li><code>V this[K key] { get; }</code></li>
 		<li><code>V[] this[K low, K high] { get; }</code></li>

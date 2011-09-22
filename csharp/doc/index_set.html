@@ -18,14 +18,14 @@
 <div class=content>
 	<p><a href=index.html>Volante</a> : <a href=devguideindex.html>Volante Developer's Guide</a> : Set</p>
 
-	<p>A set is a unordered collection of non-duplicate objects. To create a set index use one of the following methods:
+	<p>A set is an unordered collection of non-duplicate objects. To create a set:
 	<ul>
 		<li><code>ISet&lt;T&gt; CreateSet&lt;T&gt;()</code></li>
         <li><code>ISet&lt;T&gt; CreateSet&lt;T&gt;(int initialSize)</code></li>
 	</ul>
 	</p>
 
-	<p>Basic operation of the set is adding an object to a set and checking if an object in the set exists.</p>
+	<p>Basic set operations are adding an object to a set and checking if an object in the set exists.</p>
 
 	<p><code>ISet</code> implements the standard <a href="http://msdn.microsoft.com/en-us/library/92t2ye13.aspx"><code>ICollection&lt;T&gt;</code></a> interface and provides a few additions.</p>
 
@@ -35,7 +35,7 @@
 
 	<p>To check if objects exist in the set, use <code>bool ContainsAll(ICollection&lt;T&gt; c)</code>. It returns <code>true</code> if all objects exist in the collection.</p>
 
-	<p>You can also get all objects as an array with <code>T[] ToArray()</code>. Keep in mind that this can be expensive if there are many objects.</p>
+	<p>You can also get all objects as an array with <code>T[] ToArray()</code>. This is expensive if there are many objects in the set.</p>
 
 	<center><a href=index_sorted_collection.html>← sorted collection</a> &nbsp;&bull;&nbsp; <a href=index_time_series.html>time series →</a></center>
 

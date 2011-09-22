@@ -377,7 +377,6 @@
     <Content Include="doc\important_numbers.html" />
     <Content Include="doc\index.html" />
     <Content Include="doc\indexes.html" />
-    <Content Include="doc\index_array.html" />
     <Content Include="doc\index_btree.html" />
     <Content Include="doc\index_field.html" />
     <Content Include="doc\index_set.html" />

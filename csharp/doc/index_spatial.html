@@ -18,10 +18,10 @@
 <div class=content>
 	<p><a href=index.html>Volante</a> : <a href=devguideindex.html>Volante Developer's Guide</a> : Spatial index</p>
 
-	<p>Spatial index allows you to quickly find an object in a given area. Areas are represented by rectangles. There are 2 versions of functionality:
+	<p>Spatial index allows to quickly find an object in a given area. Area is represented by a rectangle. There are 2 versions:
 	<ul>
 		<li>one for rectangles with <code>int</code> coordinates</li>
-		<li>another for rectangles with <code>double</code>coordinates</li>
+		<li>another for rectangles with <code>double</code> coordinates</li>
 	</ul>
 
 	<h3>Rectangle</h3>
@@ -58,7 +58,7 @@
 
 	<h3 id=insert>Inserting into spatial index</h3>
 
-	<p>Spatial index associates an object with a given area represented as a rectangle. To do that use:
+	<p>Spatial index associates an object with a given area represented by a rectangle. To insert into a spatial index use:
 	<ul>
 		<li><code>void Put(Rectangle r, T obj)</code> (if index was created with <code>CreateSpatialIndex())</code></li>
 		<li><code>void Put(RectangleR2 r, T obj)</code> (if index was created with <code>CreateSpatialIndexR2())</code></li>
@@ -77,7 +77,7 @@
 
 	<h3 id=retrieve>Retrieving from spatial index</h3>
 
-	<p>The main purpose of spatial index is to quickly find all objects with a given rectangle:
+	<p>The main purpose of spatial index is to quickly find all objects inside a given area:
 	<ul>
 		<li><code>T[] Get(RectangleR r)</code></li>
 		<li><code>T[] Get(RectangleR2 r)</code></li>
@@ -85,10 +85,11 @@
 		<li><code>IEnumerable&lt;T&gt; Overlaps(RectangleR2 rect)</code></li>
 		<li><code>IDictionaryEnumerator GetDictionaryEnumerator(Rectangle rect)</code></li>
 		<li><code>IDictionaryEnumerator GetDictionaryEnumerator(RectangleR2 rect)</code></li>
+		<li><code>IDictionaryEnumerator GetDictionaryEnumerator()</code> - enumerator over all objects</li>
 	</ul>
 	</p>
 
-	<p>You can also enumerate all objects in the index with <code>IDictionaryEnumerator GetDictionaryEnumerator()</code> and get number of objects in the index with <code>int Count</code> property.</p>
+	<p>You can also get number of objects in the index with <code>int Count</code> property.</p>
 
 	<center><a href=index_field.html>← field index</a> &nbsp;&bull;&nbsp; <a href=index_sorted_collection.html>sorted collection →</a></center>
 
