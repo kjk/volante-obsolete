@@ -14,75 +14,75 @@
 </div>
 
 <div class=content>
-	<p><a href=index.html>Volante</a> : <a href=devguideindex.html>Volante Developer's Guide</a> : Performance tuning</p>
+	<p><a href=index.html>Volante</a> : <a href=devguideindex.html>Volante Developer's Guide</a> : <b>Performance tuning</b></p>
 
-	<h3>Choosing database cache size</h3>
+	<h3 id=cache-size>Database cache size</h3>
 
-	<p>Disk access is <a href=important_numbers.html>orders of magnitude slower</a> than memory access so the size of the cache has the biggest impact on Volante performance. Default size of the cache is 4 MB. You can change the cache size by providing <code>cacheSizeInBytes</code> argument to <code>IDatabase.Open()</code> call. Don't make it smaller than 64 kB.</p>
+	<p>Disk access is <a href=important_numbers.html>orders of magnitude slower</a> than memory access so the size of the cache has a big impact on Volante performance. Default size of the cache is 4 MB. You can change the cache size by providing <code>cacheSizeInBytes</code> argument to <code>IDatabase.Open()</code> call. Don't make it smaller than 64 kB.</p>
 
 	<p>A bigger cache usually leads to faster operations, but keep the following in mind:
 	<ul>
-		<li>If a very large cache size will cause your application using all the system memory and cause swapping, performance of the whole system will degrage drastically</li>
-		<li>Operating system also maintains file cache, so data is cached twice. That being said, accessing data from cache is faster than from  operating system cache because we avoid os call and context switching overhead</li>
-		<li>It's not possible to have zero-sized cache. When data is accessed, it is pinned in the cache so the cache should contain enough entries to keep all pinned pages. Don't make cache size less than 64kb</li>
+		<li>a very large cache might cause your application to use all available memory which might lead to disk swapping which will drastically degrade the performance of the whole system, including your application</li>
+		<li>operating system also maintains file cache, so data is cached twice. That being said, accessing data from cache is faster than from  operating system cache because we avoid overhead of OS call and context switching</li>
+		<li>it's not possible to have zero-sized cache. When data is accessed it has to be pinned in the cache so the cache should contain enough entries to keep all pinned pages. Don't make the cache less than 64kb</li>
 	</ul></p>
 
-	<p>You can use Volante as <a href=in_memory.html>in-memory database</a> by passing <code>0</code> as <code>cacheSizeInBytes</code>.</p>
+	<p>You can use Volante as an <a href=in_memory.html>in-memory database</a> by passing <code>0</code> as <code>cacheSizeInBytes</code>.</p>
 
 	<h3>Using larger transactions</h3>
 
-	<p>Larger transactions (calling <code>IDatabase.Commit()</code> less frequently) also improves the performance and reduces the size of the database file.</p>
+	<p>Larger transactions (calling <code>IDatabase.Commit()</code> less frequently) also improve performance and reduce the size of the database file.</p>
 
-	<p>Volante uses shadow objects for changed (but not yet commited) objects. If you change the object multiple times, it's cheaper to commit only after several changes than commit after each change. In that case the shadow object will be created only once and the object will be written to disk only once.</p>
+	<p>Volante uses shadow objects for changed (but not yet commited) data. If you change the object multiple times, it's cheaper to commit only once after several changes than commit several times, after each change.</p>
 
-	<p>Volante groups objects into 4kB pages and reads/writes a whole page at a time. Changing only one objects causes a whole page to be modified so it's cheaper to group modification to minimize number of changed pages.</p>
+	<p>Volante groups objects into 4kB pages and reads/writes a whole page at a time. Changing only one object causes a whole page to be modified so it's cheaper to group modifications to minimize number of changed pages.</p>
 
-	<p>The disadvantage of larger transactions is that in case of a crash, more data will be lost.</p>
+	<p>The disadvantage of larger transactions is that in case of a crash more data will be lost.</p>
 
 	<h3>Be careful about your in-memory object graph</h3>
 
-	<p>Usually the database root is kept in some variable during the lifetime of your program. That means that root object and all of the objects it points to will not be reclaimed by .NET garbage collector. If anywhere in your graph you reference a large number of objects e.g. as <code>IPersistent[10000] largeArray</code>, all of them will be kept in memory all the time.</p>
+	<p>Usually the database root object is kept in some variable during the lifetime of your program. That means that root object and all of the objects it points to will not be reclaimed by .NET garbage collector. If anywhere in your graph you reference a large number of objects e.g. as <code>IPersistent[10000] largeArray</code>, all of them will be kept in memory all the time.</p>
 
-	<p>You can avoid that by using collections that load objects on demand. Built-in Volante collections, like <a href=indexes.html>indexes</a> or <a href=link_array_relation.html>persistent array</a> do that and efficiently manage memory.</p>
+	<p>You can avoid that by using collections that load objects on demand. Built-in Volante collections, like <a href=indexes.html>indexes</a> or <a href=link_array_relation.html>persistent array</a> do that.</p>
 
     <h3>Not flushing file buffers</h3>
 
-    <p>When Volante writes its data to a file, by default it flushes file buffers (i.e. calls <a href="http://msdn.microsoft.com/en-us/library/aa364439(v=vs.85).aspx">FlushFileBuffers()</a> win32 function). This is needed for reliability, to make sure that the data has really been written to disk and not merely queued by the operating system for writing. This is slower than not flushing. If you can sacrifice relibility, set <code>IFile.NoFlush</code> property to <code>true</code>.</p>
+    <p>When Volante writes its data to a file, by default it flushes file buffers (i.e. calls <a href="http://msdn.microsoft.com/en-us/library/aa364439(v=vs.85).aspx">FlushFileBuffers()</a> win32 function). This is needed for reliability, to make sure that the data has really been written to disk and not merely queued by the operating system for writing. This is slower than not flushing. If you can sacrifice reliability, set <code>IFile.NoFlush</code> property to <code>true</code>.</p>
     <p>This only affects <code>IFile</code> implementations that write to disk, like <code>OsFile</code>.</p>
 
 	<h3>Tuning datbase parameters</h3>
 
-	<p>The following are properties on <code>IDatabase</code> and should be set before the database is opened. The values are in bytes.</p>
+	<p>The following properties on <code>IDatabase</code> influence performance. If changed, they should be set before the database is opened. The values are in bytes.</p>
 
 	<p><table>
 		<tr><th>Parameter</th><th>Default value</th><th>Description</th></tr>
 		<tr>
 		<td valign=top><code>ObjectIndexInitSize</code></td>
 		<td valign=top>1024</td>
-		<td>Initial size of the object index. Object index is increased on demand. Reallocation of index is an expensive operation. To minimize number of reallocations, object index size is always doubled. Specifying larger initial index size allows to reduce number of future reallocations which slightly increases performance. It also leads to a larger initial size of database file. With default value of this parameter, initial database size is about 50Kb.</td></tr>
+		<td>Initial size of the object index. Object index is increased on demand. Reallocation of index is expensive. To minimize number of reallocations, object index size is always doubled. Larger initial index size will reduce number of future reallocations which will slightly increases performance. It will also lead to a larger initial size of database file. With default value of this parameter, initial database size is about 50Kb.</td></tr>
 
 		<tr>
 		<td valign=top><code>ExtensionQuantum</code></td>
 		<td valign=top>4Mb</td>
-		<td>Memory is allocate by scanning bitmap. If there is no large enough hole, then database is extended by the value of<code>dbDefaultExtensionQuantum</code>. Increasing the value of this parameters leads to less frequentrescanning of allocation bitmap from the very beginning. It leads to faster allocation speed and better locality of reference for created objects (because there is more chances that them will be allocated sequentially). From the other side it leads to less efficient memory usage. Reducing the value of this parameter force reusing of existed holes in memory allocation bitmap. 
+		<td>Memory is allocated by scanning bitmap. If a big enough space cannot be found, the database is extended by the value of<code>ExtensionQuantum</code>. Increasing the value of this parameter leads to less frequent rescanning of allocation bitmap from the very beginning. It leads to faster allocation and better locality of references for objects (because there is a higher chance that they will be allocated sequentially). On the other hand, it leads to less efficient memory usage. Reducing the value of this parameter forces reusing of existing space in memory allocation bitmap. 
 		</td></tr>
 
 		<tr>
 		<td valign=top><code>ObjectCacheInitSize</code></td>
 		<td valign=top>1319</td>
-		<td>Volante needs object cache to check if object with a given oid already exists in memory. This cache uses weak references to allow garbage collector to reclaim memory used by objects. When a cache fill threshold is reached, cache is reallocated by doubling its size. Increasing this parameter can save some number of cache reallocations, which leads to higher performance but also higher memory use.
+		<td>Volante needs object cache to check if an object with a given oid is already loaded in memory. This cache uses weak references to allow garbage collector to reclaim memory used by objects. When a cache fill threshold is reached, cache is reallocated by doubling its size. Increasing this parameter can save cache reallocations, which leads to higher performance but also higher memory use.
 		</td></tr>
 	</table></p>
 
 	<h3>Using code generation</h3>
 
-	<p>Volante is using its own serialization/deserialization which happens every time an object needs to be stored in the database or loaded from the database, which happens quite a lot.</p>
+	<p>Volante is using its own serialization/deserialization which happens every time an object needs to be stored in the database or loaded from the database. This happens often.</p>
 
-	<p>To speed up serialization/deserialization Volante can dynamically generate optimized functions for serializing each type (as opposed to using a slower, generic routine).</p>
+	<p>To speed up serialization/deserialization Volante can dynamically generate optimized methods for serializing each type (as opposed to using a slower, generic method).</p>
 
 	<p>To enable that set <code>IDatabase.CodeGeneration</code> property to <code>true</code>.</p>
 
-	<p>A small downside is that those functions have to be generate every time a database is opened, which might slow down opening of the database if it contains many types.</p>
+	<p>A small downside is that those functions have to be generated every time a database is opened, which might slow down opening of the database if it contains a lot of types.</p>
 
 	<center><a href=rc4encrypted.html>← encrypted database</a> &nbsp;&bull;&nbsp; <a href=history.html>history →</a></center>
 

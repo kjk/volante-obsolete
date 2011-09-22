@@ -16,7 +16,7 @@
 </div>
 
 <div class=content>
-	<p><a href=index.html>Volante</a> : <a href=devguideindex.html>Volante Developer's Guide</a> : Sorted collection</p>
+	<p><a href=index.html>Volante</a> : <a href=devguideindex.html>Volante Developer's Guide</a> : <b>Sorted collection</b></p>
 
 	<p>Sorted collection is implemented using <a href="http://en.wikipedia.org/wiki/T-tree">T-Tree</a> and is optimized for <a href=in_memory.html>in-memory</a> use. It's not recommended if the database is on disk. For databases whose size is significantly larger than size of page pool, operations can cause disk trashing and bad performance. Unlike other indexes, sorted collection doesn't store values of keys so searching requires fetching the values of all objects.</p>
 

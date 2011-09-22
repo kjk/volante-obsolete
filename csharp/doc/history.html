@@ -13,24 +13,24 @@
 </div>
 
 <div class=content>
-	<p><a href=index.html>Volante</a> : <a href=devguideindex.html> Volante Developer's Guide</a> : History of Volante</p>
+	<p><a href=index.html>Volante</a> : <a href=devguideindex.html> Volante Developer's Guide</a> : <b>History of Volante</b></p>
 
 	<p>Volante is a continuation of <a href="http://en.wikipedia.org/wiki/Perst">Perst</a> database originally created by <a href="http://www.garret.ru/">Konstantin Knizhnik</a>.<p>
 
-	<p>Up to version 2.49 Perst was licensed under BSD. Konstantin (I assume) sold the code to McObject. Starting with version 2.50 the license was changed to GPL and McObject sells a commercial license for people who can't use GPL code.<p>
+	<p>Up to version 2.49 Perst was licensed under BSD. Konstantin (I assume) sold the code to a company called McObject. Starting with version 2.50 the license was changed to GPL and McObject sells a commercial license for people who can't use GPL code.<p>
 
 	<p>Volante is based on the latest BSD version (2.49) and retains its BSD license, which allows free use even in commercial software.</p>
 
-	<p>Perst has Java and .NET versions but at the moment I don't have the bandwidth to support both versions (and I don't active use Java) so currently Volante only has .NET version.</p>
+	<p>Perst has Java and .NET versions but at the moment I don't have the bandwidth to support both versions (and I don't actively use Java) so currently Volante only has .NET version.</p>
 
-	<p>Pers 2.49 was released in 2005 so I used it as an opportunity to make some changes, without worrying about backwards compatibility with Perst.</p>
+	<p>Perst 2.49 was released long time ago (in 2005) so I decided to make some changes in the code base without worrying about backwards compatibility with Perst.</p>
 	
 	<p>You can read a <a href="https://github.com/kjk/volante/blob/master/csharp/changelog-volante.txt">detailed changelog</a> but to summarize most important changes and why they were made:
 	<ul>
 		<li>renamed interfaces to follow C# naming style</li>
 		<li>renamed Storage class to Database</li>
-		<li>excluded XML import/export and replication functionality from official build. My focus is to best support the use case of using Volante as a storage engine for desktop/mobile applications and those </li>
-		<li>excluded old btree code from official build. Perst has 2 versions of btree code. I don't know why (probably so that programs can read databases created with older versions of Perst) but the new btree code seems to be better (faster) so I removed the old btree. The result is smaller dll and less code to maintain</li>
+		<li>excluded XML import/export and replication functionality from official build. My focus is to best support the use case of using Volante as a storage engine for desktop/mobile applications and in that usage those features aren't useful</li>
+		<li>excluded old btree code from official build. Perst has 2 versions of btree code. I don't know why (probably the old code is kept for backwards compatibility) but the new btree code seems to be better (faster) so I removed the old btree. The result is smaller dll and less code to maintain</li>
 	</ul>
 	</p>
 
