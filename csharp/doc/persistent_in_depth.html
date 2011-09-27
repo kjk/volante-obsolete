@@ -102,7 +102,7 @@
 
 	<h3 id=plain-objects>Storing plain .NET objects</h3>
 
-	<p>Sometimes it's convenient to store .NET objects that don't derive from <code>Persistent</code> class (or implement <code>IPersistent</code> interface in some other way). It's possible, but it does has drawbacks.</p>
+	<p>Sometimes it's convenient to store .NET objects that don't derive from <code>Persistent</code> class (or implement <code>IPersistent</code> interface in some other way). It's possible, but it does have drawbacks.</p>
 
 	<p>The object will be serialized using standard .NET binary serialization, so all the standard .NET serialization rules apply. Most importantly, the object and all objects it references must be marked with <code>Serializable</code> attribute. Additionally, it should not contain references to persistent objects since standard .NET serialization doesn't know how to handle them.</p>
 
