@@ -570,6 +570,11 @@ public class TestsMain
 
     static TestInfo[] TestInfos = new TestInfo[]
     {
+        // small count for TestFieldIndex and TestMultiFieldIndex because we only
+        // want to test code paths unique to them. The underlying code is tested
+        // in regular index tests
+        new TestInfo("TestFieldIndex", ConfigsDefault, new int[2] { 100, 100 }),
+        new TestInfo("TestMultiFieldIndex", ConfigsDefault, new int[2] { 100, 100 }),
         new TestInfo("TestR2", ConfigsR2, new int[2] { 1500, 20000 }),
         new TestInfo("TestRtree", ConfigsDefault, new int[2] { 1500, 20000 }),
         new TestInfo("TestCorrupt01", ConfigsOneFileAlt, Counts1),
@@ -583,11 +588,6 @@ public class TestsMain
         new TestInfo("TestPatriciaTrie"),
 #endif
         new TestInfo("TestLinkPArray"),
-        // small count for TestFieldIndex and TestMultiFieldIndex because we only
-        // want to test code paths unique to them. The underlying code is tested
-        // in regular index tests
-        new TestInfo("TestMultiFieldIndex", ConfigsDefault, new int[2] { 100, 100 }),
-        new TestInfo("TestFieldIndex", ConfigsDefault, new int[2] { 100, 100 }),
         // test set below ScalableSet.BTREE_THRESHOLD, which is 128, to test
         // ILink code paths
         new TestInfo("TestSet", ConfigsOnlyAlt, new int[2] { 100, 100 }),

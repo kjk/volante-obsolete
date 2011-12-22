@@ -147,8 +147,10 @@ namespace Volante
                 DatabaseException.ErrorCode.UNSUPPORTED_INDEX_TYPE);
 
             Tests.Assert(root.idxLong.Remove(rfFirst));
+            Tests.Assert(root.idxString.Remove(rfFirst));
             db.Commit();
             Tests.Assert(!root.idxLong.Remove(rfFirst));
+            Tests.Assert(!root.idxString.Remove(rfFirst));
         }
     }
 }

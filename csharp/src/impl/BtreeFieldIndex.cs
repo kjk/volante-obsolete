@@ -138,7 +138,9 @@ namespace Volante.Impl
                     key = new Key((Guid)val);
                     break;
                 case ClassDescriptor.FieldType.tpString:
-                    key = new Key(((string)val).ToCharArray());
+                    // TODO: this was breaking string field index
+                    // key = new Key(((string)val).ToCharArray());
+                    key = new Key((string)val);
                     break;
                 case ClassDescriptor.FieldType.tpEnum:
                     key = new Key((Enum)val);
