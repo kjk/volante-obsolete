@@ -146,11 +146,45 @@ namespace Volante
                 { root.idxString.Append(rfFirst); },
                 DatabaseException.ErrorCode.UNSUPPORTED_INDEX_TYPE);
 
+            Tests.Assert(root.idxBool.Remove(rfFirst));
+            Tests.Assert(root.idxByte.Remove(rfFirst));
+            Tests.Assert(root.idxSByte.Remove(rfFirst));
+            Tests.Assert(root.idxShort.Remove(rfFirst));
+            Tests.Assert(root.idxUShort.Remove(rfFirst));
+            Tests.Assert(root.idxInt.Remove(rfFirst));
+            Tests.Assert(root.idxUInt.Remove(rfFirst));
             Tests.Assert(root.idxLong.Remove(rfFirst));
+            Tests.Assert(root.idxULong.Remove(rfFirst));
+            Tests.Assert(root.idxFloat.Remove(rfFirst));
+            Tests.Assert(root.idxDouble.Remove(rfFirst));
+            Tests.Assert(root.idxDate.Remove(rfFirst));
+            Tests.Assert(root.idxDecimal.Remove(rfFirst));
+            Tests.Assert(root.idxGuid.Remove(rfFirst));
             Tests.Assert(root.idxString.Remove(rfFirst));
             db.Commit();
+            Tests.Assert(!root.idxBool.Remove(rfFirst));
+            Tests.Assert(!root.idxByte.Remove(rfFirst));
+            Tests.Assert(!root.idxSByte.Remove(rfFirst));
+            Tests.Assert(!root.idxShort.Remove(rfFirst));
+            Tests.Assert(!root.idxUShort.Remove(rfFirst));
+            Tests.Assert(!root.idxInt.Remove(rfFirst));
+            Tests.Assert(!root.idxUInt.Remove(rfFirst));
             Tests.Assert(!root.idxLong.Remove(rfFirst));
+            Tests.Assert(!root.idxLongProp.Remove(rfFirst));
+            Tests.Assert(!root.idxULong.Remove(rfFirst));
+            Tests.Assert(!root.idxFloat.Remove(rfFirst));
+            Tests.Assert(!root.idxDouble.Remove(rfFirst));
+            Tests.Assert(!root.idxDate.Remove(rfFirst));
+            Tests.Assert(!root.idxDecimal.Remove(rfFirst));
+            Tests.Assert(!root.idxGuid.Remove(rfFirst));
             Tests.Assert(!root.idxString.Remove(rfFirst));
+            db.Commit();
+            var e = root.idxLong.GetEnumerator();
+            Tests.Assert(e.MoveNext());
+            r2 = e.Current;
+            Tests.Assert(root.idxLongProp.Remove(r2));
+            db.Commit();
+            Tests.Assert(!root.idxLongProp.Remove(r2));
         }
     }
 }
