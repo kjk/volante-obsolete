@@ -3,6 +3,8 @@ What.
 
 Volante is a free, small, fast, object-oriented, NoSQL, embeddable database for .NET and Java.
 
+See http://blog.kowalczyk.info/software/volante/ for more information.
+
 Origin.
 -------
 
