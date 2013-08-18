@@ -99,7 +99,6 @@ namespace Volante
         }
     }
 
-
     // force recover by not closing the database propery
     public class TestCorrupt01 : ITest
     {
@@ -151,6 +150,12 @@ namespace Volante
         public class Record : Persistent
         {
             public long lval;
+            public byte[] data;
+
+            public Record()
+            {
+                data = new byte[4] { 1, 4, 0, 3 };                
+            }
         }
 
         public class Root : Persistent
@@ -166,6 +171,8 @@ namespace Volante
             Tests.AssertDatabaseException(() =>
                 { db.Open(new NullFile(), 0); }, DatabaseException.ErrorCode.DATABASE_ALREADY_OPENED);
 
+            var expectedData = new byte[4] { 1, 4, 0, 3 };
+
             Root root = new Root();
             root.idx = db.CreateIndex<long, Record>(IndexType.Unique);
             db.Root = root;
@@ -175,19 +182,21 @@ namespace Volante
             root.idx[5] = new Record { lval = 5 };
             db.Commit();
             Tests.Assert(db.DatabaseSize > 0);
-
             recs = root.idx[-1, -1];
             Tests.Assert(recs.Length == 0);
             recs = root.idx[0, 0];
             Tests.Assert(recs.Length == 0);
             recs = root.idx[1, 1];
             Tests.Assert(recs.Length == 1);
+            Tests.Assert(Tests.ByteArrayEq(recs[0].data, expectedData));
             recs = root.idx[2, 2];
             Tests.Assert(recs.Length == 1);
+            Tests.Assert(Tests.ByteArrayEq(recs[0].data, expectedData));
             recs = root.idx[3, 3];
             Tests.Assert(recs.Length == 0);
             recs = root.idx[5, 5];
             Tests.Assert(recs.Length == 1);
+            Tests.Assert(Tests.ByteArrayEq(recs[0].data, expectedData));
             recs = root.idx[6, 6];
             Tests.Assert(recs.Length == 0);
             recs = root.idx[long.MinValue, long.MaxValue];
@@ -204,13 +213,17 @@ namespace Volante
             recs = GetInRange(root.idx, 0);
             Tests.Assert(recs.Length == 0);
             recs = GetInRange(root.idx, 1);
+            Tests.Assert(Tests.ByteArrayEq(recs[0].data, expectedData));
             Tests.Assert(recs.Length == 1);
+            Tests.Assert(Tests.ByteArrayEq(recs[0].data, expectedData));
             recs = GetInRange(root.idx, 2);
             Tests.Assert(recs.Length == 1);
+            Tests.Assert(Tests.ByteArrayEq(recs[0].data, expectedData));
             recs = GetInRange(root.idx, 3);
             Tests.Assert(recs.Length == 0);
             recs = GetInRange(root.idx, 5);
             Tests.Assert(recs.Length == 1);
+            Tests.Assert(Tests.ByteArrayEq(recs[0].data, expectedData));
             recs = GetInRange(root.idx, 6);
             Tests.Assert(recs.Length == 0);
 
