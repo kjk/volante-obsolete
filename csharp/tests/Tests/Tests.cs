@@ -411,7 +411,7 @@ public class Tests
         Assert(gotException);
     }
 
-    public static bool ByteArrayEq(byte[] a1, byte[] a2)
+    public static bool ByteArraysEqual(byte[] a1, byte[] a2)
     {
         if (a1 == a2)
             return true;

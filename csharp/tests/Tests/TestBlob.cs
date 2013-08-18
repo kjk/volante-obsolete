@@ -90,18 +90,6 @@ namespace Volante
             db.Close();
         }
 
-        public bool ByteArraysEqual(byte[] b1, byte[] b2)
-        {
-            if (b1 == b2) return true;
-            if (b1 == null || b2 == null) return false;
-            if (b1.Length != b2.Length) return false;
-            for (int i = 0; i < b1.Length; i++)
-            {
-                if (b1[i] != b2[i]) return false;
-            }
-            return true;
-        }
-
         public void TestBlobImpl(TestConfig config)
         {
             int n;
@@ -128,7 +116,7 @@ namespace Volante
             Tests.Assert(0 == blobStrm.Position);
             n = blobStrm.Read(b2, 0, 6);
             Tests.Assert(n == 6);
-            Tests.Assert(ByteArraysEqual(b, b2));
+            Tests.Assert(Tests.ByteArraysEqual(b, b2));
             Tests.Assert(6 == blobStrm.Position);
             n = blobStrm.Read(b2, 0, 1);
             Tests.Assert(n == 0);
