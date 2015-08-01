@@ -1810,9 +1810,9 @@ namespace Volante.Impl
             {
                 ensureOpened();
 #if WITH_OLD_BTREE
-                ISet<T> s = alternativeBtree
-                    ? (ISet<T>)new PersistentSet<T>()
-                    : (ISet<T>)new OldPersistentSet<T>();
+                Volante.ISet<T> s = alternativeBtree
+                    ? (Volante.ISet<T>)new PersistentSet<T>()
+                    : (Volante.ISet<T>)new OldPersistentSet<T>();
 #else
                 var s = new PersistentSet<T>();
 #endif
