@@ -1804,7 +1804,7 @@ namespace Volante.Impl
             return new Ttree<K, V>(new DefaultPersistentComparator<K, V>(), unique);
         }
 
-        internal ISet<T> CreateBtreeSet<T>() where T : class,IPersistent
+        internal Volante.ISet<T> CreateBtreeSet<T>() where T : class,IPersistent
         {
             lock (this)
             {
@@ -1814,19 +1814,19 @@ namespace Volante.Impl
                     ? (ISet<T>)new PersistentSet<T>()
                     : (ISet<T>)new OldPersistentSet<T>();
 #else
-                ISet<T> s = new PersistentSet<T>();
+                var s = new PersistentSet<T>();
 #endif
                 s.AssignOid(this, 0, false);
                 return s;
             }
         }
 
-        public ISet<T> CreateSet<T>() where T : class,IPersistent
+        public Volante.ISet<T> CreateSet<T>() where T : class,IPersistent
         {
             return CreateSet<T>(8);
         }
 
-        public ISet<T> CreateSet<T>(int initialSize) where T : class,IPersistent
+        public Volante.ISet<T> CreateSet<T>(int initialSize) where T : class,IPersistent
         {
             lock (this)
             {
