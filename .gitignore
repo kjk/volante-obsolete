@@ -12,3 +12,4 @@ partcover.driver.log
 *.DS_Store
 scripts/awscreds.py
 csharp/cov
+*.userprefs

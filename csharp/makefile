@@ -6,7 +6,7 @@
 # WITH_REPLICATION=[yes|no] - default: no
 # WITH_ALL=[yes|no] - default: no
 
-CSC=gmcs
+CSC=mcs
 
 CSC_FLAGS = -debug -d:MONO
 MONO_FLAGS = --debug --gc=sgen
